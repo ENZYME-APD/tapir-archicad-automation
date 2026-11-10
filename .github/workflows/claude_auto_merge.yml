@@ -21,6 +21,13 @@ name: Auto Merge
 #     statuses: write (claude_bot_pr_steward.yml's sweep and restart, which
 #     set their own `steward-fix` status - pending while a pull request
 #     waits for an earlier one, which holds the merge back like any check);
+#   - (fast lanes) that wait shrinks to BOT_AUTO_MERGE_TESTED_DELAY_HOURS
+#     (default 1) when a person with write access passed the head in real
+#     Archicad (an `archicad-test/*` status whose tester has write access - the
+#     status alone is not enough, everyone's result line sets one), and to
+#     BOT_AUTO_MERGE_QUICK_DELAY_HOURS (default 6) for a small change to
+#     Markdown that steers nothing (see "fast lanes" below). Every other gate
+#     is unchanged; set a variable to the wait's own value to switch a lane off;
 #   - no review thread a person opened is unresolved, and no reviewer's latest
 #     review requests changes;
 #   - no Archicad test failed on that head: the newest status of each
@@ -110,6 +117,8 @@ jobs:
           REPO: ${{ github.repository }}
           BOT_AUTO_MERGE: ${{ vars.BOT_AUTO_MERGE }}
           BOT_DELAY_HOURS: ${{ vars.BOT_AUTO_MERGE_DELAY_HOURS || '72' }}
+          BOT_TESTED_DELAY_HOURS: ${{ vars.BOT_AUTO_MERGE_TESTED_DELAY_HOURS || '1' }}
+          BOT_QUICK_DELAY_HOURS: ${{ vars.BOT_AUTO_MERGE_QUICK_DELAY_HOURS || '6' }}
         run: |
           set -euo pipefail
 
@@ -157,6 +166,57 @@ jobs:
                 and $branch == "claude/devkit-\($h[-1].archicad)-\($h[-1].release)"
             ' >/dev/null
           }
+
+          # --- fast lanes: begin (tools/test_auto_merge_lanes.py tests this block) ---
+          # A bot pull request normally waits BOT_DELAY_HOURS after its review
+          # passed. Two cases, both plain checks and neither a model's call,
+          # shorten that wait; the shorter of the waits that apply counts.
+          #
+          # Lane 1, tested in Archicad by someone we trust. The newest
+          # archicad-test/* status of some Archicad version is a success whose
+          # tester has write access to this repository. archicad_test_status.yml
+          # lets everyone's result line set a status (the maintainer's decision),
+          # so a status alone proves nothing here: anyone could post a PASS for
+          # their own crafted pull request. The tester is read from the status
+          # description, which that workflow writes from the comment's author
+          # as the API reports it. Prints the tester's login on success.
+          trusted_pass () {
+            local head_oid=$1 logins login permission
+            logins=$(gh api "repos/$REPO/commits/$head_oid/statuses?per_page=100" \
+              --jq '[.[] | select(.context | startswith("archicad-test/"))] | group_by(.context)
+                    | map(max_by(.id) | select(.state == "success") | (.description // ""))
+                    | .[] | capture("^PASS [0-9]+/[0-9]+, tested by (?<u>[A-Za-z0-9-]+)$") | .u') || return 1
+            for login in $logins; do
+              permission=$(gh api "repos/$REPO/collaborators/$login/permission" --jq '.permission' 2>/dev/null || echo none)
+              case "$permission" in
+                admin|write|maintain) printf '%s' "$login"; return 0 ;;
+              esac
+            done
+            return 1
+          }
+
+          # Lane 2, a small change to text nothing executes: at most
+          # QUICK_MAX_FILES files and QUICK_MAX_LINES changed lines, every file
+          # a Markdown file outside docs/ (served on the website, and the copies
+          # for AI assistants are generated there), .claude/ and the files that
+          # steer the bots (CLAUDE.md, AGENTS.md, SKILL.md). Size alone proves
+          # nothing - one added line can be the whole attack - and "bug fix" is a
+          # label from the issue text, so neither is a test; the kind of file is.
+          QUICK_MAX_FILES=4
+          QUICK_MAX_LINES=60
+          quick_change () {
+            local pr=$1
+            gh pr view "$pr" --repo "$REPO" --json files,additions,deletions 2>/dev/null \
+              | jq -e --argjson maxfiles "$QUICK_MAX_FILES" --argjson maxlines "$QUICK_MAX_LINES" '
+                  (.files | length) as $n
+                  | $n >= 1 and $n <= $maxfiles and (.additions + .deletions) <= $maxlines
+                    and ([.files[].path
+                          | test("\\.md$")
+                            and (test("^(docs|\\.claude|\\.github|tools)/") | not)
+                            and (test("(^|/)(CLAUDE|AGENTS|SKILL)\\.md$") | not)] | all)
+                ' >/dev/null
+          }
+          # --- fast lanes: end ---
 
           # Every trigger sweeps the open pull requests rather than reading the
           # candidates off the event. The event payloads carry no pull requests
@@ -263,8 +323,22 @@ jobs:
               since=$(jq -r 'reduce .[] as $s ({stop: false, t: null};
                                if .stop then . elif $s.state == "success" then .t = $s.created_at else .stop = true end) | .t' <<<"$statuses")
               age=$(( $(date -u +%s) - $(date -u -d "$since" +%s) ))
+              required=$BOT_DELAY_HOURS
+              lane=""
+              case "$BOT_TESTED_DELAY_HOURS" in ''|*[!0-9]*) BOT_TESTED_DELAY_HOURS=1 ;; esac
+              case "$BOT_QUICK_DELAY_HOURS" in ''|*[!0-9]*) BOT_QUICK_DELAY_HOURS=6 ;; esac
               if [ "$age" -lt $(( BOT_DELAY_HOURS * 3600 )) ]; then
-                echo "skip: the review passed $((age / 3600))h ago, waiting until ${BOT_DELAY_HOURS}h"
+                if [ "$BOT_TESTED_DELAY_HOURS" -lt "$required" ] && tester=$(trusted_pass "$headOid"); then
+                  required=$BOT_TESTED_DELAY_HOURS
+                  lane="passed in Archicad for $tester"
+                fi
+                if [ "$BOT_QUICK_DELAY_HOURS" -lt "$required" ] && quick_change "$pr"; then
+                  required=$BOT_QUICK_DELAY_HOURS
+                  lane="small change to Markdown outside docs/"
+                fi
+              fi
+              if [ "$age" -lt $(( required * 3600 )) ]; then
+                echo "skip: the review passed $((age / 3600))h ago, waiting until ${required}h${lane:+ ($lane)}"
                 echo "::endgroup::"; continue
               fi
 
@@ -306,7 +380,7 @@ jobs:
                 echo "skip: $openByPeople unresolved thread(s) by people, $changesRequested change request(s)"
                 echo "::endgroup::"; continue
               fi
-              permission="issue bot, review passed $((age / 3600))h ago"
+              permission="issue bot, review passed $((age / 3600))h ago${lane:+, shortened wait: $lane}"
             else
               permission=$(gh api "repos/$REPO/collaborators/$author/permission" \
                 --jq '.permission' 2>/dev/null || echo "none")

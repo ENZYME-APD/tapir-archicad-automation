@@ -540,6 +540,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (default 72), with no open thread by a person, no changes requested and no
   `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
   This is a deliberate maintainer decision to minimize human maintenance.
+  Two fast lanes shorten that wait, both plain shell: a pass in real Archicad by
+  someone with write access (`BOT_AUTO_MERGE_TESTED_DELAY_HOURS`, default 1; the
+  `archicad-test/*` status alone is not trusted, everyone's result sets one) and a
+  small change to Markdown that steers nothing (`BOT_AUTO_MERGE_QUICK_DELAY_HOURS`,
+  default 6). `python tools/test_auto_merge_lanes.py` tests them.
 - `delete_merged_branches.yml` — deletes the head branch of every merged pull
   request of this repository, however it was merged, when its tip is still the
   merged head and no open pull request uses it; run by hand (dry run by default)
