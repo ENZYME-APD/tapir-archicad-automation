@@ -10405,6 +10405,22 @@
             "compositeId": {
                 "$ref": "#/AttributeId"
             },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of one face of the shell (API_ShellBaseType::topMat). ModifyShells takes the same key."
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the edges of the shell (API_ShellBaseType::sidMat). ModifyShells takes the same key."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the other face of the shell (API_ShellBaseType::botMat). ModifyShells takes the same key."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained. ModifyShells takes the same key."
+            },
             "displayOption": {
                 "$ref": "#/DisplayOption"
             },
