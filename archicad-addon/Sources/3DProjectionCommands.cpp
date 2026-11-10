@@ -294,6 +294,10 @@ GS::Optional<GS::UniString> GetCamerasCommand::GetRawResponseSchema () const
                                     "type": "boolean",
                                     "description": "True when the camera is active in the path of its Camera Set."
                                 },
+                                "pen": {
+                                    "type": "integer",
+                                    "description": "The pen index of the camera's symbol on the floor plan."
+                                },
                                 "perspective": {
                                     "$ref": "#/PerspectiveProjectionParameters",
                                     "description": "The perspective of the camera, in the shape Set3DProjectionSettings accepts as its perspective, so passing it there shows the camera's view in the 3D window."
@@ -303,6 +307,7 @@ GS::Optional<GS::UniString> GetCamerasCommand::GetRawResponseSchema () const
                             "required": [
                                 "cameraElementId",
                                 "isActiveInPath",
+                                "pen",
                                 "perspective"
                             ]
                         }
@@ -330,6 +335,7 @@ static GS::ObjectState CreateCameraObjectState (const API_CameraType& camera)
     return GS::ObjectState (
         "cameraElementId", CreateElementIdObjectState (camera.head.guid),
         "isActiveInPath", camera.perspCam.active,
+        "pen", static_cast<Int32> (camera.perspCam.pen),
         "perspective", CreatePerspectiveObjectState (camera.perspCam.persp));
 }
 
@@ -730,6 +736,248 @@ GS::ObjectState ModifyCameraSetsCommand::Execute (const GS::ObjectState& paramet
                 }
             }
             executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+// Cameras (API_CameraType) are created with ACAPI_Element_Create as the DevKit's Element_Test
+// does (Do_CreatePerspCam): from the tool defaults, with camSetGuid naming the Camera Set and
+// prevCam the camera the new one follows in the path (APINULLGuid for the first one).
+
+// The last camera of the path of a Camera Set: from firstCam along nextCam. A closed path leads
+// back to the first camera, so a camera already visited ends the walk. APINULLGuid when the set
+// has no camera.
+static GSErrCode GetLastCameraOfSet (const API_Guid& setGuid, API_Guid& lastCameraGuid)
+{
+    lastCameraGuid = APINULLGuid;
+    API_Element setElement {};
+    GSErrCode err = GetCameraSet (setGuid, setElement);
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::HashSet<API_Guid> visited;
+    API_Guid cameraGuid = setElement.camset.firstCam;
+    while (cameraGuid != APINULLGuid && !visited.Contains (cameraGuid)) {
+        API_Element camera {};
+        camera.header.guid = cameraGuid;
+        if (ACAPI_Element_Get (&camera) != NoError || GetElemTypeId (camera.header) != API_CameraID || camera.camera.camSetGuid != setGuid) {
+            break;
+        }
+        visited.Add (cameraGuid);
+        lastCameraGuid = cameraGuid;
+        cameraGuid = camera.camera.perspCam.nextCam;
+    }
+    return NoError;
+}
+
+// Overwrites the fields of camera that data carries (the camera and target positions, view
+// cone, roll angle, two-point perspective, sun and pen) and keeps the others. Returns false,
+// with the reason in error, when a value is invalid. Shared by the commands that write cameras.
+static bool ApplyCameraFromObjectState (const GS::ObjectState& data, API_CameraType& camera, GS::UniString& error)
+{
+    API_PerspPars& persp = camera.perspCam.persp;
+
+    // API_PerspPars keeps the X/Y of the camera and the target as 2D coordinates and their
+    // heights in separate fields.
+    GS::ObjectState position;
+    if (data.Get ("cameraPosition", position)) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (position);
+        persp.pos = API_Coord { coord.x, coord.y };
+        persp.cameraZ = coord.z;
+    }
+    if (data.Get ("targetPosition", position)) {
+        const API_Coord3D coord = Get3DCoordinateFromObjectState (position);
+        persp.target = API_Coord { coord.x, coord.y };
+        persp.targetZ = coord.z;
+    }
+
+    if (data.Contains ("viewCone") && !data.Get ("viewCone", persp.viewCone)) {
+        error = "Invalid parameter: viewCone must be a number.";
+        return false;
+    }
+    if (data.Contains ("rollAngle") && !data.Get ("rollAngle", persp.rollAngle)) {
+        error = "Invalid parameter: rollAngle must be a number.";
+        return false;
+    }
+    if (data.Contains ("isTwoPointPersp") && !data.Get ("isTwoPointPersp", persp.isTwoPointPersp)) {
+        error = "Invalid parameter: isTwoPointPersp must be a boolean.";
+        return false;
+    }
+
+    GS::ObjectState sun;
+    if (data.Get ("sun", sun)) {
+        // Check on a copy: ApplySunFromObjectState may change part of it before it fails.
+        API_SunAngleSettings sunAngSets = persp.sunAngSets;
+        if (!ApplySunFromObjectState (sun, sunAngSets, error)) {
+            return false;
+        }
+        persp.sunAngSets = sunAngSets;
+    }
+
+    if (data.Contains ("pen")) {
+        Int32 pen = 0;
+        if (!data.Get ("pen", pen) || pen < 1 || pen > 255) {
+            error = "Invalid parameter: pen must be an integer from 1 to 255.";
+            return false;
+        }
+        camera.perspCam.pen = static_cast<short> (pen);
+    }
+    return true;
+}
+
+CreateCamerasCommand::CreateCamerasCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String CreateCamerasCommand::GetName () const
+{
+    return "CreateCameras";
+}
+
+GS::Optional<GS::UniString> CreateCamerasCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "cameras": {
+            "type": "array",
+            "description": "The perspective cameras to create. Each is added at the end of the path of its Camera Set, in the order of this list. The values not given come from the Camera tool defaults.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "cameraSetElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The Camera Set (camera path) the camera is added to, as GetCameras or CreateCameraSets returns it."
+                    },
+                    "cameraPosition": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The position of the camera; z is its height."
+                    },
+                    "targetPosition": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The position of the target point the camera looks at; z is its height. Archicad works out the distance and the azimuth of the camera from the two positions."
+                    },
+                    "viewCone": {
+                        "type": "number",
+                        "description": "The view cone angle of the camera, in the units GetCameras returns it."
+                    },
+                    "rollAngle": {
+                        "type": "number",
+                        "description": "The roll angle of the camera, in the units GetCameras returns it."
+                    },
+                    "isTwoPointPersp": {
+                        "type": "boolean",
+                        "description": "True for a two-point perspective (vertical edges stay vertical)."
+                    },
+                    "sun": {
+                        "$ref": "#/ProjectionSunSettings",
+                        "description": "The sun position of the camera's perspective, by angles or by date and time. Only the values given change; the others come from the Camera tool defaults."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "The pen index of the camera's symbol on the floor plan.",
+                        "minimum": 1,
+                        "maximum": 255
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "cameraSetElementId",
+                    "cameraPosition",
+                    "targetPosition"
+                ]
+            },
+            "minItems": 1
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "cameras"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> CreateCamerasCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/ElementIdsOrErrors",
+            "description": "The element ids of the new cameras, in the order of the input, or an error for each one that could not be created. GetCameras lists them as cameraElementId."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+}
+
+GS::ObjectState CreateCamerasCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> cameras;
+    parameters.Get ("cameras", cameras);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    ACAPI_CallUndoableCommand ("Create Cameras", [&]() -> GSErrCode {
+        for (const GS::ObjectState& data : cameras) {
+            const GS::ObjectState* setId = data.Get ("cameraSetElementId");
+            if (setId == nullptr || !data.Contains ("cameraPosition") || !data.Contains ("targetPosition")) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "'cameraSetElementId', 'cameraPosition' and 'targetPosition' are required."));
+                continue;
+            }
+
+            const API_Guid setGuid = GetGuidFromObjectState (*setId);
+            API_Guid prevCameraGuid = APINULLGuid;
+            GSErrCode err = GetLastCameraOfSet (setGuid, prevCameraGuid);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "The element is not a Camera Set of the project."));
+                continue;
+            }
+
+            API_Element element {};
+#ifdef ServerMainVers_2600
+            element.header.type = API_CameraID;
+#else
+            element.header.typeID = API_CameraID;
+#endif
+            err = ACAPI_Element_GetDefaults (&element, nullptr);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to get the Camera tool defaults."));
+                continue;
+            }
+
+            GS::UniString error;
+            if (!ApplyCameraFromObjectState (data, element.camera, error)) {
+                elements (CreateErrorResponse (APIERR_BADPARS, error));
+                continue;
+            }
+            element.camera.camSetGuid = setGuid;
+            element.camera.perspCam.prevCam = prevCameraGuid;
+            element.camera.perspCam.nextCam = APINULLGuid;
+
+            err = ACAPI_Element_Create (&element, nullptr);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to create the camera."));
+                continue;
+            }
+            const API_Guid cameraGuid = element.header.guid;
+
+            // Read back: a camera Archicad created outside the requested set must not be reported as done.
+            API_Element created {};
+            created.header.guid = cameraGuid;
+            if (ACAPI_Element_Get (&created) != NoError || created.camera.camSetGuid != setGuid) {
+                elements (CreateErrorResponse (APIERR_GENERAL, "Archicad created the camera, but not in the given Camera Set. Delete it with DeleteElements: " + APIGuidToString (cameraGuid)));
+                continue;
+            }
+            elements (CreateElementIdObjectState (cameraGuid));
         }
         return NoError;
     });

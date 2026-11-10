@@ -2677,7 +2677,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetCamerasCommand> (
             navigatorCommands, "2.0.0",
-            "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own."
+            "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, its pen, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own."
         );
         err |= RegisterCommand<CreateCameraSetsCommand> (
             navigatorCommands, "2.0.1",
@@ -2686,6 +2686,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ModifyCameraSetsCommand> (
             navigatorCommands, "2.0.1",
             "Renames Camera Sets (camera paths) and makes one of them the active Camera Set (isActive true); the set active before is then no longer active. Values not given are kept."
+        );
+        err |= RegisterCommand<CreateCamerasCommand> (
+            navigatorCommands, "2.0.1",
+            "Creates perspective cameras, each added at the end of the path of the given Camera Set, from the camera and target positions (with their heights) and optionally the view cone, roll angle, two-point perspective, sun (by angles or by date and time) and pen; the rest comes from the Camera tool defaults. Returns their element ids, which GetCameras lists. Delete them with DeleteElements."
         );
         err |= RegisterCommand<Get3DStylesCommand> (
             navigatorCommands, "2.0.0",
