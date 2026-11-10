@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 10:23 UTC",
+ "generatedAt": "2026-11-10 15:09 UTC",
  "versions": [
   25,
   26,
@@ -10050,10 +10050,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2423,
-     "title": "[5/5] Script Manager: the README and screenshots in the details"
-    },
-    {
      "number": 2421,
      "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
     },
@@ -10076,10 +10072,6 @@
     {
      "number": 2416,
      "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
-    },
-    {
-     "number": 2415,
-     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
     },
     {
      "number": 2414,
@@ -13563,10 +13555,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2423,
-     "title": "[5/5] Script Manager: the README and screenshots in the details"
-    },
-    {
      "number": 2421,
      "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
     },
@@ -13589,10 +13577,6 @@
     {
      "number": 2416,
      "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
-    },
-    {
-     "number": 2415,
-     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
     },
     {
      "number": 2414,
@@ -13627,10 +13611,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2423,
-     "title": "[5/5] Script Manager: the README and screenshots in the details"
-    },
-    {
      "number": 2421,
      "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
     },
@@ -13653,10 +13633,6 @@
     {
      "number": 2416,
      "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
-    },
-    {
-     "number": 2415,
-     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
     },
     {
      "number": 2414,
@@ -17175,10 +17151,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2423,
-     "title": "[5/5] Script Manager: the README and screenshots in the details"
-    },
-    {
      "number": 2420,
      "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
     },
@@ -19359,7 +19331,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2614,
+     "title": "Set3DFilterAndCutSettings hides all MEP routes in 3D, even when nothing changes"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Change3DProjectionSets",
@@ -19681,7 +19658,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2614,
+     "title": "Set3DFilterAndCutSettings hides all MEP routes in 3D, even when nothing changes"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Get3DProjectionSets",
@@ -20659,10 +20641,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2423,
-     "title": "[5/5] Script Manager: the README and screenshots in the details"
-    },
-    {
      "number": 2420,
      "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
     },
@@ -20673,10 +20651,6 @@
     {
      "number": 2417,
      "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
-    },
-    {
-     "number": 2415,
-     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
     },
     {
      "number": 2414,
