@@ -1,5 +1,5 @@
 {
-  "title": "RebuildMEPRoutingElements adds a node to a pipe route, leaves out a collinear node, keeps the route's insulation, keeps both sizes of a duct route with a size change and maps its old parts to the new ones, resets custom segments, and refuses a segment without length without changing the route",
+  "title": "RebuildMEPRoutingElements adds a node to a pipe route, leaves out a collinear node, keeps the route's insulation, keeps both sizes of a duct route with a size change and maps its old parts to the new ones, resets custom segments, and refuses, without changing anything, a segment without length, a route ending at a tee and a route with a take-off",
   "minTapir": "2.0.1",
   "minArchicad": "28",
   "steps": [
@@ -583,6 +583,271 @@
           "name": "still three nodes"
         }
       ]
+    },
+    {
+      "id": "a main duct and a branch duct starting on it",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "nodeCoordinates": [
+              {
+                "x": 0.0,
+                "y": -20.0,
+                "z": 3.0
+              },
+              {
+                "x": 8.0,
+                "y": -20.0,
+                "z": 3.0
+              }
+            ]
+          },
+          {
+            "domain": "Ventilation",
+            "nodeCoordinates": [
+              {
+                "x": 4.0,
+                "y": -20.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -17.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "main": "elements[0].elementId.guid",
+        "branch": "elements[1].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "both ducts created"
+        }
+      ]
+    },
+    {
+      "id": "connect them with a tee",
+      "command": "ConnectMEPElements",
+      "creates": false,
+      "params": {
+        "connectionsData": [
+          {
+            "routingElementId": {
+              "guid": "${main}"
+            },
+            "connectToId": {
+              "guid": "${branch}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "tee": "connectionResults[0].createdBranchId.guid",
+        "split": "connectionResults[0].splitRoutingElementId.guid"
+      },
+      "expect": [
+        {
+          "path": "connectionResults[0].createdBranchId.guid",
+          "exists": true,
+          "name": "tee created"
+        }
+      ]
+    },
+    {
+      "id": "a route that ends at the tee is refused",
+      "command": "RebuildMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElements": [
+          {
+            "routingElementId": {
+              "guid": "${branch}"
+            },
+            "nodeCoordinates": [
+              {
+                "x": 4.0,
+                "y": -20.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -17.0,
+                "z": 3.0
+              },
+              {
+                "x": 6.0,
+                "y": -17.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].error.message",
+          "contains": "tee",
+          "name": "refused, naming the tee"
+        }
+      ]
+    },
+    {
+      "id": "the tee is kept",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${tee}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elementPorts[0].ports",
+          "len": 3,
+          "name": "the tee still has its three ports"
+        }
+      ]
+    },
+    {
+      "id": "a duct for a take-off",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "nodeCoordinates": [
+              {
+                "x": 0.0,
+                "y": -26.0,
+                "z": 3.0
+              },
+              {
+                "x": 6.0,
+                "y": -26.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "tduct": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "its segment",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${tduct}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "tseg": "routingElements[0].segments[0].elementId.guid"
+      }
+    },
+    {
+      "id": "a take-off on it",
+      "command": "CreateMEPTakeOffs",
+      "params": {
+        "takeOffsData": [
+          {
+            "segmentId": {
+              "guid": "${tseg}"
+            },
+            "distanceFromBeginning": 2.0,
+            "length": 0.3
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "take-off created"
+        }
+      ]
+    },
+    {
+      "id": "a route with a take-off is refused",
+      "command": "RebuildMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElements": [
+          {
+            "routingElementId": {
+              "guid": "${tduct}"
+            },
+            "nodeCoordinates": [
+              {
+                "x": 0.0,
+                "y": -26.0,
+                "z": 3.0
+              },
+              {
+                "x": 6.0,
+                "y": -26.0,
+                "z": 3.0
+              },
+              {
+                "x": 6.0,
+                "y": -23.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].error.message",
+          "contains": "take-off",
+          "name": "refused, naming the take-off"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteElements",
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${split}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteElements",
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${tee}"
+            }
+          }
+        ]
+      }
     }
   ]
 }

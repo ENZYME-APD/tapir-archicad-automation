@@ -9108,6 +9108,37 @@ static std::vector<GS::UniString> CarryOverRoutingElementIdentity (const ACAPI::
 // and nodes the settings of the old ones they lie along or at. Runs inside the caller's undoable
 // command. Returns the item of the response: the rebuilt route's id with its guidMap and warnings,
 // or an error.
+// A part Archicad deletes with the route and Place does not make again, so a rebuild would lose it:
+// a tee (Branch) at either end, tested in the bench (fork #24), or a take-off on one of its segments.
+static std::optional<GS::UniString> FindPartDeletedWithRoute (const RoutingElement& routingElement, const RoutingElementIdentity& identity)
+{
+    for (const ACAPI::MEP::UniqueID& connectedId : identity.connectedElementIds) {
+        if (ACAPI::MEP::Branch::Get (connectedId).IsOk ()) {
+            return GS::UniString::Printf ("The route ends at the tee (Branch) %T, which Archicad deletes with the route",
+                APIGuidToString (MEPUniqueIDToAPIGuid (connectedId)).ToPrintf ());
+        }
+    }
+    for (const ACAPI::MEP::UniqueID& segmentId : routingElement.GetRoutingSegmentIds ()) {
+        ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+        if (segment.IsErr ()) {
+            continue;
+        }
+        for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
+            ACAPI::Result<RigidSegment> rigidSegment = RigidSegment::Get (rigidSegmentId);
+            if (rigidSegment.IsErr ()) {
+                continue;
+            }
+            for (const ACAPI::MEP::UniqueID& connectedId : rigidSegment->GetDirectConnectedMEPElementIds ()) {
+                if (TakeOff::Get (connectedId).IsOk ()) {
+                    return GS::UniString::Printf ("The take-off %T sits on the route, and Archicad deletes it with the route",
+                        APIGuidToString (MEPUniqueIDToAPIGuid (connectedId)).ToPrintf ());
+                }
+            }
+        }
+    }
+    return std::nullopt;
+}
+
 static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid, const GS::ObjectState& item)
 {
     ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (routingElementGuid));
@@ -9145,6 +9176,11 @@ static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid
     GSErrCode err = GetRoutingElementIdentity (*routingElement, routingElementGuid, identity);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the routing element; nothing was changed.");
+    }
+    const std::optional<GS::UniString> lostPart = FindPartDeletedWithRoute (*routingElement, identity);
+    if (lostPart.has_value ()) {
+        return CreateErrorResponse (APIERR_REFUSEDPAR, lostPart.value () +
+            "; nothing was changed. ModifyMEPRoutingElements nodePositions moves the nodes and keeps it.");
     }
     const std::vector<RoutingSegmentRecord> oldSegments = GetRoutingSegmentRecords (*routingElement);
     const std::vector<RoutingNodeRecord> oldNodes = GetRoutingNodeRecords (*routingElement);

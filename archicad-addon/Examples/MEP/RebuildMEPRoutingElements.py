@@ -6,8 +6,9 @@ Every segment, node and fitting gets a new guid (see guidMap in the response); l
 things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node
 count stays the same: it keeps every guid. The route keeps its guid when Archicad allows it (else the response
 gives the new one), and each new segment keeps the size and settings of the old segment it lies along. Not kept:
-the element IDs, classifications, property values and own renovation status of single parts, take-offs on the
-route's segments, and the route's design option; the item's warnings list anything else not carried over.
+the element IDs, classifications, property values and own renovation status of single parts, and the route's
+design option; the item's warnings list anything else not carried over. A route that ends at a tee or has a
+take-off is refused, since Archicad deletes those with the route.
 """
 import aclib
 
