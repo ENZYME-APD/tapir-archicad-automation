@@ -441,3 +441,10 @@ GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id);
 // APIERR_REFUSEDPAR when Archicad did not keep it. Must be called inside an undoable
 // command. Defined in CommandBase.cpp.
 GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);
+
+// Deletes a new element that a create command could not finish (its id or a later setting could
+// not be written) and returns the end of the item's error message: "so it was not created", or,
+// when Archicad refuses the delete too, that the element was left in the project, with its guid,
+// so the caller is never told that an existing element does not exist (#2632). Must be called
+// inside an undoable command. Defined in CommandBase.cpp.
+GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid);
