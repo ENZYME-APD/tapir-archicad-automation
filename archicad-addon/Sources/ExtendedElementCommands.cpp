@@ -5992,6 +5992,130 @@ GS::Optional<GS::UniString> ApplyShellCutPolygons (API_Element& element, API_Ele
     return {};
 }
 
+void DisposeShellContour (API_ShellContourData& contour)
+{
+    BMKillHandle (reinterpret_cast<GSHandle*> (&contour.coords));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&contour.pends));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&contour.parcs));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&contour.vertexIDs));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&contour.edgeIDs));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&contour.contourIDs));
+    BMKillPtr (reinterpret_cast<GSPtr*> (&contour.edgeData));
+}
+
+// A contour or hole written to an existing shell gets cleared edge data, one record per
+// coordinate, as the DevKit's Do_Shell_Edit2 gives the hole it adds.
+GS::Optional<GS::UniString> FillNewShellContour (const GS::ObjectState& polygon, API_ShellContourData& contour)
+{
+    auto error = FillShellContour (polygon, GetIdentityTranmat (), contour);
+    if (error.HasValue ()) {
+        return error;
+    }
+    contour.edgeData = reinterpret_cast<API_ContourEdgeData*> (BMAllocatePtr ((contour.poly.nCoords + 1) * sizeof (API_ContourEdgeData), ALLOCATE_CLEAR, 0));
+    if (contour.edgeData == nullptr) {
+        return GS::UniString ("Out of memory.");
+    }
+    return {};
+}
+
+// ModifyShells (#2431): 'contour' replaces the clipping contour, 'removeContour' removes it and
+// 'holes' replaces all holes (an empty array removes them). What is not given is kept as it is, with
+// its edge data; the shell's profiles are written back unchanged from the memo read here. memo is
+// disposed by the caller, also on an error.
+GS::Optional<GS::UniString> ApplyShellCutPolygonChanges (
+    API_Element& element,
+    API_Element& mask,
+    API_ElementMemo& memo,
+    const GS::ObjectState& parameters,
+    bool& changed)
+{
+    const GS::ObjectState* contour = parameters.Get ("contour");
+    bool removeContour = false;
+    parameters.Get ("removeContour", removeContour);
+    const bool holesGiven = parameters.Get ("holes") != nullptr;
+    if (contour == nullptr && !removeContour && !holesGiven) {
+        return {};
+    }
+    if (contour != nullptr && removeContour) {
+        return GS::UniString ("Give either 'contour' or 'removeContour', not both.");
+    }
+    GS::Array<GS::ObjectState> holes;
+    parameters.Get ("holes", holes);
+
+    GSErrCode err = ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_Polygon | APIMemoMask_EdgeTrims);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the geometry of the shell.");
+    }
+
+    const bool hadContour = element.shell.hasContour;
+    const USize oldHoleCount = element.shell.numHoles;
+    const USize oldCount = oldHoleCount + (hadContour ? 1 : 0);
+    const USize oldStored = memo.shellContours == nullptr ? 0 : (USize) (BMGetPtrSize (reinterpret_cast<GSPtr> (memo.shellContours)) / sizeof (API_ShellContourData));
+    if (oldStored < oldCount) {
+        return GS::UniString ("Failed to read the contour and holes of the shell.");
+    }
+
+    const bool hasContour = !removeContour && (contour != nullptr || hadContour);
+    const USize holeCount = holesGiven ? holes.GetSize () : oldHoleCount;
+    const USize newCount = holeCount + (hasContour ? 1 : 0);
+
+    API_ShellContourData* oldContours = memo.shellContours;
+    API_ShellContourData* newContours = nullptr;
+    if (newCount > 0) {
+        newContours = reinterpret_cast<API_ShellContourData*> (BMAllocatePtr (newCount * sizeof (API_ShellContourData), ALLOCATE_CLEAR, 0));
+        if (newContours == nullptr) {
+            return GS::UniString ("Out of memory.");
+        }
+    }
+
+    // The records kept are moved into the new array; the others are disposed below.
+    std::vector<bool> moved (oldStored, false);
+    GS::Optional<GS::UniString> error;
+    UIndex index = 0;
+    if (hasContour) {
+        if (contour != nullptr) {
+            error = FillNewShellContour (*contour, newContours[index]);
+        } else {
+            newContours[index] = oldContours[0];
+            moved[0] = true;
+        }
+        ++index;
+    }
+    for (UIndex i = 0; i < holeCount && !error.HasValue (); ++i, ++index) {
+        if (holesGiven) {
+            API_ShellContourData& hole = newContours[index];
+            if (!holes[i].Get ("depth", hole.height)) {
+                error = GS::UniString ("A shell hole needs 'depth'.");
+                break;
+            }
+            error = FillNewShellContour (holes[i], hole);
+            hole.id = i + 1;
+        } else {
+            const UIndex oldIndex = (hadContour ? 1 : 0) + i;
+            newContours[index] = oldContours[oldIndex];
+            moved[oldIndex] = true;
+        }
+    }
+
+    for (UIndex i = 0; i < oldStored; ++i) {
+        if (!moved[i]) {
+            DisposeShellContour (oldContours[i]);
+        }
+    }
+    BMKillPtr (reinterpret_cast<GSPtr*> (&oldContours));
+    memo.shellContours = newContours;
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    element.shell.hasContour = hasContour;
+    element.shell.numHoles = holeCount;
+    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, hasContour);
+    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, numHoles);
+    changed = true;
+    return {};
+}
+
 // The Shell tool defaults hold Vertical trims at 1 degree, which the Shell tool never stores: a shell
 // drawn in the Archicad 30 GUI has every shape edge Perpendicular at pi/2.
 void ApplyShellEdgeTrim (const GS::ObjectState& parameters, const char* name, API_ContourEdgeData& edge)
@@ -6060,7 +6184,8 @@ void KillShellShapeHandles (API_ShellShapeData& shapeData, bool withIds)
 // shell's polygon memo is read and only its first profile polyline is replaced, so written back
 // with the element the GUID, the base plane, the extrusion start and vector, the thickness and the
 // cut contours stay. The vertex and edge ids are kept when the number of points stays the same.
-// memo is filled here and must be disposed by the caller; memoLoaded tells whether to write it.
+// memo is filled here, unless memoLoaded says it already is, and must be disposed by the caller;
+// memoLoaded tells whether to write it.
 GS::Optional<GS::UniString> ApplyShellProfile (
     API_Element& element,
     API_Element& mask,
@@ -6085,7 +6210,7 @@ GS::Optional<GS::UniString> ApplyShellProfile (
         return error;
     }
 
-    if (ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
+    if (!memoLoaded && ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
         KillShellShapeHandles (newShapeData, true);
         return GS::UniString ("Failed to load the profile of the shell.");
     }
@@ -11969,6 +12094,19 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "type": "boolean",
                             "description": "The side of the reference surface the thickness is applied to, as CreateShells takes it and GetDetailsOfElements returns it. Changing it keeps the reference surface in place and moves the body to its other side."
                         },
+                        "contour": {
+                            "$ref": "#/ShellCutPolygon",
+                            "description": "Replaces the clipping contour (or adds one): only the part of the shell inside this polygon, seen along the Z axis of its plane, is kept. Its 'depth' is ignored. The polygon and its plane are in the coordinates of the shell's base plane, as GetDetailsOfElements returns them. The holes and the profile are kept."
+                        },
+                        "removeContour": {
+                            "type": "boolean",
+                            "description": "True removes the clipping contour, so the whole shell is shown again. Not together with 'contour'."
+                        },
+                        "holes": {
+                            "type": "array",
+                            "description": "Replaces all holes of the shell, each requiring 'depth' to extrude its cutting polygon along the Z axis of its plane; an empty array removes every hole. To change one hole, send all holes as GetDetailsOfElements returns them with that one changed. The contour and the profile are kept.",
+                            "items": { "$ref": "#/ShellCutPolygon" }
+                        },
                         "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override." },
                         "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the edges of the shell; overridden false clears the override." },
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
@@ -12041,9 +12179,15 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (!error.HasValue ()) {
                 error = ApplyShellExtrusion (element, mask, item, changed);
             }
+            // The contour and holes (#2431) and the profile (#2453) share one polygon memo: the cut
+            // polygons load it with the edge data, and the profile then reuses it.
             API_ElementMemo memo = {};
             const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-            bool memoLoaded = false;
+            bool cutPolygonsChanged = false;
+            if (!error.HasValue ()) {
+                error = ApplyShellCutPolygonChanges (element, mask, memo, item, cutPolygonsChanged);
+            }
+            bool memoLoaded = cutPolygonsChanged;
             if (!error.HasValue ()) {
                 error = ApplyShellProfile (element, mask, memo, item, memoLoaded, changed);
             }
@@ -12051,6 +12195,7 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
             }
+            changed = changed || cutPolygonsChanged;
             auto surfaceError = ApplyShellSurfaces (element, mask, item, changed);
             if (surfaceError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
@@ -12102,7 +12247,12 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
-            err = ACAPI_Element_Change (&element, &mask, memoLoaded ? &memo : nullptr, memoLoaded ? APIMemoMask_Polygon : 0, true);
+            // As the DevKit's Do_Shell_Edit2, which adds a hole: the polygons with their edge data.
+            UInt64 memoMask = 0;
+            if (memoLoaded) {
+                memoMask = cutPolygonsChanged ? (APIMemoMask_Polygon | APIMemoMask_EdgeTrims) : APIMemoMask_Polygon;
+            }
+            err = ACAPI_Element_Change (&element, &mask, memoLoaded ? &memo : nullptr, memoMask, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify shell."));
         }
     });
