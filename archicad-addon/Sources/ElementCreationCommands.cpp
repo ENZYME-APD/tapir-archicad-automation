@@ -6445,9 +6445,72 @@ static const char* LevelDimensionSettingsSchemaProperties = R"(
                     "hideWithBaseElem": {
                         "type": "boolean",
                         "description": "Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter."
+                    },
+                    "textContent": {
+                        "type": "string",
+                        "enum": ["Measured", "Custom"],
+                        "description": "Content of the dimension text: 'Measured' shows the level value, 'Custom' shows customText. Optional parameter; giving customText alone also switches to 'Custom'."
+                    },
+                    "customText": {
+                        "type": "string",
+                        "description": "The custom content of the dimension text, own text and Autotext keys, e.g. 'FBOK <MEASUREDVALUE>'. Write the Autotext keys as GetDetailsOfElements returns them in customText for a level dimension set up in Archicad with the wanted Autotext (they are read with the autotext flag off). Sets textContent to 'Custom'; fails together with textContent 'Measured'. Optional parameter."
+                    },
+                    "secondTextContent": {
+                        "type": "string",
+                        "enum": ["Measured", "Custom"],
+                        "description": "Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText). Optional parameter; giving secondCustomText alone also switches to 'Custom'."
+                    },
+                    "secondCustomText": {
+                        "type": "string",
+                        "description": "The custom content of the second text, own text and Autotext keys as for customText. Sets secondTextContent to 'Custom'; fails together with secondTextContent 'Measured'. Optional parameter."
                     })";
 
-GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+GS::UniString LevelDimensionContentTypeToString (API_NoteContentType contentType)
+{
+    return contentType == API_NoteContent_Custom ? "Custom" : "Measured";
+}
+
+// Applies textContent/customText (or the second text's keys) to one note. The custom text is
+// passed through contentUStr, as the DevKit's Element_Test does in Do_LevelDimension_Edit.
+static GS::Optional<GS::ObjectState> ApplyLevelDimensionNoteContent (
+    const GS::ObjectState& parameters,
+    const char* contentTypeKey,
+    const char* customTextKey,
+    API_NoteType& note,
+    GS::UniString& textStorage,
+    bool& contentTypeChanged,
+    bool& textChanged)
+{
+    contentTypeChanged = false;
+    textChanged = false;
+
+    const GS::UniString contentTypeName (contentTypeKey);
+    const GS::UniString customTextName (customTextKey);
+
+    GS::UniString contentTypeStr;
+    const bool hasContentType = parameters.Get (contentTypeKey, contentTypeStr);
+    const bool isMeasured = hasContentType && contentTypeStr == "Measured";
+    const bool isCustom = hasContentType && contentTypeStr == "Custom";
+    if (hasContentType && !isMeasured && !isCustom) {
+        return CreateErrorResponse (APIERR_BADPARS, "'" + contentTypeName + "' must be 'Measured' or 'Custom', not '" + contentTypeStr + "'.");
+    }
+    const bool hasCustomText = parameters.Get (customTextKey, textStorage);
+    if (hasCustomText && isMeasured) {
+        return CreateErrorResponse (APIERR_BADPARS, "'" + customTextName + "' cannot be given with '" + contentTypeName + "' 'Measured'.");
+    }
+
+    if (hasContentType || hasCustomText) {
+        note.contentType = (hasCustomText || isCustom) ? API_NoteContent_Custom : API_NoteContent_Measured;
+        contentTypeChanged = true;
+    }
+    if (hasCustomText) {
+        note.contentUStr = &textStorage;
+        textChanged = true;
+    }
+    return {};
+}
+
+GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask, LevelDimensionTexts& texts)
 {
     Int32 pen = 0;
     if (parameters.Get ("pen", pen)) {
@@ -6578,7 +6641,89 @@ GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState
 #endif
     }
 
+    // The Text content of the settings dialog, for the main and the second text (#2656).
+    bool contentTypeChanged = false;
+    bool textChanged = false;
+    auto contentErr = ApplyLevelDimensionNoteContent (parameters, "textContent", "customText", element.levelDimension.note1, texts.text1, contentTypeChanged, textChanged);
+    if (contentErr.HasValue ()) {
+        return contentErr;
+    }
+    if (mask != nullptr && contentTypeChanged) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.contentType);
+    }
+    if (mask != nullptr && textChanged) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.content);
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.contentUStr);
+    }
+
+    contentErr = ApplyLevelDimensionNoteContent (parameters, "secondTextContent", "secondCustomText", element.levelDimension.note2, texts.text2, contentTypeChanged, textChanged);
+    if (contentErr.HasValue ()) {
+        return contentErr;
+    }
+    if (mask != nullptr && contentTypeChanged) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.contentType);
+    }
+    if (mask != nullptr && textChanged) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.content);
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.contentUStr);
+    }
+
     return {};
+}
+
+// The note's content: the string Archicad filled through contentUStr when it did, else its char
+// content (at most 64 bytes, not always terminated).
+static GS::UniString GetLevelDimensionNoteContent (const API_NoteType& note, const GS::UniString& ownString)
+{
+    if (note.contentUStr == &ownString && !ownString.IsEmpty ()) {
+        return ownString;
+    }
+    if (note.contentUStr != nullptr && note.contentUStr != &ownString) {
+        return *note.contentUStr;
+    }
+    USize length = 0;
+    while (length < sizeof (note.content) && note.content[length] != '\0') {
+        ++length;
+    }
+    return GS::UniString (note.content, length, CC_UTF8);
+}
+
+LevelDimensionTexts GetLevelDimensionTexts (const API_Element& element)
+{
+    LevelDimensionTexts texts;
+    texts.text1 = GetLevelDimensionNoteContent (element.levelDimension.note1, texts.text1);
+    texts.text2 = GetLevelDimensionNoteContent (element.levelDimension.note2, texts.text2);
+
+    // Read again with the autotext flag off, in which an autotext reads as its key (as
+    // GetRawTextContent does for texts), asking for the content as UniString through contentUStr.
+    bool savedAutoTextFlag = false;
+    if (ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag) != NoError) {
+        return texts;
+    }
+    if (savedAutoTextFlag) {
+        bool keysAutoTextFlag = false;
+        if (ACAPI_AutoText_ChangeAutoTextFlag (&keysAutoTextFlag) != NoError) {
+            return texts;
+        }
+    }
+    const GS::OnExit flagGuard ([&savedAutoTextFlag] () {
+        if (savedAutoTextFlag) {
+            ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
+        }
+    });
+
+    GS::UniString content1;
+    GS::UniString content2;
+    API_Element reread = {};
+    reread.header.guid = element.header.guid;
+    reread.levelDimension.note1.contentUStr = &content1;
+    reread.levelDimension.note2.contentUStr = &content2;
+    if (ACAPI_Element_Get (&reread) != NoError) {
+        return texts;
+    }
+    texts.text1 = GetLevelDimensionNoteContent (reread.levelDimension.note1, content1);
+    texts.text2 = GetLevelDimensionNoteContent (reread.levelDimension.note2, content2);
+    return texts;
 }
 
 CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
@@ -6688,7 +6833,9 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
         element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
     }
 
-    return ApplyLevelDimensionSettings (parameters, element, nullptr);
+    // ACAPI_Element_Create reads the custom texts after this returns, so they are kept in the command.
+    customTexts = {};
+    return ApplyLevelDimensionSettings (parameters, element, nullptr, customTexts);
 }
 
 ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :
@@ -6749,7 +6896,9 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
 // The settings go through ApplyLevelDimensionSettings, as in CreateLevelDimensions; the position
 // through loc, which ACAPI_Element_Change accepts for level dimensions (as the DevKit's Element_Test
 // does in Do_LevelDimension_Edit). The font and style go to both texts, like the text height and pen.
-// The parent element, the static level and the texts' content are not changed. The element is read back, so a value Archicad did not take is reported as a failure.
+// The texts' content is written with the autotext flag off, as CreateElementsCommandBase does, so an
+// Autotext key is kept as a key. The parent element and the static level are not changed. The element
+// is read back, so a value Archicad did not take is reported as a failure.
 GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> itemsWithDetails;
@@ -6762,6 +6911,12 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
     changeReporter.AddElementIdsOf (itemsWithDetails);
 
     ACAPI_CallUndoableCommand ("ModifyLevelDimensions", [&] () -> GSErrCode {
+        bool savedAutoTextFlag = false;
+        ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag);
+        bool setAutoTextFlag = false;
+        ACAPI_AutoText_ChangeAutoTextFlag (&setAutoTextFlag);
+        const GS::OnExit autoTextGuard ([&savedAutoTextFlag] () { ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag); });
+
         for (const GS::ObjectState& item : itemsWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
             if (elementId == nullptr) {
@@ -6790,7 +6945,8 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
                 ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, loc);
             }
 
-            auto settingsError = ApplyLevelDimensionSettings (item, element, &mask);
+            LevelDimensionTexts customTexts;
+            auto settingsError = ApplyLevelDimensionSettings (item, element, &mask, customTexts);
             if (settingsError.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (settingsError.Get ()));
                 continue;
@@ -6852,6 +7008,14 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
                 notApplied += " hideWithBaseElem";
             }
 #endif
+            if ((item.Contains ("textContent") || item.Contains ("customText")) && changed.levelDimension.note1.contentType != element.levelDimension.note1.contentType) {
+                notApplied += " textContent";
+            }
+            if ((item.Contains ("secondTextContent") || item.Contains ("secondCustomText")) && changed.levelDimension.note2.contentType != element.levelDimension.note2.contentType) {
+                notApplied += " secondTextContent";
+            }
+            // The custom text itself is not compared: Archicad may write an Autotext key differently
+            // from how it was given. GetDetailsOfElements reads it back in customText.
             if (!notApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));
                 continue;

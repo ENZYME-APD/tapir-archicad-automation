@@ -212,18 +212,38 @@ public:
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
+// The custom texts of the two notes of a level dimension. ApplyLevelDimensionSettings points the
+// notes' contentUStr at these strings, so they must live until ACAPI_Element_Create or
+// ACAPI_Element_Change has been called with the element.
+struct LevelDimensionTexts {
+    GS::UniString text1;
+    GS::UniString text2;
+};
+
 class CreateLevelDimensionsCommand : public CreateElementsCommandBase
 {
 public:
     CreateLevelDimensionsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+
+private:
+    // Kept here because CreateElementsCommandBase calls ACAPI_Element_Create after
+    // SetTypeSpecificParameters has returned.
+    mutable LevelDimensionTexts customTexts;
 };
 
 // Shared by CreateLevelDimensionsCommand and ModifyLevelDimensionsCommand: applies the pen, texts,
 // marker and origin settings of parameters to element.levelDimension, and sets their bits in mask
-// when it is not nullptr. Returns the error response of an invalid value.
-GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask);
+// when it is not nullptr. Custom texts are stored in texts. Returns the error response of an invalid value.
+GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask, LevelDimensionTexts& texts);
+
+// The content of the two notes of a level dimension read with ACAPI_Element_Get, as Archicad stores
+// it: with the autotext flag off, so an autotext reads as its key, as CreateLevelDimensions takes it.
+LevelDimensionTexts GetLevelDimensionTexts (const API_Element& element);
+
+// "Measured" or "Custom", the content type of a level dimension note.
+GS::UniString LevelDimensionContentTypeToString (API_NoteContentType contentType);
 
 class ModifyLevelDimensionsCommand : public CommandBase
 {

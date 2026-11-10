@@ -2,6 +2,8 @@
 
 The settings have the keys CreateLevelDimensions takes and GetDetailsOfElements returns; only the
 given ones are changed. The text height, pen, font and style apply to both texts of the marker.
+customText replaces the measured value by own text (with Autotext keys, as GetDetailsOfElements
+reads them in customText); textContent 'Measured' shows the value again.
 """
 import aclib
 
@@ -18,7 +20,8 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyLevelDimensions', {'levelDimensio
     'markerSize': 4.0,
     'needPlus': True,
     'bold': True,
-    'italic': False
+    'italic': False,
+    'customText': 'FBOK'
 }]}))
 
 aclib.PrintJson (aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [levelDimension]}))
