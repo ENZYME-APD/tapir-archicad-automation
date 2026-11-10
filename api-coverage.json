@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 22:39 UTC",
+ "generatedAt": "2026-11-10 00:39 UTC",
  "versions": [
   25,
   26,
@@ -5782,6 +5782,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
+    {
+     "number": 2605,
+     "title": "[3/4] GetDetailsOfElements: taper, length and cross section of each column segment"
+    },
+    {
      "number": 2601,
      "title": "GetDetailsOfElements: report a stair's going from its walking line"
     },
@@ -6822,6 +6834,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
+    {
      "number": 2600,
      "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
     },
@@ -7038,6 +7058,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
     {
      "number": 2570,
      "title": "Slabs: read and write the Edge Angle and the surface of each edge"
@@ -7432,6 +7456,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
     {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
@@ -8055,6 +8087,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
+    {
+     "number": 2605,
+     "title": "[3/4] GetDetailsOfElements: taper, length and cross section of each column segment"
+    },
     {
      "number": 2601,
      "title": "GetDetailsOfElements: report a stair's going from its walking line"
@@ -25736,6 +25780,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
+    {
      "number": 2604,
      "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
     },
@@ -31489,6 +31541,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
+    {
+     "number": 2605,
+     "title": "[3/4] GetDetailsOfElements: taper, length and cross section of each column segment"
+    },
     {
      "number": 2604,
      "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
@@ -38013,6 +38077,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
     {
      "number": 2604,
      "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
@@ -44821,6 +44893,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
+    {
+     "number": 2605,
+     "title": "[3/4] GetDetailsOfElements: taper, length and cross section of each column segment"
+    },
+    {
      "number": 2604,
      "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
     },
@@ -48003,6 +48087,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2607,
+     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
+    },
+    {
+     "number": 2606,
+     "title": "[3/3] CreateBeams/ModifyBeams: write the cross section, taper and length of single beam segments"
+    },
+    {
+     "number": 2605,
+     "title": "[3/4] GetDetailsOfElements: taper, length and cross section of each column segment"
+    },
     {
      "number": 2604,
      "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
