@@ -1591,6 +1591,21 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementDefaultsCommand::GetRawRes
     })";
 }
 
+// Archicad throws, instead of answering, for some built-in properties of some tool defaults (the
+// Label default's arrow pen with a Section window active), and an exception that reaches Archicad's
+// command loop ends Archicad. Turns it into APIERR_GENERAL.
+template <typename ArchicadCall>
+static GSErrCode CatchArchicadException (ArchicadCall&& archicadCall)
+{
+    try {
+        return archicadCall ();
+    } catch (...) {
+        return APIERR_GENERAL;
+    }
+}
+
+static const char* ToolDefaultPropertyThrewMessage = "Archicad failed to compute this property of the tool defaults.";
+
 GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementDefaultPropertyValues;
@@ -1647,7 +1662,11 @@ GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
             GS::Array<API_PropertyDefinition> propertyDefinitions;
             propertyDefinitions.Push (definition);
             GS::Array<API_Property> propertyValues;
-            err = TAPIR_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, propertyValues);
+            err = CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, propertyValues); });
+            if (err == APIERR_GENERAL) {
+                executionResults (CreateFailedExecutionResult (err, ToolDefaultPropertyThrewMessage));
+                continue;
+            }
             if (err != NoError || propertyValues.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_BADPROPERTY, "Failed to get property value for the element defaults"));
                 continue;
@@ -2528,8 +2547,10 @@ GS::ObjectState GetPropertiesOfToolDefaultsCommand::Execute (const GS::ObjectSta
                 };
 
                 API_Property propertyValue;
-                err = TAPIR_Element_GetPropertyValueOfDefaultElem (typeID, definition.guid, propertyValue);
-                if (err != NoError) {
+                err = CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValueOfDefaultElem (typeID, definition.guid, propertyValue); });
+                if (err == APIERR_GENERAL) {
+                    addError (err, ToolDefaultPropertyThrewMessage);
+                } else if (err != NoError) {
                     addError (err, "Failed to get the property value of the tool defaults");
                 } else if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
                     addError (APIERR_BADPROPERTY, "Not available or not evaluated property");
@@ -3911,8 +3932,23 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
     }
 
     GS::Array<API_Property> fetchedProperties;
+    GS::HashSet<API_Guid> throwingProperties;
     GSErrCode err = propertyGuids.IsEmpty () ? NoError :
-        TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties);
+        CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties); });
+    if (err == APIERR_GENERAL) {
+        // One property threw: ask for them one by one, so that the others still answer.
+        fetchedProperties.Clear ();
+        err = NoError;
+        for (const API_Guid& propertyGuid : propertyGuids) {
+            API_Property property;
+            if (CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValueOfDefaultElem (elemTypeId, propertyGuid, property); }) == APIERR_GENERAL) {
+                throwingProperties.Add (propertyGuid);
+                continue;
+            }
+            property.definition.guid = propertyGuid;
+            fetchedProperties.Push (property);
+        }
+    }
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get property values of the tool default");
     }
@@ -3936,6 +3972,10 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
 
         const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
+        if (throwingProperties.Contains (propertyGuid)) {
+            propertyValues (CreateErrorResponse (APIERR_GENERAL, ToolDefaultPropertyThrewMessage));
+            continue;
+        }
         if (!propertyMap.ContainsKey (propertyGuid)) {
             propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
             continue;

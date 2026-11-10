@@ -1,0 +1,78 @@
+{
+  "title": "GetPropertiesOfToolDefaults and GetPropertyValuesOfElementDefaults answer for the Label tool from a Section window instead of ending Archicad",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CutPlane" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "a section",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          { "startCoordinate": { "x": 900.0, "y": 900.0 }, "endCoordinate": { "x": 906.0, "y": 900.0 }, "name": "TapirCheck Label defaults", "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "its viewpoint",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Section" ] },
+      "save": { "sectionDb": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases[0].databaseId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the Section window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${sectionDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "Label tool default properties with values",
+      "command": "GetPropertiesOfToolDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Label" ], "includeValues": true },
+      "save": { "firstProperty": "propertiesOfToolDefaults[0].properties[0].propertyId.guid" },
+      "expect": [
+        { "path": "propertiesOfToolDefaults[0].properties[0].propertyId.guid", "exists": true, "name": "answered" }
+      ]
+    },
+    {
+      "id": "Archicad still answers",
+      "command": "GetProjectInfo",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isUntitled", "eq": true }
+      ]
+    },
+    {
+      "id": "Label tool default values by id",
+      "command": "GetPropertyValuesOfElementDefaults",
+      "creates": false,
+      "params": { "elementType": "Label", "properties": [ { "propertyId": { "guid": "${firstProperty}" } } ] },
+      "expect": [
+        { "path": "propertyValues", "len": 1 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    }
+  ]
+}
