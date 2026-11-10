@@ -1,6 +1,13 @@
 """Adds a node to a pipe route, then leaves out a node where it goes straight on, with RebuildMEPRoutingElements.
 
 Creates a temporary pipe route, rebuilds it twice, reads it back and deletes it. Requires Archicad 28 or later.
+
+Every segment, node and fitting gets a new guid (see guidMap in the response); labels, dimensions and other
+things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node
+count stays the same: it keeps every guid. The route keeps its guid when Archicad allows it (else the response
+gives the new one), and each new segment keeps the size and settings of the old segment it lies along. Not kept:
+the element IDs, classifications, property values and own renovation status of single parts, take-offs on the
+route's segments, and the route's design option; the item's warnings list anything else not carried over.
 """
 import aclib
 

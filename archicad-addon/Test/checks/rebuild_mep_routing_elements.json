@@ -1,5 +1,5 @@
 {
-  "title": "RebuildMEPRoutingElements adds a node to a pipe route, leaves out a collinear node, keeps the route's insulation and refuses a segment without length without changing the route",
+  "title": "RebuildMEPRoutingElements adds a node to a pipe route, leaves out a collinear node, keeps the route's insulation, keeps both sizes of a duct route with a size change and maps its old parts to the new ones, resets custom segments, and refuses a segment without length without changing the route",
   "minTapir": "2.0.1",
   "minArchicad": "28",
   "steps": [
@@ -20,9 +20,21 @@
           {
             "domain": "Piping",
             "nodeCoordinates": [
-              { "x": 0.0, "y": -8.0, "z": 3.0 },
-              { "x": 4.0, "y": -8.0, "z": 3.0 },
-              { "x": 4.0, "y": -5.0, "z": 3.0 }
+              {
+                "x": 0.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -5.0,
+                "z": 3.0
+              }
             ]
           }
         ]
@@ -44,7 +56,12 @@
       "creates": false,
       "params": {
         "routingElementsData": [
-          { "elementId": { "guid": "${pipe}" }, "insulationThickness": 0.02 }
+          {
+            "elementId": {
+              "guid": "${pipe}"
+            },
+            "insulationThickness": 0.02
+          }
         ]
       },
       "expect": [
@@ -60,12 +77,30 @@
       "params": {
         "routingElements": [
           {
-            "routingElementId": { "guid": "${pipe}" },
+            "routingElementId": {
+              "guid": "${pipe}"
+            },
             "nodeCoordinates": [
-              { "x": 0.0, "y": -8.0, "z": 3.0 },
-              { "x": 4.0, "y": -8.0, "z": 3.0 },
-              { "x": 4.0, "y": -5.0, "z": 3.0 },
-              { "x": 6.0, "y": -5.0, "z": 3.0 }
+              {
+                "x": 0.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -5.0,
+                "z": 3.0
+              },
+              {
+                "x": 6.0,
+                "y": -5.0,
+                "z": 3.0
+              }
             ]
           }
         ]
@@ -86,7 +121,13 @@
       "command": "GetMEPRoutingElements",
       "creates": false,
       "params": {
-        "elements": [ { "elementId": { "guid": "${rebuilt}" } } ]
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${rebuilt}"
+            }
+          }
+        ]
       },
       "expect": [
         {
@@ -117,12 +158,30 @@
       "params": {
         "routingElements": [
           {
-            "routingElementId": { "guid": "${rebuilt}" },
+            "routingElementId": {
+              "guid": "${rebuilt}"
+            },
             "nodeCoordinates": [
-              { "x": 0.0, "y": -8.0, "z": 3.0 },
-              { "x": 2.0, "y": -8.0, "z": 3.0 },
-              { "x": 4.0, "y": -8.0, "z": 3.0 },
-              { "x": 4.0, "y": -5.0, "z": 3.0 }
+              {
+                "x": 0.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 2.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -5.0,
+                "z": 3.0
+              }
             ],
             "removeCollinearNodes": true
           }
@@ -144,7 +203,13 @@
       "command": "GetMEPRoutingElements",
       "creates": false,
       "params": {
-        "elements": [ { "elementId": { "guid": "${purged}" } } ]
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${purged}"
+            }
+          }
+        ]
       },
       "expect": [
         {
@@ -160,21 +225,323 @@
       ]
     },
     {
+      "id": "two duct routes of different widths, end to end",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.4,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              {
+                "x": 0.0,
+                "y": -14.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -14.0,
+                "z": 3.0
+              }
+            ]
+          },
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              {
+                "x": 4.0,
+                "y": -14.0,
+                "z": 3.0
+              },
+              {
+                "x": 8.0,
+                "y": -14.0,
+                "z": 3.0
+              },
+              {
+                "x": 8.0,
+                "y": -11.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "wide": "elements[0].elementId.guid",
+        "narrow": "elements[1].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "both ducts created"
+        }
+      ]
+    },
+    {
+      "id": "merge them into one route with a size change",
+      "command": "ConnectMEPElements",
+      "creates": false,
+      "params": {
+        "connectionsData": [
+          {
+            "routingElementId": {
+              "guid": "${wide}"
+            },
+            "connectToId": {
+              "guid": "${narrow}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "connectionResults[0].error",
+          "exists": false,
+          "name": "merged"
+        }
+      ]
+    },
+    {
+      "id": "the merged route has both widths",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${wide}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].segments",
+          "len": 3,
+          "name": "three segments"
+        },
+        {
+          "path": "routingElements[0].segments[0].crossSectionWidth",
+          "approx": 0.4,
+          "name": "first segment 0.4 wide"
+        },
+        {
+          "path": "routingElements[0].segments[1].crossSectionWidth",
+          "approx": 0.3,
+          "name": "second segment 0.3 wide"
+        }
+      ]
+    },
+    {
+      "id": "add a node at the far end",
+      "command": "RebuildMEPRoutingElements",
+      "params": {
+        "routingElements": [
+          {
+            "routingElementId": {
+              "guid": "${wide}"
+            },
+            "nodeCoordinates": [
+              {
+                "x": 0.0,
+                "y": -14.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -14.0,
+                "z": 3.0
+              },
+              {
+                "x": 8.0,
+                "y": -14.0,
+                "z": 3.0
+              },
+              {
+                "x": 8.0,
+                "y": -11.0,
+                "z": 3.0
+              },
+              {
+                "x": 10.0,
+                "y": -11.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "duct": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "route rebuilt"
+        },
+        {
+          "path": "elements[0].guidMap[0].kind",
+          "eq": "Segment",
+          "name": "the first new segment is in the guidMap"
+        },
+        {
+          "path": "elements[0].guidMap[0].oldGuid",
+          "exists": true,
+          "name": "with the old segment it lies along"
+        },
+        {
+          "path": "elements[0].guidMap[0].newGuid",
+          "exists": true,
+          "name": "and its new guid"
+        }
+      ]
+    },
+    {
+      "id": "both widths survive the rebuild",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${duct}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].segments",
+          "len": 4,
+          "name": "four segments"
+        },
+        {
+          "path": "routingElements[0].segments[0].crossSectionWidth",
+          "approx": 0.4,
+          "name": "first segment still 0.4 wide"
+        },
+        {
+          "path": "routingElements[0].segments[1].crossSectionWidth",
+          "approx": 0.3,
+          "name": "second segment still 0.3 wide"
+        },
+        {
+          "path": "routingElements[0].segments[2].crossSectionWidth",
+          "approx": 0.3,
+          "name": "third segment still 0.3 wide"
+        }
+      ]
+    },
+    {
+      "id": "reset the custom segments",
+      "command": "RebuildMEPRoutingElements",
+      "params": {
+        "routingElements": [
+          {
+            "routingElementId": {
+              "guid": "${duct}"
+            },
+            "resetCustomSegments": true
+          }
+        ]
+      },
+      "save": {
+        "resetDuct": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "route rebuilt"
+        }
+      ]
+    },
+    {
+      "id": "read the reset route",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${resetDuct}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "w0": "routingElements[0].segments[0].crossSectionWidth",
+        "w1": "routingElements[0].segments[1].crossSectionWidth"
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].segments",
+          "len": 4,
+          "name": "still four segments"
+        }
+      ]
+    },
+    {
+      "id": "the reset gave both segments one width",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${resetDuct}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "expr": "${w0} - ${w1}",
+          "approx": 0.0,
+          "name": "same width"
+        }
+      ]
+    },
+    {
       "id": "a segment without length",
       "command": "RebuildMEPRoutingElements",
       "creates": false,
       "params": {
         "routingElements": [
           {
-            "routingElementId": { "guid": "${purged}" },
+            "routingElementId": {
+              "guid": "${purged}"
+            },
             "nodeCoordinates": [
-              { "x": 0.0, "y": -8.0, "z": 3.0 },
-              { "x": 0.0, "y": -8.0, "z": 3.0 },
-              { "x": 4.0, "y": -8.0, "z": 3.0 }
+              {
+                "x": 0.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 0.0,
+                "y": -8.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -8.0,
+                "z": 3.0
+              }
             ]
           },
           {
-            "routingElementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+            "routingElementId": {
+              "guid": "00000000-0000-0000-0000-00000000BEEF"
+            }
           }
         ]
       },
@@ -196,7 +563,13 @@
       "command": "GetMEPRoutingElements",
       "creates": false,
       "params": {
-        "elements": [ { "elementId": { "guid": "${purged}" } } ]
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${purged}"
+            }
+          }
+        ]
       },
       "expect": [
         {

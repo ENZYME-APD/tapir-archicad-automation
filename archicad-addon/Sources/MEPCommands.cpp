@@ -8507,9 +8507,10 @@ GS::ObjectState ModifyMEPElementsCommand::Execute (const GS::ObjectState& parame
 
 #ifdef ServerMainVers_2800
 
-// How far, in meters, an inner node of a route may lie from the straight line between the nodes
-// around it and still be left out by RebuildMEPRoutingElements' removeCollinearNodes.
-static constexpr double CollinearNodeTolerance = 0.001;
+// How far apart, in meters, RebuildMEPRoutingElements counts points as the same: a node on the
+// straight line between its neighbours (removeCollinearNodes), a new node at an old node, a new
+// segment along an old one.
+static constexpr double RouteGeometryTolerance = 0.001;
 
 static double GetDistance (const API_Coord3D& point1, const API_Coord3D& point2)
 {
@@ -8533,7 +8534,7 @@ static double GetDistanceOfPointFromSegment (const API_Coord3D& point, const API
 
 // Leaves out the inner nodes where the route goes straight on, and the nodes on top of the previous
 // one: a node is left out when it, and every node left out since the last kept one, lies within
-// CollinearNodeTolerance of the segment from the last kept node to the next node.
+// RouteGeometryTolerance of the segment from the last kept node to the next node.
 static std::vector<API_Coord3D> RemoveCollinearNodes (const std::vector<API_Coord3D>& nodes)
 {
     if (nodes.size () < 3) {
@@ -8544,7 +8545,7 @@ static std::vector<API_Coord3D> RemoveCollinearNodes (const std::vector<API_Coor
     for (size_t i = 1; i + 1 < nodes.size (); ++i) {
         bool isOnStraight = true;
         for (size_t j = lastKeptIndex + 1; j <= i && isOnStraight; ++j) {
-            isOnStraight = GetDistanceOfPointFromSegment (nodes[j], nodes[lastKeptIndex], nodes[i + 1]) <= CollinearNodeTolerance;
+            isOnStraight = GetDistanceOfPointFromSegment (nodes[j], nodes[lastKeptIndex], nodes[i + 1]) <= RouteGeometryTolerance;
         }
         if (!isOnStraight) {
             keptNodes.push_back (nodes[i]);
@@ -8601,9 +8602,423 @@ static GSErrCode GetRoutingElementIdentity (RoutingElement& routingElement, cons
     return NoError;
 }
 
+#ifdef ServerMainVers_2900
+using ElbowOrBendDefault = ElbowDefault;
+#else
+// Archicad 28 calls the elbows bends.
+using ElbowOrBendDefault = BendDefault;
+#endif
+
+// A routing segment of a route: where it lies, its guids and every setting a segment can have of
+// its own, so the segment of the rebuilt route that lies along it can get them.
+struct RoutingSegmentRecord {
+    API_Guid                                guid = APINULLGuid;
+    API_Coord3D                             begin = {};
+    API_Coord3D                             end = {};
+    ConnectorShape                          shape = ConnectorShape::Rectangular;
+    double                                  width = 0.0;
+    double                                  height = 0.0;
+    std::optional<uint32_t>                 referenceId;
+    std::optional<ACAPI::MEP::UniqueID>     preferenceTableId;
+    API_AnchorID                            anchor = APIAnc_MM;
+    double                                  referenceLineOffsetX = 0.0;
+    double                                  referenceLineOffsetY = 0.0;
+    double                                  wallThickness = 0.0;
+    ConnectionStyle                         connectionStyle = ConnectionStyle::SimpleBody;
+    std::optional<double>                   flangeSize;
+    std::optional<RigidSegmentDefault>      rigidSegmentDefault;
+    std::vector<API_Guid>                   rigidSegmentGuids;
+};
+
+// A routing node of a route: its position, its guids and the settings a node can have of its own.
+struct RoutingNodeRecord {
+    API_Guid                                guid = APINULLGuid;
+    API_Coord3D                             position = {};
+    PreferredTransitionPlacement            preferredTransitionPlacement = PreferredTransitionPlacement::LargeToSmall;
+    std::optional<ElbowOrBendDefault>       elbowDefault;
+    std::optional<TransitionDefault>        transitionDefault;
+    std::vector<API_Guid>                   elbowGuids;
+    std::vector<API_Guid>                   transitionGuids;
+};
+
+static std::vector<API_Guid> ToAPIGuids (const std::vector<ACAPI::MEP::UniqueID>& ids)
+{
+    std::vector<API_Guid> guids;
+    for (const ACAPI::MEP::UniqueID& id : ids) {
+        guids.push_back (MEPUniqueIDToAPIGuid (id));
+    }
+    return guids;
+}
+
+static std::optional<RoutingSegmentRecord> GetRoutingSegmentRecord (const ACAPI::MEP::UniqueID& segmentId)
+{
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return std::nullopt;
+    }
+    ACAPI::Result<RoutingNode> beginNode = RoutingNode::Get (segment->GetBeginNodeId ());
+    ACAPI::Result<RoutingNode> endNode = RoutingNode::Get (segment->GetEndNodeId ());
+    if (beginNode.IsErr () || endNode.IsErr ()) {
+        return std::nullopt;
+    }
+    RoutingSegmentRecord record;
+    record.guid = MEPUniqueIDToAPIGuid (segmentId);
+    record.begin = beginNode->GetPosition ();
+    record.end = endNode->GetPosition ();
+    record.shape = segment->GetCrossSectionShape ();
+    record.width = segment->GetCrossSectionWidth ();
+    record.height = segment->GetCrossSectionHeight ();
+    record.referenceId = ToOptional (segment->GetCrossSectionReferenceId ());
+    record.preferenceTableId = segment->GetPreferenceTableId ();
+    record.anchor = segment->GetAnchor ();
+    record.referenceLineOffsetX = segment->GetReferenceLineOffsetX ();
+    record.referenceLineOffsetY = segment->GetReferenceLineOffsetY ();
+    record.wallThickness = segment->GetWallThickness ();
+    record.connectionStyle = segment->GetConnectionStyle ();
+    record.flangeSize = segment->GetFlangeSize ();
+    record.rigidSegmentDefault = segment->GetRigidSegmentDefaultParameters ();
+    record.rigidSegmentGuids = ToAPIGuids (segment->GetRigidSegmentIds ());
+    return record;
+}
+
+static std::optional<RoutingNodeRecord> GetRoutingNodeRecord (const ACAPI::MEP::UniqueID& nodeId)
+{
+    ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+    if (node.IsErr ()) {
+        return std::nullopt;
+    }
+    RoutingNodeRecord record;
+    record.guid = MEPUniqueIDToAPIGuid (nodeId);
+    record.position = node->GetPosition ();
+    record.preferredTransitionPlacement = node->GetPreferredTransitionPlacement ();
+#ifdef ServerMainVers_2900
+    record.elbowDefault = node->GetElbowDefaultParameters ();
+    record.elbowGuids = ToAPIGuids (node->GetElbowIds ());
+#else
+    record.elbowDefault = node->GetBendDefaultParameters ();
+    record.elbowGuids = ToAPIGuids (node->GetBendIds ());
+#endif
+    record.transitionDefault = node->GetTransitionDefaultParameters ();
+    record.transitionGuids = ToAPIGuids (node->GetTransitionIds ());
+    return record;
+}
+
+static std::vector<RoutingSegmentRecord> GetRoutingSegmentRecords (const RoutingElement& routingElement)
+{
+    std::vector<RoutingSegmentRecord> records;
+    for (const ACAPI::MEP::UniqueID& segmentId : routingElement.GetRoutingSegmentIds ()) {
+        std::optional<RoutingSegmentRecord> record = GetRoutingSegmentRecord (segmentId);
+        if (record.has_value ()) {
+            records.push_back (std::move (record.value ()));
+        }
+    }
+    return records;
+}
+
+static std::vector<RoutingNodeRecord> GetRoutingNodeRecords (const RoutingElement& routingElement)
+{
+    std::vector<RoutingNodeRecord> records;
+    for (const ACAPI::MEP::UniqueID& nodeId : routingElement.GetRoutingNodeIds ()) {
+        std::optional<RoutingNodeRecord> record = GetRoutingNodeRecord (nodeId);
+        if (record.has_value ()) {
+            records.push_back (std::move (record.value ()));
+        }
+    }
+    return records;
+}
+
+// The length along which the segment from begin to end lies along the old segment: both its ends
+// within RouteGeometryTolerance of the old segment's line, overlapping it by more than the
+// tolerance. 0 when it does not lie along it.
+static double GetOverlapAlongSegment (const API_Coord3D& begin, const API_Coord3D& end, const RoutingSegmentRecord& oldSegment)
+{
+    const double oldLength = GetDistance (oldSegment.begin, oldSegment.end);
+    if (oldLength <= RouteGeometryTolerance) {
+        return 0.0;
+    }
+    const API_Coord3D direction = {
+        (oldSegment.end.x - oldSegment.begin.x) / oldLength,
+        (oldSegment.end.y - oldSegment.begin.y) / oldLength,
+        (oldSegment.end.z - oldSegment.begin.z) / oldLength
+    };
+    // The position of the point along the old segment's line, and whether it lies on that line.
+    const auto project = [&] (const API_Coord3D& point, double& along) {
+        const API_Coord3D fromBegin = { point.x - oldSegment.begin.x, point.y - oldSegment.begin.y, point.z - oldSegment.begin.z };
+        along = fromBegin.x * direction.x + fromBegin.y * direction.y + fromBegin.z * direction.z;
+        const API_Coord3D onLine = { oldSegment.begin.x + along * direction.x, oldSegment.begin.y + along * direction.y, oldSegment.begin.z + along * direction.z };
+        return GetDistance (point, onLine) <= RouteGeometryTolerance;
+    };
+    double beginAlong = 0.0;
+    double endAlong = 0.0;
+    if (!project (begin, beginAlong) || !project (end, endAlong)) {
+        return 0.0;
+    }
+    const double overlap = std::min (std::max (beginAlong, endAlong), oldLength) - std::max (std::min (beginAlong, endAlong), 0.0);
+    return overlap > RouteGeometryTolerance ? overlap : 0.0;
+}
+
+// The old segment the segment from begin to end lies along most, and in overlapped every old
+// segment it lies along.
+static std::optional<size_t> FindOldSegmentLyingAlong (const API_Coord3D& begin, const API_Coord3D& end, const std::vector<RoutingSegmentRecord>& oldSegments, std::vector<size_t>& overlapped)
+{
+    std::optional<size_t> mostOverlapped;
+    double mostOverlap = 0.0;
+    overlapped.clear ();
+    for (size_t i = 0; i < oldSegments.size (); ++i) {
+        const double overlap = GetOverlapAlongSegment (begin, end, oldSegments[i]);
+        if (overlap <= 0.0) {
+            continue;
+        }
+        overlapped.push_back (i);
+        if (overlap > mostOverlap) {
+            mostOverlap = overlap;
+            mostOverlapped = i;
+        }
+    }
+    return mostOverlapped;
+}
+
+static std::optional<size_t> FindOldNodeAt (const API_Coord3D& position, const std::vector<RoutingNodeRecord>& oldNodes)
+{
+    for (size_t i = 0; i < oldNodes.size (); ++i) {
+        if (GetDistance (position, oldNodes[i].position) <= RouteGeometryTolerance) {
+            return i;
+        }
+    }
+    return std::nullopt;
+}
+
+static bool HaveSameSize (const RoutingSegmentRecord& segment1, const RoutingSegmentRecord& segment2)
+{
+    constexpr double SizeTolerance = 1e-6;
+    return segment1.shape == segment2.shape &&
+        std::fabs (segment1.width - segment2.width) <= SizeTolerance &&
+        std::fabs (segment1.height - segment2.height) <= SizeTolerance &&
+        segment1.referenceId == segment2.referenceId;
+}
+
+// Gives the segment the settings of the old segment: only those that differ, so a value the
+// segment's preference table fixes is not set again. Runs inside the caller's undoable command.
+static bool SetRoutingSegmentSettings (const ACAPI::MEP::UniqueID& segmentId, const RoutingSegmentRecord& current, const RoutingSegmentRecord& wanted)
+{
+    constexpr double ValueTolerance = 1e-6;
+    const auto differs = [&] (double value1, double value2) { return std::fabs (value1 - value2) > ValueTolerance; };
+    const bool preferenceTableDiffers = wanted.preferenceTableId.has_value () &&
+        (!current.preferenceTableId.has_value () || MEPUniqueIDToAPIGuid (current.preferenceTableId.value ()) != MEPUniqueIDToAPIGuid (wanted.preferenceTableId.value ()));
+    const bool sizeDiffers = preferenceTableDiffers || !HaveSameSize (current, wanted);
+
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return false;
+    }
+    bool allSet = true;
+    const auto check = [&] (const ACAPI::Result<void>& result) { allSet &= result.IsOk (); };
+    ACAPI::Result<void> result = segment->Modify ([&] (RoutingSegment::Modifier& modifier) {
+        // As in CreateMEPRoutingElements: the preference table first, as the reference id is
+        // resolved against it, then the shape, then the size.
+        if (preferenceTableDiffers) {
+            check (modifier.SetPreferenceTableId (wanted.preferenceTableId.value ()));
+        }
+        if (sizeDiffers) {
+            check (modifier.SetCrossSectionShape (wanted.shape));
+            if (wanted.shape == ConnectorShape::Circular) {
+                // A circular segment refuses a width or height; its reference id gives its size.
+                if (wanted.referenceId.has_value ()) {
+                    check (modifier.SetCrossSectionReferenceId (wanted.referenceId.value ()));
+                }
+            } else {
+                check (modifier.SetCrossSectionWidth (wanted.width));
+                check (modifier.SetCrossSectionHeight (wanted.height));
+            }
+        }
+        if (current.anchor != wanted.anchor) {
+            modifier.SetAnchor (wanted.anchor);
+        }
+        if (differs (current.referenceLineOffsetX, wanted.referenceLineOffsetX)) {
+            modifier.SetReferenceLineOffsetX (wanted.referenceLineOffsetX);
+        }
+        if (differs (current.referenceLineOffsetY, wanted.referenceLineOffsetY)) {
+            modifier.SetReferenceLineOffsetY (wanted.referenceLineOffsetY);
+        }
+        if (differs (current.wallThickness, wanted.wallThickness)) {
+            check (modifier.SetWallThickness (wanted.wallThickness));
+        }
+        if (current.connectionStyle != wanted.connectionStyle) {
+            check (modifier.SetConnectionStyle (wanted.connectionStyle));
+        }
+        if (wanted.flangeSize.has_value () && (!current.flangeSize.has_value () || differs (current.flangeSize.value (), wanted.flangeSize.value ()))) {
+            check (modifier.SetFlangeSize (wanted.flangeSize.value ()));
+        }
+        // The rigid segment settings (insulation, ...) cannot be compared, so they are always set.
+        if (wanted.rigidSegmentDefault.has_value ()) {
+            check (modifier.SetRigidSegmentDefaultParameters (wanted.rigidSegmentDefault.value ()));
+        }
+    }, "Rebuild MEP Routing Element");
+    return result.IsOk () && allSet;
+}
+
+// Gives the node the settings of the old node. Runs inside the caller's undoable command.
+static bool SetRoutingNodeSettings (const ACAPI::MEP::UniqueID& nodeId, const RoutingNodeRecord& wanted)
+{
+    ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+    if (node.IsErr ()) {
+        return false;
+    }
+    bool allSet = true;
+    ACAPI::Result<void> result = node->Modify ([&] (RoutingNode::Modifier& modifier) {
+        modifier.SetPreferredTransitionPlacement (wanted.preferredTransitionPlacement);
+        if (wanted.elbowDefault.has_value ()) {
+#ifdef ServerMainVers_2900
+            allSet &= modifier.SetElbowDefaultParameters (wanted.elbowDefault.value ()).IsOk ();
+#else
+            allSet &= modifier.SetBendDefaultParameters (wanted.elbowDefault.value ()).IsOk ();
+#endif
+        }
+        if (wanted.transitionDefault.has_value ()) {
+            allSet &= modifier.SetTransitionDefaultParameters (wanted.transitionDefault.value ()).IsOk ();
+        }
+    }, "Rebuild MEP Routing Element");
+    return result.IsOk () && allSet;
+}
+
+// Gives every segment of the rebuilt route the settings of the old segment it lies along most, and
+// every node those of the old node at its position. Segments and nodes without an old counterpart
+// keep the route's uncustomized settings. Returns the warnings.
+static std::vector<GS::UniString> SetPartSettingsFromOldParts (const RoutingElement& rebuilt, const std::vector<RoutingSegmentRecord>& oldSegments, const std::vector<RoutingNodeRecord>& oldNodes)
+{
+    std::vector<GS::UniString> warnings;
+    for (const ACAPI::MEP::UniqueID& segmentId : rebuilt.GetRoutingSegmentIds ()) {
+        const std::optional<RoutingSegmentRecord> segment = GetRoutingSegmentRecord (segmentId);
+        if (!segment.has_value ()) {
+            continue;
+        }
+        std::vector<size_t> overlapped;
+        const std::optional<size_t> oldIndex = FindOldSegmentLyingAlong (segment->begin, segment->end, oldSegments, overlapped);
+        if (!oldIndex.has_value ()) {
+            continue;
+        }
+        const RoutingSegmentRecord& oldSegment = oldSegments[oldIndex.value ()];
+        const bool liesAlongOtherSizes = std::any_of (overlapped.begin (), overlapped.end (), [&] (size_t i) { return !HaveSameSize (oldSegments[i], oldSegment); });
+        if (liesAlongOtherSizes) {
+            warnings.push_back (GS::UniString::Printf (
+                "Segment %T lies along old segments of different sizes; it took the size and settings of old segment %T, which it overlaps most.",
+                APIGuidToString (segment->guid).ToPrintf (), APIGuidToString (oldSegment.guid).ToPrintf ()));
+        }
+        if (!SetRoutingSegmentSettings (segmentId, segment.value (), oldSegment)) {
+            warnings.push_back (GS::UniString::Printf (
+                "Not every setting of old segment %T could be given to segment %T.",
+                APIGuidToString (oldSegment.guid).ToPrintf (), APIGuidToString (segment->guid).ToPrintf ()));
+        }
+    }
+    for (const ACAPI::MEP::UniqueID& nodeId : rebuilt.GetRoutingNodeIds ()) {
+        ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+        if (node.IsErr ()) {
+            continue;
+        }
+        const std::optional<size_t> oldIndex = FindOldNodeAt (node->GetPosition (), oldNodes);
+        if (oldIndex.has_value () && !SetRoutingNodeSettings (nodeId, oldNodes[oldIndex.value ()])) {
+            warnings.push_back (GS::UniString::Printf (
+                "Not every setting of old node %T could be given to node %T.",
+                APIGuidToString (oldNodes[oldIndex.value ()].guid).ToPrintf (), APIGuidToString (MEPUniqueIDToAPIGuid (nodeId)).ToPrintf ()));
+        }
+    }
+    return warnings;
+}
+
+// One item of the guidMap of RebuildMEPRoutingElements; an old part without a new counterpart has
+// no newGuid, a new part without an old counterpart no oldGuid.
+static GS::ObjectState CreateGuidMapItem (const char* kind, const API_Guid& oldGuid, const API_Guid& newGuid)
+{
+    GS::ObjectState item ("kind", GS::UniString (kind));
+    if (oldGuid != APINULLGuid) {
+        item.Add ("oldGuid", APIGuidToString (oldGuid));
+    }
+    if (newGuid != APINULLGuid) {
+        item.Add ("newGuid", APIGuidToString (newGuid));
+    }
+    return item;
+}
+
+// Pairs the old guids with the new ones by index; the leftovers have no counterpart.
+static void AddPairedGuids (std::vector<GS::ObjectState>& guidMap, const char* kind, const std::vector<API_Guid>& oldGuids, const std::vector<API_Guid>& newGuids)
+{
+    for (size_t i = 0; i < std::max (oldGuids.size (), newGuids.size ()); ++i) {
+        guidMap.push_back (CreateGuidMapItem (kind,
+            i < oldGuids.size () ? oldGuids[i] : APINULLGuid,
+            i < newGuids.size () ? newGuids[i] : APINULLGuid));
+    }
+}
+
+// Maps the parts of the old route to those of the rebuilt one by where they lie: a segment to the
+// old segment it lies along most (its rigid segments to the old ones by order when both segments
+// have the same ends), a node to the old node at its position (its elbows and transitions to the
+// old node's by order). Every old and every new part is listed.
+static std::vector<GS::ObjectState> CreatePartsGuidMap (const RoutingElement& rebuilt, const std::vector<RoutingSegmentRecord>& oldSegments, const std::vector<RoutingNodeRecord>& oldNodes)
+{
+    std::vector<GS::ObjectState> guidMap;
+    std::vector<bool> isOldSegmentMapped (oldSegments.size (), false);
+    std::vector<bool> areOldRigidSegmentsMapped (oldSegments.size (), false);
+    for (const RoutingSegmentRecord& segment : GetRoutingSegmentRecords (rebuilt)) {
+        std::vector<size_t> overlapped;
+        const std::optional<size_t> oldIndex = FindOldSegmentLyingAlong (segment.begin, segment.end, oldSegments, overlapped);
+        if (!oldIndex.has_value ()) {
+            guidMap.push_back (CreateGuidMapItem ("Segment", APINULLGuid, segment.guid));
+            AddPairedGuids (guidMap, "RigidSegment", {}, segment.rigidSegmentGuids);
+            continue;
+        }
+        const RoutingSegmentRecord& oldSegment = oldSegments[oldIndex.value ()];
+        isOldSegmentMapped[oldIndex.value ()] = true;
+        guidMap.push_back (CreateGuidMapItem ("Segment", oldSegment.guid, segment.guid));
+        const bool hasSameEnds =
+            (GetDistance (segment.begin, oldSegment.begin) <= RouteGeometryTolerance && GetDistance (segment.end, oldSegment.end) <= RouteGeometryTolerance) ||
+            (GetDistance (segment.begin, oldSegment.end) <= RouteGeometryTolerance && GetDistance (segment.end, oldSegment.begin) <= RouteGeometryTolerance);
+        if (hasSameEnds && !areOldRigidSegmentsMapped[oldIndex.value ()]) {
+            areOldRigidSegmentsMapped[oldIndex.value ()] = true;
+            AddPairedGuids (guidMap, "RigidSegment", oldSegment.rigidSegmentGuids, segment.rigidSegmentGuids);
+        } else {
+            AddPairedGuids (guidMap, "RigidSegment", {}, segment.rigidSegmentGuids);
+        }
+    }
+    for (size_t i = 0; i < oldSegments.size (); ++i) {
+        if (!isOldSegmentMapped[i]) {
+            guidMap.push_back (CreateGuidMapItem ("Segment", oldSegments[i].guid, APINULLGuid));
+        }
+        if (!areOldRigidSegmentsMapped[i]) {
+            AddPairedGuids (guidMap, "RigidSegment", oldSegments[i].rigidSegmentGuids, {});
+        }
+    }
+
+    std::vector<bool> isOldNodeMapped (oldNodes.size (), false);
+    for (const RoutingNodeRecord& node : GetRoutingNodeRecords (rebuilt)) {
+        std::optional<size_t> oldIndex = FindOldNodeAt (node.position, oldNodes);
+        if (oldIndex.has_value () && isOldNodeMapped[oldIndex.value ()]) {
+            oldIndex.reset ();
+        }
+        if (!oldIndex.has_value ()) {
+            guidMap.push_back (CreateGuidMapItem ("Node", APINULLGuid, node.guid));
+            AddPairedGuids (guidMap, "Elbow", {}, node.elbowGuids);
+            AddPairedGuids (guidMap, "Transition", {}, node.transitionGuids);
+            continue;
+        }
+        const RoutingNodeRecord& oldNode = oldNodes[oldIndex.value ()];
+        isOldNodeMapped[oldIndex.value ()] = true;
+        guidMap.push_back (CreateGuidMapItem ("Node", oldNode.guid, node.guid));
+        AddPairedGuids (guidMap, "Elbow", oldNode.elbowGuids, node.elbowGuids);
+        AddPairedGuids (guidMap, "Transition", oldNode.transitionGuids, node.transitionGuids);
+    }
+    for (size_t i = 0; i < oldNodes.size (); ++i) {
+        if (!isOldNodeMapped[i]) {
+            guidMap.push_back (CreateGuidMapItem ("Node", oldNodes[i].guid, APINULLGuid));
+            AddPairedGuids (guidMap, "Elbow", oldNodes[i].elbowGuids, {});
+            AddPairedGuids (guidMap, "Transition", oldNodes[i].transitionGuids, {});
+        }
+    }
+    return guidMap;
+}
+
 // Gives the rebuilt route the layer, home story, renovation status, element ID, classifications and
 // property values of the old one, and connects it to the elements the old one was connected to at
-// its ends. Returns what could not be carried over.
+// its ends. Returns the warnings for what could not be carried over.
 static std::vector<GS::UniString> CarryOverRoutingElementIdentity (const ACAPI::MEP::UniqueID& rebuiltId, const RoutingElementIdentity& identity)
 {
     std::vector<GS::UniString> notCarriedOver;
@@ -8653,12 +9068,19 @@ static std::vector<GS::UniString> CarryOverRoutingElementIdentity (const ACAPI::
                 APIGuidToString (MEPUniqueIDToAPIGuid (connectedElementId)).ToPrintf ()));
         }
     }
-    return notCarriedOver;
+
+    std::vector<GS::UniString> warnings;
+    for (const GS::UniString& what : notCarriedOver) {
+        warnings.push_back (GS::UniString ("The rebuilt route did not get ") + what + " of the old one.");
+    }
+    return warnings;
 }
 
 // Rebuilds one route in RebuildMEPRoutingElements: deletes it and places it again along the given
-// nodes, from its own settings, under its own guid when Archicad allows it. Runs inside the caller's
-// undoable command. Returns the element id of the rebuilt route or an error item.
+// nodes, from its own settings, under its own guid when Archicad allows it, and gives its segments
+// and nodes the settings of the old ones they lie along or at. Runs inside the caller's undoable
+// command. Returns the item of the response: the rebuilt route's id with its guidMap and warnings,
+// or an error.
 static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid, const GS::ObjectState& item)
 {
     ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (routingElementGuid));
@@ -8679,12 +9101,14 @@ static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid
     if (item.Get ("removeCollinearNodes", removeCollinearNodes) && removeCollinearNodes) {
         nodes = RemoveCollinearNodes (nodes);
     }
+    bool resetCustomSegments = false;
+    item.Get ("resetCustomSegments", resetCustomSegments);
     // The route is deleted before it is placed again, so a route that cannot be placed is refused first.
     if (nodes.size () < 2) {
         return CreateErrorResponse (APIERR_BADPARS, "The route needs at least 2 nodes; nothing was changed.");
     }
     for (size_t i = 1; i < nodes.size (); ++i) {
-        if (GetDistance (nodes[i], nodes[i - 1]) <= CollinearNodeTolerance) {
+        if (GetDistance (nodes[i], nodes[i - 1]) <= RouteGeometryTolerance) {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
                 "Node %u lies on node %u, which makes a segment without length; nothing was changed.", static_cast<UInt32> (i), static_cast<UInt32> (i - 1)));
         }
@@ -8695,9 +9119,11 @@ static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to read the routing element; nothing was changed.");
     }
+    const std::vector<RoutingSegmentRecord> oldSegments = GetRoutingSegmentRecords (*routingElement);
+    const std::vector<RoutingNodeRecord> oldNodes = GetRoutingNodeRecords (*routingElement);
 
     // The route's own settings, with the uncustomized segment and node settings for every segment
-    // and node, so customized segments and nodes are reset.
+    // and node; the customized ones are given to the parts after placing, unless reset.
     RoutingElementDefault routingElementDefault = routingElement->PickUpDefault ();
     const RoutingSegmentDefault segmentDefault = routingElement->GetRoutingSegmentDefaultParameters ();
     const RoutingNodeDefault nodeDefault = routingElement->GetRoutingNodeDefaultParameters ();
@@ -8714,6 +9140,8 @@ static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid
             : GS::UniString ("The routing element cannot be rebuilt because ") + reason + "; nothing was changed.");
     }
 
+    // Place takes a guid only for the route (requiredId); its segments, nodes and fittings always
+    // get new guids, which the guidMap pairs with the old ones.
     const std::map<UInt32, RoutingSegmentRectangularCrossSectionData> noRectangularCrossSections;
     const std::map<UInt32, RoutingSegmentCircularCrossSectionData> noCircularCrossSections;
     std::optional<ACAPI::MEP::UniqueID> rebuiltId;
@@ -8730,21 +9158,37 @@ static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid
         rebuiltId = placedUnderNewGuid.Unwrap ();
     }
 
-    const std::vector<GS::UniString> notCarriedOver = CarryOverRoutingElementIdentity (rebuiltId.value (), identity);
-    const API_Guid rebuiltGuid = MEPUniqueIDToAPIGuid (rebuiltId.value ());
-    if (!notCarriedOver.empty ()) {
-        GS::UniString list;
-        for (const GS::UniString& what : notCarriedOver) {
-            if (!list.IsEmpty ()) {
-                list += ", ";
-            }
-            list += what;
+    std::vector<GS::UniString> warnings;
+    if (!resetCustomSegments) {
+        ACAPI::Result<RoutingElement> rebuilt = RoutingElement::Get (rebuiltId.value ());
+        if (rebuilt.IsOk ()) {
+            warnings = SetPartSettingsFromOldParts (*rebuilt, oldSegments, oldNodes);
+        } else {
+            warnings.push_back ("The settings of the old segments and nodes could not be given to the rebuilt route.");
         }
-        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
-            "The routing element was rebuilt with guid %T, but %T could not be carried over.",
-            APIGuidToString (rebuiltGuid).ToPrintf (), list.ToPrintf ()));
     }
-    return CreateElementIdObjectState (rebuiltGuid);
+    for (const GS::UniString& warning : CarryOverRoutingElementIdentity (rebuiltId.value (), identity)) {
+        warnings.push_back (warning);
+    }
+
+    const API_Guid rebuiltGuid = MEPUniqueIDToAPIGuid (rebuiltId.value ());
+    GS::ObjectState result = CreateElementIdObjectState (rebuiltGuid);
+    const auto& guidMap = result.AddList<GS::ObjectState> ("guidMap");
+    ACAPI::Result<RoutingElement> rebuilt = RoutingElement::Get (rebuiltId.value ());
+    if (rebuilt.IsOk ()) {
+        for (const GS::ObjectState& guidMapItem : CreatePartsGuidMap (*rebuilt, oldSegments, oldNodes)) {
+            guidMap (guidMapItem);
+        }
+    } else {
+        warnings.push_back ("The parts of the rebuilt route could not be read, so the guidMap is empty.");
+    }
+    if (!warnings.empty ()) {
+        const auto& warningList = result.AddList<GS::UniString> ("warnings");
+        for (const GS::UniString& warning : warnings) {
+            warningList (warning);
+        }
+    }
+    return result;
 }
 
 #endif
@@ -8766,7 +9210,7 @@ GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetInputParameters
         "properties": {
             "routingElements": {
                 "type": "array",
-                "description": "The routing elements to rebuild.",
+                "description": "The routing elements to rebuild. Each is deleted and placed again. Every segment, node and fitting gets a new guid (see guidMap); labels, dimensions and other things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node count stays the same: it keeps every guid.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -8785,6 +9229,10 @@ GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetInputParameters
                         "removeCollinearNodes": {
                             "type": "boolean",
                             "description": "Leaves out every inner node that lies on the straight line between its neighbours (within 1 mm), as Purge Unused MEP Nodes does, and every node on top of the previous one. Default false."
+                        },
+                        "resetCustomSegments": {
+                            "type": "boolean",
+                            "description": "True gives every segment and node the route's uncustomized settings, as Reset Custom Segments does. False (default) gives each new segment the size and settings of the old segment it lies along most (within 1 mm), and each new node those of the old node at its position; segments and nodes without an old counterpart take the route's uncustomized settings."
                         }
                     },
                     "additionalProperties": false,
@@ -8807,7 +9255,63 @@ GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetRawResponseSche
         "type": "object",
         "properties": {
             "elements": {
-                "$ref": "#/ElementIdsOrErrors"
+                "type": "array",
+                "description": "One item for each given routing element, in order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "description": "The rebuilt routing element.",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The rebuilt route: its old guid when Archicad let it keep it, else a new one."
+                                },
+                                "guidMap": {
+                                    "type": "array",
+                                    "description": "The parts of the old route paired with those of the rebuilt one, which all have new guids: a segment with the old segment it lies along most (its rigid segments by order when both segments have the same ends), a node with the old node at its position (its elbows and transitions by order). Every old and every new part is listed once or more; an old segment that two new segments lie along is listed with each.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "enum": [ "Segment", "RigidSegment", "Node", "Elbow", "Transition" ],
+                                                "description": "The kind of part. Elbows are called bends in Archicad 28."
+                                            },
+                                            "oldGuid": {
+                                                "$ref": "#/Guid",
+                                                "description": "The guid of the part of the old route. Left out for a new part without an old counterpart."
+                                            },
+                                            "newGuid": {
+                                                "$ref": "#/Guid",
+                                                "description": "The guid of the part of the rebuilt route. Left out for an old part without a new counterpart."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind"
+                                        ]
+                                    }
+                                },
+                                "warnings": {
+                                    "type": "array",
+                                    "description": "What was not carried over: a setting of a segment or node, the layer, home story, renovation status, element ID, a classification, the property values or a connection of the route, and the new segments that lie along old segments of different sizes. Left out when everything was carried over.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "guidMap"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
             }
         },
         "additionalProperties": false,
