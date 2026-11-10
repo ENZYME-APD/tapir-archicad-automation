@@ -2983,11 +2983,12 @@ static void ApplyProfileEdgeOverride (ProfileEdgeData& edgeData, const GS::Objec
             edgeData.SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
         }
     }
+    // Kept for compatibility: the edge's material is a surface index, so a building material is not stored in it,
+    // the edge only takes the surface of the skin's building material.
     GS::ObjectState buildingMaterialId;
     if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
         API_AttributeIndex idx;
         if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
-            edgeData.SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
             edgeData.SetSurfaceFromBuildMat (true);
         }
     }
@@ -3734,13 +3735,16 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                                 const auto& edgesList = skin.AddList<GS::ObjectState> ("edges");
                                 ForEachProfileEdge (hatch, [&] (const ProfileEdgeData& edgeData) {
                                     GS::ObjectState edge;
-                                    // The edge's material is a surface unless the edge takes the surface of the
-                                    // skin's building material (see ApplyProfileEdgeOverride).
+                                    // The edge's material is a surface (its custom surface), used only when the edge
+                                    // does not take the surface of the skin's building material (see
+                                    // ApplyProfileEdgeOverride). With the flag set it is not an attribute reference.
                                     const bool surfaceFromBuildMat = edgeData.IsSurfaceFromBuildMat ();
                                     edge.Add ("surfaceFromBuildingMaterial", surfaceFromBuildMat);
-                                    GS::Optional<GS::ObjectState> edgeMaterialId = GetAttributeIdFromIndex (surfaceFromBuildMat ? API_BuildingMaterialID : API_MaterialID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetMaterial ())));
-                                    if (edgeMaterialId.HasValue ()) {
-                                        edge.Add (surfaceFromBuildMat ? "buildingMaterialId" : "surfaceId", *edgeMaterialId);
+                                    if (!surfaceFromBuildMat) {
+                                        GS::Optional<GS::ObjectState> edgeSurfaceId = GetAttributeIdFromIndex (API_MaterialID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetMaterial ())));
+                                        if (edgeSurfaceId.HasValue ()) {
+                                            edge.Add ("surfaceId", *edgeSurfaceId);
+                                        }
                                     }
                                     edge.Add ("pen", (Int32) edgeData.GetPen ());
                                     GS::Optional<GS::ObjectState> edgeLineTypeId = GetAttributeIdFromIndex (API_LinetypeID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetLineType ())));
@@ -10460,7 +10464,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
         }
     }
     // Profiles: the building material, surface, fill and contour line type of every skin, the cut end line type
-    // of a profile skin and the custom surface (or building material) and line type of its edges.
+    // of a profile skin and the custom surface and line type of its edges.
     attributes.Clear ();
     if (ACAPI_Attribute_GetAttributesByType (API_ProfileID, attributes) == NoError) {
         for (API_Attribute& listed : attributes) {
@@ -10505,7 +10509,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                         profileItem->SetCutEndLineType (FromPlainAttrIndex (newPlain));
                         changed = true;
                     }
-                    if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_BuildingMaterialID || job.type == API_MaterialID)) {
+                    if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_MaterialID)) {
                         const UIndex edgeCount = hatch.GetCoords ().GetSize ();
                         for (UIndex e = 0; e < edgeCount; ++e) {
                             ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (e);
@@ -10516,9 +10520,9 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                                 edgeData->SetLineType (FromPlainAttrIndex (newPlain));
                                 changed = true;
                             }
-                            // The edge's material is a surface unless it takes the skin's building material's.
-                            const API_AttrTypeID edgeMaterialType = edgeData->IsSurfaceFromBuildMat () ? API_BuildingMaterialID : API_MaterialID;
-                            if (job.type == edgeMaterialType && RewritePlain (ToPlainAttrIndex (edgeData->GetMaterial ()), job, newPlain)) {
+                            // The edge's material is its custom surface, an attribute reference only when the edge
+                            // does not take the surface of the skin's building material.
+                            if (job.type == API_MaterialID && !edgeData->IsSurfaceFromBuildMat () && RewritePlain (ToPlainAttrIndex (edgeData->GetMaterial ()), job, newPlain)) {
                                 edgeData->SetMaterial (FromPlainAttrIndex (newPlain));
                                 changed = true;
                             }

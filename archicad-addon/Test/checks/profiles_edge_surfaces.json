@@ -60,7 +60,8 @@
         {"path": "profiles[0].skins[0].edges[1].surfaceFromBuildingMaterial", "eq": false, "name": "edge 1 has a custom surface"},
         {"path": "profiles[0].skins[0].edges[1].surfaceId.attributeId.guid", "eq": "${s1}", "name": "edge 1 surface is s1"},
         {"path": "profiles[0].skins[0].edges[2].surfaceFromBuildingMaterial", "eq": true, "name": "edge 2 takes the building material's surface"},
-        {"path": "profiles[0].skins[0].edges[2].surfaceId", "exists": false, "name": "edge 2 has no custom surface"}
+        {"path": "profiles[0].skins[0].edges[2].surfaceId", "exists": false, "name": "edge 2 has no custom surface"},
+        {"path": "profiles[0].skins[0].edges[2].buildingMaterialId", "exists": false, "name": "edge 2 reports no building material of its own"}
       ]
     },
     {
@@ -100,7 +101,8 @@
         {"path": "profiles[0].skins[0].edges[2].surfaceFromBuildingMaterial", "eq": false, "name": "edge 2 has a custom surface"},
         {"path": "profiles[0].skins[0].edges[2].surfaceId.attributeId.guid", "eq": "${s2}", "name": "edge 2 surface is s2"},
         {"path": "profiles[0].skins[0].edges[1].surfaceFromBuildingMaterial", "eq": true, "name": "edge 1 back to the building material's surface"},
-        {"path": "profiles[0].skins[0].edges[1].surfaceId", "exists": false, "name": "edge 1 no longer reports a custom surface"}
+        {"path": "profiles[0].skins[0].edges[1].surfaceId", "exists": false, "name": "edge 1 no longer reports a custom surface"},
+        {"path": "profiles[0].skins[0].edges[1].buildingMaterialId", "exists": false, "name": "edge 1's old surface index is not reported as a building material"}
       ]
     }
   ],

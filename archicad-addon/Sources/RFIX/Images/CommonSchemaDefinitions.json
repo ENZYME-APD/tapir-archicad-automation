@@ -2386,10 +2386,6 @@
                 "$ref": "#/AttributeIdArrayItem",
                 "description": "The custom surface of the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Only when surfaceFromBuildingMaterial is false and a surface is set."
             },
-            "buildingMaterialId": {
-                "$ref": "#/AttributeIdArrayItem",
-                "description": "The building material stored on the edge. Only when surfaceFromBuildingMaterial is true and one is stored."
-            },
             "pen": {
                 "type": "integer"
             },
@@ -3402,7 +3398,7 @@
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeIdArrayItem",
-                "description": "Stores this building material on the edge and makes the edge take the surface of the skin's building material."
+                "description": "Kept for compatibility: makes the edge take the surface of the skin's building material, like surfaceFromBuildingMaterial true. The building material itself is not stored on the edge."
             },
             "surfaceId": {
                 "$ref": "#/AttributeIdArrayItem",
