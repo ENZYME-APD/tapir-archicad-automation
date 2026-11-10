@@ -137,7 +137,7 @@ main { display: block }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--cream); text-decoration: none; font: 900 24px/1 var(--display) }
 .brand:hover { color: var(--cream) }
 .brand img { width: 30px; height: 30px; display: block }
-.brand img.brand-tile { display: none } /* favicon.svg, shown only by the Standard look's light header */
+.brand img.brand-tile { display: none } /* tapir_mark_moss.svg, shown only by the Standard look's light header */
 .site-nav ul { display: flex; gap: 4px 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap }
 .site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: .9375rem; opacity: .88 }
 .site-nav a:hover { opacity: 1; color: var(--ochre-light) }
@@ -677,8 +677,9 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .brand:hover, :root:not([data-style="legacy"]) .site-nav a { color: var(--fg) }
 :root:not([data-style="legacy"]) .site-nav a:hover { color: var(--link) }
 :root:not([data-style="legacy"]) .site-nav a[aria-current] { color: var(--link); box-shadow: inset 0 -2px 0 var(--link) }
-/* The mark is never recoloured (#2476, 3a). On the light header it is favicon.svg, the cream mark on
-   its moss tile; in Dark (chosen, or the system's) it stays tapir_mark_cream.svg, as in Legacy. */
+/* The mark is never recoloured with a filter (#2476, 3a). On the light header it is
+   tapir_mark_moss.svg, the same mark at the same size in the inverted colour (moss instead of cream,
+   #2515); in Dark (chosen, or the system's) it stays tapir_mark_cream.svg, as in Legacy. */
 :root:not([data-style="legacy"]) .site-header .brand img { display: none }
 :root:not([data-style="legacy"]) .site-header .brand img.brand-tile { display: block }
 :root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img { display: block }

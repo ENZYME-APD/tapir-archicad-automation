@@ -132,15 +132,15 @@ html.m-splash.m-fade::after { opacity: 0; transition: opacity .4s ease }
 
 /* The Standard look (see the end of site.css): the accent instead of ochre, no grid, a soft header
    shadow, and a plain splash: the page background with the name in ink, set in Inter 700 like the
-   header's brand. The mark is never recoloured (#2476, 3a): in Light it is favicon.svg (inlined here,
-   the cream mark on its moss tile), as the header shows it, so it lands on the header's mark; in Dark
-   it stays the cream mark. Inter has no optical sizes, so the box takes the name's own width (motion.js
+   header's brand. The mark is never recoloured with a filter (#2476, 3a): in Light it is
+   tapir_mark_moss.svg (inlined here, the mark in moss, #2515), as the header shows it, so it lands on
+   the header's mark; in Dark it stays the cream mark. Inter has no optical sizes, so the box takes the name's own width (motion.js
    measures it when the splash lifts) instead of the fixed width of the Fraunces name. */
 :root:not([data-style="legacy"]) {
     --ochre-light-28: rgba(31, 107, 78, .28); --signal: #4CB88A; --signal-60: rgba(76, 184, 138, .6);
     --shadow-header: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06); --texture-splash: none;
     --splash-font: var(--body);
-    --splash-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232D3A30'/%3E%3Cg fill='%23F4F1EA' transform='translate(5 5) scale(0.6875)'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") }
+    --splash-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%232D3A30'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") }
 :root:not([data-style="legacy"])[data-theme="dark"] { --shadow-header: none;
     --splash-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23F4F1EA'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") }
 @media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) { --shadow-header: none;
