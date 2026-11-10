@@ -2296,7 +2296,7 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     },
                     "coordinates": {
                         "type": "array",
-                        "description": "The 2D coordinates of the hatch outline. Do not repeat the first point at the end.",
+                        "description": "The 2D coordinates of the hatch outline. The first point may be repeated at the end, as in the closed outline GetDetailsOfElements returns; that last point is then ignored.",
                         "items": {
                             "$ref": "#/Coordinate2D"
                         },
@@ -2380,6 +2380,9 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
     parameters.Get ("coordinates", coordinates);
     parameters.Get ("arcs", arcs);
     parameters.Get ("holes", holes);
+    if (GetOpenHatchOutline (coordinates).GetSize () < 3) {
+        return CreateErrorResponse (APIERR_BADPARS, "The hatch outline must contain at least 3 coordinates, not counting a last one that repeats the first.");
+    }
     auto holesError = ValidateHoles (holes);
     if (holesError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, holesError.Get ());
