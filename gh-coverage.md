@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 746 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-10 04:40 UTC.
+Updated 2026-11-10 05:43 UTC.
 
 | | Status |
 |---|---|
@@ -324,8 +324,8 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyDoors` 🟢 26/26 parameters – `DoorsComponent`, `ModifyDoorsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")
 - ✅ `ModifyOpenings` 🟢 5/5 parameters – `ModifyOpeningsComponent`
 - ✅ `ModifyMorphs` 🟢 37/37 parameters – `ModifyMorphsComponent`, `MorphsComponent`
-- ✅ `ModifyRoofs` 🟡 20/29 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.bottomMaterial`, `roofsWithDetails.cutBodyType`, `roofsWithDetails.edgeSideMaterials`, `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.materialsChained`, `roofsWithDetails.pivotEdges.levels.angleType`, `roofsWithDetails.sideMaterial`, `roofsWithDetails.topMaterial`</sub>
-- ✅ `ModifyShells` 🟡 7/16 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.bottomMaterial`, `shellsWithDetails.cutBodyType`, `shellsWithDetails.edgeMaterials`, `shellsWithDetails.extrusionLength`, `shellsWithDetails.extrusionVector`, `shellsWithDetails.materialsChained`, `shellsWithDetails.profile`, `shellsWithDetails.sideMaterial`, `shellsWithDetails.topMaterial`</sub>
+- ✅ `ModifyRoofs` 🟡 20/30 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.bottomMaterial`, `roofsWithDetails.cutBodyType`, `roofsWithDetails.edgeSideMaterials`, `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.edgeTypes`, `roofsWithDetails.materialsChained`, `roofsWithDetails.pivotEdges.levels.angleType`, `roofsWithDetails.sideMaterial`, `roofsWithDetails.topMaterial`</sub>
+- ✅ `ModifyShells` 🟡 8/19 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.bottomMaterial`, `shellsWithDetails.contour`, `shellsWithDetails.cutBodyType`, `shellsWithDetails.edgeMaterials`, `shellsWithDetails.extrusionLength`, `shellsWithDetails.extrusionVector`, `shellsWithDetails.materialsChained`, `shellsWithDetails.profile`, `shellsWithDetails.removeContour`, `shellsWithDetails.sideMaterial`, `shellsWithDetails.topMaterial`</sub>
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
 - ✅ `ModifyRailings` 🟡 11/17 parameters – `RailingsComponent`<br><sub>no input: `railingsWithDetails.nodes`, `railingsWithDetails.nodes.postOffset`, `railingsWithDetails.nodes.unifyPatterns`, `railingsWithDetails.segments`, `railingsWithDetails.segments.index`, `railingsWithDetails.segments.lateralOffset`</sub>
 - ✅ `ModifyObjects` 🟢 24/24 parameters – `ModifyObjectsComponent`, `ObjectsComponent`

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 04:40 UTC",
+ "generatedAt": "2026-11-10 05:43 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7477,7 +7477,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides and edgeTrims (the cut of each edge of the outline or contour and its holes) apply to both; angle, pivotLine and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides and edgeTrims (the cut of each edge of the outline or contour and its holes) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7491,7 +7491,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 29,
+   "parameterCount": 30,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7520,6 +7520,7 @@
     "roofsWithDetails.edgeSideMaterials",
     "roofsWithDetails.edgeTrims",
     "roofsWithDetails.edgeTrims.trimType",
+    "roofsWithDetails.edgeTypes",
     "roofsWithDetails.materialsChained",
     "roofsWithDetails.pivotEdges.levels.angleType",
     "roofsWithDetails.sideMaterial",
@@ -7532,7 +7533,7 @@
    "id": "ModifyShells",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the top, side (edge) and bottom surface overrides and the custom surface of individual edges (edgeMaterials) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
+   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides and the custom surface of individual edges (edgeMaterials) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7542,24 +7543,27 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 16,
+   "parameterCount": 19,
    "coveredParameters": [
     "shellsWithDetails",
     "shellsWithDetails.buildingMaterialId",
     "shellsWithDetails.compositeId",
     "shellsWithDetails.elementId",
+    "shellsWithDetails.holes",
     "shellsWithDetails.isFlipped",
     "shellsWithDetails.structureType",
     "shellsWithDetails.thickness"
    ],
    "missingParameters": [
     "shellsWithDetails.bottomMaterial",
+    "shellsWithDetails.contour",
     "shellsWithDetails.cutBodyType",
     "shellsWithDetails.edgeMaterials",
     "shellsWithDetails.extrusionLength",
     "shellsWithDetails.extrusionVector",
     "shellsWithDetails.materialsChained",
     "shellsWithDetails.profile",
+    "shellsWithDetails.removeContour",
     "shellsWithDetails.sideMaterial",
     "shellsWithDetails.topMaterial"
    ],

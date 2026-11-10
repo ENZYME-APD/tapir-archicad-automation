@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 04:40 UTC",
+ "generatedAt": "2026-11-10 05:43 UTC",
  "versions": [
   25,
   26,
@@ -5872,14 +5872,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2443,
-     "title": "Read and write the edge types of single-plane roofs"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     }
    ],
    "issues": [
@@ -6850,10 +6842,6 @@
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
     },
     {
-     "number": 2595,
-     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
      "number": 2593,
      "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
     },
@@ -6904,10 +6892,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     },
     {
      "number": 2400,
@@ -8166,14 +8150,6 @@
     {
      "number": 2540,
      "title": "ModifyCurtainWalls: change the height through the segment contours"
-    },
-    {
-     "number": 2443,
-     "title": "Read and write the edge types of single-plane roofs"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     },
     {
      "number": 2400,
@@ -25932,16 +25908,8 @@
      "title": "Columns and beams: a width given alone also works on a linked cross section"
     },
     {
-     "number": 2443,
-     "title": "Read and write the edge types of single-plane roofs"
-    },
-    {
      "number": 2440,
      "title": "Write floor plan and section settings with ModifyRoofs and ModifyShells"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     },
     {
      "number": 2400,
@@ -31628,10 +31596,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     }
    ],
    "issues": []
@@ -38230,16 +38194,8 @@
      "title": "Columns and beams: a width given alone also works on a linked cross section"
     },
     {
-     "number": 2443,
-     "title": "Read and write the edge types of single-plane roofs"
-    },
-    {
      "number": 2440,
      "title": "Write floor plan and section settings with ModifyRoofs and ModifyShells"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     },
     {
      "number": 2400,
@@ -44967,10 +44923,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     }
    ],
    "issues": []
@@ -48158,10 +48110,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2439,
-     "title": "Read and edit the clipping contour and holes of an existing shell"
     }
    ],
    "issues": []
