@@ -2303,6 +2303,55 @@ GS::Optional<GS::UniString> ApplyShellStructure (
     return {};
 }
 
+// The extrusion of an existing extruded shell (#2425): only the vector changes, so the profile,
+// the base plane and the extrusion start stay where they are and only the end moves.
+GS::Optional<GS::UniString> ApplyShellExtrusion (
+    API_Element& element,
+    API_Element& mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    const auto extrusionVector = GetOptionalCoordinate3D (details, "extrusionVector");
+    const auto extrusionLength = GetOptionalDouble (details, "extrusionLength");
+    if (!extrusionVector.HasValue () && !extrusionLength.HasValue ()) {
+        return {};
+    }
+    if (extrusionVector.HasValue () && extrusionLength.HasValue ()) {
+        return GS::UniString ("Give either 'extrusionVector' or 'extrusionLength', not both.");
+    }
+    if (element.shell.shellClass != API_ExtrudedShellID) {
+        return GS::UniString ("'extrusionVector' and 'extrusionLength' can only be changed on an Extruded shell.");
+    }
+
+    API_Vector3D& vector = element.shell.u.extrudedShell.extrusionVector;
+    if (extrusionVector.HasValue ()) {
+        const API_Coord3D& newVector = extrusionVector.Get ();
+        if (std::sqrt (newVector.x * newVector.x + newVector.y * newVector.y + newVector.z * newVector.z) < 1e-9) {
+            return GS::UniString ("'extrusionVector' must not be a zero vector.");
+        }
+        vector.x = newVector.x;
+        vector.y = newVector.y;
+        vector.z = newVector.z;
+    } else {
+        const double newLength = extrusionLength.Get ();
+        if (newLength <= 0.0) {
+            return GS::UniString ("'extrusionLength' must be greater than 0.");
+        }
+        const double oldLength = std::sqrt (vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+        if (oldLength < 1e-9) {
+            return GS::UniString ("The shell's extrusion vector has no direction to scale.");
+        }
+        const double scale = newLength / oldLength;
+        vector.x *= scale;
+        vector.y *= scale;
+        vector.z *= scale;
+    }
+
+    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrusionVector);
+    changed = true;
+    return {};
+}
+
 } // namespace
 
 // Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it
@@ -5993,6 +6042,67 @@ void ApplyShellEdgeTrims (API_Element& element, const GS::ObjectState& parameter
     ApplyShellEdgeTrim (parameters, "endShapeEdgeTrim", *endEdge);
     ApplyShellEdgeTrim (parameters, "begSideEdgeTrim", sideEdges[0]);
     ApplyShellEdgeTrim (parameters, "endSideEdgeTrim", sideEdges[1]);
+}
+
+void KillShellShapeHandles (API_ShellShapeData& shapeData, bool withIds)
+{
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.coords));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.pends));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.parcs));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.bodyFlags));
+    if (withIds) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.vertexIDs));
+        BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.edgeIDs));
+    }
+}
+
+// A new profile for an existing extruded shell (#2453), in the format CreateShells takes. The
+// shell's polygon memo is read and only its first profile polyline is replaced, so written back
+// with the element the GUID, the base plane, the extrusion start and vector, the thickness and the
+// cut contours stay. The vertex and edge ids are kept when the number of points stays the same.
+// memo is filled here and must be disposed by the caller; memoLoaded tells whether to write it.
+GS::Optional<GS::UniString> ApplyShellProfile (
+    API_Element& element,
+    API_Element& mask,
+    API_ElementMemo& memo,
+    const GS::ObjectState& details,
+    bool& memoLoaded,
+    bool& changed)
+{
+    const GS::ObjectState* profile = details.Get ("profile");
+    if (profile == nullptr) {
+        return {};
+    }
+    if (element.shell.shellClass != API_ExtrudedShellID) {
+        return GS::UniString ("'profile' can only be changed on an Extruded shell.");
+    }
+
+    API_Polygon newShape = {};
+    API_ShellShapeData newShapeData = {};
+    auto error = FillShellShape (*profile, newShape, newShapeData);
+    if (error.HasValue ()) {
+        KillShellShapeHandles (newShapeData, true);
+        return error;
+    }
+
+    if (ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
+        KillShellShapeHandles (newShapeData, true);
+        return GS::UniString ("Failed to load the profile of the shell.");
+    }
+    memoLoaded = true;
+
+    API_Polygon& shape = element.shell.u.extrudedShell.shellShape;
+    API_ShellShapeData& shapeData = memo.shellShapes[0];
+    KillShellShapeHandles (shapeData, newShape.nCoords != shape.nCoords);
+    shapeData.coords = newShapeData.coords;
+    shapeData.pends = newShapeData.pends;
+    shapeData.parcs = newShapeData.parcs;
+    shapeData.bodyFlags = newShapeData.bodyFlags;
+    shape = newShape;
+
+    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape);
+    changed = true;
+    return {};
 }
 
 } // namespace
@@ -11357,7 +11467,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTrims": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with polygonOutline.",
+                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -11454,8 +11564,8 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTrims") || item.Contains ("edgeTypes") || item.Contains ("edgeSideMaterials"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTrims', 'edgeTypes' and 'edgeSideMaterials' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes") || item.Contains ("edgeSideMaterials"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTypes' and 'edgeSideMaterials' are only valid for single-plane roofs."));
                 continue;
             }
             if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && item.Contains ("polygonOutline")) {
@@ -11464,6 +11574,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
             if (item.Contains ("edgeTypes") && item.Contains ("polygonOutline")) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline', which makes new edges."));
+                continue;
+            }
+            // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
+            // trims would be written onto a contour Archicad replaces in the same change (#2435).
+            if (item.Contains ("edgeTrims") && (item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'pivotEdges' or 'eavesOverhang', which move the roof's contour: send them in two calls."));
                 continue;
             }
 
@@ -11573,6 +11689,36 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, materialError.Get ()));
                         continue;
                     }
+                }
+                if (!isPlaneRoof) {
+                    // A multi-plane roof's contour is the polygon of its memo. Written as the DevKit's
+                    // Do_Roof_Edit example (Element_Modify_ModelElements.cpp) writes a multi-plane roof's
+                    // edited contour: with ACAPI_Element_Change, the contour's counts in the element and
+                    // only the polygon handles and the edge data in the memo, unchanged but for the
+                    // trims, so the side surfaces, the edge types and the pivot polygon stay (#2435).
+                    element.roof.u.polyRoof.contourPolygon.nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+                    element.roof.u.polyRoof.contourPolygon.nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+                    element.roof.u.polyRoof.contourPolygon.nArcs = memo.parcs == nullptr ? 0 : (Int32) (BMGetHandleSize ((GSHandle) memo.parcs) / sizeof (API_PolyArc));
+                    API_ElementMemo contourMemo = {};
+                    contourMemo.coords = memo.coords;
+                    contourMemo.pends = memo.pends;
+                    contourMemo.parcs = memo.parcs;
+                    contourMemo.vertexIDs = memo.vertexIDs;
+                    contourMemo.edgeIDs = memo.edgeIDs;
+                    contourMemo.edgeTrims = memo.edgeTrims;
+                    contourMemo.sideMaterials = memo.sideMaterials;
+                    contourMemo.roofEdgeTypes = memo.roofEdgeTypes;
+                    contourMemo.contourIDs = memo.contourIDs;
+                    UInt64 contourMask = APIMemoMask_Polygon | APIMemoMask_EdgeTrims;
+                    if (memo.sideMaterials != nullptr) {
+                        contourMask |= APIMemoMask_SideMaterials;
+                    }
+                    if (memo.roofEdgeTypes != nullptr) {
+                        contourMask |= APIMemoMask_RoofEdgeTypes;
+                    }
+                    err = ACAPI_Element_Change (&element, &mask, &contourMemo, contourMask, true);
+                    results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the edge trims of the roof."));
+                    continue;
                 }
                 if (changed) {
                     err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -11696,6 +11842,98 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
     });
 }
 
+// The top, side and bottom surface overrides of a Shell and whether they are chained, as
+// GetDetailsOfElements reports them in ShellDetails (#2433). Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyShellSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    ShellBaseSurfacesApplied applied;
+    auto error = ApplyShellBaseSurfaces (element.shell.shellBase, details, applied);
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (applied.top) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.topMat);
+        changed = true;
+    }
+    if (applied.side) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.sidMat);
+        changed = true;
+    }
+    if (applied.bottom) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.botMat);
+        changed = true;
+    }
+    if (applied.chained) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.materialsChained);
+        changed = true;
+    }
+    return {};
+}
+
+// The given "edgeMaterials" of a Shell (ShellEdgeMaterials, as GetDetailsOfElements reports them):
+// the custom surface of its begin and end profile edges and of the two edges along its surface
+// (#2433). Only the given edges are written; an item that is not overridden clears the edge's
+// custom surface. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyShellEdgeMaterials (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    GS::ObjectState edgeMaterialsOs;
+    if (!details.Get ("edgeMaterials", edgeMaterialsOs)) {
+        return {};
+    }
+    API_ContourEdgeData* begEdge = nullptr;
+    API_ContourEdgeData* endEdge = nullptr;
+    API_ContourEdgeData* sideEdges = nullptr;
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID:
+            begEdge = &element.shell.u.extrudedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.extrudedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.extrudedShell.extrudedEdgeDatas;
+            break;
+        case API_RevolvedShellID:
+            begEdge = &element.shell.u.revolvedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.revolvedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.revolvedShell.revolvedEdgeDatas;
+            break;
+        case API_RuledShellID:
+            begEdge = &element.shell.u.ruledShell.begShapeEdgeData;
+            endEdge = &element.shell.u.ruledShell.endShapeEdgeData;
+            sideEdges = element.shell.u.ruledShell.ruledEdgeDatas;
+            break;
+        default:
+            return GS::UniString ("The shell class is not known, so its edges cannot be written.");
+    }
+
+    const char* names[4] = { "begShapeEdge", "endShapeEdge", "begSideEdge", "endSideEdge" };
+    API_ContourEdgeData* edges[4] = { begEdge, endEdge, &sideEdges[0], &sideEdges[1] };
+    API_OverriddenAttribute materials[4];
+    bool given[4] = { false, false, false, false };
+    for (UIndex i = 0; i < 4; ++i) {
+        materials[i] = edges[i]->sideMaterial;
+        GS::ObjectState materialOs;
+        if (!edgeMaterialsOs.Get (names[i], materialOs)) {
+            continue;
+        }
+        auto error = GetOverriddenMaterialChecked (materialOs, GS::UniString ("edgeMaterials.") + GS::UniString (names[i]), materials[i]);
+        if (error.HasValue ()) {
+            return error;
+        }
+        given[i] = true;
+    }
+
+    for (UIndex i = 0; i < 4; ++i) {
+        if (!given[i]) {
+            continue;
+        }
+        edges[i]->sideMaterial = materials[i];
+        // ACAPI_ELEMENT_MASK_SET of the same member, whichever shell class's data it is in: the
+        // mask byte at the member's offset in the element.
+        const size_t offset = (size_t) (reinterpret_cast<const char*> (&edges[i]->sideMaterial) - reinterpret_cast<const char*> (&element));
+        *(reinterpret_cast<char*> (&mask) + offset) = -1;
+        changed = true;
+    }
+    return {};
+}
+
 ModifyShellsCommand::ModifyShellsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11730,6 +11968,24 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "isFlipped": {
                             "type": "boolean",
                             "description": "The side of the reference surface the thickness is applied to, as CreateShells takes it and GetDetailsOfElements returns it. Changing it keeps the reference surface in place and moves the body to its other side."
+                        },
+                        "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override." },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the edges of the shell; overridden false clears the override." },
+                        "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
+                        "edgeMaterials": { "$ref": "#/ShellEdgeMaterials", "description": "The custom surface of individual edges of the shell, as GetDetailsOfElements reports them. Only the edges given are written; overridden false clears an edge's custom surface." },
+                        "extrusionVector": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "Extruded shells only: the new direction and length of the extrusion, in base plane coordinates (as GetDetailsOfElements returns it). The profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionLength."
+                        },
+                        "extrusionLength": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Extruded shells only: the new length of the extrusion. The extrusion vector keeps its direction and is scaled to this length; the profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionVector."
+                        },
+                        "profile": {
+                            "$ref": "#/ShellProfile",
+                            "description": "Extruded shells only: the new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns (the plane across the extrusion, x horizontal, y up). It replaces the first profile polyline; the GUID, the base plane, the extrusion start and vector, the thickness and the cut contours are kept."
                         },
                         "cutBodyType": {
                             "type": "string",
@@ -11782,8 +12038,27 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool changed = false;
             auto error = ApplyShellStructure (element, &mask, item, changed);
+            if (!error.HasValue ()) {
+                error = ApplyShellExtrusion (element, mask, item, changed);
+            }
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            bool memoLoaded = false;
+            if (!error.HasValue ()) {
+                error = ApplyShellProfile (element, mask, memo, item, memoLoaded, changed);
+            }
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+            auto surfaceError = ApplyShellSurfaces (element, mask, item, changed);
+            if (surfaceError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
+                continue;
+            }
+            auto edgeError = ApplyShellEdgeMaterials (element, mask, item, changed);
+            if (edgeError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
                 continue;
             }
             bool cutBodyGiven = false;
@@ -11827,7 +12102,7 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            err = ACAPI_Element_Change (&element, &mask, memoLoaded ? &memo : nullptr, memoLoaded ? APIMemoMask_Polygon : 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify shell."));
         }
     });
@@ -16524,6 +16799,67 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                             "minimum": 1,
                             "maximum": 255,
                             "description": "The new pen index of the railing's contour line (API_RailingType::contourPen)."
+                        },
+                        "segments": {
+                            "type": "array",
+                            "description": "Changes to single segments of the railing, applied after height. Only the given fields of the given segments change; the other segments, the nodes and the railing's GUID stay as they are.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "index": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "description": "The index of the segment in the segments list GetDetailsOfElements returns (0 is the segment from the first to the second node)."
+                                    },
+                                    "height": {
+                                        "type": "number",
+                                        "exclusiveMinimum": 0.0,
+                                        "description": "The new height of this segment."
+                                    },
+                                    "lateralOffset": {
+                                        "type": "number",
+                                        "description": "The new sideways offset of this segment from the reference line (API_RailingSegmentType::yOffset). Archicad only applies it while the segment's referenceLineLocation is Left or Right (confirmed on Archicad 29); with Center the offset stays 0 and the item is reported as a failure, so give referenceLineLocation with it."
+                                    },
+                                    "referenceLineLocation": {
+                                        "$ref": "#/RailingReferenceLineLocation",
+                                        "description": "The new location of this segment relative to the reference line. Applied before lateralOffset."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "index"
+                                ]
+                            }
+                        },
+                        "nodes": {
+                            "type": "array",
+                            "description": "Changes to single nodes of the railing, applied after the segments. Only the given fields of the given nodes change.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "index": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "description": "The index of the node in the nodes list GetDetailsOfElements returns (one node per vertex of the reference line)."
+                                    },
+                                    "postOffset": {
+                                        "type": "number",
+                                        "description": "The new offset of the node's post from the node (API_RailingNodeType::postOffset)."
+                                    },
+                                    "elevation": {
+                                        "type": "number",
+                                        "description": "The new vertical offset of the node (API_RailingNodeType::elevation)."
+                                    },
+                                    "unifyPatterns": {
+                                        "type": "boolean",
+                                        "description": "True continues the pattern of the segments across the node, false crops the segments at it (API_RailingNodeType::unifyPatterns)."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "index"
+                                ]
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -16547,6 +16883,168 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
 
 namespace {
 
+struct RailingSegmentChange {
+    UInt32                                      index = 0;
+    GS::Optional<double>                        height;
+    GS::Optional<double>                        lateralOffset;
+    GS::Optional<API_RailingRefLineLocationID>  referenceLineLocation;
+};
+
+struct RailingNodeChange {
+    UInt32                  index = 0;
+    GS::Optional<double>    postOffset;
+    GS::Optional<double>    elevation;
+    GS::Optional<bool>      unifyPatterns;
+};
+
+// Reads the "segments" or "nodes" list of a ModifyRailings item. Returns an error text, or nothing.
+GS::Optional<GS::UniString> ReadRailingSegmentChanges (const GS::ObjectState& item, UInt32 nSegments, GS::Array<RailingSegmentChange>& changes)
+{
+    GS::Array<GS::ObjectState> list;
+    if (!item.Get ("segments", list)) {
+        return GS::NoValue;
+    }
+    for (const GS::ObjectState& entry : list) {
+        Int32 index = -1;
+        if (!entry.Get ("index", index) || index < 0 || static_cast<UInt32> (index) >= nSegments) {
+            return GS::UniString::Printf ("segments: index %d is not a segment of the railing, which has %u segments.", static_cast<int> (index), static_cast<unsigned> (nSegments));
+        }
+        RailingSegmentChange change;
+        change.index = static_cast<UInt32> (index);
+        double value = 0.0;
+        if (entry.Get ("height", value)) {
+            if (value <= 0.0) {
+                return GS::UniString::Printf ("segments: the height of segment %d must be positive.", static_cast<int> (index));
+            }
+            change.height = value;
+        }
+        if (entry.Get ("lateralOffset", value)) {
+            change.lateralOffset = value;
+        }
+        GS::UniString location;
+        if (entry.Get ("referenceLineLocation", location)) {
+            if (location == "Left") {
+                change.referenceLineLocation = APIRLL_Left;
+            } else if (location == "Center") {
+                change.referenceLineLocation = APIRLL_Center;
+            } else if (location == "Right") {
+                change.referenceLineLocation = APIRLL_Right;
+            } else {
+                return GS::UniString::Printf ("segments: the referenceLineLocation of segment %d must be Left, Center or Right.", static_cast<int> (index));
+            }
+        }
+        if (!change.height.HasValue () && !change.lateralOffset.HasValue () && !change.referenceLineLocation.HasValue ()) {
+            return GS::UniString::Printf ("segments: no fields to modify for segment %d.", static_cast<int> (index));
+        }
+        changes.Push (change);
+    }
+    return GS::NoValue;
+}
+
+GS::Optional<GS::UniString> ReadRailingNodeChanges (const GS::ObjectState& item, UInt32 nNodes, GS::Array<RailingNodeChange>& changes)
+{
+    GS::Array<GS::ObjectState> list;
+    if (!item.Get ("nodes", list)) {
+        return GS::NoValue;
+    }
+    for (const GS::ObjectState& entry : list) {
+        Int32 index = -1;
+        if (!entry.Get ("index", index) || index < 0 || static_cast<UInt32> (index) >= nNodes) {
+            return GS::UniString::Printf ("nodes: index %d is not a node of the railing, which has %u nodes.", static_cast<int> (index), static_cast<unsigned> (nNodes));
+        }
+        RailingNodeChange change;
+        change.index = static_cast<UInt32> (index);
+        double value = 0.0;
+        if (entry.Get ("postOffset", value)) {
+            change.postOffset = value;
+        }
+        if (entry.Get ("elevation", value)) {
+            change.elevation = value;
+        }
+        bool flag = false;
+        if (entry.Get ("unifyPatterns", flag)) {
+            change.unifyPatterns = flag;
+        }
+        if (!change.postOffset.HasValue () && !change.elevation.HasValue () && !change.unifyPatterns.HasValue ()) {
+            return GS::UniString::Printf ("nodes: no fields to modify for node %d.", static_cast<int> (index));
+        }
+        changes.Push (change);
+    }
+    return GS::NoValue;
+}
+
+// Changes one segment of a railing as a subelement, the way the DevKit's Element_Test
+// (Do_Railing_Elevate_Node) changes a node: its head is taken from the railing's memo, read with
+// ACAPI_Element_Get and changed with a mask of only the given fields. The memo is read again for
+// every change, so a subelement Archicad regenerated after an earlier change is still found.
+GSErrCode ChangeRailingSegment (const API_Guid& railingGuid, const RailingSegmentChange& change)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingSegment);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.railingSegments == nullptr) {
+        return APIERR_GENERAL;
+    }
+    API_Element segment = {};
+    segment.header = memo.railingSegments[change.index].head;
+    err = ACAPI_Element_Get (&segment);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    if (change.height.HasValue ()) {
+        segment.railingSegment.height = change.height.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, height);
+    }
+    if (change.referenceLineLocation.HasValue ()) {
+        segment.railingSegment.refLineLocation = change.referenceLineLocation.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, refLineLocation);
+    }
+    if (change.lateralOffset.HasValue ()) {
+        segment.railingSegment.yOffset = change.lateralOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, yOffset);
+    }
+    return ACAPI_Element_Change (&segment, &mask, nullptr, 0, true);
+}
+
+GSErrCode ChangeRailingNode (const API_Guid& railingGuid, const RailingNodeChange& change)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingNode);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.railingNodes == nullptr) {
+        return APIERR_GENERAL;
+    }
+    API_Element node = {};
+    node.header = memo.railingNodes[change.index].head;
+    err = ACAPI_Element_Get (&node);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    if (change.postOffset.HasValue ()) {
+        node.railingNode.postOffset = change.postOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, postOffset);
+    }
+    if (change.elevation.HasValue ()) {
+        node.railingNode.elevation = change.elevation.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, elevation);
+    }
+    if (change.unifyPatterns.HasValue ()) {
+        node.railingNode.unifyPatterns = change.unifyPatterns.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, unifyPatterns);
+    }
+    return ACAPI_Element_Change (&node, &mask, nullptr, 0, true);
+}
+
 // What ModifyRailings asked a railing for, read back once the undoable command has ended.
 struct RailingCheck {
     UIndex      resultIndex = 0;
@@ -16559,14 +17057,17 @@ struct RailingCheck {
     bool        hasContourPen = false;
     bool        hasHeight = false;
     double      height = 0.0;
+    GS::Array<RailingSegmentChange> segmentChanges;
+    GS::Array<RailingNodeChange>    nodeChanges;
 };
 
 }
 
-// Only fields of the railing element itself are changed (heights, home story, story visibility and the
-// floor plan pens), never its memo: the reference line, nodes, segments, posts and rails stay as they
-// are. The height goes to defSegment.height, as the DevKit's Element_Test (Do_Railing_Edit) changes it. The railing is read back once
-// the undoable command has ended, so a value Archicad did not take is reported as a failure instead of a success.
+// The fields of the railing element itself are changed first, without its memo: the reference line,
+// posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's Element_Test
+// (Do_Railing_Edit) changes it, and to every segment as a subelement. Then single segments and nodes are
+// changed as subelements (ChangeRailingSegment, ChangeRailingNode). The railing is read back once the
+// undoable command has ended, so a value Archicad did not take is reported as a failure instead of a success.
 GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -16624,7 +17125,18 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "A pen index must be between 1 and 255."));
                 continue;
             }
-            if (!hasHeight && !hasBottomOffset && !hasFloorIndex && !hasVisibility && !hasIsAutoOnStoryVisibility && !hasReferenceLinePen && !hasContourPen) {
+            GS::Array<RailingSegmentChange> segmentChanges;
+            GS::Optional<GS::UniString> changeError = ReadRailingSegmentChanges (item, element.railing.nSegments, segmentChanges);
+            GS::Array<RailingNodeChange> nodeChanges;
+            if (!changeError.HasValue ()) {
+                changeError = ReadRailingNodeChanges (item, element.railing.nNodes, nodeChanges);
+            }
+            if (changeError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, changeError.Get ()));
+                continue;
+            }
+            const bool hasRailingFields = hasHeight || hasBottomOffset || hasFloorIndex || hasVisibility || hasIsAutoOnStoryVisibility || hasReferenceLinePen || hasContourPen;
+            if (!hasRailingFields && segmentChanges.IsEmpty () && nodeChanges.IsEmpty ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No railing fields to modify."));
                 continue;
             }
@@ -16666,9 +17178,50 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, contourPen);
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to modify railing."));
+            if (hasRailingFields) {
+                err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify railing."));
+                    continue;
+                }
+            }
+
+            // defSegment.height does not reach a segment that has a height of its own (one changed
+            // as a subelement before), so height is also given to every segment. The listed segments
+            // and nodes come after it, so a segment's own height overrides height.
+            GS::UniString subelementError;
+            if (hasHeight) {
+                for (UInt32 i = 0; i < element.railing.nSegments; ++i) {
+                    RailingSegmentChange change;
+                    change.index = i;
+                    change.height = height;
+                    err = ChangeRailingSegment (element.header.guid, change);
+                    if (err != NoError) {
+                        subelementError = GS::UniString::Printf ("Failed to set the height of segment %u of the railing.", static_cast<unsigned> (i));
+                        break;
+                    }
+                }
+            }
+            if (subelementError.IsEmpty ()) {
+                for (const RailingSegmentChange& change : segmentChanges) {
+                    err = ChangeRailingSegment (element.header.guid, change);
+                    if (err != NoError) {
+                        subelementError = GS::UniString::Printf ("Failed to modify segment %u of the railing.", static_cast<unsigned> (change.index));
+                        break;
+                    }
+                }
+            }
+            if (subelementError.IsEmpty ()) {
+                for (const RailingNodeChange& change : nodeChanges) {
+                    err = ChangeRailingNode (element.header.guid, change);
+                    if (err != NoError) {
+                        subelementError = GS::UniString::Printf ("Failed to modify node %u of the railing.", static_cast<unsigned> (change.index));
+                        break;
+                    }
+                }
+            }
+            if (!subelementError.IsEmpty ()) {
+                results.Push (CreateFailedExecutionResult (err, subelementError));
                 continue;
             }
 
@@ -16683,6 +17236,8 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             check.hasContourPen = hasContourPen;
             check.hasHeight = hasHeight;
             check.height = height;
+            check.segmentChanges = segmentChanges;
+            check.nodeChanges = nodeChanges;
             checks.Push (check);
             results.Push (CreateSuccessfulExecutionResult ());
         }
@@ -16731,15 +17286,93 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             if (check.hasContourPen && changed.railing.contourPen != element.railing.contourPen) {
                 notApplied += GS::UniString::Printf (" contourPen is %d.", static_cast<int> (changed.railing.contourPen));
             }
-            if (check.hasHeight) {
+            if (check.hasHeight || !check.segmentChanges.IsEmpty () || !check.nodeChanges.IsEmpty ()) {
+                // The value each segment and node must have now; the last change given for one wins.
+                std::map<UInt32, double> expectedHeights;
+                std::map<UInt32, double> expectedLateralOffsets;
+                std::map<UInt32, API_RailingRefLineLocationID> expectedLocations;
+                if (check.hasHeight) {
+                    for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
+                        expectedHeights[i] = check.height;
+                    }
+                }
+                for (const RailingSegmentChange& change : check.segmentChanges) {
+                    if (change.height.HasValue ()) {
+                        expectedHeights[change.index] = change.height.Get ();
+                    }
+                    if (change.lateralOffset.HasValue ()) {
+                        expectedLateralOffsets[change.index] = change.lateralOffset.Get ();
+                    }
+                    if (change.referenceLineLocation.HasValue ()) {
+                        expectedLocations[change.index] = change.referenceLineLocation.Get ();
+                    }
+                }
+                std::map<UInt32, double> expectedPostOffsets;
+                std::map<UInt32, double> expectedElevations;
+                std::map<UInt32, bool> expectedUnifyPatterns;
+                for (const RailingNodeChange& change : check.nodeChanges) {
+                    if (change.postOffset.HasValue ()) {
+                        expectedPostOffsets[change.index] = change.postOffset.Get ();
+                    }
+                    if (change.elevation.HasValue ()) {
+                        expectedElevations[change.index] = change.elevation.Get ();
+                    }
+                    if (change.unifyPatterns.HasValue ()) {
+                        expectedUnifyPatterns[change.index] = change.unifyPatterns.Get ();
+                    }
+                }
+
                 API_ElementMemo memo = {};
                 const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-                if (ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment) == NoError && memo.railingSegments != nullptr) {
-                    for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
-                        if (std::abs (memo.railingSegments[i].height - check.height) > tolerance) {
-                            notApplied += GS::UniString::Printf (" The height of segment %u is %.4f.", i, memo.railingSegments[i].height);
-                            break;
-                        }
+                err = ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment | APIMemoMask_RailingNode);
+                if (err != NoError) {
+                    results[check.resultIndex] = CreateFailedExecutionResult (err, "Failed to read the segments and nodes of the railing back after the change.");
+                    continue;
+                }
+                const auto hasSegment = [&] (UInt32 index) { return memo.railingSegments != nullptr && index < changed.railing.nSegments; };
+                const auto hasNode = [&] (UInt32 index) { return memo.railingNodes != nullptr && index < changed.railing.nNodes; };
+                for (const auto& expected : expectedHeights) {
+                    if (!hasSegment (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingSegments[expected.first].height - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The height of segment %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingSegments[expected.first].height);
+                    }
+                }
+                for (const auto& expected : expectedLateralOffsets) {
+                    if (!hasSegment (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingSegments[expected.first].yOffset - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The lateral offset of segment %u is %.4f%s.", static_cast<unsigned> (expected.first), memo.railingSegments[expected.first].yOffset,
+                            memo.railingSegments[expected.first].refLineLocation == APIRLL_Center ? " (Archicad only offsets a segment whose referenceLineLocation is Left or Right)" : "");
+                    }
+                }
+                for (const auto& expected : expectedLocations) {
+                    if (!hasSegment (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (memo.railingSegments[expected.first].refLineLocation != expected.second) {
+                        const API_RailingRefLineLocationID got = memo.railingSegments[expected.first].refLineLocation;
+                        notApplied += GS::UniString::Printf (" The referenceLineLocation of segment %u is %s.", static_cast<unsigned> (expected.first), got == APIRLL_Left ? "Left" : (got == APIRLL_Right ? "Right" : "Center"));
+                    }
+                }
+                for (const auto& expected : expectedPostOffsets) {
+                    if (!hasNode (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingNodes[expected.first].postOffset - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The post offset of node %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].postOffset);
+                    }
+                }
+                for (const auto& expected : expectedElevations) {
+                    if (!hasNode (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingNodes[expected.first].elevation - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The elevation of node %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].elevation);
+                    }
+                }
+                for (const auto& expected : expectedUnifyPatterns) {
+                    if (!hasNode (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (memo.railingNodes[expected.first].unifyPatterns != expected.second) {
+                        notApplied += GS::UniString::Printf (" unifyPatterns of node %u is %s.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].unifyPatterns ? "true" : "false");
                     }
                 }
             }
