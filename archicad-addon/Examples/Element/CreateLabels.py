@@ -1,6 +1,7 @@
 """Labels the first wall with a text label with CreateLabels.
 
 Needs at least one Wall. Without parentElementId the label stands on its own at begCoordinate.
+textWay sets the text direction: Parallel, Horizontal, Vertical or General (a custom angle).
 """
 import aclib
 
@@ -11,5 +12,6 @@ if not walls:
 aclib.PrintJson (aclib.RunTapirCommand ('CreateLabels', {'labelsData': [{
     'parentElementId': walls[0]['elementId'],
     'labelClass': 'Text',
-    'text': 'Exterior wall'
+    'text': 'Exterior wall',
+    'textWay': 'Horizontal'
 }]}))

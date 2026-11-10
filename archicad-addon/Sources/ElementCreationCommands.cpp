@@ -3562,7 +3562,11 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
                         },
                         "style": { "$ref": "#/TextStyleSettableDetails" },
                         "symbolStyle": { "$ref": "#/LabelSymbolStyleSettableDetails" },
-                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" }
+                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" },
+                        "textWay": {
+                            "$ref": "#/LabelTextDirection",
+                            "description": "The new text direction, for a Text or a Symbol label. Refused together with symbolStyle.textWay."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3650,6 +3654,12 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                     executionResults (CreateFailedExecutionResult (*leaderLineErr));
                     continue;
                 }
+            }
+
+            auto textWayErr = TextLabelDetails::ApplyLabelTextWay (item, element.label, &mask);
+            if (textWayErr.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (*textWayErr));
+                continue;
             }
 
             API_ElementMemo memo = {};
@@ -4890,6 +4900,10 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     "leaderLine": {
                         "$ref": "#/LabelLeaderLineSettableDetails"
                     },
+                    "textWay": {
+                        "$ref": "#/LabelTextDirection",
+                        "description": "Optional text direction, for a Text or a Symbol label; when omitted the Label tool default (or the favorite) is kept. Refused together with symbolStyle.textWay."
+                    },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
                         "description": "The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided. Unless midCoordinate and endCoordinate are both given too, the label is created at its default position relative to the parent element (Archicad's 'createAtDefaultPosition'), so the label may not end up at begCoordinate - read it back with GetDetailsOfElements after creation."
@@ -5979,6 +5993,32 @@ GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::Ob
     return {};
 }
 
+// API_LabelType::textWay is one field of the label, documented "for textual labels", and the
+// Symbol label settings have the same direction choice, which symbolStyle.textWay has always
+// written. The label-level "textWay" writes it for either class (#2666). Of API_DirID, labels take
+// only Parallel, Horizontal, Vertical and General (APIdefs_Elements.h, AC25 to AC30); General is the
+// custom angle, which a Text label takes from style.angle.
+void AddLabelTextWay (GS::ObjectState& os, const API_LabelType& label)
+{
+    os.Add ("textWay", LabelTextWayToString (label.textWay));
+}
+
+GS::Optional<GS::ObjectState> ApplyLabelTextWay (const GS::ObjectState& item, API_LabelType& label, API_Element* mask)
+{
+    GS::UniString textWay;
+    if (!item.Get ("textWay", textWay)) {
+        return {};
+    }
+    const GS::ObjectState* symbolStyleOS = item.Get ("symbolStyle");
+    GS::UniString symbolTextWay;
+    if (symbolStyleOS != nullptr && symbolStyleOS->Get ("textWay", symbolTextWay)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give textWay either on the label or in symbolStyle, not in both.");
+    }
+    label.textWay = StringToLabelTextWay (textWay);
+    if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, textWay);
+    return {};
+}
+
 } // namespace TextLabelDetails
 
 // For a Slab, ACAPI_Element_CalcBounds goes through Archicad's 2D bound calculation, which
@@ -6106,6 +6146,11 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         if (leaderLineErr.HasValue ()) {
             return leaderLineErr;
         }
+    }
+
+    auto textWayErr = TextLabelDetails::ApplyLabelTextWay (parameters, element.label, nullptr);
+    if (textWayErr.HasValue ()) {
+        return textWayErr;
     }
 
     if (element.label.labelClass == APILblClass_Text) {

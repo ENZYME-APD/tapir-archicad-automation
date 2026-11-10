@@ -125,6 +125,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> has <code>isAutoOnStoryVisibility</code> and <code>visibility</code> (<code>APIdefs_Elements.h</code>, AC27 and AC29), but Archicad 29 keeps <code>isAutoOnStoryVisibility</code> true after <code>ACAPI_Element_Change</code> (with and without the railing&rsquo;s memo) and <code>ACAPI_Element_ChangeParameters</code>, and then ignores <code>visibility</code>. Archicad 30 is untested.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set a label&rsquo;s optimised position, &ldquo;use text pen as uniform pen&rdquo; of a symbol label, or a perpendicular text direction</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Set the text direction (parallel, horizontal, vertical or a custom angle) with textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> and <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. When the symbol label&rsquo;s library part has a parameter for the other two, set it with <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; otherwise set them in the Label tool settings or a favorite, and create the labels with favoriteName.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_LabelType</code> has no field for an optimised position or a uniform pen (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). Its <code>textWay</code> is documented for labels with only <code>APIDir_Parallel</code>, <code>APIDir_Horizontal</code>, <code>APIDir_Vertical</code> and <code>APIDir_General</code>, not <code>APIDir_Perpendicular</code>.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2666">#2666</a></td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
                         <tr>

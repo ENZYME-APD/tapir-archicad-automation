@@ -358,4 +358,10 @@ void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label
 // Returns an error response for a fontName no loaded font has.
 GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
 
+// Adds "textWay", the label's text direction (API_LabelType::textWay), for either label class.
+void AddLabelTextWay (GS::ObjectState& os, const API_LabelType& label);
+// Applies the label-level "textWay" of a CreateLabels/ModifyLabels item, for either label class.
+// Returns an error response when symbolStyle carries a textWay too.
+GS::Optional<GS::ObjectState> ApplyLabelTextWay (const GS::ObjectState& item, API_LabelType& label, API_Element* mask);
+
 }
