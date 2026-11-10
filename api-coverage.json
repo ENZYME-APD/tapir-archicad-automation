@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 06:48 UTC",
+ "generatedAt": "2026-11-10 10:23 UTC",
  "versions": [
   25,
   26,
@@ -12057,12 +12057,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2397,
-     "title": "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38192,10 +38187,6 @@
     {
      "number": 2400,
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
-    },
-    {
-     "number": 2397,
-     "title": "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)"
     }
    ],
    "issues": []
