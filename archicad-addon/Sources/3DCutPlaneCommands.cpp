@@ -50,7 +50,7 @@ GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetInputParametersSchema () c
     "properties": {
         "cutPlanes": {
             "type": "array",
-            "description": "The cut planes, replacing the current ones. Each cuts away the side of its plane that its normal vector (pa, pb, pc) points to; several planes cut away the union of those sides. Setting planes also turns 3D Cutaway on (off and on again when it is on), which puts them in force in the 3D window. An empty array switches the 3D cut and 3D Cutaway off. A plane without cutPen or cutSurfaceId keeps those of the current plane in its place, or of the last current plane, or else takes customPen and customSurfaceId.",
+            "description": "The cut planes, replacing the current ones. Each cuts away the side of its plane that its normal vector (pa, pb, pc) points to; several planes cut away the union of those sides. Setting planes also turns 3D Cutaway on (off and on again when it is on), which puts them in force in the 3D window. An empty array switches the 3D cut off. A plane without cutPen or cutSurfaceId keeps those of the current plane in its place, or of the last current plane, or else takes customPen and customSurfaceId.",
             "items": {
                 "$ref": "#/CutPlane"
             }
@@ -184,9 +184,12 @@ GS::ObjectState Set3DCutPlanesCommand::Execute (const GS::ObjectState& parameter
     }
 
     // The 3D window keeps cutting with the planes in force when 3D Cutaway was last turned on, so it is
-    // turned off and on again to put the new planes in force; with no planes it stays off.
+    // turned off and on again to put the new planes in force. Switching the cut off needs no toggle.
+    if (cutPlanes.IsEmpty ()) {
+        return CreateSuccessfulExecutionResult ();
+    }
     GSErrCode cutawayErr = Set3DCutawayEnabled (false);
-    if (cutawayErr == NoError && !cutPlanes.IsEmpty ()) {
+    if (cutawayErr == NoError) {
         cutawayErr = Set3DCutawayEnabled (true);
     }
     if (cutawayErr != NoError && cutawayErr != APIERR_NOTSUPPORTED) {

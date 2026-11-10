@@ -104,15 +104,7 @@
       "params": {},
       "expect": [
         { "path": "isCutPlanes", "eq": false, "name": "cut off" }
-      ]
-    },
-    {
-      "id": "3D Cutaway is off",
-      "command": "Get3DCutawayStatus",
-      "creates": false,
-      "params": {},
-      "expect": [
-        { "path": "cutawayEnabled", "eq": false }
+
       ]
     }
   ],
