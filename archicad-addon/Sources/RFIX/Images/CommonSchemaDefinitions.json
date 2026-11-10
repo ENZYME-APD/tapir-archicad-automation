@@ -9738,7 +9738,7 @@
             },
             "renovationFilterName": {
                 "type": "string",
-                "description": "Name of the renovation filter applied to the view. Read-only (GetViewSettings): present together with renovationFilterGuid when the name could be resolved; set the filter via renovationFilterGuid."
+                "description": "Name of the renovation filter applied to the view (GetRenovationFilters lists them). GetViewSettings returns it together with renovationFilterGuid when the name could be resolved. SetViewSettings sets the filter by this name (an exact match first, else a case-insensitive one); a name the project has no filter for, or one that names another filter than a renovationFilterGuid given with it, fails the item and nothing of it is written."
             },
             "d3styleName": {
                 "type": "string",
