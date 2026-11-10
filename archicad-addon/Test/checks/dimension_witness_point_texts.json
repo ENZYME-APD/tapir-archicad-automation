@@ -1,0 +1,151 @@
+{
+  "title": "Linear dimensions: custom text, superscript and text position per witness point, written by ModifyAssociativeDimensions and read back by GetDimensionData (#2663 part 4)",
+  "minTapir": "2.0.1",
+  "minArchicad": "26",
+  "steps": [
+    {
+      "id": "linear dimension with four witness points",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 840.0, "y": 839.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 840.0, "y": 840.0 } },
+              { "coordinate": { "x": 843.0, "y": 840.0 } },
+              { "coordinate": { "x": 847.0, "y": 840.0 } },
+              { "coordinate": { "x": 849.0, "y": 840.0 } }
+            ],
+            "textHeight": 2.5
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "a new dimension shows the measured values",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints", "len": 4, "name": "four witness points" },
+        { "path": "dimensionsData[0].witnessPoints[1].content", "eq": "MeasuredValue", "name": "second shows the measured value" },
+        { "path": "dimensionsData[0].witnessPoints[2].content", "eq": "MeasuredValue", "name": "third shows the measured value" },
+        { "path": "dimensionsData[0].witnessPoints[1].customText", "exists": true, "name": "customText returned" },
+        { "path": "dimensionsData[0].witnessPoints[1].superscript", "exists": true, "name": "superscript returned" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "exists": true, "name": "textPositionFixed returned" }
+      ]
+    },
+    {
+      "id": "custom texts, superscript and a reset position",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "witnessPointTexts": [
+              { "index": 1, "customText": "Tapir A" },
+              { "index": 2, "content": "CustomText", "customText": "{MeasuredValue} ok", "superscript": true },
+              { "index": 3, "resetTextPosition": true }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "texts accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "the texts read back",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints", "len": 4, "name": "witness points kept" },
+        { "path": "dimensionsData[0].witnessPoints[1].content", "eq": "CustomText", "name": "customText alone switches to the custom text" },
+        { "path": "dimensionsData[0].witnessPoints[1].customText", "eq": "Tapir A", "name": "second point's custom text" },
+        { "path": "dimensionsData[0].witnessPoints[2].content", "eq": "CustomText", "name": "third shows its custom text" },
+        { "path": "dimensionsData[0].witnessPoints[2].customText", "eq": "{MeasuredValue} ok", "name": "measured value placeholder round-trips" },
+        { "path": "dimensionsData[0].witnessPoints[2].superscript", "eq": true, "name": "third is superscript" },
+        { "path": "dimensionsData[0].witnessPoints[1].superscript", "eq": false, "name": "second not superscript" },
+        { "path": "dimensionsData[0].witnessPoints[3].content", "eq": "MeasuredValue", "name": "fourth still shows the measured value" },
+        { "path": "dimensionsData[0].witnessPoints[3].textPositionFixed", "eq": false, "name": "fourth at its automatic position" }
+      ]
+    },
+    {
+      "id": "back to the measured value, superscript off",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "witnessPointTexts": [
+              { "index": 1, "content": "MeasuredValue" },
+              { "index": 2, "superscript": false }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "second change accepted" }
+      ]
+    },
+    {
+      "id": "the texts after the second change",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].content", "eq": "MeasuredValue", "name": "second back to the measured value" },
+        { "path": "dimensionsData[0].witnessPoints[2].superscript", "eq": false, "name": "third no longer superscript" },
+        { "path": "dimensionsData[0].witnessPoints[2].content", "eq": "CustomText", "name": "third keeps its custom text" },
+        { "path": "dimensionsData[0].witnessPoints[2].customText", "eq": "{MeasuredValue} ok", "name": "third text unchanged" }
+      ]
+    },
+    {
+      "id": "an index past the last witness point is refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "witnessPointTexts": [ { "index": 4, "customText": "too far" } ] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "out of range index refused" }
+      ]
+    },
+    {
+      "id": "an index given twice is refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "witnessPointTexts": [ { "index": 1, "customText": "one" }, { "index": 1, "customText": "two" } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "duplicate index refused" }
+      ]
+    },
+    {
+      "id": "the refused changes changed nothing",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].content", "eq": "MeasuredValue", "name": "second still the measured value" }
+      ]
+    }
+  ]
+}

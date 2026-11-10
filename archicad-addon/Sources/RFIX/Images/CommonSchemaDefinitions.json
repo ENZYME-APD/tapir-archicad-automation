@@ -5909,6 +5909,23 @@
             "textFrame": {
                 "type": "boolean",
                 "description": "Whether the dimension text has a frame."
+            },
+            "content": {
+                "type": "string",
+                "enum": ["MeasuredValue", "CustomText"],
+                "description": "Whether the witness point shows the measured value or its custom text (API note contentType), as ModifyAssociativeDimensions' witnessPointTexts takes it."
+            },
+            "customText": {
+                "type": "string",
+                "description": "The custom text of the witness point (API note contentUStr), with {MeasuredValue} where the measured value autotext is (Archicad 26 and later). Kept, but not shown, while content is MeasuredValue."
+            },
+            "superscript": {
+                "type": "boolean",
+                "description": "Whether the text is superscript (API note effectBits, APIEffect_SuperScript)."
+            },
+            "textPositionFixed": {
+                "type": "boolean",
+                "description": "Whether the text was moved by hand from its automatic position (API note fixPos); ModifyAssociativeDimensions' resetTextPosition sets it back to false."
             }
         }
     },
