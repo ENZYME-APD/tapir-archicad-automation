@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 746 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-10 15:09 UTC.
+Updated 2026-11-10 17:50 UTC.
 
 | | Status |
 |---|---|
@@ -796,18 +796,18 @@ A parameter counts as covered when the component's code names it (a static check
 ## MEP Commands
 
 - ✅ `GetMEPElements` 🟢 2/2 parameters – `GetMEPElementsComponent`
-- ✅ `GetMEPRoutingElements` 🟢 1/1 parameters – `GetMEPRoutingElementsComponent`
+- ✅ `GetMEPRoutingElements` 🟢 1/1 parameters – `GetMEPRoutingElementsComponent` — [#2624](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2624 "MEP reads return mepSystemId as {attributeId: {guid}}, which their schema doesn't allow and Modify refuses")
 - ✅ `GetMEPPorts` 🟢 1/1 parameters – `GetMEPPortsComponent`
-- ✅ `GetMEPDistributionSystems` 🟢 1/1 parameters – `GetMEPDistributionSystemsComponent`
-- ✅ `CreateMEPRoutingElements` 🟢 1/1 parameters – `CreateMEPRoutingElementsComponent`
+- ✅ `GetMEPDistributionSystems` 🟢 1/1 parameters – `GetMEPDistributionSystemsComponent` — [#2624](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2624 "MEP reads return mepSystemId as {attributeId: {guid}}, which their schema doesn't allow and Modify refuses")
+- ✅ `CreateMEPRoutingElements` 🟢 1/1 parameters – `CreateMEPRoutingElementsComponent` — [#2624](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2624 "MEP reads return mepSystemId as {attributeId: {guid}}, which their schema doesn't allow and Modify refuses")
 - ✅ `CreateMEPElements` 🟢 1/1 parameters – `CreateMEPElementsComponent`
-- ✅ `ModifyMEPRoutingElements` 🟢 1/1 parameters – `ModifyMEPRoutingElementsComponent`
+- ✅ `ModifyMEPRoutingElements` 🟢 1/1 parameters – `ModifyMEPRoutingElementsComponent` — [#2624](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2624 "MEP reads return mepSystemId as {attributeId: {guid}}, which their schema doesn't allow and Modify refuses")
 - ✅ `ModifyMEPPorts` 🟢 1/1 parameters – `ModifyMEPPortsComponent`
 - ✅ `ConnectMEPElements` 🟢 1/1 parameters – `ConnectMEPElementsComponent`
 - ✅ `CheckMEPPortConnectability` 🟢 1/1 parameters – `CheckMEPPortConnectabilityComponent`
 - ✅ `GetMEPPreferenceTables` 🟢 2/2 parameters – `GetMEPPreferenceTablesComponent`
 - ✅ `ModifyMEPPreferenceTables` 🟡 6/7 parameters – `ModifyMEPPreferenceTablesComponent`<br><sub>no input: `anglesToAdd`</sub>
-- ✅ `GetMEPSystemGroups` 🟢 0/0 parameters – `GetMEPSystemGroupsComponent`
+- ✅ `GetMEPSystemGroups` 🟢 0/0 parameters – `GetMEPSystemGroupsComponent` — [#2624](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2624 "MEP reads return mepSystemId as {attributeId: {guid}}, which their schema doesn't allow and Modify refuses")
 - ✅ `CreateMEPSystemGroups` 🟢 1/1 parameters – `CreateMEPSystemGroupsComponent`
 - ✅ `CreateMEPPhysicalSystems` 🟢 1/1 parameters – `CreateMEPPhysicalSystemsComponent`
 - ✅ `ModifyMEPSystemGroups` 🟢 1/1 parameters – `ModifyMEPSystemGroupsComponent`

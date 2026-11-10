@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 15:09 UTC",
+ "generatedAt": "2026-11-10 17:50 UTC",
  "versions": [
   25,
   26,
@@ -2908,6 +2908,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2619,
+     "title": "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type"
+    },
+    {
      "number": 2558,
      "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
     }
@@ -5782,6 +5786,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2639,
+     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
+    },
+    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
@@ -6826,6 +6834,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2644,
+     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
+    },
+    {
+     "number": 2620,
+     "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
+    },
+    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
@@ -6898,7 +6914,12 @@
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2638,
+     "title": "ModifyCurtainWallFrames changes nothing on Archicad 29 (\"accepted the change but did not apply it\")"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeContent",
@@ -6990,7 +7011,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2639,
+     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
+    }
+   ],
    "issues": []
   },
   {
@@ -7038,6 +7064,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2639,
+     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
+    },
     {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
@@ -7111,6 +7141,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2620,
+     "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
+    },
+    {
      "number": 2537,
      "title": "ApplyFavoritesToElements: keep a stair's flight width"
     }
@@ -7136,6 +7170,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2644,
+     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
+    },
+    {
+     "number": 2617,
+     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
+    },
     {
      "number": 2555,
      "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
@@ -7436,6 +7478,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2644,
+     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
+    },
+    {
+     "number": 2620,
+     "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
+    },
+    {
+     "number": 2617,
+     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
+    },
     {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
@@ -9022,7 +9076,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2635,
+     "title": "GetElementAtCoordinate without z misses a slab whose top is above the story level"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_SetElementURLRef",
@@ -9595,7 +9654,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2641,
+     "title": "GetFavoriteSettings always answers \"folder\": [] on Archicad 29"
+    }
+   ]
   },
   {
    "id": "ACAPI_Favorite_GetNum",
@@ -10217,7 +10281,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2619,
+     "title": "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type"
+    }
+   ],
    "issues": []
   },
   {
@@ -10788,7 +10857,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2643,
+     "title": "GetMainGroups answers APIERR_BADID for every group on Archicad 29"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_GetMainGroupGuid",
@@ -10811,7 +10885,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2643,
+     "title": "GetMainGroups answers APIERR_BADID for every group on Archicad 29"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_GetRootGroup",
@@ -10834,7 +10913,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2643,
+     "title": "GetMainGroups answers APIERR_BADID for every group on Archicad 29"
+    }
+   ]
   },
   {
    "id": "ACAPI_Grouping_GetUserData",
@@ -12576,8 +12660,18 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
-   "issues": []
+   "pullRequests": [
+    {
+     "number": 2640,
+     "title": "CreateLibraryParts, CreateLibraryPartFromElements: refuse the General GDL Object as parent, use the Model Element"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2622,
+     "title": "CreateLibraryParts and CreateLibraryPartFromElements fail with General GDL Object as the parent (Archicad 29)"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetSection",
@@ -19307,7 +19401,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2618,
+     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
+    }
+   ],
    "issues": []
   },
   {
@@ -19330,7 +19429,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2616,
+     "title": "Set3DFilterAndCutSettings: keep MEP routes visible in 3D"
+    }
+   ],
    "issues": [
     {
      "number": 2614,
@@ -19634,7 +19738,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2618,
+     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
+    }
+   ],
    "issues": []
   },
   {
@@ -19657,7 +19766,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2616,
+     "title": "Set3DFilterAndCutSettings: keep MEP routes visible in 3D"
+    }
+   ],
    "issues": [
     {
      "number": 2614,
@@ -20959,7 +21073,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2618,
+     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
+    }
+   ],
    "issues": []
   },
   {
@@ -23480,7 +23599,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2618,
+     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
+    }
+   ],
    "issues": []
   },
   {
@@ -23516,7 +23640,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2618,
+     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
+    }
+   ],
    "issues": []
   },
   {
@@ -23548,7 +23677,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -23564,7 +23698,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -23729,7 +23868,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -23833,7 +23977,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -23885,7 +24034,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -24291,7 +24445,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -24308,7 +24467,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -24512,7 +24676,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2625,
+     "title": "Refuse to delete design options and sets that still hold elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -25720,6 +25889,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2644,
+     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
+    },
+    {
+     "number": 2642,
+     "title": "CreateMorphs/ModifyMorphs: place the morph at `level` above its home story"
+    },
     {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
@@ -31462,6 +31639,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2639,
+     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
+    },
+    {
+     "number": 2617,
+     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
+    },
     {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
@@ -37990,6 +38175,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2644,
+     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
+    },
+    {
+     "number": 2642,
+     "title": "CreateMorphs/ModifyMorphs: place the morph at `level` above its home story"
+    },
+    {
+     "number": 2617,
+     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
+    },
     {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
@@ -44782,6 +44979,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2639,
+     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
+    },
+    {
+     "number": 2617,
+     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
+    },
+    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
@@ -47968,6 +48173,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2639,
+     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
+    },
+    {
+     "number": 2617,
+     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
+    },
     {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 15:09 UTC",
+ "generatedAt": "2026-11-10 17:50 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -18022,7 +18022,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2624,
+     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
+    }
+   ]
   },
   {
    "id": "GetMEPPorts",
@@ -18066,7 +18071,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2624,
+     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
+    }
+   ]
   },
   {
    "id": "CreateMEPRoutingElements",
@@ -18088,7 +18098,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2624,
+     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
+    }
+   ]
   },
   {
    "id": "CreateMEPElements",
@@ -18132,7 +18147,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2624,
+     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
+    }
+   ]
   },
   {
    "id": "ModifyMEPPorts",
@@ -18270,7 +18290,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2624,
+     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
+    }
+   ]
   },
   {
    "id": "CreateMEPSystemGroups",
