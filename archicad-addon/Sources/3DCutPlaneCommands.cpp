@@ -50,7 +50,7 @@ GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetInputParametersSchema () c
     "properties": {
         "cutPlanes": {
             "type": "array",
-            "description": "The cut planes, replacing the current ones. Each cuts away the side of its plane that its normal vector (pa, pb, pc) points to; several planes cut away the union of those sides. Setting planes also turns 3D Cutaway on (off and on again when it is on), which puts them in force in the 3D window. An empty array switches the 3D cut off. A plane without cutPen or cutSurfaceId keeps those of the current plane in its place, or of the last current plane, or else takes customPen and customSurfaceId.",
+            "description": "The cut planes, replacing the current ones. Each cuts away the side of its plane that its normal vector (pa, pb, pc) points to; several planes cut away the union of those sides. Setting planes also turns 3D Cutaway on (off and on again when it is on), which puts them in force in the 3D window. An empty array switches the 3D cut off. A plane without cutPen or cutSurfaceId keeps those of the current plane in its place, or of the last current plane; where there is none, or it is pen 0 or no surface (which draws black), it takes customPen and customSurfaceId.",
             "items": {
                 "$ref": "#/CutPlane"
             }
@@ -157,8 +157,12 @@ GS::ObjectState Set3DCutPlanesCommand::Execute (const GS::ObjectState& parameter
             API_3DCutShapeType& shape = (*cutInfo.shapes)[i];
             if (!currentShapes.IsEmpty ()) {
                 shape = currentShapes[i < currentShapes.GetSize () ? i : currentShapes.GetSize () - 1];
-            } else {
+            }
+            // Pen 0 and surface 0, which planes set by earlier versions of this command have, draw black.
+            if (!IsPenIndex (shape.cutPen)) {
                 shape.cutPen = cutInfo.customPen;
+            }
+            if (GetAttributeGuidFromIndex (API_MaterialID, shape.cutMater) == APINULLGuid) {
                 shape.cutMater = cutInfo.customMater;
             }
             cutPlanes[i].Get ("pa", shape.pa);
