@@ -1,0 +1,154 @@
+{
+  "title": "ModifyPictures resizes pictures around their anchor point keeping the proportions, moves them, changes the anchor point, angle, mirrored, transparent and name, and refuses elements that are not pictures (#2659)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Picture", "Hotspot" ],
+  "steps": [
+    {
+      "id": "four pictures to modify",
+      "command": "CreatePictures",
+      "params": {
+        "picturesData": [
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "name": "CHK-PICTURE-A",
+            "position": { "x": 800.0, "y": 700.0 },
+            "anchorPoint": "BottomLeft",
+            "width": 4.0,
+            "floorInd": 0
+          },
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "name": "CHK-PICTURE-B",
+            "position": { "x": 820.0, "y": 700.0 },
+            "anchorPoint": "BottomLeft",
+            "width": 4.0,
+            "floorInd": 0
+          },
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "name": "CHK-PICTURE-C",
+            "position": { "x": 840.0, "y": 700.0 },
+            "anchorPoint": "BottomLeft",
+            "width": 4.0,
+            "floorInd": 0
+          },
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "name": "CHK-PICTURE-D",
+            "position": { "x": 860.0, "y": 700.0 },
+            "anchorPoint": "Center",
+            "width": 4.0,
+            "floorInd": 0
+          }
+        ]
+      },
+      "save": {
+        "p1": "elements[0].elementId.guid",
+        "p2": "elements[1].elementId.guid",
+        "p3": "elements[2].elementId.guid",
+        "p4": "elements[3].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 4 },
+        { "path": "elements[0].elementId.guid", "exists": true },
+        { "path": "elements[1].elementId.guid", "exists": true },
+        { "path": "elements[2].elementId.guid", "exists": true },
+        { "path": "elements[3].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "a hotspot that is not a picture",
+      "command": "CreateHotspots",
+      "params": {
+        "hotspotsData": [
+          { "position": { "x": 880.0, "y": 700.0 }, "floorInd": 0 }
+        ]
+      },
+      "save": { "h1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "modify the pictures",
+      "command": "ModifyPictures",
+      "creates": false,
+      "params": {
+        "picturesWithDetails": [
+          {
+            "elementId": { "guid": "${p1}" },
+            "width": 8.0,
+            "angle": 0.25,
+            "mirrored": true,
+            "transparent": true,
+            "name": "CHK-PICTURE-MODIFIED"
+          },
+          {
+            "elementId": { "guid": "${p2}" },
+            "position": { "x": 830.0, "y": 710.0 },
+            "anchorPoint": "Center"
+          },
+          {
+            "elementId": { "guid": "${p3}" },
+            "anchorPoint": "TopRight"
+          },
+          {
+            "elementId": { "guid": "${p4}" },
+            "height": 4.0
+          },
+          {
+            "elementId": { "guid": "${h1}" },
+            "width": 2.0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 5 },
+        { "path": "executionResults[0].success", "eq": true, "name": "size, angle, mirrored, transparent and name changed" },
+        { "path": "executionResults[1].success", "eq": true, "name": "moved by a new anchor point" },
+        { "path": "executionResults[2].success", "eq": true, "name": "anchor point changed" },
+        { "path": "executionResults[3].success", "eq": true, "name": "height changed" },
+        { "path": "executionResults[4].success", "eq": false, "name": "a hotspot is refused" }
+      ]
+    },
+    {
+      "id": "read the pictures back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${p1}" } },
+          { "elementId": { "guid": "${p2}" } },
+          { "elementId": { "guid": "${p3}" } },
+          { "elementId": { "guid": "${p4}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 8.0, "name": "width as given" },
+        { "path": "detailsOfElements[0].details.height", "approx": 4.0, "name": "height keeps the 2:1 proportions" },
+        { "path": "detailsOfElements[0].details.box.xMin", "approx": 800.0, "name": "bottom left anchor stays (x)" },
+        { "path": "detailsOfElements[0].details.box.yMin", "approx": 700.0, "name": "bottom left anchor stays (y)" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.25, "name": "angle changed" },
+        { "path": "detailsOfElements[0].details.mirrored", "eq": true, "name": "mirrored changed" },
+        { "path": "detailsOfElements[0].details.transparent", "eq": true, "name": "transparent changed" },
+        { "path": "detailsOfElements[0].details.name", "eq": "CHK-PICTURE-MODIFIED", "name": "name changed" },
+        { "path": "detailsOfElements[0].details.pixelWidth", "eq": 4, "name": "image kept" },
+        { "path": "detailsOfElements[1].details.anchorPoint", "eq": "Center" },
+        { "path": "detailsOfElements[1].details.box.xMin", "approx": 828.0, "name": "centred on the new position (xMin)" },
+        { "path": "detailsOfElements[1].details.box.yMin", "approx": 709.0, "name": "centred on the new position (yMin)" },
+        { "path": "detailsOfElements[1].details.box.xMax", "approx": 832.0, "name": "centred on the new position (xMax)" },
+        { "path": "detailsOfElements[1].details.box.yMax", "approx": 711.0, "name": "centred on the new position (yMax)" },
+        { "path": "detailsOfElements[1].details.name", "eq": "CHK-PICTURE-B", "name": "name not given, kept" },
+        { "path": "detailsOfElements[1].details.mirrored", "eq": false, "name": "mirrored not given, kept" },
+        { "path": "detailsOfElements[2].details.anchorPoint", "eq": "TopRight", "name": "anchor point changed" },
+        { "path": "detailsOfElements[2].details.box.xMin", "approx": 840.0, "name": "box stays when only the anchor point changes (xMin)" },
+        { "path": "detailsOfElements[2].details.box.yMax", "approx": 702.0, "name": "box stays when only the anchor point changes (yMax)" },
+        { "path": "detailsOfElements[3].details.width", "approx": 8.0, "name": "width keeps the 2:1 proportions" },
+        { "path": "detailsOfElements[3].details.height", "approx": 4.0, "name": "height as given" },
+        { "path": "detailsOfElements[3].details.box.xMin", "approx": 856.0, "name": "resized around the center anchor (xMin)" },
+        { "path": "detailsOfElements[3].details.box.yMin", "approx": 698.0, "name": "resized around the center anchor (yMin)" },
+        { "path": "detailsOfElements[3].details.anchorPoint", "eq": "Center" }
+      ]
+    }
+  ]
+}
