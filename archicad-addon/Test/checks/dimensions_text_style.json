@@ -1,0 +1,131 @@
+{
+  "title": "Linear dimensions: textStyle (font, bold, italic, underline, width and spacing factor) written and read back (#2663 part 2)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a loaded font",
+      "command": "GetFontsByName",
+      "creates": false,
+      "params": { "fontNames": [ "Arial" ] },
+      "save": { "fontIdx": "fonts[0].fontIndex", "fontName": "fonts[0].fontName" },
+      "expect": [
+        { "path": "fonts[0].fontIndex", "gt": 0, "name": "Arial is loaded" }
+      ]
+    },
+    {
+      "id": "linear dimension with a text style",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 840.0, "y": 839.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 840.0, "y": 840.0 } },
+              { "coordinate": { "x": 843.0, "y": 840.0 } }
+            ],
+            "textHeight": 2.5,
+            "textStyle": {
+              "fontName": "${fontName}",
+              "bold": true,
+              "italic": true,
+              "underline": false,
+              "widthFactor": 1.5,
+              "spacingFactor": 1.25
+            }
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "the text style read back by GetDetailsOfElements",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "dFont": "detailsOfElements[0].details.textStyle.fontIndex" },
+      "expect": [
+        { "expr": "${dFont} - ${fontIdx}", "eq": 0, "name": "font as created" },
+        { "path": "detailsOfElements[0].details.textStyle.bold", "eq": true, "name": "bold as created" },
+        { "path": "detailsOfElements[0].details.textStyle.italic", "eq": true, "name": "italic as created" },
+        { "path": "detailsOfElements[0].details.textStyle.underline", "eq": false, "name": "not underlined as created" },
+        { "path": "detailsOfElements[0].details.textStyle.widthFactor", "approx": 1.5, "tol": 0.0001, "name": "width factor as created" },
+        { "path": "detailsOfElements[0].details.textStyle.spacingFactor", "approx": 1.25, "tol": 0.0001, "name": "spacing factor as created" }
+      ]
+    },
+    {
+      "id": "the text style of every witness point in GetDimensionData",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "p0Font": "dimensionsData[0].witnessPoints[0].textStyle.fontIndex", "p1Font": "dimensionsData[0].witnessPoints[1].textStyle.fontIndex" },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints", "len": 2, "name": "two witness points" },
+        { "expr": "${p0Font} - ${fontIdx}", "eq": 0, "name": "first point's font" },
+        { "expr": "${p1Font} - ${fontIdx}", "eq": 0, "name": "second point's font" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.bold", "eq": true, "name": "first point bold" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.italic", "eq": true, "name": "second point italic" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.widthFactor", "approx": 1.5, "tol": 0.0001, "name": "first point's width factor" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.spacingFactor", "approx": 1.25, "tol": 0.0001, "name": "second point's spacing factor" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions changes part of the style",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "textStyle": { "fontIndex": "${fontIdx}", "bold": false, "underline": true, "widthFactor": 0.8 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted" }
+      ]
+    },
+    {
+      "id": "the style after the change",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "afterFont": "dimensionsData[0].witnessPoints[1].textStyle.fontIndex" },
+      "expect": [
+        { "expr": "${afterFont} - ${fontIdx}", "eq": 0, "name": "font kept" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.bold", "eq": false, "name": "bold off" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.underline", "eq": true, "name": "underlined" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.italic", "eq": true, "name": "italic not given, so kept" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.widthFactor", "approx": 0.8, "tol": 0.0001, "name": "new width factor" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.spacingFactor", "approx": 1.25, "tol": 0.0001, "name": "spacing factor not given, so kept" },
+        { "path": "dimensionsData[0].witnessPoints[0].textHeight", "approx": 2.5, "tol": 0.0001, "name": "text height kept" },
+        { "path": "dimensionsData[0].witnessPoints", "len": 2, "name": "witness points kept" }
+      ]
+    },
+    {
+      "id": "a font that is not loaded is refused",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 840.0, "y": 844.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 840.0, "y": 845.0 } },
+              { "coordinate": { "x": 842.0, "y": 845.0 } }
+            ],
+            "textStyle": { "fontName": "No Such Font Tapir 2663" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "error item for the unknown font" }
+      ]
+    }
+  ]
+}
