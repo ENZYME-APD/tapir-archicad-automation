@@ -11673,6 +11673,15 @@
             },
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
+            },
+            "polygonDisplay": {
+                "$ref": "#/ZonePolygonDisplay"
+            },
+            "stampPen": {
+                "$ref": "#/ZoneStampPen"
+            },
+            "reducePercent": {
+                "$ref": "#/ZoneReducePercent"
             }
         },
         "additionalProperties": false,
@@ -11690,7 +11699,10 @@
             "relativeTopStory",
             "floorThickness",
             "contourLine",
-            "coverFill"
+            "coverFill",
+            "polygonDisplay",
+            "stampPen",
+            "reducePercent"
         ]
     },
     "RailingDetails": {
@@ -14809,6 +14821,15 @@
             },
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
+            },
+            "polygonDisplay": {
+                "$ref": "#/ZonePolygonDisplay"
+            },
+            "stampPen": {
+                "$ref": "#/ZoneStampPen"
+            },
+            "reducePercent": {
+                "$ref": "#/ZoneReducePercent"
             }
         },
         "additionalProperties": false,
@@ -14863,6 +14884,38 @@
         },
         "additionalProperties": false,
         "required": []
+    },
+    "ZonePolygonDisplay": {
+        "type": "string",
+        "description": "The zone polygon display of the Zone settings: Gross uses the reference line of the bounding walls, Net their inner edges. Archicad only uses it for a zone whose boundary is the reference line of the walls; for other zones it is stored but has no effect.",
+        "enum": [
+            "Gross",
+            "Net"
+        ]
+    },
+    "ZoneStampPen": {
+        "type": "object",
+        "description": "The pen of the zone stamp. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "uniform": {
+                "type": "boolean",
+                "description": "Uniform stamp pen: true draws the whole stamp with pen, false uses the pens defined in the zone stamp (category) library part."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the zone stamp. Only used when uniform is true.",
+                "minimum": 1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneReducePercent": {
+        "type": "number",
+        "description": "Reduces the calculated area of the zone by this percentage (\"reduce area by %\" of the Zone settings). 0 means no reduction.",
+        "minimum": 0.0,
+        "maximum": 100.0
     },
     "LineSettings": {
         "type": "object",

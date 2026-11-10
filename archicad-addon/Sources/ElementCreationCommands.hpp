@@ -86,6 +86,8 @@ public:
 // with a mask, marks them in it; it returns an error message for an unknown attribute id.
 void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& details);
 GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
+void AddZoneDisplayStampPenAndReduction (const API_ZoneType& zone, GS::ObjectState& details);
+GS::Optional<GS::UniString> ApplyZoneDisplayStampPenAndReduction (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
 
 class CreatePolylinesCommand : public CreateElementsCommandBase
 {

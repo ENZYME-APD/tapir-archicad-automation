@@ -811,6 +811,72 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     return {};
 }
 
+// The zone polygon display (gross or net, show_found_poly), the uniform stamp pen
+// (useStampPens and pen) and the area reduction (reducePercent) of a zone (#2631).
+// show_found_poly true uses the reference line of the bounding walls (gross), false
+// their inner edges (net); Archicad only uses it for zones whose boundary is the walls'
+// reference line (refLineFlag).
+void AddZoneDisplayStampPenAndReduction (const API_ZoneType& zone, GS::ObjectState& details)
+{
+    details.Add ("polygonDisplay", GS::UniString (zone.show_found_poly ? "Gross" : "Net"));
+
+    GS::ObjectState stampPen;
+    stampPen.Add ("uniform", !zone.useStampPens);
+    stampPen.Add ("pen", static_cast<Int32> (zone.pen));
+    details.Add ("stampPen", stampPen);
+
+    details.Add ("reducePercent", zone.reducePercent);
+}
+
+GS::Optional<GS::UniString> ApplyZoneDisplayStampPenAndReduction (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    // Everything is checked before anything is changed; SetDetailsOfElements does not hold
+    // typeSpecificDetails to the ranges and enums of the schema.
+    GS::UniString polygonDisplay;
+    const bool hasPolygonDisplay = details.Get ("polygonDisplay", polygonDisplay);
+    if (hasPolygonDisplay && polygonDisplay != "Gross" && polygonDisplay != "Net") {
+        return GS::UniString ("polygonDisplay must be \"Gross\" or \"Net\".");
+    }
+
+    GS::ObjectState stampPen;
+    const bool hasStampPen = details.Get ("stampPen", stampPen);
+    Int32 pen = 0;
+    const bool hasPen = hasStampPen && stampPen.Get ("pen", pen);
+    if (hasPen && (pen < 1 || pen > 255)) {
+        return GS::UniString ("stampPen.pen must be between 1 and 255.");
+    }
+
+    double reducePercent = 0.0;
+    const bool hasReducePercent = details.Get ("reducePercent", reducePercent);
+    if (hasReducePercent && (reducePercent < 0.0 || reducePercent > 100.0)) {
+        return GS::UniString ("reducePercent must be between 0 and 100.");
+    }
+
+    if (hasPolygonDisplay) {
+        zone.show_found_poly = (polygonDisplay == "Gross");
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, show_found_poly);
+    }
+
+    if (hasStampPen) {
+        bool uniform = false;
+        if (stampPen.Get ("uniform", uniform)) {
+            zone.useStampPens = !uniform;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, useStampPens);
+        }
+        if (hasPen) {
+            zone.pen = static_cast<short> (pen);
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, pen);
+        }
+    }
+
+    if (hasReducePercent) {
+        zone.reducePercent = reducePercent;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, reducePercent);
+    }
+
+    return {};
+}
+
 // --- Zone overlap pre-check (#822) -------------------------------------------------
 //
 // Archicad answers ACAPI_Element_Create of a Zone whose area overlaps another Zone on
@@ -1256,6 +1322,11 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
     }
 
+    const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (details, element.zone, &mask);
+    if (displayError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *displayError);
+    }
+
     return ApplyZoneLevels (details, element.zone, &mask);
 }
 
@@ -1436,6 +1507,18 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/ZoneCoverFill",
                         "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
                     },
+                    "polygonDisplay": {
+                        "$ref": "#/ZonePolygonDisplay",
+                        "description": "Optional zone polygon display: Gross uses the reference line of the bounding walls, Net their inner edges. Only has an effect for a zone whose boundary is the reference line of the walls. When omitted, the value of the favorite or of the Zone tool defaults is kept."
+                    },
+                    "stampPen": {
+                        "$ref": "#/ZoneStampPen",
+                        "description": "Optional pen of the zone stamp. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
+                    "reducePercent": {
+                        "$ref": "#/ZoneReducePercent",
+                        "description": "Optional percentage the calculated area of the zone is reduced by; 0 means no reduction. When omitted, the value of the favorite or of the Zone tool defaults is kept."
+                    },
                     "allowOverlap": {
                         "type": "boolean",
                         "description" : "Optional, defaults to false. Archicad answers a new zone whose area overlaps an existing zone on the same story with a modal warning dialog that blocks the API until it is dismissed, so by default such an item fails with an error naming the overlapping zone and no element is created for it. Set it to true to skip this check and create the zone anyway; the dialog may then appear. Zones that only touch (a shared edge or corner) do not overlap; curved edges are checked by their chords, and an automatic zone counts as overlapping when its referencePosition lies inside an existing zone."
@@ -1516,6 +1599,11 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (parameters, element.zone, nullptr);
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
+
+    const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (parameters, element.zone, nullptr);
+    if (displayError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *displayError);
     }
 
     // Filled for a manual zone; the overlap pre-check at the end compares it with the
@@ -1652,7 +1740,10 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
-                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." }
+                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
+                        "polygonDisplay": { "$ref": "#/ZonePolygonDisplay" },
+                        "stampPen": { "$ref": "#/ZoneStampPen", "description": "Pen of the zone stamp. Only the given fields are changed." },
+                        "reducePercent": { "$ref": "#/ZoneReducePercent" }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
