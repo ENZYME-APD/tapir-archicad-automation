@@ -127,7 +127,12 @@ jobs:
           # and signs with. The one exception is the bot's own new Archicad
           # version pull request (archicad_devkit_update.yml), which may only
           # append entries to it - see devkits_appended below.
-          PROTECTED='^\.github/|^archicad-addon/Tools/|^archicad-addon/Installer/|^tools/|^archicad-addon/devkits\.json$|CMakeLists\.txt$|\.cmake$|\.csproj$'
+          #
+          # The files that steer the bots are in it too: CLAUDE.md, AGENTS.md,
+          # SKILL.md and .claude/ are read as instructions by every Claude run,
+          # so a change to them is a change to the rules the bots follow, and
+          # AUTOMATION_SECURITY.md is the rulebook those rules come from.
+          PROTECTED='^\.github/|^archicad-addon/Tools/|^archicad-addon/Installer/|^tools/|^archicad-addon/devkits\.json$|CMakeLists\.txt$|\.cmake$|\.csproj$|(^|/)CLAUDE\.md$|(^|/)AGENTS\.md$|(^|/)SKILL\.md$|^\.claude/|^AUTOMATION_SECURITY\.md$'
 
           # True when the head's devkits.json is main's with new Archicad
           # versions appended and nothing else changed: the same entries in the

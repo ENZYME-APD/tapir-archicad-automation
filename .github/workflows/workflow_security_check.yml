@@ -1,0 +1,35 @@
+name: Workflow Security Check
+
+# Runs tools/check_workflow_security.py (the mechanical rules of
+# AUTOMATION_SECURITY.md) and its tests on every pull request that changes a
+# workflow or the checker. No secrets, a read-only token, no model. A pull request
+# that weakens the checker or its baseline changes tools/, which only a person merges.
+
+on:
+  pull_request:
+    paths:
+      - '.github/**'
+      - 'tools/check_workflow_security.py'
+      - 'tools/test_check_workflow_security.py'
+      - 'tools/workflow_security_baseline.json'
+      - 'AUTOMATION_SECURITY.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - run: python tools/check_workflow_security.py
+      - run: python tools/test_check_workflow_security.py
+        working-directory: tools

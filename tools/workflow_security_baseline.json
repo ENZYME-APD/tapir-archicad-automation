@@ -1,0 +1,26 @@
+{
+  "allowed": [
+    "4|archicad_addon.yml:build_installer_mac",
+    "4|archicad_addon.yml:build_mac",
+    "4|archicad_addon.yml:build_win",
+    "4|archicad_addon.yml:devkits",
+    "4|archicad_addon_build_check.yml:build_mac",
+    "4|archicad_addon_build_check.yml:build_win",
+    "4|archicad_addon_build_check.yml:changes",
+    "4|archicad_addon_build_check.yml:devkits",
+    "4|archicad_addon_build_check.yml:generate_docs",
+    "4|grasshopper_plugin.yml:build",
+    "4|grasshopper_plugin_build_check.yml:build",
+    "4|installer_build_check.yml:build_installer",
+    "4|installer_build_check.yml:changes",
+    "5|archicad_addon.yml|ncipollo/release-action@v1",
+    "5|claude_bot_pr_steward.yml|anthropics/claude-code-action@v1",
+    "5|claude_issue_triage.yml|anthropics/claude-code-action@v1",
+    "5|claude_pr_review.yml|anthropics/claude-code-action@v1",
+    "5|grasshopper_plugin.yml|microsoft/setup-msbuild@v2",
+    "5|grasshopper_plugin.yml|nuget/setup-nuget@v2",
+    "5|grasshopper_plugin.yml|paramdigma/setup-yak@1.0.0",
+    "5|grasshopper_plugin_build_check.yml|microsoft/setup-msbuild@v2",
+    "5|grasshopper_plugin_build_check.yml|nuget/setup-nuget@v2"
+  ]
+}
