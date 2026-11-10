@@ -141,6 +141,41 @@ static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState
     os.Add ("materialsChained", base.materialsChained);
 }
 
+// The custom surface of each edge of a Shell (#2433): the edges of its profile at the begin and
+// at the end, and the two edges along the surface from the first and the last profile point. Each
+// is an API_ContourEdgeData of the shell class's data, read into the ShellEdgeMaterials shape.
+static void AddShellEdgeMaterials (const API_ShellType& shell, GS::ObjectState& os)
+{
+    const API_ContourEdgeData* begEdge = nullptr;
+    const API_ContourEdgeData* endEdge = nullptr;
+    const API_ContourEdgeData* sideEdges = nullptr;
+    switch (shell.shellClass) {
+        case API_ExtrudedShellID:
+            begEdge = &shell.u.extrudedShell.begShapeEdgeData;
+            endEdge = &shell.u.extrudedShell.endShapeEdgeData;
+            sideEdges = shell.u.extrudedShell.extrudedEdgeDatas;
+            break;
+        case API_RevolvedShellID:
+            begEdge = &shell.u.revolvedShell.begShapeEdgeData;
+            endEdge = &shell.u.revolvedShell.endShapeEdgeData;
+            sideEdges = shell.u.revolvedShell.revolvedEdgeDatas;
+            break;
+        case API_RuledShellID:
+            begEdge = &shell.u.ruledShell.begShapeEdgeData;
+            endEdge = &shell.u.ruledShell.endShapeEdgeData;
+            sideEdges = shell.u.ruledShell.ruledEdgeDatas;
+            break;
+        default:
+            return;
+    }
+    GS::ObjectState edgeMaterials;
+    edgeMaterials.Add ("begShapeEdge", CreateOverriddenMaterialObjectState (begEdge->sideMaterial));
+    edgeMaterials.Add ("endShapeEdge", CreateOverriddenMaterialObjectState (endEdge->sideMaterial));
+    edgeMaterials.Add ("begSideEdge", CreateOverriddenMaterialObjectState (sideEdges[0].sideMaterial));
+    edgeMaterials.Add ("endSideEdge", CreateOverriddenMaterialObjectState (sideEdges[1].sideMaterial));
+    os.Add ("edgeMaterials", edgeMaterials);
+}
+
 static GS::UniString ShellBaseCutBodyTypeToString (API_ShellBaseCutBodyTypeID cutBodyType)
 {
     switch (cutBodyType) {
@@ -3302,6 +3337,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // The surfaces, as the roof's: top and bottom are the two faces of the
                 // shell, side its edges (#2433). ModifyShells writes them.
                 AddShellBaseSurfaces (base, typeSpecificDetails);
+                AddShellEdgeMaterials (elem.shell, typeSpecificDetails);
                 AddShellBaseFloorPlanAndSection (base, typeSpecificDetails);
                 AddShellGeometry (elem, typeSpecificDetails);
             } break;

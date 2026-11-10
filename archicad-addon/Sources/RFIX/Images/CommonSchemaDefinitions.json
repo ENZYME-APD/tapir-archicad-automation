@@ -10382,6 +10382,29 @@
             "polygonOutline"
         ]
     },
+    "ShellEdgeMaterials": {
+        "type": "object",
+        "description": "The custom surface of the edges of a shell (API_ContourEdgeData::sideMaterial of the shell class's edge data). An overridden edge shows its own surface; one that is not overridden shows the shell's side surface (sideMaterial).",
+        "properties": {
+            "begShapeEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edges of the profile at the begin of the shell: the start of the extrusion or revolution, or the first profile of a ruled shell (begShapeEdgeData)."
+            },
+            "endShapeEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edges of the profile at the end of the shell: the end of the extrusion or revolution, or the second profile of a ruled shell (endShapeEdgeData)."
+            },
+            "begSideEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edge along the shell's surface from the first point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [0])."
+            },
+            "endSideEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edge along the shell's surface from the last point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [1])."
+            }
+        },
+        "additionalProperties": false
+    },
     "ShellDetails": {
         "type": "object",
         "properties": {
@@ -10420,6 +10443,10 @@
             "materialsChained": {
                 "type": "boolean",
                 "description": "Whether the surface materials are chained. ModifyShells takes the same key."
+            },
+            "edgeMaterials": {
+                "$ref": "#/ShellEdgeMaterials",
+                "description": "The custom surface of each edge of the shell. ModifyShells takes the same key."
             },
             "displayOption": {
                 "$ref": "#/DisplayOption"
