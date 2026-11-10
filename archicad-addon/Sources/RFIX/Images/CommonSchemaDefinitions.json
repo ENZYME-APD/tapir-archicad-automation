@@ -14944,7 +14944,7 @@
     },
     "SplineSettings": {
         "type": "object",
-        "description": "Settings for modifying a Spline. Only these settings fields are modifiable - Archicad's own API does not support changing Spline geometry (coordinates/closed) via ACAPI_Element_Change.",
+        "description": "Settings for modifying a Spline. Only these settings fields are modifiable - Archicad's own API does not support changing Spline geometry (coordinates/closed) via ACAPI_Element_Change. Any other field (such as coordinates) fails the item with an error and changes nothing of it; delete the spline and create it again with CreateSplines to change its geometry.",
         "properties": {
             "roomSeparator": {
                 "type": "boolean"
