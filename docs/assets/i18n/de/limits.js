@@ -46,7 +46,11 @@
     'Add an item to a publisher set': 'Einem Publisher Set ein Element hinzufügen',
     'Add the items in Archicad\'s Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Fügen Sie die Elemente im Organizer von Archicad hinzu und veröffentlichen Sie das Set dann mit <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.',
-    'Change, rename or create a stored Model View Options combination': 'Eine gespeicherte Kombination der Model View Options ändern, umbenennen oder anlegen',
+    'Change the settings of an existing Layout Book subset (prefix, numbering style, start at, ...)':
+        'Die Einstellungen eines bestehenden Teilsets im Planbuch ändern (Präfix, Nummerierungsstil, Beginnen mit, ...)',
+    'Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.':
+        'Lesen Sie das Teilset mit <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a> aus, legen Sie mit <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> ein Teilset mit den neuen Einstellungen an und verschieben Sie die Layouts mit <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a> hinein. Das alte, leere Teilset löschen Sie in Archicad.',
+    'Change, rename or create a stored Model View Options combination':'Eine gespeicherte Kombination der Model View Options ändern, umbenennen oder anlegen',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Lesen Sie die Kombinationen mit <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; ändern Sie die Optionen des aktuellen Fensters mit <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.',
 

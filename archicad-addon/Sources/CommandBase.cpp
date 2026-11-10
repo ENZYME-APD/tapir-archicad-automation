@@ -1707,6 +1707,8 @@ GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_Database
         filterItem.itemType = API_WorksheetDrawingNavItem;
     } else if (database.typeID == APIWind_DetailID) {
         filterItem.itemType = API_DetailDrawingNavItem;
+    } else if (database.typeID == APIWind_DocumentFrom3DID) {
+        filterItem.itemType = API_DocumentFrom3DNavItem;
     } else {
         return {};
     }

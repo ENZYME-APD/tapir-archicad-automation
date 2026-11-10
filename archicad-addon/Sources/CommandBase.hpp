@@ -341,7 +341,7 @@ GS::ObjectState ExecuteForEachIdInList (
     const std::function<GS::ObjectState (const API_Guid&)>& perItem,
     bool dryRun = false);
 
-// The Project Map item of an independent worksheet or detail database, found by its database;
+// The Project Map item of an independent worksheet, detail or 3D Document database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
 

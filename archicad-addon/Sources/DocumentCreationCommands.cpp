@@ -34,7 +34,7 @@ GS::ObjectState CreateNavigatorItemsResponse (const GS::Array<GS::ObjectState>& 
     return response;
 }
 
-// The id of a new worksheet or detail database, with the navigatorItemId of its Project Map item,
+// The id of a new worksheet, detail or 3D Document database, with the navigatorItemId of its Project Map item,
 // so that the new item can be opened with ChangeWindow or placed with CreateDrawings without
 // reading the whole Project Map (#1602). Without the item only the databaseId is returned.
 GS::ObjectState CreateNewWorksheetOrDetailObjectState (const API_DatabaseInfo& dbInfo)
@@ -522,6 +522,71 @@ GS::ObjectState CreateWorksheetsCommand::Execute (const GS::ObjectState& paramet
         const GSErrCode err = ACAPI_Database_NewDatabase (&dbInfo);
         if (err != NoError) {
             databases.Push (CreateErrorResponse (err, "Failed to create worksheet database."));
+            continue;
+        }
+
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
+    }
+    return CreateDatabasesResponse (databases);
+}
+
+Create3DDocumentsCommand::Create3DDocumentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Create3DDocumentsCommand::GetName () const
+{
+    return "Create3DDocuments";
+}
+
+GS::Optional<GS::UniString> Create3DDocumentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "documentsData": {
+                "type": "array",
+                "description": "One item per new 3D Document.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string", "minLength": 1, "description": "The name of the new 3D Document." },
+                        "referenceId": { "type": "string", "minLength": 1, "description": "The reference ID of the new 3D Document." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["name", "referenceId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["documentsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> Create3DDocumentsCommand::GetRawResponseSchema () const
+{
+    return CreateDetailsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState Create3DDocumentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "documentsData", items, errorResponse)) {
+        return errorResponse;
+    }
+
+    GS::Array<GS::ObjectState> databases;
+    for (const auto& item : items) {
+        API_DatabaseInfo dbInfo = {};
+        dbInfo.typeID = APIWind_DocumentFrom3DID;
+        SetUCharProperty (&item, "name", dbInfo.name);
+        SetUCharProperty (&item, "referenceId", dbInfo.ref);
+
+        const GSErrCode err = ACAPI_Database_NewDatabase (&dbInfo);
+        if (err != NoError) {
+            databases.Push (CreateErrorResponse (err, "Failed to create 3D Document database."));
             continue;
         }
 
