@@ -87,6 +87,11 @@ public:
 void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& details);
 GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
 
+// The 3D surface of a zone (surface: surfaceId and useOnAllSides, the Model panel of the Zone
+// Settings dialog), shared the same way as the contour line and the cover fill.
+void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details);
+GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
+
 class CreatePolylinesCommand : public CreateElementsCommandBase
 {
 public:

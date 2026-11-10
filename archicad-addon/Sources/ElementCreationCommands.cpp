@@ -811,7 +811,43 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     return {};
 }
 
-// --- Zone overlap pre-check (#822) -------------------------------------------------
+void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details)
+{
+    GS::ObjectState surface;
+    surface.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, zone.material)));
+    surface.Add ("useOnAllSides", zone.oneMat);
+    details.Add ("surface", surface);
+}
+
+GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    GS::ObjectState surface;
+    if (!details.Get ("surface", surface)) {
+        return {};
+    }
+
+    // The attribute id is checked before anything is changed.
+    GS::Optional<API_AttributeIndex> surfaceIndex;
+    GS::ObjectState surfaceId;
+    if (surface.Get ("surfaceId", surfaceId)) {
+        surfaceIndex = GetAttributeIndexFromGuid (API_MaterialID, GetGuidFromObjectState (surfaceId));
+        if (*surfaceIndex == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Surface attribute was found for surface.surfaceId.");
+        }
+    }
+
+    if (surfaceIndex.HasValue ()) {
+        zone.material = *surfaceIndex;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, material);
+    }
+    if (surface.Get ("useOnAllSides", zone.oneMat) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, oneMat);
+    }
+
+    return {};
+}
+
+// --- Zone overlap pre-check (#822)-------------------------------------------------
 //
 // Archicad answers ACAPI_Element_Create of a Zone whose area overlaps another Zone on
 // the same story with a modal "overlapping zone areas" warning. A JSON command runs on
@@ -1255,6 +1291,10 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
     }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (details, element.zone, &mask);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
+    }
 
     return ApplyZoneLevels (details, element.zone, &mask);
 }
@@ -1436,6 +1476,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/ZoneCoverFill",
                         "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
                     },
+                    "surface": {
+                        "$ref": "#/ZoneSurface",
+                        "description": "Optional 3D surface of the zone (the Model panel). Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
                     "allowOverlap": {
                         "type": "boolean",
                         "description" : "Optional, defaults to false. Archicad answers a new zone whose area overlaps an existing zone on the same story with a modal warning dialog that blocks the API until it is dismissed, so by default such an item fails with an error naming the overlapping zone and no element is created for it. Set it to true to skip this check and create the zone anyway; the dialog may then appear. Zones that only touch (a shared edge or corner) do not overlap; curved edges are checked by their chords, and an automatic zone counts as overlapping when its referencePosition lies inside an existing zone."
@@ -1516,6 +1560,10 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (parameters, element.zone, nullptr);
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (parameters, element.zone, nullptr);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
     }
 
     // Filled for a manual zone; the overlap pre-check at the end compares it with the
@@ -1652,7 +1700,8 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
-                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." }
+                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
+                        "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
