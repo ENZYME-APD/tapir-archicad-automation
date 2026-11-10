@@ -730,6 +730,10 @@ void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& deta
     coverFill.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, zone.floorFillInd)));
     coverFill.Add ("foregroundPen", static_cast<Int32> (zone.floorFillPen));
     coverFill.Add ("backgroundPen", static_cast<Int32> (zone.floorFillBGPen));
+    coverFill.Add ("use3DHatching", zone.use3DHatching);
+    coverFill.Add ("useLocalOrigo", zone.useLocalOrigo);
+    coverFill.Add ("locOrigo", Create2DCoordinateObjectState (zone.locOrigo));
+    coverFill.Add ("fillAngle", zone.fillAngle);
     details.Add ("coverFill", coverFill);
 }
 
@@ -805,6 +809,23 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
         if (coverFill.Get ("backgroundPen", backgroundPen)) {
             zone.floorFillBGPen = static_cast<short> (backgroundPen);
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, floorFillBGPen);
+        }
+        if (coverFill.Get ("use3DHatching", zone.use3DHatching) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, use3DHatching);
+        }
+        if (coverFill.Get ("useLocalOrigo", zone.useLocalOrigo) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, useLocalOrigo);
+        }
+        GS::ObjectState locOrigo;
+        if (coverFill.Get ("locOrigo", locOrigo)) {
+            // SetDetailsOfElements does not check typeSpecificDetails against the schema, so a
+            // coordinate that is left out keeps its value instead of becoming 0.
+            locOrigo.Get ("x", zone.locOrigo.x);
+            locOrigo.Get ("y", zone.locOrigo.y);
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, locOrigo);
+        }
+        if (coverFill.Get ("fillAngle", zone.fillAngle) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, fillAngle);
         }
     }
 
