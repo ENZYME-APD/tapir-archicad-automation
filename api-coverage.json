@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 19:29 UTC",
+ "generatedAt": "2026-11-10 19:57 UTC",
  "versions": [
   25,
   26,
@@ -3613,6 +3613,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
+    {
      "number": 2681,
      "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     }
@@ -3686,6 +3690,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
     {
      "number": 2681,
      "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
@@ -4039,6 +4047,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2691,
+     "title": "[3/3] Add ModifyCameras"
+    },
     {
      "number": 2682,
      "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
@@ -4789,7 +4805,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -4904,7 +4925,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -6873,6 +6899,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2691,
+     "title": "[3/3] Add ModifyCameras"
+    },
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
+    {
      "number": 2686,
      "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
     },
@@ -7238,6 +7276,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2691,
+     "title": "[3/3] Add ModifyCameras"
+    },
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
+    {
      "number": 2682,
      "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
     },
@@ -7570,6 +7616,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2691,
+     "title": "[3/3] Add ModifyCameras"
+    },
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
+    {
      "number": 2682,
      "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
     },
@@ -7892,6 +7950,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2691,
+     "title": "[3/3] Add ModifyCameras"
+    },
+    {
      "number": 2682,
      "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
     },
@@ -7996,6 +8058,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2691,
+     "title": "[3/3] Add ModifyCameras"
+    },
     {
      "number": 2682,
      "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
@@ -8186,6 +8252,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
     {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
@@ -16548,12 +16618,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2497,
-     "title": "Update: save or send the project before Archicad is restarted"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16641,12 +16706,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2497,
-     "title": "Update: save or send the project before Archicad is restarted"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18968,12 +19028,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2497,
-     "title": "Update: save or send the project before Archicad is restarted"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20642,7 +20697,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2694,
+     "title": "PhotoRender: refuse a missing output folder before rendering"
+    }
+   ],
    "issues": []
   },
   {
@@ -20734,7 +20798,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2694,
+     "title": "PhotoRender: refuse a missing output folder before rendering"
+    }
+   ],
    "issues": []
   },
   {
@@ -26057,6 +26130,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2696,
+     "title": "[3/5] Linear dimensions: text placement method and marker size"
+    },
     {
      "number": 2686,
      "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
@@ -31859,6 +31936,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2696,
+     "title": "[3/5] Linear dimensions: text placement method and marker size"
+    },
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
     {
      "number": 2686,
      "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
@@ -38444,6 +38533,30 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2696,
+     "title": "[3/5] Linear dimensions: text placement method and marker size"
+    },
+    {
+     "number": 2695,
+     "title": "[3/3] Labels: text direction (textWay) for Text labels; API limits for the rest"
+    },
+    {
+     "number": 2691,
+     "title": "[3/3] Add ModifyCameras"
+    },
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
+    {
+     "number": 2689,
+     "title": "[4/5] Zones: cover fill \"use the surface's fill\" and fill orientation"
+    },
+    {
      "number": 2686,
      "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
     },
@@ -38690,10 +38803,6 @@
     {
      "number": 2506,
      "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
-    },
-    {
-     "number": 2497,
-     "title": "Update: save or send the project before Archicad is restarted"
     },
     {
      "number": 2459,
@@ -45323,6 +45432,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2696,
+     "title": "[3/5] Linear dimensions: text placement method and marker size"
+    },
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
+    {
      "number": 2686,
      "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
     },
@@ -48565,6 +48686,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
+     "number": 2696,
+     "title": "[3/5] Linear dimensions: text placement method and marker size"
+    },
+    {
+     "number": 2690,
+     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
+    },
     {
      "number": 2686,
      "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
