@@ -3109,6 +3109,28 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("penIndex", elem.hotspot.pen);
             } break;
 
+            case API_PictureID: {
+                // Read the way API_PictureType stores it: destBox is the box the picture fills in
+                // model units, origBox the image's own box, pixelSizeX/Y its size in pixels.
+                const API_PictureType& picture = elem.picture;
+                typeSpecificDetails.Add ("name", GS::UniString (picture.pictName));
+                typeSpecificDetails.Add ("mimeType", GS::UniString (picture.mime));
+                GS::ObjectState boxOS;
+                boxOS.Add ("xMin", picture.destBox.xMin);
+                boxOS.Add ("yMin", picture.destBox.yMin);
+                boxOS.Add ("xMax", picture.destBox.xMax);
+                boxOS.Add ("yMax", picture.destBox.yMax);
+                typeSpecificDetails.Add ("box", boxOS);
+                typeSpecificDetails.Add ("width", picture.destBox.xMax - picture.destBox.xMin);
+                typeSpecificDetails.Add ("height", picture.destBox.yMax - picture.destBox.yMin);
+                typeSpecificDetails.Add ("pixelWidth", static_cast<Int32> (picture.pixelSizeX));
+                typeSpecificDetails.Add ("pixelHeight", static_cast<Int32> (picture.pixelSizeY));
+                typeSpecificDetails.Add ("angle", picture.rotAngle);
+                typeSpecificDetails.Add ("mirrored", picture.mirrored);
+                typeSpecificDetails.Add ("transparent", picture.transparent);
+                typeSpecificDetails.Add ("anchorPoint", AnchorIdToString (picture.anchorPoint));
+            } break;
+
             case API_SplineID: {
                 // Spline has no poly/nCoords summary field (unlike Line/PolyLine/Hatch) - the
                 // point count is implicit in the coords memo handle's byte size. Index 0 is a
