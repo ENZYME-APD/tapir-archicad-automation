@@ -1411,6 +1411,10 @@ GSErrCode Initialize (void)
             elementCommands, "2.0.0",
             "Measures how far the given 2D coordinates are from a segment of a Spline element, between two of its fit points, with its own Bezier handles: returns the largest distance, for example to check how well a polyline follows the spline. The output is aligned with the input array. Changes nothing in the project."
         );
+        err |= RegisterCommand<GetProfileValuesOfElementsCommand> (
+            elementCommands, "2.0.1",
+            "Returns the custom profiles walls, beams and columns use, with the values the element gives them: the width and height of the stretched profile and the value of each profile modifier, measured on the stretched profile of the element (one per Profile wall, one per Profile segment of a beam or column). Read only: the Archicad API has no function that writes an element's modifier values or stretch."
+        );
         AddCommandGroup (elementCommands);
     }
 
