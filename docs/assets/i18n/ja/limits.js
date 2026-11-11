@@ -82,6 +82,11 @@
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         '<a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a> でチェックを実行します。問題が見つかると Archicad が Action Center を表示します。ホットリンクのチェックでは、<a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> で各ソースの状態を読み取れます（Archicad 27 以降）。',
 
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'プロファイルを使う壁、梁、柱のプロファイル修正値、またはストレッチされた幅と高さを設定する',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        '<a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> で読み取れます。変更するには、<a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> でプロファイルを変更する（これらの要素用のコピー、またはプロファイル自体）か、Archicad で要素の設定から設定してください。',
+
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Archicad API にできないことをほかにも見つけましたか？確認した DevKit のヘッダーを添えて issue で知らせてください。ここに追加します。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">issue を作成</a>'
 });

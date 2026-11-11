@@ -15,7 +15,8 @@ Colors the elements in the model by the value of a chosen property, with a
 legend of the values and their element counts. Text values get one color each;
 number values can also be grouped into ranges with a color gradient. Select
 values in the legend to highlight only those, double-click one to select its
-elements in Archicad.
+elements in Archicad. Classification properties are listed by the ID and name of
+their classification items, not by their GUIDs.
 """
 
 import colorsys
@@ -23,7 +24,7 @@ import re
 import tkinter as tk
 from tkinter import ttk
 
-from utilities.archicad import batched, get_elements, run_tapir, select_elements
+from utilities.archicad import batched, get_elements, run_command, run_tapir, select_elements
 from utilities.ui import ScriptWindow, make_tree, require_archicad
 
 SCRIPT_NAME = "Property Highlighter"
@@ -61,6 +62,23 @@ def gradient_color(t: float) -> tuple[int, int, int]:
     i = min(int(t), len(GRADIENT) - 2)
     f = t - i
     return tuple(round(a + (b - a) * f) for a, b in zip(GRADIENT[i], GRADIENT[i + 1]))
+
+
+_GUID = re.compile(r"\{?[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}?")
+
+
+def guid_key(text: str) -> str | None:
+    """ The GUID of a value such as a classification property's, always spelled the same way, or None. """
+    text = text.strip()
+    return text.strip("{}").upper() if _GUID.fullmatch(text) else None
+
+
+def classification_label(item: dict) -> str:
+    """ "ID Name" of a classification item, or only one of them when the other is empty or the same. """
+    item_id, name = item.get("id", "").strip(), item.get("name", "").strip()
+    if item_id and name and item_id != name:
+        return f"{item_id} {name}"
+    return item_id or name
 
 
 _NUMBER = re.compile(r"[-+−]?\d[\d.,'\s  ]*")
@@ -230,11 +248,39 @@ class PropertyHighlighter:
                         values.append(NOT_AVAILABLE)
                     else:
                         values.append(item["propertyValue"].get("value", "") or EMPTY)
+            values = self._with_classification_names(values)
 
         self.property = prop
         self.values = list(zip(elements, values))
         self.legend.selection_set(())
         self._regroup()
+
+    def _read_classification_labels(self) -> dict[str, str]:
+        """ The label of every classification item of the project, by its GUID (guid_key). """
+        self.window.set_status("Reading the classification items...")
+        labels: dict[str, str] = {}
+
+        def collect(classification_items: list[dict]) -> None:
+            for wrapper in classification_items:
+                item = wrapper.get("classificationItem", {})
+                key = guid_key(item.get("classificationItemId", {}).get("guid", ""))
+                if key:
+                    labels[key] = classification_label(item)
+                collect(item.get("children", []))
+
+        for system in run_command("GetAllClassificationSystems").get("classificationSystems", []):
+            tree = run_command("GetAllClassificationsInSystem",
+                               {"classificationSystemId": system["classificationSystemId"]})
+            collect(tree.get("classificationItems", []))
+        return labels
+
+    def _with_classification_names(self, values: list[str]) -> list[str]:
+        """ The values with the GUIDs of classification items (the values of a classification property)
+        replaced by the items' ID and name; other values, and GUIDs of no classification item, stay. """
+        if not any(guid_key(value) for value in values):
+            return values
+        labels = self._read_classification_labels()
+        return [labels.get(guid_key(value) or "", value) for value in values]
 
     def _regroup(self) -> None:
         if self.property is None:

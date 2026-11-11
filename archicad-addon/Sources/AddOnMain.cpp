@@ -1103,7 +1103,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateSlabsCommand> (
             elementCommands, "1.0.3",
             "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; "
-            "settings not given come from the Slab tool defaults or the favorite. Not written by either command: the surface of a single edge, and the cut fill pens before Archicad 27; "
+            "settings not given come from the Slab tool defaults or the favorite. The Edge Angle and the surface of single edges are written afterwards with ModifySlabs (edgeTrim, edgeTrims, edgeSideMaterials). Not written by either command: the cut fill pens before Archicad 27; "
             "of the floor fill orientation Archicad applies only the type through the API."
         );
         err |= RegisterCommand<CreateWindowsCommand> (
@@ -1292,7 +1292,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifySlabsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied."
+            "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied."
         );
         err |= RegisterCommand<ModifyColumnsCommand> (
             elementCommands, "1.4.0",
@@ -1316,7 +1316,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyRoofsCommand> (
             elementCommands, "1.4.0",
-            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story."
+            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang, pivotEdges and contourPolygon only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story."
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
@@ -1410,6 +1410,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetSplineMaxDistancesCommand> (
             elementCommands, "2.0.0",
             "Measures how far the given 2D coordinates are from a segment of a Spline element, between two of its fit points, with its own Bezier handles: returns the largest distance, for example to check how well a polyline follows the spline. The output is aligned with the input array. Changes nothing in the project."
+        );
+        err |= RegisterCommand<GetProfileValuesOfElementsCommand> (
+            elementCommands, "2.0.1",
+            "Returns the custom profiles walls, beams and columns use, with the values the element gives them: the width and height of the stretched profile and the value of each profile modifier, measured on the stretched profile of the element (one per Profile wall, one per Profile segment of a beam or column). Read only: the Archicad API has no function that writes an element's modifier values or stretch."
         );
         AddCommandGroup (elementCommands);
     }
@@ -2939,6 +2943,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetRevisionChangesOfElementsCommand> (
             issueCommands, "1.1.9",
             "Retrieves the changes belong to the given elements."
+        );
+        err |= RegisterCommand<CreateChangeMarkersCommand> (
+            issueCommands, "2.0.1",
+            "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults. GetDetailsOfElements reads the markers back."
         );
         AddCommandGroup (issueCommands);
     }

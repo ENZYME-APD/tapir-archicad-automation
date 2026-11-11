@@ -2369,6 +2369,70 @@
         },
         "additionalProperties": false
     },
+    "ElementProfileValues": {
+        "type": "object",
+        "description": "The profile values of one wall, beam or column, measured on the stretched profile the element uses: the profile after the element's own stretch and modifier values.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "profiles": {
+                "type": "array",
+                "description": "One item per custom profile of the element: one for a Profile wall, one per Profile segment of a beam or column. Empty when the element uses no custom profile.",
+                "items": {
+                    "$ref": "#/ElementProfileValue"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "profiles"
+        ]
+    },
+    "ElementProfileValue": {
+        "type": "object",
+        "description": "A custom profile as one element, or one segment of a beam or column, uses it.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "description": "The segment of the beam or column, 0-based in the order GetDetailsOfElements lists the segments. Absent for a wall."
+            },
+            "profileId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The profile attribute. Absent when it could not be resolved."
+            },
+            "width": {
+                "type": "number",
+                "description": "Width of the stretched profile (its bounding box): the element's own width where the profile stretches horizontally."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the stretched profile (its bounding box): the element's own height where the profile stretches vertically."
+            },
+            "profileModifiers": {
+                "type": "array",
+                "description": "The offset modifiers of the profile with the values this element has, measured on its stretched profile the way GetProfiles measures them on the profile attribute. Empty when the stretched profile Archicad returns carries no modifiers. A modifier whose dimension crosses a stretch zone includes the stretch.",
+                "items": {
+                    "$ref": "#/ProfileModifier"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "width",
+            "height",
+            "profileModifiers"
+        ]
+    },
+    "ElementProfileValuesOrError": {
+        "type": "object",
+        "description": "The profile values of one element, or an error.",
+        "oneOf": [
+            { "$ref": "#/ElementProfileValues" },
+            { "$ref": "#/ErrorItem" }
+        ]
+    },
     "ProfileSkin": {
         "type": "object",
         "description": "One skin (hatch) of the profile's cross-section.",
@@ -3859,6 +3923,22 @@
             "angle": {
                 "type": "number",
                 "description": "The angle of the edge cut in radians, as Archicad stores it. Only CustomAngle uses it."
+            }
+        },
+        "additionalProperties": false
+    },
+    "SlabEdgeTrim": {
+        "type": "object",
+        "description": "The Edge Angle of a slab edge (Geometry and Positioning panel of Slab Settings): vertical, or at a custom angle.",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut"],
+                "description": "Vertical (the default, perpendicular to the slab), or at 'angle' (CustomAngle). ModifySlabs writes only these two; the others are only reported, should Archicad store one on a slab."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The angle of the edge in radians, as Archicad stores it (the dialog shows it in degrees). Only CustomAngle uses it."
             }
         },
         "additionalProperties": false
@@ -10423,6 +10503,11 @@
                 "type": "number",
                 "description": "Multi-plane: the eaves overhang beyond the pivot polygon."
             },
+            "overhangType": {
+                "type": "string",
+                "enum": [ "Offset", "Manual" ],
+                "description": "Multi-plane: how the roof's contour is made (API_PolyRoofData::overHangType, the Overhang of Roof Settings). Offset: from the pivot polygon and the eaves overhangs, which ModifyRoofs' eavesOverhang sets. Manual: the contour was edited on its own (Edit Roof Contour in Archicad, or ModifyRoofs' contourPolygon), and polygonOutline is that contour."
+            },
             "levels": {
                 "type": "array",
                 "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
@@ -10439,7 +10524,7 @@
             },
             "polygonOutline": {
                 "type": "array",
-                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged.",
+                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
@@ -10721,6 +10806,20 @@
             },
             "holes": {
                 "$ref": "#/Holes2D"
+            },
+            "edgeSideMaterials": {
+                "type": "array",
+                "description": "The custom side surface of each edge of the slab's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. ModifySlabs takes the same list.",
+                "items": {
+                    "$ref": "#/OverriddenMaterial"
+                }
+            },
+            "edgeTrims": {
+                "type": "array",
+                "description": "The Edge Angle of each edge of the slab's polygon, in the order of edgeSideMaterials. Missing when the slab stores no edge trims, in which case every edge is Vertical. ModifySlabs takes the same list, or one edgeTrim for every edge.",
+                "items": {
+                    "$ref": "#/SlabEdgeTrim"
+                }
             },
             "structureType": {
                 "$ref": "#/SlabStructureType"
@@ -13389,6 +13488,77 @@
             "defaultWitnessVal"
         ]
     },
+    "ChangeMarkerComponent": {
+        "type": "string",
+        "description": "Which parts a Change Marker shows: only the marker head, only the cloud, or both.",
+        "enum": [
+            "HeadOnly",
+            "CloudOnly",
+            "HeadAndCloud"
+        ]
+    },
+    "ChangeMarkerDetails": {
+        "type": "object",
+        "description": "A Change Marker: the revision Change it is linked to, the parts it shows and its geometry.",
+        "properties": {
+            "linkType": {
+                "type": "string",
+                "enum": ["Linked", "Unlinked", "NewChange", "Unknown"],
+                "description": "Whether the marker is linked to a Change. NewChange is the value a marker is created with to make a new Change."
+            },
+            "markerComponent": {
+                "$ref": "#/ChangeMarkerComponent"
+            },
+            "changeId": {
+                "type": "string",
+                "description": "The ID of the linked Change (empty when not linked)."
+            },
+            "changeDescription": {
+                "type": "string",
+                "description": "The description (short name) of the linked Change."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point the Change Marker points to."
+            },
+            "polygon": {
+                "type": "array",
+                "description": "The outline of the cloud, with the closing point. Present only when the marker has a polygon.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "The curved edges of polygon. Present only when it has any.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "markerId": {
+                "$ref": "#/ElementId",
+                "description": "The GUID of the marker head's library part element. Present only when the marker has one."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle of the marker head in radians."
+            },
+            "horizontalMarker": {
+                "type": "boolean",
+                "description": "Whether the marker head is always horizontal."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linkType",
+            "markerComponent",
+            "changeId",
+            "changeDescription",
+            "position",
+            "angle",
+            "horizontalMarker"
+        ]
+    },
     "TextDetails": {
         "type": "object",
         "properties": {
@@ -14102,6 +14272,9 @@
             },
             {
                 "$ref": "#/DimensionDetails"
+            },
+            {
+                "$ref": "#/ChangeMarkerDetails"
             },
             {
                 "$ref": "#/StairDetails"

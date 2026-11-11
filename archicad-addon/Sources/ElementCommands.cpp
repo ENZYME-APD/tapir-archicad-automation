@@ -3,6 +3,7 @@
 #include "ElementCreationCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ExtendedElementCommands.hpp"
+#include "RevisionCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 #include "GSUnID.hpp"
@@ -81,6 +82,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("pivotLine", pivotLine);
     } else {
         os.Add ("eavesOverhang", roof.u.polyRoof.eavesOverHang);
+        os.Add ("overhangType", roof.u.polyRoof.overHangType == API_ManualOverhang ? "Manual" : "Offset");
         const auto& levels = os.AddList<GS::ObjectState> ("levels");
         for (short i = 0; i < roof.u.polyRoof.levelNum && i < 16; ++i) {
             GS::ObjectState level;
@@ -301,7 +303,7 @@ static void AddShellCutPolygonsFromMemo (const API_Element& elem, GS::ObjectStat
     }
 }
 
-// The custom side surfaces of a Roof's polygon edges (APIMemoMask_SideMaterials), one per
+// The custom side surfaces of a Roof's or Slab's polygon edges (APIMemoMask_SideMaterials), one per
 // edge in the order of polygonOutline and then of each hole: sideMaterials[i] belongs to the
 // edge from coords[i] to coords[i + 1], so index 0 and the closing vertex of each sub-polygon
 // (the pends) carry no edge, the way AddPolyToMemo (ElementCreationCommands.cpp) fills them (#1672).
@@ -339,10 +341,10 @@ static GS::UniString EdgeTrimTypeToString (API_EdgeTrimID sideType)
     }
 }
 
-// The cut of each edge of a Roof's polygon (APIMemoMask_EdgeTrims): the outline of a Single-plane
-// Roof, the contour of a Multi-plane Roof (#2435), whose memo.coords hold the contour polygon as the
-// DevKit's Plan_Dump example reads it. In the order of edgeSideMaterials: edgeTrims[i] belongs to
-// the edge from coords[i] to coords[i + 1] (#2363).
+// The cut of each edge of a Roof's or a Slab's polygon (APIMemoMask_EdgeTrims): the outline of a
+// Single-plane Roof or a Slab (#2562), the contour of a Multi-plane Roof (#2435), whose memo.coords
+// hold the contour polygon as the DevKit's Plan_Dump example reads it. In the order of
+// edgeSideMaterials: edgeTrims[i] belongs to the edge from coords[i] to coords[i + 1] (#2363).
 static void AddEdgeTrimsFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -440,13 +442,19 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 }
 
 // The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
-static GS::ObjectState CreateBeamSegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
+static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
 {
-    GS::ObjectState os;
-    os.Add ("lengthType", scheme.lengthType == APIAssemblySegment_Proportional ? "Proportional" : "Fixed");
-    os.Add ("fixedLength", scheme.fixedLength);
-    os.Add ("lengthProportion", scheme.lengthProportion);
-    return os;
+    GS::ObjectState length;
+    if (scheme.lengthType == APIAssemblySegment_Fixed) {
+        length.Add ("lengthType", "Fixed");
+    } else if (scheme.lengthType == APIAssemblySegment_Proportional) {
+        length.Add ("lengthType", "Proportional");
+    } else {
+        length.Add ("lengthType", "Unknown");
+    }
+    length.Add ("fixedLength", scheme.fixedLength);
+    length.Add ("lengthProportion", scheme.lengthProportion);
+    return length;
 }
 
 // The cross section, taper and length of a beam segment (#2551). scheme is nullptr when the beam
@@ -469,7 +477,7 @@ static GS::ObjectState CreateBeamSegmentGeometryObjectState (const API_AssemblyS
     os.Add ("endHeight", segment.endHeight);
     os.Add ("isEndWidthAndHeightLinked", segment.isEndWidthAndHeightLinked);
     if (scheme != nullptr) {
-        os.Add ("length", CreateBeamSegmentLengthObjectState (*scheme));
+        os.Add ("length", CreateAssemblySegmentLengthObjectState (*scheme));
     }
     return os;
 }
@@ -506,7 +514,7 @@ static void AddBeamSegmentIndexAndLength (const API_BeamSegmentType& beamSegment
         if (memo.beamSegments[i].head.guid == beamSegment.head.guid) {
             os.Add ("segmentIndex", static_cast<Int32> (i));
             if (i < nSchemes) {
-                os.Add ("length", CreateBeamSegmentLengthObjectState (memo.assemblySegmentSchemes[i]));
+                os.Add ("length", CreateAssemblySegmentLengthObjectState (memo.assemblySegmentSchemes[i]));
             }
             return;
         }
@@ -565,21 +573,6 @@ static GS::ObjectState CreateColumnSegmentTaperObjectState (const API_AssemblySe
     taper.Add ("endDepth", segment.endHeight);
     taper.Add ("isEndWidthAndDepthLinked", segment.isEndWidthAndHeightLinked);
     return taper;
-}
-
-static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
-{
-    GS::ObjectState length;
-    if (scheme.lengthType == APIAssemblySegment_Fixed) {
-        length.Add ("lengthType", "Fixed");
-    } else if (scheme.lengthType == APIAssemblySegment_Proportional) {
-        length.Add ("lengthType", "Proportional");
-    } else {
-        length.Add ("lengthType", "Unknown");
-    }
-    length.Add ("fixedLength", scheme.fixedLength);
-    length.Add ("lengthProportion", scheme.lengthProportion);
-    return length;
 }
 
 // The segment schemes are kept in the Column's memo, one for each segment, in the order of the segments.
@@ -2982,6 +2975,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("floorFill", floorFillOs);
                 }
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+                AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
+                AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_ZoneID:
@@ -3157,6 +3152,26 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // with GetDimensionData.
                 AddDimensionDetails (typeSpecificDetails, elem);
                 break;
+
+            case API_ChangeMarkerID: {
+                // The marker of a revision Change (#2658): the Change it is linked to, which parts it
+                // shows, and its geometry. The cloud polygon is read from the memo.
+                const API_ChangeMarkerType& changeMarker = elem.changeMarker;
+                typeSpecificDetails.Add ("linkType", ChangeMarkerLinkTypeToString (changeMarker.linkType));
+                typeSpecificDetails.Add ("markerComponent", ChangeMarkerComponentToString (changeMarker.markerComponent));
+                typeSpecificDetails.Add ("changeId", GS::UniString (changeMarker.changeId));
+                typeSpecificDetails.Add ("changeDescription", GS::UniString (changeMarker.changeName));
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (changeMarker.pos));
+                if (changeMarker.poly.nCoords > 0) {
+                    AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygon", "polygonArcs");
+                }
+                if (changeMarker.markerGuid != APINULLGuid) {
+                    typeSpecificDetails.Add ("markerId", CreateGuidObjectState (changeMarker.markerGuid));
+                }
+                typeSpecificDetails.Add ("angle", changeMarker.angle);
+                typeSpecificDetails.Add ("horizontalMarker", changeMarker.horizontalMarker);
+                break;
+            }
 
             case API_LevelDimensionID: {
                 // "level" is the value the dimension shows: the parent's height at "position"

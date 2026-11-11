@@ -3820,6 +3820,110 @@ static GS::Optional<GS::UniString> ApplyBeamSegmentsToMemo (API_ElementMemo& mem
     return {};
 }
 
+// The most segments CreateBeams' segmentCount gives a beam (#2678).
+static constexpr Int32 MaxBeamSegmentCount = 100;
+
+// CreateBeams' segmentCount (#2678): gives the new beam that many segments, so beams with different
+// cross sections can be merged into one beam whose segments keep them (segments then sets each
+// one's cross section and length). Only the layout a beam made in Archicad has is changed: one cut
+// more than segments (the two ends and the joints between the segments) and one length scheme per
+// segment, as the DevKit's Favorite_Test builds a segment memo. Any other layout of the tool defaults
+// is refused before anything is written. Added segments copy the last segment, as the DevKit's
+// Element_Test adds a column segment, with a Basic structure (a profile needs a profile memo the
+// copy does not have; segments[].geometry.profileId sets one); added joints are vertical cuts and
+// the end cut stays the end cut. When the count changes, every segment gets the same proportional
+// length unless segments[].geometry.length sets it.
+static GS::Optional<GS::UniString> SetBeamSegmentCount (API_Element& element, API_ElementMemo& memo, Int32 segmentCount)
+{
+    if (segmentCount < 1 || segmentCount > MaxBeamSegmentCount) {
+        return GS::UniString::Printf ("segmentCount must be between 1 and %d.", static_cast<int> (MaxBeamSegmentCount));
+    }
+    if (memo.beamSegments == nullptr || memo.assemblySegmentCuts == nullptr || memo.assemblySegmentSchemes == nullptr) {
+        return GS::UniString ("The Beam tool defaults have no segment, cut and length data, so segmentCount cannot be applied.");
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    const GSSize nCuts = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentCuts)) / sizeof (API_AssemblySegmentCutData);
+    const GSSize nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+    if (nSegments < 1 || nCuts != nSegments + 1 || nSchemes != nSegments ||
+        static_cast<GSSize> (element.beam.nSegments) != nSegments || static_cast<GSSize> (element.beam.nCuts) != nCuts || static_cast<GSSize> (element.beam.nSchemes) != nSchemes) {
+        return GS::UniString::Printf ("The Beam tool defaults have %d segment(s), %d cut(s) and %d length scheme(s), not one cut more than segments and one scheme per segment, so segmentCount cannot be applied.",
+            static_cast<int> (nSegments), static_cast<int> (nCuts), static_cast<int> (nSchemes));
+    }
+    if (static_cast<GSSize> (segmentCount) == nSegments) {
+        return {};
+    }
+    // A segment profile (of a Profile segment of the defaults) names its segment by index; one whose
+    // segment would be dropped is refused rather than left pointing past the last segment.
+    if (memo.assemblySegmentProfiles != nullptr) {
+        const GSSize nProfiles = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentProfiles)) / sizeof (API_AssemblySegmentProfileData);
+        for (GSSize i = 0; i < nProfiles; ++i) {
+            if (static_cast<Int32> (memo.assemblySegmentProfiles[i].segmentIndex) >= segmentCount) {
+                return GS::UniString::Printf ("Segment %d of the Beam tool defaults has a profile and would be dropped by segmentCount %d; give the defaults fewer segments or a larger segmentCount.",
+                    static_cast<int> (memo.assemblySegmentProfiles[i].segmentIndex), static_cast<int> (segmentCount));
+            }
+        }
+    }
+
+    API_BeamSegmentType* newSegments = reinterpret_cast<API_BeamSegmentType*> (BMAllocatePtr (segmentCount * sizeof (API_BeamSegmentType), ALLOCATE_CLEAR, 0));
+    API_AssemblySegmentCutData* newCuts = reinterpret_cast<API_AssemblySegmentCutData*> (BMAllocatePtr ((segmentCount + 1) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0));
+    API_AssemblySegmentSchemeData* newSchemes = reinterpret_cast<API_AssemblySegmentSchemeData*> (BMAllocatePtr (segmentCount * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0));
+    if (newSegments == nullptr || newCuts == nullptr || newSchemes == nullptr) {
+        if (newSegments != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&newSegments));
+        }
+        if (newCuts != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&newCuts));
+        }
+        if (newSchemes != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&newSchemes));
+        }
+        return GS::UniString ("Failed to allocate the beam segments.");
+    }
+
+    for (Int32 i = 0; i < segmentCount; ++i) {
+        if (static_cast<GSSize> (i) < nSegments) {
+            newSegments[i] = memo.beamSegments[i];
+        } else {
+            newSegments[i] = memo.beamSegments[nSegments - 1];
+            newSegments[i].head.guid = APINULLGuid;
+            API_AssemblySegmentData& segment = newSegments[i].assemblySegmentData;
+            if (segment.modelElemStructureType == API_ProfileStructure) {
+                segment.modelElemStructureType = API_BasicStructure;
+                segment.profileAttr = APIInvalidAttributeIndex;
+            }
+            if (segment.profileType == APISect_Poly) {
+                segment.profileType = APISect_Normal;
+            }
+        }
+        newSchemes[i].lengthType = APIAssemblySegment_Proportional;
+        newSchemes[i].fixedLength = memo.assemblySegmentSchemes[static_cast<GSSize> (i) < nSchemes ? i : nSchemes - 1].fixedLength;
+        newSchemes[i].lengthProportion = 1.0 / segmentCount;
+    }
+    // Cut 0 is the start of the beam and cut nSegments its end; the ones between are the joints.
+    newCuts[0] = memo.assemblySegmentCuts[0];
+    for (Int32 i = 1; i < segmentCount; ++i) {
+        if (static_cast<GSSize> (i) < nSegments) {
+            newCuts[i] = memo.assemblySegmentCuts[i];
+        } else {
+            newCuts[i] = memo.assemblySegmentCuts[0];
+            newCuts[i].cutType = APIAssemblySegmentCut_Vertical;
+            newCuts[i].customAngle = 0.0;
+        }
+    }
+    newCuts[segmentCount] = memo.assemblySegmentCuts[nCuts - 1];
+
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.beamSegments));
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.assemblySegmentCuts));
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.assemblySegmentSchemes));
+    memo.beamSegments = newSegments;
+    memo.assemblySegmentCuts = newCuts;
+    memo.assemblySegmentSchemes = newSchemes;
+    element.beam.nSegments = static_cast<UInt32> (segmentCount);
+    element.beam.nCuts = static_cast<UInt32> (segmentCount + 1);
+    element.beam.nSchemes = static_cast<UInt32> (segmentCount);
+    return {};
+}
+
 // Writes the segments array of ModifyBeams into an existing beam (#2551).
 static GSErrCode ApplyBeamSegmentsToBeam (const API_Guid& beamGuid, const GS::Array<GS::ObjectState>& segments, GS::UniString& errorMessage)
 {
@@ -5717,9 +5821,15 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "$ref": "#/AttributeId",
                             "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         },
+                        "segmentCount": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "Optional number of segments of the new beam, e.g. one per beam when beams with different cross sections are merged into one (segments then gives each its cross section and length). Added segments copy the last segment of the Beam tool defaults or the favorite, with a Basic structure; the joints between segments are vertical cuts. When the number changes, every segment gets the same proportional length unless segments sets its length. The beam is read back, and when Archicad did not keep the number it is deleted again and the item fails. Not taken by ModifyBeams: an existing beam keeps its number of segments."
+                        },
                         "segments": {
                             "type": "array",
-                            "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite: their cross section, taper and length. Applied after the cross section given for all segments, so a segment given here keeps its own values. Segments are not added; a segmentIndex the defaults do not have is an error and the beam is not created.",
+                            "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite, or segmentCount segments: their cross section, taper and length. Applied after segmentCount and the cross section given for all segments, so a segment given here keeps its own values. A segmentIndex the beam does not have is an error and the beam is not created.",
                             "items": {
                                 "$ref": "#/BeamSegmentModification"
                             }
@@ -5816,6 +5926,16 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
         return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
+    // segmentCount first, so the cross section given for all segments and the segments array
+    // below reach the added segments too (#2678).
+    Int32 segmentCount = 0;
+    if (parameters.Get ("segmentCount", segmentCount)) {
+        const GS::Optional<GS::UniString> countError = SetBeamSegmentCount (element, memo, segmentCount);
+        if (countError.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, countError.Get ());
+        }
+    }
+
     auto width = GetOptionalDouble (parameters, "width");
     auto height = GetOptionalDouble (parameters, "height");
     bool circleBased = false;
@@ -5868,11 +5988,24 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+// A beam whose segmentCount Archicad did not keep is deleted again and the item fails (#2678).
 // The holes are written as ModifyBeams writes them (#2551), with ACAPI_Element_Change on the new
 // beam rather than with the memo of ACAPI_Element_Create, so the create itself stays as it was.
 // An error here makes CreateElementsCommandBase delete the new beam and fail the item.
-GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
 {
+    if (parameters.Contains ("segmentCount")) {
+        API_Element created = {};
+        created.header.guid = newElementGuid;
+        const GSErrCode err = ACAPI_Element_Get (&created);
+        if (err != NoError) {
+            return err;
+        }
+        if (created.beam.nSegments != requestedElement.beam.nSegments) {
+            return APIERR_GENERAL;
+        }
+    }
+
     GS::Array<GS::ObjectState> holes;
     if (!parameters.Get ("holes", holes) || holes.IsEmpty ()) {
         return NoError;
@@ -10688,6 +10821,11 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
     });
 }
 
+// Defined with ModifyRoofs below, which writes the same per-edge data of a roof's polygon.
+static GS::Optional<GS::UniString> ApplyPolygonEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims, bool isSlab);
+static GS::Optional<GS::UniString> ApplyPolygonEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& elementSideMaterial, bool isSlab);
+static GS::Array<Int32> GetPolygonEdgeIndices (const API_ElementMemo& memo);
+
 ModifySlabsCommand::ModifySlabsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -10737,6 +10875,20 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                         "holes": {
                             "$ref": "#/Holes2D",
                             "description": "Can be given on its own, without polygonOutline, to add/remove/clear holes in place (an empty array clears all holes) - the slab's current outline is reused unchanged."
+                        },
+                        "edgeTrim": {
+                            "$ref": "#/SlabEdgeTrim",
+                            "description": "The Edge Angle of the whole slab (Geometry and Positioning panel of Slab Settings): sets every edge of the slab's polygon, the outline and the holes, to this trim. Cannot be combined with edgeTrims, polygonOutline or holes."
+                        },
+                        "edgeTrims": {
+                            "type": "array",
+                            "description": "The Edge Angle of each edge of the slab's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with edgeTrim, polygonOutline or holes, which make new edges.",
+                            "items": { "$ref": "#/SlabEdgeTrim" }
+                        },
+                        "edgeSideMaterials": {
+                            "type": "array",
+                            "description": "The custom surface of each edge of the slab's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the slab's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline or holes, which make new edges.",
+                            "items": { "$ref": "#/OverriddenMaterial" }
                         },)") + SlabSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -10839,6 +10991,93 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
             auto error = ApplySlabStructure (element, &mask, item, changed);
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+
+            // The Edge Angle and the custom surface of the polygon's edges (#2562), written as
+            // ModifyRoofs writes them for a single-plane roof.
+            GS::ObjectState edgeTrim;
+            GS::Array<GS::ObjectState> edgeTrims;
+            GS::Array<GS::ObjectState> edgeSideMaterials;
+            const bool hasEdgeTrim = item.Get ("edgeTrim", edgeTrim);
+            const bool hasEdgeTrims = item.Get ("edgeTrims", edgeTrims);
+            const bool hasEdgeSideMaterials = item.Get ("edgeSideMaterials", edgeSideMaterials);
+            if (hasEdgeTrim || hasEdgeTrims || hasEdgeSideMaterials) {
+                if (item.Contains ("polygonOutline") || item.Contains ("holes")) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrim', 'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
+                    continue;
+                }
+                if (hasEdgeTrim && hasEdgeTrims) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Give either 'edgeTrim' (every edge) or 'edgeTrims' (one item per edge), not both."));
+                    continue;
+                }
+                GS::UniString edgeTrimType;
+                if (hasEdgeTrim && edgeTrim.Get ("trimType", edgeTrimType) && edgeTrimType != "Vertical" && edgeTrimType != "CustomAngle") {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Unsupported trimType '" + edgeTrimType + "' in 'edgeTrim': a slab edge is Vertical or CustomAngle."));
+                    continue;
+                }
+
+                API_ElementMemo memo = {};
+                const GS::OnExit cleanup ([&]() {
+                    ACAPI_DisposeElemMemoHdls (&memo);
+                });
+                err = ACAPI_Element_GetMemo (element.header.guid, &memo);
+                if (err != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the slab."));
+                    continue;
+                }
+                if (hasEdgeTrim) {
+                    const UIndex nEdges = GetPolygonEdgeIndices (memo).GetSize ();
+                    for (UIndex k = 0; k < nEdges; ++k) {
+                        edgeTrims.Push (edgeTrim);
+                    }
+                }
+                if (hasEdgeTrim || hasEdgeTrims) {
+                    auto trimError = ApplyPolygonEdgeTrims (memo, edgeTrims, true);
+                    if (trimError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
+                        continue;
+                    }
+                }
+                if (hasEdgeSideMaterials) {
+                    auto materialError = ApplyPolygonEdgeSideMaterials (memo, edgeSideMaterials, element.slab.sideMat, true);
+                    if (materialError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, materialError.Get ()));
+                        continue;
+                    }
+                }
+                if (changed) {
+                    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Failed to modify slab."));
+                        continue;
+                    }
+                }
+                // Only the polygon handles and the edge data, unchanged but for the given trims and
+                // side surfaces, so the rest of the slab stays (as ModifyRoofs passes them).
+                API_ElementMemo polygonMemo = {};
+                polygonMemo.coords = memo.coords;
+                polygonMemo.pends = memo.pends;
+                polygonMemo.parcs = memo.parcs;
+                polygonMemo.vertexIDs = memo.vertexIDs;
+                polygonMemo.edgeIDs = memo.edgeIDs;
+                polygonMemo.edgeTrims = memo.edgeTrims;
+                polygonMemo.sideMaterials = memo.sideMaterials;
+                polygonMemo.contourIDs = memo.contourIDs;
+                UInt64 memoMask = APIMemoMask_Polygon;
+                if (memo.edgeTrims != nullptr) {
+                    memoMask |= APIMemoMask_EdgeTrims;
+                }
+                if (memo.sideMaterials != nullptr) {
+                    memoMask |= APIMemoMask_SideMaterials;
+                }
+                err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, hasEdgeSideMaterials ? "Failed to modify the edges of the slab." : "Failed to modify the edge trims of the slab."));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (element.header.guid, item);
+                results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
                 continue;
             }
 
@@ -11946,21 +12185,30 @@ static void RestoreRoofPolygonEdges (API_ElementMemo& memo, const GS::Array<Roof
     }
 }
 
-// Writes the given "edgeTrims" (see ModifyRoofs) into memo.edgeTrims, one item per edge in the
-// order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports them in (#2363).
-// Only the given fields of an item change. Changes nothing on an error.
-static GS::Optional<GS::UniString> ApplyRoofEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims)
+// Writes the given "edgeTrims" (see ModifyRoofs and ModifySlabs) into memo.edgeTrims, one item
+// per edge in the order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports
+// them in (#2363, #2562). Only the given fields of an item change. Changes nothing on an error.
+// A slab's edge is either vertical or at a custom angle (the Edge Angle of Slab Settings), so
+// isSlab refuses the trims a slab does not have.
+static GS::Optional<GS::UniString> ApplyPolygonEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims, bool isSlab)
 {
+    const GS::UniString elementName = isSlab ? "slab" : "roof";
     const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
     if (edgeIndices.IsEmpty ()) {
-        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+        return "Failed to read the edges of the " + elementName + "'s polygon.";
     }
     if (edgeTrims.GetSize () != edgeIndices.GetSize ()) {
-        return GS::UniString::Printf ("'edgeTrims' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+        return "'edgeTrims' must have one item per edge of the " + elementName + GS::UniString::Printf ("'s polygon (%u).", (unsigned) edgeIndices.GetSize ());
     }
     for (UIndex k = 0; k < edgeTrims.GetSize (); ++k) {
         GS::UniString trimType;
-        if (edgeTrims[k].Get ("trimType", trimType) && trimType != "Vertical" && trimType != "Perpendicular" && trimType != "Horizontal" && trimType != "CustomAngle") {
+        if (!edgeTrims[k].Get ("trimType", trimType)) {
+            continue;
+        }
+        if (isSlab && trimType != "Vertical" && trimType != "CustomAngle") {
+            return "Unsupported trimType '" + trimType + GS::UniString::Printf ("' in 'edgeTrims' item %u: a slab edge is Vertical or CustomAngle.", (unsigned) k);
+        }
+        if (trimType != "Vertical" && trimType != "Perpendicular" && trimType != "Horizontal" && trimType != "CustomAngle") {
             return "Unknown trimType '" + trimType + GS::UniString::Printf ("' in 'edgeTrims' item %u: use Vertical, Perpendicular, Horizontal or CustomAngle.", (unsigned) k);
         }
     }
@@ -11968,11 +12216,11 @@ static GS::Optional<GS::UniString> ApplyRoofEdgeTrims (API_ElementMemo& memo, co
     const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
     const GSSize nTrims = memo.edgeTrims == nullptr ? 0 : BMGetHandleSize ((GSHandle) memo.edgeTrims) / sizeof (API_EdgeTrim);
     if (nTrims < nCoords + 1) {
-        // A roof that never had a custom edge cut may have no edge trims: its edges are Vertical,
-        // as GetRoofPolygonEdges reads them. The trims it has are kept.
+        // A roof or slab that never had a custom edge cut may have no edge trims: its edges are
+        // Vertical, as GetRoofPolygonEdges reads them. The trims it has are kept.
         API_EdgeTrim** trims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
         if (trims == nullptr) {
-            return GS::UniString ("Failed to allocate the edge trims of the roof.");
+            return "Failed to allocate the edge trims of the " + elementName + ".";
         }
         for (Int32 i = 0; i <= nCoords; ++i) {
             (*trims)[i].sideType = APIEdgeTrim_Vertical;
@@ -12313,18 +12561,19 @@ static GS::Optional<GS::UniString> ApplyRoofSurfaces (API_Element& element, API_
     return {};
 }
 
-// Writes the given "edgeSideMaterials" (see ModifyRoofs) into memo.sideMaterials, one item per
-// edge in the order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports
-// them in (#2433). An item that is not overridden clears the edge's custom surface, so the edge
-// shows the roof's side surface. Changes nothing on an error.
-static GS::Optional<GS::UniString> ApplyRoofEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& roofSideMaterial)
+// Writes the given "edgeSideMaterials" (see ModifyRoofs and ModifySlabs) into memo.sideMaterials,
+// one item per edge in the order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements
+// reports them in (#2433, #2562). An item that is not overridden clears the edge's custom surface,
+// so the edge shows the element's side surface. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyPolygonEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& elementSideMaterial, bool isSlab)
 {
+    const GS::UniString elementName = isSlab ? "slab" : "roof";
     const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
     if (edgeIndices.IsEmpty ()) {
-        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+        return "Failed to read the edges of the " + elementName + "'s polygon.";
     }
     if (edgeSideMaterials.GetSize () != edgeIndices.GetSize ()) {
-        return GS::UniString::Printf ("'edgeSideMaterials' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+        return "'edgeSideMaterials' must have one item per edge of the " + elementName + GS::UniString::Printf ("'s polygon (%u).", (unsigned) edgeIndices.GetSize ());
     }
     GS::Array<API_OverriddenAttribute> newMaterials;
     for (UIndex k = 0; k < edgeSideMaterials.GetSize (); ++k) {
@@ -12339,14 +12588,14 @@ static GS::Optional<GS::UniString> ApplyRoofEdgeSideMaterials (API_ElementMemo& 
     const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
     const GSSize nSideMaterials = memo.sideMaterials == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.sideMaterials) / sizeof (API_OverriddenAttribute);
     if (nSideMaterials < nCoords + 1) {
-        // A roof without side materials in its memo shows its own side surface on every edge,
-        // which is what AddPolyToMemo (ElementCreationCommands.cpp) writes. The ones it has are kept.
+        // A roof or slab without side materials in its memo shows its own side surface on every
+        // edge, which is what AddPolyToMemo (ElementCreationCommands.cpp) writes. The ones it has are kept.
         API_OverriddenAttribute* materials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
         if (materials == nullptr) {
-            return GS::UniString ("Failed to allocate the edge surfaces of the roof.");
+            return "Failed to allocate the edge surfaces of the " + elementName + ".";
         }
         for (Int32 i = 0; i <= nCoords; ++i) {
-            materials[i] = i < nSideMaterials ? memo.sideMaterials[i] : roofSideMaterial;
+            materials[i] = i < nSideMaterials ? memo.sideMaterials[i] : elementSideMaterial;
         }
         if (memo.sideMaterials != nullptr) {
             BMKillPtr (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
@@ -12366,6 +12615,49 @@ static GS::Optional<GS::UniString> ApplyRoofEdgeSideMaterials (API_ElementMemo& 
         const Int32 closing = (*memo.pends)[subPoly];
         if (closing <= nCoords && first < closing) {
             memo.sideMaterials[closing] = memo.sideMaterials[first];
+        }
+    }
+    return {};
+}
+
+// Reads a multi-plane roof back after ModifyRoofs wrote its contourPolygon (#2582): the overhang
+// must be Manual, the contour's outline must have the given points and the contour as many holes
+// as given. The points are compared as a set, as Archicad may start the outline at another vertex.
+static GS::Optional<GS::UniString> CheckRoofContour (const API_Guid& guid, const GS::Array<GS::ObjectState>& polygonOutline, USize holeCount)
+{
+    API_Element element = {};
+    element.header.guid = guid;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return GS::UniString ("Modified the roof, but failed to read it back to check its contour.");
+    }
+    if (element.roof.roofClass != API_PolyRoofID || element.roof.u.polyRoof.overHangType != API_ManualOverhang) {
+        return GS::UniString ("Archicad did not apply the contour: the roof's overhang is not Manual after writing it.");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&]() {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_Polygon) != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+        return GS::UniString ("Modified the roof, but failed to read its contour back.");
+    }
+    const GS::Array<Int32> contours = GetContourPointCounts (memo);
+    if (contours.IsEmpty () || contours[0] - 1 != (Int32) polygonOutline.GetSize ()) {
+        return GS::UniString::Printf ("Archicad did not apply the contour: its outline has %d points instead of the %u given.", contours.IsEmpty () ? 0 : (int) (contours[0] - 1), (unsigned) polygonOutline.GetSize ());
+    }
+    if (contours.GetSize () - 1 != holeCount) {
+        return GS::UniString::Printf ("Archicad did not apply the contour: it has %u holes instead of the %u given.", (unsigned) (contours.GetSize () - 1), (unsigned) holeCount);
+    }
+    const double eps = 0.0001;
+    const Int32 last = (*memo.pends)[1];
+    for (UIndex k = 0; k < polygonOutline.GetSize (); ++k) {
+        const API_Coord given = Get2DCoordinateFromObjectState (polygonOutline[k]);
+        bool found = false;
+        for (Int32 i = 1; i < last && !found; ++i) {
+            found = std::abs ((*memo.coords)[i].x - given.x) < eps && std::abs ((*memo.coords)[i].y - given.y) < eps;
+        }
+        if (!found) {
+            return GS::UniString::Printf ("Archicad did not apply the contour: its outline has no point at (%.4f, %.4f), item %u of polygonOutline.", given.x, given.y, (unsigned) k);
         }
     }
     return {};
@@ -12407,7 +12699,27 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "eavesOverhang": {
                             "type": "number",
-                            "description": "Multi-plane roofs only: one eaves overhang for the whole roof, the distance of the roof's contour outside the pivot polygon. Switches the roof to an overhang offset from the pivot polygon. Per-edge overhangs are set with pivotEdges."
+                            "description": "Multi-plane roofs only: one eaves overhang for the whole roof, the distance of the roof's contour outside the pivot polygon. Switches the roof to an overhang offset from the pivot polygon (overhangType Offset), which replaces a manual contour. Per-edge overhangs are set with pivotEdges. Cannot be combined with contourPolygon."
+                        },
+                        "contourPolygon": {
+                            "type": "object",
+                            "description": "Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).",
+                            "properties": {
+                                "polygonOutline": {
+                                    "type": "array",
+                                    "description": "The plan (x, y) coordinates of the contour's outline.",
+                                    "items": { "$ref": "#/Coordinate2D" },
+                                    "minItems": 3
+                                },
+                                "polygonArcs": {
+                                    "type": "array",
+                                    "description": "The arcs of the contour's outline.",
+                                    "items": { "$ref": "#/PolyArc" }
+                                },
+                                "holes": { "$ref": "#/Holes2D" }
+                            },
+                            "additionalProperties": false,
+                            "required": [ "polygonOutline" ]
                         },
                         "levels": {
                             "type": "array",
@@ -12424,7 +12736,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "compositeId": { "$ref": "#/AttributeId" },
                         "polygonOutline": {
                             "type": "array",
-                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. ModifyRoofs cannot write a multi-plane roof's contour independently of its pivot polygon; it follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline). The coordinates are plan (x, y) coordinates; the elevation is set with level.",
+                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. A multi-plane roof's contour follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline), or is written on its own with contourPolygon. The coordinates are plan (x, y) coordinates; the elevation is set with level.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
@@ -12464,7 +12776,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTrims": {
                             "type": "array",
-                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
+                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline or contourPolygon, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -12557,16 +12869,20 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
             // The fields of the other roof class would be written into the wrong member of
             // the roof's union (u.planeRoof / u.polyRoof), so they are refused.
-            if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
+            if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") || item.Contains ("contourPolygon"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges' and 'contourPolygon' are only valid for multi-plane roofs."));
+                continue;
+            }
+            if (item.Contains ("contourPolygon") && (item.Contains ("polygonOutline") || item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'pivotEdges' or 'eavesOverhang', which make the contour from the pivot polygon."));
                 continue;
             }
             if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes") || item.Contains ("edgeSideMaterials"))) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTypes' and 'edgeSideMaterials' are only valid for single-plane roofs."));
                 continue;
             }
-            if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && item.Contains ("polygonOutline")) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', which makes new edges."));
+            if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("contourPolygon"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline' or 'contourPolygon', which make new edges."));
                 continue;
             }
             if (item.Contains ("edgeTypes") && item.Contains ("polygonOutline")) {
@@ -12629,6 +12945,74 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 }
             }
 
+            GS::ObjectState contourPolygon;
+            if (item.Get ("contourPolygon", contourPolygon)) {
+                GS::Array<GS::ObjectState> contourOutline;
+                GS::Array<GS::ObjectState> contourArcs;
+                GS::Array<GS::ObjectState> contourHoles;
+                contourPolygon.Get ("polygonOutline", contourOutline);
+                contourPolygon.Get ("polygonArcs", contourArcs);
+                contourPolygon.Get ("holes", contourHoles);
+                if (contourOutline.GetSize () < 3) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon.polygonOutline' must contain at least 3 coordinates."));
+                    continue;
+                }
+                API_ElementMemo memo = {};
+                const GS::OnExit cleanup ([&]() {
+                    ACAPI_DisposeElemMemoHdls (&memo);
+                });
+                err = ACAPI_Element_GetMemo (element.header.guid, &memo);
+                if (err != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the contour of the roof."));
+                    continue;
+                }
+                // The memo's polygon of a multi-plane roof is its contour; it is edited in place as
+                // a single-plane roof's outline is below, keeping the data of the edges that stay.
+                const GS::Array<RoofPolygonEdge> oldEdges = GetRoofPolygonEdges (memo);
+                const GS::Array<Int32> oldContours = GetContourPointCounts (memo);
+                const bool hadEdgeTypes = memo.roofEdgeTypes != nullptr;
+                auto contourError = ApplySlabPolygonChange (memo, element.roof.shellBase.sidMat, contourOutline, contourArcs, contourHoles);
+                if (contourError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, contourError.Get ()));
+                    continue;
+                }
+                RestoreRoofPolygonEdges (memo, oldEdges, GetContourPointCounts (memo) == oldContours, hadEdgeTypes);
+
+                // As the DevKit's Element_Test example (Do_Roof_Edit) changes a multi-plane roof's
+                // contour: the contour's counts in contourPolygon and the polygon with its edge data
+                // through ACAPI_Element_Change. Manual overhang keeps the contour from being made
+                // again from the pivot polygon and the overhangs.
+                element.roof.u.polyRoof.overHangType = API_ManualOverhang;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.overHangType);
+                element.roof.u.polyRoof.contourPolygon.nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+                element.roof.u.polyRoof.contourPolygon.nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+                element.roof.u.polyRoof.contourPolygon.nArcs = memo.parcs == nullptr ? 0 : (Int32) (BMGetHandleSize ((GSHandle) memo.parcs) / sizeof (API_PolyArc));
+
+                // Only the polygon handles and the edge data, as the polygon edits below pass them.
+                API_ElementMemo polygonMemo = {};
+                polygonMemo.coords = memo.coords;
+                polygonMemo.pends = memo.pends;
+                polygonMemo.parcs = memo.parcs;
+                polygonMemo.vertexIDs = memo.vertexIDs;
+                polygonMemo.edgeIDs = memo.edgeIDs;
+                polygonMemo.edgeTrims = memo.edgeTrims;
+                polygonMemo.sideMaterials = memo.sideMaterials;
+                polygonMemo.roofEdgeTypes = memo.roofEdgeTypes;
+                polygonMemo.contourIDs = memo.contourIDs;
+                UInt64 memoMask = APIMemoMask_Polygon | APIMemoMask_EdgeTrims | APIMemoMask_SideMaterials;
+                if (memo.roofEdgeTypes != nullptr) {
+                    memoMask |= APIMemoMask_RoofEdgeTypes;
+                }
+                err = ACAPI_Element_Change (&element, &mask, &polygonMemo, memoMask, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify the contour of the roof."));
+                    continue;
+                }
+                auto checkError = CheckRoofContour (element.header.guid, contourOutline, contourHoles.GetSize ());
+                results.Push (checkError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()) : CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
             GS::Array<GS::ObjectState> pivotEdges;
             if (item.Get ("pivotEdges", pivotEdges)) {
                 if (item.Contains ("polygonOutline")) {
@@ -12672,7 +13056,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
                 if (hasEdgeTrims) {
-                    auto trimError = ApplyRoofEdgeTrims (memo, edgeTrims);
+                    auto trimError = ApplyPolygonEdgeTrims (memo, edgeTrims, false);
                     if (trimError.HasValue ()) {
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
                         continue;
@@ -12686,7 +13070,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     }
                 }
                 if (hasEdgeSideMaterials) {
-                    auto materialError = ApplyRoofEdgeSideMaterials (memo, edgeSideMaterials, element.roof.shellBase.sidMat);
+                    auto materialError = ApplyPolygonEdgeSideMaterials (memo, edgeSideMaterials, element.roof.shellBase.sidMat, false);
                     if (materialError.HasValue ()) {
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, materialError.Get ()));
                         continue;
