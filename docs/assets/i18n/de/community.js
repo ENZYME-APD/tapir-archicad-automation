@@ -99,6 +99,9 @@
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'Jan. Feb. März Apr. Mai Juni Juli Aug. Sep. Okt. Nov. Dez.',
     '{month} {year}': '{month} {year}',
     'Growth': 'Wachstum',
+    'Total': 'Summe',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        'Wachstumsdiagramm. Die Pfeiltasten links und rechts lesen die Zahlen Monat für Monat, Pos1 und Ende springen zum ersten und letzten Monat, Esc blendet sie aus.',
     'Growth since <em>2022.</em>': 'Wachstum seit <em>2022.</em>',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Alles, was rund um Tapir jeden Monat geschieht, vom ersten Commit bei Enzyme bis heute. Erfasst werden nur Zahlen, nie der Text einer Nachricht.',

@@ -1886,6 +1886,10 @@ GS::Optional<GS::UniString> SetLayoutSettingsCommand::GetRawResponseSchema () co
 
 bool IsMasterLayoutDatabase (const API_DatabaseUnId& targetUnId)
 {
+    GS::Array<API_DatabaseUnId> masterLayoutUnIds;
+    if (ACAPI_Database_GetMasterLayoutDatabases (nullptr, &masterLayoutUnIds) == NoError && masterLayoutUnIds.Contains (targetUnId)) {
+        return true;
+    }
     return FindMasterLayoutNavigatorItem (targetUnId).HasValue ();
 }
 
@@ -1916,9 +1920,18 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
             }
             dbInfo = navItem.db;
             isMasterLayout = (navItem.itemType == API_MasterLayoutNavItem);
+            if (navItem.itemType == API_LayoutNavItem || isMasterLayout) {
+                dbInfo.typeID = isMasterLayout ? APIWind_MasterLayoutID : APIWind_LayoutID;
+            }
         } else if (dbIdOS != nullptr) {
             dbInfo = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*dbIdOS));
             isMasterLayout = IsMasterLayoutDatabase (dbInfo.databaseUnId);
+            // A database id carries no database type, but ACAPI_Window_GetDatabaseInfo and
+            // ACAPI_Database_ModifyDatabase need it: renaming a master layout as a layout database
+            // fails with APIERR_GENERAL and keeps its name (#2524).
+            if (dbInfo.typeID == API_ZombieWindowID) {
+                dbInfo.typeID = isMasterLayout ? APIWind_MasterLayoutID : APIWind_LayoutID;
+            }
         } else {
             executionResults.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing layoutDatabaseId or layoutNavigatorItemId."));
             continue;
@@ -1978,17 +1991,23 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
                 continue;
             }
             if (GS::UniString (layoutDbInfo.name) != requestedLayoutName) {
+                // Modify the database as the type it was identified as: a master layout must be
+                // renamed as APIWind_MasterLayoutID, also if the read above reported another type.
+                if (dbInfo.typeID == APIWind_LayoutID || dbInfo.typeID == APIWind_MasterLayoutID) {
+                    layoutDbInfo.typeID = dbInfo.typeID;
+                }
+                const char* layoutKind = isMasterLayout ? "master layout" : "layout";
                 SetUCharProperty (&item, "layoutName", layoutDbInfo.name);
                 err = ACAPI_Database_ModifyDatabase (&layoutDbInfo);
                 if (err != NoError) {
-                    executionResults.Push (CreateFailedExecutionResult (err, "Failed to change the name of the layout."));
+                    executionResults.Push (CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to change the name of the %s.", layoutKind)));
                     continue;
                 }
                 API_DatabaseInfo verifyDbInfo = dbInfo;
                 err = ACAPI_Window_GetDatabaseInfo (&verifyDbInfo);
                 if (err != NoError || GS::UniString (verifyDbInfo.name) != requestedLayoutName) {
                     executionResults.Push (CreateFailedExecutionResult (APIERR_GENERAL,
-                        "The name of the layout was not changed to the requested layoutName."));
+                        GS::UniString::Printf ("The name of the %s was not changed to the requested layoutName.", layoutKind)));
                     continue;
                 }
             }
