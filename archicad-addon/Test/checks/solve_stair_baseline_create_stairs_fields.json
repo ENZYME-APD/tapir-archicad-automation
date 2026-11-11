@@ -1,0 +1,46 @@
+{
+  "title": "SolveStairBaseline takes the fields of CreateStairs it reads, such as baselinePosition (#2623, #2526)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "the request of #2526, with baselinePosition",
+      "command": "SolveStairBaseline",
+      "creates": false,
+      "params": {
+        "stairsData": [
+          {
+            "flightWidth": 1.1,
+            "baselinePosition": "Center",
+            "floorIndex": 0,
+            "baseLinePoints": [ { "x": 870.0, "y": 40.0 }, { "x": 874.0, "y": 40.0 } ],
+            "zCoordinate": 0.0,
+            "totalHeight": 2.8
+          }
+        ]
+      },
+      "expect": [
+        { "path": "solutions[0].solution", "exists": true, "name": "solved, not refused" }
+      ]
+    },
+    {
+      "id": "an unknown key is refused",
+      "command": "SolveStairBaseline",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 870.0, "y": 50.0 }, { "x": 874.0, "y": 50.0 } ],
+            "zCoordinate": 0.0,
+            "totalHeight": 2.8,
+            "fooBar": 1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "solutions", "exists": false, "name": "refused" }
+      ]
+    }
+  ]
+}

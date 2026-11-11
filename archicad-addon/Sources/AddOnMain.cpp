@@ -72,10 +72,28 @@
 #include "DrawingPrimitiveCommands.hpp"
 #include "LibraryPartCreationCommands.hpp"
 
+// Every command is registered behind this check (#2623). Archicad refuses a key the input schema does
+// not list only in the parts written inline in the command's schema, not inside the shared definitions
+// it reaches through "$ref", so a mistyped or unsupported key there was accepted and silently ignored.
+// The check refuses such a key before the command runs, with its place; see InputKeyCheck.hpp.
+template <typename CommandType>
+class InputKeyCheckedCommand : public CommandType
+{
+public:
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override
+    {
+        const GS::Optional<GS::UniString> unknownKey = this->FindUnknownInputKey (parameters);
+        if (unknownKey.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, unknownKey.Get ());
+        }
+        return CommandType::Execute (parameters, processControl);
+    }
+};
+
 template <typename CommandType>
 GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, const GS::UniString& description)
 {
-    GS::Owner<CommandType> command = GS::NewOwned<CommandType> ();
+    GS::Owner<InputKeyCheckedCommand<CommandType>> command = GS::NewOwned<InputKeyCheckedCommand<CommandType>> ();
     const GS::String commandName = command->GetName ();
     group.commands.push_back (CommandInfo (
         commandName,

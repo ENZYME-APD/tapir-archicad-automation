@@ -39,7 +39,7 @@ if layoutNavId is None:
     print('No layout named "{}" found - create one (with any drawing placed on it) and rerun.'.format(TEST_LAYOUT_NAME))
     raise SystemExit
 
-aclib.RunTapirCommand('ChangeWindow', {'windowType': 'Layout', 'navigatorItemId': layoutNavId}, debug=False)
+aclib.RunTapirCommand('ChangeWindow', {'navigatorItemId': layoutNavId}, debug=False)
 
 resp = aclib.RunTapirCommand('GetElementsByType', {'elementType': 'Drawing'}, debug=False)
 drawings = resp['elements'] if resp else []
