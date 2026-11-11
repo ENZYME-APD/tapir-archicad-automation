@@ -13424,6 +13424,119 @@
             "defaultWitnessVal"
         ]
     },
+    "RadialDimensionDetails": {
+        "type": "object",
+        "description": "A radial dimension, as Archicad stores it. The Archicad API does not document how the measured arc is stored (the meaning of basePoint and ownerElementInIndex), so these are the raw values; ownerArcCenter is read from the measured arc or circle.",
+        "properties": {
+            "basePoint": {
+                "$ref": "#/Coordinate2D",
+                "description": "The base point of the dimension as Archicad stores it (API_RadialDimensionType base.loc)."
+            },
+            "dimensionLineEnd": {
+                "$ref": "#/Coordinate2D",
+                "description": "The end of the radial dimension line."
+            },
+            "radius": {
+                "type": "number",
+                "description": "The radius the dimension measures, in meters."
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "Present only when the dimension is linked to an element: the element it measures."
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType",
+                "description": "Present only when the dimension is linked to an element."
+            },
+            "ownerElementInIndex": {
+                "type": "integer",
+                "description": "Present only when the dimension is linked to an element: the index of the measured part of that element, as Archicad stores it."
+            },
+            "ownerElementLine": {
+                "type": "boolean",
+                "description": "Present only when the dimension is linked to an element: whether the dimension is linked to a line or arc of that element rather than to a node, as Archicad stores it."
+            },
+            "ownerArcCenter": {
+                "$ref": "#/Coordinate2D",
+                "description": "Present only when the measured element is an arc or a circle: its centre."
+            },
+            "ownerArcRadius": {
+                "type": "number",
+                "description": "Present only when the measured element is an arc or a circle: its radius in meters."
+            },
+            "linePen": {
+                "type": "integer",
+                "description": "The pen of the dimension line."
+            },
+            "marker": {
+                "type": "object",
+                "description": "The marker at the end of the dimension line.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "The marker type, named after API_MarkerID.",
+                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "The pen of the marker."
+                    },
+                    "size": {
+                        "type": "number",
+                        "description": "The size of the marker as Archicad stores it, in millimeters."
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["type", "pen", "size"]
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "The height of the dimension text in millimeters."
+            },
+            "textPen": {
+                "type": "integer",
+                "description": "The pen of the dimension text."
+            },
+            "textPosition": {
+                "type": "string",
+                "enum": ["Above", "In", "Below", "Unknown"],
+                "description": "Where the text is, relative to the dimension line."
+            },
+            "textDirection": {
+                "type": "string",
+                "enum": ["Horizontal", "Vertical", "Radial", "Unknown"],
+                "description": "The direction of the text."
+            },
+            "textContent": {
+                "type": "string",
+                "enum": ["Measured", "Custom"],
+                "description": "Whether the text shows the measured radius or a custom text."
+            },
+            "showOrigin": {
+                "type": "boolean",
+                "description": "Whether the centre of the arc is marked."
+            },
+            "onlyDimensionText": {
+                "type": "boolean",
+                "description": "Whether only the dimension text is shown, without the dimension line."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "basePoint",
+            "dimensionLineEnd",
+            "radius",
+            "linePen",
+            "marker",
+            "textHeight",
+            "textPen",
+            "textPosition",
+            "textDirection",
+            "textContent",
+            "showOrigin",
+            "onlyDimensionText"
+        ]
+    },
     "TextDetails": {
         "type": "object",
         "properties": {
@@ -14137,6 +14250,9 @@
             },
             {
                 "$ref": "#/DimensionDetails"
+            },
+            {
+                "$ref": "#/RadialDimensionDetails"
             },
             {
                 "$ref": "#/StairDetails"

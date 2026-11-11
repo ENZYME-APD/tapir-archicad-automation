@@ -3152,6 +3152,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddDimensionDetails (typeSpecificDetails, elem);
                 break;
 
+            case API_RadialDimensionID:
+                // The stored data as it is; the DevKit does not document how the base is stored.
+                AddRadialDimensionDetails (typeSpecificDetails, elem);
+                break;
+
             case API_LevelDimensionID: {
                 // "level" is the value the dimension shows: the parent's height at "position"
                 // for an associative one, the floor level or the static value otherwise.

@@ -410,6 +410,10 @@ public:
 // returns, with the keys ModifyAssociativeDimensions takes.
 void AddDimensionDetails (GS::ObjectState& details, const API_Element& element);
 
+// Adds the stored data and settings of a radial dimension (API_RadialDimensionID) to the details
+// GetDetailsOfElements returns (#2660).
+void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& element);
+
 class CreateElevationsCommand : public CommandBase
 {
 public:
