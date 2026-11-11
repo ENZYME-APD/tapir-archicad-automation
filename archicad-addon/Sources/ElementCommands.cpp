@@ -2876,6 +2876,17 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("polyCanChange", elem.wall.polyCanChange);
                 typeSpecificDetails.Add ("materialsChained", elem.wall.materialsChained);
                 typeSpecificDetails.Add ("logHeight", elem.wall.logHeight);
+                {
+                    GS::ObjectState logDetailsOS;
+                    logDetailsOS.Add ("startWithHalfLog", (elem.wall.beamFlags & APIWBeam_HalfLog) != 0);
+                    logDetailsOS.Add ("squareLogs", (elem.wall.beamFlags & APIWBeam_QuadricLog) != 0);
+                    logDetailsOS.Add ("roundedOnRightSide", (elem.wall.beamFlags & APIWBeam_RightLog) != 0);
+                    logDetailsOS.Add ("roundedOnLeftSide", (elem.wall.beamFlags & APIWBeam_LeftLog) != 0);
+                    logDetailsOS.Add ("radiusFromOppositeSide", (elem.wall.beamFlags & APIWBeam_Stretched) != 0);
+                    logDetailsOS.Add ("referenceSideSurfaceOnHorizontalEdges", (elem.wall.beamFlags & APIWBeam_RefMater) != 0);
+                    logDetailsOS.Add ("oppositeSideSurfaceOnHorizontalEdges", (elem.wall.beamFlags & APIWBeam_OppMater) != 0);
+                    typeSpecificDetails.Add ("logDetails", logDetailsOS);
+                }
                 typeSpecificDetails.Add ("hasWindow", elem.wall.hasWindow);
                 typeSpecificDetails.Add ("hasDoor", elem.wall.hasDoor);
                 break;
