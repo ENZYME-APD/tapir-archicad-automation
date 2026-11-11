@@ -16,6 +16,7 @@ from tkinter import font as tkfont, messagebox, ttk
 from typing import Callable
 
 from utilities.archicad import ArchicadError, is_alive
+from utilities.icon import apply_tapir_icon, use_own_taskbar_entry
 
 STATUS_COLORS = {
     "info": "#555555",
@@ -69,7 +70,9 @@ class ScriptWindow:
     def __init__(self, title: str, description: str, min_width: int = 460, min_height: int = 320,
                  keep_on_top: bool = True):
         _enable_dpi_awareness()
+        use_own_taskbar_entry()
         self.root = tk.Tk()
+        apply_tapir_icon(self.root)
         self.root.title(title)
         self.root.minsize(min_width, min_height)
 
@@ -184,7 +187,9 @@ def require_archicad(script_name: str) -> None:
     """ Stops with a clear message when the Archicad the script was started for does not answer. """
     if is_alive():
         return
+    use_own_taskbar_entry()
     root = tk.Tk()
+    apply_tapir_icon(root)
     root.withdraw()
     messagebox.showerror(script_name, "Cannot connect to Archicad.\n\n"
                                       "Start this script from the Tapir palette of a running Archicad.")
