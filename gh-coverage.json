@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-11-11 16:46 UTC",
+ "generatedAt": "2026-11-11 22:17 UTC",
  "counts": {
   "done": 788,
-  "open": 1,
+  "open": 3,
   "not applicable": 1
  },
  "parameters": {
-  "all": 742,
-  "json": 42,
+  "all": 741,
+  "json": 43,
   "partial": 4
  },
  "items": [
@@ -5164,7 +5164,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 25,
+   "parameterCount": 26,
    "coveredParameters": [
     "beamsData",
     "beamsData.anchorPoint",
@@ -5192,6 +5192,7 @@
     "beamsData.zCoordinate"
    ],
    "missingParameters": [
+    "beamsData.segmentCount",
     "beamsData.segments"
    ],
    "pullRequests": [],
@@ -5294,7 +5295,7 @@
    "id": "CreateSlabs",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. Not written by either command: the surface of a single edge, and the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.",
+   "brief": "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. The Edge Angle and the surface of single edges are written afterwards with ModifySlabs (edgeTrim, edgeTrims, edgeSideMaterials). Not written by either command: the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7200,7 +7201,7 @@
    "id": "ModifySlabs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied.",
+   "brief": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7213,8 +7214,8 @@
      "path": "Components/DesignToolsComponents/SlabsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 18,
+   "parameters": "json",
+   "parameterCount": 21,
    "coveredParameters": [
     "slabsWithDetails",
     "slabsWithDetails.bottomMaterial",
@@ -7235,7 +7236,11 @@
     "slabsWithDetails.topMaterial",
     "slabsWithDetails.zCoordinate"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "slabsWithDetails.edgeSideMaterials",
+    "slabsWithDetails.edgeTrim",
+    "slabsWithDetails.edgeTrims"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -7494,7 +7499,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang, pivotEdges and contourPolygon only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7508,16 +7513,18 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 44,
+   "parameterCount": 45,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
     "roofsWithDetails.buildingMaterialId",
     "roofsWithDetails.compositeId",
+    "roofsWithDetails.contourPolygon.holes",
+    "roofsWithDetails.contourPolygon.polygonArcs",
+    "roofsWithDetails.contourPolygon.polygonOutline",
     "roofsWithDetails.eavesOverhang",
     "roofsWithDetails.elementId",
     "roofsWithDetails.floorIndex",
-    "roofsWithDetails.holes",
     "roofsWithDetails.level",
     "roofsWithDetails.levels",
     "roofsWithDetails.pivotEdges",
@@ -7526,8 +7533,6 @@
     "roofsWithDetails.pivotLine.begin",
     "roofsWithDetails.pivotLine.end",
     "roofsWithDetails.pivotLine.endCoordinate",
-    "roofsWithDetails.polygonArcs",
-    "roofsWithDetails.polygonOutline",
     "roofsWithDetails.structureType",
     "roofsWithDetails.thickness"
    ],
@@ -7537,6 +7542,7 @@
     "roofsWithDetails.bottomMaterial",
     "roofsWithDetails.contourLineTypeId",
     "roofsWithDetails.contourPen",
+    "roofsWithDetails.contourPolygon",
     "roofsWithDetails.cutBodyType",
     "roofsWithDetails.cutFillBackgroundPen",
     "roofsWithDetails.cutFillPen",
@@ -8282,6 +8288,21 @@
     "splines.elementId",
     "splines.segmentIndex"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetProfileValuesOfElements",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Returns the custom profiles walls, beams and columns use, with the values the element gives them: the width and height of the stretched profile and the value of each profile modifier, measured on the stretched profile of the element (one per Profile wall, one per Profile segment of a beam or column). Read only: the Archicad API has no function that writes an element's modifier values or stretch.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -16885,6 +16906,21 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateChangeMarkers",
+   "group": "Revision Management Commands",
+   "version": "2.0.1",
+   "brief": "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults. GetDetailsOfElements reads the markers back.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 9,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
