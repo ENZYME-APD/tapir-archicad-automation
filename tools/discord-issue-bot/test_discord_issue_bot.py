@@ -729,7 +729,8 @@ class ShareChannelTests(CheckpointTests):
 
     def script_message(self, message_id, filename="walls.py", content="Counts walls by type",
                        size=40):
-        message = self.message(message_id)
+        # One author per message: consecutive messages of one author are read as one.
+        message = self.message(message_id, author="u" + message_id)
         message["content"] = content
         message["attachments"] = [{"id": "x" + message_id, "filename": filename,
                                    "size": size, "url": "https://cdn/" + message_id}]
@@ -806,6 +807,30 @@ class ShareChannelTests(CheckpointTests):
         discord, _, github = self.share([self.script_message("1")], {})
         self.assertEqual(github.created, [])
         self.assertEqual(discord.seen(), [])
+
+    def test_a_failed_download_stops_the_scan_even_when_a_later_script_works(self):
+        messages = [self.script_message("1"), self.script_message("2", content="Second one ok")]
+        discord, _, github = self.share(messages, {"https://cdn/2": self.SCRIPT.encode()})
+        self.assertEqual(github.created, [])
+        self.assertEqual(discord.seen(), [])
+
+    def test_scripts_before_a_failed_download_are_filed_and_checked(self):
+        messages = [self.script_message("1"), self.script_message("2", content="Fails to load"),
+                    self.script_message("3", content="Third one is fine")]
+        discord, _, github = self.share(
+            messages, {"https://cdn/1": self.SCRIPT.encode(), "https://cdn/3": self.SCRIPT.encode()})
+        self.assertEqual(len(github.created), 1)
+        self.assertIn("{} 1`".format(bot.ISSUE_MARKER_PREFIX), github.created[0])
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_a_very_long_file_name_cannot_make_the_title_too_long(self):
+        name = "w" * 400 + ".py"
+        message = self.script_message("1", filename=name)
+        reader = bot.ShareScriptReader({"1": bot.merge_group([message])}, FakeDiscord(
+            [message], files={"https://cdn/1": self.SCRIPT.encode()}))
+        result = reader.classify_batch([{"id": "1"}])["1"]
+        self.assertLessEqual(len(result["title"]), 250)
+        self.assertTrue(result["title"].startswith("Script share: www"))
 
     def test_a_file_that_is_not_python_is_chat(self):
         _, _, github = self.share(

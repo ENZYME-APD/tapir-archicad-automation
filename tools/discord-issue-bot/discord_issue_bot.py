@@ -1025,7 +1025,9 @@ class ShareScriptReader:
                 continue
             result[candidate["id"]] = {
                 "actionable": True, "confidence": 1.0, "type": "script",
-                "title": "Script share: {}".format(files[0][0]),
+                # Same cap as a classifier title: GitHub rejects one over 256
+                # characters, and a long file name must not stop the channel.
+                "title": " ".join("Script share: {}".format(files[0][0]).split())[:250],
                 "summary": "", "files": files}
         return result
 
@@ -1297,6 +1299,14 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             classifications.update(classifier.classify_batch(chunk))
             classified_until = index + len(chunk)
         classification = classifications.get(candidate["id"])
+        if classification is None and share:
+            # A script that could not be downloaded is not a message the
+            # classifier cannot handle: it is retried, never skipped. The scan
+            # of the channel stops here and the checkpoint stays before it, so
+            # the next run reads the message again (with a fresh attachment URL).
+            log("  message {}: its script could not be downloaded - leaving the "
+                "channel from this message for the next run".format(message["id"]))
+            break
         if classification is None:
             if unclassified is not None:
                 log("  message {}: classifier gave no usable answer again - "

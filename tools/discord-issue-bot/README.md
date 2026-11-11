@@ -74,7 +74,9 @@ under 48,000 characters) or a fenced code block of five lines or more:
 
 Every other message in the channel is chat and is only checked off. A file that
 is too large, not UTF-8 text, or not `.py` is not shared; a download that fails
-is retried by the next run. The bot creates the `script-share` label if the
+stops the scan of the channel at that message, which the next run reads
+again with a fresh attachment link (a script that keeps failing holds the
+channel only until it is older than `LOOKBACK_MINUTES`). The bot creates the `script-share` label if the
 repository does not have it, because an issue created with a missing label
 loses it silently and would never be prepared.
 
