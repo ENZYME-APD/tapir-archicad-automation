@@ -125,6 +125,9 @@ void Config::LoadFromFile (IO::File& file)
     os.Get ("askUpdatingAddOnBeforeEachExecution", askUpdatingAddOnBeforeEachExecution);
     os.Get ("uvLocation", uvLocationStr);
     os.Get ("pythonLocation", pythonLocationStr);
+    // Only read, never written: a config file without it uses the default catalogue.
+    marketplaceCatalogueUrlStr = GS::EmptyUniString;
+    os.Get ("marketplaceCatalogueUrl", marketplaceCatalogueUrlStr);
 }
 
 void Config::SaveToFile (IO::File& file) const
