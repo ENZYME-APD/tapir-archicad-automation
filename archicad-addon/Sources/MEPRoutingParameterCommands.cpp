@@ -724,12 +724,12 @@ static GS::ObjectState SetRoutingParametersOfRoutingNode (const ACAPI::MEP::Uniq
             error = ApplyElbowChanges (elbowDefault, elbowChanges);
         }
     }
-    TransitionChanges transitionChanges;
+    // No angle here: Archicad 29 and 30 answer OK to SetAngle on a node's transition default but keep the
+    // angle of the route, so the angle is set on the routing element only.
     if (transitionParameters != nullptr && !error.has_value ()) {
-        error = ReadTransitionChanges (*transitionParameters, transitionChanges);
+        error = ReadRoutingParameterTableId (*transitionParameters, tables.transition);
         if (!error.has_value ()) {
-            tables.transition = transitionChanges.preferenceTableId;
-            error = ApplyTransitionChanges (transitionDefault, transitionChanges);
+            error = ApplyTransitionTableChange (transitionDefault, tables.transition);
         }
     }
     if (error.has_value ()) {
@@ -749,12 +749,6 @@ static GS::ObjectState SetRoutingParametersOfRoutingNode (const ACAPI::MEP::Uniq
     }
     if (error.has_value ()) {
         return CreateFailedExecutionResult (APIERR_GENERAL, error.value ());
-    }
-    if (transitionChanges.angle.has_value ()) {
-        ACAPI::Result<RoutingNode> changedNode = RoutingNode::Get (elementId);
-        if (changedNode.IsErr () || !TransitionHasAngle (changedNode->GetTransitionDefaultParameters (), transitionChanges.angle)) {
-            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the transition angle but the node kept its old angle.");
-        }
     }
     if (tables.IsEmpty ()) {
         return CreateSuccessfulExecutionResult ();

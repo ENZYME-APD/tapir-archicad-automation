@@ -1,5 +1,5 @@
 {
-  "title": "SetMEPRoutingParameters sets the transition angle of a duct route and of a routing node; a later size-change join gets a transition of (largest half size step) x tan(angle), and an angle out of [1, 89] or on a pipe changes nothing",
+  "title": "SetMEPRoutingParameters sets the transition angle of a duct route; a later size-change join gets a transition of (largest half size step) x tan(angle), and an angle out of [1, 89] or on a pipe changes nothing",
   "minTapir": "2.0.1",
   "minArchicad": "29",
   "steps": [
@@ -116,8 +116,7 @@
         "elements": [ { "elementId": { "guid": "${small}" } } ]
       },
       "save": {
-        "transition": "routingElements[0].nodes[1].transitions[0].elementId.guid",
-        "node": "routingElements[0].nodes[1].elementId.guid"
+        "transition": "routingElements[0].nodes[1].transitions[0].elementId.guid"
       }
     },
     {
@@ -133,33 +132,6 @@
       },
       "expect": [
         { "expr": "(${x1} - ${x0}) * (${x1} - ${x0})", "approx": 0.014203, "tol": 0.0002, "name": "length 0.1 x tan 50 = 0.1192 m" }
-      ]
-    },
-    {
-      "id": "transition angle 30 on that node",
-      "command": "SetMEPRoutingParameters",
-      "creates": false,
-      "params": {
-        "elements": [
-          {
-            "elementId": { "guid": "${node}" },
-            "transitionParameters": { "angle": 30.0 }
-          }
-        ]
-      },
-      "expect": [
-        { "path": "executionResults[0].success", "eq": true }
-      ]
-    },
-    {
-      "id": "node read back",
-      "command": "GetMEPRoutingParameters",
-      "creates": false,
-      "params": {
-        "elements": [ { "elementId": { "guid": "${node}" } } ]
-      },
-      "expect": [
-        { "path": "routingParameters[0].transitionParameters.angle", "approx": 30.0, "tol": 1e-6 }
       ]
     },
     {
