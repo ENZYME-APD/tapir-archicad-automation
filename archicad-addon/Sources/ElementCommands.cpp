@@ -567,7 +567,8 @@ static GS::ObjectState CreateColumnSegmentTaperObjectState (const API_AssemblySe
     return taper;
 }
 
-static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
+// The length of a column segment (AssemblySegmentLength, which also allows "Unknown").
+static GS::ObjectState CreateColumnSegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
 {
     GS::ObjectState length;
     if (scheme.lengthType == APIAssemblySegment_Fixed) {
@@ -590,7 +591,7 @@ static void AddColumnSegmentLength (const API_ElementMemo& memo, GSIndex segment
     }
     const GSSize nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
     if (segmentIndex < nSchemes) {
-        os.Add ("length", CreateAssemblySegmentLengthObjectState (memo.assemblySegmentSchemes[segmentIndex]));
+        os.Add ("length", CreateColumnSegmentLengthObjectState (memo.assemblySegmentSchemes[segmentIndex]));
     }
 }
 
