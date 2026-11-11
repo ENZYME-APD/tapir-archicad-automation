@@ -25273,6 +25273,7 @@
             "layerIndex",
             "width",
             "height",
+            "depth",
             "sillHeight",
             "referenceLineLocation",
             "topOffset",
