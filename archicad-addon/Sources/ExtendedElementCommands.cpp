@@ -5717,6 +5717,33 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+// The holes of a beam as CreateBeams and ModifyBeams write them (#2551): the given array
+// replaces all holes of the beam, numbered from 1 in the given order. An empty array gives a
+// one-item cleared handle, which Archicad reads as no holes (as ModifyBeams always did).
+static bool FillBeamHolesMemo (const GS::Array<GS::ObjectState>& holes, API_ElementMemo& memo)
+{
+    const GSSize nHoles = holes.GetSize ();
+    memo.beamHoles = reinterpret_cast<API_Beam_Hole**> (BMAllocateHandle (GS::Max<GSSize> (nHoles, 1) * sizeof (API_Beam_Hole), ALLOCATE_CLEAR, 0));
+    if (memo.beamHoles == nullptr) {
+        return false;
+    }
+    for (GSIndex i = 0; i < nHoles; ++i) {
+        const GS::ObjectState& holeOs = holes[i];
+        API_Beam_Hole& hole = (*memo.beamHoles)[i];
+        hole = {};
+        hole.holeID = static_cast<Int32> (i + 1);
+        GS::UniString typeStr;
+        holeOs.Get ("type", typeStr);
+        hole.holeType = (typeStr == "Circular") ? APIBHole_Circular : APIBHole_Rectangular;
+        holeOs.Get ("showContour", hole.holeContureOn);
+        holeOs.Get ("centerX", hole.centerx);
+        holeOs.Get ("centerZ", hole.centerz);
+        holeOs.Get ("width", hole.width);
+        holeOs.Get ("height", hole.height);
+    }
+    return true;
+}
+
 CreateBeamsCommand::CreateBeamsCommand () :
     CreateElementsCommandBase ("CreateBeams", API_BeamID, "beamsData")
 {
@@ -5805,6 +5832,13 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite, or segmentCount segments: their cross section, taper and length. Applied after segmentCount and the cross section given for all segments, so a segment given here keeps its own values. A segmentIndex the beam does not have is an error and the beam is not created.",
                             "items": {
                                 "$ref": "#/BeamSegmentModification"
+                            }
+                        },
+                        "holes": {
+                            "type": "array",
+                            "description": "Optional holes of the new beam, in the shape ModifyBeams takes and GetDetailsOfElements returns them (centerX along the beam from begCoordinate). They are written right after the beam is created; a hole Archicad refuses fails the item and the beam is not created. When omitted, no holes are written.",
+                            "items": {
+                                "$ref": "#/BeamHoleModification"
                             }
                         },)") + BeamSurfaceAndFillSchemaProperties + R"(
                     },
@@ -5955,18 +5989,43 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 }
 
 // A beam whose segmentCount Archicad did not keep is deleted again and the item fails (#2678).
+// The holes are written as ModifyBeams writes them (#2551), with ACAPI_Element_Change on the new
+// beam rather than with the memo of ACAPI_Element_Create, so the create itself stays as it was.
+// An error here makes CreateElementsCommandBase delete the new beam and fail the item.
 GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
 {
-    if (!parameters.Contains ("segmentCount")) {
+    if (parameters.Contains ("segmentCount")) {
+        API_Element created = {};
+        created.header.guid = newElementGuid;
+        const GSErrCode err = ACAPI_Element_Get (&created);
+        if (err != NoError) {
+            return err;
+        }
+        if (created.beam.nSegments != requestedElement.beam.nSegments) {
+            return APIERR_GENERAL;
+        }
+    }
+
+    GS::Array<GS::ObjectState> holes;
+    if (!parameters.Get ("holes", holes) || holes.IsEmpty ()) {
         return NoError;
     }
-    API_Element created = {};
-    created.header.guid = newElementGuid;
-    const GSErrCode err = ACAPI_Element_Get (&created);
+
+    API_Element element = {};
+    element.header.guid = newElementGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
     if (err != NoError) {
         return err;
     }
-    return created.beam.nSegments == requestedElement.beam.nSegments ? NoError : APIERR_GENERAL;
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&]() { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (!FillBeamHolesMemo (holes, memo)) {
+        return APIERR_MEMFULL;
+    }
+    return ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_BeamHole, true);
 }
 
 // The settings CreateStairs and ModifyStairs share (#2220): this fragment ends the item schema of
@@ -11202,25 +11261,9 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             if (item.Get ("holes", holes)) {
                 API_ElementMemo memo = {};
                 const GS::OnExit cleanup ([&]() { ACAPI_DisposeElemMemoHdls (&memo); });
-                const GSSize nHoles = holes.GetSize ();
-                memo.beamHoles = reinterpret_cast<API_Beam_Hole**> (BMAllocateHandle (GS::Max<GSSize> (nHoles, 1) * sizeof (API_Beam_Hole), ALLOCATE_CLEAR, 0));
-                if (memo.beamHoles == nullptr) {
+                if (!FillBeamHolesMemo (holes, memo)) {
                     results.Push (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate memory for beam holes."));
                     continue;
-                }
-                for (GSIndex i = 0; i < nHoles; ++i) {
-                    const GS::ObjectState& holeOs = holes[i];
-                    API_Beam_Hole& hole = (*memo.beamHoles)[i];
-                    hole = {};
-                    hole.holeID = static_cast<Int32> (i + 1);
-                    GS::UniString typeStr;
-                    holeOs.Get ("type", typeStr);
-                    hole.holeType = (typeStr == "Circular") ? APIBHole_Circular : APIBHole_Rectangular;
-                    holeOs.Get ("showContour", hole.holeContureOn);
-                    holeOs.Get ("centerX", hole.centerx);
-                    holeOs.Get ("centerZ", hole.centerz);
-                    holeOs.Get ("width", hole.width);
-                    holeOs.Get ("height", hole.height);
                 }
 
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_BeamHole, true);
