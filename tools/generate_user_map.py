@@ -19,8 +19,8 @@ Which messages count, per person (by their Discord account, never written out):
   A person's latest /where wins; without one, their latest answer in the welcome channel; without
   one, their latest statement elsewhere. A message that cannot be placed is left out (the run prints how many).
 
-Placing: OpenStreetMap's Nominatim (one request per second, as its usage policy asks), first as a
-town, then as a country. What it found is kept in the "geocode" section of the file and carried
+Placing: OpenStreetMap's Nominatim (one request per second, as its usage policy asks): a bare
+country name as that country ("Italy", not Italy, Texas), anything else as a town, else a country. What it found is kept in the "geocode" section of the file and carried
 over from the previous run (--previous), so a place is looked up once.
 
 Corrections: tools/user_map_overrides.json maps a message id (Discord: right-click the message,
@@ -56,6 +56,7 @@ sys.path.insert (0, os.path.dirname (os.path.abspath (__file__)))
 import generate_community_data as community  # noqa: E402  (the Discord helpers)
 
 NOMINATIM = 'https://nominatim.openstreetmap.org/search'
+GEOCODE_VERSION = 2  # raise when the lookup rules change, so cached lookups are made again
 WELCOME_CHANNEL = os.environ.get ('USER_MAP_CHANNEL') or 'welcome-and-rules'
 QUESTION = re.compile (r'where\s+(are\s+)?(you|everyone|people)\s+(are\s+)?(from|based|living)|where\s+are\s+the\s+users', re.I)
 OVERRIDES = os.path.join (os.path.dirname (os.path.abspath (__file__)), 'user_map_overrides.json')
@@ -144,18 +145,31 @@ def place_of (hit, feature):
             'lat': round (float (hit['lat']), 2), 'lon': round (float (hit['lon']), 2), 'kind': feature}
 
 
+def fold (text):
+    text = unicodedata.normalize ('NFKD', text or '').lower ()
+    return re.sub (r'[^a-z]', '', ''.join (c for c in text if not unicodedata.combining (c)))
+
+
+def same_name (phrase, *names):
+    """Whether the phrase is just one of these names ("the Netherlands", "Türkiye ")."""
+    words = fold (re.sub (r'^\s*the\s+', '', phrase, flags=re.I))
+    return any (words and words == fold (name) for name in names if name)
+
+
 def geocode (phrase, cache):
     key = unicodedata.normalize ('NFKC', phrase).lower ()
     if key in cache:
         return cache[key]
     place = None
     try:
-        for feature in ('settlement', 'country'):
-            hit = nominatim (phrase, feature)
-            if hit:
-                place = place_of (hit, feature)
-                if place:
-                    break
+        # A bare country name is the country, not a town of that name ("Italy" is not Italy, Texas).
+        hit = nominatim (phrase, 'country')
+        country = place_of (hit, 'country') if hit else None
+        if country and same_name (phrase, country['country'], hit.get ('name')):
+            place = country
+        else:
+            hit = nominatim (phrase, 'settlement')
+            place = (place_of (hit, 'settlement') if hit else None) or country
     except (urllib.error.URLError, KeyError, ValueError) as error:
         print (f'Not placed now ({error}), tried again on the next run: {phrase!r}', file=sys.stderr)
         return None  # not cached: a failed request is not "no such place"
@@ -320,6 +334,8 @@ def main ():
 
     previous = load_json (args.previous, {})
     cache = previous.get ('geocode') if isinstance (previous.get ('geocode'), dict) else {}
+    if previous.get ('geocodeVersion') != GEOCODE_VERSION:
+        cache = {}  # looked up by older rules: look them up again
     overrides = {str (k): v for k, v in load_json (OVERRIDES, {}).items () if not str (k).startswith ('_')}
 
     token = community.discord_token ()
@@ -339,7 +355,7 @@ def main ():
 
     data, unplaced = assemble (commands, answers, statements, overrides, cache)
     data = dict ({'version': 1, 'generatedAt': community.now ().strftime ('%Y-%m-%dT%H:%M:%SZ')}, **data,
-                 geocode=dict (sorted (cache.items ())))
+                 geocodeVersion=GEOCODE_VERSION, geocode=dict (sorted (cache.items ())))
     os.makedirs (os.path.dirname (os.path.abspath (args.out)), exist_ok=True)
     with open (args.out, 'w', encoding='utf-8') as file:
         json.dump (data, file, ensure_ascii=False, indent=1)
