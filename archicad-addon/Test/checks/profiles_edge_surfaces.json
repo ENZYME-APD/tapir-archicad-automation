@@ -9,7 +9,7 @@
       "command": "GetAttributesByType",
       "creates": false,
       "params": {"attributeType": "Surface"},
-      "save": {"s1": "attributes[0].attributeId.guid", "s2": "attributes[1].attributeId.guid"},
+      "save": {"s1": "attributes[0].attributeId.guid", "s2": "attributes[1].attributeId.guid", "s1Index": "attributes[0].index", "s2Index": "attributes[1].index"},
       "expect": [
         {"path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces"}
       ]
@@ -54,14 +54,23 @@
       "command": "GetProfiles",
       "creates": false,
       "params": {"attributeIds": [{"attributeId": {"guid": "${p1}"}}], "fields": ["skins"]},
-      "save": {"skin": "profiles[0].skins[0].skinId"},
+      "save": {"skin": "profiles[0].skins[0].skinId", "e1": "profiles[0].skins[0].edges[1].surfaceId.attributeId.guid"},
       "expect": [
         {"path": "profiles[0].skins", "len": 1},
         {"path": "profiles[0].skins[0].edges[1].surfaceFromBuildingMaterial", "eq": false, "name": "edge 1 has a custom surface"},
-        {"path": "profiles[0].skins[0].edges[1].surfaceId.attributeId.guid", "eq": "${s1}", "name": "edge 1 surface is s1"},
         {"path": "profiles[0].skins[0].edges[2].surfaceFromBuildingMaterial", "eq": true, "name": "edge 2 takes the building material's surface"},
         {"path": "profiles[0].skins[0].edges[2].surfaceId", "exists": false, "name": "edge 2 has no custom surface"},
         {"path": "profiles[0].skins[0].edges[2].buildingMaterialId", "exists": false, "name": "edge 2 reports no building material of its own"}
+      ]
+    },
+    {
+      "id": "edge 1's surface is s1",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${e1}"}}]},
+      "save": {"e1Index": "surfaces[0].index"},
+      "expect": [
+        {"expr": "${e1Index} - ${s1Index}", "approx": 0, "name": "edge 1 surface is s1"}
       ]
     },
     {
@@ -96,13 +105,23 @@
       "command": "GetProfiles",
       "creates": false,
       "params": {"attributeIds": [{"attributeId": {"guid": "${p1}"}}], "fields": ["skins"]},
+      "save": {"e2": "profiles[0].skins[0].edges[2].surfaceId.attributeId.guid"},
       "expect": [
         {"path": "profiles[0].skins", "len": 1},
         {"path": "profiles[0].skins[0].edges[2].surfaceFromBuildingMaterial", "eq": false, "name": "edge 2 has a custom surface"},
-        {"path": "profiles[0].skins[0].edges[2].surfaceId.attributeId.guid", "eq": "${s2}", "name": "edge 2 surface is s2"},
         {"path": "profiles[0].skins[0].edges[1].surfaceFromBuildingMaterial", "eq": true, "name": "edge 1 back to the building material's surface"},
         {"path": "profiles[0].skins[0].edges[1].surfaceId", "exists": false, "name": "edge 1 no longer reports a custom surface"},
         {"path": "profiles[0].skins[0].edges[1].buildingMaterialId", "exists": false, "name": "edge 1's old surface index is not reported as a building material"}
+      ]
+    },
+    {
+      "id": "edge 2's surface is s2",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${e2}"}}]},
+      "save": {"e2Index": "surfaces[0].index"},
+      "expect": [
+        {"expr": "${e2Index} - ${s2Index}", "approx": 0, "name": "edge 2 surface is s2"}
       ]
     }
   ],
