@@ -2940,6 +2940,10 @@ GSErrCode Initialize (void)
             issueCommands, "1.1.9",
             "Retrieves the changes belong to the given elements."
         );
+        err |= RegisterCommand<CreateChangeMarkersCommand> (
+            issueCommands, "2.0.1",
+            "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults. GetDetailsOfElements reads the markers back."
+        );
         AddCommandGroup (issueCommands);
     }
 

@@ -3,6 +3,7 @@
 #include "ElementCreationCommands.hpp"
 #include "PropertyCommands.hpp"
 #include "ExtendedElementCommands.hpp"
+#include "RevisionCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 #include "GSUnID.hpp"
@@ -3151,6 +3152,26 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // with GetDimensionData.
                 AddDimensionDetails (typeSpecificDetails, elem);
                 break;
+
+            case API_ChangeMarkerID: {
+                // The marker of a revision Change (#2658): the Change it is linked to, which parts it
+                // shows, and its geometry. The cloud polygon is read from the memo.
+                const API_ChangeMarkerType& changeMarker = elem.changeMarker;
+                typeSpecificDetails.Add ("linkType", ChangeMarkerLinkTypeToString (changeMarker.linkType));
+                typeSpecificDetails.Add ("markerComponent", ChangeMarkerComponentToString (changeMarker.markerComponent));
+                typeSpecificDetails.Add ("changeId", GS::UniString (changeMarker.changeId));
+                typeSpecificDetails.Add ("changeDescription", GS::UniString (changeMarker.changeName));
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (changeMarker.pos));
+                if (changeMarker.poly.nCoords > 0) {
+                    AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygon", "polygonArcs");
+                }
+                if (changeMarker.markerGuid != APINULLGuid) {
+                    typeSpecificDetails.Add ("markerId", CreateGuidObjectState (changeMarker.markerGuid));
+                }
+                typeSpecificDetails.Add ("angle", changeMarker.angle);
+                typeSpecificDetails.Add ("horizontalMarker", changeMarker.horizontalMarker);
+                break;
+            }
 
             case API_LevelDimensionID: {
                 // "level" is the value the dimension shows: the parent's height at "position"

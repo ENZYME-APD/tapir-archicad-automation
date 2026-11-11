@@ -195,6 +195,28 @@
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
 
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Create a revision Change without placing a Change Marker, or change the ID or description of an existing Change</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Create the Change together with its first marker with <a href="../archicad-addon/#CreateChangeMarkers">CreateChangeMarkers</a> (createChange). To change an existing Change, use Archicad&rsquo;s Change Manager.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The <code>ACAPI_Revision_*</code> functions (<code>ACAPI_Database.h</code>, AC27&ndash;AC30; <code>APIDb_*RVM*ID</code> in AC25&ndash;AC26) read Changes; the only one that writes, <code>ACAPI_Revision_ChangeRVMIssue</code>, changes an Issue. A Change is only created by <code>ACAPI_Element_Create</code>/<code>ACAPI_Element_CreateExt</code> of a Change Marker with <code>linkType</code> <code>APICMLT_CreateNewChange</code> (<code>API_ChangeMarkerType</code>, <code>APIdefs_Elements.h</code>).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2658">#2658</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the custom scheme fields of a revision Change</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Fill them in Archicad&rsquo;s Change Manager; <a href="../archicad-addon/#GetRevisionChanges">GetRevisionChanges</a> reads them back.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RVMChange::customData</code> (<code>APIdefs_Database.h</code>) is only filled by the reading functions; no <code>ACAPI_Revision_*</code> functions (<code>ACAPI_Database.h</code>, AC27&ndash;AC30; <code>APIDb_*RVM*ID</code> in AC25&ndash;AC26) writes a Change, and <code>API_ChangeMarkerType</code> has only <code>changeId</code> and <code>changeName</code> (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2658">#2658</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Add elements to a revision Change, or remove them from it</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Add them in Archicad&rsquo;s Change Manager; <a href="../archicad-addon/#GetRevisionChangesOfElements">GetRevisionChangesOfElements</a> reads which Changes an element belongs to.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Revision_GetRVMElemChangeIds</code> (<code>APIDb_GetRVMElemChangeIdsID</code> in AC25&ndash;AC26) only reads the Changes of an element; no function writes them (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2658">#2658</a></td>
+                        </tr>
+
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Archicad's interface</th></tr>
                         <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read the text of the Session Report window</td>
