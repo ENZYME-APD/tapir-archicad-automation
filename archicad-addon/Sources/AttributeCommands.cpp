@@ -87,8 +87,12 @@ static GS::Optional<GS::ObjectState> GetAttributeIdFromIndex (API_AttrTypeID att
 
 static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId, API_AttrTypeID attributeType, API_AttributeIndex& attributeIndex)
 {
+    const API_Guid requestedGuid = GetGuidFromAttributesArrayItem (attributeId);
+    if (requestedGuid == APINULLGuid) {
+        return false;
+    }
     API_Attribute attribute = {};
-    attribute.header.guid = GetGuidFromAttributesArrayItem (attributeId);
+    attribute.header.guid = requestedGuid;
     attribute.header.typeID = attributeType;
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
@@ -97,10 +101,12 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
 
     // Archicad finds an attribute by its guid whatever type is asked for, so a layer's guid given as a
     // Fill would give the layer's index, which is some other fill. Read the attribute of the asked type
-    // at that index back and accept it only when it is the same attribute.
+    // at that index back and accept it only when it is the same attribute. A guid the Get came back with
+    // that is not the one asked for is another attribute too (a Surface's guid given as a Building
+    // Material was accepted in AC28, #2585).
     const API_Guid guid = attribute.header.guid;
     const API_AttributeIndex index = attribute.header.index;
-    if (attribute.header.typeID != attributeType) {
+    if (guid != requestedGuid || attribute.header.typeID != attributeType) {
         return false;
     }
     API_Attribute check = {};

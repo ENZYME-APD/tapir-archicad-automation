@@ -439,7 +439,7 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
     }
 }
 
-// The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
+// The length of a beam or column segment, from the element's assemblySegmentSchemes (#2551, #2552).
 static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
 {
     GS::ObjectState os;
@@ -565,21 +565,6 @@ static GS::ObjectState CreateColumnSegmentTaperObjectState (const API_AssemblySe
     taper.Add ("endDepth", segment.endHeight);
     taper.Add ("isEndWidthAndDepthLinked", segment.isEndWidthAndHeightLinked);
     return taper;
-}
-
-static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
-{
-    GS::ObjectState length;
-    if (scheme.lengthType == APIAssemblySegment_Fixed) {
-        length.Add ("lengthType", "Fixed");
-    } else if (scheme.lengthType == APIAssemblySegment_Proportional) {
-        length.Add ("lengthType", "Proportional");
-    } else {
-        length.Add ("lengthType", "Unknown");
-    }
-    length.Add ("fixedLength", scheme.fixedLength);
-    length.Add ("lengthProportion", scheme.lengthProportion);
-    return length;
 }
 
 // The segment schemes are kept in the Column's memo, one for each segment, in the order of the segments.
