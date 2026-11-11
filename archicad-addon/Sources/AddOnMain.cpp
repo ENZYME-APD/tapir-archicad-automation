@@ -1098,7 +1098,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.7.3",
             "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. "
             "Returns for each one whether the baseline was already correct, could be solved or could not be solved, "
-            "with the baseline and the main stair settings after solving. Available from Archicad 27."
+            "with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, "
+            "2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. "
+            "The solver checks the baseline only: it does not lay out the steps, so stepNum, riserHeight and treadDepth are the given values "
+            "or the tool defaults, and CreateStairs picks the riser count and height for totalHeight within the rules. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateSlabsCommand> (
             elementCommands, "1.0.3",

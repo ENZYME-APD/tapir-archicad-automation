@@ -7107,6 +7107,45 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetRawResponseSchema () c
 }
 
 #ifdef ServerMainVers_2700
+// The Rules and Standards of a stair, in the StairRules definition: the limits Archicad lays the
+// steps out by when it creates the stair (#2526). The same fields, in the same form, as the stair
+// details of GetDetailsOfElements in #2531.
+static GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules)
+{
+    GS::ObjectState os;
+    os.Add ("riserHeightMinValue", rules.riserHeightMinValue);
+    os.Add ("riserHeightMinApplied", rules.riserHeightMinApplied);
+    os.Add ("riserHeightMaxValue", rules.riserHeightMaxValue);
+    os.Add ("riserHeightMaxApplied", rules.riserHeightMaxApplied);
+    os.Add ("treadDepthMinValue", rules.treadDepthMinValue);
+    os.Add ("treadDepthMinApplied", rules.treadDepthMinApplied);
+    os.Add ("treadDepthMaxValue", rules.treadDepthMaxValue);
+    os.Add ("treadDepthMaxApplied", rules.treadDepthMaxApplied);
+    os.Add ("ruleMinValue", rules.ruleMinValue);
+    os.Add ("ruleMinApplied", rules.ruleMinApplied);
+    os.Add ("ruleMaxValue", rules.ruleMaxValue);
+    os.Add ("ruleMaxApplied", rules.ruleMaxApplied);
+    os.Add ("riserPlusGoingMinValue", rules.riserPlusGoingMinValue);
+    os.Add ("riserPlusGoingMinApplied", rules.riserPlusGoingMinApplied);
+    os.Add ("riserPlusGoingMaxValue", rules.riserPlusGoingMaxValue);
+    os.Add ("riserPlusGoingMaxApplied", rules.riserPlusGoingMaxApplied);
+    os.Add ("riserGoingRatioMinValue", rules.riserGoingRatioMinValue);
+    os.Add ("riserGoingRatioMinApplied", rules.riserGoingRatioMinApplied);
+    os.Add ("riserGoingRatioMaxValue", rules.riserGoingRatioMaxValue);
+    os.Add ("riserGoingRatioMaxApplied", rules.riserGoingRatioMaxApplied);
+    os.Add ("stairPitchMinValue", rules.stairPitchMinValue);
+    os.Add ("stairPitchMinApplied", rules.stairPitchMinApplied);
+    os.Add ("stairPitchMaxValue", rules.stairPitchMaxValue);
+    os.Add ("stairPitchMaxApplied", rules.stairPitchMaxApplied);
+    os.Add ("landingLengthMinValue", rules.landingLengthMinValue);
+    os.Add ("landingLengthMinApplied", rules.landingLengthMinApplied);
+    os.Add ("walkingLineOffsetMinValue", rules.walkingLineOffsetMinValue);
+    os.Add ("walkingLineOffsetMinApplied", rules.walkingLineOffsetMinApplied);
+    os.Add ("winderTurnOffsetMinValue", rules.winderTurnOffsetMinValue);
+    os.Add ("winderTurnOffsetMinApplied", rules.winderTurnOffsetMinApplied);
+    return os;
+}
+
 static GS::UniString StairSolutionToString (API_StairSolutionID solution)
 {
     switch (solution) {
@@ -7193,6 +7232,11 @@ GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& param
         result.Add ("stepNum", static_cast<Int32> (element.stair.stepNum));
         result.Add ("riserHeight", element.stair.riserHeight);
         result.Add ("treadDepth", element.stair.treadDepth);
+        // The solver lays out no steps, so stepNum, riserHeight and treadDepth above are the given
+        // values or the tool defaults. The rules are what CreateStairs would lay the steps out by:
+        // SetTypeSpecificParameters has already pinned a given treadDepth in them, as CreateStairs
+        // does (#2526).
+        result.Add ("rules", CreateStairRulesObjectState (element.stair.rules));
 
         solutions (result);
     }
