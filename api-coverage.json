@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 23:42 UTC",
+ "generatedAt": "2026-11-11 07:06 UTC",
  "versions": [
   25,
   26,
@@ -4681,12 +4681,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2540,
-     "title": "ModifyCurtainWalls: change the height through the segment contours"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5966,10 +5961,6 @@
      "title": "ModifyBeams: set the surfaces of a beam segment"
     },
     {
-     "number": 2540,
-     "title": "ModifyCurtainWalls: change the height through the segment contours"
-    },
-    {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     }
@@ -7031,10 +7022,6 @@
      "title": "[1/3] ModifyCurtainWalls: write story visibility and floor plan display"
     },
     {
-     "number": 2540,
-     "title": "ModifyCurtainWalls: change the height through the segment contours"
-    },
-    {
      "number": 2537,
      "title": "ApplyFavoritesToElements: keep a stair's flight width"
     },
@@ -7756,10 +7743,6 @@
      "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
     },
     {
-     "number": 2540,
-     "title": "ModifyCurtainWalls: change the height through the segment contours"
-    },
-    {
      "number": 2537,
      "title": "ApplyFavoritesToElements: keep a stair's flight width"
     },
@@ -8444,10 +8427,6 @@
     {
      "number": 2544,
      "title": "ModifyBeams: set the surfaces of a beam segment"
-    },
-    {
-     "number": 2540,
-     "title": "ModifyCurtainWalls: change the height through the segment contours"
     },
     {
      "number": 2400,
@@ -26403,10 +26382,6 @@
      "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
     },
     {
-     "number": 2540,
-     "title": "ModifyCurtainWalls: change the height through the segment contours"
-    },
-    {
      "number": 2520,
      "title": "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated"
     },
@@ -39227,10 +39202,6 @@
     {
      "number": 2541,
      "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
-    },
-    {
-     "number": 2540,
-     "title": "ModifyCurtainWalls: change the height through the segment contours"
     },
     {
      "number": 2538,
