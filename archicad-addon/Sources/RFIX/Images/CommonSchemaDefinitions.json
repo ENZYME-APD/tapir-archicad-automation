@@ -2275,6 +2275,17 @@
                 "items": {
                     "$ref": "#/ProfileSkin"
                 }
+            },
+            "nominalSize": {
+                "$ref": "#/ProfileNominalSize",
+                "description": "The positions of the profile's nominal width and height lines (Profile Editor), in the coordinates of skins[].outlineCoords. A profile without nominal size lines reports the bounds Archicad uses instead."
+            },
+            "hotspots": {
+                "type": "array",
+                "description": "The hotspots of the profile (Profile Editor), in the coordinates of skins[].outlineCoords.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
             }
         },
         "additionalProperties": false,
@@ -2282,6 +2293,65 @@
             "attributeId",
             "index",
             "name"
+        ]
+    },
+    "ProfileNominalSize": {
+        "type": "object",
+        "description": "The nominal width and height lines of a profile (Profile Editor): the x of the left and right nominal width lines and the y of the bottom and top nominal height lines, in the coordinates of GetProfiles' skins[].outlineCoords. The nominal width is right - left, the nominal height top - bottom.",
+        "properties": {
+            "left": {
+                "type": "number"
+            },
+            "right": {
+                "type": "number"
+            },
+            "bottom": {
+                "type": "number"
+            },
+            "top": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "left",
+            "right",
+            "bottom",
+            "top"
+        ]
+    },
+    "ProfileAreaMethod": {
+        "type": "object",
+        "description": "The component area method of a profile skin (Profile Manager): the line or circle the skin's area is projected onto. None: no projection shape. Line: the line from lineBegin to lineEnd. Circle: the circle with center and radius. Coordinates are those of GetProfiles' skins[].outlineCoords.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Line",
+                    "Circle"
+                ]
+            },
+            "lineBegin": {
+                "$ref": "#/Coordinate2D",
+                "description": "Start of the line. Needed for Line."
+            },
+            "lineEnd": {
+                "$ref": "#/Coordinate2D",
+                "description": "End of the line. Needed for Line."
+            },
+            "center": {
+                "$ref": "#/Coordinate2D",
+                "description": "Center of the circle. Needed for Circle."
+            },
+            "radius": {
+                "type": "number",
+                "description": "Radius of the circle, greater than 0. Needed for Circle."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
         ]
     },
     "ProfileModifier": {
@@ -2336,6 +2406,9 @@
             },
             "cutEndLineTypeId": {
                 "$ref": "#/AttributeIdArrayItem"
+            },
+            "areaMethod": {
+                "$ref": "#/ProfileAreaMethod"
             },
             "edges": {
                 "type": "array",
@@ -3531,6 +3604,9 @@
             "cutEndLineTypeId": {
                 "$ref": "#/AttributeIdArrayItem"
             },
+            "areaMethod": {
+                "$ref": "#/ProfileAreaMethod"
+            },
             "edgeOverrides": {
                 "type": "array",
                 "description": "Per-edge pen/visibility/line type, targeted by 0-based edge index. Edge indices follow the same order as this skin's contours/polygonCoordinates: the outer contour's edges first (one edge per vertex, wrapping around), then each hole's, in the order the contours were given. Verify exact indices for a created skin via a follow-up GetProfiles call's skins[].edges before relying on them.",
@@ -4583,7 +4659,9 @@
             "hasCoreSkin",
             "profileModifiers",
             "skins",
-            "skinOutlines"
+            "skinOutlines",
+            "nominalSize",
+            "hotspots"
         ]
     },
     "CompositeAttributeField": {
