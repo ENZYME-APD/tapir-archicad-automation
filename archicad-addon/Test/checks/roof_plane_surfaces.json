@@ -105,12 +105,57 @@
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "save": {
+        "topGot": "detailsOfElements[0].details.pivotEdges[1].levels[0].topMaterialId.guid",
+        "bottomGot": "detailsOfElements[0].details.pivotEdges[1].levels[0].bottomMaterialId.guid",
+        "fillGot": "detailsOfElements[0].details.pivotEdges[1].levels[0].coverFillId.guid"
+      },
       "expect": [
-        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].topMaterialId.guid", "eq": "${surfA}", "name": "top surface of the plane" },
-        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].bottomMaterialId.guid", "eq": "${surfB}", "name": "bottom surface of the plane" },
-        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].coverFillId.guid", "eq": "${fillA}", "name": "cover fill of the plane" },
         { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].angleType", "eq": "Sloped", "name": "slope type kept" },
         { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].angle", "approx": 0.5, "name": "slope kept" }
+      ]
+    },
+    {
+      "id": "the plane's surfaces are the ones written",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${surfA}" } },
+          { "attributeId": { "guid": "${topGot}" } },
+          { "attributeId": { "guid": "${surfB}" } },
+          { "attributeId": { "guid": "${bottomGot}" } }
+        ],
+        "fields": [ "materialType" ]
+      },
+      "save": {
+        "surfAIndex": "surfaces[0].index",
+        "topIndex": "surfaces[1].index",
+        "surfBIndex": "surfaces[2].index",
+        "bottomIndex": "surfaces[3].index"
+      },
+      "expect": [
+        { "expr": "${topIndex} - ${surfAIndex}", "approx": 0, "tol": 0.1, "name": "top surface of the plane" },
+        { "expr": "${bottomIndex} - ${surfBIndex}", "approx": 0, "tol": 0.1, "name": "bottom surface of the plane" }
+      ]
+    },
+    {
+      "id": "the plane's cover fill is the one written",
+      "command": "GetFills",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${fillA}" } },
+          { "attributeId": { "guid": "${fillGot}" } }
+        ],
+        "fields": [ "subType" ]
+      },
+      "save": {
+        "fillAIndex": "fills[0].index",
+        "fillIndex": "fills[1].index"
+      },
+      "expect": [
+        { "expr": "${fillIndex} - ${fillAIndex}", "approx": 0, "tol": 0.1, "name": "cover fill of the plane" }
       ]
     }
   ]

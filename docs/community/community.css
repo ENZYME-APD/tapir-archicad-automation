@@ -38,9 +38,19 @@
     :root:not([data-theme="light"], [data-theme="contrast"]) .growth { --layer-commits: var(--moss-mist); --layer-github: var(--ochre); --layer-discord: var(--moss-mid); --members: var(--cream) }
 }
 .growth-legend { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font: 700 .71875rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
-.growth-legend li { display: inline-flex; align-items: center; gap: 8px }
-.growth-legend .swatch { width: 12px; height: 12px; border: 1px solid var(--border-strong) }
-.growth-legend .swatch-line { height: 0; width: 18px; border: 0; border-top: 3px solid var(--members) }
+.growth-legend li { display: inline-flex; align-items: center }
+/* Each entry is a toggle button: pressed, its series is drawn; not pressed, it is faded and its swatch hollow. */
+.growth-legend button {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 4px 2px; border: 0; background: none;
+    color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer
+}
+.growth-legend button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px }
+.growth-legend button[aria-pressed="false"] { opacity: .55; text-decoration: line-through }
+.growth-legend button[aria-pressed="false"] .swatch { background: none }
+.growth-legend button[aria-pressed="false"] .swatch-line { border-top-style: dashed }
+.growth-legend button[aria-disabled="true"] { cursor: default }
+.growth .swatch { display: inline-block; flex: none; width: 12px; height: 12px; border: 1px solid var(--border-strong) }
+.growth .swatch-line { height: 0; width: 18px; border: 0; border-top: 3px solid var(--members) }
 .swatch.layer-commits, .activity-chart .layer-commits { background: var(--layer-commits); fill: var(--layer-commits) }
 .swatch.layer-github, .activity-chart .layer-github { background: var(--layer-github); fill: var(--layer-github) }
 .swatch.layer-discordMessages, .activity-chart .layer-discordMessages { background: var(--layer-discord); fill: var(--layer-discord) }
@@ -66,6 +76,37 @@
 .activity-chart text { fill: var(--muted); font: 400 11px var(--body); font-variant-numeric: tabular-nums }
 .activity-chart .line-scale { fill: var(--members); font-weight: 600 }
 
+/* The read-out: a guide line at the month, a dot on each layer's top edge and on the members line,
+   and a tooltip beside the guide line (on its left in the right half), inside the chart. Nothing in it
+   moves by animation. A vertical swipe still scrolls the page on a phone. */
+.activity-chart { position: relative; touch-action: pan-y }
+.activity-chart:focus { outline: none }
+.activity-chart:focus-visible { outline: 2px solid var(--link); outline-offset: 4px }
+.activity-chart .readout { pointer-events: none }
+.activity-chart .guide { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 3 3; opacity: .6 }
+.activity-chart .focus-dot { stroke: var(--surface); stroke-width: 2 }
+.activity-chart .focus-commits { fill: var(--layer-commits) }
+.activity-chart .focus-github { fill: var(--layer-github) }
+.activity-chart .focus-discordMessages { fill: var(--layer-discord) }
+.activity-chart .focus-discordMembers { fill: var(--members) }
+.growth-tip {
+    position: absolute; top: 8px; z-index: 1; display: grid; gap: 3px; min-width: 0; max-width: calc(50% - 14px);
+    padding: 8px 10px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--fg);
+    font-size: .8125rem; font-variant-numeric: tabular-nums; line-height: 1.3; pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .12)
+}
+.growth-tip[hidden] { display: none }
+.growth-tip strong { margin-bottom: 2px }
+.growth-tip .tip-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px }
+.growth-tip .tip-name { display: inline-flex; align-items: center; gap: 6px; color: var(--muted) }
+.growth-tip .tip-name .swatch { align-self: center }
+.growth-tip .tip-value { font-weight: 600; white-space: nowrap }
+.growth-tip .tip-total { margin-top: 2px; padding-top: 4px; border-top: 1px solid var(--line) }
+.growth-tip .tip-total .tip-name { color: var(--fg) }
+@media (max-width: 640px) {
+    .growth-tip { padding: 6px 8px; font-size: .75rem }
+}
+
 .activity-details > summary { cursor: pointer; color: var(--link); font-weight: 600 }
 .activity-table-wrap { overflow-x: auto; margin-top: 10px }
 .activity-table { border-collapse: collapse; font-size: .90625rem; font-variant-numeric: tabular-nums }
@@ -88,5 +129,6 @@
     :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
 }
 :root:not([data-style="legacy"]) .contributors, :root:not([data-style="legacy"]) .activity-card { border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .growth-tip { border-color: var(--line); border-radius: 8px }
 :root:not([data-style="legacy"]) .growth-legend { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
 :root:not([data-style="legacy"]) .contributor-list li::before, :root:not([data-style="legacy"]) .contributor-list .counts { font-family: var(--body) }

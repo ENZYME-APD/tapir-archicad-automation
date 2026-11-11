@@ -99,6 +99,9 @@
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': '1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月',
     '{month} {year}': '{year}年{month}',
     'Growth': '成長',
+    'Total': '合計',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        '成長グラフ。左右の矢印キーで月ごとの数値を読み、Home と End で最初と最後の月に移動し、Esc で数値を隠します。',
     'Growth since <em>2022.</em>': '<em>2022 年</em>からの成長。',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Enzyme での最初のコミットから今日まで、Tapir の周りで毎月起きていることのすべてです。集めるのは数値だけで、メッセージの本文は決して集めません。',

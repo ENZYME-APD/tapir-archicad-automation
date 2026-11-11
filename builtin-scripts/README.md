@@ -216,7 +216,10 @@ it, download the script into a folder on your computer and add that folder to `l
 ```
 
 On macOS the path looks like `/Users/me/Documents/Tapir scripts`. A marketplace folder holds no
-copies of `utilities/` or `aclib/`, so a script that imports them needs copies of those folders next
-to it. Then choose *Reload scripts...* in the palette: the script appears as
+copies of `utilities/` or `aclib/`. With a Tapir Add-On newer than 2.0.0 that is fine: the palette
+runs every Python script with the folder of the built-in scripts it downloaded on `PYTHONPATH`, so a
+script that imports them finds the palette's copies (copies next to the script are still used
+first). With 2.0.0 or older, copy `utilities/` and `aclib/` from `builtin-scripts/` next to the
+script, otherwise it stops with "No module named 'utilities'". Then choose *Reload scripts...* in the palette: the script appears as
 `<file name> (Marketplace)`. The website's [Get started](https://archicad-api.com/start/#marketplace)
 page shows the same steps.
