@@ -1,0 +1,840 @@
+{
+ "version": 1,
+ "generatedAt": "2026-11-11T16:55:11Z",
+ "totals": {
+  "people": 43,
+  "places": 42,
+  "countries": 27
+ },
+ "places": [
+  {
+   "name": "Berlin",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 52.52,
+   "lon": 13.4,
+   "people": 2
+  },
+  {
+   "name": "Barcelona",
+   "country": "Spain",
+   "countryCode": "ES",
+   "lat": 41.38,
+   "lon": 2.18,
+   "people": 1
+  },
+  {
+   "name": "Braunschweig",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 52.26,
+   "lon": 10.52,
+   "people": 1
+  },
+  {
+   "name": "Brisbane",
+   "country": "Australia",
+   "countryCode": "AU",
+   "lat": -27.47,
+   "lon": 153.02,
+   "people": 1
+  },
+  {
+   "name": "Budapest",
+   "country": "Hungary",
+   "countryCode": "HU",
+   "lat": 47.5,
+   "lon": 19.04,
+   "people": 1
+  },
+  {
+   "name": "Daerah Khusus Ibukota Jakarta",
+   "country": "Indonesia",
+   "countryCode": "ID",
+   "lat": -6.18,
+   "lon": 106.83,
+   "people": 1
+  },
+  {
+   "name": "Delhi",
+   "country": "India",
+   "countryCode": "IN",
+   "lat": 28.67,
+   "lon": 77.22,
+   "people": 1
+  },
+  {
+   "name": "Espoo",
+   "country": "Finland",
+   "countryCode": "FI",
+   "lat": 60.2,
+   "lon": 24.66,
+   "people": 1
+  },
+  {
+   "name": "Fürth",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 49.49,
+   "lon": 10.96,
+   "people": 1
+  },
+  {
+   "name": "Helsinki",
+   "country": "Finland",
+   "countryCode": "FI",
+   "lat": 60.17,
+   "lon": 24.94,
+   "people": 1
+  },
+  {
+   "name": "Italy",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 32.18,
+   "lon": -96.88,
+   "people": 1
+  },
+  {
+   "name": "Klagenfurt am Wörthersee",
+   "country": "Austria",
+   "countryCode": "AT",
+   "lat": 46.62,
+   "lon": 14.31,
+   "people": 1
+  },
+  {
+   "name": "Kyiv",
+   "country": "Ukraine",
+   "countryCode": "UA",
+   "lat": 50.45,
+   "lon": 30.52,
+   "people": 1
+  },
+  {
+   "name": "Kyrgyzstan",
+   "country": "Kyrgyzstan",
+   "countryCode": "KG",
+   "lat": 41.51,
+   "lon": 74.72,
+   "people": 1,
+   "countryOnly": true
+  },
+  {
+   "name": "Los Angeles",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 34.05,
+   "lon": -118.24,
+   "people": 1
+  },
+  {
+   "name": "Luxembourg",
+   "country": "Luxembourg",
+   "countryCode": "LU",
+   "lat": 49.61,
+   "lon": 6.13,
+   "people": 1
+  },
+  {
+   "name": "Maribor",
+   "country": "Slovenia",
+   "countryCode": "SI",
+   "lat": 46.56,
+   "lon": 15.65,
+   "people": 1
+  },
+  {
+   "name": "Melbourne",
+   "country": "Australia",
+   "countryCode": "AU",
+   "lat": -37.81,
+   "lon": 144.96,
+   "people": 1
+  },
+  {
+   "name": "Mexico City",
+   "country": "Mexico",
+   "countryCode": "MX",
+   "lat": 19.32,
+   "lon": -99.15,
+   "people": 1
+  },
+  {
+   "name": "Netherlands",
+   "country": "Netherlands",
+   "countryCode": "NL",
+   "lat": 52.24,
+   "lon": 5.63,
+   "people": 1,
+   "countryOnly": true
+  },
+  {
+   "name": "Ohio",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 40.23,
+   "lon": -82.69,
+   "people": 1
+  },
+  {
+   "name": "Okinawa Prefecture",
+   "country": "Japan",
+   "countryCode": "JP",
+   "lat": 26.57,
+   "lon": 128.03,
+   "people": 1
+  },
+  {
+   "name": "Paris",
+   "country": "France",
+   "countryCode": "FR",
+   "lat": 48.85,
+   "lon": 2.35,
+   "people": 1
+  },
+  {
+   "name": "Philadelphia",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 39.95,
+   "lon": -75.16,
+   "people": 1
+  },
+  {
+   "name": "Podgorica",
+   "country": "Montenegro",
+   "countryCode": "ME",
+   "lat": 42.44,
+   "lon": 19.26,
+   "people": 1
+  },
+  {
+   "name": "Pontevedra",
+   "country": "Spain",
+   "countryCode": "ES",
+   "lat": 42.43,
+   "lon": -8.6,
+   "people": 1
+  },
+  {
+   "name": "Poznań",
+   "country": "Poland",
+   "countryCode": "PL",
+   "lat": 52.41,
+   "lon": 16.93,
+   "people": 1
+  },
+  {
+   "name": "Prishtinë",
+   "country": "Kosovo",
+   "countryCode": "XK",
+   "lat": 42.66,
+   "lon": 21.16,
+   "people": 1
+  },
+  {
+   "name": "Rethymno",
+   "country": "Greece",
+   "countryCode": "GR",
+   "lat": 35.37,
+   "lon": 24.47,
+   "people": 1
+  },
+  {
+   "name": "Romania",
+   "country": "Romania",
+   "countryCode": "RO",
+   "lat": 45.99,
+   "lon": 24.69,
+   "people": 1,
+   "countryOnly": true
+  },
+  {
+   "name": "Santiago",
+   "country": "Chile",
+   "countryCode": "CL",
+   "lat": -33.44,
+   "lon": -70.65,
+   "people": 1
+  },
+  {
+   "name": "Sevilla",
+   "country": "Spain",
+   "countryCode": "ES",
+   "lat": 37.39,
+   "lon": -6.0,
+   "people": 1
+  },
+  {
+   "name": "Singapore",
+   "country": "Singapore",
+   "countryCode": "SG",
+   "lat": 1.29,
+   "lon": 103.85,
+   "people": 1
+  },
+  {
+   "name": "South Korea",
+   "country": "South Korea",
+   "countryCode": "KR",
+   "lat": 36.64,
+   "lon": 127.7,
+   "people": 1,
+   "countryOnly": true
+  },
+  {
+   "name": "Stuttgart",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 48.78,
+   "lon": 9.18,
+   "people": 1
+  },
+  {
+   "name": "Sun Valley",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 43.7,
+   "lon": -114.35,
+   "people": 1
+  },
+  {
+   "name": "Sydney",
+   "country": "Australia",
+   "countryCode": "AU",
+   "lat": -33.87,
+   "lon": 151.21,
+   "people": 1
+  },
+  {
+   "name": "Tierra del Fuego",
+   "country": "Argentina",
+   "countryCode": "AR",
+   "lat": -54.38,
+   "lon": -67.57,
+   "people": 1
+  },
+  {
+   "name": "Turkey",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 34.39,
+   "lon": -100.89,
+   "people": 1
+  },
+  {
+   "name": "Warszawa",
+   "country": "Poland",
+   "countryCode": "PL",
+   "lat": 52.23,
+   "lon": 21.01,
+   "people": 1
+  },
+  {
+   "name": "Wels",
+   "country": "Austria",
+   "countryCode": "AT",
+   "lat": 48.16,
+   "lon": 14.02,
+   "people": 1
+  },
+  {
+   "name": "Zealand",
+   "country": "Canada",
+   "countryCode": "CA",
+   "lat": 46.06,
+   "lon": -66.94,
+   "people": 1
+  }
+ ],
+ "countries": [
+  {
+   "name": "United States",
+   "code": "US",
+   "people": 6
+  },
+  {
+   "name": "Germany",
+   "code": "DE",
+   "people": 5
+  },
+  {
+   "name": "Australia",
+   "code": "AU",
+   "people": 3
+  },
+  {
+   "name": "Spain",
+   "code": "ES",
+   "people": 3
+  },
+  {
+   "name": "Austria",
+   "code": "AT",
+   "people": 2
+  },
+  {
+   "name": "Finland",
+   "code": "FI",
+   "people": 2
+  },
+  {
+   "name": "Poland",
+   "code": "PL",
+   "people": 2
+  },
+  {
+   "name": "Argentina",
+   "code": "AR",
+   "people": 1
+  },
+  {
+   "name": "Canada",
+   "code": "CA",
+   "people": 1
+  },
+  {
+   "name": "Chile",
+   "code": "CL",
+   "people": 1
+  },
+  {
+   "name": "France",
+   "code": "FR",
+   "people": 1
+  },
+  {
+   "name": "Greece",
+   "code": "GR",
+   "people": 1
+  },
+  {
+   "name": "Hungary",
+   "code": "HU",
+   "people": 1
+  },
+  {
+   "name": "India",
+   "code": "IN",
+   "people": 1
+  },
+  {
+   "name": "Indonesia",
+   "code": "ID",
+   "people": 1
+  },
+  {
+   "name": "Japan",
+   "code": "JP",
+   "people": 1
+  },
+  {
+   "name": "Kosovo",
+   "code": "XK",
+   "people": 1
+  },
+  {
+   "name": "Kyrgyzstan",
+   "code": "KG",
+   "people": 1
+  },
+  {
+   "name": "Luxembourg",
+   "code": "LU",
+   "people": 1
+  },
+  {
+   "name": "Mexico",
+   "code": "MX",
+   "people": 1
+  },
+  {
+   "name": "Montenegro",
+   "code": "ME",
+   "people": 1
+  },
+  {
+   "name": "Netherlands",
+   "code": "NL",
+   "people": 1
+  },
+  {
+   "name": "Romania",
+   "code": "RO",
+   "people": 1
+  },
+  {
+   "name": "Singapore",
+   "code": "SG",
+   "people": 1
+  },
+  {
+   "name": "Slovenia",
+   "code": "SI",
+   "people": 1
+  },
+  {
+   "name": "South Korea",
+   "code": "KR",
+   "people": 1
+  },
+  {
+   "name": "Ukraine",
+   "code": "UA",
+   "people": 1
+  }
+ ],
+ "geocode": {
+  "a spanish fella in hong kong": null,
+  "austria, klagenfurt": {
+   "name": "Klagenfurt am Wörthersee",
+   "country": "Austria",
+   "countryCode": "AT",
+   "lat": 46.62,
+   "lon": 14.31,
+   "kind": "settlement"
+  },
+  "austria, wels": {
+   "name": "Wels",
+   "country": "Austria",
+   "countryCode": "AT",
+   "lat": 48.16,
+   "lon": 14.02,
+   "kind": "settlement"
+  },
+  "barcelona, guys": null,
+  "barcelona, spain": {
+   "name": "Barcelona",
+   "country": "Spain",
+   "countryCode": "ES",
+   "lat": 41.38,
+   "lon": 2.18,
+   "kind": "settlement"
+  },
+  "berlin": {
+   "name": "Berlin",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 52.52,
+   "lon": 13.4,
+   "kind": "settlement"
+  },
+  "berlin, germany": {
+   "name": "Berlin",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 52.52,
+   "lon": 13.4,
+   "kind": "settlement"
+  },
+  "brisbane, australia": {
+   "name": "Brisbane",
+   "country": "Australia",
+   "countryCode": "AU",
+   "lat": -27.47,
+   "lon": 153.02,
+   "kind": "settlement"
+  },
+  "budapest, hungary": {
+   "name": "Budapest",
+   "country": "Hungary",
+   "countryCode": "HU",
+   "lat": 47.5,
+   "lon": 19.04,
+   "kind": "settlement"
+  },
+  "component file": null,
+  "costa rica, i am a civil": null,
+  "delhi, india": {
+   "name": "Delhi",
+   "country": "India",
+   "countryCode": "IN",
+   "lat": 28.67,
+   "lon": 77.22,
+   "kind": "settlement"
+  },
+  "espoo, finland": {
+   "name": "Espoo",
+   "country": "Finland",
+   "countryCode": "FI",
+   "lat": 60.2,
+   "lon": 24.66,
+   "kind": "settlement"
+  },
+  "fürth, germany": {
+   "name": "Fürth",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 49.49,
+   "lon": 10.96,
+   "kind": "settlement"
+  },
+  "germany, braunschweig": {
+   "name": "Braunschweig",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 52.26,
+   "lon": 10.52,
+   "kind": "settlement"
+  },
+  "helsinki, finland": {
+   "name": "Helsinki",
+   "country": "Finland",
+   "countryCode": "FI",
+   "lat": 60.17,
+   "lon": 24.94,
+   "kind": "settlement"
+  },
+  "italy": {
+   "name": "Italy",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 32.18,
+   "lon": -96.88,
+   "kind": "settlement"
+  },
+  "jakarta, indonesia": {
+   "name": "Daerah Khusus Ibukota Jakarta",
+   "country": "Indonesia",
+   "countryCode": "ID",
+   "lat": -6.18,
+   "lon": 106.83,
+   "kind": "settlement"
+  },
+  "kyiv, ukraine": {
+   "name": "Kyiv",
+   "country": "Ukraine",
+   "countryCode": "UA",
+   "lat": 50.45,
+   "lon": 30.52,
+   "kind": "settlement"
+  },
+  "kyrgyzstan": {
+   "name": "Kyrgyzstan",
+   "country": "Kyrgyzstan",
+   "countryCode": "KG",
+   "lat": 41.51,
+   "lon": 74.72,
+   "kind": "country"
+  },
+  "los angeles": {
+   "name": "Los Angeles",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 34.05,
+   "lon": -118.24,
+   "kind": "settlement"
+  },
+  "luxembourg": {
+   "name": "Luxembourg",
+   "country": "Luxembourg",
+   "countryCode": "LU",
+   "lat": 49.61,
+   "lon": 6.13,
+   "kind": "settlement"
+  },
+  "melbourne": {
+   "name": "Melbourne",
+   "country": "Australia",
+   "countryCode": "AU",
+   "lat": -37.81,
+   "lon": 144.96,
+   "kind": "settlement"
+  },
+  "mexico": {
+   "name": "Mexico City",
+   "country": "Mexico",
+   "countryCode": "MX",
+   "lat": 19.32,
+   "lon": -99.15,
+   "kind": "settlement"
+  },
+  "new zealand": {
+   "name": "Zealand",
+   "country": "Canada",
+   "countryCode": "CA",
+   "lat": 46.06,
+   "lon": -66.94,
+   "kind": "settlement"
+  },
+  "ohio, usa": {
+   "name": "Ohio",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 40.23,
+   "lon": -82.69,
+   "kind": "settlement"
+  },
+  "okinawa,japan": {
+   "name": "Okinawa Prefecture",
+   "country": "Japan",
+   "countryCode": "JP",
+   "lat": 26.57,
+   "lon": 128.03,
+   "kind": "settlement"
+  },
+  "paris, france": {
+   "name": "Paris",
+   "country": "France",
+   "countryCode": "FR",
+   "lat": 48.85,
+   "lon": 2.35,
+   "kind": "settlement"
+  },
+  "philly, us": {
+   "name": "Philadelphia",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 39.95,
+   "lon": -75.16,
+   "kind": "settlement"
+  },
+  "podgorica, montenegro": {
+   "name": "Podgorica",
+   "country": "Montenegro",
+   "countryCode": "ME",
+   "lat": 42.44,
+   "lon": 19.26,
+   "kind": "settlement"
+  },
+  "pontevedra": {
+   "name": "Pontevedra",
+   "country": "Spain",
+   "countryCode": "ES",
+   "lat": 42.43,
+   "lon": -8.6,
+   "kind": "settlement"
+  },
+  "poznań, poland": {
+   "name": "Poznań",
+   "country": "Poland",
+   "countryCode": "PL",
+   "lat": 52.41,
+   "lon": 16.93,
+   "kind": "settlement"
+  },
+  "prishtina, kosovo": {
+   "name": "Prishtinë",
+   "country": "Kosovo",
+   "countryCode": "XK",
+   "lat": 42.66,
+   "lon": 21.16,
+   "kind": "settlement"
+  },
+  "rethymno,greece": {
+   "name": "Rethymno",
+   "country": "Greece",
+   "countryCode": "GR",
+   "lat": 35.37,
+   "lon": 24.47,
+   "kind": "settlement"
+  },
+  "romania": {
+   "name": "Romania",
+   "country": "Romania",
+   "countryCode": "RO",
+   "lat": 45.99,
+   "lon": 24.69,
+   "kind": "country"
+  },
+  "santiago, chile": {
+   "name": "Santiago",
+   "country": "Chile",
+   "countryCode": "CL",
+   "lat": -33.44,
+   "lon": -70.65,
+   "kind": "settlement"
+  },
+  "seville": {
+   "name": "Sevilla",
+   "country": "Spain",
+   "countryCode": "ES",
+   "lat": 37.39,
+   "lon": -6.0,
+   "kind": "settlement"
+  },
+  "singapore": {
+   "name": "Singapore",
+   "country": "Singapore",
+   "countryCode": "SG",
+   "lat": 1.29,
+   "lon": 103.85,
+   "kind": "settlement"
+  },
+  "slovenia, maribor": {
+   "name": "Maribor",
+   "country": "Slovenia",
+   "countryCode": "SI",
+   "lat": 46.56,
+   "lon": 15.65,
+   "kind": "settlement"
+  },
+  "south korea": {
+   "name": "South Korea",
+   "country": "South Korea",
+   "countryCode": "KR",
+   "lat": 36.64,
+   "lon": 127.7,
+   "kind": "country"
+  },
+  "stuttgart": {
+   "name": "Stuttgart",
+   "country": "Germany",
+   "countryCode": "DE",
+   "lat": 48.78,
+   "lon": 9.18,
+   "kind": "settlement"
+  },
+  "sun valley, idaho": {
+   "name": "Sun Valley",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 43.7,
+   "lon": -114.35,
+   "kind": "settlement"
+  },
+  "sydney, australia": {
+   "name": "Sydney",
+   "country": "Australia",
+   "countryCode": "AU",
+   "lat": -33.87,
+   "lon": 151.21,
+   "kind": "settlement"
+  },
+  "the document i shared": null,
+  "the netherlands": {
+   "name": "Netherlands",
+   "country": "Netherlands",
+   "countryCode": "NL",
+   "lat": 52.24,
+   "lon": 5.63,
+   "kind": "country"
+  },
+  "the netherlands, owner": null,
+  "tierra del fuego, argentina": {
+   "name": "Tierra del Fuego",
+   "country": "Argentina",
+   "countryCode": "AR",
+   "lat": -54.38,
+   "lon": -67.57,
+   "kind": "settlement"
+  },
+  "turkey": {
+   "name": "Turkey",
+   "country": "United States",
+   "countryCode": "US",
+   "lat": 34.39,
+   "lon": -100.89,
+   "kind": "settlement"
+  },
+  "warsaw, poland": {
+   "name": "Warszawa",
+   "country": "Poland",
+   "countryCode": "PL",
+   "lat": 52.23,
+   "lon": 21.01,
+   "kind": "settlement"
+  }
+ }
+}

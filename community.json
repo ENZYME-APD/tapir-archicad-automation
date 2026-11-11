@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-11T10:53:59Z",
+ "generatedAt": "2026-11-11T16:39:59Z",
  "months": [
   {
    "month": "2022-07",
@@ -421,13 +421,13 @@
  ],
  "totals": {
   "commits": 1315,
-  "discordMessages": 11864,
+  "discordMessages": 11951,
   "discordMembers": 656,
   "discordMembersChange": {
    "diff": 16,
    "days": 5
   },
-  "participants": 486
+  "participants": 485
  },
  "topContributors": [
   {
@@ -445,18 +445,18 @@
    "tests": 0
   },
   {
-   "name": "archispatialist",
-   "login": "archispatialist",
-   "commits": 23,
-   "reports": 139,
-   "tests": 0
-  },
-  {
    "name": "weltmaister",
    "login": "weltmaister",
    "commits": 54,
    "reports": 21,
-   "tests": 82
+   "tests": 114
+  },
+  {
+   "name": "archispatialist",
+   "login": "archispatialist",
+   "commits": 35,
+   "reports": 144,
+   "tests": 0
   },
   {
    "name": "Viktor Kovacs",
@@ -515,17 +515,17 @@
    "tests": 0
   },
   {
+   "name": "JBENEITEZ",
+   "login": "JBENEITEZ",
+   "commits": 15,
+   "reports": 14,
+   "tests": 0
+  },
+  {
    "name": "ooki-atsufumi",
    "login": "ooki-atsufumi",
    "commits": 24,
    "reports": 1,
-   "tests": 0
-  },
-  {
-   "name": "JBENEITEZ",
-   "login": "JBENEITEZ",
-   "commits": 13,
-   "reports": 12,
    "tests": 0
   },
   {
