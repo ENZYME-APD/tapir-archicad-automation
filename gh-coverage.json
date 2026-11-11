@@ -1,12 +1,13 @@
 {
- "generatedAt": "2026-11-11 10:37 UTC",
+ "generatedAt": "2026-11-11 12:48 UTC",
  "counts": {
   "done": 788,
+  "open": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 746,
-  "json": 38,
+  "all": 742,
+  "json": 42,
   "partial": 4
  },
  "items": [
@@ -4609,7 +4610,7 @@
    "id": "ScaleElements",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled.",
+   "brief": "Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Elevations are kept: a beam, whose absolute elevation Resize would scale too, gets its story and level back after the resize. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4755,7 +4756,7 @@
    "id": "GetGDLParametersOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets all the GDL parameters (name, type, value) of the given elements.",
+   "brief": "Gets all the GDL parameters (name, type, value) of the given elements. For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), which have no parameter session in the Archicad API, the parameters are read from the component itself: isLocked is then always false and possibleValues is not given.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5017,7 +5018,7 @@
    "id": "CreateColumns",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. Not written by either command: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
+   "brief": "Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, top link (relativeTopStory, topOffset), slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. Not written by either command: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5031,7 +5032,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 25,
+   "parameterCount": 27,
    "coveredParameters": [
     "columnsData",
     "columnsData.axisRotationAngle",
@@ -5054,8 +5055,10 @@
     "columnsData.isWidthAndHeightLinked",
     "columnsData.layerIndex",
     "columnsData.profileId",
+    "columnsData.relativeTopStory",
     "columnsData.slantAngle",
     "columnsData.slantDirectionAngle",
+    "columnsData.topOffset",
     "columnsData.veneer",
     "columnsData.width"
    ],
@@ -5067,7 +5070,7 @@
    "id": "CreateWalls",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, except geometryType and profileType, which the new wall takes from the favorite or the Wall tool defaults (its plan outline is always Straight), and bottomOffset, which comes from zCoordinate. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.",
+   "brief": "Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, including geometryType (Straight or Trapezoid, with begThickness and endThickness), profileType (Normal, Slanted or Trapez) and the slant angles, so a trapezoid or slanted wall is made in one call; only bottomOffset differs, which comes from zCoordinate. A slantAlpha or slantBeta that the wall's profileType cannot take fails the item instead of being dropped. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5084,8 +5087,8 @@
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 45,
+   "parameters": "json",
+   "parameterCount": 50,
    "coveredParameters": [
     "wallsData",
     "wallsData.aboveViewLinePen",
@@ -5093,6 +5096,7 @@
     "wallsData.alignTexture",
     "wallsData.arcAngle",
     "wallsData.begCoordinate",
+    "wallsData.begThickness",
     "wallsData.belowViewLineTypeId",
     "wallsData.buildingMaterialId",
     "wallsData.compositeId",
@@ -5106,18 +5110,21 @@
     "wallsData.favoriteName",
     "wallsData.flipped",
     "wallsData.floorIndex",
+    "wallsData.geometryType",
     "wallsData.height",
     "wallsData.id",
     "wallsData.inheritEndSurface",
     "wallsData.isAutoOnStoryVisibility",
     "wallsData.layerIndex",
     "wallsData.linkToSettings",
+    "wallsData.logDetails",
     "wallsData.logHeight",
     "wallsData.materialsChained",
     "wallsData.offset",
     "wallsData.oppositeMaterial",
     "wallsData.polyCanChange",
     "wallsData.profileId",
+    "wallsData.profileType",
     "wallsData.referenceLineLocation",
     "wallsData.referenceMaterial",
     "wallsData.relativeTopStory",
@@ -5133,7 +5140,9 @@
     "wallsData.zCoordinate",
     "wallsData.zoneRel"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "wallsData.endThickness"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -5141,7 +5150,7 @@
    "id": "CreateBeams",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates Beam elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
+   "brief": "Creates Beam elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Both commands take the same segments array, which sets the cross section, taper and length of single segments. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5154,8 +5163,8 @@
      "path": "Components/ElementsComponents/CreateBeamsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 24,
+   "parameters": "json",
+   "parameterCount": 25,
    "coveredParameters": [
     "beamsData",
     "beamsData.anchorPoint",
@@ -5182,7 +5191,9 @@
     "beamsData.width",
     "beamsData.zCoordinate"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "beamsData.segments"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -7059,7 +7070,7 @@
    "id": "ModifyWalls",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, plus geometryType (Straight or Trapezoid), profileType and bottomOffset. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.",
+   "brief": "Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, including geometryType (Straight or Trapezoid, with begThickness and endThickness), profileType and the slant angles, plus bottomOffset. A slantAlpha or slantBeta that the wall's profileType cannot take fails the item instead of being dropped. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7076,8 +7087,8 @@
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 44,
+   "parameters": "json",
+   "parameterCount": 47,
    "coveredParameters": [
     "wallsWithDetails",
     "wallsWithDetails.aboveViewLinePen",
@@ -7085,6 +7096,7 @@
     "wallsWithDetails.alignTexture",
     "wallsWithDetails.arcAngle",
     "wallsWithDetails.begCoordinate",
+    "wallsWithDetails.begThickness",
     "wallsWithDetails.belowViewLineTypeId",
     "wallsWithDetails.bottomOffset",
     "wallsWithDetails.buildingMaterialId",
@@ -7103,6 +7115,7 @@
     "wallsWithDetails.inheritEndSurface",
     "wallsWithDetails.isAutoOnStoryVisibility",
     "wallsWithDetails.linkToSettings",
+    "wallsWithDetails.logDetails",
     "wallsWithDetails.logHeight",
     "wallsWithDetails.materialsChained",
     "wallsWithDetails.offset",
@@ -7124,7 +7137,9 @@
     "wallsWithDetails.visibility",
     "wallsWithDetails.zoneRel"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "wallsWithDetails.endThickness"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -7132,7 +7147,7 @@
    "id": "ModifyBeams",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex). Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
+   "brief": "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex), and the same segments array, which changes the cross section, taper and length of single segments and leaves the others as they are. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7145,8 +7160,8 @@
      "path": "Components/ElementsComponents/ModifyBeamsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 26,
+   "parameters": "json",
+   "parameterCount": 27,
    "coveredParameters": [
     "beamsWithDetails",
     "beamsWithDetails.anchorPoint",
@@ -7175,7 +7190,9 @@
     "beamsWithDetails.width",
     "beamsWithDetails.zCoordinate"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "beamsWithDetails.segments"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -7890,6 +7907,21 @@
     "framesWithDetails.frameId",
     "framesWithDetails.type"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyCurtainWallPanels",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Assigns a panel class to single Curtain Wall Panels by their GUID; the panel takes the settings of the class (thickness, surfaces, building material, cut line, panel type). ACAPI_Element_Change does not take a panel on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -8780,7 +8812,7 @@
    "id": "ApplyFavoritesToElements",
    "group": "Favorites Commands",
    "version": "1.5.4",
-   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes. With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, or to every element of its type that matches the filter.",
+   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. The cross section of a Column or Beam is a Favorite setting and is applied too. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link, a Column's height, top link and cross section width and depth, a Beam's cross section width and height) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes. With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, or to every element of its type that matches the filter.",
    "status": "done",
    "reason": "",
    "components": [
@@ -11187,7 +11219,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 34,
+   "parameterCount": 37,
    "coveredParameters": [
     "overwriteExisting",
     "profileDataArray",
@@ -11196,6 +11228,7 @@
     "profileDataArray.skinOverrides.buildingMaterialId"
    ],
    "missingParameters": [
+    "profileDataArray.addHotspots",
     "profileDataArray.beamType",
     "profileDataArray.coluType",
     "profileDataArray.handrailType",
@@ -11209,9 +11242,11 @@
     "profileDataArray.moveVertices.skinIds",
     "profileDataArray.moveVertices.vector",
     "profileDataArray.newSkins",
+    "profileDataArray.nominalSize",
     "profileDataArray.otherGDLObjectType",
     "profileDataArray.replaceSkins",
     "profileDataArray.skinOverrides",
+    "profileDataArray.skinOverrides.areaMethod",
     "profileDataArray.skinOverrides.contourLineTypeId",
     "profileDataArray.skinOverrides.contourPen",
     "profileDataArray.skinOverrides.cutEndLinePen",
