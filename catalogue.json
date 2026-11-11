@@ -589,6 +589,22 @@
       "changes": "model",
       "versions": [
         {
+          "version": "1.3.1",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "The window opens smaller (760 x 700, at most 85 % of the screen), can be made as small as 640 x 520: the four finish panels are two by two, and the content scrolls when the window is short.",
+          "commit": "3d1a0ca729aa44653a153a228c1196d9e7df038c",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/3d1a0ca729aa44653a153a228c1196d9e7df038c/marketplace/room-finishes-from-zones/RoomFinishesFromZones.py",
+          "sha256": "fed184babdc4f2787b5a92ad39035ff66872a2c89df584b18a298664ee957c95"
+        },
+        {
           "version": "1.3.0",
           "archicadVersions": [
             25,
@@ -1036,6 +1052,22 @@
       "changes": "files",
       "versions": [
         {
+          "version": "1.1.2",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "The window opens smaller (800 x 700, at most 85 % of the screen), can be made as small as 800 x 520, and its content scrolls when the window is short.",
+          "commit": "3d1a0ca729aa44653a153a228c1196d9e7df038c",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/3d1a0ca729aa44653a153a228c1196d9e7df038c/marketplace/zone-area-dashboard/ZoneAreaDashboard.py",
+          "sha256": "d19f9ee1e6161a7f076ca0b91ebf78635ad37438f1d1dfd01fc2f4382741e138"
+        },
+        {
           "version": "1.1.1",
           "archicadVersions": [
             25,
@@ -1108,6 +1140,22 @@
       "entry": "ZonesToWallsAndSlabs.py",
       "changes": "model",
       "versions": [
+        {
+          "version": "0.4.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "Wall favorites for the internal partitions and the external walls: the walls are made with the favorite, and its thickness, read from the favorite, places the external walls outside the zones. The settings are remembered between runs. The window opens smaller (760 x 620, at most 85 % of the screen), can be made as small as 640 x 520, and its settings scroll when the window is short.",
+          "commit": "3d1a0ca729aa44653a153a228c1196d9e7df038c",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/3d1a0ca729aa44653a153a228c1196d9e7df038c/marketplace/zones-to-walls-and-slabs/ZonesToWallsAndSlabs.py",
+          "sha256": "50e887d748403d177a027bc485abe64b6dc3f08c4e82ccbfabe3c53d51c10ec7"
+        },
         {
           "version": "0.3.1",
           "archicadVersions": [
