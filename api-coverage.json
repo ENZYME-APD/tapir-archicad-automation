@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-11 22:17 UTC",
+ "generatedAt": "2026-11-11 22:30 UTC",
  "versions": [
   25,
   26,
@@ -4053,10 +4053,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2710,
      "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
     },
@@ -5839,10 +5835,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -6700,10 +6692,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2710,
      "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
     }
@@ -6896,10 +6884,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7264,10 +7248,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -7401,10 +7381,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7604,12 +7580,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7631,10 +7602,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7834,10 +7801,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2710,
      "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
     }
@@ -7971,10 +7934,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -8087,10 +8046,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2747,
      "title": "SetElementNotificationClient: observe an explicit list of elements (elementsToObserve)"
@@ -8358,10 +8313,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -8508,10 +8459,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2710,
      "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
     }
@@ -8621,10 +8568,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2710,
      "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
@@ -9234,12 +9177,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9385,10 +9323,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2710,
      "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
     }
@@ -9497,12 +9431,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9523,12 +9452,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9549,12 +9473,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9575,12 +9494,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9601,12 +9515,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9711,12 +9620,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9737,12 +9641,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9784,12 +9683,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11100,12 +10994,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26246,10 +26135,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     },
@@ -32081,10 +31966,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
-    {
      "number": 2749,
      "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
     },
@@ -32261,12 +32142,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32976,12 +32852,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36407,12 +36278,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38968,10 +38834,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
@@ -45996,12 +45858,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46141,12 +45998,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46297,10 +46149,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2749,
      "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
@@ -46479,12 +46327,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50049,10 +49892,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2749,
      "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
@@ -56860,10 +56699,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2756,
-     "title": "Add RecreateStairs: move a stair's baseline, keeping everything but the GUID"
-    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"

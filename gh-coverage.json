@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-11-11 22:17 UTC",
+ "generatedAt": "2026-11-11 22:30 UTC",
  "counts": {
   "done": 788,
-  "open": 3,
+  "open": 4,
   "not applicable": 1
  },
  "parameters": {
@@ -5212,7 +5212,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 49,
+   "parameterCount": 45,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLinePoints",
@@ -5233,11 +5233,7 @@
    ],
    "missingParameters": [
     "stairsData.baseLineEdges",
-    "stairsData.baseLineEdges.segmentType",
     "stairsData.baseLineVertices",
-    "stairsData.baseLineVertices.minLandingEndEdgeOffset",
-    "stairsData.baseLineVertices.minLandingStartEdgeOffset",
-    "stairsData.baseLineVertices.turnType",
     "stairsData.baselineOffset",
     "stairsData.baselinePosition",
     "stairsData.extraBottomTread",
@@ -7988,6 +7984,21 @@
     "stairsWithDetails.walkingLineOffset",
     "stairsWithDetails.walkingLinePosition"
    ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RecreateStairs",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
