@@ -6121,42 +6121,12 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         "baseLineEdges": {
                             "type": "array",
                             "description": "Optional. The segment type of each baseline edge, one item per edge (baseLinePoints.length - 1 items; edge i runs from point i to point i + 1). A U-shaped stair with a half landing is Flight, Landing, Flight with landing turns at both inner points. When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineVertices is given, every edge is a flight. Combinations Archicad cannot build fail like any other invalid stair.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "segmentType": {
-                                        "type": "string",
-                                        "enum": ["Flight", "Landing", "DividedLanding"],
-                                        "description": "Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["segmentType"]
-                            }
+                            "items": { "$ref": "#/StairBaseLineEdge" }
                         },
                         "baseLineVertices": {
                             "type": "array",
                             "description": "Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "turnType": {
-                                        "type": "string",
-                                        "enum": ["None", "Landing", "Winder", "DividedLanding"],
-                                        "description": "The turn at this point. The first and last points take None."
-                                    },
-                                    "minLandingStartEdgeOffset": {
-                                        "type": "number",
-                                        "description": "Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset)."
-                                    },
-                                    "minLandingEndEdgeOffset": {
-                                        "type": "number",
-                                        "description": "Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset)."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["turnType"]
-                            }
+                            "items": { "$ref": "#/StairBaseLineVertex" }
                         },)") + StairSettingsSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -7721,6 +7691,517 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
     });
 
     changeReporter.Report ();
+
+    return response;
+}
+
+// ============================================================================
+// RecreateStairs (#2532)
+// The Archicad API cannot write the baseline of an existing stair: ACAPI_Element_Change does not
+// list API_StairID for geometry or memo changes, and there is no memo mask for stairBaseLine. So the
+// stair is created again on the new baseline, with the settings of the old one, and the old one is
+// deleted. Everything is done in one undoable command per stair, and any step that fails returns
+// its error from that command, which rolls all of it back: the old stair is then left as it was.
+// ============================================================================
+
+RecreateStairsCommand::RecreateStairsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateStairsCommand::GetName () const
+{
+    return "RecreateStairs";
+}
+
+GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "stairs": {
+                "type": "array",
+                "description": "The stairs to recreate on a new baseline.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The stair to recreate."
+                        },
+                        "baseLinePoints": {
+                            "type": "array",
+                            "description": "The new baseline, as CreateStairs takes it and GetDetailsOfElements returns it. The old stair's baseline position and offset are kept.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "baseLineEdges": {
+                            "type": "array",
+                            "description": "Optional. The segment type of each edge of the new baseline (baseLinePoints.length - 1 items), as in CreateStairs. Give it, with baseLineVertices, to keep the landings of an L or U stair.",
+                            "items": { "$ref": "#/StairBaseLineEdge" }
+                        },
+                        "baseLineVertices": {
+                            "type": "array",
+                            "description": "Optional. The turn at each point of the new baseline (baseLinePoints.length items), as in CreateStairs.",
+                            "items": { "$ref": "#/StairBaseLineVertex" }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "baseLinePoints"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["stairs"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateStairsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item per input stair: the new stair, or an error. After an error nothing was changed for that stair.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "oldElementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The stair that was deleted."
+                                },
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The new stair."
+                                },
+                                "notCarriedOver": {
+                                    "type": "array",
+                                    "description": "What was linked to the old stair and could not be moved to the new one. Labels of the stair are deleted with it; dimensions measuring it lose those witness points or are deleted. Only the dimensions of the current database (the active window) are listed.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "relation": {
+                                                "type": "string",
+                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"],
+                                                "description": "Label: an associative label of the old stair. Dimension, LevelDimension: a dimension that measured the old stair. Group: the old stair was in a group; the new one is not."
+                                            },
+                                            "elementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The label or dimension, as it was before the old stair was deleted. Not given for Group."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": ["relation"]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["oldElementId", "elementId", "notCarriedOver"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    })";
+}
+
+namespace {
+
+struct StairSolidLink {
+    API_Guid                other = APINULLGuid;
+    API_SolidOperationID    operation = APISolid_Substract;
+    GSFlags                 flags = 0;
+};
+
+struct StairTrim {
+    API_Guid        trimming = APINULLGuid;
+    API_TrimTypeID  trimType = APITrim_No;
+};
+
+// What RecreateStairs reads from the old stair before anything is changed.
+struct StairDataToCarry {
+    API_Element                                 element = {};
+    GS::UniString                               elementId;
+    GS::Array<GS::Pair<API_Guid, API_Guid>>     classifications;
+    GS::Array<API_Property>                     properties;
+    GS::Array<API_ElemCategoryValue>            categoryValues;
+    GS::Array<StairSolidLink>                   operatorsOfStair;   // the stair is their target
+    GS::Array<StairSolidLink>                   targetsOfStair;     // the stair is their operator
+    GS::Array<StairTrim>                        trims;
+    GS::Array<GS::Pair<GS::UniString, API_Guid>> notCarriedOver;
+};
+
+GS::ObjectState RecreateStairFailure (const char* step, GSErrCode err)
+{
+    return CreateErrorResponse (err, GS::UniString (step) + ". Nothing was changed.");
+}
+
+// Reads everything RecreateStairs carries over, and lists what it cannot. Returns the error text.
+GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, StairDataToCarry& data, GSErrCode& err)
+{
+    data.element.header.guid = stairGuid;
+    err = ACAPI_Element_Get (&data.element);
+    if (err != NoError) {
+        return GS::UniString ("The stair was not found.");
+    }
+    if (GetElemTypeId (data.element.header) != API_StairID) {
+        err = APIERR_BADID;
+        return GS::UniString ("The element is not a Stair.");
+    }
+    if (data.element.header.hotlinkGuid != APINULLGuid || !ACAPI_Element_Filter (stairGuid, APIFilt_IsEditable)) {
+        err = APIERR_NOACCESSRIGHT;
+        return GS::UniString ("The stair cannot be deleted: it is in a hotlink, on a locked or hidden layer, locked, or not reserved in Teamwork.");
+    }
+
+    err = GetElementId (stairGuid, data.elementId);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the Element ID of the stair.");
+    }
+
+    err = ACAPI_Element_GetClassificationItems (stairGuid, data.classifications);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the classifications of the stair.");
+    }
+
+    // The user-defined property values the stair has of its own, as CreateFavoritesFromElements reads them.
+    GS::Array<API_PropertyDefinition> definitions;
+    err = ACAPI_Element_GetPropertyDefinitions (stairGuid, API_PropertyDefinitionFilter_UserDefined, definitions);
+    if (err == NoError) {
+        err = ACAPI_Element_GetPropertyValues (stairGuid, definitions, data.properties);
+    }
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the property values of the stair.");
+    }
+    for (UIndex ii = data.properties.GetSize (); ii >= 1; --ii) {
+        const API_Property& p = data.properties[ii - 1];
+        if (p.isDefault || !p.definition.canValueBeEditable || p.status != API_Property_HasValue) {
+            data.properties.Delete (ii - 1);
+        }
+    }
+
+    // A category whose value cannot be read does not apply to stairs, so there is nothing to carry.
+    GS::Array<API_ElemCategory> categories;
+    if (TAPIR_GetElementCategories (categories) == NoError) {
+        for (const API_ElemCategory& category : categories) {
+            API_ElemCategoryValue value = {};
+            if (TAPIR_Element_GetCategoryValue (stairGuid, category, value) == NoError) {
+                data.categoryValues.Push (value);
+            }
+        }
+    }
+
+    // On Archicad 27 ACAPI_Element_SolidLink_GetFlags is missing from the API library, and the shim in
+    // MigrationHelper.hpp answers 0: the links are recreated there without their flags.
+    GS::Array<API_Guid> operators;
+    if (ACAPI_Element_SolidLink_GetOperators (stairGuid, &operators) == NoError) {
+        for (const API_Guid& operatorGuid : operators) {
+            StairSolidLink link;
+            link.other = operatorGuid;
+            if (ACAPI_Element_SolidLink_GetOperation (stairGuid, operatorGuid, &link.operation) != NoError ||
+                ACAPI_Element_SolidLink_GetFlags (stairGuid, operatorGuid, &link.flags) != NoError) {
+                err = APIERR_GENERAL;
+                return GS::UniString ("Failed to read a solid element operation of the stair.");
+            }
+            data.operatorsOfStair.Push (link);
+        }
+    }
+    GS::Array<API_Guid> targets;
+    if (ACAPI_Element_SolidLink_GetTargets (stairGuid, &targets) == NoError) {
+        for (const API_Guid& targetGuid : targets) {
+            StairSolidLink link;
+            link.other = targetGuid;
+            if (ACAPI_Element_SolidLink_GetOperation (targetGuid, stairGuid, &link.operation) != NoError ||
+                ACAPI_Element_SolidLink_GetFlags (targetGuid, stairGuid, &link.flags) != NoError) {
+                err = APIERR_GENERAL;
+                return GS::UniString ("Failed to read a solid element operation of the stair.");
+            }
+            data.targetsOfStair.Push (link);
+        }
+    }
+
+    GS::Array<API_Guid> trimming;
+    if (ACAPI_Element_Trim_GetTrimmingElements (stairGuid, &trimming) == NoError) {
+        for (const API_Guid& trimmingGuid : trimming) {
+            StairTrim trim;
+            trim.trimming = trimmingGuid;
+            err = ACAPI_Element_Trim_GetTrimType (stairGuid, trimmingGuid, &trim.trimType);
+            if (err != NoError) {
+                return GS::UniString ("Failed to read a trim of the stair.");
+            }
+            data.trims.Push (trim);
+        }
+    }
+
+    // What cannot be carried over is only listed.
+    GS::Array<API_Guid> labels;
+    if (ACAPI_Grouping_GetConnectedElements (stairGuid, API_LabelID, &labels) == NoError) {
+        for (const API_Guid& label : labels) {
+            data.notCarriedOver.Push (GS::Pair<GS::UniString, API_Guid> (GS::UniString ("Label"), label));
+        }
+    }
+    GS::Array<API_Guid> dimensions;
+    if (ACAPI_Element_GetElemList (API_DimensionID, &dimensions) == NoError) {
+        for (const API_Guid& dimensionGuid : dimensions) {
+            API_Element dimension = {};
+            dimension.header.guid = dimensionGuid;
+            if (ACAPI_Element_Get (&dimension) != NoError) {
+                continue;
+            }
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            if (ACAPI_Element_GetMemo (dimensionGuid, &memo) != NoError || memo.dimElems == nullptr || *memo.dimElems == nullptr) {
+                continue;
+            }
+            for (Int32 i = 0; i < dimension.dimension.nDimElem; ++i) {
+                if ((*memo.dimElems)[i].base.base.guid == stairGuid) {
+                    data.notCarriedOver.Push (GS::Pair<GS::UniString, API_Guid> (GS::UniString ("Dimension"), dimensionGuid));
+                    break;
+                }
+            }
+        }
+    }
+    GS::Array<API_Guid> levelDimensions;
+    if (ACAPI_Element_GetElemList (API_LevelDimensionID, &levelDimensions) == NoError) {
+        for (const API_Guid& levelDimensionGuid : levelDimensions) {
+            API_Element levelDimension = {};
+            levelDimension.header.guid = levelDimensionGuid;
+            if (ACAPI_Element_Get (&levelDimension) == NoError && levelDimension.levelDimension.parentGuid == stairGuid) {
+                data.notCarriedOver.Push (GS::Pair<GS::UniString, API_Guid> (GS::UniString ("LevelDimension"), levelDimensionGuid));
+            }
+        }
+    }
+    if (data.element.header.groupGuid != APINULLGuid) {
+        data.notCarriedOver.Push (GS::Pair<GS::UniString, API_Guid> (GS::UniString ("Group"), APINULLGuid));
+    }
+
+    err = NoError;
+    return {};
+}
+
+// Creates the new stair and moves everything over; runs inside the undoable command. Returns the
+// error response, with err set, when a step failed: the caller returns err from the command, which
+// rolls back every step before it.
+GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, const GS::ObjectState& item, const Stories& stories, API_Guid& newGuid, GSErrCode& err)
+{
+    const API_Guid oldGuid = data.element.header.guid;
+
+    // The CreateStairs path: the Stair tool defaults and their memo, the stair settings, then the
+    // baseline from SetTypeSpecificParameters. The settings are the old stair's whole API_StairType,
+    // as CreateStairs with favoriteName creates from the settings of a Favorite captured from a stair.
+    API_Element element = {};
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+    element.header.type = API_StairID;
+#else
+    element.header.typeID = API_StairID;
+#endif
+    err = ACAPI_Element_GetDefaults (&element, &memo);
+    if (err != NoError) {
+        return RecreateStairFailure ("Failed to read the Stair defaults", err);
+    }
+    // API_StairType begins with the element header (API_Element is a union of the types, each
+    // starting with API_Elem_Head), so the defaults' header is put back after the copy: the old
+    // stair's guid, group and hotlink must not reach ACAPI_Element_Create. The counts of the
+    // floor plan and ceiling plan markers and of the treads describe the old stair's subelements,
+    // which the defaults' memo does not have, so they stay as the defaults have them.
+    const API_Elem_Head defaultsHeader = element.header;
+    const UInt32 defaultsFPDMarkers = element.stair.nFPDMarkers;
+    const UInt32 defaultsRCPDMarkers = element.stair.nRCPDMarkers;
+    const UInt32 defaultsTreadNum = element.stair.treadNum;
+    element.stair = data.element.stair;
+    element.header = defaultsHeader;
+    element.stair.nFPDMarkers = defaultsFPDMarkers;
+    element.stair.nRCPDMarkers = defaultsRCPDMarkers;
+    element.stair.treadNum = defaultsTreadNum;
+    element.header.layer = data.element.header.layer;
+    element.header.drwIndex = data.element.header.drwIndex;
+    element.header.renovationStatus = data.element.header.renovationStatus;
+    element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+    // The item holds only elementId and the baseline keys of CreateStairs (its schema allows no
+    // other), so SetTypeSpecificParameters writes the baseline and nothing else. It also sets the
+    // story and the base offset from zCoordinate, which the item does not have: both are set to
+    // the old stair's below.
+    const CreateStairsCommand createStairsCommand;
+    const GS::Optional<GS::ObjectState> baselineError = createStairsCommand.SetTypeSpecificParameters (element, memo, stories, item);
+    if (baselineError.HasValue ()) {
+        err = APIERR_BADPARS;
+        return baselineError;
+    }
+    element.header.floorInd = data.element.header.floorInd;
+    element.stair.basePlane.basePoint.z = data.element.stair.basePlane.basePoint.z;
+
+    err = ACAPI_Element_Create (&element, &memo);
+    if (err != NoError) {
+        return RecreateStairFailure ("Archicad could not create a stair on the new baseline with the settings of the old one", err);
+    }
+    newGuid = element.header.guid;
+
+    // Classifications: the old stair's items, and none of the defaults' in other systems.
+    GS::Array<GS::Pair<API_Guid, API_Guid>> newClassifications;
+    err = ACAPI_Element_GetClassificationItems (newGuid, newClassifications);
+    if (err != NoError) {
+        return RecreateStairFailure ("Failed to read the classifications of the new stair", err);
+    }
+    for (const GS::Pair<API_Guid, API_Guid>& newPair : newClassifications) {
+        bool systemOfOld = false;
+        for (const GS::Pair<API_Guid, API_Guid>& oldPair : data.classifications) {
+            systemOfOld = systemOfOld || oldPair.first == newPair.first;
+        }
+        if (!systemOfOld) {
+            err = ACAPI_Element_RemoveClassificationItem (newGuid, newPair.second);
+            if (err != NoError) {
+                return RecreateStairFailure ("Failed to remove a default classification from the new stair", err);
+            }
+        }
+    }
+    for (const GS::Pair<API_Guid, API_Guid>& oldPair : data.classifications) {
+        err = ACAPI_Element_AddClassificationItem (newGuid, oldPair.second);
+        if (err != NoError) {
+            return RecreateStairFailure ("Failed to classify the new stair as the old one", err);
+        }
+    }
+
+    for (const API_ElemCategoryValue& value : data.categoryValues) {
+        err = TAPIR_Element_SetCategoryValue (newGuid, value);
+        if (err != NoError) {
+            return RecreateStairFailure ("Failed to set a category value (Structural Function, Position, Renovation Status ...) of the new stair", err);
+        }
+    }
+
+    if (!data.properties.IsEmpty ()) {
+        err = ACAPI_Element_SetProperties (newGuid, data.properties);
+        if (err != NoError) {
+            return RecreateStairFailure ("Failed to set the property values of the new stair", err);
+        }
+    }
+
+    for (const StairSolidLink& link : data.operatorsOfStair) {
+        err = ACAPI_Element_SolidLink_Create (newGuid, link.other, link.operation, link.flags);
+        if (err != NoError) {
+            return RecreateStairFailure ("Failed to link a solid element operator to the new stair", err);
+        }
+    }
+    for (const StairSolidLink& link : data.targetsOfStair) {
+        err = ACAPI_Element_SolidLink_Create (link.other, newGuid, link.operation, link.flags);
+        if (err != NoError) {
+            return RecreateStairFailure ("Failed to link the new stair as a solid element operator", err);
+        }
+    }
+
+    for (const StairTrim& trim : data.trims) {
+        GS::Array<API_Guid> toTrim;
+        toTrim.Push (newGuid);
+        err = ACAPI_Element_Trim_ElementsWith (toTrim, trim.trimming, trim.trimType);
+        if (err != NoError) {
+            return RecreateStairFailure ("Failed to trim the new stair with a roof or shell", err);
+        }
+    }
+
+    GS::Array<API_Guid> toDelete;
+    toDelete.Push (oldGuid);
+    err = ACAPI_Element_Delete (toDelete);
+    if (err != NoError) {
+        return RecreateStairFailure ("Failed to delete the old stair", err);
+    }
+
+    // The Element ID last, once the old stair is gone. ChangeElementId reads it back.
+    if (!data.elementId.IsEmpty ()) {
+        err = ChangeElementId (newGuid, data.elementId);
+        if (err != NoError) {
+            return RecreateStairFailure ("Failed to give the new stair the Element ID of the old one", err);
+        }
+    }
+
+    err = NoError;
+    return {};
+}
+
+} // namespace
+
+GS::ObjectState RecreateStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> stairs;
+    parameters.Get ("stairs", stairs);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const Stories stories = GetStories ();
+
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    for (const GS::ObjectState& item : stairs) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId is missing."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadStairDataToCarry (oldGuid, data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        // One undoable command per stair. A step that fails returns its error from the command,
+        // which rolls back the steps before it, so the old stair is never lost halfway.
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Stair", [&] () -> GSErrCode {
+            stepError = RecreateOneStair (data, item, stories, newGuid, stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the stair."));
+            continue;
+        }
+
+        API_Element newElement = {};
+        newElement.header.guid = newGuid;
+        if (ACAPI_Element_Get (&newElement) == NoError) {
+            notification = {};
+            notification.notifID = APINotifyElement_New;
+            notification.elemHead = newElement.header;
+            AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+        }
+
+        GS::ObjectState result;
+        result.Add ("oldElementId", CreateGuidObjectState (oldGuid));
+        result.Add ("elementId", CreateGuidObjectState (newGuid));
+        const auto& notCarriedOver = result.AddList<GS::ObjectState> ("notCarriedOver");
+        for (const GS::Pair<GS::UniString, API_Guid>& lost : data.notCarriedOver) {
+            GS::ObjectState lostOs ("relation", lost.first);
+            if (lost.second != APINULLGuid) {
+                lostOs.Add ("elementId", CreateGuidObjectState (lost.second));
+            }
+            notCarriedOver (lostOs);
+        }
+        results (result);
+    }
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
     return response;
 }
