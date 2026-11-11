@@ -1,6 +1,7 @@
 """Creates a beam, then changes its cross section and adds a round hole with ModifyBeams,
 moves it: a new reference line and its absolute elevation (zCoordinate, as in CreateBeams),
-and changes its floor plan display: home story only, cut contour pen 21 and dashed hidden lines.
+changes its floor plan display: home story only, cut contour pen 21 and dashed hidden lines,
+and tapers one segment of the beam with segments.
 
 Only the given fields change; holes replaces every hole of the beam. The display settings
 have the names GetDetailsOfElements reads them under, so what it returns can be sent back.
@@ -38,5 +39,16 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
     'cutContourLinePen': 21,
     'hiddenLinePen': 21,
     'hiddenLineTypeId': dashed['attributeId']
+}]}))
+
+# segments changes single segments, picked by segmentIndex: here the first one is tapered to
+# half its height at its end. The other segments of a multi-segment beam stay as they are
+# (see Workflows/change_one_beam_segment.py).
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
+    'elementId': beam['elementId'],
+    'segments': [{
+        'segmentIndex': 0,
+        'geometry': {'isHomogeneous': False, 'isEndWidthAndHeightLinked': False, 'endWidth': 0.3, 'endHeight': 0.3}
+    }]
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [beam], 'fields': ['details']})
