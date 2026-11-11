@@ -40,6 +40,8 @@
         '手すりのフロア表示の自動設定をオフにして、表示するフロアを指定できるようにする',
     'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
         'メッシュの Floor Plan Display、Show Projection、切断されない線と上方の線、または切断線の線種を設定する',
+    'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
+        '手すりの平面図シンボルを読み取る、または設定する：切断線、表示するシンボル構成要素、その2D属性、シンボルの上書き',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         '<a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> でスラブの輪郭を読み取り、<a href="../archicad-addon/#CreateRailings">CreateRailings</a> でそのエッジに沿って静的な手すりを作成してください。スラブが変わったら、手すりを削除して作成し直します。',
 

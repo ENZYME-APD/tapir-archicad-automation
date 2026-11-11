@@ -40,6 +40,8 @@
         'Die automatische Geschosssichtbarkeit eines Geländers ausschalten, damit sich die Geschosse festlegen lassen, auf denen es gezeigt wird',
     'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
         'Floor Plan Display, Show Projection, die ungeschnittenen und darüberliegenden Linien oder den Linientyp des Schnitts eines Netzes festlegen',
+    'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
+        'Das Grundrisssymbol eines Geländers lesen oder einstellen: seine Bruchlinie, welche Symbolkomponenten es zeigt, deren 2D-Attribute und die Symbolüberschreibungen',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lesen Sie den Umriss der Decke mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus und erstellen Sie mit <a href="../archicad-addon/#CreateRailings">CreateRailings</a> ein statisches Geländer entlang der Kante. Wenn sich die Decke ändert, löschen Sie das Geländer und erstellen Sie es neu.',
 

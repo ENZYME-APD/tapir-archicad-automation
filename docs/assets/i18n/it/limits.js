@@ -40,6 +40,8 @@
         'Disattivare la visibilità automatica sui piani di un parapetto, per poter scegliere i piani su cui è mostrato',
     'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
         'Impostare il Floor Plan Display, lo Show Projection, le linee non tagliate e sovrastanti o il tipo di linea del taglio di una mesh',
+    'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
+        'Leggere o impostare il simbolo in pianta di un parapetto: la linea di interruzione, quali componenti del simbolo mostra, i loro attributi 2D e le sostituzioni del simbolo',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Leggete il contorno del solaio con <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> e create un parapetto statico lungo il bordo con <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Quando il solaio cambia, eliminate il parapetto e createlo di nuovo.',
 

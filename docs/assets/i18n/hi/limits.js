@@ -40,6 +40,8 @@
         'रेलिंग की स्वचालित स्टोरी दृश्यता बंद करना, ताकि वे स्टोरी तय की जा सकें जिन पर वह दिखती है',
     'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
         'मेश का Floor Plan Display, Show Projection, बिना कटी और ऊपर की रेखाएँ या कट रेखा का प्रकार तय करना',
+    'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
+        'रेलिंग का floor plan symbol पढ़ना या सेट करना: उसका break mark, वह कौन-से symbol components दिखाती है, उनके 2D attributes और symbol overrides',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         '<a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> से slab की outline पढ़ें और <a href="../archicad-addon/#CreateRailings">CreateRailings</a> से किनारे के साथ एक static railing बनाएँ। जब slab बदले, railing हटाकर फिर से बनाएँ।',
 
