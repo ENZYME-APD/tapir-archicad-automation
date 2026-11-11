@@ -2399,7 +2399,7 @@
                 "description": "The segment of the beam or column, 0-based in the order GetDetailsOfElements lists the segments. Absent for a wall."
             },
             "profileId": {
-                "$ref": "#/AttributeId",
+                "$ref": "#/AttributeIdArrayItem",
                 "description": "The profile attribute. Absent when it could not be resolved."
             },
             "width": {
