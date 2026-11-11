@@ -149,15 +149,39 @@
         (function next () { if (i >= spans.length) return; spans[i].classList.add ('on'); spans[i].appendChild (caret); i++; setTimeout (next, 70 + Math.random () * 60); }) ();
     }
 
-    // 6. Timeline progress line follows the scroll.
-    var tls = document.querySelectorAll ('.timeline');
+    // 6. Timeline, Legacy look only: each step's segment runs from 12px below its number to 12px
+    //    above the next one (measured from the layout, so transforms of the reveal do not move it)
+    //    and fills as the reading line, 60% down the window, passes it. The Standard look has none.
+    var steps = [].slice.call (document.querySelectorAll ('.timeline > li'));
+    function placeSteps () {
+        if (root.getAttribute ('data-style') !== 'legacy') return;
+        var reading = innerHeight * 0.6;
+        steps.forEach (function (li) {
+            var next = li.nextElementSibling, n = li.querySelector (':scope > .n'), nextN = next && next.querySelector (':scope > .n');
+            if (!n || !nextN) return;
+            // In li's padding box, where the segment is positioned (li and the timeline are positioned).
+            var top = n.offsetTop + n.offsetHeight + 12;
+            var end = (next.offsetTop + next.clientTop) - (li.offsetTop + li.clientTop) + nextN.offsetTop - 12;
+            var h = Math.max (0, end - top);
+            var p = h ? Math.max (0, Math.min (1, (reading - (li.getBoundingClientRect ().top + li.clientTop + top)) / h)) : 0;
+            li.style.setProperty ('--seg-top', top + 'px');
+            li.style.setProperty ('--seg-h', h + 'px');
+            li.style.setProperty ('--prog', (p * 100).toFixed (1) + '%');
+        });
+    }
     // 8. Header shadow.
     var header = document.querySelector ('.site-header');
     function onScroll () {
         if (header) header.classList.toggle ('m-scrolled', scrollY > 8);
-        tls.forEach (function (tl) { var r = tl.getBoundingClientRect (); var p = Math.max (0, Math.min (1, (innerHeight * 0.6 - r.top) / r.height)); tl.style.setProperty ('--prog', (p * 100).toFixed (1) + '%'); });
+        if (steps.length) placeSteps ();
     }
     addEventListener ('scroll', onScroll, { passive: true }); onScroll ();
+    if (steps.length) {
+        addEventListener ('resize', placeSteps);
+        document.addEventListener ('tapir-display-change', placeSteps);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then (placeSteps);
+        if ('ResizeObserver' in window) { var ro = new ResizeObserver (placeSteps); steps.forEach (function (li) { ro.observe (li); }); }
+    }
 
     // Safety net: an element still hidden on screen 1.5 s after the last scroll (or after load, for
     // content a script fills or moves later) is shown, whatever the observer missed (#2508).
