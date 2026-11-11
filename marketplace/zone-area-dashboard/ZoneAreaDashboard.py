@@ -31,10 +31,18 @@ import sys
 import tkinter as tk
 from tkinter import filedialog, font as tkfont, ttk
 
-from utilities.archicad import (ArchicadError, batched, get_details_of_elements, get_elements, get_story_names,
-                                run_command, run_tapir, select_elements)
-from utilities.export import FILE_TYPES, write_table, write_workbook
-from utilities.ui import ScriptWindow, make_tree, require_archicad
+try:
+    from utilities.archicad import (ArchicadError, batched, get_details_of_elements, get_elements, get_story_names,
+                                    run_command, run_tapir, select_elements)
+    from utilities.export import FILE_TYPES, write_table, write_workbook
+    from utilities.ui import ScriptWindow, make_tree, require_archicad
+except ModuleNotFoundError as error:
+    # The palette of a Tapir newer than 2.0.0 provides the helpers; an older one needs copies next to the script.
+    if (error.name or "").split(".")[0] not in ("utilities", "aclib"):
+        raise
+    sys.exit("Error: the Tapir helpers utilities and aclib were not found. Update the Tapir Add-On, or copy the "
+             "utilities and aclib folders of builtin-scripts "
+             "(https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts) next to this script.")
 
 SCRIPT_NAME = "Zone Area Dashboard"
 NO_VALUE = "(no value)"
