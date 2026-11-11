@@ -5,6 +5,8 @@
 #include "GSUnID.hpp"
 #include "ProfileVectorImage.hpp"
 #include "ProfileAdditionalInfo.hpp"
+#include "ProfileVectorImageOperations.hpp"
+#include "SyHot.hpp"
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
@@ -2952,6 +2954,108 @@ static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { retur
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.GetProfileItemPtr (); }
 #endif
 
+// The component area method of a profile skin (Profile Manager): the line or circle the skin's area is
+// projected onto, stored as the SkinProjectionProperties of its ProfileItem. Read as GetProfiles'
+// skins[].areaMethod, written by CreateProfiles' skinOverrides[].areaMethod and newSkins[].areaMethod.
+static GS::ObjectState GetProfileAreaMethod (const ProfileItem& profileItem)
+{
+    const SkinProjectionProperties& projection = profileItem.GetSkinProjectionProperties ();
+    if (!projection.HasProjectionShape ()) {
+        return GS::ObjectState ("type", GS::UniString ("None"));
+    }
+    if (projection.GetProjectionType () == SkinProjectionProperties::SPT_Circle) {
+        return GS::ObjectState (
+            "type", GS::UniString ("Circle"),
+            "center", GS::ObjectState ("x", projection.GetCircleOrigo ().x, "y", projection.GetCircleOrigo ().y),
+            "radius", projection.GetCircleRadius ());
+    }
+    return GS::ObjectState (
+        "type", GS::UniString ("Line"),
+        "lineBegin", GS::ObjectState ("x", projection.GetLineCoord1 ().x, "y", projection.GetLineCoord1 ().y),
+        "lineEnd", GS::ObjectState ("x", projection.GetLineCoord2 ().x, "y", projection.GetLineCoord2 ().y));
+}
+
+// Checks an areaMethod input; returns false with the reason when a field its type needs is missing or wrong.
+static bool CheckProfileAreaMethod (const GS::ObjectState& areaMethod, GS::UniString& error)
+{
+    GS::UniString type;
+    areaMethod.Get ("type", type);
+    if (type == "None") {
+        return true;
+    }
+    if (type == "Line") {
+        GS::ObjectState begOS, endOS;
+        if (!areaMethod.Get ("lineBegin", begOS) || !areaMethod.Get ("lineEnd", endOS)) {
+            error = "areaMethod of type Line needs lineBegin and lineEnd.";
+            return false;
+        }
+        API_Coord beg = Get2DCoordinateFromObjectState (begOS);
+        API_Coord end = Get2DCoordinateFromObjectState (endOS);
+        if ((end.x - beg.x) * (end.x - beg.x) + (end.y - beg.y) * (end.y - beg.y) < 1e-12) {
+            error = "areaMethod's lineBegin and lineEnd must differ.";
+            return false;
+        }
+        return true;
+    }
+    if (type == "Circle") {
+        GS::ObjectState centerOS;
+        double radius = 0.0;
+        if (!areaMethod.Get ("center", centerOS) || !areaMethod.Get ("radius", radius)) {
+            error = "areaMethod of type Circle needs center and radius.";
+            return false;
+        }
+        if (radius <= 0.0) {
+            error = "areaMethod's radius must be greater than 0.";
+            return false;
+        }
+        return true;
+    }
+    error = "areaMethod's type must be None, Line or Circle.";
+    return false;
+}
+
+// Applies an areaMethod checked by CheckProfileAreaMethod. None removes the projection shape; the coordinates of
+// the other type are kept, as the Profile Manager keeps them.
+static void ApplyProfileAreaMethod (ProfileItem& profileItem, const GS::ObjectState& areaMethod)
+{
+    SkinProjectionProperties projection = profileItem.GetSkinProjectionProperties ();
+    GS::UniString type;
+    areaMethod.Get ("type", type);
+    if (type == "Line") {
+        GS::ObjectState begOS, endOS;
+        areaMethod.Get ("lineBegin", begOS);
+        areaMethod.Get ("lineEnd", endOS);
+        API_Coord beg = Get2DCoordinateFromObjectState (begOS);
+        API_Coord end = Get2DCoordinateFromObjectState (endOS);
+        Coord begC;
+        begC.x = beg.x;
+        begC.y = beg.y;
+        Coord endC;
+        endC.x = end.x;
+        endC.y = end.y;
+        projection.SetProjectionType (SkinProjectionProperties::SPT_Line);
+        projection.SetLineCoord1 (begC);
+        projection.SetLineCoord2 (endC);
+        projection.SetHasProjectionShape (true);
+    } else if (type == "Circle") {
+        GS::ObjectState centerOS;
+        double radius = 0.0;
+        areaMethod.Get ("center", centerOS);
+        areaMethod.Get ("radius", radius);
+        API_Coord center = Get2DCoordinateFromObjectState (centerOS);
+        Coord centerC;
+        centerC.x = center.x;
+        centerC.y = center.y;
+        projection.SetProjectionType (SkinProjectionProperties::SPT_Circle);
+        projection.SetCircleOrigo (centerC);
+        projection.SetCircleRadius (radius);
+        projection.SetHasProjectionShape (true);
+    } else {
+        projection.SetHasProjectionShape (false);
+    }
+    profileItem.SetSkinProjectionProperties (projection);
+}
+
 // Applies caller-supplied overrides (from CreateProfiles' skinOverrides) to one skin of a profile's vector
 // image, matched by the skinId GetProfiles reports. Mutation goes through Archicad's own HatchObject/
 // ProfileItem setters - the same objects GetProfiles reads via their const getters - so this genuinely
@@ -3041,6 +3145,10 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
                 if (GetAttributeIndexFromAttributeId (cutEndLineTypeId, API_LinetypeID, idx)) {
                     profileItem->SetCutEndLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
                 }
+            }
+            GS::ObjectState areaMethod;
+            if (override.Get ("areaMethod", areaMethod)) {
+                ApplyProfileAreaMethod (*profileItem, areaMethod);
             }
         }
 
@@ -3459,6 +3567,10 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
             profileItem.SetCutEndLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
         }
     }
+    GS::ObjectState areaMethod;
+    if (skinDef.Get ("areaMethod", areaMethod)) {
+        ApplyProfileAreaMethod (profileItem, areaMethod);
+    }
 
     HatchProfileData profileData;
     profileData.SetProfileItem (profileItem);
@@ -3601,6 +3713,107 @@ static GS::Optional<double> GetProfileModifierValue (const ProfileVectorImage& p
     return GS::NoValue;
 }
 
+// The hotspots of a profile (Profile Editor): the hotspot records of its vector image, which walls, beams and
+// columns with this profile show.
+static GS::Array<Sy_HotType> GetProfileHotspots (const ProfileVectorImage& pvi)
+{
+    GS::Array<Sy_HotType> hotspots;
+    for (ConstVectorImageIterator it (pvi.GetVectorImage ()); !it.IsEOI (); ++it) {
+        if (it->item_Typ == SyHots) {
+            const Sy_HotType* hotspot = it;
+            hotspots.Push (*hotspot);
+        }
+    }
+    return hotspots;
+}
+
+// Adds hotspots to a profile (CreateProfiles' addHotspots). Existing hotspots are never removed: Archicad ties
+// the hotspots that lie on a skin vertex to that vertex by their id, and the DevKit cannot tie a re-added one
+// again. A new hotspot copies the settings (pen, layer, type, flags) of the profile's first hotspot, with a new
+// id; a profile without hotspots gets Archicad's defaults (pen 1, the construction layer).
+static void AddProfileHotspots (ProfileVectorImage& pvi, const GS::Array<Coord>& positions)
+{
+    const GS::Array<Sy_HotType> existing = GetProfileHotspots (pvi);
+    for (const Coord& position : positions) {
+        Sy_HotType hotspot;
+        if (!existing.IsEmpty ()) {
+            hotspot = existing[0];
+            hotspot.SetNewUniqueId ();
+            hotspot.c = position;
+        } else {
+            hotspot = Sy_HotType ((short) 0, (short) 0, 0, position, 0.0);
+            hotspot.sy_pen = 1;
+            hotspot.sy_fragmentIdx = ProfileVectorImageOperations::GetDedicatedConstructionLayer ();
+        }
+        pvi.AddHotspotRec (hotspot);
+    }
+}
+
+struct ProfileNominalSize {
+    double left = 0.0;
+    double right = 0.0;
+    double bottom = 0.0;
+    double top = 0.0;
+};
+
+static ProfileNominalSize GetProfileNominalSize (const ProfileVectorImage& pvi)
+{
+    Box2DData nominalBox;
+    ProfileVectorImageOperations::GetNominalBounds (pvi, nominalBox);
+    ProfileNominalSize size;
+    size.left = nominalBox.xMin;
+    size.right = nominalBox.xMax;
+    size.bottom = nominalBox.yMin;
+    size.top = nominalBox.yMax;
+    return size;
+}
+
+static bool IsProfileNominalSize (const ProfileVectorImage& pvi, const ProfileNominalSize& wanted)
+{
+    const double eps = 1e-6;
+    const ProfileNominalSize actual = GetProfileNominalSize (pvi);
+    return fabs (actual.left - wanted.left) < eps && fabs (actual.right - wanted.right) < eps &&
+        fabs (actual.bottom - wanted.bottom) < eps && fabs (actual.top - wanted.top) < eps;
+}
+
+// Sets the nominal width and height lines of a profile (Profile Editor) to fixed positions. The DevKit adds them
+// with AddNominalSizeAnchors, which does not replace lines the profile already has; those are replaced by their
+// anchor ids. The DevKit does not say which id is which line, so both readings are tried, and the result is
+// checked with GetNominalBounds. Returns false when the nominal size could not be set; the caller then does not
+// save the profile.
+static bool SetProfileNominalSize (ProfileVectorImage& pvi, const ProfileNominalSize& size)
+{
+    const double midX = (size.left + size.right) / 2.0;
+    const double midY = (size.bottom + size.top) / 2.0;
+    PVI::Anchor left;
+    left.SetFixed (size.left, midY);
+    PVI::Anchor right;
+    right.SetFixed (size.right, midY);
+    PVI::Anchor bottom;
+    bottom.SetFixed (midX, size.bottom);
+    PVI::Anchor top;
+    top.SetFixed (midX, size.top);
+
+    ProfileVectorImageOperations::AddNominalSizeAnchors (pvi, left, right, bottom, top);
+    if (IsProfileNominalSize (pvi, size)) {
+        return true;
+    }
+
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalLAnchorID, left);
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalUAnchorID, right);
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalLAnchorID, bottom);
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalUAnchorID, top);
+    if (IsProfileNominalSize (pvi, size)) {
+        return true;
+    }
+
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalLAnchorID, left);
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalUAnchorID, right);
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalLAnchorID, bottom);
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalUAnchorID, top);
+    return IsProfileNominalSize (pvi, size);
+}
+
 GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> attributeIds;
@@ -3666,7 +3879,8 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
         bool wantsGeometryDerivedFields = wantsField.Wants ("width") || wantsField.Wants ("height") ||
             wantsField.Wants ("minimumWidth") || wantsField.Wants ("minimumHeight") ||
             wantsField.Wants ("widthStretchable") || wantsField.Wants ("heightStretchable") || wantsField.Wants ("stretchZones") ||
-            wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins");
+            wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins") ||
+            wantsField.Wants ("nominalSize") || wantsField.Wants ("hotspots");
         if (wantsGeometryDerivedFields) {
             API_AttributeDefExt profileDefs = {};
             if (ACAPI_Attribute_GetDefExt (API_ProfileID, attr.header.index, &profileDefs) == NoError && profileDefs.profile_vectorImageItems != nullptr) {
@@ -3704,6 +3918,20 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                         stretchZones.Add ("vertical", GS::ObjectState ("min", stretch.GetVerticalZoneMin (), "max", stretch.GetVerticalZoneMax ()));
                     }
                     profile.Add ("stretchZones", stretchZones);
+                }
+                if (wantsField.Wants ("nominalSize")) {
+                    const ProfileNominalSize nominalSize = GetProfileNominalSize (pvi);
+                    profile.Add ("nominalSize", GS::ObjectState (
+                        "left", nominalSize.left,
+                        "right", nominalSize.right,
+                        "bottom", nominalSize.bottom,
+                        "top", nominalSize.top));
+                }
+                if (wantsField.Wants ("hotspots")) {
+                    const auto& hotspotsList = profile.AddList<GS::ObjectState> ("hotspots");
+                    for (const Sy_HotType& hotspot : GetProfileHotspots (pvi)) {
+                        hotspotsList (GS::ObjectState ("x", hotspot.c.x, "y", hotspot.c.y));
+                    }
                 }
 
                 if (wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins")) {
@@ -3799,6 +4027,7 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                                 if (cutEndLineTypeId.HasValue ()) {
                                     skin.Add ("cutEndLineTypeId", *cutEndLineTypeId);
                                 }
+                                skin.Add ("areaMethod", GetProfileAreaMethod (profileItem));
 
                                 const auto& edgesList = skin.AddList<GS::ObjectState> ("edges");
                                 ForEachProfileEdge (hatch, [&] (const ProfileEdgeData& edgeData) {
@@ -7606,6 +7835,10 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                     "cutEndLineTypeId": {
                                         "$ref": "#/AttributeIdArrayItem"
                                     },
+                                    "areaMethod": {
+                                        "$ref": "#/ProfileAreaMethod",
+                                        "description": "Sets the component area method of this skin (read it with GetProfiles' skins[].areaMethod). None removes it."
+                                    },
                                     "edgeOverrides": {
                                         "type": "array",
                                         "description": "Modifications to specific edges of this skin, targeted by their position (0-based) in GetProfiles' skins[].edges.",
@@ -7692,6 +7925,17 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                 }
                             },
                             "additionalProperties": false
+                        },
+                        "nominalSize": {
+                            "$ref": "#/ProfileNominalSize",
+                            "description": "Sets the nominal width and height lines of the Profile (Profile Editor; read them with GetProfiles' nominalSize) at these positions, replacing the ones it has. right must be greater than left and top greater than bottom. Applied after skinOverrides, moveVertices and newSkins, in their final coordinates. Omit to keep the Profile's nominal size lines."
+                        },
+                        "addHotspots": {
+                            "type": "array",
+                            "description": "Adds hotspots to the Profile at these positions (Profile Editor; read them with GetProfiles' hotspots), in the final coordinates after skinOverrides, moveVertices and newSkins. The Profile's existing hotspots are kept: Archicad ties a hotspot on a skin vertex to that vertex, and the Archicad API cannot tie it again once removed, so hotspots cannot be removed or moved here. New hotspots take the settings of the Profile's first hotspot.",
+                            "items": {
+                                "$ref": "#/Coordinate2D"
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -7791,6 +8035,48 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             continue;
         }
 #endif
+
+        // Checked before anything is read or changed, so a wrong areaMethod changes nothing of the profile.
+        GS::UniString areaMethodError;
+        GS::Array<GS::ObjectState> skinsWithAreaMethod;
+        profileData.Get ("skinOverrides", skinsWithAreaMethod);
+        skinsWithAreaMethod.Append (newSkins);
+        for (const GS::ObjectState& skin : skinsWithAreaMethod) {
+            GS::ObjectState areaMethod;
+            if (skin.Get ("areaMethod", areaMethod) && !CheckProfileAreaMethod (areaMethod, areaMethodError)) {
+                break;
+            }
+        }
+        if (!areaMethodError.IsEmpty ()) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, areaMethodError));
+            continue;
+        }
+
+        GS::ObjectState nominalSizeOS;
+        const bool setNominalSize = profileData.Get ("nominalSize", nominalSizeOS);
+        ProfileNominalSize nominalSize;
+        if (setNominalSize) {
+            if (!nominalSizeOS.Get ("left", nominalSize.left) || !nominalSizeOS.Get ("right", nominalSize.right) ||
+                !nominalSizeOS.Get ("bottom", nominalSize.bottom) || !nominalSizeOS.Get ("top", nominalSize.top)) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, "nominalSize needs left, right, bottom and top."));
+                continue;
+            }
+            if (nominalSize.right <= nominalSize.left || nominalSize.top <= nominalSize.bottom) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, "nominalSize's right must be greater than left, and top greater than bottom."));
+                continue;
+            }
+        }
+
+        GS::Array<GS::ObjectState> addHotspotsOS;
+        profileData.Get ("addHotspots", addHotspotsOS);
+        GS::Array<Coord> addHotspots;
+        for (const GS::ObjectState& hotspotOS : addHotspotsOS) {
+            API_Coord position = Get2DCoordinateFromObjectState (hotspotOS);
+            Coord c;
+            c.x = position.x;
+            c.y = position.y;
+            addHotspots.Push (c);
+        }
 
         API_AttributeDefExt sourceDefs = {};
         bool hasSourceDefs = false;
@@ -7898,6 +8184,20 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             }
         }
 #endif
+
+        // After newSkins, so hotspots and nominal lines can be given in the final coordinates.
+        if (!addHotspots.IsEmpty () && profileDefs.profile_vectorImageItems != nullptr) {
+            AddProfileHotspots (*profileDefs.profile_vectorImageItems, addHotspots);
+        }
+        if (setNominalSize && profileDefs.profile_vectorImageItems != nullptr) {
+            if (!SetProfileNominalSize (*profileDefs.profile_vectorImageItems, nominalSize)) {
+                attributeIds (CreateErrorResponse (APIERR_GENERAL, "Failed to set the nominal size lines of the Profile."));
+                if (hasSourceDefs) {
+                    ACAPI_DisposeAttrDefsHdlsExt (&sourceDefs);
+                }
+                continue;
+            }
+        }
 
         // Applied last, so the zones are given in the final coordinates (after moveVertices and newSkins).
         GS::ObjectState stretchZones;
