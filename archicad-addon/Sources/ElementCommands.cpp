@@ -9344,9 +9344,34 @@ GS::ObjectState ScaleElementsCommand::Execute (const GS::ObjectState& parameters
                 continue;
             }
 
+            // Resize scales a beam's absolute elevation by the factor too (#2566), while walls,
+            // columns and slabs keep theirs, so the beam's level is read here and restored below.
+            API_Element beamBefore = {};
+            if (typeId == API_BeamID) {
+                beamBefore.header.guid = elemGuid;
+                if (ACAPI_Element_Get (&beamBefore) != NoError) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADID, "Failed to read the beam before scaling it."));
+                    continue;
+                }
+            }
+
             changeReporter.Add (elemGuid);
             GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
-            const GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
+            GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
+            if (err == NoError && typeId == API_BeamID) {
+                API_Element beamAfter = {};
+                beamAfter.header.guid = elementsToEdit.IsEmpty () ? elemGuid : elementsToEdit[0].guid;
+                err = ACAPI_Element_Get (&beamAfter);
+                if (err == NoError && (beamAfter.header.floorInd != beamBefore.header.floorInd || std::abs (beamAfter.beam.level - beamBefore.beam.level) > 1e-9)) {
+                    API_Element mask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (mask);
+                    beamAfter.header.floorInd = beamBefore.header.floorInd;
+                    beamAfter.beam.level = beamBefore.beam.level;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, level);
+                    err = ACAPI_Element_Change (&beamAfter, &mask, nullptr, 0, true);
+                }
+            }
             if (err != NoError) {
                 const GS::UniString errorMsg = GS::UniString::Printf ("Failed to scale element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
                 executionResults (CreateFailedExecutionResult (err, errorMsg));
