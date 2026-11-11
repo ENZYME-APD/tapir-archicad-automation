@@ -1,0 +1,200 @@
+{
+  "title": "SetMEPRoutingParameters sets the transition angle of a duct route and of a routing node; a later size-change join gets a transition of (largest half size step) x tan(angle), and an angle out of [1, 89] or on a pipe changes nothing",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "300x200 duct and 500x300 duct, end to end",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -70.0, "z": 3.0 },
+              { "x": 2.0, "y": -70.0, "z": 3.0 }
+            ]
+          },
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.5,
+            "crossSectionHeight": 0.3,
+            "nodeCoordinates": [
+              { "x": 2.0, "y": -70.0, "z": 3.0 },
+              { "x": 4.0, "y": -70.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "small": "elements[0].elementId.guid",
+        "large": "elements[1].elementId.guid"
+      }
+    },
+    {
+      "id": "transition angle 50 on the small duct",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${small}" },
+            "routingNodeParameters": { "transition": { "angle": 50.0 } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "angles out of range",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${small}" },
+            "routingNodeParameters": { "transition": { "angle": 0.5 } }
+          },
+          {
+            "elementId": { "guid": "${small}" },
+            "routingNodeParameters": { "transition": { "angle": 90.0 } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "0.5 refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "90 refused" }
+      ]
+    },
+    {
+      "id": "read back",
+      "command": "GetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${small}" } } ]
+      },
+      "expect": [
+        { "path": "routingParameters[0].routingNodeParameters.transition.angle", "approx": 50.0, "tol": 1e-6, "name": "50 kept, out-of-range values changed nothing" }
+      ]
+    },
+    {
+      "id": "join the large duct to the small one",
+      "command": "ConnectMEPElements",
+      "creates": false,
+      "params": {
+        "connectionsData": [
+          {
+            "routingElementId": { "guid": "${small}" },
+            "connectToId": { "guid": "${large}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "connectionResults[0].deletedRoutingElementId.guid", "eq": "${large}", "name": "merged into the small duct" }
+      ]
+    },
+    {
+      "id": "the transition at the joint",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${small}" } } ]
+      },
+      "save": {
+        "transition": "routingElements[0].nodes[1].transitions[0].elementId.guid",
+        "node": "routingElements[0].nodes[1].elementId.guid"
+      }
+    },
+    {
+      "id": "its length",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${transition}" } } ]
+      },
+      "save": {
+        "x0": "elementPorts[0].ports[0].position.x",
+        "x1": "elementPorts[0].ports[1].position.x"
+      },
+      "expect": [
+        { "expr": "(${x1} - ${x0}) * (${x1} - ${x0})", "approx": 0.014203, "tol": 0.0002, "name": "length 0.1 x tan 50 = 0.1192 m" }
+      ]
+    },
+    {
+      "id": "transition angle 30 on that node",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${node}" },
+            "transitionParameters": { "angle": 30.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "node read back",
+      "command": "GetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${node}" } } ]
+      },
+      "expect": [
+        { "path": "routingParameters[0].transitionParameters.angle", "approx": 30.0, "tol": 1e-6 }
+      ]
+    },
+    {
+      "id": "pipe route",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -74.0, "z": 3.0 },
+              { "x": 2.0, "y": -74.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "pipe": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "angle on a pipe",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${pipe}" },
+            "routingNodeParameters": { "transition": { "angle": 50.0 } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "Archicad has no transition angle for pipes" }
+      ]
+    }
+  ]
+}
