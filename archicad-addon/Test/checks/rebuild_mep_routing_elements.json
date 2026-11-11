@@ -1,5 +1,5 @@
 {
-  "title": "RebuildMEPRoutingElements adds a node to a pipe route, leaves out a collinear node, keeps the route's insulation, keeps both sizes of a duct route with a size change and maps its old parts to the new ones, resets custom segments, and refuses, without changing anything, a segment without length, a route ending at a tee and a route with a take-off",
+  "title": "RebuildMEPRoutingElements adds a node to a pipe route, leaves out a collinear node, keeps the route's insulation and element ID, keeps both sizes and the element ID of a duct route with a size change and maps its old parts to the new ones, resets custom segments, and refuses, without changing anything, a segment without length, a route ending at a tee and a route with a take-off",
   "minTapir": "2.0.1",
   "minArchicad": "28",
   "steps": [
@@ -61,6 +61,27 @@
               "guid": "${pipe}"
             },
             "insulationThickness": 0.02
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "give the pipe an element ID",
+      "command": "SetElementInfoStrings",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${pipe}"
+            },
+            "infoString": "REBUILT PIPE 1"
           }
         ]
       },
@@ -225,6 +246,27 @@
       ]
     },
     {
+      "id": "the pipe keeps its element ID through both rebuilds",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${purged}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].id",
+          "eq": "REBUILT PIPE 1",
+          "name": "element ID kept"
+        }
+      ]
+    },
+    {
       "id": "two duct routes of different widths, end to end",
       "command": "CreateMEPRoutingElements",
       "params": {
@@ -340,6 +382,27 @@
       ]
     },
     {
+      "id": "give the duct an element ID",
+      "command": "SetElementInfoStrings",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${wide}"
+            },
+            "infoString": "REBUILT DUCT 1"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
       "id": "add a node at the far end",
       "command": "RebuildMEPRoutingElements",
       "params": {
@@ -442,6 +505,27 @@
           "path": "routingElements[0].segments[3].crossSectionWidth",
           "approx": 0.3,
           "name": "the new end segment continues 0.3 wide, like the segment it is drawn from"
+        }
+      ]
+    },
+    {
+      "id": "the duct keeps its element ID",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${duct}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].id",
+          "eq": "REBUILT DUCT 1",
+          "name": "element ID kept"
         }
       ]
     },
