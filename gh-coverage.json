@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-11 22:30 UTC",
+ "generatedAt": "2026-11-11 23:10 UTC",
  "counts": {
   "done": 788,
   "open": 4,
@@ -5150,7 +5150,7 @@
    "id": "CreateBeams",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates Beam elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Both commands take the same segments array, which sets the cross section, taper and length of single segments. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
+   "brief": "Creates Beam elements based on the given parameters. Takes the same cut fill pens, cover fill and holes as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Both commands take the same segments array, which sets the cross section, taper and length of single segments. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5164,7 +5164,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 26,
+   "parameterCount": 27,
    "coveredParameters": [
     "beamsData",
     "beamsData.anchorPoint",
@@ -5179,6 +5179,7 @@
     "beamsData.favoriteName",
     "beamsData.floorIndex",
     "beamsData.height",
+    "beamsData.holes",
     "beamsData.id",
     "beamsData.isSlanted",
     "beamsData.isWidthAndHeightLinked",
@@ -7144,7 +7145,7 @@
    "id": "ModifyBeams",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex), and the same segments array, which changes the cross section, taper and length of single segments and leaves the others as they are. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
+   "brief": "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens, cover fill and holes, and the same absolute zCoordinate of the reference line (with an optional floorIndex), and the same segments array, which changes the cross section, taper and length of single segments and leaves the others as they are. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [

@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 741 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-11 22:30 UTC.
+Updated 2026-11-11 23:10 UTC.
 
 | | Status |
 |---|---|
@@ -268,7 +268,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `RunParameterScriptOfElements` 🟢 1/1 parameters – `RunParameterScriptOfElementsComponent`
 - ✅ `CreateColumns` 🟢 27/27 parameters – `ColumnsComponent`, `CreateColumnsComponent`
 - ✅ `CreateWalls` 🟡 49/50 parameters – `CreateWallsComponent`, `WallsApiComponent`, `WallsComponent`<br><sub>no input: `wallsData.endThickness`</sub>
-- ✅ `CreateBeams` 🟡 24/26 parameters – `BeamsComponent`, `CreateBeamsComponent`<br><sub>no input: `beamsData.segmentCount`, `beamsData.segments`</sub>
+- ✅ `CreateBeams` 🟡 25/27 parameters – `BeamsComponent`, `CreateBeamsComponent`<br><sub>no input: `beamsData.segmentCount`, `beamsData.segments`</sub>
 - ✅ `CreateStairs` 🟡 16/45 parameters – `CreateStairsComponent`<br><sub>no input: `stairsData.baseLineEdges`, `stairsData.baseLineVertices`, `stairsData.baselineOffset`, `stairsData.baselinePosition`, `stairsData.extraBottomTread`, `stairsData.extraTopTread`, `stairsData.id`, `stairsData.inputDirection`, `stairsData.numberingType`, `stairsData.risers`, `stairsData.risers.crossSection`, `stairsData.structureVisibility`, `stairsData.structures`, `stairsData.structures.bottomType`, `stairsData.structures.horizontalThickness`, `stairsData.structures.side`, `stairsData.totalHeightLocked`, `stairsData.treadDepthLocked`, `stairsData.treads`, `stairsData.treads.nosingSlant`, `stairsData.treads.nosingType`, `stairsData.treads.nosingValue`, `stairsData.treads.role`, `stairsData.treads.visible`, `stairsData.uniformDrainings`, `stairsData.uniformFinish`, `stairsData.uniformMonolithAttributes`, `stairsData.walkingLineOffset`, `stairsData.walkingLinePosition`</sub>
 - ✅ `SolveStairBaseline` 🟢 1/1 parameters – `SolveStairBaselineComponent`
 - ✅ `CreateSlabs` 🟢 20/20 parameters – `CreateSlabsComponent`, `SlabsComponent`
