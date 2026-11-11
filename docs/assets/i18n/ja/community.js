@@ -135,5 +135,20 @@
         '私たちは Archicad の自動化を軸に、意欲的で多様なコミュニティを築いています。',
     'Say hello on Discord, and tell us what you automate in Archicad.':
         'Discord であいさつして、Archicad で何を自動化しているか教えてください。',
-    'Join the Discord': 'Discord に参加'
+    'Join the Discord': 'Discord に参加',
+
+    // On the map (user-map.js)
+    "On the map": "マップ",
+    "Where Tapir is <em>used.</em>": "Tapir が<em>使われている場所。</em>",
+    "The towns people named on Discord, counted per town: never a name or a message. Tell us where you are in #welcome-and-rules to put your town on the map.": "Discord で皆さんが書いてくれた都市を、都市ごとに数えています。名前やメッセージは一切記録しません。#welcome-and-rules でどこにいるか教えて、あなたの都市をマップに載せてください。",
+    "People on the map": "マップ上の人数",
+    "Countries": "国",
+    "Towns": "都市",
+    "A dot per town, larger where more people are. Land: Natural Earth.": "都市ごとに1つの点。人が多いほど大きくなります。陸地：Natural Earth。",
+    "Add your town on Discord": "Discord であなたの都市を追加",
+    "{place}, {country}: {count} person": "{place}、{country}：{count} 人",
+    "{place}, {country}: {count} people": "{place}、{country}：{count} 人",
+    "{count} person": "{count} 人",
+    "{count} people": "{count} 人",
+    "World map of where people use Tapir: {people} people in {countries} countries. The list below names every country.": "Tapir が使われている場所の世界地図：{countries} か国に {people} 人。下のリストにすべての国があります。"
 });

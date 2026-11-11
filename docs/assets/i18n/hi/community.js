@@ -134,5 +134,20 @@
         'हम Archicad automation के इर्द-गिर्द एक उत्साही, विविध समुदाय बना रहे हैं।',
     'Say hello on Discord, and tell us what you automate in Archicad.':
         'Discord पर नमस्ते कहें, और हमें बताएँ कि आप Archicad में क्या automate करते हैं।',
-    'Join the Discord': 'Discord से जुड़ें'
+    'Join the Discord': 'Discord से जुड़ें',
+
+    // On the map (user-map.js)
+    "On the map": "नक्शे पर",
+    "Where Tapir is <em>used.</em>": "Tapir कहाँ <em>इस्तेमाल होता है।</em>",
+    "The towns people named on Discord, counted per town: never a name or a message. Tell us where you are in #welcome-and-rules to put your town on the map.": "लोगों ने Discord पर जो शहर बताए, उन्हें शहर के हिसाब से गिना गया है: कभी कोई नाम या message नहीं। #welcome-and-rules में बताइए कि आप कहाँ हैं, और अपना शहर नक्शे पर लाइए।",
+    "People on the map": "नक्शे पर लोग",
+    "Countries": "देश",
+    "Towns": "शहर",
+    "A dot per town, larger where more people are. Land: Natural Earth.": "हर शहर के लिए एक बिंदु, जहाँ ज़्यादा लोग हैं वहाँ बड़ा। ज़मीन: Natural Earth।",
+    "Add your town on Discord": "Discord पर अपना शहर जोड़ें",
+    "{place}, {country}: {count} person": "{place}, {country}: {count} व्यक्ति",
+    "{place}, {country}: {count} people": "{place}, {country}: {count} लोग",
+    "{count} person": "{count} व्यक्ति",
+    "{count} people": "{count} लोग",
+    "World map of where people use Tapir: {people} people in {countries} countries. The list below names every country.": "Tapir कहाँ इस्तेमाल होता है, इसका विश्व नक्शा: {countries} देशों में {people} लोग। नीचे की सूची में हर देश है।"
 });

@@ -132,3 +132,31 @@
 :root:not([data-style="legacy"]) .growth-tip { border-color: var(--line); border-radius: 8px }
 :root:not([data-style="legacy"]) .growth-legend { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
 :root:not([data-style="legacy"]) .contributor-list li::before, :root:not([data-style="legacy"]) .contributor-list .counts { font-family: var(--body) }
+
+/* The map of where people use Tapir (user-map.js): world.svg's land dots as a mask in the line
+   colour, the towns as ochre dots with a soft halo over it, and the countries as a list. */
+.map-figures { margin-bottom: 24px }
+.map-card { border: 1.5px solid var(--fg); background: var(--surface); padding: 20px 24px }
+.user-map { margin: 0 0 20px }
+.map-canvas { position: relative; aspect-ratio: 1000 / 437 }
+.map-land { position: absolute; inset: 0; background: var(--muted); opacity: .45;
+    -webkit-mask: url(world.svg) center / 100% 100% no-repeat; mask: url(world.svg) center / 100% 100% no-repeat }
+.map-towns { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible }
+.map-towns .town { cursor: pointer; outline: none }
+.map-towns .dot { fill: var(--ochre); stroke: var(--surface); stroke-width: 1.5 }
+.map-towns .halo { fill: var(--ochre); opacity: .18; transition: opacity .2s }
+.map-towns .hit { fill: transparent }
+.map-towns .town.active .halo, .map-towns .town:focus-visible .halo { opacity: .45 }
+.map-towns .town:focus-visible .dot { stroke: var(--focus); stroke-width: 3 }
+@media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion="reduced"]) .map-towns .halo { animation: map-pulse 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center }
+}
+@keyframes map-pulse { 0%, 100% { transform: scale(.85) } 50% { transform: scale(1.1) } }
+.map-label { position: absolute; transform: translate(-50%, calc(-100% - 14px)); margin: 0; padding: 4px 10px; white-space: nowrap;
+    background: var(--fg); color: var(--surface); font: 600 .8125rem var(--body); pointer-events: none; z-index: 1 }
+.user-map figcaption { margin-top: 12px; font-size: .8125rem; color: var(--muted) }
+.country-list { list-style: none; margin: 0 0 20px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px 24px }
+.country-list li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--line) }
+.country-list .name { font-weight: 600 }
+.country-list .count { color: var(--muted); font: 500 .78125rem var(--mono) }
+.country-list .bar { grid-column: 1 / -1; height: 3px; background: var(--ochre) }

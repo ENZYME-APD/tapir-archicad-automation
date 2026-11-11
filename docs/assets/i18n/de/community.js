@@ -135,5 +135,20 @@
         'Wir bauen eine motivierte, vielfältige Community rund um die Automatisierung von Archicad auf.',
     'Say hello on Discord, and tell us what you automate in Archicad.':
         'Sagen Sie Hallo auf Discord und erzählen Sie uns, was Sie in Archicad automatisieren.',
-    'Join the Discord': 'Dem Discord beitreten'
+    'Join the Discord': 'Dem Discord beitreten',
+
+    // On the map (user-map.js)
+    "On the map": "Auf der Karte",
+    "Where Tapir is <em>used.</em>": "Wo Tapir <em>genutzt wird.</em>",
+    "The towns people named on Discord, counted per town: never a name or a message. Tell us where you are in #welcome-and-rules to put your town on the map.": "Die Orte, die Leute auf Discord genannt haben, gezählt pro Ort: nie ein Name oder eine Nachricht. Sag uns in #welcome-and-rules, wo du bist, und dein Ort kommt auf die Karte.",
+    "People on the map": "Personen auf der Karte",
+    "Countries": "Länder",
+    "Towns": "Orte",
+    "A dot per town, larger where more people are. Land: Natural Earth.": "Ein Punkt pro Ort, größer, wo mehr Leute sind. Land: Natural Earth.",
+    "Add your town on Discord": "Deinen Ort auf Discord eintragen",
+    "{place}, {country}: {count} person": "{place}, {country}: {count} Person",
+    "{place}, {country}: {count} people": "{place}, {country}: {count} Personen",
+    "{count} person": "{count} Person",
+    "{count} people": "{count} Personen",
+    "World map of where people use Tapir: {people} people in {countries} countries. The list below names every country.": "Weltkarte, wo Leute Tapir nutzen: {people} Personen in {countries} Ländern. Die Liste darunter nennt jedes Land."
 });
