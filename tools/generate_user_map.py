@@ -165,7 +165,9 @@ def geocode (phrase, cache):
         # A bare country name is the country, not a town of that name ("Italy" is not Italy, Texas).
         hit = nominatim (phrase, 'country')
         country = place_of (hit, 'country') if hit else None
-        if country and same_name (phrase, country['country'], hit.get ('name')):
+        # Any of the country's names counts: "Holland", "Czech Republic", "Türkiye", "España".
+        names = [country['country'], hit.get ('name')] + list ((hit.get ('namedetails') or {}).values ()) if country else []
+        if country and same_name (phrase, *names):
             place = country
         else:
             hit = nominatim (phrase, 'settlement')
