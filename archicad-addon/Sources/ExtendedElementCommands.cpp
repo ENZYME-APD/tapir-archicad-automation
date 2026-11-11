@@ -10143,6 +10143,15 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the tool defaults."
+                        },
                         "level": { "type": "number" },
                         "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from level." },
                         "thickness": {
@@ -10178,6 +10187,11 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                                 "$ref": "#/RoofLevel"
                             }
                         },
+                        "pivotEdges": {
+                            "type": "array",
+                            "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (item i is the edge from vertex i to vertex i + 1 of polygonCoordinates, the last one closing the polygon; the edges of each hole follow), as ModifyRoofs takes them. They are written right after the roof is made from levels and eavesOverhang, and only the given fields change those planes; an item without levels keeps its edge. angleType Gable makes a gable roof in one call. If they cannot be written, the roof is not created.",
+                            "items": { "$ref": "#/RoofPivotEdgeChange" }
+                        },
                         "structureType": {
                             "$ref": "#/RoofStructureType"
                         },
@@ -10198,6 +10212,8 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetRawResponseSchema () const
 {
     return CreateMorphsCommand ().GetRawResponseSchema ();
 }
+
+static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, const GS::Array<GSIndex>& edgeIndices, const GS::Array<GS::ObjectState>& pivotEdges);
 
 GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
@@ -10234,6 +10250,20 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (!isSinglePlane && GetOptionalDouble (data, "angle").HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "'angle' is only valid for single-plane roofs (add 'pivotLine' to create one)."));
                 continue;
+            }
+            GS::Array<GS::ObjectState> pivotEdges;
+            const bool hasPivotEdges = data.Get ("pivotEdges", pivotEdges);
+            if (isSinglePlane && hasPivotEdges) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'pivotEdges' is only valid for multi-plane roofs (omit 'pivotLine' to create one)."));
+                continue;
+            }
+
+            {
+                const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
+                if (layerError.HasValue ()) {
+                    elements.Push (*layerError);
+                    continue;
+                }
             }
 
             bool changed = false;
@@ -10297,6 +10327,60 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create roof."));
                 continue;
+            }
+
+            // Per-item "pivotEdges", written as ModifyRoofs writes them: Archicad builds the
+            // planes of the edges from levels and eavesOverhang when it creates the roof, so
+            // they are changed afterwards, in the same undoable command. A roof whose edges
+            // cannot be written is deleted again, as for the id below.
+            if (hasPivotEdges) {
+                GS::UniString edgeError;
+                API_Element created = {};
+                created.header.guid = element.header.guid;
+                API_ElementMemo createdMemo = {};
+                const GS::OnExit createdCleanup ([&]() {
+                    ACAPI_DisposeElemMemoHdls (&createdMemo);
+                });
+                err = ACAPI_Element_Get (&created);
+                if (err == NoError) {
+                    err = ACAPI_Element_GetMemo (created.header.guid, &createdMemo, APIMemoMask_AdditionalPolygon);
+                }
+                const GS::Array<GSIndex> edgeIndices = GetPivotEdgeIndices (createdMemo);
+                if (err != NoError || edgeIndices.IsEmpty ()) {
+                    err = err != NoError ? err : APIERR_GENERAL;
+                    edgeError = "Failed to read the edges of the new roof's pivot polygon, so it was not created.";
+                } else {
+                    auto applyError = ApplyRoofPivotEdges (createdMemo, edgeIndices, pivotEdges);
+                    if (applyError.HasValue ()) {
+                        err = APIERR_BADPARS;
+                        edgeError = applyError.Get ();
+                        edgeError.Append (" The roof was not created.");
+                    } else {
+                        API_Element createdMask = {};
+                        ACAPI_ELEMENT_MASK_CLEAR (createdMask);
+                        err = ACAPI_Element_Change (&created, &createdMask, &createdMemo, APIMemoMask_AdditionalPolygon, true);
+                        if (err != NoError) {
+                            edgeError = "Failed to set the roof planes of the edges of the new roof, so it was not created.";
+                        }
+                    }
+                }
+                if (err != NoError) {
+                    ACAPI_Element_Delete ({ element.header.guid });
+                    elements.Push (CreateErrorResponse (err, edgeError));
+                    continue;
+                }
+            }
+
+            // Per-item "id", as in CreateElementsCommandBase::Execute: an id that cannot be
+            // written leaves no half-done roof behind, the new roof is deleted again.
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                err = ChangeElementId (element.header.guid, id);
+                if (err != NoError) {
+                    ACAPI_Element_Delete ({ element.header.guid });
+                    elements.Push (CreateErrorResponse (err, "Failed to set the id of the new roof, so it was not created."));
+                    continue;
+                }
             }
 
             elements.Push (CreateElementIdObjectState (element.header.guid));
@@ -13284,25 +13368,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "pivotEdges": {
                             "type": "array",
                             "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "levels": {
-                                        "type": "array",
-                                        "description": "The roof plane of the edge on each level, from the pivot polygon upwards; at most as many as the roof has levels.",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
-                                                "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
-                                                "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
-                                            },
-                                            "additionalProperties": false
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false
-                            }
+                            "items": { "$ref": "#/RoofPivotEdgeChange" }
                         },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
                     "additionalProperties": false,

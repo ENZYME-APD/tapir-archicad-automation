@@ -1160,7 +1160,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateRoofsCommand> (
             elementCommands, "1.4.0",
-            "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead."
+            "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead. Each item may give a layer (layerIndex) and an Element ID (id), and a multi-plane roof the planes of its edges (pivotEdges, e.g. gables), as ModifyRoofs takes them."
         );
         err |= RegisterCommand<CreateShellsCommand> (
             elementCommands, "2.0.0",
