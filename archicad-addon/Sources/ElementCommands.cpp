@@ -442,11 +442,17 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 // The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
 static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
 {
-    GS::ObjectState os;
-    os.Add ("lengthType", scheme.lengthType == APIAssemblySegment_Proportional ? "Proportional" : "Fixed");
-    os.Add ("fixedLength", scheme.fixedLength);
-    os.Add ("lengthProportion", scheme.lengthProportion);
-    return os;
+    GS::ObjectState length;
+    if (scheme.lengthType == APIAssemblySegment_Fixed) {
+        length.Add ("lengthType", "Fixed");
+    } else if (scheme.lengthType == APIAssemblySegment_Proportional) {
+        length.Add ("lengthType", "Proportional");
+    } else {
+        length.Add ("lengthType", "Unknown");
+    }
+    length.Add ("fixedLength", scheme.fixedLength);
+    length.Add ("lengthProportion", scheme.lengthProportion);
+    return length;
 }
 
 // The cross section, taper and length of a beam segment (#2551). scheme is nullptr when the beam
@@ -567,22 +573,6 @@ static GS::ObjectState CreateColumnSegmentTaperObjectState (const API_AssemblySe
     return taper;
 }
 
-// The column's own copy (#2552): unlike the beam's (#2551), it reports an unknown length type as Unknown.
-static GS::ObjectState CreateColumnSegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
-{
-    GS::ObjectState length;
-    if (scheme.lengthType == APIAssemblySegment_Fixed) {
-        length.Add ("lengthType", "Fixed");
-    } else if (scheme.lengthType == APIAssemblySegment_Proportional) {
-        length.Add ("lengthType", "Proportional");
-    } else {
-        length.Add ("lengthType", "Unknown");
-    }
-    length.Add ("fixedLength", scheme.fixedLength);
-    length.Add ("lengthProportion", scheme.lengthProportion);
-    return length;
-}
-
 // The segment schemes are kept in the Column's memo, one for each segment, in the order of the segments.
 static void AddColumnSegmentLength (const API_ElementMemo& memo, GSIndex segmentIndex, GS::ObjectState& os)
 {
@@ -591,7 +581,7 @@ static void AddColumnSegmentLength (const API_ElementMemo& memo, GSIndex segment
     }
     const GSSize nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
     if (segmentIndex < nSchemes) {
-        os.Add ("length", CreateColumnSegmentLengthObjectState (memo.assemblySegmentSchemes[segmentIndex]));
+        os.Add ("length", CreateAssemblySegmentLengthObjectState (memo.assemblySegmentSchemes[segmentIndex]));
     }
 }
 
