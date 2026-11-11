@@ -1,6 +1,6 @@
 {
   "title": "ApplyFavoritesToElements command",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "steps": [
     {
       "id": "create test wall",
@@ -85,12 +85,167 @@
       ]
     },
     {
+      "id": "source column 0.24 x 0.32, target columns 0.35 x 0.42 (#2553)",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          { "coordinates": { "x": 1500.0, "y": 1500.0, "z": 0.0 }, "floorIndex": 0, "height": 2.8,
+            "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.24, "depth": 0.32 },
+          { "coordinates": { "x": 1503.0, "y": 1500.0, "z": 0.0 }, "floorIndex": 0, "height": 2.8,
+            "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.35, "depth": 0.42 },
+          { "coordinates": { "x": 1506.0, "y": 1500.0, "z": 0.0 }, "floorIndex": 0, "height": 2.8,
+            "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.35, "depth": 0.42 }
+        ]
+      },
+      "save": {
+        "sourceColumn": "elements[0].elementId.guid",
+        "keptColumn": "elements[1].elementId.guid",
+        "changedColumn": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 3 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "source column created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "first target column created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "second target column created" }
+      ]
+    },
+    {
+      "id": "source beam 0.24 x 0.38, target beams 0.32 x 0.44 (#2553)",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          { "begCoordinate": { "x": 1500.0, "y": 1510.0 }, "endCoordinate": { "x": 1505.0, "y": 1510.0 }, "zCoordinate": 3.0,
+            "floorIndex": 0, "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.24, "height": 0.38 },
+          { "begCoordinate": { "x": 1500.0, "y": 1514.0 }, "endCoordinate": { "x": 1505.0, "y": 1514.0 }, "zCoordinate": 3.0,
+            "floorIndex": 0, "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.32, "height": 0.44 },
+          { "begCoordinate": { "x": 1500.0, "y": 1518.0 }, "endCoordinate": { "x": 1505.0, "y": 1518.0 }, "zCoordinate": 3.0,
+            "floorIndex": 0, "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.32, "height": 0.44 }
+        ]
+      },
+      "save": {
+        "sourceBeam": "elements[0].elementId.guid",
+        "keptBeam": "elements[1].elementId.guid",
+        "changedBeam": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 3 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "source beam created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "first target beam created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "second target beam created" }
+      ]
+    },
+    {
+      "id": "favorites from the source column and beam",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${sourceColumn}" }, "favorite": "Tapir check 2553 column favorite" },
+          { "elementId": { "guid": "${sourceBeam}" }, "favorite": "Tapir check 2553 beam favorite" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "column favorite created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "beam favorite created" }
+      ]
+    },
+    {
+      "id": "column favorite keeping width and depth on the first target",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favorite": "Tapir check 2553 column favorite",
+        "elements": [ { "elementId": { "guid": "${keptColumn}" } } ],
+        "keepFields": [ "id", "layerIndex", "height", "relativeTopStory", "topOffset", "width", "depth" ],
+        "applyProperties": false,
+        "applyClassifications": false,
+        "applyCategories": false
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "column favorite without keeping the cross section on the second target",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favorite": "Tapir check 2553 column favorite",
+        "elements": [ { "elementId": { "guid": "${changedColumn}" } } ],
+        "keepFields": [ "id", "layerIndex", "height", "relativeTopStory", "topOffset" ],
+        "applyProperties": false,
+        "applyClassifications": false,
+        "applyCategories": false
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "beam favorite keeping width and height on the first target",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favorite": "Tapir check 2553 beam favorite",
+        "elements": [ { "elementId": { "guid": "${keptBeam}" } } ],
+        "keepFields": [ "id", "layerIndex", "width", "height" ],
+        "applyProperties": false,
+        "applyClassifications": false,
+        "applyCategories": false
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "beam favorite without keeping the cross section on the second target",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favorite": "Tapir check 2553 beam favorite",
+        "elements": [ { "elementId": { "guid": "${changedBeam}" } } ],
+        "keepFields": [ "id", "layerIndex" ],
+        "applyProperties": false,
+        "applyClassifications": false,
+        "applyCategories": false
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "kept cross sections stayed, the others took the favorite's, nothing moved",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${keptColumn}" } },
+          { "elementId": { "guid": "${changedColumn}" } },
+          { "elementId": { "guid": "${keptBeam}" } },
+          { "elementId": { "guid": "${changedBeam}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 0.35, "name": "column kept its width" },
+        { "path": "detailsOfElements[0].details.depth", "approx": 0.42, "name": "column kept its depth" },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.8, "name": "column kept its height" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1503.0, "name": "column not moved" },
+        { "path": "detailsOfElements[1].details.width", "approx": 0.24, "name": "column took the favorite's width" },
+        { "path": "detailsOfElements[1].details.depth", "approx": 0.32, "name": "column took the favorite's depth" },
+        { "path": "detailsOfElements[2].details.width", "approx": 0.32, "name": "beam kept its width" },
+        { "path": "detailsOfElements[2].details.height", "approx": 0.44, "name": "beam kept its height" },
+        { "path": "detailsOfElements[2].details.begCoordinate.y", "approx": 1514.0, "name": "beam not moved" },
+        { "path": "detailsOfElements[3].details.width", "approx": 0.24, "name": "beam took the favorite's width" },
+        { "path": "detailsOfElements[3].details.height", "approx": 0.38, "name": "beam took the favorite's height" }
+      ]
+    },
+    {
       "id": "stair A 1.10 m wide and stair B 1.25 m wide",
       "command": "CreateStairs",
       "params": {
         "stairsData": [
           {
-            "baseLinePoints": [ { "x": 1500.0, "y": 1500.0 }, { "x": 1504.64, "y": 1500.0 } ],
+            "baseLinePoints": [ { "x": 1530.0, "y": 1500.0 }, { "x": 1534.64, "y": 1500.0 } ],
             "baselinePosition": "Center",
             "zCoordinate": 0.0,
             "floorIndex": 0,
@@ -101,7 +256,7 @@
             "treadDepth": 0.29
           },
           {
-            "baseLinePoints": [ { "x": 1500.0, "y": 1510.0 }, { "x": 1504.64, "y": 1510.0 } ],
+            "baseLinePoints": [ { "x": 1530.0, "y": 1510.0 }, { "x": 1534.64, "y": 1510.0 } ],
             "baselinePosition": "Center",
             "zCoordinate": 0.0,
             "floorIndex": 0,
@@ -174,7 +329,7 @@
       "save": { "stepNumB2": "detailsOfElements[0].details.stepNum" },
       "expect": [
         { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.25, "name": "flight width kept, not the favorite's 1.10 m" },
-        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 1500.0, "name": "baseline start x kept" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 1530.0, "name": "baseline start x kept" },
         { "path": "detailsOfElements[0].details.baseLinePoints[0].y", "approx": 1510.0, "name": "baseline start y kept" },
         { "expr": "${stepNumB2} - ${stepNumB}", "approx": 0, "tol": 0, "name": "riser count unchanged" },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" }
@@ -185,7 +340,7 @@
     {
       "command": "DeleteFavorites",
       "params": {
-        "favorites": [ "Tapir check stair favorite 2528" ]
+        "favorites": [ "Tapir check 2553 column favorite", "Tapir check 2553 beam favorite", "Tapir check stair favorite 2528" ]
       }
     }
   ]

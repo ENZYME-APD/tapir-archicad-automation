@@ -15,9 +15,13 @@
 #include "MessageLoopExecutor.hpp"
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
+#include "ProjectCommands.hpp"
 #include "ScriptRequirements.hpp"
 #include "ScriptUIPalette.hpp"
+#include "ScriptManager.hpp"
+#include "MarketplaceInstalls.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -68,6 +72,12 @@ static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
 static GS::UniString PaletteText (Int32 index)
 {
     return RSGetIndString (ID_PALETTE_STRINGS, index, ACAPI_GetOwnResModule ());
+}
+
+// The Marketplace section's texts are the Script Manager's, so ID_PALETTE_STRINGS stays as it is.
+static GS::UniString MarketplaceText (Int32 index)
+{
+    return RSGetIndString (ID_SCRIPT_MANAGER_STRINGS, index, ACAPI_GetOwnResModule ());
 }
 
 static GS::UniString SearchText (Int32 index)
@@ -490,6 +500,7 @@ TapirPalette::TapirPalette ()
     , searchEdit (GetReference (), ID_PALETTE_SEARCH_EDIT)
     , favouriteButton (GetReference (), ID_PALETTE_FAVOURITE_BUTTON)
     , searchButton (GetReference (), ID_PALETTE_SEARCH_BUTTON)
+    , scriptManagerButton (GetReference (), ID_PALETTE_SCRIPTMANAGER_BUTTON)
 {
     Attach (*this);
     AttachToAllItems (*this);
@@ -708,6 +719,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         OpenShortcutsDialog ();
     } else if (ev.GetSource () == &checkForUpdatesButton) {
         CheckForUpdates ();
+    } else if (ev.GetSource () == &scriptManagerButton) {
+        ScriptManager::Instance ().Show ();
     } else if (ev.GetSource () == &favouriteButton) {
         ToggleFavourite ();
     } else if (ev.GetSource () == &searchButton) {
@@ -911,7 +924,7 @@ bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
 TapirPalette::ScriptList TapirPalette::GetAllScripts () const
 {
     ScriptList scripts;
-    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts }) {
+    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts, &marketplaceScripts }) {
         for (const GS::Ref<PopUpItemData>& popUpItemData : *list) {
             scripts.Push (popUpItemData);
         }
@@ -979,6 +992,19 @@ TapirPalette::VisibleItemList TapirPalette::BuildVisibleItems (bool forDropdown)
     for (const GS::Ref<PopUpItemData>& popUpItemData : listed) {
         items.Push (VisibleItem (VisibleItem::Kind::Script, popUpItemData));
         hasScript = true;
+    }
+    // The marketplace scripts last, after a separator and their "Marketplace" heading (#2408), so the items before
+    // them keep the numbers older Tapir versions saved. The section is left out while it shows no script.
+    const ScriptList marketplace = getSectionScripts (marketplaceScripts, false);
+    if (!marketplace.IsEmpty ()) {
+        if (!items.IsEmpty ()) {
+            items.Push (VisibleItem (VisibleItem::Kind::Separator));
+        }
+        items.Push (VisibleItem (VisibleItem::Kind::Heading));
+        for (const GS::Ref<PopUpItemData>& popUpItemData : marketplace) {
+            items.Push (VisibleItem (VisibleItem::Kind::Script, popUpItemData));
+            hasScript = true;
+        }
     }
 
     if (isSearching && !hasScript) {
@@ -1064,6 +1090,16 @@ void TapirPalette::RebuildScriptPopUp (const GS::Ref<PopUpItemData>& scriptToSel
                 scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, SearchText (ID_PALETTE_SEARCH_STRINGS_NO_MATCH));
                 scriptSelectionPopUp.DisableItem (DG::PopUp::BottomItem);
                 break;
+            case VisibleItem::Kind::Heading:
+                // DG::PopUp has no section headings, so the heading is a disabled item in bold.
+            {
+                scriptSelectionPopUp.AppendItem ();
+                const short headingItem = scriptSelectionPopUp.GetItemCount ();
+                scriptSelectionPopUp.SetItemText (headingItem, MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_PALETTE_SECTION));
+                scriptSelectionPopUp.SetItemFontStyle (headingItem, DG::Font::Bold);
+                scriptSelectionPopUp.DisableItem (headingItem);
+                break;
+            }
             case VisibleItem::Kind::Separator:
             default:
                 scriptSelectionPopUp.AppendSeparator ();
@@ -1949,13 +1985,34 @@ void TapirPalette::RemoveEndedScript (const GS::UniString& scriptId)
     }
 }
 
+// The value of an environment variable in Archicad's environment, empty when it is not set. The name must be ASCII.
+static GS::UniString GetEnvironmentVariableValue (const char* name)
+{
+#if defined (WINDOWS)
+    const std::string nameStr (name);
+    const std::wstring nameW (nameStr.begin (), nameStr.end ());
+    const DWORD valueSize = GetEnvironmentVariableW (nameW.c_str (), nullptr, 0);
+    if (valueSize == 0) {
+        return GS::EmptyUniString;
+    }
+    std::vector<wchar_t> valueW (valueSize + 1, L'\0');
+    if (GetEnvironmentVariableW (nameW.c_str (), valueW.data (), valueSize) >= valueSize) {
+        return GS::EmptyUniString;
+    }
+    return GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (valueW.data ()));
+#else
+    const char* value = getenv (name);
+    return value == nullptr ? GS::EmptyUniString : GS::UniString (value, CC_UTF8);
+#endif
+}
+
 // Sets an environment variable in Archicad's environment while this object exists, so that only the process
-// started meanwhile inherits it, then puts back the value Archicad had. The value must be ASCII.
+// started meanwhile inherits it, then puts back the value Archicad had. The name must be ASCII; the value may
+// be any text (a path with the user's name in it, for example).
 class ScopedEnvironmentVariable {
 public:
     ScopedEnvironmentVariable (const char* _name, const GS::UniString& value) : name (_name)
     {
-        const std::string valueStr (value.ToCStr ().Get ());
 #if defined (WINDOWS)
         const std::wstring nameW (name.begin (), name.end ());
         const DWORD oldValueSize = GetEnvironmentVariableW (nameW.c_str (), nullptr, 0);
@@ -1964,7 +2021,7 @@ public:
         if (hasOldValue) {
             oldValue = std::wstring (oldValueW.data ());
         }
-        const std::wstring valueW (valueStr.begin (), valueStr.end ());
+        const std::wstring valueW (reinterpret_cast<const wchar_t*> (value.ToUStr ().Get ()));
         SetEnvironmentVariableW (nameW.c_str (), valueW.c_str ());
 #else
         const char* old = getenv (name.c_str ());
@@ -1972,6 +2029,7 @@ public:
         if (hasOldValue) {
             oldValue = old;
         }
+        const std::string valueStr (value.ToCStr (CC_UTF8).Get ());
         setenv (name.c_str (), valueStr.c_str (), 1);
 #endif
     }
@@ -2021,6 +2079,52 @@ static GS::UniString PrefixLines (const GS::UniString& scriptName, const GS::Uni
         result += prefix + GS::UniString (text.GetSubstring (lineStart, length - lineStart));
     }
     return result;
+}
+
+// The folder of the built-in scripts the palette downloaded from the Tapir repository (see AddScriptsFromRepositories),
+// which holds the helpers utilities/ and aclib/ that marketplace scripts import (issue #2608). Empty when the
+// helpers are not there, for example because the download failed or the repository was removed from the config.
+static GS::UniString GetBuiltInHelpersPath ()
+{
+    IO::Location folderLoc = GetTapirTemporaryFolder ();
+    folderLoc.AppendToLocal (IO::Name ("ENZYME-APD"));
+    folderLoc.AppendToLocal (IO::Name ("tapir-archicad-automation"));
+    folderLoc.AppendToLocal (IO::Name ("builtin-scripts"));
+
+    for (const char* helper : { "utilities", "aclib" }) {
+        IO::Location initLoc = folderLoc;
+        initLoc.AppendToLocal (IO::Name (helper));
+        initLoc.AppendToLocal (IO::Name ("__init__.py"));
+        bool exists = false;
+        if (IO::fileSystem.Contains (initLoc, &exists) != NoError || !exists) {
+            return GS::EmptyUniString;
+        }
+    }
+
+    GS::UniString folderPath;
+    folderLoc.ToPath (&folderPath);
+    return folderPath;
+}
+
+// PYTHONPATH for a Python script: the folder of the built-in scripts' helpers, followed by the PYTHONPATH the user
+// already has. Python looks in the script's own folder first, so a script that ships its own copies of the helpers
+// still uses those. Empty when the helpers were not downloaded, then PYTHONPATH is left as it is.
+static GS::UniString GetPythonPathWithBuiltInHelpers ()
+{
+    const GS::UniString helpersPath = GetBuiltInHelpersPath ();
+    if (helpersPath.IsEmpty ()) {
+        return GS::EmptyUniString;
+    }
+
+    const GS::UniString oldPythonPath = GetEnvironmentVariableValue ("PYTHONPATH");
+    if (oldPythonPath.IsEmpty ()) {
+        return helpersPath;
+    }
+#if defined (WINDOWS)
+    return helpersPath + ";" + oldPythonPath;
+#else
+    return helpersPath + ":" + oldPythonPath;
+#endif
 }
 
 void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
@@ -2258,6 +2362,15 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         script->scriptId = scriptId;
         {
             const ScopedEnvironmentVariable scriptIdVariable ("TAPIR_SCRIPT_ID", scriptId);
+            // A Python script finds the helpers utilities and aclib of the built-in scripts even when it runs from a
+            // local folder that has no copies of them, such as a marketplace script installed by hand (issue #2608).
+            std::unique_ptr<ScopedEnvironmentVariable> pythonPathVariable;
+            if (filePath.EndsWith (".py")) {
+                const GS::UniString pythonPath = GetPythonPathWithBuiltInHelpers ();
+                if (!pythonPath.IsEmpty ()) {
+                    pythonPathVariable.reset (new ScopedEnvironmentVariable ("PYTHONPATH", pythonPath));
+                }
+            }
 #if defined (WINDOWS)
             // Python writes to a pipe in the system code page unless told otherwise (cp932 on Japanese
             // Windows), while the output is read as UTF-8. PYTHONIOENCODING makes the script's standard
@@ -2575,11 +2688,58 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
     });
 }
 
+// The enabled scripts of installed.json, by name; one whose entry file is missing is left out. Reads only local
+// files, so installed scripts are listed offline too. "(update available)" follows the name of one the Script
+// Manager found an update for in the catalogue it fetched last.
+void TapirPalette::AddScriptsFromMarketplace ()
+{
+    marketplaceScripts.Clear ();
+
+    MarketplaceInstalls::State state = MarketplaceInstalls::Load ();
+    std::vector<MarketplaceInstalls::InstalledScript> installed;
+    for (const MarketplaceInstalls::InstalledScript& script : state.scripts) {
+        if (script.enabled) {
+            installed.push_back (script);
+        }
+    }
+    std::stable_sort (installed.begin (), installed.end (),
+        [] (const MarketplaceInstalls::InstalledScript& a, const MarketplaceInstalls::InstalledScript& b) {
+            return a.name.IsLess (b.name, CaseInsensitive);
+        });
+
+    for (const MarketplaceInstalls::InstalledScript& script : installed) {
+        IO::Location entryLoc = MarketplaceInstalls::GetVersionFolder (script.slug, script.version);
+        entryLoc.AppendToLocal (IO::Name (script.entry));
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (entryLoc);
+        if (!PrepareScript (*popUpItemData)) {
+            continue;
+        }
+        popUpItemData->baseDisplayText = script.name;
+        if (MarketplaceInstalls::HasUpdate (script.slug)) {
+            popUpItemData->baseDisplayText = GS::UniString::Printf (MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_UPDATE_AVAILABLE), script.name.ToPrintf ());
+        }
+        marketplaceScripts.Push (popUpItemData);
+    }
+}
+
+void TapirPalette::ReloadMarketplaceScripts ()
+{
+    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+
+    AddScriptsFromMarketplace ();
+
+    // The selected script stays selected, wherever its item is now (SelectScript finds it by its file); a removed or
+    // disabled one gives way to the first.
+    RebuildScriptPopUp (selectedScript);
+    SelectedScriptChanged ();
+}
+
 void TapirPalette::LoadScriptsToPopUp ()
 {
     addedScripts.Clear ();
     customScripts.Clear ();
     listedScripts.Clear ();
+    marketplaceScripts.Clear ();
     hasCustomScript = false;
     hasAddedScript = false;
 
@@ -2587,6 +2747,7 @@ void TapirPalette::LoadScriptsToPopUp ()
     const short savedItem = AddScriptsFromPreferences ();
     AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
+    AddScriptsFromMarketplace ();
 
     RebuildScriptPopUp (GetSavedSelection (savedItem));
     SetDeleteScriptButtonStatus ();
@@ -3028,6 +3189,65 @@ private:
     Int32 percent;
 };
 
+// The installer quits Archicad with the QuitArchicad command, which closes the project without Archicad's
+// own save or send prompt, so a solo project's unsaved changes and a Teamwork project's unsent changes were
+// lost (#2494). The API cannot tell whether the project has changes, so the user is asked each time: the
+// project is saved (solo) or the changes are sent (Teamwork) here, or the update is cancelled.
+// Returns false when the update must not go on.
+static bool SaveOrSendBeforeQuit ()
+{
+    API_ProjectInfo projectInfo = {};
+    const bool hasProjectInfo = ACAPI_ProjectOperation_Project (&projectInfo) == NoError;
+
+    if (hasProjectInfo && projectInfo.teamwork) {
+        const short response = DGAlert (DG_WARNING, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            UpdateText (ID_AUTOUPDATE_UNSENT_TEXT1), UpdateText (ID_AUTOUPDATE_UNSENT_TEXT2),
+            UpdateText (ID_AUTOUPDATE_SEND_AND_UPDATE_BUTTON), UpdateText (ID_AUTOUPDATE_CANCEL_BUTTON),
+            UpdateText (ID_AUTOUPDATE_UPDATE_WITHOUT_SENDING));
+        if (response == DG_THIRD) {
+            return true;
+        }
+        if (response != DG_OK) {
+            return false;
+        }
+        const GSErrCode err = ACAPI_Teamwork_SendChanges ();
+        if (err != NoError) {
+            DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+                GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_SEND_FAILED), static_cast<int> (err)),
+                GS::EmptyUniString, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+            return false;
+        }
+        return true;
+    }
+
+    if (!hasProjectInfo || projectInfo.untitled) {
+        // An untitled project can only be saved with a file dialog: File > Save As is left to the user.
+        const short response = DGAlert (DG_WARNING, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            UpdateText (ID_AUTOUPDATE_UNTITLED_TEXT1), UpdateText (ID_AUTOUPDATE_UNTITLED_TEXT2),
+            UpdateText (ID_AUTOUPDATE_UPDATE_WITHOUT_SAVING), UpdateText (ID_AUTOUPDATE_CANCEL_BUTTON));
+        return response == DG_OK;
+    }
+
+    const short response = DGAlert (DG_WARNING, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+        UpdateText (ID_AUTOUPDATE_UNSAVED_TEXT1), UpdateText (ID_AUTOUPDATE_UNSAVED_TEXT2),
+        UpdateText (ID_AUTOUPDATE_SAVE_AND_UPDATE_BUTTON), UpdateText (ID_AUTOUPDATE_CANCEL_BUTTON),
+        UpdateText (ID_AUTOUPDATE_UPDATE_WITHOUT_SAVING));
+    if (response == DG_THIRD) {
+        return true;
+    }
+    if (response != DG_OK) {
+        return false;
+    }
+    const GSErrCode err = SaveOpenProjectInPlace ();
+    if (err != NoError) {
+        DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_SAVE_FAILED), static_cast<int> (err)),
+            GS::EmptyUniString, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+        return false;
+    }
+    return true;
+}
+
 bool TapirPalette::UpdateAddOn ()
 {
     // A second call during the download (e.g. from the menu) returns true, so the callers do not run a script
@@ -3057,6 +3277,10 @@ bool TapirPalette::UpdateAddOn ()
     if (installerDownloadUrl.IsEmpty ()) {
         DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_INSTALLER_MISSING_TEXT1),
             UpdateText (ID_AUTOUPDATE_INSTALLER_MISSING_TEXT2), UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+        return false;
+    }
+
+    if (!SaveOrSendBeforeQuit ()) {
         return false;
     }
 

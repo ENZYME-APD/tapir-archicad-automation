@@ -1,0 +1,160 @@
+{
+  "title": "GetDetailsOfElements reads an extruded shell's geometry and ModifyShells changes its extrusion, keeping its GUID, profile and start (#2425)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "extruded vault and revolved dome",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 960.0, "y": 940.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionStart": { "x": 0.0, "y": 0.5, "z": 0.0 },
+            "extrusionVector": { "x": 0.0, "y": 0.9000188, "z": 0.0 }
+          },
+          {
+            "shellClass": "Revolved",
+            "floorIndex": 0,
+            "thickness": 0.15,
+            "basePlane": { "origin": { "x": 975.0, "y": 944.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 4.0, "y": 0.0 }, { "x": 0.0, "y": 4.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 1.5707963267948966 } ]
+            },
+            "segmentsByCircle": 24
+          }
+        ]
+      },
+      "save": {
+        "s1": "elements[0].elementId.guid",
+        "s2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "extruded shell created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "revolved shell created" }
+      ]
+    },
+    {
+      "id": "read the extruded shell's geometry",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } }, { "elementId": { "guid": "${s2}" } } ] },
+      "save": {
+        "startX": "detailsOfElements[0].details.extrusionStart.x",
+        "startY": "detailsOfElements[0].details.extrusionStart.y",
+        "startZ": "detailsOfElements[0].details.extrusionStart.z"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.x", "approx": 960.0, "name": "base plane origin (x)" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.y", "approx": 940.0, "name": "base plane origin (y)" },
+        { "path": "detailsOfElements[0].details.basePlane.xAxis.x", "approx": 1.0, "name": "base plane x axis" },
+        { "path": "detailsOfElements[0].details.basePlane.zAxis.z", "approx": 1.0, "name": "base plane z axis" },
+        { "path": "detailsOfElements[0].details.extrusionStart.y", "approx": 0.5, "name": "extrusion start as created" },
+        { "path": "detailsOfElements[0].details.extrusionVector.x", "approx": 0.0, "tol": 1e-9 },
+        { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 0.9000188, "tol": 1e-9 },
+        { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 0.0, "tol": 1e-9 },
+        { "path": "detailsOfElements[0].details.extrusionLength", "approx": 0.9000188, "tol": 1e-9 },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 2, "name": "profile: the two points given" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[0].x", "approx": -3.0 },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].x", "approx": 3.0 },
+        { "path": "detailsOfElements[0].details.profile.arcs", "len": 1, "name": "profile: the arc given" },
+        { "path": "detailsOfElements[0].details.profile.arcs[0].arcAngle", "approx": -1.5707963267948966 },
+        { "path": "detailsOfElements[0].details.profile.closed", "eq": false, "name": "profile open as created" },
+        { "path": "detailsOfElements[1].details.shellClass", "eq": "Revolved" },
+        { "path": "detailsOfElements[1].details.basePlane.origin.x", "approx": 975.0, "name": "revolved shell has a base plane" },
+        { "path": "detailsOfElements[1].details.extrusionVector", "exists": false, "name": "no extrusion on a revolved shell" }
+      ]
+    },
+    {
+      "id": "extrusion length 0.9; both fields at once, a revolved shell, a bad length",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "extrusionLength": 0.9 },
+          { "elementId": { "guid": "${s1}" }, "extrusionLength": 2.0, "extrusionVector": { "x": 0.0, "y": 2.0, "z": 0.0 } },
+          { "elementId": { "guid": "${s2}" }, "extrusionLength": 2.0 },
+          { "elementId": { "guid": "${s1}" }, "extrusionVector": { "x": 0.0, "y": 0.0, "z": 0.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "length set" },
+        { "path": "executionResults[1].success", "eq": false, "name": "vector and length together refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "extrusion of a revolved shell refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "zero vector refused" }
+      ]
+    },
+    {
+      "id": "the same shell, 0.9 long, start and profile kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": {
+        "startXAfter": "detailsOfElements[0].details.extrusionStart.x",
+        "startYAfter": "detailsOfElements[0].details.extrusionStart.y",
+        "startZAfter": "detailsOfElements[0].details.extrusionStart.z"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "still extruded" },
+        { "path": "detailsOfElements[0].details.extrusionLength", "approx": 0.9, "tol": 1e-9 },
+        { "path": "detailsOfElements[0].details.extrusionVector.x", "approx": 0.0, "tol": 1e-9, "name": "direction kept (x)" },
+        { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 0.9, "tol": 1e-9, "name": "end is start + 0.9 along y" },
+        { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 0.0, "tol": 1e-9, "name": "direction kept (z)" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.x", "approx": 960.0, "name": "base plane kept (x)" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.y", "approx": 940.0, "name": "base plane kept (y)" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 2, "name": "profile kept" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[0].x", "approx": -3.0, "name": "profile point kept" },
+        { "path": "detailsOfElements[0].details.profile.arcs[0].arcAngle", "approx": -1.5707963267948966, "name": "profile arc kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" }
+      ]
+    },
+    {
+      "id": "the extrusion start did not move",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Shell" },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "no shell added or removed" },
+        { "expr": "${startXAfter} - ${startX}", "approx": 0, "name": "start kept (x)" },
+        { "expr": "${startYAfter} - ${startY}", "approx": 0, "name": "start kept (y)" },
+        { "expr": "${startZAfter} - ${startZ}", "approx": 0, "name": "start kept (z)" }
+      ]
+    },
+    {
+      "id": "a new extrusion vector",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "extrusionVector": { "x": 0.0, "y": 1.5, "z": 0.5 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "vector set" }
+      ]
+    },
+    {
+      "id": "read the new vector",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 1.5, "tol": 1e-9 },
+        { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 0.5, "tol": 1e-9 },
+        { "path": "detailsOfElements[0].details.extrusionStart.y", "approx": 0.5, "name": "start still kept" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 2, "name": "profile still kept" }
+      ]
+    }
+  ]
+}

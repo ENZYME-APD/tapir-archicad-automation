@@ -1,7 +1,7 @@
 # Translating the Tapir Add-On
 
-The texts of the Add-On's user interface (the Tapir menu, the Tapir palette, the About and
-Script Shortcuts dialogs, the update and `uv` alerts, the messages in the Report window) are
+The texts of the Add-On's user interface (the Tapir menu, the Tapir palette, the Script Manager,
+the About and Script Shortcuts dialogs, the update and `uv` alerts, the messages in the Report window) are
 resources in [RINT/AddOn.grc](RINT/AddOn.grc), the international English version and the
 complete one. The C++ code reads the texts with `RSGetIndString` by the IDs in
 [ResourceIds.hpp](ResourceIds.hpp).
