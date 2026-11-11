@@ -542,11 +542,63 @@ static void AddBeamSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectStat
     }
 }
 
+// The cross section of one column segment, the same keys for the segments of a Column and for a ColumnSegment (#2552).
+static void AddColumnSegmentCrossSection (const API_AssemblySegmentData& segment, GS::ObjectState& os)
+{
+    os.Add ("structureType", StructureTypeToString (segment.modelElemStructureType));
+    os.Add ("width", segment.nominalWidth);
+    os.Add ("depth", segment.nominalHeight);
+    os.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+    os.Add ("circleBased", segment.circleBased);
+    if (segment.modelElemStructureType == API_BasicStructure) {
+        os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
+    } else if (segment.modelElemStructureType == API_ProfileStructure) {
+        os.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
+    }
+}
+
+static GS::ObjectState CreateColumnSegmentTaperObjectState (const API_AssemblySegmentData& segment)
+{
+    GS::ObjectState taper;
+    taper.Add ("isHomogeneous", segment.isHomogeneous);
+    taper.Add ("endWidth", segment.endWidth);
+    taper.Add ("endDepth", segment.endHeight);
+    taper.Add ("isEndWidthAndDepthLinked", segment.isEndWidthAndHeightLinked);
+    return taper;
+}
+
+static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
+{
+    GS::ObjectState length;
+    if (scheme.lengthType == APIAssemblySegment_Fixed) {
+        length.Add ("lengthType", "Fixed");
+    } else if (scheme.lengthType == APIAssemblySegment_Proportional) {
+        length.Add ("lengthType", "Proportional");
+    } else {
+        length.Add ("lengthType", "Unknown");
+    }
+    length.Add ("fixedLength", scheme.fixedLength);
+    length.Add ("lengthProportion", scheme.lengthProportion);
+    return length;
+}
+
+// The segment schemes are kept in the Column's memo, one for each segment, in the order of the segments.
+static void AddColumnSegmentLength (const API_ElementMemo& memo, GSIndex segmentIndex, GS::ObjectState& os)
+{
+    if (memo.assemblySegmentSchemes == nullptr || segmentIndex < 0) {
+        return;
+    }
+    const GSSize nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+    if (segmentIndex < nSchemes) {
+        os.Add ("length", CreateAssemblySegmentLengthObjectState (memo.assemblySegmentSchemes[segmentIndex]));
+    }
+}
+
 static void AddColumnSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.columnSegments == nullptr) {
         return;
     }
     const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
@@ -558,7 +610,30 @@ static void AddColumnSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectSt
         segmentOs.Add ("endsMaterial", CreateOverriddenMaterialObjectState (segment.endsMaterial));
         segmentOs.Add ("materialsChained", segment.materialsChained);
         segmentOs.Add ("veneer", CreateColumnVeneerObjectState (segment));
+        AddColumnSegmentCrossSection (segment.assemblySegmentData, segmentOs);
+        segmentOs.Add ("taper", CreateColumnSegmentTaperObjectState (segment.assemblySegmentData));
+        AddColumnSegmentLength (memo, i, segmentOs);
         segments (segmentOs);
+    }
+}
+
+// The length of a ColumnSegment subelement comes from the scheme of its owner Column with the same index.
+static void AddColumnSegmentLengthFromOwner (const API_Guid& segmentGuid, const API_Guid& ownerGuid, GS::ObjectState& os)
+{
+    if (ownerGuid == APINULLGuid) {
+        return;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (ownerGuid, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.columnSegments == nullptr) {
+        return;
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        if (memo.columnSegments[i].head.guid == segmentGuid) {
+            AddColumnSegmentLength (memo, i, os);
+            return;
+        }
     }
 }
 
@@ -2955,17 +3030,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (elem.columnSegment.owner != APINULLGuid) {
                     typeSpecificDetails.Add ("ownerElementId", CreateGuidObjectState (elem.columnSegment.owner));
                 }
-                typeSpecificDetails.Add ("structureType", StructureTypeToString (segment.modelElemStructureType));
-                typeSpecificDetails.Add ("width", segment.nominalWidth);
-                typeSpecificDetails.Add ("depth", segment.nominalHeight);
-                typeSpecificDetails.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
-                typeSpecificDetails.Add ("circleBased", segment.circleBased);
-                if (segment.modelElemStructureType == API_BasicStructure) {
-                    typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
-                } else if (segment.modelElemStructureType == API_ProfileStructure) {
-                    typeSpecificDetails.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
-                }
+                AddColumnSegmentCrossSection (segment, typeSpecificDetails);
                 typeSpecificDetails.Add ("veneer", CreateColumnVeneerObjectState (elem.columnSegment));
+                typeSpecificDetails.Add ("taper", CreateColumnSegmentTaperObjectState (segment));
+                AddColumnSegmentLengthFromOwner (elem.header.guid, elem.columnSegment.owner, typeSpecificDetails);
             } break;
 
             case API_DoorID:
