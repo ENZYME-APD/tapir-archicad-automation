@@ -440,7 +440,7 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 }
 
 // The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
-static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
+static GS::ObjectState CreateBeamSegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
 {
     GS::ObjectState os;
     os.Add ("lengthType", scheme.lengthType == APIAssemblySegment_Proportional ? "Proportional" : "Fixed");
@@ -469,7 +469,7 @@ static GS::ObjectState CreateBeamSegmentGeometryObjectState (const API_AssemblyS
     os.Add ("endHeight", segment.endHeight);
     os.Add ("isEndWidthAndHeightLinked", segment.isEndWidthAndHeightLinked);
     if (scheme != nullptr) {
-        os.Add ("length", CreateAssemblySegmentLengthObjectState (*scheme));
+        os.Add ("length", CreateBeamSegmentLengthObjectState (*scheme));
     }
     return os;
 }
@@ -506,7 +506,7 @@ static void AddBeamSegmentIndexAndLength (const API_BeamSegmentType& beamSegment
         if (memo.beamSegments[i].head.guid == beamSegment.head.guid) {
             os.Add ("segmentIndex", static_cast<Int32> (i));
             if (i < nSchemes) {
-                os.Add ("length", CreateAssemblySegmentLengthObjectState (memo.assemblySegmentSchemes[i]));
+                os.Add ("length", CreateBeamSegmentLengthObjectState (memo.assemblySegmentSchemes[i]));
             }
             return;
         }
