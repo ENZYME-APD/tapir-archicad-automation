@@ -3820,6 +3820,110 @@ static GS::Optional<GS::UniString> ApplyBeamSegmentsToMemo (API_ElementMemo& mem
     return {};
 }
 
+// The most segments CreateBeams' segmentCount gives a beam (#2678).
+static constexpr Int32 MaxBeamSegmentCount = 100;
+
+// CreateBeams' segmentCount (#2678): gives the new beam that many segments, so beams with different
+// cross sections can be merged into one beam whose segments keep them (segments then sets each
+// one's cross section and length). Only the layout a beam made in Archicad has is changed: one cut
+// more than segments (the two ends and the joints between the segments) and one length scheme per
+// segment, as the DevKit's Favorite_Test builds a segment memo. Any other layout of the tool defaults
+// is refused before anything is written. Added segments copy the last segment, as the DevKit's
+// Element_Test adds a column segment, with a Basic structure (a profile needs a profile memo the
+// copy does not have; segments[].geometry.profileId sets one); added joints are vertical cuts and
+// the end cut stays the end cut. When the count changes, every segment gets the same proportional
+// length unless segments[].geometry.length sets it.
+static GS::Optional<GS::UniString> SetBeamSegmentCount (API_Element& element, API_ElementMemo& memo, Int32 segmentCount)
+{
+    if (segmentCount < 1 || segmentCount > MaxBeamSegmentCount) {
+        return GS::UniString::Printf ("segmentCount must be between 1 and %d.", static_cast<int> (MaxBeamSegmentCount));
+    }
+    if (memo.beamSegments == nullptr || memo.assemblySegmentCuts == nullptr || memo.assemblySegmentSchemes == nullptr) {
+        return GS::UniString ("The Beam tool defaults have no segment, cut and length data, so segmentCount cannot be applied.");
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    const GSSize nCuts = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentCuts)) / sizeof (API_AssemblySegmentCutData);
+    const GSSize nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+    if (nSegments < 1 || nCuts != nSegments + 1 || nSchemes != nSegments ||
+        static_cast<GSSize> (element.beam.nSegments) != nSegments || static_cast<GSSize> (element.beam.nCuts) != nCuts || static_cast<GSSize> (element.beam.nSchemes) != nSchemes) {
+        return GS::UniString::Printf ("The Beam tool defaults have %d segment(s), %d cut(s) and %d length scheme(s), not one cut more than segments and one scheme per segment, so segmentCount cannot be applied.",
+            static_cast<int> (nSegments), static_cast<int> (nCuts), static_cast<int> (nSchemes));
+    }
+    if (static_cast<GSSize> (segmentCount) == nSegments) {
+        return {};
+    }
+    // A segment profile (of a Profile segment of the defaults) names its segment by index; one whose
+    // segment would be dropped is refused rather than left pointing past the last segment.
+    if (memo.assemblySegmentProfiles != nullptr) {
+        const GSSize nProfiles = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentProfiles)) / sizeof (API_AssemblySegmentProfileData);
+        for (GSSize i = 0; i < nProfiles; ++i) {
+            if (static_cast<Int32> (memo.assemblySegmentProfiles[i].segmentIndex) >= segmentCount) {
+                return GS::UniString::Printf ("Segment %d of the Beam tool defaults has a profile and would be dropped by segmentCount %d; give the defaults fewer segments or a larger segmentCount.",
+                    static_cast<int> (memo.assemblySegmentProfiles[i].segmentIndex), static_cast<int> (segmentCount));
+            }
+        }
+    }
+
+    API_BeamSegmentType* newSegments = reinterpret_cast<API_BeamSegmentType*> (BMAllocatePtr (segmentCount * sizeof (API_BeamSegmentType), ALLOCATE_CLEAR, 0));
+    API_AssemblySegmentCutData* newCuts = reinterpret_cast<API_AssemblySegmentCutData*> (BMAllocatePtr ((segmentCount + 1) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0));
+    API_AssemblySegmentSchemeData* newSchemes = reinterpret_cast<API_AssemblySegmentSchemeData*> (BMAllocatePtr (segmentCount * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0));
+    if (newSegments == nullptr || newCuts == nullptr || newSchemes == nullptr) {
+        if (newSegments != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&newSegments));
+        }
+        if (newCuts != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&newCuts));
+        }
+        if (newSchemes != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&newSchemes));
+        }
+        return GS::UniString ("Failed to allocate the beam segments.");
+    }
+
+    for (Int32 i = 0; i < segmentCount; ++i) {
+        if (static_cast<GSSize> (i) < nSegments) {
+            newSegments[i] = memo.beamSegments[i];
+        } else {
+            newSegments[i] = memo.beamSegments[nSegments - 1];
+            newSegments[i].head.guid = APINULLGuid;
+            API_AssemblySegmentData& segment = newSegments[i].assemblySegmentData;
+            if (segment.modelElemStructureType == API_ProfileStructure) {
+                segment.modelElemStructureType = API_BasicStructure;
+                segment.profileAttr = APIInvalidAttributeIndex;
+            }
+            if (segment.profileType == APISect_Poly) {
+                segment.profileType = APISect_Normal;
+            }
+        }
+        newSchemes[i].lengthType = APIAssemblySegment_Proportional;
+        newSchemes[i].fixedLength = memo.assemblySegmentSchemes[static_cast<GSSize> (i) < nSchemes ? i : nSchemes - 1].fixedLength;
+        newSchemes[i].lengthProportion = 1.0 / segmentCount;
+    }
+    // Cut 0 is the start of the beam and cut nSegments its end; the ones between are the joints.
+    newCuts[0] = memo.assemblySegmentCuts[0];
+    for (Int32 i = 1; i < segmentCount; ++i) {
+        if (static_cast<GSSize> (i) < nSegments) {
+            newCuts[i] = memo.assemblySegmentCuts[i];
+        } else {
+            newCuts[i] = memo.assemblySegmentCuts[0];
+            newCuts[i].cutType = APIAssemblySegmentCut_Vertical;
+            newCuts[i].customAngle = 0.0;
+        }
+    }
+    newCuts[segmentCount] = memo.assemblySegmentCuts[nCuts - 1];
+
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.beamSegments));
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.assemblySegmentCuts));
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.assemblySegmentSchemes));
+    memo.beamSegments = newSegments;
+    memo.assemblySegmentCuts = newCuts;
+    memo.assemblySegmentSchemes = newSchemes;
+    element.beam.nSegments = static_cast<UInt32> (segmentCount);
+    element.beam.nCuts = static_cast<UInt32> (segmentCount + 1);
+    element.beam.nSchemes = static_cast<UInt32> (segmentCount);
+    return {};
+}
+
 // Writes the segments array of ModifyBeams into an existing beam (#2551).
 static GSErrCode ApplyBeamSegmentsToBeam (const API_Guid& beamGuid, const GS::Array<GS::ObjectState>& segments, GS::UniString& errorMessage)
 {
@@ -5690,9 +5794,15 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "$ref": "#/AttributeId",
                             "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
                         },
+                        "segmentCount": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "Optional number of segments of the new beam, e.g. one per beam when beams with different cross sections are merged into one (segments then gives each its cross section and length). Added segments copy the last segment of the Beam tool defaults or the favorite, with a Basic structure; the joints between segments are vertical cuts. When the number changes, every segment gets the same proportional length unless segments sets its length. The beam is read back, and when Archicad did not keep the number it is deleted again and the item fails. Not taken by ModifyBeams: an existing beam keeps its number of segments."
+                        },
                         "segments": {
                             "type": "array",
-                            "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite: their cross section, taper and length. Applied after the cross section given for all segments, so a segment given here keeps its own values. Segments are not added; a segmentIndex the defaults do not have is an error and the beam is not created.",
+                            "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite, or segmentCount segments: their cross section, taper and length. Applied after segmentCount and the cross section given for all segments, so a segment given here keeps its own values. A segmentIndex the beam does not have is an error and the beam is not created.",
                             "items": {
                                 "$ref": "#/BeamSegmentModification"
                             }
@@ -5782,6 +5892,16 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
         return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
+    // segmentCount first, so the cross section given for all segments and the segments array
+    // below reach the added segments too (#2678).
+    Int32 segmentCount = 0;
+    if (parameters.Get ("segmentCount", segmentCount)) {
+        const GS::Optional<GS::UniString> countError = SetBeamSegmentCount (element, memo, segmentCount);
+        if (countError.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, countError.Get ());
+        }
+    }
+
     auto width = GetOptionalDouble (parameters, "width");
     auto height = GetOptionalDouble (parameters, "height");
     bool circleBased = false;
@@ -5832,6 +5952,21 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
     }
 
     return {};
+}
+
+// A beam whose segmentCount Archicad did not keep is deleted again and the item fails (#2678).
+GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    if (!parameters.Contains ("segmentCount")) {
+        return NoError;
+    }
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    const GSErrCode err = ACAPI_Element_Get (&created);
+    if (err != NoError) {
+        return err;
+    }
+    return created.beam.nSegments == requestedElement.beam.nSegments ? NoError : APIERR_GENERAL;
 }
 
 // The settings CreateStairs and ModifyStairs share (#2220): this fragment ends the item schema of
