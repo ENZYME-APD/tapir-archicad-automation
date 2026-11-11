@@ -8153,7 +8153,8 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                         "replaceSkins": {
                             "type": "boolean",
                             "description": "AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet)."
-                        },
+                        },)" // split: MSVC limits one string literal to 16380 characters
+                        R"(
                         "newProfileModifiers": {
                             "type": "array",
                             "description": "Adds offset modifiers (Profile Manager, Modifiers) to the Profile, read back with GetProfiles' profileModifiers. Applied after skinOverrides, moveVertices and newSkins, so edges and anchors refer to the final shape; their skinIds come from GetProfiles, so a Profile built from newSkins gets its modifiers in a second CreateProfiles call with overwriteExisting. A modifier's value is the distance its dimension measures on the shape: draw the shape so it measures the default value you want. Archicad has no function to delete one modifier: to remove modifiers, rebuild the Profile with replaceSkins (which drops them all) and add the ones to keep again.",
