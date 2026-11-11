@@ -41,6 +41,13 @@
 .hero .tagline { color: var(--ochre-light) }
 .hero h1 { margin-top: 18px; font-size: clamp(3.25rem, 8.4vw, 7rem); font-weight: 900; line-height: .92; letter-spacing: -.025em }
 .hero h1 em { color: var(--ochre-light); font-weight: 500 }
+/* French, Spanish and Italian translate "autopilot" into one long word ("automatique.", "automático.",
+   "automatico."), which at the hero's size is wider than the text column, so it was cut inside the word
+   (#2514). In those languages the heading is at most 14% of the column's width, which keeps a word of
+   about 12 letters on one line in every look and font; the other languages keep their size. A browser
+   without container query units ignores the declaration and keeps the size above. */
+.hero .wrap > :first-child { container-type: inline-size }
+.hero h1:lang(fr), .hero h1:lang(es), .hero h1:lang(it) { font-size: min(clamp(3.25rem, 8.4vw, 7rem), 14cqi) }
 .hero .lead { font-size: clamp(1.0625rem, 1.6vw, 1.25rem); color: var(--cream-86); margin-top: 24px; max-width: 30em }
 .hero .ctas { margin-top: 32px }
 .hero .meta { margin-top: 18px; font: 500 .78125rem/1.7 var(--mono); color: var(--cream-72); letter-spacing: .04em; text-transform: uppercase }

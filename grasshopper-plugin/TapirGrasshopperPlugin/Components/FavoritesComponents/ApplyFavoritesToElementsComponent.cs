@@ -57,7 +57,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             InTexts(
                 "KeepFields",
                 "Optional fields of the target element to keep, copied back after the Favorite has been applied: " +
-                "id, layerIndex, width, height, sillHeight, referenceLineLocation, topOffset, relativeTopStory. " +
+                "id, layerIndex, width, height, depth, sillHeight, referenceLineLocation, topOffset, relativeTopStory. " +
+                "width and depth keep a Column's cross section, width and height a Beam's. " +
                 "A field the element's type does not have is ignored.");
 
             // The inputs below come after the existing ones, so saved
