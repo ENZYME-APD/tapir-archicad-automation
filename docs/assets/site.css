@@ -231,7 +231,8 @@ div.teaser.dark .ctas { margin-top: 8px }
 :root[data-theme="dark"] .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) } }
 .term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 .71875rem var(--mono); color: var(--slate-light); border-bottom: 1px solid var(--cream-10) }
-.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 .8125rem/1.65 var(--mono); color: var(--cream) }
+/* Long lines wrap inside the box instead of scrolling sideways (#2723). */
+.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 400 .8125rem/1.65 var(--mono); color: var(--cream) }
 .term .k { color: var(--ochre-light) } .term .s { color: var(--sage) } .term .c { color: var(--slate-light) } .term .o { color: var(--cream); font-weight: 700 }
 /* The copy button site.js adds to every code block. */
 .code-block { position: relative }
