@@ -1,0 +1,156 @@
+{
+  "title": "GetDetailsOfElements reads and ModifyShells sets the Flip of an existing shell, which moves its body to the other side (#2432)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "two basic extruded shells 20 m apart, the second flipped at creation",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "isFlipped": false,
+            "basePlane": { "origin": { "x": 870.0, "y": 850.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 }
+          },
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "isFlipped": true,
+            "basePlane": { "origin": { "x": 890.0, "y": 850.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 }
+          }
+        ]
+      },
+      "save": {
+        "a": "elements[0].elementId.guid",
+        "b": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "unflipped shell created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "flipped shell created" }
+      ]
+    },
+    {
+      "id": "GetDetailsOfElements reads the Flip",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } }, { "elementId": { "guid": "${b}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isFlipped", "eq": false, "name": "first shell not flipped" },
+        { "path": "detailsOfElements[1].details.isFlipped", "eq": true, "name": "second shell flipped" }
+      ]
+    },
+    {
+      "id": "3D boxes before the flip",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } }, { "elementId": { "guid": "${b}" } } ] },
+      "save": {
+        "aXMin0": "boundingBoxes3D[0].boundingBox3D.xMin", "aXMax0": "boundingBoxes3D[0].boundingBox3D.xMax",
+        "aYMin0": "boundingBoxes3D[0].boundingBox3D.yMin", "aYMax0": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "aZMin0": "boundingBoxes3D[0].boundingBox3D.zMin", "aZMax0": "boundingBoxes3D[0].boundingBox3D.zMax",
+        "bXMin0": "boundingBoxes3D[1].boundingBox3D.xMin", "bXMax0": "boundingBoxes3D[1].boundingBox3D.xMax",
+        "bYMin0": "boundingBoxes3D[1].boundingBox3D.yMin", "bYMax0": "boundingBoxes3D[1].boundingBox3D.yMax",
+        "bZMin0": "boundingBoxes3D[1].boundingBox3D.zMin", "bZMax0": "boundingBoxes3D[1].boundingBox3D.zMax"
+      },
+      "expect": [
+        { "expr": "(${aXMin0} - 20 - ${bXMin0}) * (${aXMin0} - 20 - ${bXMin0}) + (${aXMax0} - 20 - ${bXMax0}) * (${aXMax0} - 20 - ${bXMax0}) + (${aZMin0} - ${bZMin0}) * (${aZMin0} - ${bZMin0}) + (${aZMax0} - ${bZMax0}) * (${aZMax0} - ${bZMax0}) + (${aYMin0} - ${bYMin0}) * (${aYMin0} - ${bYMin0}) + (${aYMax0} - ${bYMax0}) * (${aYMax0} - ${bYMax0})", "gt": 0.01, "name": "the flipped shell's body is on the other side" }
+      ]
+    },
+    {
+      "id": "flip the first shell; a nonexistent shell",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${a}" }, "isFlipped": true },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "isFlipped": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "shell flipped" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent shell refused" }
+      ]
+    },
+    {
+      "id": "the flipped shell, read by its old GUID, keeps its thickness, class and structure",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isFlipped", "eq": true, "name": "now flipped" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" },
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "shell class kept" },
+        { "path": "detailsOfElements[0].details.structureType", "eq": "Basic", "name": "structure kept" }
+      ]
+    },
+    {
+      "id": "the flipped shell's body is where the shell flipped at creation has it",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "save": {
+        "aXMin1": "boundingBoxes3D[0].boundingBox3D.xMin", "aXMax1": "boundingBoxes3D[0].boundingBox3D.xMax",
+        "aYMin1": "boundingBoxes3D[0].boundingBox3D.yMin", "aYMax1": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "aZMin1": "boundingBoxes3D[0].boundingBox3D.zMin", "aZMax1": "boundingBoxes3D[0].boundingBox3D.zMax"
+      },
+      "expect": [
+        { "expr": "${aXMin1} - ${bXMin0}", "approx": -20, "tol": 0.001, "name": "xMin as the flipped shell's, 20 m away" },
+        { "expr": "${aXMax1} - ${bXMax0}", "approx": -20, "tol": 0.001, "name": "xMax as the flipped shell's, 20 m away" },
+        { "expr": "${aYMin1} - ${bYMin0}", "approx": 0, "tol": 0.001, "name": "yMin as the flipped shell's" },
+        { "expr": "${aYMax1} - ${bYMax0}", "approx": 0, "tol": 0.001, "name": "yMax as the flipped shell's" },
+        { "expr": "${aZMin1} - ${bZMin0}", "approx": 0, "tol": 0.001, "name": "zMin as the flipped shell's" },
+        { "expr": "${aZMax1} - ${bZMax0}", "approx": 0, "tol": 0.001, "name": "zMax as the flipped shell's" }
+      ]
+    },
+    {
+      "id": "flip the second shell back",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": { "shellsWithDetails": [ { "elementId": { "guid": "${b}" }, "isFlipped": false } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "shell unflipped" }
+      ]
+    },
+    {
+      "id": "the unflipped shell's body is where the first shell had it before",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b}" } } ] },
+      "save": {
+        "bXMin1": "boundingBoxes3D[0].boundingBox3D.xMin",
+        "bZMin1": "boundingBoxes3D[0].boundingBox3D.zMin", "bZMax1": "boundingBoxes3D[0].boundingBox3D.zMax"
+      },
+      "expect": [
+        { "expr": "${bXMin1} - ${aXMin0}", "approx": 20, "tol": 0.001, "name": "xMin as the unflipped shell's, 20 m away" },
+        { "expr": "${bZMin1} - ${aZMin0}", "approx": 0, "tol": 0.001, "name": "zMin as the unflipped shell's" },
+        { "expr": "${bZMax1} - ${aZMax0}", "approx": 0, "tol": 0.001, "name": "zMax as the unflipped shell's" }
+      ]
+    },
+    {
+      "id": "GetDetailsOfElements reads the new Flip of the second shell",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isFlipped", "eq": false, "name": "second shell no longer flipped" }
+      ]
+    }
+  ]
+}

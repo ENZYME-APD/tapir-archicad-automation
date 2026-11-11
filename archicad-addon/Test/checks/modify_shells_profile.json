@@ -1,0 +1,189 @@
+{
+  "title": "ModifyShells replaces the profile of an extruded shell, keeping its GUID, base plane, extrusion and thickness (#2453)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "extruded L-profile shell and revolved shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1060.0, "y": 1040.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.0, "y": 2.0 }, { "x": 3.0, "y": 2.0 } ]
+            },
+            "extrusionStart": { "x": 0.0, "y": 0.5, "z": 0.0 },
+            "extrusionVector": { "x": 0.0, "y": 4.0, "z": 0.0 }
+          },
+          {
+            "shellClass": "Revolved",
+            "floorIndex": 0,
+            "thickness": 0.15,
+            "basePlane": { "origin": { "x": 1075.0, "y": 1044.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 4.0, "y": 0.0 }, { "x": 0.0, "y": 4.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 1.5707963267948966 } ]
+            },
+            "segmentsByCircle": 24
+          }
+        ]
+      },
+      "save": {
+        "s1": "elements[0].elementId.guid",
+        "s2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "extruded shell created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "revolved shell created" }
+      ]
+    },
+    {
+      "id": "read the shell before the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": {
+        "startX": "detailsOfElements[0].details.extrusionStart.x",
+        "startY": "detailsOfElements[0].details.extrusionStart.y",
+        "startZ": "detailsOfElements[0].details.extrusionStart.z"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 3, "name": "profile: the three points given" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[2].x", "approx": 3.0 }
+      ]
+    },
+    {
+      "id": "3D box before the change",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": {
+        "xMin0": "boundingBoxes3D[0].boundingBox3D.xMin", "xMax0": "boundingBoxes3D[0].boundingBox3D.xMax",
+        "yMin0": "boundingBoxes3D[0].boundingBox3D.yMin", "yMax0": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "zMin0": "boundingBoxes3D[0].boundingBox3D.zMin", "zMax0": "boundingBoxes3D[0].boundingBox3D.zMax"
+      },
+      "expect": [
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMin", "exists": true, "name": "the shell has a 3D box" }
+      ]
+    },
+    {
+      "id": "move one profile point; a revolved shell and a closed two-point profile are refused",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "profile": { "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.0, "y": 2.0 }, { "x": 4.0, "y": 2.0 } ] }
+          },
+          {
+            "elementId": { "guid": "${s2}" },
+            "profile": { "coordinates": [ { "x": 5.0, "y": 0.0 }, { "x": 0.0, "y": 5.0 } ] }
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "profile": { "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.0, "y": 2.0 } ], "closed": true }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "profile replaced" },
+        { "path": "executionResults[1].success", "eq": false, "name": "profile of a revolved shell refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "closed two-point profile refused" }
+      ]
+    },
+    {
+      "id": "the same shell with the new profile; base plane, extrusion and thickness kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": {
+        "startXAfter": "detailsOfElements[0].details.extrusionStart.x",
+        "startYAfter": "detailsOfElements[0].details.extrusionStart.y",
+        "startZAfter": "detailsOfElements[0].details.extrusionStart.z"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "still extruded" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 3, "name": "still three points" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[0].x", "approx": 0.0, "name": "first point kept (x)" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[0].y", "approx": 0.0, "name": "first point kept (y)" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].y", "approx": 2.0, "name": "second point kept" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[2].x", "approx": 4.0, "name": "moved point read back (x)" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[2].y", "approx": 2.0, "name": "moved point read back (y)" },
+        { "path": "detailsOfElements[0].details.profile.closed", "eq": false, "name": "profile still open" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.x", "approx": 1060.0, "name": "base plane kept (x)" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.y", "approx": 1040.0, "name": "base plane kept (y)" },
+        { "path": "detailsOfElements[0].details.basePlane.zAxis.z", "approx": 1.0, "name": "base plane kept (z axis)" },
+        { "path": "detailsOfElements[0].details.extrusionVector.x", "approx": 0.0, "tol": 1e-9, "name": "extrusion vector kept (x)" },
+        { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 4.0, "tol": 1e-9, "name": "extrusion vector kept (y)" },
+        { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 0.0, "tol": 1e-9, "name": "extrusion vector kept (z)" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" }
+      ]
+    },
+    {
+      "id": "3D box after moving the point: one side 1 m longer",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": {
+        "xMin1": "boundingBoxes3D[0].boundingBox3D.xMin", "xMax1": "boundingBoxes3D[0].boundingBox3D.xMax",
+        "yMin1": "boundingBoxes3D[0].boundingBox3D.yMin", "yMax1": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "zMin1": "boundingBoxes3D[0].boundingBox3D.zMin", "zMax1": "boundingBoxes3D[0].boundingBox3D.zMax"
+      },
+      "expect": [
+        {
+          "expr": "(${xMax1} - ${xMin1}) + (${yMax1} - ${yMin1}) + (${zMax1} - ${zMin1}) - ((${xMax0} - ${xMin0}) + (${yMax0} - ${yMin0}) + (${zMax0} - ${zMin0}))",
+          "approx": 1.0, "tol": 0.01, "name": "the 3D shape grew by the 1 m the profile's last segment grew"
+        }
+      ]
+    },
+    {
+      "id": "the extrusion start did not move and no shell was added",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Shell" },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "no shell added or removed" },
+        { "expr": "${startXAfter} - ${startX}", "approx": 0, "name": "start kept (x)" },
+        { "expr": "${startYAfter} - ${startY}", "approx": 0, "name": "start kept (y)" },
+        { "expr": "${startZAfter} - ${startZ}", "approx": 0, "name": "start kept (z)" }
+      ]
+    },
+    {
+      "id": "a profile with one more point",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "profile": { "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.0, "y": 2.0 }, { "x": 4.0, "y": 2.0 }, { "x": 4.0, "y": 0.0 } ] }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "four-point profile set" }
+      ]
+    },
+    {
+      "id": "read the four-point profile",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 4, "name": "four points read back" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[3].x", "approx": 4.0 },
+        { "path": "detailsOfElements[0].details.profile.coordinates[3].y", "approx": 0.0 },
+        { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 4.0, "tol": 1e-9, "name": "extrusion vector still kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness still kept" }
+      ]
+    }
+  ]
+}

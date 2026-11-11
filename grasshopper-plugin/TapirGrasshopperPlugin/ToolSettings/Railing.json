@@ -11,7 +11,8 @@
   "plainKeys": [
     "elementId",
     "favoriteName",
-    "id"
+    "id",
+    "templateElementId"
   ],
   "sources": {
     "help": [
@@ -82,6 +83,26 @@
       "label": null,
       "labelSource": null,
       "group": "Segment Settings",
+      "subgroup": null
+    },
+    {
+      "get": "segments",
+      "set": "segments",
+      "apiMember": "API_ElementMemo::railingSegments (API_RailingSegmentType)",
+      "apiDescription": "The segments of the railing, one per pair of consecutive reference line vertices, each with its own height, lateral offset and reference line location.",
+      "label": null,
+      "labelSource": null,
+      "group": "Segment Settings",
+      "subgroup": null
+    },
+    {
+      "get": "nodes",
+      "set": "nodes",
+      "apiMember": "API_ElementMemo::railingNodes (API_RailingNodeType)",
+      "apiDescription": "The nodes of the railing, one per reference line vertex, each with its post offset, elevation and whether the pattern continues across it.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
       "subgroup": null
     },
     {

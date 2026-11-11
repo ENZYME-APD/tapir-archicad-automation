@@ -596,7 +596,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   marketplace scripts, read by `docs/scripts/scripts.js` and the site's live
   script count) to the same branch with `tools/generate_catalogue.py`, which needs
   the full history for each version's commit, URL and SHA-256; a push run writes
-  only that and leaves `community.json` as it is. Its runs never cancel each
+  only that and leaves `community.json` as it is. Daily and by hand it also writes
+  `user-map.json` with `tools/generate_user_map.py`: the towns people name on Discord
+  (the /where slash command of tools/discord-where/, answers to the location question in #welcome-and-rules, and "I'm from ..." anywhere),
+  placed with OpenStreetMap's Nominatim and counted per town, never a name or a message,
+  read by `docs/community/user-map.js` (the map); it needs the bot's Message Content
+  Intent, and `tools/user_map_overrides.json` corrects a message it misreads. Its runs never cancel each
   other. It never runs on pull request events and never checks out pull request
   code; `SITE_DATA=false` turns it off.
 
