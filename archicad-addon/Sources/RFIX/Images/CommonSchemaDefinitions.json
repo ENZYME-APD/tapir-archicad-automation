@@ -13424,49 +13424,75 @@
             "defaultWitnessVal"
         ]
     },
-    "StairBaseLineEdge": {
-        "type": "object",
-        "properties": {
-            "segmentType": {
-                "type": "string",
-                "enum": [
-                    "Flight",
-                    "Landing",
-                    "DividedLanding"
-                ],
-                "description": "Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "segmentType"
+    "ChangeMarkerComponent": {
+        "type": "string",
+        "description": "Which parts a Change Marker shows: only the marker head, only the cloud, or both.",
+        "enum": [
+            "HeadOnly",
+            "CloudOnly",
+            "HeadAndCloud"
         ]
     },
-    "StairBaseLineVertex": {
+    "ChangeMarkerDetails": {
         "type": "object",
+        "description": "A Change Marker: the revision Change it is linked to, the parts it shows and its geometry.",
         "properties": {
-            "turnType": {
+            "linkType": {
                 "type": "string",
-                "enum": [
-                    "None",
-                    "Landing",
-                    "Winder",
-                    "DividedLanding"
-                ],
-                "description": "The turn at this point. The first and last points take None."
+                "enum": ["Linked", "Unlinked", "NewChange", "Unknown"],
+                "description": "Whether the marker is linked to a Change. NewChange is the value a marker is created with to make a new Change."
             },
-            "minLandingStartEdgeOffset": {
-                "type": "number",
-                "description": "Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset)."
+            "markerComponent": {
+                "$ref": "#/ChangeMarkerComponent"
             },
-            "minLandingEndEdgeOffset": {
+            "changeId": {
+                "type": "string",
+                "description": "The ID of the linked Change (empty when not linked)."
+            },
+            "changeDescription": {
+                "type": "string",
+                "description": "The description (short name) of the linked Change."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point the Change Marker points to."
+            },
+            "polygon": {
+                "type": "array",
+                "description": "The outline of the cloud, with the closing point. Present only when the marker has a polygon.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "The curved edges of polygon. Present only when it has any.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "markerId": {
+                "$ref": "#/ElementId",
+                "description": "The GUID of the marker head's library part element. Present only when the marker has one."
+            },
+            "angle": {
                 "type": "number",
-                "description": "Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset)."
+                "description": "The rotation angle of the marker head in radians."
+            },
+            "horizontalMarker": {
+                "type": "boolean",
+                "description": "Whether the marker head is always horizontal."
             }
         },
         "additionalProperties": false,
         "required": [
-            "turnType"
+            "linkType",
+            "markerComponent",
+            "changeId",
+            "changeDescription",
+            "position",
+            "angle",
+            "horizontalMarker"
         ]
     },
     "TextDetails": {
@@ -14182,6 +14208,9 @@
             },
             {
                 "$ref": "#/DimensionDetails"
+            },
+            {
+                "$ref": "#/ChangeMarkerDetails"
             },
             {
                 "$ref": "#/StairDetails"
@@ -28746,6 +28775,51 @@
         "oneOf": [
             { "$ref": "#/SectionElevationDetails" },
             { "$ref": "#/ErrorItem" }
+        ]
+    },
+    "StairBaseLineEdge": {
+        "type": "object",
+        "properties": {
+            "segmentType": {
+                "type": "string",
+                "enum": [
+                    "Flight",
+                    "Landing",
+                    "DividedLanding"
+                ],
+                "description": "Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentType"
+        ]
+    },
+    "StairBaseLineVertex": {
+        "type": "object",
+        "properties": {
+            "turnType": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Landing",
+                    "Winder",
+                    "DividedLanding"
+                ],
+                "description": "The turn at this point. The first and last points take None."
+            },
+            "minLandingStartEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset)."
+            },
+            "minLandingEndEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "turnType"
         ]
     }
 }
