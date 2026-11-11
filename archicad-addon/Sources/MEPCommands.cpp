@@ -9103,11 +9103,6 @@ static std::vector<GS::UniString> CarryOverRoutingElementIdentity (const ACAPI::
     return warnings;
 }
 
-// Rebuilds one route in RebuildMEPRoutingElements: deletes it and places it again along the given
-// nodes, from its own settings, under its own guid when Archicad allows it, and gives its segments
-// and nodes the settings of the old ones they lie along or at. Runs inside the caller's undoable
-// command. Returns the item of the response: the rebuilt route's id with its guidMap and warnings,
-// or an error.
 // A part Archicad deletes with the route and Place does not make again, so a rebuild would lose it:
 // a tee (Branch) at either end, tested in the bench (fork #24), or a take-off on one of its segments.
 static std::optional<GS::UniString> FindPartDeletedWithRoute (const RoutingElement& routingElement, const RoutingElementIdentity& identity)
@@ -9139,6 +9134,11 @@ static std::optional<GS::UniString> FindPartDeletedWithRoute (const RoutingEleme
     return std::nullopt;
 }
 
+// Rebuilds one route in RebuildMEPRoutingElements: deletes it and places it again along the given
+// nodes, from its own settings, under its own guid when Archicad allows it, and gives its segments
+// and nodes the settings of the old ones they lie along or at. Runs inside the caller's undoable
+// command. Returns the item of the response: the rebuilt route's id with its guidMap and warnings,
+// or an error.
 static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid, const GS::ObjectState& item)
 {
     ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (routingElementGuid));
