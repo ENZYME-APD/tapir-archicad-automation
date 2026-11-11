@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-11 07:54 UTC",
+ "generatedAt": "2026-11-11 08:27 UTC",
  "versions": [
   25,
   26,
@@ -5857,6 +5857,10 @@
      "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
     },
     {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
      "number": 2686,
      "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
     },
@@ -7295,6 +7299,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
+    },
+    {
      "number": 2691,
      "title": "[3/3] Add ModifyCameras"
     },
@@ -7423,6 +7431,10 @@
     {
      "number": 2710,
      "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
+    },
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
     },
     {
      "number": 2647,
@@ -8347,6 +8359,10 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
+    },
+    {
+     "number": 2697,
+     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
     },
     {
      "number": 2607,
@@ -16987,7 +17003,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2720,
+     "title": "Add-On: ExecuteModifyObjectOrLamp reads all story settings for every item; read them once"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_SetLast3DDefLevels",
