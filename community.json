@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-10T11:08:03Z",
+ "generatedAt": "2026-11-11T10:53:59Z",
  "months": [
   {
    "month": "2022-07",
@@ -421,13 +421,13 @@
  ],
  "totals": {
   "commits": 1315,
-  "discordMessages": 11758,
-  "discordMembers": 649,
+  "discordMessages": 11864,
+  "discordMembers": 656,
   "discordMembersChange": {
-   "diff": 9,
-   "days": 4
+   "diff": 16,
+   "days": 5
   },
-  "participants": 475
+  "participants": 486
  },
  "topContributors": [
   {
@@ -440,16 +440,23 @@
   {
    "name": "Parikshit Wadhwa",
    "login": "parikshit99",
-   "commits": 58,
-   "reports": 160,
+   "commits": 69,
+   "reports": 164,
    "tests": 0
   },
   {
    "name": "archispatialist",
    "login": "archispatialist",
-   "commits": 21,
-   "reports": 135,
+   "commits": 23,
+   "reports": 139,
    "tests": 0
+  },
+  {
+   "name": "weltmaister",
+   "login": "weltmaister",
+   "commits": 54,
+   "reports": 21,
+   "tests": 82
   },
   {
    "name": "Viktor Kovacs",
@@ -468,16 +475,9 @@
   {
    "name": "MathiasJon",
    "login": "MathiasJon",
-   "commits": 92,
-   "reports": 20,
-   "tests": 0
-  },
-  {
-   "name": "weltmaister",
-   "login": "weltmaister",
-   "commits": 54,
+   "commits": 93,
    "reports": 21,
-   "tests": 30
+   "tests": 0
   },
   {
    "name": "SzamosiMate",
@@ -728,6 +728,10 @@
   {
    "date": "2026-11-10",
    "members": 649
+  },
+  {
+   "date": "2026-11-11",
+   "members": 656
   }
  ]
 }
