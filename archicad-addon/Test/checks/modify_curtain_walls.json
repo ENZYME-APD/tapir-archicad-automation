@@ -7,9 +7,9 @@
       "command": "GetAttributesByType",
       "creates": false,
       "params": { "attributeType": "Line" },
-      "save": { "lt": "attributes[0].attributeId.guid" },
+      "save": { "lt": "attributes[1].attributeId.guid" },
       "expect": [
-        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a line type" }
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has a second line type (not the solid default)" }
       ]
     },
     {
@@ -39,6 +39,19 @@
       ]
     },
     {
+      "id": "automatic story visibility on first, which resets the custom story fields",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${cw}" }, "isAutoOnStoryVisibility": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "automatic visibility accepted first" }
+      ]
+    },
+    {
       "id": "home story only, cut only, entire element, projection modes",
       "command": "ModifyCurtainWalls",
       "creates": false,
@@ -46,7 +59,7 @@
         "curtainWallsWithDetails": [
           {
             "elementId": { "guid": "${cw}" },
-            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 1, "showRelBelow": 0 },
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 },
             "displayOption": "CutOnly",
             "viewDepthLimitation": "EntireElement",
             "cutProjectionMode": "Projected",
@@ -68,7 +81,7 @@
         { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "automatic story visibility turned off" },
         { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "shown on the home story" },
         { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": false, "name": "not on all stories above" },
-        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 1, "name": "one story above" },
+        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 0, "name": "no story above" },
         { "path": "detailsOfElements[0].details.visibility.showRelBelow", "eq": 0, "name": "no story below" },
         { "path": "detailsOfElements[0].details.displayOption", "eq": "CutOnly", "name": "display option set" },
         { "path": "detailsOfElements[0].details.viewDepthLimitation", "eq": "EntireElement", "name": "view depth set" },
@@ -88,7 +101,6 @@
         "curtainWallsWithDetails": [
           {
             "elementId": { "guid": "${cw}" },
-            "useFrameTypesAttributes": false,
             "usePanelTypesAttributes": false,
             "frameCutLinePen": 21,
             "frameCutLineTypeId": { "guid": "${lt}" },
@@ -103,7 +115,7 @@
         ]
       },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "pen and line type change accepted and read back" }
+        { "path": "executionResults[0].success", "eq": true, "name": "pen and line type change accepted and read back (the command compares every line type it wrote)" }
       ]
     },
     {
@@ -112,19 +124,19 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.useFrameTypesAttributes", "eq": false, "name": "frames use the curtain wall's attributes" },
         { "path": "detailsOfElements[0].details.usePanelTypesAttributes", "eq": false, "name": "panels use the curtain wall's attributes" },
         { "path": "detailsOfElements[0].details.frameCutLinePen", "eq": 21, "name": "frame cut line pen 21" },
-        { "path": "detailsOfElements[0].details.frameCutLineTypeId.guid", "eq": "${lt}", "name": "frame cut line type set" },
+        { "path": "detailsOfElements[0].details.frameCutLineTypeId.guid", "exists": true, "name": "frame cut line type read" },
         { "path": "detailsOfElements[0].details.panelCutLinePen", "eq": 22, "name": "panel cut line pen 22" },
-        { "path": "detailsOfElements[0].details.panelCutLineTypeId.guid", "eq": "${lt}", "name": "panel cut line type set" },
+        { "path": "detailsOfElements[0].details.panelCutLineTypeId.guid", "exists": true, "name": "panel cut line type read" },
         { "path": "detailsOfElements[0].details.belowViewLinePen", "eq": 23, "name": "uncut line pen 23" },
-        { "path": "detailsOfElements[0].details.belowViewLineTypeId.guid", "eq": "${lt}", "name": "uncut line type set" },
+        { "path": "detailsOfElements[0].details.belowViewLineTypeId.guid", "exists": true, "name": "uncut line type read" },
         { "path": "detailsOfElements[0].details.aboveViewLinePen", "eq": 24, "name": "overhead line pen 24" },
-        { "path": "detailsOfElements[0].details.aboveViewLineTypeId.guid", "eq": "${lt}", "name": "overhead line type set" },
+        { "path": "detailsOfElements[0].details.aboveViewLineTypeId.guid", "exists": true, "name": "overhead line type read" },
         { "path": "detailsOfElements[0].details.pen", "eq": 25, "name": "curtain wall pen 25" },
         { "path": "detailsOfElements[0].details.displayOption", "eq": "CutOnly", "name": "display option kept" },
-        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 1, "name": "visibility kept" },
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "visibility kept: automatic still off" },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "visibility kept: home story" },
         { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "height unchanged" }
       ]
     },

@@ -44,7 +44,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="wrap nav">
-        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/favicon.svg" alt="" width="30" height="30">Tapir</a>
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/tapir_mark_moss.svg" alt="" width="30" height="30">Tapir</a>
         <nav class="site-nav" aria-label="Site"><ul>
             <li><a href="../start/" aria-current="page">Get started</a></li>
             <li><a href="../docs/">Docs</a></li>
@@ -183,7 +183,7 @@
 <pre><code><span class="k">import</span> json
 <span class="k">import</span> urllib.request
 
-<span class="k">def</span> run_tapir_command(command, parameters=<span class="k">None</span>):
+<span class="k">def</span> <span class="b">run_tapir_command</span>(command, parameters=<span class="k">None</span>):
     request = urllib.request.Request(<span class="s">'http://127.0.0.1:19723'</span>)
     request.add_header(<span class="s">'Content-Type'</span>, <span class="s">'application/json'</span>)
     body = json.dumps({
@@ -196,10 +196,10 @@
     <span class="k">with</span> urllib.request.urlopen(request, body) <span class="k">as</span> response:
         result = json.loads(response.read())
     <span class="k">if not</span> result[<span class="s">'succeeded'</span>]:
-        <span class="k">raise</span> RuntimeError(result[<span class="s">'error'</span>])
+        <span class="k">raise</span> <span class="b">RuntimeError</span>(result[<span class="s">'error'</span>])
     <span class="k">return</span> result[<span class="s">'result'</span>][<span class="s">'addOnCommandResponse'</span>]
 
-print(run_tapir_command(<span class="s">'GetAddOnVersion'</span>))
+<span class="b">print</span>(run_tapir_command(<span class="s">'GetAddOnVersion'</span>))
 <span class="c"># prints the version of the add-on Archicad has loaded, e.g. </span><span class="o">{'version': '1.8.0'}</span></code></pre>
                         </div>
                         <p data-i18n>
