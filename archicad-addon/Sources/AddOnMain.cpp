@@ -884,7 +884,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetElementsInDrawOrderCommand> (
             elementCommands, "1.7.3",
-            "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
+            "Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Items of the drawing order whose element Archicad cannot read are left out too, so every returned identifier can be used with the other commands."
         );
         err |= RegisterCommand<GetDrawingPrimitivesOfElementsCommand> (
             elementCommands, "1.8.0",
