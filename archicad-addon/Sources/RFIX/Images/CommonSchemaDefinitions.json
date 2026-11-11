@@ -3863,6 +3863,22 @@
         },
         "additionalProperties": false
     },
+    "SlabEdgeTrim": {
+        "type": "object",
+        "description": "The Edge Angle of a slab edge (Geometry and Positioning panel of Slab Settings): vertical, or at a custom angle.",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut"],
+                "description": "Vertical (the default, perpendicular to the slab), or at 'angle' (CustomAngle). ModifySlabs writes only these two; the others are only reported, should Archicad store one on a slab."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The angle of the edge in radians, as Archicad stores it (the dialog shows it in degrees). Only CustomAngle uses it."
+            }
+        },
+        "additionalProperties": false
+    },
     "RoofEdgeType": {
         "type": "string",
         "description": "The Edge Type of an edge of a single-plane roof (its Custom Edge Settings), used only for listing: Undefined (not set, the default), Ridge, Valley, Gable, Hip, Eaves, Peak, SideWall, EndWall, RoofTransitionDome or RoofTransitionHollow.",
@@ -10721,6 +10737,20 @@
             },
             "holes": {
                 "$ref": "#/Holes2D"
+            },
+            "edgeSideMaterials": {
+                "type": "array",
+                "description": "The custom side surface of each edge of the slab's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. ModifySlabs takes the same list.",
+                "items": {
+                    "$ref": "#/OverriddenMaterial"
+                }
+            },
+            "edgeTrims": {
+                "type": "array",
+                "description": "The Edge Angle of each edge of the slab's polygon, in the order of edgeSideMaterials. Missing when the slab stores no edge trims, in which case every edge is Vertical. ModifySlabs takes the same list, or one edgeTrim for every edge.",
+                "items": {
+                    "$ref": "#/SlabEdgeTrim"
+                }
             },
             "structureType": {
                 "$ref": "#/SlabStructureType"

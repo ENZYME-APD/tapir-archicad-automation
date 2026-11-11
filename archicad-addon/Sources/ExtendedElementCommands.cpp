@@ -10643,6 +10643,11 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
     });
 }
 
+// Defined with ModifyRoofs below, which writes the same per-edge data of a roof's polygon.
+static GS::Optional<GS::UniString> ApplyPolygonEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims, bool isSlab);
+static GS::Optional<GS::UniString> ApplyPolygonEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& elementSideMaterial, bool isSlab);
+static GS::Array<Int32> GetPolygonEdgeIndices (const API_ElementMemo& memo);
+
 ModifySlabsCommand::ModifySlabsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -10692,6 +10697,20 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                         "holes": {
                             "$ref": "#/Holes2D",
                             "description": "Can be given on its own, without polygonOutline, to add/remove/clear holes in place (an empty array clears all holes) - the slab's current outline is reused unchanged."
+                        },
+                        "edgeTrim": {
+                            "$ref": "#/SlabEdgeTrim",
+                            "description": "The Edge Angle of the whole slab (Geometry and Positioning panel of Slab Settings): sets every edge of the slab's polygon, the outline and the holes, to this trim. Cannot be combined with edgeTrims, polygonOutline or holes."
+                        },
+                        "edgeTrims": {
+                            "type": "array",
+                            "description": "The Edge Angle of each edge of the slab's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with edgeTrim, polygonOutline or holes, which make new edges.",
+                            "items": { "$ref": "#/SlabEdgeTrim" }
+                        },
+                        "edgeSideMaterials": {
+                            "type": "array",
+                            "description": "The custom surface of each edge of the slab's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the slab's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline or holes, which make new edges.",
+                            "items": { "$ref": "#/OverriddenMaterial" }
                         },)") + SlabSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -10794,6 +10813,93 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
             auto error = ApplySlabStructure (element, &mask, item, changed);
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+
+            // The Edge Angle and the custom surface of the polygon's edges (#2562), written as
+            // ModifyRoofs writes them for a single-plane roof.
+            GS::ObjectState edgeTrim;
+            GS::Array<GS::ObjectState> edgeTrims;
+            GS::Array<GS::ObjectState> edgeSideMaterials;
+            const bool hasEdgeTrim = item.Get ("edgeTrim", edgeTrim);
+            const bool hasEdgeTrims = item.Get ("edgeTrims", edgeTrims);
+            const bool hasEdgeSideMaterials = item.Get ("edgeSideMaterials", edgeSideMaterials);
+            if (hasEdgeTrim || hasEdgeTrims || hasEdgeSideMaterials) {
+                if (item.Contains ("polygonOutline") || item.Contains ("holes")) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrim', 'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
+                    continue;
+                }
+                if (hasEdgeTrim && hasEdgeTrims) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Give either 'edgeTrim' (every edge) or 'edgeTrims' (one item per edge), not both."));
+                    continue;
+                }
+                GS::UniString edgeTrimType;
+                if (hasEdgeTrim && edgeTrim.Get ("trimType", edgeTrimType) && edgeTrimType != "Vertical" && edgeTrimType != "CustomAngle") {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Unsupported trimType '" + edgeTrimType + "' in 'edgeTrim': a slab edge is Vertical or CustomAngle."));
+                    continue;
+                }
+
+                API_ElementMemo memo = {};
+                const GS::OnExit cleanup ([&]() {
+                    ACAPI_DisposeElemMemoHdls (&memo);
+                });
+                err = ACAPI_Element_GetMemo (element.header.guid, &memo);
+                if (err != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the slab."));
+                    continue;
+                }
+                if (hasEdgeTrim) {
+                    const UIndex nEdges = GetPolygonEdgeIndices (memo).GetSize ();
+                    for (UIndex k = 0; k < nEdges; ++k) {
+                        edgeTrims.Push (edgeTrim);
+                    }
+                }
+                if (hasEdgeTrim || hasEdgeTrims) {
+                    auto trimError = ApplyPolygonEdgeTrims (memo, edgeTrims, true);
+                    if (trimError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
+                        continue;
+                    }
+                }
+                if (hasEdgeSideMaterials) {
+                    auto materialError = ApplyPolygonEdgeSideMaterials (memo, edgeSideMaterials, element.slab.sideMat, true);
+                    if (materialError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, materialError.Get ()));
+                        continue;
+                    }
+                }
+                if (changed) {
+                    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Failed to modify slab."));
+                        continue;
+                    }
+                }
+                // Only the polygon handles and the edge data, unchanged but for the given trims and
+                // side surfaces, so the rest of the slab stays (as ModifyRoofs passes them).
+                API_ElementMemo polygonMemo = {};
+                polygonMemo.coords = memo.coords;
+                polygonMemo.pends = memo.pends;
+                polygonMemo.parcs = memo.parcs;
+                polygonMemo.vertexIDs = memo.vertexIDs;
+                polygonMemo.edgeIDs = memo.edgeIDs;
+                polygonMemo.edgeTrims = memo.edgeTrims;
+                polygonMemo.sideMaterials = memo.sideMaterials;
+                polygonMemo.contourIDs = memo.contourIDs;
+                UInt64 memoMask = APIMemoMask_Polygon;
+                if (memo.edgeTrims != nullptr) {
+                    memoMask |= APIMemoMask_EdgeTrims;
+                }
+                if (memo.sideMaterials != nullptr) {
+                    memoMask |= APIMemoMask_SideMaterials;
+                }
+                err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, hasEdgeSideMaterials ? "Failed to modify the edges of the slab." : "Failed to modify the edge trims of the slab."));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (element.header.guid, item);
+                results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
                 continue;
             }
 
@@ -11901,21 +12007,30 @@ static void RestoreRoofPolygonEdges (API_ElementMemo& memo, const GS::Array<Roof
     }
 }
 
-// Writes the given "edgeTrims" (see ModifyRoofs) into memo.edgeTrims, one item per edge in the
-// order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports them in (#2363).
-// Only the given fields of an item change. Changes nothing on an error.
-static GS::Optional<GS::UniString> ApplyRoofEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims)
+// Writes the given "edgeTrims" (see ModifyRoofs and ModifySlabs) into memo.edgeTrims, one item
+// per edge in the order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports
+// them in (#2363, #2562). Only the given fields of an item change. Changes nothing on an error.
+// A slab's edge is either vertical or at a custom angle (the Edge Angle of Slab Settings), so
+// isSlab refuses the trims a slab does not have.
+static GS::Optional<GS::UniString> ApplyPolygonEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims, bool isSlab)
 {
+    const GS::UniString elementName = isSlab ? "slab" : "roof";
     const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
     if (edgeIndices.IsEmpty ()) {
-        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+        return "Failed to read the edges of the " + elementName + "'s polygon.";
     }
     if (edgeTrims.GetSize () != edgeIndices.GetSize ()) {
-        return GS::UniString::Printf ("'edgeTrims' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+        return "'edgeTrims' must have one item per edge of the " + elementName + GS::UniString::Printf ("'s polygon (%u).", (unsigned) edgeIndices.GetSize ());
     }
     for (UIndex k = 0; k < edgeTrims.GetSize (); ++k) {
         GS::UniString trimType;
-        if (edgeTrims[k].Get ("trimType", trimType) && trimType != "Vertical" && trimType != "Perpendicular" && trimType != "Horizontal" && trimType != "CustomAngle") {
+        if (!edgeTrims[k].Get ("trimType", trimType)) {
+            continue;
+        }
+        if (isSlab && trimType != "Vertical" && trimType != "CustomAngle") {
+            return "Unsupported trimType '" + trimType + GS::UniString::Printf ("' in 'edgeTrims' item %u: a slab edge is Vertical or CustomAngle.", (unsigned) k);
+        }
+        if (trimType != "Vertical" && trimType != "Perpendicular" && trimType != "Horizontal" && trimType != "CustomAngle") {
             return "Unknown trimType '" + trimType + GS::UniString::Printf ("' in 'edgeTrims' item %u: use Vertical, Perpendicular, Horizontal or CustomAngle.", (unsigned) k);
         }
     }
@@ -11923,11 +12038,11 @@ static GS::Optional<GS::UniString> ApplyRoofEdgeTrims (API_ElementMemo& memo, co
     const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
     const GSSize nTrims = memo.edgeTrims == nullptr ? 0 : BMGetHandleSize ((GSHandle) memo.edgeTrims) / sizeof (API_EdgeTrim);
     if (nTrims < nCoords + 1) {
-        // A roof that never had a custom edge cut may have no edge trims: its edges are Vertical,
-        // as GetRoofPolygonEdges reads them. The trims it has are kept.
+        // A roof or slab that never had a custom edge cut may have no edge trims: its edges are
+        // Vertical, as GetRoofPolygonEdges reads them. The trims it has are kept.
         API_EdgeTrim** trims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
         if (trims == nullptr) {
-            return GS::UniString ("Failed to allocate the edge trims of the roof.");
+            return "Failed to allocate the edge trims of the " + elementName + ".";
         }
         for (Int32 i = 0; i <= nCoords; ++i) {
             (*trims)[i].sideType = APIEdgeTrim_Vertical;
@@ -12268,18 +12383,19 @@ static GS::Optional<GS::UniString> ApplyRoofSurfaces (API_Element& element, API_
     return {};
 }
 
-// Writes the given "edgeSideMaterials" (see ModifyRoofs) into memo.sideMaterials, one item per
-// edge in the order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports
-// them in (#2433). An item that is not overridden clears the edge's custom surface, so the edge
-// shows the roof's side surface. Changes nothing on an error.
-static GS::Optional<GS::UniString> ApplyRoofEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& roofSideMaterial)
+// Writes the given "edgeSideMaterials" (see ModifyRoofs and ModifySlabs) into memo.sideMaterials,
+// one item per edge in the order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements
+// reports them in (#2433, #2562). An item that is not overridden clears the edge's custom surface,
+// so the edge shows the element's side surface. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyPolygonEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& elementSideMaterial, bool isSlab)
 {
+    const GS::UniString elementName = isSlab ? "slab" : "roof";
     const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
     if (edgeIndices.IsEmpty ()) {
-        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+        return "Failed to read the edges of the " + elementName + "'s polygon.";
     }
     if (edgeSideMaterials.GetSize () != edgeIndices.GetSize ()) {
-        return GS::UniString::Printf ("'edgeSideMaterials' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+        return "'edgeSideMaterials' must have one item per edge of the " + elementName + GS::UniString::Printf ("'s polygon (%u).", (unsigned) edgeIndices.GetSize ());
     }
     GS::Array<API_OverriddenAttribute> newMaterials;
     for (UIndex k = 0; k < edgeSideMaterials.GetSize (); ++k) {
@@ -12294,14 +12410,14 @@ static GS::Optional<GS::UniString> ApplyRoofEdgeSideMaterials (API_ElementMemo& 
     const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
     const GSSize nSideMaterials = memo.sideMaterials == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.sideMaterials) / sizeof (API_OverriddenAttribute);
     if (nSideMaterials < nCoords + 1) {
-        // A roof without side materials in its memo shows its own side surface on every edge,
-        // which is what AddPolyToMemo (ElementCreationCommands.cpp) writes. The ones it has are kept.
+        // A roof or slab without side materials in its memo shows its own side surface on every
+        // edge, which is what AddPolyToMemo (ElementCreationCommands.cpp) writes. The ones it has are kept.
         API_OverriddenAttribute* materials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
         if (materials == nullptr) {
-            return GS::UniString ("Failed to allocate the edge surfaces of the roof.");
+            return "Failed to allocate the edge surfaces of the " + elementName + ".";
         }
         for (Int32 i = 0; i <= nCoords; ++i) {
-            materials[i] = i < nSideMaterials ? memo.sideMaterials[i] : roofSideMaterial;
+            materials[i] = i < nSideMaterials ? memo.sideMaterials[i] : elementSideMaterial;
         }
         if (memo.sideMaterials != nullptr) {
             BMKillPtr (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
@@ -12627,7 +12743,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
                 if (hasEdgeTrims) {
-                    auto trimError = ApplyRoofEdgeTrims (memo, edgeTrims);
+                    auto trimError = ApplyPolygonEdgeTrims (memo, edgeTrims, false);
                     if (trimError.HasValue ()) {
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
                         continue;
@@ -12641,7 +12757,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     }
                 }
                 if (hasEdgeSideMaterials) {
-                    auto materialError = ApplyRoofEdgeSideMaterials (memo, edgeSideMaterials, element.roof.shellBase.sidMat);
+                    auto materialError = ApplyPolygonEdgeSideMaterials (memo, edgeSideMaterials, element.roof.shellBase.sidMat, false);
                     if (materialError.HasValue ()) {
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, materialError.Get ()));
                         continue;
