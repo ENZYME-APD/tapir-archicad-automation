@@ -1028,7 +1028,10 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Gets all the GDL parameters (name, type, value) of the given elements."
+            "Gets all the GDL parameters (name, type, value) of the given elements. "
+            "For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), "
+            "which have no parameter session in the Archicad API, the parameters are read from the component itself: "
+            "isLocked is then always false and possibleValues is not given."
         );
         err |= RegisterCommand<SetGDLParametersOfElementsCommand> (
             elementCommands, "1.5.7",

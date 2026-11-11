@@ -530,6 +530,74 @@ static bool SetParamValueString (API_ChangeParamType& changeParam,
     return false;
 }
 
+// The components of a railing that GetSubelementsOfHierarchicalElements lists (posts, rails,
+// balusters, panels ...). The DevKit documents no parameter session for them:
+// ACAPI_LibraryPart_OpenParameters fails on them (#2572), so their parameters are read from
+// their own element memo instead.
+static bool IsRailingComponentType (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_RailingToprailID:
+        case API_RailingHandrailID:
+        case API_RailingRailID:
+        case API_RailingPostID:
+        case API_RailingInnerPostID:
+        case API_RailingBalusterID:
+        case API_RailingPanelID:
+        case API_RailingSegmentID:
+        case API_RailingNodeID:
+        case API_RailingBalusterSetID:
+        case API_RailingPatternID:
+        case API_RailingToprailEndID:
+        case API_RailingHandrailEndID:
+        case API_RailingRailEndID:
+        case API_RailingToprailConnectionID:
+        case API_RailingHandrailConnectionID:
+        case API_RailingRailConnectionID:
+        case API_RailingEndFinishID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// The parameters of a railing component, from the APIMemoMask_AddPars memo of the component
+// itself. Without a parameter session nothing reports locks or the Parameter Script's possible
+// values, so isLocked is false and possibleValues is left out. Returns false when the component
+// has no parameters there.
+static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, GS::ObjectState& gdlParameters)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars) != NoError || memo.params == nullptr) {
+        return false;
+    }
+
+    const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
+    if (nParams == 0) {
+        return false;
+    }
+
+    const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& actParam = (*memo.params)[ii];
+        if (actParam.typeID == APIParT_Separator) {
+            continue;
+        }
+
+        GS::ObjectState gdlParameterDetails;
+        gdlParameterDetails.Add ("name", actParam.name);
+        gdlParameterDetails.Add ("displayName", GS::UniString (actParam.uDescname));
+        gdlParameterDetails.Add ("index", actParam.index);
+        gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
+        AddValueAndDescriptions (gdlParameterDetails, actParam);
+        gdlParameterDetails.Add ("isLocked", false);
+        AddParameterFlags (gdlParameterDetails, actParam);
+        parameterListAdder (gdlParameterDetails);
+    }
+    return true;
+}
+
 GetGDLParametersOfElementsCommand::GetGDLParametersOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -617,6 +685,17 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             if (err != NoError) {
                 ACAPI_LibraryPart_CloseParameters ();
             }
+        }
+
+        if (err != NoError && IsRailingComponentType (GetElemTypeId (apiElement.header))) {
+            GS::ObjectState gdlParameters;
+            if (AddMemoParametersOfRailingComponent (paramOwner.guid, gdlParameters)) {
+                elemGdlParameterListAdder (gdlParameters);
+            } else {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Archicad gives no GDL parameters for the railing component with guid %T: neither a parameter session nor its element memo has them.", APIGuidToString (paramOwner.guid).ToPrintf ());
+                elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
+            }
+            continue;
         }
 
         if (err != NoError) {
