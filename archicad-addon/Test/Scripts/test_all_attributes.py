@@ -22,7 +22,7 @@ def find_attr(attr_type, name):
 
 def delete_attr(attr_type, attribute_id):
     return aclib.RunTapirCommand('DeleteAttributes', {'attributesToDelete': [
-        {'attributeType': attr_type, 'attributeId': {'attributeId': attribute_id}}
+        {'attributeType': attr_type, 'attributeId': attribute_id}
     ]}, debug=False)
 
 def cleanup(attr_type, names):
@@ -107,7 +107,7 @@ check("Layer intersectionGroupNr matches", g.get('intersectionGroupNr') == 7, st
 
 # partial modify: only touch isHidden, verify isLocked/isWireframe/intersectionGroupNr survive
 aclib.RunTapirCommand('CreateLayers', {'overwriteExisting': True, 'layerDataArray': [
-    {'attributeId': {'attributeId': layer_id}, 'name': name, 'isHidden': True}
+    {'attributeId': layer_id, 'name': name, 'isHidden': True}
 ]}, debug=False)
 g2 = get_layer(layer_id)
 check("Layer partial modify: isHidden changed", g2.get('isHidden') == True, str(g2))
@@ -116,7 +116,7 @@ check("Layer partial modify: intersectionGroupNr survived", g2.get('intersection
 
 # restore for visual inspection
 aclib.RunTapirCommand('CreateLayers', {'overwriteExisting': True, 'layerDataArray': [
-    {'attributeId': {'attributeId': layer_id}, 'name': name, **initial}
+    {'attributeId': layer_id, 'name': name, **initial}
 ]}, debug=False)
 
 # throwaway + delete
@@ -193,7 +193,7 @@ check("Line dashItems[0] matches", close(g['dashItems'][0]['dash'], 3.0) and clo
 # partial modify: only defineScale (scaleWithPlan stays True from creation, so defineScale is meaningful here),
 # verify dashItems/lineType survive (per code comment: only rebuilt if resupplied)
 aclib.RunTapirCommand('CreateLines', {'overwriteExisting': True, 'lineDataArray': [
-    {'attributeId': {'attributeId': line_id}, 'name': line_name, 'defineScale': 50.0}
+    {'attributeId': line_id, 'name': line_name, 'defineScale': 50.0}
 ]}, debug=False)
 g2 = get_line(line_id)
 check("Line partial modify: defineScale changed", close(g2.get('defineScale', -1), 50.0), str(g2))
@@ -277,7 +277,7 @@ check("Fill lineItems[0].lineLengths matches", g['lineItems'][0].get('lineLength
 # handle (null) disagreed - Archicad's own validation rejected the inconsistent state. Now fillDefs seeds the
 # existing geometry handles first, so a partial modify both succeeds AND leaves lineItems untouched.
 r_mod = aclib.RunTapirCommand('CreateFills', {'overwriteExisting': True, 'fillDataArray': [
-    {'attributeId': {'attributeId': fill_id}, 'name': fill_name, 'angle': 1.0}
+    {'attributeId': fill_id, 'name': fill_name, 'angle': 1.0}
 ]}, debug=False)
 check("Fill partial modify (angle only, no lineItems) succeeded", 'attributeId' in r_mod['attributeIds'][0], str(r_mod))
 g2 = get_fill(fill_id)
@@ -393,7 +393,7 @@ check("ZoneCategory color matches", close(g.get('color', {}).get('red', -1), 0.9
 
 # partial modify: only color, verify categoryCode survives
 aclib.RunTapirCommand('CreateZoneCategories', {'overwriteExisting': True, 'zoneCategoryDataArray': [
-    {'attributeId': {'attributeId': zc_id}, 'name': zc_name, 'color': {'red': 0.0, 'green': 1.0, 'blue': 0.0}}
+    {'attributeId': zc_id, 'name': zc_name, 'color': {'red': 0.0, 'green': 1.0, 'blue': 0.0}}
 ]}, debug=False)
 g2 = get_zc(zc_id)
 check("ZoneCategory partial modify: color changed", close(g2['color']['green'], 1.0), str(g2))
@@ -401,7 +401,7 @@ check("ZoneCategory partial modify: categoryCode survived", g2.get('categoryCode
 
 # restore for visual inspection
 aclib.RunTapirCommand('CreateZoneCategories', {'overwriteExisting': True, 'zoneCategoryDataArray': [
-    {'attributeId': {'attributeId': zc_id}, 'name': zc_name, 'categoryCode': 'ZC-99', 'color': {'red': 0.9, 'green': 0.1, 'blue': 0.2}}
+    {'attributeId': zc_id, 'name': zc_name, 'categoryCode': 'ZC-99', 'color': {'red': 0.9, 'green': 0.1, 'blue': 0.2}}
 ]}, debug=False)
 
 r_tw = aclib.RunTapirCommand('CreateZoneCategories', {'zoneCategoryDataArray': [{'name': zc_name + THROWAWAY_SUFFIX}]}, debug=False)
@@ -449,7 +449,7 @@ check("MEPSystem insulationMaterialId matches", g.get('insulationMaterialId', {}
 
 # partial modify: only contourPen, verify domain/fillPen survive
 aclib.RunTapirCommand('CreateMEPSystems', {'overwriteExisting': True, 'mepSystemDataArray': [
-    {'attributeId': {'attributeId': mep_id}, 'name': mep_name, 'contourPen': 33}
+    {'attributeId': mep_id, 'name': mep_name, 'contourPen': 33}
 ]}, debug=False)
 g2 = get_mep(mep_id)
 check("MEPSystem partial modify: contourPen changed", g2.get('contourPen') == 33, str(g2))
@@ -493,7 +493,7 @@ check("PenTable unspecified pen[100] seeded (not crashed/missing)", pen100 is no
 
 # partial modify: only pen[1]'s width, verify pen[2] survives untouched
 aclib.RunTapirCommand('CreatePenTables', {'overwriteExisting': True, 'penTableDataArray': [
-    {'attributeId': {'attributeId': pt_id}, 'name': pt_name, 'pens': [{'index': 1, 'width': 0.9}]}
+    {'attributeId': pt_id, 'name': pt_name, 'pens': [{'index': 1, 'width': 0.9}]}
 ]}, debug=False)
 g2 = aclib.RunTapirCommand('GetPenTables', {'attributeIds': [{'attributeId': pt_id}], 'fields': ['pens']}, debug=False)['penTables'][0]
 pens2 = g2.get('pens', [])
@@ -547,7 +547,7 @@ check("Surface fillId matches", g.get('fillId', {}).get('attributeId') == fills[
 
 # partial modify: only materialType, verify colors survive
 aclib.RunTapirCommand('CreateSurfaces', {'overwriteExisting': True, 'surfaceDataArray': [
-    {'attributeId': {'attributeId': surf_id}, 'name': surf_name, 'materialType': 'Metal'}
+    {'attributeId': surf_id, 'name': surf_name, 'materialType': 'Metal'}
 ]}, debug=False)
 g2 = get_surf(surf_id)
 check("Surface partial modify: materialType changed", g2.get('materialType') == 'Metal', str(g2))
@@ -556,7 +556,7 @@ check("Surface partial modify: ambientReflection survived", close(g2.get('ambien
 
 # restore for visual inspection
 aclib.RunTapirCommand('CreateSurfaces', {'overwriteExisting': True, 'surfaceDataArray': [{
-    'attributeId': {'attributeId': surf_id}, 'name': surf_name, 'materialType': 'Plastic',
+    'attributeId': surf_id, 'name': surf_name, 'materialType': 'Plastic',
     'ambientReflection': 40.0, 'diffuseReflection': 60.0, 'specularReflection': 20.0, 'transparency': 10.0,
     'shine': 5000.0, 'transparencyAttenuation': 100.0, 'emissionAttenuation': 200.0,
     'surfaceColor': {'red': 0.8, 'green': 0.2, 'blue': 0.1}, 'specularColor': {'red': 1.0, 'green': 1.0, 'blue': 1.0},

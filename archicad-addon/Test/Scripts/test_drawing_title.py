@@ -25,7 +25,7 @@ if layoutNavId is None:
     print('No layout named "{}" found - create one (with any drawing placed on it) and rerun.'.format(TEST_LAYOUT_NAME))
     raise SystemExit
 
-aclib.RunTapirCommand('ChangeWindow', {'windowType': 'Layout', 'navigatorItemId': layoutNavId}, debug=False)
+aclib.RunTapirCommand('ChangeWindow', {'navigatorItemId': layoutNavId}, debug=False)
 
 print('Looking for a Drawing element on the test layout...')
 resp = aclib.RunTapirCommand('GetElementsByType', {'elementType': 'Drawing'}, debug=False)
@@ -121,7 +121,7 @@ def collect_layouts(item, result):
 for layoutItem in collect_layouts(lbTree['navigatorTree']['rootItem'], []):
     if layoutItem['name'] == TEST_LAYOUT_NAME:
         continue
-    aclib.RunTapirCommand('ChangeWindow', {'windowType': 'Layout', 'navigatorItemId': layoutItem['navigatorItemId']},
+    aclib.RunTapirCommand('ChangeWindow', {'navigatorItemId': layoutItem['navigatorItemId']},
                            debug=False)
     otherDrawings = aclib.RunTapirCommand('GetElementsByType', {'elementType': 'Drawing'}, debug=False).get('elements', [])
     if not otherDrawings:
@@ -133,7 +133,7 @@ for layoutItem in collect_layouts(lbTree['navigatorTree']['rootItem'], []):
         referenceTitleElementId = found['titleElementId']
         break
 
-aclib.RunTapirCommand('ChangeWindow', {'windowType': 'Layout', 'navigatorItemId': layoutNavId}, debug=False)
+aclib.RunTapirCommand('ChangeWindow', {'navigatorItemId': layoutNavId}, debug=False)
 
 if referenceTitleElementId is None:
     print('No other drawing with an existing title object found in this project - skipping title object test.')

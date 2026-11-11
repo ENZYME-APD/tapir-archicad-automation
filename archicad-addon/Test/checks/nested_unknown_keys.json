@@ -1,0 +1,118 @@
+{
+  "title": "Unknown keys inside shared schema definitions are refused, with their place (#2623)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a mesh",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "floorIndex": 0,
+            "level": 0.0,
+            "polygonCoordinates": [
+              { "x": 850.0, "y": 700.0, "z": 0.0 },
+              { "x": 860.0, "y": 700.0, "z": 0.0 },
+              { "x": 860.0, "y": 708.0, "z": 0.0 },
+              { "x": 850.0, "y": 708.0, "z": 0.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "mesh": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "mesh created" } ]
+    },
+    {
+      "id": "ModifyMeshes: an unknown key in meshData",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": { "meshesData": [ { "elementId": { "guid": "${mesh}" }, "meshData": { "fooBar": 1 } } ] },
+      "expect": [
+        { "path": "error.message", "contains": "'fooBar'", "name": "names the key" },
+        { "path": "error.message", "contains": "#/meshesData/0/meshData", "name": "names its place" },
+        { "path": "executionResults", "exists": false, "name": "nothing run" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: a plausible key meshData does not take, next to a valid one",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          { "elementId": { "guid": "${mesh}" }, "meshData": { "level": 0.5, "displayOption": "Projected" } }
+        ]
+      },
+      "expect": [
+        { "path": "error.message", "contains": "'displayOption'", "name": "refused, naming the key" },
+        { "path": "executionResults", "exists": false, "name": "the level was not written either" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: valid keys only",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": { "meshesData": [ { "elementId": { "guid": "${mesh}" }, "meshData": { "level": 0.5 } } ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "accepted" } ]
+    },
+    {
+      "id": "a zone",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck unknown keys",
+            "numberStr": "1",
+            "floorIndex": 0,
+            "stampPosition": { "x": 851.0, "y": 711.0 },
+            "height": 2.5,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 850.0, "y": 710.0 },
+                { "x": 854.0, "y": 710.0 },
+                { "x": 854.0, "y": 713.0 },
+                { "x": 850.0, "y": 713.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "zone": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created" } ]
+    },
+    {
+      "id": "ModifyZones: an unknown key in contourLine",
+      "command": "ModifyZones",
+      "creates": false,
+      "params": { "zonesWithDetails": [ { "elementId": { "guid": "${zone}" }, "contourLine": { "use": true, "fooBar": 1 } } ] },
+      "expect": [
+        { "path": "error.message", "contains": "'fooBar'", "name": "names the key" },
+        { "path": "error.message", "contains": "#/zonesWithDetails/0/contourLine", "name": "names its place" },
+        { "path": "executionResults", "exists": false, "name": "nothing run" }
+      ]
+    },
+    {
+      "id": "ModifyZones: valid keys only",
+      "command": "ModifyZones",
+      "creates": false,
+      "params": { "zonesWithDetails": [ { "elementId": { "guid": "${zone}" }, "contourLine": { "use": true } } ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "accepted" } ]
+    },
+    {
+      "id": "top-level keys are still refused by Archicad",
+      "command": "CreateZones",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck refused zone",
+            "floorIndex": 0,
+            "layerIndex": 1,
+            "geometry": { "polygonCoordinates": [ { "x": 856.0, "y": 710.0 }, { "x": 858.0, "y": 710.0 }, { "x": 858.0, "y": 712.0 } ] }
+          }
+        ]
+      },
+      "expect": [ { "path": "elements", "exists": false, "name": "no zone created" } ]
+    }
+  ]
+}

@@ -11,7 +11,10 @@
 #include <functional>
 #include <vector>
 #include <map>
+#include <memory>
 #include <mutex>
+
+class InputKeyChecker;
 
 enum class CommonSchema
 {
@@ -42,8 +45,16 @@ public:
     virtual GS::Optional<GS::UniString> GetResponseSchema () const override final;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const;
 
+    // The error message for the first key of parameters that an object of a shared definition the
+    // input schema reaches through "$ref" does not list, which Archicad's own check lets pass (#2623,
+    // InputKeyCheck.hpp); no value when there is none. RegisterCommand runs it before Execute.
+    GS::Optional<GS::UniString> FindUnknownInputKey (const GS::ObjectState& parameters) const;
+
 private:
     CommonSchema mCommonSchema;
+    // Built from the input schema on the first FindUnknownInputKey call.
+    mutable std::once_flag mInputKeyCheckerOnce;
+    mutable std::shared_ptr<const InputKeyChecker> mInputKeyChecker;
     // Only the common definitions the schemas reference (see GetCommonSchemaDefinitionsFor),
     // worked out on the first GetSchemaDefinitions call.
     mutable std::once_flag mSchemaDefinitionsOnce;

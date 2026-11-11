@@ -1,6 +1,7 @@
 #include "CommandBase.hpp"
 
 #include "SchemaDefinitions.hpp"
+#include "InputKeyCheck.hpp"
 #include "MigrationHelper.hpp"
 #include "FileSystem.hpp"
 
@@ -58,6 +59,22 @@ GS::Optional<GS::UniString> CommandBase::GetSchemaDefinitions () const
         mSchemaDefinitions = GetCommonSchemaDefinitionsFor (schemas);
     });
     return mSchemaDefinitions;
+}
+
+GS::Optional<GS::UniString> CommandBase::FindUnknownInputKey (const GS::ObjectState& parameters) const
+{
+    // The schema never changes, so it is read once; call_once because Archicad may ask from more
+    // than one thread. Without an input schema there is nothing to check.
+    std::call_once (mInputKeyCheckerOnce, [this] () {
+        const GS::Optional<GS::UniString> inputParametersSchema = GetInputParametersSchema ();
+        if (inputParametersSchema.HasValue ()) {
+            mInputKeyChecker = std::make_shared<InputKeyChecker> (inputParametersSchema.Get ());
+        }
+    });
+    if (mInputKeyChecker == nullptr) {
+        return GS::NoValue;
+    }
+    return mInputKeyChecker->FindUnknownKey (parameters);
 }
 
 GS::Optional<GS::UniString> CommandBase::GetInputParametersSchema () const
