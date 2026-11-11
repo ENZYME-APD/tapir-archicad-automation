@@ -17,6 +17,7 @@
 #include "ACAPI/MEPRigidSegmentDefault.hpp"
 #endif
 
+#include <cmath>
 #include <optional>
 #include <utility>
 
@@ -257,18 +258,52 @@ static bool ApplyElbowParameters (ElbowDefault& elbowDefault, const GS::ObjectSt
     return settersSucceeded;
 }
 
-// Changes the given keys of a transition default. Returns false when a setter failed.
+// Changes the given keys of a transition default. Returns false when a value is not valid or a setter failed.
+// The angle (TransitionDefault::Modifier::SetAngle, [1, 89] degrees) sets the transition length of ducts and
+// cable carriers: the largest half size step times the tangent of the angle. Archicad gives an error for pipes.
 static bool ApplyTransitionParameters (TransitionDefault& transitionDefault, const GS::ObjectState& parameters)
 {
     GS::UniString preferenceTableIdStr;
-    if (!parameters.Get ("preferenceTableId", preferenceTableIdStr)) {
+    const bool hasTable = parameters.Get ("preferenceTableId", preferenceTableIdStr);
+    double angle = 0.0;
+    const bool hasAngle = parameters.Get ("angle", angle);
+    if (hasAngle && (angle < 1.0 || angle > 89.0)) {
+        return false;
+    }
+    if (!hasTable && !hasAngle) {
         return true;
     }
     bool settersSucceeded = true;
-    transitionDefault.Modify ([&](TransitionDefault::Modifier& modifier) {
-        settersSucceeded &= modifier.SetPreferenceTable (RoutingParameterTableIdFromString (preferenceTableIdStr)).IsOk ();
+    ACAPI::Result<void> result = transitionDefault.Modify ([&](TransitionDefault::Modifier& modifier) {
+        if (hasTable) {
+            settersSucceeded &= modifier.SetPreferenceTable (RoutingParameterTableIdFromString (preferenceTableIdStr)).IsOk ();
+        }
+        if (hasAngle) {
+            settersSucceeded &= modifier.SetAngle (angle).IsOk ();
+        }
     });
-    return settersSucceeded;
+    return settersSucceeded && result.IsOk ();
+}
+
+// The angle a transition parameters object asks for, if any.
+static std::optional<double> RequestedTransitionAngle (const GS::ObjectState* parameters)
+{
+    double angle = 0.0;
+    if (parameters != nullptr && parameters->Get ("angle", angle)) {
+        return angle;
+    }
+    return std::nullopt;
+}
+
+// Whether a transition default has the asked angle. It is read back because a setter can answer OK and
+// keep the old value.
+static bool TransitionHasAngle (const TransitionDefault& transitionDefault, const std::optional<double>& angle)
+{
+    if (!angle.has_value ()) {
+        return true;
+    }
+    const auto current = RoutingParameterValueOf (transitionDefault.GetAngle ());
+    return current.has_value () && std::abs (current.value () - angle.value ()) < 1e-6;
 }
 #endif
 
@@ -330,6 +365,15 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
     if (!settersSucceeded) {
         return CreateFailedExecutionResult (APIERR_GENERAL, "Some routing parameters of the routing element could not be set.");
     }
+#ifdef ServerMainVers_2900
+    const std::optional<double> angle = RequestedTransitionAngle (nodeParameters != nullptr ? nodeParameters->Get ("transition") : nullptr);
+    if (angle.has_value ()) {
+        ACAPI::Result<RoutingElement> changedRoute = RoutingElement::Get (elementId);
+        if (changedRoute.IsErr () || !TransitionHasAngle (changedRoute->GetRoutingNodeDefaultParameters ().GetTransitionDefault (), angle)) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the transition angle but the route kept its old angle.");
+        }
+    }
+#endif
     return CreateSuccessfulExecutionResult ();
 }
 
@@ -367,6 +411,13 @@ static GS::ObjectState SetRoutingParametersOfRoutingNode (const ACAPI::MEP::Uniq
     }
     if (!settersSucceeded) {
         return CreateFailedExecutionResult (APIERR_GENERAL, "Some routing parameters of the routing node could not be set.");
+    }
+    const std::optional<double> angle = RequestedTransitionAngle (transitionParameters);
+    if (angle.has_value ()) {
+        ACAPI::Result<RoutingNode> changedNode = RoutingNode::Get (elementId);
+        if (changedNode.IsErr () || !TransitionHasAngle (changedNode->GetTransitionDefaultParameters (), angle)) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the transition angle but the node kept its old angle.");
+        }
     }
     return CreateSuccessfulExecutionResult ();
 }
@@ -662,6 +713,10 @@ GS::Optional<GS::UniString> SetMEPRoutingParametersCommand::GetInputParametersSc
                                 "transition": {
                                     "type": "object",
                                     "properties": {
+                                        "angle": {
+                                            "type": "number",
+                                            "description": "The transition angle in degrees, 1 to 89. It sets the length of the transitions Archicad makes from then on on a duct or cable carrier route: the largest half size step times the tangent of the angle. Archicad refuses it for pipes."
+                                        },
                                         "preferenceTableId": {
                                             "$ref": "#/Guid",
                                             "description": "A transition preference table, as returned by GetMEPPreferenceTables."
@@ -710,6 +765,10 @@ GS::Optional<GS::UniString> SetMEPRoutingParametersCommand::GetInputParametersSc
                             "type": "object",
                             "description": "The transition parameters of a routing node (RoutingNode::Modifier::SetTransitionDefaultParameters). Archicad 29 or newer.",
                             "properties": {
+                                "angle": {
+                                    "type": "number",
+                                    "description": "The transition angle in degrees, 1 to 89. It sets the length of the transitions Archicad makes from then on on a duct or cable carrier route: the largest half size step times the tangent of the angle. Archicad refuses it for pipes."
+                                },
                                 "preferenceTableId": {
                                     "$ref": "#/Guid",
                                     "description": "A transition preference table, as returned by GetMEPPreferenceTables."
