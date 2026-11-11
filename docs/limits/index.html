@@ -45,7 +45,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="wrap nav">
-        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/favicon.svg" alt="" width="30" height="30">Tapir</a>
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/tapir_mark_moss.svg" alt="" width="30" height="30">Tapir</a>
         <nav class="site-nav" aria-label="Site"><ul>
             <li><a href="../start/">Get started</a></li>
             <li><a href="../docs/" aria-current="page">Docs</a></li>
@@ -112,6 +112,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2365">#2365</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the joint type (Vertical Cut and the others) and the dx offset of a stair structure</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_StairStructureType</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30) holds <code>structType</code>, <code>bottomType</code>, thicknesses, <code>role</code>, <code>side</code>, <code>isLanding</code>, <code>sequenceNumber</code>, <code>subElemId</code> and <code>API_SideStairStructData</code> or <code>API_MonolithStairStructData</code>; no field, enum or function for the joint type or dx. <code>GetGDLParametersOfElements</code> on stair structure sub-elements fails in Archicad 29 build 3200 (&ldquo;Failed to get parameters of element&rdquo;).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2536">#2536</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read which slab or stair edge a railing is linked to, or link a railing to one</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the slab's outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.</td>
@@ -124,6 +131,13 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> has <code>isAutoOnStoryVisibility</code> and <code>visibility</code> (<code>APIdefs_Elements.h</code>, AC27 and AC29), but Archicad 29 keeps <code>isAutoOnStoryVisibility</code> true after <code>ACAPI_Element_Change</code> (with and without the railing&rsquo;s memo) and <code>ACAPI_Element_ChangeParameters</code>, and then ignores <code>visibility</code>. Archicad 30 is untested.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> holds only <code>head</code>, <code>linkToSettings</code>, <code>defNode</code>, <code>defSegment</code>, <code>visibility</code>, <code>isAutoOnStoryVisibility</code>, <code>nVertices</code>, <code>referenceLinePen</code>, <code>contourPen</code>, <code>nNodes</code>, <code>nSegments</code> and <code>bottomOffset</code>; neither it nor <code>API_RailingSegmentType</code>, <code>API_RailingNodeType</code> and their post, rail, panel and baluster types has a break mark, symbol component, symbol override or 2D attribute field (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). The break mark fields (<code>breakLinePositionType</code>, <code>breakLineDistance</code>, <code>breakLineAngle</code>) are only in <code>API_StairType</code>, and the <code>ACAPI::</code> modules have no railing API.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2573">#2573</a></td>
                         </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>

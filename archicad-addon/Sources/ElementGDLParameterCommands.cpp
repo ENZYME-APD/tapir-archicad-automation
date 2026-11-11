@@ -530,6 +530,74 @@ static bool SetParamValueString (API_ChangeParamType& changeParam,
     return false;
 }
 
+// The components of a railing that GetSubelementsOfHierarchicalElements lists (posts, rails,
+// balusters, panels ...). The DevKit documents no parameter session for them:
+// ACAPI_LibraryPart_OpenParameters fails on them (#2572), so their parameters are read from
+// their own element memo instead.
+static bool IsRailingComponentType (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_RailingToprailID:
+        case API_RailingHandrailID:
+        case API_RailingRailID:
+        case API_RailingPostID:
+        case API_RailingInnerPostID:
+        case API_RailingBalusterID:
+        case API_RailingPanelID:
+        case API_RailingSegmentID:
+        case API_RailingNodeID:
+        case API_RailingBalusterSetID:
+        case API_RailingPatternID:
+        case API_RailingToprailEndID:
+        case API_RailingHandrailEndID:
+        case API_RailingRailEndID:
+        case API_RailingToprailConnectionID:
+        case API_RailingHandrailConnectionID:
+        case API_RailingRailConnectionID:
+        case API_RailingEndFinishID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// The parameters of a railing component, from the APIMemoMask_AddPars memo of the component
+// itself. Without a parameter session nothing reports locks or the Parameter Script's possible
+// values, so isLocked is false and possibleValues is left out. Returns false when the component
+// has no parameters there.
+static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, GS::ObjectState& gdlParameters)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars) != NoError || memo.params == nullptr) {
+        return false;
+    }
+
+    const GSSize nParams = BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType);
+    if (nParams == 0) {
+        return false;
+    }
+
+    const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
+    for (GSIndex ii = 0; ii < nParams; ++ii) {
+        const API_AddParType& actParam = (*memo.params)[ii];
+        if (actParam.typeID == APIParT_Separator) {
+            continue;
+        }
+
+        GS::ObjectState gdlParameterDetails;
+        gdlParameterDetails.Add ("name", actParam.name);
+        gdlParameterDetails.Add ("displayName", GS::UniString (actParam.uDescname));
+        gdlParameterDetails.Add ("index", actParam.index);
+        gdlParameterDetails.Add ("type", ConvertAddParIDToString (actParam.typeID));
+        AddValueAndDescriptions (gdlParameterDetails, actParam);
+        gdlParameterDetails.Add ("isLocked", false);
+        AddParameterFlags (gdlParameterDetails, actParam);
+        parameterListAdder (gdlParameterDetails);
+    }
+    return true;
+}
+
 GetGDLParametersOfElementsCommand::GetGDLParametersOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -617,6 +685,17 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             if (err != NoError) {
                 ACAPI_LibraryPart_CloseParameters ();
             }
+        }
+
+        if (err != NoError && IsRailingComponentType (GetElemTypeId (apiElement.header))) {
+            GS::ObjectState gdlParameters;
+            if (AddMemoParametersOfRailingComponent (paramOwner.guid, gdlParameters)) {
+                elemGdlParameterListAdder (gdlParameters);
+            } else {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Archicad gives no GDL parameters for the railing component with guid %T: neither a parameter session nor its element memo has them.", APIGuidToString (paramOwner.guid).ToPrintf ());
+                elemGdlParameterListAdder (CreateErrorResponse (err, errorMsg));
+            }
+            continue;
         }
 
         if (err != NoError) {
@@ -819,15 +898,94 @@ static bool IsSameParameterValue (const API_AddParType& param1, const API_AddPar
     return true;
 }
 
+// Whether a given number is kept, compared the way GetGDLParametersOfElements reads the value:
+// integers as integers, booleans and light switches as on/off, the rest as real numbers.
+static bool IsGivenNumberKept (API_AddParID typeID, double kept, double given)
+{
+    switch (typeID) {
+        case APIParT_Integer:
+        case APIParT_PenCol:
+        case APIParT_LineTyp:
+        case APIParT_Mater:
+        case APIParT_FillPat:
+        case APIParT_BuildingMaterial:
+        case APIParT_Profile:
+            return static_cast<Int32> (kept) == static_cast<Int32> (given);
+        case APIParT_LightSw:
+        case APIParT_Boolean:
+            return (static_cast<Int32> (kept) == 0) == (static_cast<Int32> (given) == 0);
+        default:
+            return IsSameRealParameterValue (kept, given);
+    }
+}
+
+// A given string as it can be read back: cut to MaxStrValueLength - 1 characters, as
+// SetParamValueString and ApplyArrayParameterChanges cut it, and a simple value further to
+// API_UAddParStrLen - 1, because API_AddParType::value.uStr holds no more (array items have no
+// such limit).
+static GS::UniString ToWrittenString (const GS::UniString& given, USize maxLength = MaxStrValueLength)
+{
+    return GS::UniString (given.ToUStr (0, GS::Min (given.GetLength (), maxLength - 1)).Get ());
+}
+
+// Whether a parameter holds exactly the given value. A simple value is given with dim1 = dim2 = 0
+// and one item, an array value item by item in the order GetGDLParametersOfElements reports it (and
+// ApplyArrayParameterChanges writes it).
+static bool IsGivenValueKept (const API_AddParType& param, const SetGDLParametersOfElementsCommand::ArrayParameterChange& given)
+{
+    const bool isString = (given.typeID == APIParT_CString || given.typeID == APIParT_Title);
+    const USize givenCount = isString ? given.stringValues.GetSize () : given.numberValues.GetSize ();
+
+    if (given.dim1 == 0) {
+        if (param.typeMod != API_ParSimple || givenCount != 1) {
+            return false;
+        }
+        if (isString) {
+            return GS::UniString (param.value.uStr) == ToWrittenString (given.stringValues[0], static_cast<USize> (API_UAddParStrLen));
+        }
+        return IsGivenNumberKept (given.typeID, param.value.real, given.numberValues[0]);
+    }
+
+    if (param.typeMod != API_ParArray || param.value.array == nullptr) {
+        return false;
+    }
+    const USize itemCount = static_cast<USize> (param.dim1) * static_cast<USize> (param.dim2);
+    if (givenCount != itemCount) {
+        return false;
+    }
+
+    Int32 strPos = 0;
+    for (UIndex itemIndex = 0; itemIndex < itemCount; ++itemIndex) {
+        if (isString) {
+            // The same walk as AddValueString: consecutive null-terminated strings.
+            const GS::uchar_t* keptStr = (reinterpret_cast<GS::uchar_t*> (*param.value.array)) + strPos;
+            strPos += GS::ucslen32 (keptStr) + 1;
+            if (GS::UniString (keptStr) != ToWrittenString (given.stringValues[itemIndex])) {
+                return false;
+            }
+        } else if (!IsGivenNumberKept (given.typeID, ((double*) *param.value.array)[itemIndex], given.numberValues[itemIndex])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // ACAPI_Element_Change can succeed and still not keep a written parameter: Archicad overrides some
 // parameters from the element's own settings, e.g. AC_TextSize_1 of a symbol label keeps its value
 // (#1690). So the element's parameters are read back the way GetGDLParametersOfElements reads them,
 // and each written parameter is compared with the value that was committed. Must be called with no
 // parameter session open; it opens and closes its own.
+//
+// The committed value is not always the given one: ACAPI_LibraryPart_ChangeAParameter runs the
+// object's parameter script after every change (after every item of an array), and a script that
+// sets the parameter itself leaves the committed block, and so the read-back, at the old value
+// (#2396). So the read-back is also compared with the value given in the request (givenValues: the
+// simple values and whole arrays given, in the order they were written).
 static GSErrCode CheckWrittenParametersKept (
     API_ParamOwnerType& paramOwner,
     const API_GetParamsType& committedParams,
     const GS::Array<GS::String>& writtenNames,
+    const GS::Array<SetGDLParametersOfElementsCommand::ArrayParameterChange>& givenValues,
     const API_Guid& elemGuid,
     GS::UniString& errMessage)
 {
@@ -854,7 +1012,20 @@ static GSErrCode CheckWrittenParametersKept (
     for (const GS::String& name : writtenNames) {
         const API_AddParType* committedParam = FindParameterByName (committedParams, name.ToCStr ());
         const API_AddParType* readParam = FindParameterByName (readParams, name.ToCStr ());
-        if (committedParam == nullptr || readParam == nullptr || !IsSameParameterValue (*committedParam, *readParam)) {
+        bool kept = committedParam != nullptr && readParam != nullptr && IsSameParameterValue (*committedParam, *readParam);
+        if (kept && readParam != nullptr) {
+            // The last value given for a name is the one that should be kept.
+            const SetGDLParametersOfElementsCommand::ArrayParameterChange* givenValue = nullptr;
+            for (const SetGDLParametersOfElementsCommand::ArrayParameterChange& given : givenValues) {
+                if (given.name == name) {
+                    givenValue = &given;
+                }
+            }
+            if (givenValue != nullptr) {
+                kept = IsGivenValueKept (*readParam, *givenValue);
+            }
+        }
+        if (!kept) {
             if (!notKeptNames.IsEmpty ()) {
                 notKeptNames.Append (", ");
             }
@@ -867,7 +1038,7 @@ static GSErrCode CheckWrittenParametersKept (
         return NoError;
     }
 
-    errMessage = GS::UniString::Printf ("Archicad accepted the change of element with guid %T but did not keep the value of %T: reading the parameters back gives another value. Archicad may set these parameters from the element's own settings (e.g. the text settings of a label, changed with ModifyLabels). The other given parameters were written.", APIGuidToString (elemGuid).ToPrintf (), notKeptNames.ToPrintf ());
+    errMessage = GS::UniString::Printf ("Archicad accepted the change of element with guid %T but did not keep the given value of %T: reading the parameters back gives another value. Archicad may set these parameters from the element's own settings (e.g. the text settings of a label, changed with ModifyLabels), or the object's parameter script may set them. The other given parameters were written.", APIGuidToString (elemGuid).ToPrintf (), notKeptNames.ToPrintf ());
     return APIERR_GENERAL;
 }
 
@@ -1051,6 +1222,8 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                 // On a dry run, the parameter list before the first write, for the old values.
                 API_GetParamsType paramsBefore = {};
                 GS::Array<GS::String> writtenNames;
+                // The values given, in the order written, checked against the element once it is changed.
+                GS::Array<ArrayParameterChange> givenValues;
                 bool elementChanged = false;
                 err = ACAPI_LibraryPart_GetActParameters (&getParams);
                 if (err != NoError) {
@@ -1100,7 +1273,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                         if (elemGdlParametersItem.Get ("parameters", parameters)) {
                             // Legacy mode: old schema had nested list for parameters
                             for (const GS::ObjectState& parameter : parameters) {
-                                err = SetOneGDLParameter (parameter, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                                err = SetOneGDLParameter (parameter, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, givenValues, errMessage);
                                 if (err == NoError) {
                                     addWrittenName (parameter);
                                     err = ReadParametersAgain (getParams, elemGuid, errMessage);
@@ -1113,7 +1286,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                                 break;
                             }
                         } else {
-                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, errMessage);
+                            err = SetOneGDLParameter (elemGdlParametersItem, elemGuid, elemTypeId, getParams, gdlParametersTypeDictionary, gdlParametersIndexNameDictionary, xRatioPerA, yRatioPerB, pendingArrayChanges, givenValues, errMessage);
                             if (err == NoError) {
                                 addWrittenName (elemGdlParametersItem);
                                 err = ReadParametersAgain (getParams, elemGuid, errMessage);
@@ -1126,6 +1299,8 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
                     if (err == NoError && !pendingArrayChanges.IsEmpty ()) {
                         err = ApplyArrayParameterChanges (getParams, pendingArrayChanges, elemGuid, errMessage);
+                        // The arrays are written after the simple values, in the order given.
+                        givenValues.Append (pendingArrayChanges);
                     }
 
                     if (err == NoError && getParams.params == nullptr) {
@@ -1190,7 +1365,7 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                 }
                 ACAPI_LibraryPart_CloseParameters ();
                 if (elementChanged) {
-                    err = CheckWrittenParametersKept (paramOwner, getParams, writtenNames, elemGuid, errMessage);
+                    err = CheckWrittenParametersKept (paramOwner, getParams, writtenNames, givenValues, elemGuid, errMessage);
                 }
                 ACAPI_DisposeAddParHdl (&getParams.params);
                 ACAPI_DisposeAddParHdl (&paramsBefore.params);
@@ -1231,6 +1406,7 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     const GS::Optional<double>& xRatioPerA,
     const GS::Optional<double>& yRatioPerB,
     GS::Array<ArrayParameterChange>& pendingArrayChanges,
+    GS::Array<ArrayParameterChange>& givenValues,
     GS::UniString& errMessage)
 {
     API_ChangeParamType changeParam = {};
@@ -1366,6 +1542,46 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
             break;
     }
 
+    // The simple value given, in the unit of the parameter list (an Angle in radians, as given), to
+    // check after the change that it is kept (#2396). A and B are left out: they are stored in the
+    // stored size unit and follow the element's size. So is a single item of an array (index1).
+    const bool isAOrB = CHCompareCStrings (changeParam.name, "A") == 0 || CHCompareCStrings (changeParam.name, "B") == 0;
+    ArrayParameterChange givenValue;
+    givenValue.name = changeParam.name;
+    givenValue.typeID = gdlParametersTypeDictionary[changeParam.name];
+    if (!isArrayParameter && !isAOrB) {
+        switch (givenValue.typeID) {
+            case APIParT_CString:
+                givenValue.stringValues.Push (GS::UniString (changeParam.uStrValue));
+                break;
+            case APIParT_Angle: {
+                double givenAngle = 0.0;
+                if (parameter.Get (ParameterValueFieldName, givenAngle)) {
+                    givenValue.numberValues.Push (givenAngle);
+                }
+                break;
+            }
+            case APIParT_Integer:
+            case APIParT_PenCol:
+            case APIParT_LineTyp:
+            case APIParT_Mater:
+            case APIParT_FillPat:
+            case APIParT_BuildingMaterial:
+            case APIParT_Profile:
+            case APIParT_ColRGB:
+            case APIParT_Intens:
+            case APIParT_Length:
+            case APIParT_RealNum:
+            case APIParT_LightSw:
+            case APIParT_Boolean:
+                givenValue.numberValues.Push (changeParam.realValue);
+                break;
+            default:
+                // Titles and dictionaries have no value to check.
+                break;
+        }
+    }
+
     // A written A or B is read in the stored size unit (see GetStoredSizeScale).
     if (xRatioPerA.HasValue () && CHCompareCStrings (changeParam.name, "A") == 0) {
         changeParam.realValue *= *xRatioPerA;
@@ -1377,6 +1593,10 @@ SetGDLParametersOfElementsCommand::SetOneGDLParameter (
     if (err != NoError) {
         errMessage = GS::UniString::Printf ("Failed to change parameter %s of element with guid %T", changeParam.name, APIGuidToString (elemGuid).ToPrintf ());
         return err;
+    }
+
+    if (givenValue.stringValues.GetSize () + givenValue.numberValues.GetSize () == 1) {
+        givenValues.Push (givenValue);
     }
 
     return err;

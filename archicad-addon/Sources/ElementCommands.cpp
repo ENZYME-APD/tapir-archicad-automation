@@ -141,6 +141,41 @@ static void AddShellBaseSurfaces (const API_ShellBaseType& base, GS::ObjectState
     os.Add ("materialsChained", base.materialsChained);
 }
 
+// The custom surface of each edge of a Shell (#2433): the edges of its profile at the begin and
+// at the end, and the two edges along the surface from the first and the last profile point. Each
+// is an API_ContourEdgeData of the shell class's data, read into the ShellEdgeMaterials shape.
+static void AddShellEdgeMaterials (const API_ShellType& shell, GS::ObjectState& os)
+{
+    const API_ContourEdgeData* begEdge = nullptr;
+    const API_ContourEdgeData* endEdge = nullptr;
+    const API_ContourEdgeData* sideEdges = nullptr;
+    switch (shell.shellClass) {
+        case API_ExtrudedShellID:
+            begEdge = &shell.u.extrudedShell.begShapeEdgeData;
+            endEdge = &shell.u.extrudedShell.endShapeEdgeData;
+            sideEdges = shell.u.extrudedShell.extrudedEdgeDatas;
+            break;
+        case API_RevolvedShellID:
+            begEdge = &shell.u.revolvedShell.begShapeEdgeData;
+            endEdge = &shell.u.revolvedShell.endShapeEdgeData;
+            sideEdges = shell.u.revolvedShell.revolvedEdgeDatas;
+            break;
+        case API_RuledShellID:
+            begEdge = &shell.u.ruledShell.begShapeEdgeData;
+            endEdge = &shell.u.ruledShell.endShapeEdgeData;
+            sideEdges = shell.u.ruledShell.ruledEdgeDatas;
+            break;
+        default:
+            return;
+    }
+    GS::ObjectState edgeMaterials;
+    edgeMaterials.Add ("begShapeEdge", CreateOverriddenMaterialObjectState (begEdge->sideMaterial));
+    edgeMaterials.Add ("endShapeEdge", CreateOverriddenMaterialObjectState (endEdge->sideMaterial));
+    edgeMaterials.Add ("begSideEdge", CreateOverriddenMaterialObjectState (sideEdges[0].sideMaterial));
+    edgeMaterials.Add ("endSideEdge", CreateOverriddenMaterialObjectState (sideEdges[1].sideMaterial));
+    os.Add ("edgeMaterials", edgeMaterials);
+}
+
 static GS::UniString ShellBaseCutBodyTypeToString (API_ShellBaseCutBodyTypeID cutBodyType)
 {
     switch (cutBodyType) {
@@ -206,6 +241,66 @@ static void AddShellBaseFloorPlanAndSection (const API_ShellBaseType& base, GS::
     os.Add ("floorFill", floorFillOs);
 }
 
+// A shell's clipping contour or hole (#2431) in the ShellCutPolygon shape CreateShells and
+// ModifyShells take: the first sub-polygon without its closing point, the plane in the coordinates
+// of the shell's base plane (its axes are the columns of the 3x4 tmx), and the depth of a hole.
+static GS::ObjectState CreateShellCutPolygonObjectState (const API_ShellContourData& contour, bool isHole)
+{
+    GS::ObjectState os;
+    Int32 last = contour.poly.nCoords;
+    if (contour.pends != nullptr && contour.poly.nSubPolys > 0) {
+        last = (*contour.pends)[1];
+    }
+    const auto& coords = os.AddList<GS::ObjectState> ("coordinates");
+    if (contour.coords != nullptr) {
+        for (Int32 i = 1; i < last; ++i) {
+            coords (Create2DCoordinateObjectState ((*contour.coords)[i]));
+        }
+    }
+    if (contour.parcs != nullptr && contour.poly.nArcs > 0) {
+        const auto& arcs = os.AddList<GS::ObjectState> ("arcs");
+        for (Int32 i = 0; i < contour.poly.nArcs; ++i) {
+            const API_PolyArc& arc = (*contour.parcs)[i];
+            if (arc.begIndex >= 1 && arc.endIndex >= 1 && arc.begIndex <= last && arc.endIndex <= last) {
+                arcs (CreatePolyArcObjectState (arc));
+            }
+        }
+    }
+    const double* tmx = contour.plane.tmx;
+    os.Add ("plane", GS::ObjectState (
+        "origin", Create3DCoordinateObjectState (API_Coord3D { tmx[3], tmx[7], tmx[11] }),
+        "xAxis",  Create3DCoordinateObjectState (API_Coord3D { tmx[0], tmx[4], tmx[8] }),
+        "yAxis",  Create3DCoordinateObjectState (API_Coord3D { tmx[1], tmx[5], tmx[9] }),
+        "zAxis",  Create3DCoordinateObjectState (API_Coord3D { tmx[2], tmx[6], tmx[10] })));
+    if (isHole) {
+        os.Add ("depth", contour.height);
+    }
+    return os;
+}
+
+// The memo's shellContours hold the clipping contour first when hasContour, then numHoles holes.
+static void AddShellCutPolygonsFromMemo (const API_Element& elem, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
+        return;
+    }
+    const UIndex first = elem.shell.hasContour ? 1 : 0;
+    const USize count = elem.shell.numHoles + first;
+    const USize stored = memo.shellContours == nullptr ? 0 : (USize) (BMGetPtrSize (reinterpret_cast<GSConstPtr> (memo.shellContours)) / sizeof (API_ShellContourData));
+    if (stored < count) {
+        return;
+    }
+    if (elem.shell.hasContour) {
+        os.Add ("contour", CreateShellCutPolygonObjectState (memo.shellContours[0], false));
+    }
+    const auto& holes = os.AddList<GS::ObjectState> ("holes");
+    for (UIndex i = first; i < count; ++i) {
+        holes (CreateShellCutPolygonObjectState (memo.shellContours[i], true));
+    }
+}
+
 // The custom side surfaces of a Roof's polygon edges (APIMemoMask_SideMaterials), one per
 // edge in the order of polygonOutline and then of each hole: sideMaterials[i] belongs to the
 // edge from coords[i] to coords[i + 1], so index 0 and the closing vertex of each sub-polygon
@@ -244,8 +339,10 @@ static GS::UniString EdgeTrimTypeToString (API_EdgeTrimID sideType)
     }
 }
 
-// The cut of each edge of a Single-plane Roof's polygon (APIMemoMask_EdgeTrims), in the order
-// of edgeSideMaterials: edgeTrims[i] belongs to the edge from coords[i] to coords[i + 1] (#2363).
+// The cut of each edge of a Roof's polygon (APIMemoMask_EdgeTrims): the outline of a Single-plane
+// Roof, the contour of a Multi-plane Roof (#2435), whose memo.coords hold the contour polygon as the
+// DevKit's Plan_Dump example reads it. In the order of edgeSideMaterials: edgeTrims[i] belongs to
+// the edge from coords[i] to coords[i + 1] (#2363).
 static void AddEdgeTrimsFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -269,6 +366,48 @@ static void AddEdgeTrimsFromMemo (const API_Guid& guid, GS::ObjectState& os)
         trimOs.Add ("trimType", EdgeTrimTypeToString (trim.sideType));
         trimOs.Add ("angle", trim.sideAngle);
         edgeTrims (trimOs);
+    }
+}
+
+static GS::UniString RoofEdgeTypeToString (API_RoofEdgeTypeID edgeType)
+{
+    switch (edgeType) {
+        case APIRoofEdgeType_Ridge:     return "Ridge";
+        case APIRoofEdgeType_Valley:    return "Valley";
+        case APIRoofEdgeType_Gable:     return "Gable";
+        case APIRoofEdgeType_Hip:       return "Hip";
+        case APIRoofEdgeType_Eaves:     return "Eaves";
+        case APIRoofEdgeType_Peak:      return "Peak";
+        case APIRoofEdgeType_SideWall:  return "SideWall";
+        case APIRoofEdgeType_EndWall:   return "EndWall";
+        case APIRoofEdgeType_RTDome:    return "RoofTransitionDome";
+        case APIRoofEdgeType_RTHollow:  return "RoofTransitionHollow";
+        default:                        return "Undefined";
+    }
+}
+
+// The edge type of each edge of a Single-plane Roof's polygon (APIMemoMask_RoofEdgeTypes, the
+// Edge Type of the Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and
+// edgeTrims (#2436). A roof without stored edge types has every edge Undefined.
+static void AddRoofEdgeTypesFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_Polygon | APIMemoMask_RoofEdgeTypes) != NoError || memo.coords == nullptr) {
+        return;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord);
+    const GSSize nEdgeTypes = memo.roofEdgeTypes == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.roofEdgeTypes)) / sizeof (API_RoofEdgeTypeID);
+    const GSSize nPends = memo.pends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32);
+
+    const auto& edgeTypes = os.AddList<GS::UniString> ("edgeTypes");
+    GSIndex iPend = 1;
+    for (GSIndex i = 1; i < nCoords - 1; ++i) {
+        if (iPend < nPends && (*memo.pends)[iPend] == i) {
+            ++iPend;
+            continue;
+        }
+        edgeTypes (RoofEdgeTypeToString (i < nEdgeTypes ? memo.roofEdgeTypes[i] : APIRoofEdgeType_Undefined));
     }
 }
 
@@ -300,19 +439,95 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
     }
 }
 
+// The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
+static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
+{
+    GS::ObjectState os;
+    os.Add ("lengthType", scheme.lengthType == APIAssemblySegment_Proportional ? "Proportional" : "Fixed");
+    os.Add ("fixedLength", scheme.fixedLength);
+    os.Add ("lengthProportion", scheme.lengthProportion);
+    return os;
+}
+
+// The cross section, taper and length of a beam segment (#2551). scheme is nullptr when the beam
+// has no scheme for the segment.
+static GS::ObjectState CreateBeamSegmentGeometryObjectState (const API_AssemblySegmentData& segment, const API_AssemblySegmentSchemeData* scheme)
+{
+    GS::ObjectState os;
+    os.Add ("structureType", StructureTypeToString (segment.modelElemStructureType));
+    os.Add ("width", segment.nominalWidth);
+    os.Add ("height", segment.nominalHeight);
+    os.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+    os.Add ("circleBased", segment.circleBased);
+    if (segment.modelElemStructureType == API_BasicStructure) {
+        os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
+    } else if (segment.modelElemStructureType == API_ProfileStructure) {
+        os.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
+    }
+    os.Add ("isHomogeneous", segment.isHomogeneous);
+    os.Add ("endWidth", segment.endWidth);
+    os.Add ("endHeight", segment.endHeight);
+    os.Add ("isEndWidthAndHeightLinked", segment.isEndWidthAndHeightLinked);
+    if (scheme != nullptr) {
+        os.Add ("length", CreateAssemblySegmentLengthObjectState (*scheme));
+    }
+    return os;
+}
+
+// The segments of a Beam and their length schemes, in the order of the beam (#2551).
+static bool GetBeamSegmentsMemo (const API_Guid& beamGuid, API_ElementMemo& memo, GSSize& nSegments, GSSize& nSchemes)
+{
+    nSegments = 0;
+    nSchemes = 0;
+    if (ACAPI_Element_GetMemo (beamGuid, &memo, APIMemoMask_BeamSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.beamSegments == nullptr) {
+        return false;
+    }
+    nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    if (memo.assemblySegmentSchemes != nullptr) {
+        nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+    }
+    return true;
+}
+
+// The index of a BeamSegment in its beam and its length (#2551).
+static void AddBeamSegmentIndexAndLength (const API_BeamSegmentType& beamSegment, GS::ObjectState& os)
+{
+    if (beamSegment.owner == APINULLGuid) {
+        return;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSSize nSegments = 0;
+    GSSize nSchemes = 0;
+    if (!GetBeamSegmentsMemo (beamSegment.owner, memo, nSegments, nSchemes)) {
+        return;
+    }
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        if (memo.beamSegments[i].head.guid == beamSegment.head.guid) {
+            os.Add ("segmentIndex", static_cast<Int32> (i));
+            if (i < nSchemes) {
+                os.Add ("length", CreateAssemblySegmentLengthObjectState (memo.assemblySegmentSchemes[i]));
+            }
+            return;
+        }
+    }
+}
+
 // The surfaces of a Beam or Column are kept on each of its segments (#1672).
 static void AddBeamSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_BeamSegment) != NoError || memo.beamSegments == nullptr) {
+    GSSize nSegments = 0;
+    GSSize nSchemes = 0;
+    if (!GetBeamSegmentsMemo (guid, memo, nSegments, nSchemes)) {
         return;
     }
-    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
     const auto& segments = os.AddList<GS::ObjectState> ("segments");
     for (GSIndex i = 0; i < nSegments; ++i) {
         const API_BeamSegmentType& segment = memo.beamSegments[i];
         GS::ObjectState segmentOs;
+        segmentOs.Add ("geometry", CreateBeamSegmentGeometryObjectState (segment.assemblySegmentData, i < nSchemes ? &memo.assemblySegmentSchemes[i] : nullptr));
         segmentOs.Add ("leftMaterial", CreateOverriddenMaterialObjectState (segment.leftMaterial));
         segmentOs.Add ("topMaterial", CreateOverriddenMaterialObjectState (segment.topMaterial));
         segmentOs.Add ("rightMaterial", CreateOverriddenMaterialObjectState (segment.rightMaterial));
@@ -2661,6 +2876,17 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("polyCanChange", elem.wall.polyCanChange);
                 typeSpecificDetails.Add ("materialsChained", elem.wall.materialsChained);
                 typeSpecificDetails.Add ("logHeight", elem.wall.logHeight);
+                {
+                    GS::ObjectState logDetailsOS;
+                    logDetailsOS.Add ("startWithHalfLog", (elem.wall.beamFlags & APIWBeam_HalfLog) != 0);
+                    logDetailsOS.Add ("squareLogs", (elem.wall.beamFlags & APIWBeam_QuadricLog) != 0);
+                    logDetailsOS.Add ("roundedOnRightSide", (elem.wall.beamFlags & APIWBeam_RightLog) != 0);
+                    logDetailsOS.Add ("roundedOnLeftSide", (elem.wall.beamFlags & APIWBeam_LeftLog) != 0);
+                    logDetailsOS.Add ("radiusFromOppositeSide", (elem.wall.beamFlags & APIWBeam_Stretched) != 0);
+                    logDetailsOS.Add ("referenceSideSurfaceOnHorizontalEdges", (elem.wall.beamFlags & APIWBeam_RefMater) != 0);
+                    logDetailsOS.Add ("oppositeSideSurfaceOnHorizontalEdges", (elem.wall.beamFlags & APIWBeam_OppMater) != 0);
+                    typeSpecificDetails.Add ("logDetails", logDetailsOS);
+                }
                 typeSpecificDetails.Add ("hasWindow", elem.wall.hasWindow);
                 typeSpecificDetails.Add ("hasDoor", elem.wall.hasDoor);
                 break;
@@ -2716,6 +2942,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else if (segment.modelElemStructureType == API_ProfileStructure) {
                     typeSpecificDetails.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
                 }
+                typeSpecificDetails.Add ("isHomogeneous", segment.isHomogeneous);
+                typeSpecificDetails.Add ("endWidth", segment.endWidth);
+                typeSpecificDetails.Add ("endHeight", segment.endHeight);
+                typeSpecificDetails.Add ("isEndWidthAndHeightLinked", segment.isEndWidthAndHeightLinked);
+                AddBeamSegmentIndexAndLength (elem.beamSegment, typeSpecificDetails);
             } break;
 
             case API_SlabID:
@@ -3213,6 +3444,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("segmentIndex", elem.cwPanel.segmentID);
                 typeSpecificDetails.Add ("className", GS::UniString (elem.cwPanel.className));
+                typeSpecificDetails.Add ("classIndex", elem.cwPanel.classID == APICWPanelClass_Customized ? -1 : static_cast<Int32> (elem.cwPanel.classID));
                 AddCurtainWallHomeStoryLevel (elem.cwPanel.owner, stories, typeSpecificDetails);
             } break;
 
@@ -3346,8 +3578,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_RoofID:
                 AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
+                AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
                 if (elem.roof.roofClass == API_PlaneRoofID) {
-                    AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
+                    AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
                 }
                 break;
 
@@ -3367,7 +3600,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else {
                     typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
                 }
+                // The surfaces, as the roof's: top and bottom are the two faces of the
+                // shell, side its edges (#2433). ModifyShells writes them.
+                AddShellBaseSurfaces (base, typeSpecificDetails);
+                AddShellEdgeMaterials (elem.shell, typeSpecificDetails);
                 AddShellBaseFloorPlanAndSection (base, typeSpecificDetails);
+                AddShellCutPolygonsFromMemo (elem, typeSpecificDetails);
                 AddShellGeometry (elem, typeSpecificDetails);
             } break;
 
@@ -9107,9 +9345,34 @@ GS::ObjectState ScaleElementsCommand::Execute (const GS::ObjectState& parameters
                 continue;
             }
 
+            // Resize scales a beam's absolute elevation by the factor too (#2566), while walls,
+            // columns and slabs keep theirs, so the beam's level is read here and restored below.
+            API_Element beamBefore = {};
+            if (typeId == API_BeamID) {
+                beamBefore.header.guid = elemGuid;
+                if (ACAPI_Element_Get (&beamBefore) != NoError) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADID, "Failed to read the beam before scaling it."));
+                    continue;
+                }
+            }
+
             changeReporter.Add (elemGuid);
             GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
-            const GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
+            GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
+            if (err == NoError && typeId == API_BeamID) {
+                API_Element beamAfter = {};
+                beamAfter.header.guid = elementsToEdit.IsEmpty () ? elemGuid : elementsToEdit[0].guid;
+                err = ACAPI_Element_Get (&beamAfter);
+                if (err == NoError && (beamAfter.header.floorInd != beamBefore.header.floorInd || std::abs (beamAfter.beam.level - beamBefore.beam.level) > 1e-9)) {
+                    API_Element mask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (mask);
+                    beamAfter.header.floorInd = beamBefore.header.floorInd;
+                    beamAfter.beam.level = beamBefore.beam.level;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, level);
+                    err = ACAPI_Element_Change (&beamAfter, &mask, nullptr, 0, true);
+                }
+            }
             if (err != NoError) {
                 const GS::UniString errorMsg = GS::UniString::Printf ("Failed to scale element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
                 executionResults (CreateFailedExecutionResult (err, errorMsg));

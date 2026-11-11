@@ -98,6 +98,9 @@
         'Commit, issue e pull request, e messaggi su Discord al mese, impilati, con il numero di membri di Discord come linea, da {first} a {last}. La tabella sotto riporta tutti i numeri.',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'gen feb mar apr mag giu lug ago set ott nov dic',
     'Growth': 'Crescita',
+    'Total': 'Totale',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        'Grafico della crescita. Le frecce sinistra e destra leggono i numeri mese per mese, Home e Fine saltano al primo e all’ultimo mese, Esc li nasconde.',
     'Growth since <em>2022.</em>': 'La crescita dal <em>2022.</em>',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Tutto quello che succede intorno a Tapir ogni mese, dal primo commit in Enzyme a oggi. Si raccolgono solo numeri, mai il testo di un messaggio.',

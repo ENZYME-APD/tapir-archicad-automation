@@ -1,7 +1,9 @@
 """Creates a multi-plane and a single-plane roof, then changes both with ModifyRoofs.
 
 The multi-plane roof is raised and gets a new slope and eaves overhang. The single-plane roof gets a
-steeper angle, a new pivot line and a wider outline. Only the given fields change. Angles are in radians.
+steeper angle, a new pivot line and a wider outline, and then the Edge Type of each of its edges
+(edgeTypes, which schedules use, e.g. for the eaves length), one item per edge in the order
+GetDetailsOfElements reports them. Only the given fields change. Angles are in radians.
 """
 import aclib
 import math
@@ -27,5 +29,11 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyRoofs', {'roofsWithDetails': [{
     'angle': math.radians (25),
     'pivotLine': {'begCoordinate': {'x': 12.0, 'y': -1.0}, 'endCoordinate': {'x': 18.0, 'y': -1.0}},
     'polygonOutline': [{'x': 12.0, 'y': -1.0}, {'x': 18.0, 'y': -1.0}, {'x': 18.0, 'y': 5.0}, {'x': 12.0, 'y': 5.0}]
+}]}))
+
+# Edge 0 is the pivot line side (eaves), edge 2 the ridge, edges 1 and 3 the gables.
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyRoofs', {'roofsWithDetails': [{
+    'elementId': roofs[1]['elementId'],
+    'edgeTypes': ['Eaves', 'Gable', 'Ridge', 'Gable']
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': roofs, 'fields': ['details']})
