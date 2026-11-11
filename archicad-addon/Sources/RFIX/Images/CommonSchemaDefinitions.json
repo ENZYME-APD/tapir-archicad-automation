@@ -13424,6 +13424,51 @@
             "defaultWitnessVal"
         ]
     },
+    "StairBaseLineEdge": {
+        "type": "object",
+        "properties": {
+            "segmentType": {
+                "type": "string",
+                "enum": [
+                    "Flight",
+                    "Landing",
+                    "DividedLanding"
+                ],
+                "description": "Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentType"
+        ]
+    },
+    "StairBaseLineVertex": {
+        "type": "object",
+        "properties": {
+            "turnType": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Landing",
+                    "Winder",
+                    "DividedLanding"
+                ],
+                "description": "The turn at this point. The first and last points take None."
+            },
+            "minLandingStartEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset)."
+            },
+            "minLandingEndEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "turnType"
+        ]
+    },
     "TextDetails": {
         "type": "object",
         "properties": {
