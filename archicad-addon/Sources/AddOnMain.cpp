@@ -1103,7 +1103,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateSlabsCommand> (
             elementCommands, "1.0.3",
             "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; "
-            "settings not given come from the Slab tool defaults or the favorite. Not written by either command: the surface of a single edge, and the cut fill pens before Archicad 27; "
+            "settings not given come from the Slab tool defaults or the favorite. The Edge Angle and the surface of single edges are written afterwards with ModifySlabs (edgeTrim, edgeTrims, edgeSideMaterials). Not written by either command: the cut fill pens before Archicad 27; "
             "of the floor fill orientation Archicad applies only the type through the API."
         );
         err |= RegisterCommand<CreateWindowsCommand> (
@@ -1292,7 +1292,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifySlabsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied."
+            "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied."
         );
         err |= RegisterCommand<ModifyColumnsCommand> (
             elementCommands, "1.4.0",

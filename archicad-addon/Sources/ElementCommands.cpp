@@ -301,7 +301,7 @@ static void AddShellCutPolygonsFromMemo (const API_Element& elem, GS::ObjectStat
     }
 }
 
-// The custom side surfaces of a Roof's polygon edges (APIMemoMask_SideMaterials), one per
+// The custom side surfaces of a Roof's or Slab's polygon edges (APIMemoMask_SideMaterials), one per
 // edge in the order of polygonOutline and then of each hole: sideMaterials[i] belongs to the
 // edge from coords[i] to coords[i + 1], so index 0 and the closing vertex of each sub-polygon
 // (the pends) carry no edge, the way AddPolyToMemo (ElementCreationCommands.cpp) fills them (#1672).
@@ -339,10 +339,10 @@ static GS::UniString EdgeTrimTypeToString (API_EdgeTrimID sideType)
     }
 }
 
-// The cut of each edge of a Roof's polygon (APIMemoMask_EdgeTrims): the outline of a Single-plane
-// Roof, the contour of a Multi-plane Roof (#2435), whose memo.coords hold the contour polygon as the
-// DevKit's Plan_Dump example reads it. In the order of edgeSideMaterials: edgeTrims[i] belongs to
-// the edge from coords[i] to coords[i + 1] (#2363).
+// The cut of each edge of a Roof's or a Slab's polygon (APIMemoMask_EdgeTrims): the outline of a
+// Single-plane Roof or a Slab (#2562), the contour of a Multi-plane Roof (#2435), whose memo.coords
+// hold the contour polygon as the DevKit's Plan_Dump example reads it. In the order of
+// edgeSideMaterials: edgeTrims[i] belongs to the edge from coords[i] to coords[i + 1] (#2363).
 static void AddEdgeTrimsFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -2973,6 +2973,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("floorFill", floorFillOs);
                 }
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+                AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
+                AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_ZoneID:
