@@ -13593,7 +13593,7 @@
             },
             "box": {
                 "$ref": "#/BoundingBox2D",
-                "description": "The box the picture fills, in model units (API_PictureType::destBox)."
+                "description": "The box the picture is drawn in, in model units, before its rotation by angle. For an unmirrored picture this is API_PictureType::destBox; a mirrored picture is drawn one width away from its stored destBox (along the rotated x axis), and this box is the drawn one, so a mirrored and an unmirrored picture drawn at the same place report the same box."
             },
             "width": {
                 "type": "number",

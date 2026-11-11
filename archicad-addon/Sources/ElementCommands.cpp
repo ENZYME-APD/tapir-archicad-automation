@@ -3115,14 +3115,25 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 const API_PictureType& picture = elem.picture;
                 typeSpecificDetails.Add ("name", GS::UniString (picture.pictName));
                 typeSpecificDetails.Add ("mimeType", GS::UniString (picture.mime));
+                const double pictureWidth = picture.destBox.xMax - picture.destBox.xMin;
+                const double pictureHeight = picture.destBox.yMax - picture.destBox.yMin;
+                // A mirrored picture is mirrored to the local vertical axis through destBox.xMin, so
+                // Archicad draws it one width to the left of destBox (along the rotated x axis when
+                // the picture is rotated). Report the box it is drawn in, as for an unmirrored one.
+                double boxShiftX = 0.0;
+                double boxShiftY = 0.0;
+                if (picture.mirrored) {
+                    boxShiftX = -pictureWidth * std::cos (picture.rotAngle);
+                    boxShiftY = -pictureWidth * std::sin (picture.rotAngle);
+                }
                 GS::ObjectState boxOS;
-                boxOS.Add ("xMin", picture.destBox.xMin);
-                boxOS.Add ("yMin", picture.destBox.yMin);
-                boxOS.Add ("xMax", picture.destBox.xMax);
-                boxOS.Add ("yMax", picture.destBox.yMax);
+                boxOS.Add ("xMin", picture.destBox.xMin + boxShiftX);
+                boxOS.Add ("yMin", picture.destBox.yMin + boxShiftY);
+                boxOS.Add ("xMax", picture.destBox.xMax + boxShiftX);
+                boxOS.Add ("yMax", picture.destBox.yMax + boxShiftY);
                 typeSpecificDetails.Add ("box", boxOS);
-                typeSpecificDetails.Add ("width", picture.destBox.xMax - picture.destBox.xMin);
-                typeSpecificDetails.Add ("height", picture.destBox.yMax - picture.destBox.yMin);
+                typeSpecificDetails.Add ("width", pictureWidth);
+                typeSpecificDetails.Add ("height", pictureHeight);
                 typeSpecificDetails.Add ("pixelWidth", static_cast<Int32> (picture.pixelSizeX));
                 typeSpecificDetails.Add ("pixelHeight", static_cast<Int32> (picture.pixelSizeY));
                 typeSpecificDetails.Add ("angle", picture.rotAngle);
