@@ -9104,7 +9104,7 @@ static std::vector<GS::UniString> CarryOverRoutingElementIdentity (const ACAPI::
 }
 
 // A part Archicad deletes with the route and Place does not make again, so a rebuild would lose it:
-// a tee (Branch) at either end, tested in the bench (fork #24), or a take-off on one of its segments.
+// a tee (Branch) at either end, or a take-off on one of its segments.
 static std::optional<GS::UniString> FindPartDeletedWithRoute (const RoutingElement& routingElement, const RoutingElementIdentity& identity)
 {
     for (const ACAPI::MEP::UniqueID& connectedId : identity.connectedElementIds) {
