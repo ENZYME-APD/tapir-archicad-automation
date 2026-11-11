@@ -81,6 +81,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("pivotLine", pivotLine);
     } else {
         os.Add ("eavesOverhang", roof.u.polyRoof.eavesOverHang);
+        os.Add ("overhangType", roof.u.polyRoof.overHangType == API_ManualOverhang ? "Manual" : "Offset");
         const auto& levels = os.AddList<GS::ObjectState> ("levels");
         for (short i = 0; i < roof.u.polyRoof.levelNum && i < 16; ++i) {
             GS::ObjectState level;
