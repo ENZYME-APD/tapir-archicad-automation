@@ -119,6 +119,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2536">#2536</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change the baseline of an existing stair (move a flight end, a landing or a winder) and keep its GUID</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Recreate the stair on the new baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a>, which keeps its settings, Element ID, classifications, categories, properties and solid element operations, and returns the old and the new GUID. Its labels are lost.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The table of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>) does not list <code>API_StairID</code> among the types whose geometry or memo can change; there is no memo mask for <code>stairBaseLine</code> (only <code>APIMemoMask_StairRiser</code>, <code>StairTread</code> and <code>StairStructure</code>), and <code>ACAPI_Element_ChangeMemo</code> takes only <code>APIMemoMask_Polygon</code> (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2532">#2532</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read which slab or stair edge a railing is linked to, or link a railing to one</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the slab's outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.</td>
