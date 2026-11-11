@@ -9,21 +9,67 @@
         "stairsData": [
           {
             "id": "TAPIR-RECREATE-2532",
-            "baseLinePoints": [{"x": 710.0, "y": 700.0}, {"x": 713.455, "y": 700.0}, {"x": 713.455, "y": 701.39}, {"x": 710.0, "y": 701.39}],
+            "baseLinePoints": [
+              {
+                "x": 710.0,
+                "y": 700.0
+              },
+              {
+                "x": 713.455,
+                "y": 700.0
+              },
+              {
+                "x": 713.455,
+                "y": 701.39
+              },
+              {
+                "x": 710.0,
+                "y": 701.39
+              }
+            ],
             "zCoordinate": 0.0,
             "floorIndex": 0,
             "totalHeight": 2.7684,
             "riserHeight": 0.1538,
             "treadDepth": 0.24,
             "flightWidth": 1.15,
-            "baseLineEdges": [{"segmentType": "Flight"}, {"segmentType": "Landing"}, {"segmentType": "Flight"}],
-            "baseLineVertices": [{"turnType": "None"}, {"turnType": "Landing"}, {"turnType": "Landing"}, {"turnType": "None"}]
+            "baseLineEdges": [
+              {
+                "segmentType": "Flight"
+              },
+              {
+                "segmentType": "Landing"
+              },
+              {
+                "segmentType": "Flight"
+              }
+            ],
+            "baseLineVertices": [
+              {
+                "turnType": "None"
+              },
+              {
+                "turnType": "Landing"
+              },
+              {
+                "turnType": "Landing"
+              },
+              {
+                "turnType": "None"
+              }
+            ]
           }
         ]
       },
-      "save": {"s1": "elements[0].elementId.guid"},
+      "save": {
+        "s1": "elements[0].elementId.guid"
+      },
       "expect": [
-        {"path": "elements[0].elementId.guid", "exists": true, "name": "stair created"}
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "stair created"
+        }
       ]
     },
     {
@@ -33,41 +79,137 @@
       "params": {
         "stairs": [
           {
-            "elementId": {"guid": "${s1}"},
-            "baseLinePoints": [{"x": 710.0, "y": 700.0}, {"x": 713.455, "y": 700.0}, {"x": 713.455, "y": 701.39}, {"x": 710.5, "y": 701.39}],
-            "baseLineEdges": [{"segmentType": "Flight"}, {"segmentType": "Flight"}]
+            "elementId": {
+              "guid": "${s1}"
+            },
+            "baseLinePoints": [
+              {
+                "x": 710.0,
+                "y": 700.0
+              },
+              {
+                "x": 713.455,
+                "y": 700.0
+              },
+              {
+                "x": 713.455,
+                "y": 701.39
+              },
+              {
+                "x": 710.5,
+                "y": 701.39
+              }
+            ],
+            "baseLineEdges": [
+              {
+                "segmentType": "Flight"
+              },
+              {
+                "segmentType": "Flight"
+              }
+            ]
           }
         ]
       },
       "expect": [
-        {"path": "results", "len": 1, "name": "one result"},
-        {"path": "results[0].error.message", "exists": true, "name": "refused"}
+        {
+          "path": "results",
+          "len": 1,
+          "name": "one result"
+        },
+        {
+          "path": "results[0].error.message",
+          "exists": true,
+          "name": "refused"
+        }
       ]
     },
     {
-      "id": "[an element that is not a stair]",
+      "id": "a wall, which is not a stair",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 730.0,
+              "y": 700.0
+            },
+            "endCoordinate": {
+              "x": 733.0,
+              "y": 700.0
+            },
+            "zCoordinate": 0.0,
+            "height": 2.5,
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "wall created"
+        }
+      ]
+    },
+    {
+      "id": "[a wall instead of a stair]",
       "command": "RecreateStairs",
       "creates": false,
       "params": {
         "stairs": [
           {
-            "elementId": {"guid": "00000000-0000-0000-0000-00000000BEEF"},
-            "baseLinePoints": [{"x": 0.0, "y": 0.0}, {"x": 4.0, "y": 0.0}]
+            "elementId": {
+              "guid": "${w1}"
+            },
+            "baseLinePoints": [
+              {
+                "x": 0.0,
+                "y": 0.0
+              },
+              {
+                "x": 4.0,
+                "y": 0.0
+              }
+            ]
           }
         ]
       },
       "expect": [
-        {"path": "results[0].error.message", "exists": true, "name": "refused"}
+        {
+          "path": "results[0].error.message",
+          "contains": "not a Stair",
+          "name": "refused as not a stair"
+        }
       ]
     },
     {
       "id": "the refused baseline left the stair as it was",
       "command": "GetDetailsOfElements",
       "creates": false,
-      "params": {"elements": [{"elementId": {"guid": "${s1}"}}]},
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s1}"
+            }
+          }
+        ]
+      },
       "expect": [
-        {"path": "detailsOfElements[0].type", "eq": "Stair", "name": "old stair still there"},
-        {"path": "detailsOfElements[0].details.baseLinePoints[3].x", "approx": 710.0, "name": "with its old baseline"}
+        {
+          "path": "detailsOfElements[0].type",
+          "eq": "Stair",
+          "name": "old stair still there"
+        },
+        {
+          "path": "detailsOfElements[0].details.baseLinePoints[3].x",
+          "approx": 710.0,
+          "name": "with its old baseline"
+        }
       ]
     },
     {
@@ -77,39 +219,166 @@
       "params": {
         "stairs": [
           {
-            "elementId": {"guid": "${s1}"},
-            "baseLinePoints": [{"x": 710.0, "y": 700.0}, {"x": 713.455, "y": 700.0}, {"x": 713.455, "y": 701.39}, {"x": 710.5, "y": 701.39}],
-            "baseLineEdges": [{"segmentType": "Flight"}, {"segmentType": "Landing"}, {"segmentType": "Flight"}],
-            "baseLineVertices": [{"turnType": "None"}, {"turnType": "Landing"}, {"turnType": "Landing"}, {"turnType": "None"}]
+            "elementId": {
+              "guid": "${s1}"
+            },
+            "baseLinePoints": [
+              {
+                "x": 710.0,
+                "y": 700.0
+              },
+              {
+                "x": 713.455,
+                "y": 700.0
+              },
+              {
+                "x": 713.455,
+                "y": 701.39
+              },
+              {
+                "x": 710.5,
+                "y": 701.39
+              }
+            ],
+            "baseLineEdges": [
+              {
+                "segmentType": "Flight"
+              },
+              {
+                "segmentType": "Landing"
+              },
+              {
+                "segmentType": "Flight"
+              }
+            ],
+            "baseLineVertices": [
+              {
+                "turnType": "None"
+              },
+              {
+                "turnType": "Landing"
+              },
+              {
+                "turnType": "Landing"
+              },
+              {
+                "turnType": "None"
+              }
+            ]
           }
         ]
       },
-      "save": {"s2": "results[0].elementId.guid"},
+      "save": {
+        "s2": "results[0].elementId.guid"
+      },
       "expect": [
-        {"path": "results", "len": 1, "name": "one result"},
-        {"path": "results[0].oldElementId.guid", "eq": "${s1}", "name": "maps the old stair"},
-        {"path": "results[0].elementId.guid", "ne": "${s1}", "name": "to a new stair"},
-        {"path": "results[0].notCarriedOver", "len": 0, "name": "nothing was linked to it"}
+        {
+          "path": "results",
+          "len": 1,
+          "name": "one result"
+        },
+        {
+          "path": "results[0].oldElementId.guid",
+          "eq": "${s1}",
+          "name": "maps the old stair"
+        },
+        {
+          "path": "results[0].elementId.guid",
+          "ne": "${s1}",
+          "name": "to a new stair"
+        },
+        {
+          "path": "results[0].notCarriedOver",
+          "len": 0,
+          "name": "nothing was linked to it"
+        }
       ]
     },
     {
       "id": "read the new and the old stair",
       "command": "GetDetailsOfElements",
       "creates": false,
-      "params": {"elements": [{"elementId": {"guid": "${s2}"}}, {"elementId": {"guid": "${s1}"}}]},
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s2}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${s1}"
+            }
+          }
+        ]
+      },
       "expect": [
-        {"path": "detailsOfElements[0].type", "eq": "Stair"},
-        {"path": "detailsOfElements[0].id", "eq": "TAPIR-RECREATE-2532", "name": "the old Element ID"},
-        {"path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "the old story"},
-        {"path": "detailsOfElements[0].details.flightWidth", "approx": 1.15, "name": "the old flight width"},
-        {"path": "detailsOfElements[0].details.totalHeight", "approx": 2.7684, "name": "the old total height"},
-        {"path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 710.0, "name": "the baseline starts where it did"},
-        {"path": "detailsOfElements[0].details.baseLineEdges[1].segmentType", "eq": "Landing", "name": "the landing kept"},
-        {"path": "detailsOfElements[1].error", "exists": true, "name": "the old stair is deleted"}
+        {
+          "path": "detailsOfElements[0].type",
+          "eq": "Stair"
+        },
+        {
+          "path": "detailsOfElements[0].id",
+          "eq": "TAPIR-RECREATE-2532",
+          "name": "the old Element ID"
+        },
+        {
+          "path": "detailsOfElements[0].floorIndex",
+          "eq": 0,
+          "name": "the old story"
+        },
+        {
+          "path": "detailsOfElements[0].details.flightWidth",
+          "approx": 1.15,
+          "name": "the old flight width"
+        },
+        {
+          "path": "detailsOfElements[0].details.totalHeight",
+          "approx": 2.7684,
+          "name": "the old total height"
+        },
+        {
+          "path": "detailsOfElements[0].details.baseLinePoints[0].x",
+          "approx": 710.0,
+          "name": "the baseline starts where it did"
+        },
+        {
+          "path": "detailsOfElements[0].details.baseLinePoints[3].x",
+          "approx": 710.5,
+          "tol": 0.01,
+          "name": "the second flight ends at the new point"
+        },
+        {
+          "path": "detailsOfElements[0].details.baseLinePoints[3].y",
+          "approx": 701.39,
+          "tol": 0.01,
+          "name": "on the line of the second flight"
+        },
+        {
+          "path": "detailsOfElements[0].details.baseLineEdges[1].segmentType",
+          "eq": "Landing",
+          "name": "the landing kept"
+        },
+        {
+          "path": "detailsOfElements[1].error",
+          "exists": true,
+          "name": "the old stair is deleted"
+        }
       ]
     }
   ],
   "teardown": [
-    {"command": "DeleteElements", "params": {"elements": [{"elementId": {"guid": "${s2}"}}]}}
+    {
+      "command": "DeleteElements",
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s2}"
+            }
+          }
+        ]
+      }
+    }
   ]
 }
