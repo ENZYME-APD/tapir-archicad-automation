@@ -307,6 +307,16 @@
       "subgroup": "Log Details"
     },
     {
+      "get": "logDetails",
+      "set": "logDetails",
+      "apiMember": "API_WallType::beamFlags",
+      "apiDescription": "Log wall flags: half log start, square or curved logs on the right/left side, radius from the opposite side, reference/opposite side material on the horizontal edges.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": "Log Details"
+    },
+    {
       "get": "visibility",
       "set": "visibility",
       "apiMember": "API_WallType::visibility",

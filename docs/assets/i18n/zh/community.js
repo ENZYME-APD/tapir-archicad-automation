@@ -99,6 +99,9 @@
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': '1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月',
     '{month} {year}': '{year}年{month}',
     'Growth': '增长',
+    'Total': '合计',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        '增长图。左右方向键逐月读出数字，Home 和 End 跳到第一个月和最后一个月，Esc 隐藏数字。',
     'Growth since <em>2022.</em>': '自 <em>2022</em> 年以来的增长。',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         '每个月围绕 Tapir 发生的一切，从在 Enzyme 的第一次提交到今天。只统计数字，从不收集消息的内容。',

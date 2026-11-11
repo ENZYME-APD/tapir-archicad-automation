@@ -2,9 +2,9 @@
 gives its segment its own top and bottom surfaces, and moves it: a new reference line and its
 absolute elevation (zCoordinate, as in CreateBeams).
 
-Only the given fields change; holes replaces every hole of the beam. segments writes the surfaces
-of the segment given by segmentIndex (0 for a beam of one segment), in the shape
-GetDetailsOfElements returns them.
+Only the given fields change; holes replaces every hole of the beam. segments changes single
+segments, chosen by segmentIndex (0 for a beam of one segment): their surfaces, in the shape
+GetDetailsOfElements returns them, and, last, the taper of one segment.
 """
 import aclib
 
@@ -39,5 +39,16 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
     'begCoordinate': {'x': 1.0, 'y': 2.0},
     'endCoordinate': {'x': 7.0, 'y': 2.0},
     'zCoordinate': 2.5
+}]}))
+
+# segments changes single segments, picked by segmentIndex: here the first one is tapered to
+# half its height at its end. The other segments of a multi-segment beam stay as they are
+# (see Workflows/change_one_beam_segment.py).
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
+    'elementId': beam['elementId'],
+    'segments': [{
+        'segmentIndex': 0,
+        'geometry': {'isHomogeneous': False, 'isEndWidthAndHeightLinked': False, 'endWidth': 0.3, 'endHeight': 0.3}
+    }]
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [beam], 'fields': ['details']})
