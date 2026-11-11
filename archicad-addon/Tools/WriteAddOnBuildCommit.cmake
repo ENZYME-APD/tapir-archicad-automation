@@ -1,7 +1,7 @@
 # Writes OUTPUT_FILE, a header defining ADDON_BUILD_COMMIT: the short hash of the git commit
-# of SOURCE_DIR, which the About dialog shows after the version. It is empty when GIT_EXECUTABLE
-# is not set or SOURCE_DIR is not a git checkout (a source archive), so the build never fails
-# for it. Run on every build:
+# of SOURCE_DIR (7 characters, as GitHub shows commits), which the About dialog shows after the
+# version. It is empty when GIT_EXECUTABLE is not set or SOURCE_DIR is not a git checkout (a
+# source archive), so the build never fails for it. Run on every build:
 #   cmake -DGIT_EXECUTABLE=<git> -DSOURCE_DIR=<dir> -DOUTPUT_FILE=<header> -P WriteAddOnBuildCommit.cmake
 # The header is only rewritten when the commit changed, so an unchanged one recompiles nothing.
 
@@ -10,7 +10,7 @@ cmake_minimum_required (VERSION 3.17)
 set (buildCommit "")
 if (GIT_EXECUTABLE)
     execute_process (
-        COMMAND "${GIT_EXECUTABLE}" rev-parse --short=8 HEAD
+        COMMAND "${GIT_EXECUTABLE}" rev-parse --short=7 HEAD
         WORKING_DIRECTORY "${SOURCE_DIR}"
         RESULT_VARIABLE gitResult
         OUTPUT_VARIABLE gitOutput
