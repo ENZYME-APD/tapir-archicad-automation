@@ -98,6 +98,9 @@
         'हर महीने के कमिट, issues और pull requests, और Discord संदेश, एक के ऊपर एक, और Discord सदस्यों की संख्या एक रेखा के रूप में, {first} से {last} तक। नीचे की तालिका में हर संख्या है।',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'जन॰ फ़र॰ मार्च अप्रैल मई जून जुल॰ अग॰ सित॰ अक्तू॰ नव॰ दिस॰',
     'Growth': 'विकास',
+    'Total': 'कुल',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        'विकास chart। बाएँ और दाएँ arrow keys महीने-दर-महीने संख्याएँ पढ़ती हैं, Home और End पहले और आख़िरी महीने पर जाती हैं, Esc उन्हें छिपाती है।',
     'Growth since <em>2022.</em>': '<em>2022</em> से विकास।',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Enzyme में पहले कमिट से आज तक, हर महीने Tapir के आसपास जो कुछ होता है। सिर्फ़ संख्याएँ इकट्ठा की जाती हैं, किसी संदेश का टेक्स्ट कभी नहीं।',

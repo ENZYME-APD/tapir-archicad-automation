@@ -1,0 +1,116 @@
+{
+  "title": "Log wall details beyond logHeight: GetDetailsOfElements, CreateWalls and ModifyWalls (#2565)",
+  "minTapir": "2.0.1",
+  "minArchicad": "25",
+  "steps": [
+    {
+      "id": "log wall created with half log, square logs and the reference surface on the edges",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 940.0, "y": 760.0 },
+            "endCoordinate": { "x": 945.0, "y": 760.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "structureType": "Basic",
+            "thickness": 0.2,
+            "logHeight": 0.2,
+            "logDetails": {
+              "startWithHalfLog": true,
+              "squareLogs": true,
+              "roundedOnRightSide": false,
+              "roundedOnLeftSide": false,
+              "radiusFromOppositeSide": false,
+              "referenceSideSurfaceOnHorizontalEdges": true,
+              "oppositeSideSurfaceOnHorizontalEdges": false
+            }
+          }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "log wall created, logDetails accepted" }
+      ]
+    },
+    {
+      "id": "read the new log wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.logHeight", "approx": 0.2 },
+        { "path": "detailsOfElements[0].details.logDetails.startWithHalfLog", "eq": true },
+        { "path": "detailsOfElements[0].details.logDetails.squareLogs", "eq": true },
+        { "path": "detailsOfElements[0].details.logDetails.roundedOnRightSide", "eq": false },
+        { "path": "detailsOfElements[0].details.logDetails.roundedOnLeftSide", "eq": false },
+        { "path": "detailsOfElements[0].details.logDetails.radiusFromOppositeSide", "eq": false },
+        { "path": "detailsOfElements[0].details.logDetails.referenceSideSurfaceOnHorizontalEdges", "eq": true },
+        { "path": "detailsOfElements[0].details.logDetails.oppositeSideSurfaceOnHorizontalEdges", "eq": false }
+      ]
+    },
+    {
+      "id": "modify only some log details",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          {
+            "elementId": { "guid": "${w1}" },
+            "logDetails": {
+              "squareLogs": false,
+              "roundedOnRightSide": true,
+              "roundedOnLeftSide": true,
+              "radiusFromOppositeSide": true,
+              "referenceSideSurfaceOnHorizontalEdges": false,
+              "oppositeSideSurfaceOnHorizontalEdges": true
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "wall modified" }
+      ]
+    },
+    {
+      "id": "read the modified log wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.logHeight", "approx": 0.2, "name": "log height kept" },
+        { "path": "detailsOfElements[0].details.logDetails.startWithHalfLog", "eq": true, "name": "half log kept (not given)" },
+        { "path": "detailsOfElements[0].details.logDetails.squareLogs", "eq": false },
+        { "path": "detailsOfElements[0].details.logDetails.roundedOnRightSide", "eq": true },
+        { "path": "detailsOfElements[0].details.logDetails.roundedOnLeftSide", "eq": true },
+        { "path": "detailsOfElements[0].details.logDetails.radiusFromOppositeSide", "eq": true },
+        { "path": "detailsOfElements[0].details.logDetails.referenceSideSurfaceOnHorizontalEdges", "eq": false },
+        { "path": "detailsOfElements[0].details.logDetails.oppositeSideSurfaceOnHorizontalEdges", "eq": true }
+      ]
+    },
+    {
+      "id": "turn the half log off alone",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          { "elementId": { "guid": "${w1}" }, "logDetails": { "startWithHalfLog": false } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the log wall again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.logDetails.startWithHalfLog", "eq": false },
+        { "path": "detailsOfElements[0].details.logDetails.roundedOnRightSide", "eq": true, "name": "other flags kept" },
+        { "path": "detailsOfElements[0].details.logDetails.oppositeSideSurfaceOnHorizontalEdges", "eq": true, "name": "edge surface kept" }
+      ]
+    }
+  ]
+}
