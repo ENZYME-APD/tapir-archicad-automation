@@ -326,8 +326,16 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "height": {
                             "type": "number",
-                            "description": "Optional column height.",
+                            "description": "Optional explicit column height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or of the tool defaults. Cannot be combined with a non-zero relativeTopStory.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "relativeTopStory": {
+                            "type": "integer",
+                            "description": "Optional link of the column's top to another story, relative to its home story (1 is the story above); 0 means an explicit height. With a non-zero value Archicad computes the height from the story levels and topOffset. The linked story must exist. Cannot be combined with height. When omitted, the top link of the favorite or of the tool defaults is kept."
+                        },
+                        "topOffset": {
+                            "type": "number",
+                            "description": "Optional offset of the column's top from the level of the linked top story (negative is below it). Only has an effect when the top is linked (relativeTopStory non-zero, given here or kept from the favorite or the tool defaults)."
                         },
                         "axisRotationAngle": {
                             "type": "number",
@@ -413,9 +421,30 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     element.column.bottomOffset = floorIndexAndOffset.second;
     element.column.origoPos.x = apiCoordinate.x;
     element.column.origoPos.y = apiCoordinate.y;
-    if (parameters.Get ("height", element.column.height)) {
+
+    // The top of the column: an explicit height (relativeTopStory 0), or a link to a story
+    // relative to the home story with an offset from that story's level, as ModifyColumns
+    // writes them (#2552). A non-zero link and a height in one item are refused, because
+    // Archicad computes the height from the story levels once the top is linked.
+    double height = 0.0;
+    const bool hasHeight = parameters.Get ("height", height);
+    double relativeTopStory = 0.0;
+    const bool hasRelativeTopStory = parameters.Get ("relativeTopStory", relativeTopStory);
+    const short topStoryLink = static_cast<short> (relativeTopStory);
+    if (hasHeight && hasRelativeTopStory && topStoryLink != 0) {
+        return CreateErrorResponse (APIERR_BADPARS, "Do not give 'height' together with a non-zero 'relativeTopStory': a column linked to a story gets its height from the story levels and 'topOffset'.");
+    }
+    if (hasRelativeTopStory && topStoryLink != 0 && stories.find (static_cast<short> (element.header.floorInd + topStoryLink)) == stories.end ()) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("'relativeTopStory' %d links the column to story %d, which does not exist.", static_cast<int> (topStoryLink), static_cast<int> (element.header.floorInd + topStoryLink)));
+    }
+    if (hasHeight) {
+        element.column.height = height;
         element.column.relativeTopStory = 0;
     }
+    if (hasRelativeTopStory) {
+        element.column.relativeTopStory = topStoryLink;
+    }
+    parameters.Get ("topOffset", element.column.topOffset);
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
 
     GS::UniString coreAnchor;

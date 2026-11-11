@@ -49,6 +49,7 @@ without it (archicad-addon/Test/test_zones_to_walls_and_slabs.py).
 """
 
 import math
+import sys
 
 SCRIPT_NAME = "Zones to Walls and Slabs"
 EPSILON = 1e-6
@@ -791,8 +792,17 @@ def main() -> None:
     import tkinter as tk
     from tkinter import ttk
 
-    from utilities.archicad import ArchicadError, get_details_of_elements, get_elements, item_errors, run_tapir
-    from utilities.ui import ScriptWindow, make_tree, require_archicad
+    try:
+        from utilities.archicad import ArchicadError, get_details_of_elements, get_elements, item_errors, run_tapir
+        from utilities.ui import ScriptWindow, make_tree, require_archicad
+    except ModuleNotFoundError as error:
+        # The palette of a Tapir newer than 2.0.0 provides the helpers; an older one needs copies next to the script.
+        if (error.name or "").split(".")[0] not in ("utilities", "aclib"):
+            raise
+        sys.exit("Error: the Tapir helpers utilities and aclib were not found. Update the Tapir Add-On, or copy the "
+                 "utilities and aclib folders of builtin-scripts "
+                 "(https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts) next to this "
+                 "script.")
 
     class ZonesToWalls:
         def __init__(self):
