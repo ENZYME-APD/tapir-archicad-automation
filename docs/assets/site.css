@@ -851,3 +851,46 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 @media (max-width: 640px) {
     :root[data-spacing="compact"] section[aria-labelledby="written"] .teaser { padding-top: 15px; padding-bottom: 15px }
 }
+
+/* ------------------------------------------------------------------------------------------------------
+   Phones (#2714): below 640 px every page stacks its grids into one column, so the desktop's vertical
+   spacing made the pages much longer than their content. This tightens it in every look and mode: the
+   space between sections (the dimension line, the section padding and heading), the page heads, the
+   cards and grids, the timeline and the footer, and the largest headings. It comes after both looks'
+   rules, so it wins by order; the Display menu's Spacing Compact (above, more specific) still takes the
+   written tutorials' rows tighter. Text sizes are in rem, so the Display menu's Text size still scales them.
+   ------------------------------------------------------------------------------------------------------ */
+@media (max-width: 640px) {
+    .dim { padding-top: 24px }
+    .wrap > section, .page-body > section { padding-block: 28px 16px }
+    .page-body > section:first-child, .page-body > .dim + section { padding-top: 20px }
+    .page-body { padding-block: 24px 16px }
+    .sec-head { gap: 8px; margin-bottom: 20px }
+    .sec-head h2 { font-size: 1.75rem }
+    .sec-head p { font-size: 1rem }
+    .sec-head.ref { margin: 28px 0 16px }
+    .ref-sub { font-size: 1.375rem; margin: 28px 0 10px }
+    .page-head .wrap { padding-block: 28px 24px; gap: 12px }
+    .page-head h1, .page-head .h1 { font-size: 2.25rem }
+    .page-head p { font-size: 1rem }
+    .ways, .comm, .teasers, .doc-grid, .two, .share-steps ol, .uses, .videos { gap: 14px }
+    .detail { gap: 24px }
+    .detail > div { gap: 16px }
+    .way, .teaser { padding: 18px; gap: 10px }
+    .teaser h3, .comm .way h3 { font-size: 1.375rem }
+    .share-steps li { padding: 18px }
+    .share-steps li b { font-size: 2.25rem }
+    .video .text { padding: 14px 16px 16px }
+    .figures > div { padding: 16px }
+    .figures strong { font-size: 2.25rem }
+    .uses-grid li, .flow > div { padding: 16px }
+    .timeline > li { padding-block: 20px }
+    .timeline .n { font-size: 2.25rem }
+    .timeline h2, .timeline h3 { font-size: 1.375rem }
+    .prose > h3 { margin-top: 20px }
+    .lead-out { margin-top: 20px }
+    .site-footer { margin-top: 40px }
+    .tblock { margin-top: 20px }
+    .tblock > div { padding: 10px 12px }
+    .fine { padding-block: 10px 20px }
+}

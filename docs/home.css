@@ -117,7 +117,12 @@
     .plan-sheet { display: none }
 }
 @media (max-width: 640px) {
-    .hero .wrap { padding-block: 40px 48px; gap: 36px }
+    /* Tighter on phones (#2714, with the phone block at the end of site.css). */
+    .hero .wrap { padding-block: 28px 32px; gap: 28px }
+    .hero h1 { margin-top: 12px; font-size: 2.75rem }
+    .hero .lead { margin-top: 16px }
+    .hero .ctas { margin-top: 24px }
+    .try { gap: 24px }
     .plan-card { box-shadow: var(--shadow-plan-small) }
 }
 
