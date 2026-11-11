@@ -4957,7 +4957,8 @@
         "type": "string",
         "enum": [
             "Straight",
-            "Trapezoid"
+            "Trapezoid",
+            "Polygonal"
         ],
         "description": "The wall's plan outline shape, distinct from its cross section shape."
     },

@@ -41,6 +41,15 @@ GS::Optional<GS::UniString> CreateElementsCommandBase::GetRawResponseSchema () c
     })";
 }
 
+GS::Optional<GS::ObjectState> CreateElementsCommandBase::CreateElement (API_Element& element, API_ElementMemo& memo, const GS::ObjectState& /*parameters*/) const
+{
+    const GSErrCode err = ACAPI_Element_Create (&element, &memo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create new " + GetElementTypeNonLocalizedName (elemTypeID));
+    }
+    return {};
+}
+
 GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> dataArray;
@@ -189,9 +198,9 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             }
 
             const API_Element requestedElement = element;
-            err = ACAPI_Element_Create (&element, &memo);
-            if (err != NoError) {
-                elements (CreateErrorResponse (err, "Failed to create new " + elemTypeName));
+            const GS::Optional<GS::ObjectState> createError = CreateElement (element, memo, data);
+            if (createError.HasValue ()) {
+                elements (*createError);
                 continue;
             }
 

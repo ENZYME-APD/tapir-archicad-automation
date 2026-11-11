@@ -46,6 +46,11 @@ protected:
     // prepared it and the item's parameters, for what the create itself does not keep. An error
     // deletes the new element.
     virtual GSErrCode AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/, const GS::ObjectState& /*parameters*/) const { return NoError; }
+    // Creates the element SetTypeSpecificParameters prepared. The default calls ACAPI_Element_Create;
+    // a command overrides it for what has to happen around the create itself (CreateWalls switches
+    // the Wall tool default to a Basic structure for a polygonal wall, #2563). Returns the error
+    // response of the item, or nothing when the element was created (element.header.guid is its guid).
+    virtual GS::Optional<GS::ObjectState> CreateElement (API_Element& element, API_ElementMemo& memo, const GS::ObjectState& parameters) const;
 protected:
     GS::String     commandName;
     API_ElemTypeID elemTypeID;
