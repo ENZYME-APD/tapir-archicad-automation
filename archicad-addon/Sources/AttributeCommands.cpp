@@ -3760,6 +3760,43 @@ static bool SetProfileNominalSize (ProfileVectorImage& pvi, const ProfileNominal
     return IsProfileNominalSize (pvi, size);
 }
 
+// The profileModifiers of a profile: each edge-offset parameter of pvi with its value measured on pvi
+// and its name from parameterNames (the profile attribute's profile_vectorImageParameterNames), when
+// given. GetProfiles measures them on the profile attribute, GetProfileValuesOfElements on the
+// stretched profile of an element (#2587).
+static GS::Array<GS::ObjectState> GetProfileModifiers (const ProfileVectorImage& pvi, const GS::HashTable<PVI::ProfileParameterId, GS::UniString>* parameterNames)
+{
+    GS::Array<GS::ObjectState> modifiers;
+    const GS::HashTable<GS::Guid, HatchObject>& hatches = pvi.GetConstHatchObjects ();
+    const auto& paramTable = pvi.GetParameterTable ();
+    // Parameter names are user-authored free text (assigned when the profile's author draws
+    // each dimension in the Profile Editor), not derived from any other profile data - they
+    // live in the sibling profile_vectorImageParameterNames table, keyed by the same
+    // ProfileParameterId as GetParameterTable().
+    paramTable.Enumerate ([&] (const PVI::ProfileParameterId& paramId, const GS::HashSet<PVI::ProfileParameterSetupId>& setupIds) {
+        if (setupIds.IsEmpty ()) {
+            return;
+        }
+        // Every setup in the set is a per-skin-instance variant of the same logical parameter;
+        // any one of them yields the parameter's current (shared) value.
+        PVI::ProfileParameterSetupId representativeSetupId = *setupIds.Begin ();
+        const PVI::ProfileVectorImageParameter& param = pvi.GetParameterDef (representativeSetupId);
+        GS::Optional<double> value = GetProfileModifierValue (pvi, param, hatches);
+        GS::ObjectState modifier;
+        if (parameterNames != nullptr) {
+            const GS::UniString* name = nullptr;
+            if (parameterNames->Get (paramId, &name) && name != nullptr) {
+                modifier.Add ("name", *name);
+            }
+        }
+        if (value.HasValue ()) {
+            modifier.Add ("value", *value);
+        }
+        modifiers.Push (modifier);
+    });
+    return modifiers;
+}
+
 GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> attributeIds;
@@ -3885,32 +3922,9 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
 
                     if (wantsField.Wants ("profileModifiers")) {
                         const auto& modifiersList = profile.AddList<GS::ObjectState> ("profileModifiers");
-                        const auto& paramTable = pvi.GetParameterTable ();
-                        // Parameter names are user-authored free text (assigned when the profile's author draws
-                        // each dimension in the Profile Editor), not derived from any other profile data - they
-                        // live in the sibling profile_vectorImageParameterNames table, keyed by the same
-                        // ProfileParameterId as GetParameterTable().
-                        paramTable.Enumerate ([&] (const PVI::ProfileParameterId& paramId, const GS::HashSet<PVI::ProfileParameterSetupId>& setupIds) {
-                            if (setupIds.IsEmpty ()) {
-                                return;
-                            }
-                            // Every setup in the set is a per-skin-instance variant of the same logical parameter;
-                            // any one of them yields the parameter's current (shared) value.
-                            PVI::ProfileParameterSetupId representativeSetupId = *setupIds.Begin ();
-                            const PVI::ProfileVectorImageParameter& param = pvi.GetParameterDef (representativeSetupId);
-                            GS::Optional<double> value = GetProfileModifierValue (pvi, param, hatches);
-                            GS::ObjectState modifier;
-                            if (profileDefs.profile_vectorImageParameterNames != nullptr) {
-                                const GS::UniString* name = nullptr;
-                                if (profileDefs.profile_vectorImageParameterNames->Get (paramId, &name) && name != nullptr) {
-                                    modifier.Add ("name", *name);
-                                }
-                            }
-                            if (value.HasValue ()) {
-                                modifier.Add ("value", *value);
-                            }
+                        for (const GS::ObjectState& modifier : GetProfileModifiers (pvi, profileDefs.profile_vectorImageParameterNames)) {
                             modifiersList (modifier);
-                        });
+                        }
                     }
 
                     if (wantsField.Wants ("skins")) {
@@ -13505,6 +13519,168 @@ GS::ObjectState RenameAttributesCommand::Execute (const GS::ObjectState& paramet
             continue;
         }
         executionResults (RenameAttribute (GetGuidFromObjectState (*attributeId), newName));
+    }
+
+    return response;
+}
+
+// One item of GetProfileValuesOfElements (#2587): a profile as an element uses it, measured on
+// the element's stretched profile. The modifier names come from the profile attribute profileAttr;
+// segmentIndex is the beam or column segment, or -1 for a wall.
+static GS::ObjectState GetElementProfileValue (const ProfileVectorImage& stretchedProfile, const API_AttributeIndex& profileAttr, Int32 segmentIndex)
+{
+    GS::ObjectState profile;
+    if (segmentIndex >= 0) {
+        profile.Add ("segmentIndex", segmentIndex);
+    }
+    GS::Optional<GS::ObjectState> profileId = GetAttributeIdFromIndex (API_ProfileID, profileAttr);
+    if (profileId.HasValue ()) {
+        profile.Add ("profileId", *profileId);
+    }
+    const Box2DData bounds = stretchedProfile.GetBuildingBounds ();
+    profile.Add ("width", bounds.xMax - bounds.xMin);
+    profile.Add ("height", bounds.yMax - bounds.yMin);
+
+    API_AttributeDefExt profileDefs = {};
+    const bool hasDefs = IsPositiveAttributeIndex (profileAttr) && ACAPI_Attribute_GetDefExt (API_ProfileID, profileAttr, &profileDefs) == NoError;
+    const auto& modifiersList = profile.AddList<GS::ObjectState> ("profileModifiers");
+    for (const GS::ObjectState& modifier : GetProfileModifiers (stretchedProfile, hasDefs ? profileDefs.profile_vectorImageParameterNames : nullptr)) {
+        modifiersList (modifier);
+    }
+    if (hasDefs) {
+        ACAPI_DisposeAttrDefsHdlsExt (&profileDefs);
+    }
+    return profile;
+}
+
+GetProfileValuesOfElementsCommand::GetProfileValuesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetProfileValuesOfElementsCommand::GetName () const
+{
+    return "GetProfileValuesOfElements";
+}
+
+GS::Optional<GS::UniString> GetProfileValuesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetProfileValuesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "profileValuesOfElements": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementProfileValuesOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "profileValuesOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetProfileValuesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& profileValuesOfElements = response.AddList<GS::ObjectState> ("profileValuesOfElements");
+
+    for (const GS::ObjectState& item : elements) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            profileValuesOfElements (CreateErrorResponse (APIERR_BADPARS, "Missing 'elementId' parameter."));
+            continue;
+        }
+        const API_Guid elementGuid = GetGuidFromObjectState (*elementId);
+
+        API_Element element = {};
+        element.header.guid = elementGuid;
+        GSErrCode err = ACAPI_Element_Get (&element);
+        if (err != NoError) {
+            profileValuesOfElements (CreateErrorResponse (err, "Failed to get the element."));
+            continue;
+        }
+        const API_ElemTypeID typeId = GetElemTypeId (element.header);
+        if (typeId != API_WallID && typeId != API_BeamID && typeId != API_ColumnID) {
+            profileValuesOfElements (CreateErrorResponse (APIERR_BADELEMENTTYPE, "Not a wall, beam or column."));
+            continue;
+        }
+
+        GS::Array<GS::ObjectState> profiles;
+        API_ElementMemo memo = {};
+        const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        if (typeId == API_WallID) {
+            if (element.wall.modelElemStructureType == API_ProfileStructure) {
+                err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_StretchedProfile);
+                if (err != NoError) {
+                    profileValuesOfElements (CreateErrorResponse (err, "Failed to get the stretched profile of the wall."));
+                    continue;
+                }
+                if (memo.stretchedProfile != nullptr) {
+                    profiles.Push (GetElementProfileValue (*memo.stretchedProfile, element.wall.profileAttr, -1));
+                }
+            }
+        } else {
+            // A beam or column keeps a profile per Profile segment, each naming its segment.
+            const bool isBeam = typeId == API_BeamID;
+            err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_AssemblySegmentProfile | (isBeam ? APIMemoMask_BeamSegment : APIMemoMask_ColumnSegment));
+            if (err != NoError) {
+                profileValuesOfElements (CreateErrorResponse (err, "Failed to get the segment profiles of the element."));
+                continue;
+            }
+            const GSSize nSegments = isBeam
+                ? (memo.beamSegments == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType))
+                : (memo.columnSegments == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType));
+            const GSSize nProfiles = memo.assemblySegmentProfiles == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentProfiles)) / sizeof (API_AssemblySegmentProfileData);
+            for (GSSize i = 0; i < nProfiles; ++i) {
+                const API_AssemblySegmentProfileData& segmentProfile = memo.assemblySegmentProfiles[i];
+                if (segmentProfile.stretchedProfile == nullptr) {
+                    continue;
+                }
+                const GSSize segmentIndex = static_cast<GSSize> (segmentProfile.segmentIndex);
+                API_AttributeIndex profileAttr = APIInvalidAttributeIndex;
+                if (segmentIndex < nSegments) {
+                    profileAttr = isBeam
+                        ? memo.beamSegments[segmentIndex].assemblySegmentData.profileAttr
+                        : memo.columnSegments[segmentIndex].assemblySegmentData.profileAttr;
+                }
+                profiles.Push (GetElementProfileValue (*segmentProfile.stretchedProfile, profileAttr, static_cast<Int32> (segmentProfile.segmentIndex)));
+            }
+        }
+
+        GS::ObjectState result;
+        result.Add ("elementId", CreateGuidObjectState (elementGuid));
+        const auto& profilesList = result.AddList<GS::ObjectState> ("profiles");
+        for (const GS::ObjectState& profile : profiles) {
+            profilesList (profile);
+        }
+        profileValuesOfElements (result);
     }
 
     return response;

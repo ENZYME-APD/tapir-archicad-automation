@@ -82,6 +82,11 @@
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Starten Sie die Prüfung mit <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad zeigt das Action Center, wenn es ein Problem gefunden hat. Für die Hotlink-Prüfung lesen Sie den Zustand jeder Quelle mit <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (ab Archicad 27).',
 
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Die Werte der Profil-Modifikatoren oder die gestreckte Breite und Höhe einer Wand, eines Unterzugs oder einer Stütze mit Profil einstellen',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'Lesen Sie sie mit <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> aus. Um sie zu ändern, ändern Sie das Profil mit <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (eine Kopie für diese Elemente oder das Profil selbst) oder stellen Sie sie in den Einstellungen des Elements in Archicad ein.',
+
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Etwas anderes gefunden, das die Archicad-API nicht kann? Schreiben Sie es in ein Issue, mit den DevKit-Headern, die Sie geprüft haben, und es kommt auf diese Seite. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Ein Issue öffnen</a>'
 });

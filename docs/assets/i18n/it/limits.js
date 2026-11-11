@@ -82,6 +82,11 @@
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Eseguite il controllo con <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad mostra l’Action Center quando ha trovato un problema. Per il controllo degli hotlink, leggete lo stato di ogni sorgente con <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (da Archicad 27).',
 
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Impostare i valori dei modificatori del profilo, o la larghezza e l\'altezza allungate, di un muro, una trave o un pilastro che usa un profilo',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'Leggeteli con <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. Per cambiarli, modificate il profilo con <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (una copia per questi elementi, o il profilo stesso), oppure impostateli nelle impostazioni dell\'elemento in Archicad.',
+
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Avete trovato altro che l’API di Archicad non può fare? Segnalatelo in una issue, con gli header del DevKit che avete verificato, e verrà aggiunto qui. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Apri una issue</a>'
 });
