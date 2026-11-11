@@ -3171,6 +3171,7 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const Stories stories = GetStories ();
 
     ElementChangeReporter changeReporter;
     changeReporter.AddElementIdsOf (itemsWithDetails);
@@ -3203,7 +3204,7 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
             const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
             ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_AddPars);
 
-            auto applyErr = ApplyObjectLampDetails (element, memo, &mask, GetStories (), item);
+            auto applyErr = ApplyObjectLampDetails (element, memo, &mask, stories, item);
             if (applyErr.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (*applyErr));
                 continue;
