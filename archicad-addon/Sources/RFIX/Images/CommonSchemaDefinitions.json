@@ -2275,6 +2275,17 @@
                 "items": {
                     "$ref": "#/ProfileSkin"
                 }
+            },
+            "nominalSize": {
+                "$ref": "#/ProfileNominalSize",
+                "description": "The positions of the profile's nominal width and height lines (Profile Editor), in the coordinates of skins[].outlineCoords. A profile without nominal size lines reports the bounds Archicad uses instead."
+            },
+            "hotspots": {
+                "type": "array",
+                "description": "The hotspots of the profile (Profile Editor), in the coordinates of skins[].outlineCoords.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
             }
         },
         "additionalProperties": false,
@@ -2282,6 +2293,65 @@
             "attributeId",
             "index",
             "name"
+        ]
+    },
+    "ProfileNominalSize": {
+        "type": "object",
+        "description": "The nominal width and height lines of a profile (Profile Editor): the x of the left and right nominal width lines and the y of the bottom and top nominal height lines, in the coordinates of GetProfiles' skins[].outlineCoords. The nominal width is right - left, the nominal height top - bottom.",
+        "properties": {
+            "left": {
+                "type": "number"
+            },
+            "right": {
+                "type": "number"
+            },
+            "bottom": {
+                "type": "number"
+            },
+            "top": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "left",
+            "right",
+            "bottom",
+            "top"
+        ]
+    },
+    "ProfileAreaMethod": {
+        "type": "object",
+        "description": "The component area method of a profile skin (Profile Manager): the line or circle the skin's area is projected onto. None: no projection shape. Line: the line from lineBegin to lineEnd. Circle: the circle with center and radius. Coordinates are those of GetProfiles' skins[].outlineCoords.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Line",
+                    "Circle"
+                ]
+            },
+            "lineBegin": {
+                "$ref": "#/Coordinate2D",
+                "description": "Start of the line. Needed for Line."
+            },
+            "lineEnd": {
+                "$ref": "#/Coordinate2D",
+                "description": "End of the line. Needed for Line."
+            },
+            "center": {
+                "$ref": "#/Coordinate2D",
+                "description": "Center of the circle. Needed for Circle."
+            },
+            "radius": {
+                "type": "number",
+                "description": "Radius of the circle, greater than 0. Needed for Circle."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
         ]
     },
     "ProfileModifier": {
@@ -2336,6 +2406,9 @@
             },
             "cutEndLineTypeId": {
                 "$ref": "#/AttributeIdArrayItem"
+            },
+            "areaMethod": {
+                "$ref": "#/ProfileAreaMethod"
             },
             "edges": {
                 "type": "array",
@@ -3545,6 +3618,9 @@
             "cutEndLineTypeId": {
                 "$ref": "#/AttributeIdArrayItem"
             },
+            "areaMethod": {
+                "$ref": "#/ProfileAreaMethod"
+            },
             "edgeOverrides": {
                 "type": "array",
                 "description": "Per-edge pen/visibility/line type, targeted by 0-based edge index. Edge indices follow the same order as this skin's contours/polygonCoordinates: the outer contour's edges first (one edge per vertex, wrapping around), then each hole's, in the order the contours were given. Verify exact indices for a created skin via a follow-up GetProfiles call's skins[].edges before relying on them.",
@@ -3787,7 +3863,7 @@
     },
     "RoofEdgeTrim": {
         "type": "object",
-        "description": "How an edge of a single-plane roof's polygon is cut (the edge's cut in the roof's settings).",
+        "description": "How an edge of a roof's polygon (a single-plane roof's outline or a multi-plane roof's contour) is cut (the edge's cut in the roof's Custom Edge Settings).",
         "properties": {
             "trimType": {
                 "type": "string",
@@ -3800,6 +3876,11 @@
             }
         },
         "additionalProperties": false
+    },
+    "RoofEdgeType": {
+        "type": "string",
+        "description": "The Edge Type of an edge of a single-plane roof (its Custom Edge Settings), used only for listing: Undefined (not set, the default), Ridge, Valley, Gable, Hip, Eaves, Peak, SideWall, EndWall, RoofTransitionDome or RoofTransitionHollow.",
+        "enum": ["Undefined", "Ridge", "Valley", "Gable", "Hip", "Eaves", "Peak", "SideWall", "EndWall", "RoofTransitionDome", "RoofTransitionHollow"]
     },
     "ShellProfile": {
         "type": "object",
@@ -4592,7 +4673,9 @@
             "hasCoreSkin",
             "profileModifiers",
             "skins",
-            "skinOutlines"
+            "skinOutlines",
+            "nominalSize",
+            "hotspots"
         ]
     },
     "CompositeAttributeField": {
@@ -10077,6 +10160,9 @@
                 "type": "number",
                 "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
             },
+            "logDetails": {
+                "$ref": "#/WallLogDetails"
+            },
             "hasWindow": {
                 "type": "boolean",
                 "description": "Whether the wall has at least one Window. Output only."
@@ -10096,6 +10182,41 @@
             "bottomOffset",
             "offset"
         ]
+    },
+    "WallLogDetails": {
+        "type": "object",
+        "description": "The settings of the Log Details dialog (Wall Settings > Model) other than the log height (logHeight), one boolean per flag of API_WallType::beamFlags. They only have an effect on a log wall (logHeight greater than 0). GetDetailsOfElements returns every field; CreateWalls and ModifyWalls change only the fields given and keep the others.",
+        "properties": {
+            "startWithHalfLog": {
+                "type": "boolean",
+                "description": "The wall starts with a half log at the bottom (APIWBeam_HalfLog)."
+            },
+            "squareLogs": {
+                "type": "boolean",
+                "description": "The logs are square (rectangular) instead of rounded (APIWBeam_QuadricLog)."
+            },
+            "roundedOnRightSide": {
+                "type": "boolean",
+                "description": "The logs are curved on the right side of the wall, looking from its start point to its end point (APIWBeam_RightLog). Together with roundedOnLeftSide this is the log shape's outside/inside/both choice; which side is the outside depends on the wall's direction and 'flipped'."
+            },
+            "roundedOnLeftSide": {
+                "type": "boolean",
+                "description": "The logs are curved on the left side of the wall, looking from its start point to its end point (APIWBeam_LeftLog)."
+            },
+            "radiusFromOppositeSide": {
+                "type": "boolean",
+                "description": "The log radius is measured from the opposite side of the wall (APIWBeam_Stretched)."
+            },
+            "referenceSideSurfaceOnHorizontalEdges": {
+                "type": "boolean",
+                "description": "The horizontal edges of the logs get the reference side surface instead of the one of the Wall Settings (APIWBeam_RefMater). Set at most one of this and oppositeSideSurfaceOnHorizontalEdges; both false means the surface of the Wall Settings."
+            },
+            "oppositeSideSurfaceOnHorizontalEdges": {
+                "type": "boolean",
+                "description": "The horizontal edges of the logs get the opposite side surface instead of the one of the Wall Settings (APIWBeam_OppMater)."
+            }
+        },
+        "additionalProperties": false
     },
     "BeamDetails": {
         "type": "object",
@@ -10190,7 +10311,7 @@
             },
             "segments": {
                 "type": "array",
-                "description": "The surfaces of each segment of the beam.",
+                "description": "The surfaces and the geometry (cross section, taper and length) of each segment of the beam, in the order of the beam's segments (segmentIndex of a BeamSegment).",
                 "items": {
                     "$ref": "#/BeamSegmentSurfaces"
                 }
@@ -10355,9 +10476,16 @@
             },
             "edgeTrims": {
                 "type": "array",
-                "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, in the order of edgeSideMaterials. ModifyRoofs takes the same list.",
+                "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), in the order of edgeSideMaterials: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. ModifyRoofs takes the same list.",
                 "items": {
                     "$ref": "#/RoofEdgeTrim"
+                }
+            },
+            "edgeTypes": {
+                "type": "array",
+                "description": "Single-plane roofs only: the Edge Type of each edge of the roof's polygon (Custom Edge Settings), which schedules use, e.g. to list the length of the Eaves or Gable edges. In the order of edgeSideMaterials and edgeTrims: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. It does not change the geometry of the roof. ModifyRoofs takes the same list.",
+                "items": {
+                    "$ref": "#/RoofEdgeType"
                 }
             },
             "pivotEdges": {
@@ -10396,6 +10524,29 @@
             "polygonOutline"
         ]
     },
+    "ShellEdgeMaterials": {
+        "type": "object",
+        "description": "The custom surface of the edges of a shell (API_ContourEdgeData::sideMaterial of the shell class's edge data). An overridden edge shows its own surface; one that is not overridden shows the shell's side surface (sideMaterial).",
+        "properties": {
+            "begShapeEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edges of the profile at the begin of the shell: the start of the extrusion or revolution, or the first profile of a ruled shell (begShapeEdgeData)."
+            },
+            "endShapeEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edges of the profile at the end of the shell: the end of the extrusion or revolution, or the second profile of a ruled shell (endShapeEdgeData)."
+            },
+            "begSideEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edge along the shell's surface from the first point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [0])."
+            },
+            "endSideEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edge along the shell's surface from the last point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [1])."
+            }
+        },
+        "additionalProperties": false
+    },
     "ShellDetails": {
         "type": "object",
         "properties": {
@@ -10418,6 +10569,26 @@
             },
             "compositeId": {
                 "$ref": "#/AttributeId"
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of one face of the shell (API_ShellBaseType::topMat). ModifyShells takes the same key."
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the edges of the shell (API_ShellBaseType::sidMat). ModifyShells takes the same key."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the other face of the shell (API_ShellBaseType::botMat). ModifyShells takes the same key."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained. ModifyShells takes the same key."
+            },
+            "edgeMaterials": {
+                "$ref": "#/ShellEdgeMaterials",
+                "description": "The custom surface of each edge of the shell. ModifyShells takes the same key."
             },
             "displayOption": {
                 "$ref": "#/DisplayOption"
@@ -10474,6 +10645,17 @@
             },
             "floorFill": {
                 "$ref": "#/ShellBaseFloorFill"
+            },
+            "contour": {
+                "$ref": "#/ShellCutPolygon",
+                "description": "The clipping contour of the shell, when it has one: only the part inside this polygon, seen along the Z axis of its plane, is kept. The polygon and its plane are in the coordinates of the shell's base plane, as CreateShells and ModifyShells take them."
+            },
+            "holes": {
+                "type": "array",
+                "description": "The holes of the shell, each with its polygon, its plane (in the coordinates of the shell's base plane) and the depth its cutting body is extruded along the Z axis of that plane. Empty when the shell has no hole.",
+                "items": {
+                    "$ref": "#/ShellCutPolygon"
+                }
             },
             "basePlane": {
                 "$ref": "#/CoordinateSystem3D",
@@ -10676,7 +10858,7 @@
             },
             "segments": {
                 "type": "array",
-                "description": "The surfaces of each segment of the column.",
+                "description": "The segments of the column, in the order Archicad keeps them: the surfaces, the cross section, the taper and the length of each.",
                 "items": {
                     "$ref": "#/ColumnSegmentSurfaces"
                 }
@@ -10692,8 +10874,12 @@
     },
     "BeamSegmentSurfaces": {
         "type": "object",
-        "description": "The surfaces of a beam segment.",
+        "description": "The surfaces of a beam segment, and its geometry when read.",
         "properties": {
+            "geometry": {
+                "$ref": "#/BeamSegmentGeometry",
+                "description": "The cross section, taper and length of the segment. CreateBeams and ModifyBeams write it with their segments array."
+            },
             "leftMaterial": {
                 "$ref": "#/OverriddenMaterial"
             },
@@ -10748,9 +10934,62 @@
         },
         "additionalProperties": false
     },
+    "AssemblySegmentLength": {
+        "type": "object",
+        "description": "How the length of a segment is set (its segment scheme): a fixed length, or a proportion of the length the fixed segments leave. Both values are returned; Archicad uses the one of the lengthType.",
+        "properties": {
+            "lengthType": {
+                "type": "string",
+                "enum": [ "Fixed", "Proportional", "Unknown" ]
+            },
+            "fixedLength": {
+                "type": "number",
+                "description": "The length of the segment, used when lengthType is Fixed."
+            },
+            "lengthProportion": {
+                "type": "number",
+                "description": "The proportion of the segment, used when lengthType is Proportional, as Archicad stores it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lengthType",
+            "fixedLength",
+            "lengthProportion"
+        ]
+    },
+    "ColumnSegmentTaper": {
+        "type": "object",
+        "description": "The taper of a column segment: a segment that is not homogeneous changes its cross section from width and depth at its start to endWidth and endDepth at its end.",
+        "properties": {
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True when the cross section is the same at both ends of the segment (no taper)."
+            },
+            "endWidth": {
+                "type": "number",
+                "description": "Cross section width at the end of the segment. Used only when isHomogeneous is false."
+            },
+            "endDepth": {
+                "type": "number",
+                "description": "Cross section depth (height) at the end of the segment. Used only when isHomogeneous is false."
+            },
+            "isEndWidthAndDepthLinked": {
+                "type": "boolean",
+                "description": "Whether Archicad keeps endWidth and endDepth linked. Used only when isHomogeneous is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isHomogeneous",
+            "endWidth",
+            "endDepth",
+            "isEndWidthAndDepthLinked"
+        ]
+    },
     "ColumnSegmentSurfaces": {
         "type": "object",
-        "description": "The surfaces of a column segment.",
+        "description": "A segment of a column: its surfaces and veneer, its own cross section, its taper and its length.",
         "properties": {
             "extrusionSurfaceMaterial": {
                 "$ref": "#/OverriddenMaterial"
@@ -10764,6 +11003,39 @@
             },
             "veneer": {
                 "$ref": "#/ColumnVeneer"
+            },
+            "structureType": {
+                "$ref": "#/SegmentStructureType"
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment (at its start when it is tapered)."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Cross section depth (height) of the segment (at its start when it is tapered)."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section of the segment uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section of the segment uses a custom extruded profile rather than a building material."
+            },
+            "taper": {
+                "$ref": "#/ColumnSegmentTaper"
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength",
+                "description": "The length scheme of the segment. Absent when Archicad does not return the column's segment schemes."
             }
         },
         "additionalProperties": false,
@@ -10809,6 +11081,13 @@
             },
             "veneer": {
                 "$ref": "#/ColumnVeneer"
+            },
+            "taper": {
+                "$ref": "#/ColumnSegmentTaper"
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength",
+                "description": "The length scheme of the segment, from its Column. Absent when Archicad does not return the Column's segment schemes."
             }
         },
         "additionalProperties": false,
@@ -10853,6 +11132,30 @@
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True when the cross section is the same at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight."
+            },
+            "endWidth": {
+                "type": "number",
+                "description": "Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "endHeight": {
+                "type": "number",
+                "description": "Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "isEndWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "Whether the end width and end height of a tapered segment are linked."
+            },
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the segment in its beam, the same as its position in the beam's segments list."
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength"
             }
         },
         "additionalProperties": false,
@@ -10863,6 +11166,189 @@
             "isWidthAndHeightLinked",
             "circleBased"
         ]
+    },
+    "AssemblySegmentLength": {
+        "type": "object",
+        "description": "The length of a segment of a beam, from the beam's segment schemes.",
+        "properties": {
+            "lengthType": {
+                "type": "string",
+                "enum": [ "Fixed", "Proportional" ],
+                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
+            },
+            "fixedLength": {
+                "type": "number",
+                "description": "The length of the segment. Archicad uses it when lengthType is Fixed."
+            },
+            "lengthProportion": {
+                "type": "number",
+                "description": "The share of the length of the segment. Archicad uses it when lengthType is Proportional."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lengthType",
+            "fixedLength",
+            "lengthProportion"
+        ]
+    },
+    "BeamSegmentGeometry": {
+        "type": "object",
+        "description": "The cross section, taper and length of a segment of a beam.",
+        "properties": {
+            "structureType": {
+                "$ref": "#/SegmentStructureType"
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment (at its start, for a tapered segment)."
+            },
+            "height": {
+                "type": "number",
+                "description": "Cross section height of the segment (at its start, for a tapered segment)."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True when the cross section is the same at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight."
+            },
+            "endWidth": {
+                "type": "number",
+                "description": "Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "endHeight": {
+                "type": "number",
+                "description": "Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "isEndWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "Whether the end width and end height of a tapered segment are linked."
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "height",
+            "isWidthAndHeightLinked",
+            "circleBased",
+            "isHomogeneous",
+            "endWidth",
+            "endHeight",
+            "isEndWidthAndHeightLinked"
+        ]
+    },
+    "AssemblySegmentLengthModification": {
+        "type": "object",
+        "description": "The length of a segment of a beam. Only the keys given are written.",
+        "properties": {
+            "lengthType": {
+                "type": "string",
+                "enum": [ "Fixed", "Proportional" ],
+                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
+            },
+            "fixedLength": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "The length of the segment. Archicad uses it when lengthType is Fixed."
+            },
+            "lengthProportion": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "The share of the length of the segment. Archicad uses it when lengthType is Proportional."
+            }
+        },
+        "additionalProperties": false
+    },
+    "BeamSegmentGeometryModification": {
+        "type": "object",
+        "description": "The cross section, taper and length of a segment of a beam, in the shape GetDetailsOfElements returns them (BeamSegmentGeometry). Only the keys given are written; the other values of the segment stay as they are.",
+        "properties": {
+            "structureType": {
+                "$ref": "#/SegmentStructureType",
+                "description": "Basic: a round or rectangular cross section of a building material (buildingMaterialId, or the segment's current one). Profile: a custom extruded profile, which needs profileId."
+            },
+            "width": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Cross section width of the segment (at its start, for a tapered segment)."
+            },
+            "height": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Cross section height of the segment (at its start, for a tapered segment)."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "When true, Archicad keeps width and height equal - set to false to give them independent values."
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular. Ignored when profileId is given."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Switches the segment to a basic cross section of this building material. Not together with profileId."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Switches the segment to this custom extruded profile (circleBased becomes false). Not together with buildingMaterialId."
+            },
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True for the same cross section at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight."
+            },
+            "endWidth": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "endHeight": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "isEndWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "Whether the end width and end height of a tapered segment are linked."
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLengthModification"
+            }
+        },
+        "additionalProperties": false
+    },
+    "BeamSegmentModification": {
+        "type": "object",
+        "description": "Changes one existing segment of a beam.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The segment to change, 0-based, in the order GetDetailsOfElements lists the beam's segments. Without it, the item's position in the segments array is used, so an empty item {} leaves its segment as it is."
+            },
+            "geometry": {
+                "$ref": "#/BeamSegmentGeometryModification"
+            }
+        },
+        "additionalProperties": false
     },
     "DetailWorksheetDetails": {
         "type": "object",
@@ -11986,6 +12472,10 @@
             },
             "className": {
                 "type": "string"
+            },
+            "classIndex": {
+                "type": "integer",
+                "description": "The panel class of the panel, numbered as in the cells of CreateCurtainWalls and in ModifyCurtainWallPanels: 0 is a deleted panel, 1 the first panel class of the curtain wall, 2 the second and so on. -1 is a panel whose settings were customized apart from its class."
             },
             "frames": {
                 "type": "array",
@@ -24801,6 +25291,7 @@
             "layerIndex",
             "width",
             "height",
+            "depth",
             "sillHeight",
             "referenceLineLocation",
             "topOffset",
