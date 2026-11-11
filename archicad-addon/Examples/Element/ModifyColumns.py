@@ -2,8 +2,8 @@
 and gives its segment its own side and end surfaces.
 
 Only the given fields change. Angles are in radians. segments writes the surfaces (and the veneer)
-of the segment given by segmentIndex (0 for a column of one segment), in the shape
-GetDetailsOfElements returns them.
+of the segment given by segmentIndex (0 for a column of one segment), with the same keys
+GetDetailsOfElements returns for them.
 """
 import aclib
 import math

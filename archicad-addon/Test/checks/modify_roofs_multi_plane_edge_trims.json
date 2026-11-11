@@ -1,0 +1,137 @@
+{
+  "title": "ModifyRoofs sets the cut of one contour edge and one hole edge of a multi-plane roof and keeps the other edges and the roof planes (#2435)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "multi-plane roof with a hole, no eaves overhang",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic", "eavesOverhang": 0.0,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5235988 } ],
+            "polygonCoordinates": [ { "x": 760, "y": 720 }, { "x": 770, "y": 720 }, { "x": 770, "y": 728 }, { "x": 760, "y": 728 } ],
+            "holes": [
+              { "polygonOutline": [ { "x": 763, "y": 723 }, { "x": 767, "y": 723 }, { "x": 767, "y": 725 }, { "x": 763, "y": 725 } ] }
+            ]
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "edge trims before",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "save": {
+        "t0": "detailsOfElements[0].details.edgeTrims[0].trimType",
+        "t2": "detailsOfElements[0].details.edgeTrims[2].trimType",
+        "t3": "detailsOfElements[0].details.edgeTrims[3].trimType",
+        "t4": "detailsOfElements[0].details.edgeTrims[4].trimType",
+        "t6": "detailsOfElements[0].details.edgeTrims[6].trimType",
+        "t7": "detailsOfElements[0].details.edgeTrims[7].trimType",
+        "a0": "detailsOfElements[0].details.edgeTrims[0].angle",
+        "a3": "detailsOfElements[0].details.edgeTrims[3].angle",
+        "a4": "detailsOfElements[0].details.edgeTrims[4].angle",
+        "a7": "detailsOfElements[0].details.edgeTrims[7].angle",
+        "p0": "detailsOfElements[0].details.pivotEdges[0].levels[0].angle",
+        "p1": "detailsOfElements[0].details.pivotEdges[1].levels[0].angle",
+        "p5": "detailsOfElements[0].details.pivotEdges[5].levels[0].angle",
+        "pt1": "detailsOfElements[0].details.pivotEdges[1].levels[0].angleType"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane", "name": "the roof is multi-plane" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "contour has 4 corners and the closing point" },
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "contour has the hole" },
+        { "path": "detailsOfElements[0].details.edgeTrims", "len": 8, "name": "edgeTrims reported for the multi-plane roof: 4 contour edges, then 4 hole edges" },
+        { "path": "detailsOfElements[0].details.pivotEdges", "len": 8, "name": "8 pivot edges" }
+      ]
+    },
+    {
+      "id": "custom cut on contour edge 1 and hole edge 5 (the hole's 2nd edge)",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r1}" },
+            "edgeTrims": [ {}, { "trimType": "CustomAngle", "angle": 1.0 }, {}, {}, {}, { "trimType": "CustomAngle", "angle": 0.7 }, {}, {} ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "ModifyRoofs accepts edgeTrims on a multi-plane roof" }
+      ]
+    },
+    {
+      "id": "edge trims after",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "save": {
+        "n1": "detailsOfElements[0].details.edgeTrims[1].angle",
+        "n5": "detailsOfElements[0].details.edgeTrims[5].angle",
+        "b0": "detailsOfElements[0].details.edgeTrims[0].angle",
+        "b3": "detailsOfElements[0].details.edgeTrims[3].angle",
+        "b4": "detailsOfElements[0].details.edgeTrims[4].angle",
+        "b7": "detailsOfElements[0].details.edgeTrims[7].angle",
+        "q0": "detailsOfElements[0].details.pivotEdges[0].levels[0].angle",
+        "q1": "detailsOfElements[0].details.pivotEdges[1].levels[0].angle",
+        "q5": "detailsOfElements[0].details.pivotEdges[5].levels[0].angle"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeTrims", "len": 8, "name": "still 8 edges" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].trimType", "eq": "CustomAngle", "name": "contour edge 1 is CustomAngle" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].angle", "approx": 1.0, "tol": 0.0001, "name": "contour edge 1 has the angle sent" },
+        { "path": "detailsOfElements[0].details.edgeTrims[5].trimType", "eq": "CustomAngle", "name": "hole edge 5 is CustomAngle" },
+        { "path": "detailsOfElements[0].details.edgeTrims[5].angle", "approx": 0.7, "tol": 0.0001, "name": "hole edge 5 has the angle sent" },
+        { "path": "detailsOfElements[0].details.edgeTrims[0].trimType", "eq": "${t0}", "name": "contour edge 0 keeps its cut" },
+        { "path": "detailsOfElements[0].details.edgeTrims[2].trimType", "eq": "${t2}", "name": "contour edge 2 keeps its cut" },
+        { "path": "detailsOfElements[0].details.edgeTrims[3].trimType", "eq": "${t3}", "name": "contour edge 3 keeps its cut" },
+        { "path": "detailsOfElements[0].details.edgeTrims[4].trimType", "eq": "${t4}", "name": "hole edge 4 keeps its cut" },
+        { "path": "detailsOfElements[0].details.edgeTrims[6].trimType", "eq": "${t6}", "name": "hole edge 6 keeps its cut" },
+        { "path": "detailsOfElements[0].details.edgeTrims[7].trimType", "eq": "${t7}", "name": "hole edge 7 keeps its cut" },
+        { "expr": "${b0} - ${a0}", "approx": 0, "tol": 0.000001, "name": "contour edge 0 keeps its angle" },
+        { "expr": "${b3} - ${a3}", "approx": 0, "tol": 0.000001, "name": "contour edge 3 keeps its angle" },
+        { "expr": "${b4} - ${a4}", "approx": 0, "tol": 0.000001, "name": "hole edge 4 keeps its angle" },
+        { "expr": "${b7} - ${a7}", "approx": 0, "tol": 0.000001, "name": "hole edge 7 keeps its angle" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "contour keeps its 4 corners and the closing point" },
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "contour keeps its hole" },
+        { "path": "detailsOfElements[0].details.pivotEdges", "len": 8, "name": "still 8 pivot edges" },
+        { "expr": "${q0} - ${p0}", "approx": 0, "tol": 0.000001, "name": "pivot plane 0 keeps its slope" },
+        { "expr": "${q1} - ${p1}", "approx": 0, "tol": 0.000001, "name": "pivot plane 1 (under the trimmed contour edge) keeps its slope" },
+        { "expr": "${q5} - ${p5}", "approx": 0, "tol": 0.000001, "name": "pivot plane 5 (under the trimmed hole edge) keeps its slope" },
+        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].angleType", "eq": "${pt1}", "name": "pivot plane 1 keeps Sloped/Gable" }
+      ]
+    },
+    {
+      "id": "refused: wrong item count, with eavesOverhang, angle on a multi-plane roof",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          { "elementId": { "guid": "${r1}" }, "edgeTrims": [ { "trimType": "Horizontal" } ] },
+          { "elementId": { "guid": "${r1}" }, "eavesOverhang": 0.5, "edgeTrims": [ {}, {}, {}, {}, {}, {}, {}, {} ] },
+          { "elementId": { "guid": "${r1}" }, "angle": 0.3 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "one item for eight edges is refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "edgeTrims with eavesOverhang is refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "angle on a multi-plane roof is still refused" }
+      ]
+    },
+    {
+      "id": "refused calls changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.eavesOverhang", "approx": 0.0, "tol": 0.0001, "name": "eaves overhang unchanged" },
+        { "path": "detailsOfElements[0].details.edgeTrims[0].trimType", "eq": "${t0}", "name": "contour edge 0 unchanged" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].angle", "approx": 1.0, "tol": 0.0001, "name": "contour edge 1 keeps its custom angle" }
+      ]
+    }
+  ]
+}
