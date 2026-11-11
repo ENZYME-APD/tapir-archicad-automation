@@ -7763,6 +7763,8 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
         }
     }
 
+    // On Archicad 27 ACAPI_Element_SolidLink_GetFlags is missing from the API library, and the shim in
+    // MigrationHelper.hpp answers 0: the links are recreated there without their flags.
     GS::Array<API_Guid> operators;
     if (ACAPI_Element_SolidLink_GetOperators (stairGuid, &operators) == NoError) {
         for (const API_Guid& operatorGuid : operators) {
