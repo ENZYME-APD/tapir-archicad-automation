@@ -12459,6 +12459,10 @@
             "className": {
                 "type": "string"
             },
+            "classIndex": {
+                "type": "integer",
+                "description": "The panel class of the panel, numbered as in the cells of CreateCurtainWalls and in ModifyCurtainWallPanels: 0 is a deleted panel, 1 the first panel class of the curtain wall, 2 the second and so on. -1 is a panel whose settings were customized apart from its class."
+            },
             "frames": {
                 "type": "array",
                 "description": "The surrounding frames.",

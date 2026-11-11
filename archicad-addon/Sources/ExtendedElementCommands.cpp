@@ -11493,6 +11493,190 @@ GS::ObjectState ModifyCurtainWallFramesCommand::Execute (const GS::ObjectState& 
     });
 }
 
+ModifyCurtainWallPanelsCommand::ModifyCurtainWallPanelsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyCurtainWallPanelsCommand::GetName () const
+{
+    return "ModifyCurtainWallPanels";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallPanelsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "panelsWithDetails": {
+                "type": "array",
+                "description": "Curtain Wall Panels to modify (the GUIDs from GetSubelementsOfHierarchicalElements), with the fields to change. Only the given fields are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "panelId": { "$ref": "#/ElementId" },
+                        "classIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "The panel class to assign, numbered as Archicad numbers them (as in the cells of CreateCurtainWalls): 1 is the first panel class of the owner curtain wall (as listed in its Curtain Wall Settings), 2 the second and so on. The panel takes the settings of the class: its thickness, surfaces, building material, cut line and panel type (generic or GDL object). GetDetailsOfElements returns the classIndex and className of a panel."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["panelId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["panelsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallPanelsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+namespace {
+
+// ACAPI_Element_Change does not take a curtain wall panel on its own, so the panel is changed in
+// the memo of its owner curtain wall (cWallPanels), found there by its GUID, like the frames of
+// ModifyCurtainWallFrames.
+GS::ObjectState ModifyCurtainWallPanel (const GS::ObjectState& item)
+{
+    if (item.Get ("panelId") == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'panelId' field.");
+    }
+    const API_Guid panelGuid = GetGuidFromObjectState (*item.Get ("panelId"));
+
+    API_Element panelElement = {};
+    panelElement.header.guid = panelGuid;
+    GSErrCode err = ACAPI_Element_Get (&panelElement);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to load the panel.");
+    }
+    if (GetElemTypeId (panelElement.header) != API_CurtainWallPanelID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Curtain Wall Panel.");
+    }
+
+    Int32 classIndex = 0;
+    if (!item.Get ("classIndex", classIndex)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'classIndex'.");
+    }
+
+    API_Element curtainWall = {};
+    curtainWall.header.guid = panelElement.cwPanel.owner;
+    err = ACAPI_Element_Get (&curtainWall);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to load the owner curtain wall of the panel.");
+    }
+
+    constexpr UInt64 memoMask = APIMemoMask_CWallPanels | APIMemoMask_CWallPanelClasses;
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (curtainWall.header.guid, &memo, memoMask);
+    if (err != NoError || memo.cWallPanels == nullptr) {
+        return CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the panels of the owner curtain wall.");
+    }
+    if (memo.cWallPanelDefaults == nullptr) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read the panel classes of the owner curtain wall.");
+    }
+
+    const UInt32 nMemoPanels = static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallPanels)) / sizeof (API_CWPanelType));
+    const UInt32 nPanels = curtainWall.curtainWall.nPanels < nMemoPanels ? curtainWall.curtainWall.nPanels : nMemoPanels;
+    API_CWPanelType* panel = nullptr;
+    for (UInt32 i = 0; i < nPanels; ++i) {
+        if (memo.cWallPanels[i].head.guid == panelGuid) {
+            panel = &memo.cWallPanels[i];
+            break;
+        }
+    }
+    if (panel == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADID, "The panel was not found in the owner curtain wall.");
+    }
+    if (panel->hidden) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The panel is a deleted (hidden) panel; give the cell a panel class with ModifyCurtainWalls instead.");
+    }
+
+    // Everything is validated before anything is written.
+    const UInt32 nPanelClasses = static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallPanelDefaults)) / sizeof (API_CWPanelType));
+    if (classIndex < APICWPanelClass_FirstCustomClass || static_cast<UInt32> (classIndex - APICWPanelClass_FirstCustomClass) >= nPanelClasses) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("classIndex %d is not a panel class of the curtain wall (1 to %u).", classIndex, nPanelClasses));
+    }
+
+    // The panel takes the settings of its class, as when a class is assigned in Archicad; what
+    // makes it this panel (its header, owner, place in the grid and polygon) is kept.
+    const API_CWPanelType& panelClass = memo.cWallPanelDefaults[classIndex - APICWPanelClass_FirstCustomClass];
+    API_CWPanelType changedPanel = *panel;
+    changedPanel.classID = static_cast<UInt32> (classIndex);
+    GS::ucscpy (changedPanel.className, panelClass.className);
+    changedPanel.pen = panelClass.pen;
+    changedPanel.outerSurfaceMaterial = panelClass.outerSurfaceMaterial;
+    changedPanel.innerSurfaceMaterial = panelClass.innerSurfaceMaterial;
+    changedPanel.cutSurfaceMaterial = panelClass.cutSurfaceMaterial;
+    changedPanel.buildingMaterial = panelClass.buildingMaterial;
+    changedPanel.cutLineType = panelClass.cutLineType;
+    changedPanel.cutLinePen = panelClass.cutLinePen;
+    changedPanel.objectType = panelClass.objectType;
+    changedPanel.thickness = panelClass.thickness;
+    changedPanel.symbolID = panelClass.symbolID;
+    changedPanel.hasSymbol = panelClass.hasSymbol;
+    changedPanel.libInd = panelClass.libInd;
+
+    *panel = changedPanel;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&curtainWall, &mask, &memo, APIMemoMask_CWallPanels, true);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the panel through the memo of the owner curtain wall.");
+    }
+
+    // Read it back: a change Archicad accepted but did not apply is a failure, not a success.
+    API_ElementMemo checkMemo = {};
+    const GS::OnExit checkGuard ([&checkMemo] () { ACAPI_DisposeElemMemoHdls (&checkMemo); });
+    API_Element checkWall = {};
+    checkWall.header.guid = curtainWall.header.guid;
+    if (ACAPI_Element_Get (&checkWall) != NoError || ACAPI_Element_GetMemo (checkWall.header.guid, &checkMemo, APIMemoMask_CWallPanels) != NoError || checkMemo.cWallPanels == nullptr) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The change was written, but the panel could not be read back.");
+    }
+    const UInt32 nCheckMemoPanels = static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (checkMemo.cWallPanels)) / sizeof (API_CWPanelType));
+    const UInt32 nCheckPanels = checkWall.curtainWall.nPanels < nCheckMemoPanels ? checkWall.curtainWall.nPanels : nCheckMemoPanels;
+    for (UInt32 i = 0; i < nCheckPanels; ++i) {
+        const API_CWPanelType& actual = checkMemo.cWallPanels[i];
+        if (actual.head.guid != panelGuid) {
+            continue;
+        }
+        if (actual.classID != changedPanel.classID) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the change but did not apply the panel class.");
+        }
+        return CreateSuccessfulExecutionResult ();
+    }
+    return CreateFailedExecutionResult (APIERR_GENERAL, "The panel is no longer in the curtain wall after the change (its GUID may have changed).");
+}
+
+}
+
+GS::ObjectState ModifyCurtainWallPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "panelsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    // The panels are reported to the notification clients; their items name them by panelId.
+    GS::Array<GS::ObjectState> panelItems;
+    for (const auto& item : items) {
+        const GS::ObjectState* panelId = item.Get ("panelId");
+        panelItems.Push (panelId != nullptr ? GS::ObjectState ("elementId", *panelId) : GS::ObjectState ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Curtain Wall Panels", panelItems, [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            results.Push (ModifyCurtainWallPanel (item));
+        }
+    });
+}
+
 // Writes the given "pivotEdges" (see ModifyRoofs) into memo.pivotPolyEdges; edgeIndices maps
 // each item to its pivotPolyEdges index (GetPivotEdgeIndices). Changes nothing on an error.
 static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, const GS::Array<GSIndex>& edgeIndices, const GS::Array<GS::ObjectState>& pivotEdges)
