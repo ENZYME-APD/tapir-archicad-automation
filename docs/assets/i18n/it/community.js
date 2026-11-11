@@ -139,7 +139,7 @@
     // On the map (user-map.js)
     "On the map": "Sulla mappa",
     "Where Tapir is <em>used.</em>": "Dove si usa <em>Tapir.</em>",
-    "The towns people named on Discord, counted per town: never a name or a message. Tell us where you are in #welcome-and-rules to put your town on the map.": "Le città indicate dalle persone su Discord, contate per città: mai un nome o un messaggio. Dicci dove sei in #welcome-and-rules per mettere la tua città sulla mappa.",
+    "The towns people named on Discord, counted per town: never a name or a message. Type <code>/where</code> and your town in any Discord channel to put it on the map.": "Le città indicate dalle persone su Discord, contate per città: mai un nome o un messaggio. Scrivi <code>/where</code> e la tua città in un qualsiasi canale Discord per metterla sulla mappa.",
     "People on the map": "Persone sulla mappa",
     "Countries": "Paesi",
     "Towns": "Città",

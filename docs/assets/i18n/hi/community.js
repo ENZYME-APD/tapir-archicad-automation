@@ -139,7 +139,7 @@
     // On the map (user-map.js)
     "On the map": "नक्शे पर",
     "Where Tapir is <em>used.</em>": "Tapir कहाँ <em>इस्तेमाल होता है।</em>",
-    "The towns people named on Discord, counted per town: never a name or a message. Tell us where you are in #welcome-and-rules to put your town on the map.": "लोगों ने Discord पर जो शहर बताए, उन्हें शहर के हिसाब से गिना गया है: कभी कोई नाम या message नहीं। #welcome-and-rules में बताइए कि आप कहाँ हैं, और अपना शहर नक्शे पर लाइए।",
+    "The towns people named on Discord, counted per town: never a name or a message. Type <code>/where</code> and your town in any Discord channel to put it on the map.": "लोगों ने Discord पर जो शहर बताए, उन्हें शहर के हिसाब से गिना गया है: कभी कोई नाम या message नहीं। किसी भी Discord channel में <code>/where</code> और अपना शहर लिखिए, और उसे नक्शे पर लाइए।",
     "People on the map": "नक्शे पर लोग",
     "Countries": "देश",
     "Towns": "शहर",

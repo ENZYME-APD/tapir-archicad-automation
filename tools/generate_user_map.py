@@ -13,8 +13,11 @@ Which messages count, per person (by their Discord account, never written out):
      time, only a clear statement counts: "I'm from ...", "I live in ...", "based in ...",
      "living in ...", "hello from ...", "greetings from ...". A passing mention ("I'm in Paris for
      a conference") does not.
-  A person's latest answer in the welcome channel wins; without one, their latest statement
-  elsewhere. A message that cannot be placed is left out (the run prints how many).
+  0. The /where slash command (tools/discord-where/), in any channel: the app's public answer
+     names the town in **bold** for the person who used it, and "Removed from the Tapir map."
+     takes them off. It comes before everything else.
+  A person's latest /where wins; without one, their latest answer in the welcome channel; without
+  one, their latest statement elsewhere. A message that cannot be placed is left out (the run prints how many).
 
 Placing: OpenStreetMap's Nominatim (one request per second, as its usage policy asks), first as a
 town, then as a country. What it found is kept in the "geocode" section of the file and carried
@@ -180,12 +183,35 @@ def channel_messages (channel_id, token, after=None):
             after = max (page, key=lambda m: int (m['id']))['id']
         else:
             cursor = '&before=' + page[-1]['id']
-    return sorted ((m for m in messages if not m['author'].get ('bot')), key=lambda m: int (m['id']))
+    return sorted ((m for m in messages if not m['author'].get ('bot') or where_user (m)), key=lambda m: int (m['id']))
+
+
+def where_user (message):
+    """The id of the person whose /where command a bot message answers, else None."""
+    if not message['author'].get ('bot'):
+        return None
+    meta = message.get ('interaction_metadata') or {}
+    legacy = message.get ('interaction') or {}
+    if meta.get ('name') == 'where' or legacy.get ('name') == 'where':
+        return (meta.get ('user') or legacy.get ('user') or {}).get ('id')
+    return None
+
+
+WHERE_PLACE = re.compile (r'\*\*(?P<town>[^*]{1,60})\*\*(?P<country>,\s*[^.\n<]{1,60})?')
+
+
+def where_place (message):
+    """'remove', the place a /where answer names ("Maribor, Slovenia"), or None."""
+    content = message.get ('content') or ''
+    if 'Removed from the Tapir map' in content:
+        return 'remove'
+    match = WHERE_PLACE.search (content)
+    return (match.group ('town') + (match.group ('country') or '')).strip () if match else None
 
 
 def read_discord (token):
-    """(answers, statements, unreadable): message dicts in the welcome channel after the question,
-    and elsewhere."""
+    """(commands, answers, statements, unreadable): the /where answers anywhere, and the messages of
+    people in the welcome channel after the question and elsewhere."""
     guild = os.environ.get ('DISCORD_GUILD_ID') or ''
     if not guild:
         guilds = community.discord_get ('/users/@me/guilds', token)
@@ -221,15 +247,25 @@ def read_discord (token):
             unreadable += 1
         else:
             statements += history
-    return answers, statements, unreadable
+    commands = [m for m in answers + statements if where_user (m)]
+    answers = [m for m in answers if not where_user (m)]
+    statements = [m for m in statements if not where_user (m)]
+    return commands, answers, statements, unreadable
 
 
 # ---- assembling ----
 
-def assemble (answers, statements, overrides, cache):
+def assemble (commands, answers, statements, overrides, cache):
     """The place of each person, then the places and countries with their counts."""
-    chosen = {}  # author id -> place; answers in the welcome channel first, then statements
+    chosen = {}  # author id -> place; /where first, then answers in the welcome channel, then statements
     unplaced = 0
+    for message in sorted (commands, key=lambda m: int (m['id']), reverse=True):  # latest first
+        author, place = where_user (message), where_place (message)
+        if not author or author in chosen or not place:
+            continue
+        chosen[author] = None if place == 'remove' else geocode (place, cache)
+        if place != 'remove' and not chosen[author]:
+            unplaced += 1
     for group, answer in ((answers, True), (statements, False)):
         for message in sorted (group, key=lambda m: int (m['id']), reverse=True):  # latest first
             author = message['author']['id']
@@ -291,17 +327,17 @@ def main ():
         print ('No Discord bot token: user-map.json not written.', file=sys.stderr)
         return
     try:
-        answers, statements, unreadable = read_discord (token)
+        commands, answers, statements, unreadable = read_discord (token)
     except (urllib.error.URLError, KeyError, ValueError, RuntimeError) as error:
         print (f'Discord not read, user-map.json not written: {error}', file=sys.stderr)
         return
-    if not any (m.get ('content') for m in answers + statements):
+    if not any (m.get ('content') for m in commands + answers + statements):
         # The Message Content Intent is off: every text reads as empty. Keep the previous map.
         print ('Discord messages have no text: turn on the Message Content Intent of the bot. '
                'user-map.json not written.', file=sys.stderr)
         return
 
-    data, unplaced = assemble (answers, statements, overrides, cache)
+    data, unplaced = assemble (commands, answers, statements, overrides, cache)
     data = dict ({'version': 1, 'generatedAt': community.now ().strftime ('%Y-%m-%dT%H:%M:%SZ')}, **data,
                  geocode=dict (sorted (cache.items ())))
     os.makedirs (os.path.dirname (os.path.abspath (args.out)), exist_ok=True)
@@ -309,7 +345,7 @@ def main ():
         json.dump (data, file, ensure_ascii=False, indent=1)
         file.write ('\n')
     print (f"{data['totals']['people']} people in {data['totals']['places']} places and "
-           f"{data['totals']['countries']} countries; {len (answers)} answers to the question, "
+           f"{data['totals']['countries']} countries; {len (commands)} /where commands and {len (answers)} answers to the question, "
            f"{unplaced} of them not placed (see tools/user_map_overrides.json); "
            f"{unreadable} channels not readable.")
 
