@@ -82,6 +82,11 @@
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Ejecute la comprobación con <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad muestra el Action Center cuando encuentra un problema. Para la comprobación de hotlinks, lea el estado de cada origen con <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (desde Archicad 27).',
 
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Establecer los valores de los modificadores de perfil, o el ancho y la altura estirados, de un muro, una viga o un pilar que usa un perfil',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'Léalos con <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. Para cambiarlos, cambie el perfil con <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (una copia para estos elementos, o el propio perfil), o ajústelos en la configuración del elemento en Archicad.',
+
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         '¿Ha encontrado algo más que la API de Archicad no puede hacer? Dígalo en un issue, con las cabeceras del DevKit que comprobó, y se añadirá aquí. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Abrir un issue</a>'
 });

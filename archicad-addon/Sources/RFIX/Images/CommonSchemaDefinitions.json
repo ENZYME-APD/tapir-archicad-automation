@@ -2369,6 +2369,70 @@
         },
         "additionalProperties": false
     },
+    "ElementProfileValues": {
+        "type": "object",
+        "description": "The profile values of one wall, beam or column, measured on the stretched profile the element uses: the profile after the element's own stretch and modifier values.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "profiles": {
+                "type": "array",
+                "description": "One item per custom profile of the element: one for a Profile wall, one per Profile segment of a beam or column. Empty when the element uses no custom profile.",
+                "items": {
+                    "$ref": "#/ElementProfileValue"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "profiles"
+        ]
+    },
+    "ElementProfileValue": {
+        "type": "object",
+        "description": "A custom profile as one element, or one segment of a beam or column, uses it.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "description": "The segment of the beam or column, 0-based in the order GetDetailsOfElements lists the segments. Absent for a wall."
+            },
+            "profileId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The profile attribute. Absent when it could not be resolved."
+            },
+            "width": {
+                "type": "number",
+                "description": "Width of the stretched profile (its bounding box): the element's own width where the profile stretches horizontally."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the stretched profile (its bounding box): the element's own height where the profile stretches vertically."
+            },
+            "profileModifiers": {
+                "type": "array",
+                "description": "The offset modifiers of the profile with the values this element has, measured on its stretched profile the way GetProfiles measures them on the profile attribute. Empty when the stretched profile Archicad returns carries no modifiers. A modifier whose dimension crosses a stretch zone includes the stretch.",
+                "items": {
+                    "$ref": "#/ProfileModifier"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "width",
+            "height",
+            "profileModifiers"
+        ]
+    },
+    "ElementProfileValuesOrError": {
+        "type": "object",
+        "description": "The profile values of one element, or an error.",
+        "oneOf": [
+            { "$ref": "#/ElementProfileValues" },
+            { "$ref": "#/ErrorItem" }
+        ]
+    },
     "ProfileSkin": {
         "type": "object",
         "description": "One skin (hatch) of the profile's cross-section.",
@@ -14474,6 +14538,25 @@
             "begCoordinate",
             "endCoordinate"
         ]
+    },
+    "RoofPivotEdgeChange": {
+        "type": "object",
+        "properties": {
+            "levels": {
+                "type": "array",
+                "description": "The roof plane of the edge on each level, from the pivot polygon upwards; at most as many as the roof has levels.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
+                        "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
+                        "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false
     },
     "DesignOptionData": {
         "type": "object",
@@ -28775,6 +28858,51 @@
         "oneOf": [
             { "$ref": "#/SectionElevationDetails" },
             { "$ref": "#/ErrorItem" }
+        ]
+    },
+    "StairBaseLineEdge": {
+        "type": "object",
+        "properties": {
+            "segmentType": {
+                "type": "string",
+                "enum": [
+                    "Flight",
+                    "Landing",
+                    "DividedLanding"
+                ],
+                "description": "Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentType"
+        ]
+    },
+    "StairBaseLineVertex": {
+        "type": "object",
+        "properties": {
+            "turnType": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Landing",
+                    "Winder",
+                    "DividedLanding"
+                ],
+                "description": "The turn at this point. The first and last points take None."
+            },
+            "minLandingStartEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset)."
+            },
+            "minLandingEndEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "turnType"
         ]
     }
 }
