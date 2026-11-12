@@ -11796,6 +11796,66 @@
             "useObjectSectionAttributes": {
                 "type": "boolean",
                 "description": "Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'."
+            },
+            "verticalLink": {
+                "$ref": "#/WindowDoorVerticalLink"
+            },
+            "verticalLinkStoryIndex": {
+                "type": "integer",
+                "description": "The index of the story the opening is anchored to (API_VerticalLink::linkValue); only returned when verticalLink is 'SillToStory' or 'HeaderToStory'."
+            },
+            "subFloorThickness": {
+                "type": "number",
+                "description": "Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness)."
+            },
+            "revealDepthLocation": {
+                "$ref": "#/WindowDoorRevealDepthLocation"
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true."
+            },
+            "useObjectMaterials": {
+                "type": "boolean",
+                "description": "Use the surfaces defined in the library part instead of 'surfaceId'."
+            },
+            "directionType": {
+                "$ref": "#/WindowDoorDirectionType"
+            },
+            "fixPoint": {
+                "$ref": "#/WindowDoorFixPoint"
+            },
+            "revealDepthFromSide": {
+                "type": "number",
+                "description": "Read only. The reveal depth measured from the clicked side of the wall, computed by Archicad from revealDepthLocation and revealDepthOffset (API_WindowType::revealDepthFromSide)."
+            },
+            "jambDepthHead": {
+                "type": "number",
+                "description": "Read only. Inset on top (API_WindowType::jambDepthHead)."
+            },
+            "jambDepthSill": {
+                "type": "number",
+                "description": "Read only. Inset on bottom (API_WindowType::jambDepthSill)."
+            },
+            "jambDepthLeft": {
+                "type": "number",
+                "description": "Read only. Inset on the left (API_WindowType::jambDepth)."
+            },
+            "jambDepthRight": {
+                "type": "number",
+                "description": "Read only. Inset on the right (API_WindowType::jambDepth2)."
+            },
+            "wallCutUsing": {
+                "type": "boolean",
+                "description": "Read only. Whether the opening inherits the gables of its owner wall (API_OpeningBaseType::wallCutUsing)."
+            },
+            "startPoint": {
+                "$ref": "#/Coordinate2D",
+                "description": "Read only. The center point of the opening, measured from the beginning corner of the wall and rotated into the direction of the wall reference edge (API_WindowType::startPoint)."
+            },
+            "dirVector": {
+                "$ref": "#/Coordinate2D",
+                "description": "Read only. The direction vector of the opening in a polygonal wall, relative to the wall reference edge (API_WindowType::dirVector)."
             }
         },
         "additionalProperties": false,
@@ -11811,6 +11871,43 @@
             "reveal",
             "revealDepthOffset"
         ]
+    },
+    "WindowDoorVerticalLink": {
+        "type": "string",
+        "enum": [
+            "SillToWallBottom",
+            "SillToStory",
+            "HeaderToWallBottom",
+            "HeaderToStory",
+            "SillToWallTop",
+            "HeaderToWallTop"
+        ],
+        "description": "What the vertical position of a window or door is anchored to, as the anchor in \"Preview and Positioning\" (API_OpeningBaseType::verticalLink): its sill or its header, to the bottom or the top of the owner wall, or to a story (verticalLinkStoryIndex). The DevKit has no anchor to the project zero or to a reference level."
+    },
+    "WindowDoorRevealDepthLocation": {
+        "type": "string",
+        "enum": [
+            "Side",
+            "Core"
+        ],
+        "description": "What revealDepthOffset of a window or door is measured from (API_WindowType::revealDepthLocation): 'Side' the clicked face of the wall, 'Core' the core skin (clicked side) of a composite wall."
+    },
+    "WindowDoorDirectionType": {
+        "type": "string",
+        "enum": [
+            "AssociativeToWall",
+            "Vertical"
+        ],
+        "description": "The plane of a window or door in a slanted wall (API_WindowType::directionType): 'AssociativeToWall' follows the plane of the wall, 'Vertical' stays vertical."
+    },
+    "WindowDoorFixPoint": {
+        "type": "string",
+        "enum": [
+            "Beginning",
+            "Center",
+            "End"
+        ],
+        "description": "The fixed (placement) point of a window or door, relative to the owner wall's reference line (API_WindowType::fixPoint)."
     },
     "SkylightDetails": {
         "type": "object",

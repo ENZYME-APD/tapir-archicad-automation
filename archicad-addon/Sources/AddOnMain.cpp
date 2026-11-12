@@ -1301,11 +1301,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyWindowsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Window elements based on the given parameters."
+            "Modifies Window elements based on the given parameters: size, position, sill anchor (verticalLink), sub-floor thickness, reveal and its anchor, surface, plane in slanted walls, fix point and floor plan and section settings. The display option and these settings are read back, and an item fails when Archicad did not apply one."
         );
         err |= RegisterCommand<ModifyDoorsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Door elements based on the given parameters."
+            "Modifies Door elements based on the given parameters: size, position, sill anchor (verticalLink), sub-floor thickness, reveal and its anchor, surface, plane in slanted walls, fix point and floor plan and section settings. The display option and these settings are read back, and an item fails when Archicad did not apply one."
         );
         err |= RegisterCommand<ModifyOpeningsCommand> (
             elementCommands, "2.0.0",

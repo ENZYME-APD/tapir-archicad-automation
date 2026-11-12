@@ -4921,7 +4921,62 @@ GS::UniString WindowOrDoorDetailSchemaFields ()
         "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines (\"Uncut Lines\")." },
         "useObjectPens": { "type": "boolean", "description": "Use the pens defined in the library part instead of 'pen'." },
         "useObjectLineTypes": { "type": "boolean", "description": "Use the line types defined in the library part instead of 'lineTypeId'." },
-        "useObjectSectionAttributes": { "type": "boolean", "description": "Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens." })";
+        "useObjectSectionAttributes": { "type": "boolean", "description": "Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens." },
+        "verticalLink": { "$ref": "#/WindowDoorVerticalLink" },
+        "verticalLinkStoryIndex": { "type": "integer", "description": "The index of the story the opening is anchored to when verticalLink is 'SillToStory' or 'HeaderToStory' (API_VerticalLink::linkValue). When a story anchor is given without it, the opening keeps the story it is anchored to, or else its home story." },
+        "subFloorThickness": { "type": "number", "minimum": 0.0, "description": "Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness)." },
+        "revealDepthLocation": { "$ref": "#/WindowDoorRevealDepthLocation" },
+        "surfaceId": { "$ref": "#/AttributeId", "description": "The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true." },
+        "useObjectMaterials": { "type": "boolean", "description": "Use the surfaces defined in the library part instead of 'surfaceId'." },
+        "directionType": { "$ref": "#/WindowDoorDirectionType" },
+        "fixPoint": { "$ref": "#/WindowDoorFixPoint" })";
+}
+
+// The names of API_VerticalLinkID for windows and doors; the skylight values are left out.
+const std::pair<const char*, API_VerticalLinkID> WindowDoorVerticalLinks[] = {
+    { "SillToWallBottom", API_LinkSillToWallBottom }, { "SillToStory", API_LinkSillToStory },
+    { "HeaderToWallBottom", API_LinkHeaderToWallBottom }, { "HeaderToStory", API_LinkHeaderToStory },
+    { "SillToWallTop", API_LinkSillToWallTop }, { "HeaderToWallTop", API_LinkHeaderToWallTop }
+};
+
+const std::pair<const char*, API_WindowDoorRevealDepthLocationID> WindowDoorRevealDepthLocations[] = {
+    { "Side", APIWDRevealDepth_Side }, { "Core", APIWDRevealDepth_Core }
+};
+
+const std::pair<const char*, API_WindowDoorDirectionTypes> WindowDoorDirectionTypes[] = {
+    { "AssociativeToWall", API_WDAssociativeToWall }, { "Vertical", API_WDVertical }
+};
+
+const std::pair<const char*, short> WindowDoorFixPoints[] = {
+    { "Beginning", APIHoleAnchor_BegFix }, { "Center", APIHoleAnchor_CenterFix }, { "End", APIHoleAnchor_EndFix }
+};
+
+template <typename T, size_t N>
+bool WindowDoorEnumFromString (const std::pair<const char*, T> (&table)[N], const GS::UniString& name, T& value)
+{
+    for (const auto& entry : table) {
+        if (name == entry.first) {
+            value = entry.second;
+            return true;
+        }
+    }
+    return false;
+}
+
+template <typename T, size_t N>
+GS::Optional<GS::UniString> WindowDoorEnumToString (const std::pair<const char*, T> (&table)[N], T value)
+{
+    for (const auto& entry : table) {
+        if (entry.second == value) {
+            return GS::UniString (entry.first);
+        }
+    }
+    return {};
+}
+
+bool IsWindowDoorStoryLink (API_VerticalLinkID linkType)
+{
+    return linkType == API_LinkSillToStory || linkType == API_LinkHeaderToStory;
 }
 
 // Writes the given keys of a window or door to `element` and sets them in `mask`; shared by
@@ -5095,27 +5150,154 @@ GS::Optional<GS::UniString> ApplyWindowOrDoorDetails (API_Element& element, API_
         ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjSectAttrs);
         changed = true;
     }
+
+    // Anchor, sub-floor, reveal anchor, surface and plane settings (#2575).
+    GS::UniString enumStr;
+    API_VerticalLink verticalLink = opening.verticalLink;
+    bool verticalLinkGiven = false;
+    if (details.Get ("verticalLink", enumStr)) {
+        API_VerticalLinkID linkType = API_LinkSillToWallBottom;
+        if (!WindowDoorEnumFromString (WindowDoorVerticalLinks, enumStr, linkType)) {
+            return GS::UniString ("Invalid 'verticalLink'.");
+        }
+        if (IsWindowDoorStoryLink (linkType)) {
+            if (!IsWindowDoorStoryLink (verticalLink.linkType)) {
+                verticalLink.linkValue = element.header.floorInd;
+            }
+        } else {
+            verticalLink.linkValue = 0;
+        }
+        verticalLink.linkType = linkType;
+        verticalLinkGiven = true;
+    }
+    Int32 storyIndex = 0;
+    if (details.Get ("verticalLinkStoryIndex", storyIndex)) {
+        if (!IsWindowDoorStoryLink (verticalLink.linkType)) {
+            return GS::UniString ("'verticalLinkStoryIndex' is only used with the verticalLink 'SillToStory' or 'HeaderToStory'.");
+        }
+        const Stories stories = GetStories ();
+        if (stories.find ((short) storyIndex) == stories.end ()) {
+            return GS::UniString ("'verticalLinkStoryIndex' is not the index of a story; see GetStories for the valid story indices.");
+        }
+        verticalLink.linkValue = (short) storyIndex;
+        verticalLinkGiven = true;
+    }
+    if (verticalLinkGiven) {
+        opening.verticalLink = verticalLink;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.verticalLink);
+        changed = true;
+    }
+
+    auto subFloorThickness = GetOptionalDouble (details, "subFloorThickness");
+    if (subFloorThickness.HasValue ()) {
+        opening.subFloorThickness = subFloorThickness.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.subFloorThickness);
+        changed = true;
+    }
+
+    if (details.Get ("revealDepthLocation", enumStr)) {
+        API_WindowDoorRevealDepthLocationID revealDepthLocation = APIWDRevealDepth_Side;
+        if (!WindowDoorEnumFromString (WindowDoorRevealDepthLocations, enumStr, revealDepthLocation)) {
+            return GS::UniString ("Invalid 'revealDepthLocation'.");
+        }
+        element.window.revealDepthLocation = revealDepthLocation;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, revealDepthLocation);
+        changed = true;
+    }
+
+    attributeError = applyAttribute ("surfaceId", API_MaterialID, opening.mat);
+    if (attributeError.HasValue ()) {
+        return attributeError;
+    }
+    if (details.Get ("surfaceId") != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.mat);
+    }
+    if (details.Get ("useObjectMaterials", boolValue)) {
+        opening.useObjMaterials = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, openingBase.useObjMaterials);
+        changed = true;
+    }
+
+    if (details.Get ("directionType", enumStr)) {
+        API_WindowDoorDirectionTypes directionType = API_WDAssociativeToWall;
+        if (!WindowDoorEnumFromString (WindowDoorDirectionTypes, enumStr, directionType)) {
+            return GS::UniString ("Invalid 'directionType'.");
+        }
+        element.window.directionType = directionType;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, directionType);
+        changed = true;
+    }
+    if (details.Get ("fixPoint", enumStr)) {
+        short fixPoint = APIHoleAnchor_CenterFix;
+        if (!WindowDoorEnumFromString (WindowDoorFixPoints, enumStr, fixPoint)) {
+            return GS::UniString ("Invalid 'fixPoint'.");
+        }
+        element.window.fixPoint = fixPoint;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WindowType, fixPoint);
+        changed = true;
+    }
     return {};
 }
 
 // The result of ModifyWindows/ModifyDoors after ACAPI_Element_Change answered NoError: a
-// success, unless the item gave a displayOption that the window or door does not have now.
-// Archicad answers NoError for every display option and keeps another one on a window or
-// door (OutLinesOnly was read back as CutOnly, #2470), so it is read back here.
-GS::ObjectState CheckWindowOrDoorDisplayOptionApplied (const API_Element& element, const GS::ObjectState& item, const char* noun)
+// success, unless the item gave a setting that the window or door does not have now. Archicad
+// answers NoError for every display option and keeps another one on a window or door
+// (OutLinesOnly was read back as CutOnly, #2470), so the displayOption and the settings of
+// #2575 are read back here; `element` holds the values that were written.
+GS::ObjectState CheckWindowOrDoorDetailsApplied (const API_Element& element, const GS::ObjectState& item, const char* noun)
 {
-    GS::UniString displayOptionStr;
-    if (!item.Get ("displayOption", displayOptionStr)) {
+    static const char* const checkedKeys[] = { "displayOption", "verticalLink", "verticalLinkStoryIndex", "subFloorThickness",
+        "revealDepthLocation", "surfaceId", "useObjectMaterials", "directionType", "fixPoint" };
+    bool anyChecked = false;
+    for (const char* key : checkedKeys) {
+        anyChecked = anyChecked || item.Get (key) != nullptr;
+    }
+    if (!anyChecked) {
         return CreateSuccessfulExecutionResult ();
     }
     API_Element changed = {};
     changed.header.guid = element.header.guid;
     if (ACAPI_Element_Get (&changed) != NoError) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The %s was modified, but it could not be read back to check its displayOption.", noun));
+        return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The %s was modified, but it could not be read back to check the given settings.", noun));
     }
-    if (changed.window.openingBase.displayOption != element.window.openingBase.displayOption) {
-        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString::Printf ("Archicad did not apply displayOption '%T' to the %s, it has '%T' now; the other given fields were changed.",
-            displayOptionStr.ToPrintf (), noun, ElemDisplayOptionToString (changed.window.openingBase.displayOption).ToPrintf ()));
+
+    const API_OpeningBaseType& wanted = element.window.openingBase;
+    const API_OpeningBaseType& now = changed.window.openingBase;
+    GS::UniString notApplied;
+    const auto addNotApplied = [&] (const char* key, const GS::UniString& value) {
+        notApplied += GS::UniString (notApplied.IsEmpty () ? " " : "; ") + key + " (it is " + value + " now)";
+    };
+    const auto nameOrUnknown = [] (const GS::Optional<GS::UniString>& name) {
+        return name.HasValue () ? name.Get () : GS::UniString ("unknown");
+    };
+    if (item.Get ("displayOption") != nullptr && now.displayOption != wanted.displayOption) {
+        addNotApplied ("displayOption", ElemDisplayOptionToString (now.displayOption));
+    }
+    if ((item.Get ("verticalLink") != nullptr || item.Get ("verticalLinkStoryIndex") != nullptr) &&
+        (now.verticalLink.linkType != wanted.verticalLink.linkType || now.verticalLink.linkValue != wanted.verticalLink.linkValue)) {
+        const GS::UniString linkName = nameOrUnknown (WindowDoorEnumToString (WindowDoorVerticalLinks, now.verticalLink.linkType));
+        addNotApplied ("verticalLink", GS::UniString::Printf ("%T, story index %d", linkName.ToPrintf (), (int) now.verticalLink.linkValue));
+    }
+    if (item.Get ("subFloorThickness") != nullptr && std::abs (now.subFloorThickness - wanted.subFloorThickness) > 1e-6) {
+        addNotApplied ("subFloorThickness", GS::UniString::Printf ("%g", now.subFloorThickness));
+    }
+    if (item.Get ("revealDepthLocation") != nullptr && changed.window.revealDepthLocation != element.window.revealDepthLocation) {
+        addNotApplied ("revealDepthLocation", nameOrUnknown (WindowDoorEnumToString (WindowDoorRevealDepthLocations, changed.window.revealDepthLocation)));
+    }
+    if (item.Get ("surfaceId") != nullptr && now.mat != wanted.mat) {
+        addNotApplied ("surfaceId", "another surface");
+    }
+    if (item.Get ("useObjectMaterials") != nullptr && now.useObjMaterials != wanted.useObjMaterials) {
+        addNotApplied ("useObjectMaterials", now.useObjMaterials ? "true" : "false");
+    }
+    if (item.Get ("directionType") != nullptr && changed.window.directionType != element.window.directionType) {
+        addNotApplied ("directionType", nameOrUnknown (WindowDoorEnumToString (WindowDoorDirectionTypes, changed.window.directionType)));
+    }
+    if (item.Get ("fixPoint") != nullptr && changed.window.fixPoint != element.window.fixPoint) {
+        addNotApplied ("fixPoint", nameOrUnknown (WindowDoorEnumToString (WindowDoorFixPoints, changed.window.fixPoint)));
+    }
+    if (!notApplied.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString::Printf ("Archicad did not apply to the %s:", noun) + notApplied + ". The other given fields were changed.");
     }
     return CreateSuccessfulExecutionResult ();
 }
@@ -5358,6 +5540,49 @@ GS::Optional<GS::UniString> ApplySkylightDetails (API_Element& element, API_Elem
     return {};
 }
 
+}
+
+// Adds the window and door settings of #2575 to their GetDetailsOfElements answer: the ones
+// ApplyWindowOrDoorDetails writes, then the ones Archicad computes, which are only read.
+// Declared in CommandBase.hpp.
+void AddWindowOrDoorPositioningDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    const API_WindowType& window = elem.window;
+    const API_OpeningBaseType& opening = window.openingBase;
+    const GS::Optional<GS::UniString> verticalLink = WindowDoorEnumToString (WindowDoorVerticalLinks, opening.verticalLink.linkType);
+    if (verticalLink.HasValue ()) {
+        typeSpecificDetails.Add ("verticalLink", verticalLink.Get ());
+        if (IsWindowDoorStoryLink (opening.verticalLink.linkType)) {
+            typeSpecificDetails.Add ("verticalLinkStoryIndex", (Int32) opening.verticalLink.linkValue);
+        }
+    }
+    typeSpecificDetails.Add ("subFloorThickness", opening.subFloorThickness);
+    const GS::Optional<GS::UniString> revealDepthLocation = WindowDoorEnumToString (WindowDoorRevealDepthLocations, window.revealDepthLocation);
+    if (revealDepthLocation.HasValue ()) {
+        typeSpecificDetails.Add ("revealDepthLocation", revealDepthLocation.Get ());
+    }
+    if (opening.mat != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, opening.mat)));
+    }
+    typeSpecificDetails.Add ("useObjectMaterials", opening.useObjMaterials);
+    const GS::Optional<GS::UniString> directionType = WindowDoorEnumToString (WindowDoorDirectionTypes, window.directionType);
+    if (directionType.HasValue ()) {
+        typeSpecificDetails.Add ("directionType", directionType.Get ());
+    }
+    const GS::Optional<GS::UniString> fixPoint = WindowDoorEnumToString (WindowDoorFixPoints, window.fixPoint);
+    if (fixPoint.HasValue ()) {
+        typeSpecificDetails.Add ("fixPoint", fixPoint.Get ());
+    }
+
+    // Computed by Archicad; ModifyWindows and ModifyDoors do not take them.
+    typeSpecificDetails.Add ("revealDepthFromSide", window.revealDepthFromSide);
+    typeSpecificDetails.Add ("jambDepthHead", window.jambDepthHead);
+    typeSpecificDetails.Add ("jambDepthSill", window.jambDepthSill);
+    typeSpecificDetails.Add ("jambDepthLeft", window.jambDepth);
+    typeSpecificDetails.Add ("jambDepthRight", window.jambDepth2);
+    typeSpecificDetails.Add ("wallCutUsing", opening.wallCutUsing);
+    typeSpecificDetails.Add ("startPoint", Create2DCoordinateObjectState (window.startPoint));
+    typeSpecificDetails.Add ("dirVector", Create2DCoordinateObjectState (window.dirVector));
 }
 
 // The GetDetailsOfElements branch of skylights: the keys ApplySkylightDetails writes, plus the
@@ -15396,7 +15621,7 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
                 results.Push (CreateFailedExecutionResult (err, "Failed to modify window."));
                 continue;
             }
-            results.Push (CheckWindowOrDoorDisplayOptionApplied (element, item, "window"));
+            results.Push (CheckWindowOrDoorDetailsApplied (element, item, "window"));
         }
     });
 }
@@ -15478,7 +15703,7 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (err, "Failed to modify door."));
                 continue;
             }
-            results.Push (CheckWindowOrDoorDisplayOptionApplied (element, item, "door"));
+            results.Push (CheckWindowOrDoorDetailsApplied (element, item, "door"));
         }
     });
 }

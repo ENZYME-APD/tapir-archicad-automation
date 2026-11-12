@@ -98,6 +98,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Anchor the sill or header of a window or door to the project zero or to a reference level</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_VerticalLinkID</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30) has only the wall bottom, the wall top and a story as the anchor of a window or door (<code>API_LinkSillTo&hellip;</code>, <code>API_LinkHeaderTo&hellip;</code>); there is no value for the project zero or a reference level.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2575">#2575</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">A camera with a name of its own, or an axonometric camera</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.</td>
