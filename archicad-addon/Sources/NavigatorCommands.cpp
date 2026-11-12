@@ -1296,6 +1296,60 @@ GS::ObjectState GetModelViewOptionDetailsCommand::Execute (const GS::ObjectState
 // Defined at CreateViewsInViewMap below; frees what ACAPI_Navigator_GetNavigatorView allocates.
 static void FreeNavigatorView (API_NavigatorView& navigatorView);
 
+struct RenovationFilter {
+    API_Guid      guid;
+    GS::UniString name;
+};
+
+// Every renovation filter of the project with its name. A filter whose name cannot be
+// read is still listed, with an empty name, so its guid stays usable.
+static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
+{
+    GS::Array<API_Guid> renovationFilterGuids;
+    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& guid : renovationFilterGuids) {
+        GS::UniString name;
+        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
+            name.Clear ();
+        }
+        renovationFilters.Push ({ guid, name });
+    }
+
+    return NoError;
+}
+
+// The guid of the renovation filter with this name: an exact match first, else the first
+// case-insensitive one. APINULLGuid when there is none; availableNames then lists the
+// names of the project's filters for the error message.
+static API_Guid FindRenovationFilterByName (const GS::Array<RenovationFilter>& renovationFilters, const GS::UniString& name, GS::UniString& availableNames)
+{
+    API_Guid caseInsensitiveMatch = APINULLGuid;
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        if (renovationFilter.name == name) {
+            return renovationFilter.guid;
+        }
+        if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
+            caseInsensitiveMatch = renovationFilter.guid;
+        }
+    }
+    if (caseInsensitiveMatch != APINULLGuid) {
+        return caseInsensitiveMatch;
+    }
+
+    availableNames.Clear ();
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        if (!availableNames.IsEmpty ()) {
+            availableNames += ", ";
+        }
+        availableNames += "\"" + renovationFilter.name + "\"";
+    }
+    return APINULLGuid;
+}
+
 GetViewOptionsCommand::GetViewOptionsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -1670,6 +1724,11 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Read once, when the first renovationFilterName is given.
+    GS::Array<RenovationFilter> renovationFilters;
+    bool renovationFiltersRead = false;
+    GSErrCode renovationFiltersErr = NoError;
+
     for (const GS::ObjectState& navigatorItemIdWithViewSetting : navigatorItemIdsWithViewSettings) {
         const GS::ObjectState* viewSettingsOS = navigatorItemIdWithViewSetting.Get ("viewSettings");
         if (viewSettingsOS == nullptr) {
@@ -1753,9 +1812,44 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             navigatorView.saveStructureDisplay = true;
         }
 
+        API_Guid renovationFilterGuid = APINULLGuid;
         const GS::ObjectState* renovFilterOS = viewSettingsOS->Get ("renovationFilterGuid");
         if (renovFilterOS != nullptr) {
-            navigatorView.renovationFilterGuid = GetGuidFromObjectState (*renovFilterOS);
+            renovationFilterGuid = GetGuidFromObjectState (*renovFilterOS);
+        }
+
+        // A renovation filter given by name is looked up among the project's filters. An
+        // unknown name fails the item before anything is written: Archicad has no name field
+        // for the filter in the view, so the name alone would otherwise be ignored silently.
+        GS::UniString renovationFilterName;
+        const bool renovationFilterNameGiven = viewSettingsOS->Get ("renovationFilterName", renovationFilterName);
+        if (renovationFilterNameGiven) {
+            if (!renovationFiltersRead) {
+                renovationFiltersErr = GetRenovationFilters (renovationFilters);
+                renovationFiltersRead = true;
+            }
+            if (renovationFiltersErr != NoError) {
+                executionResults (CreateFailedExecutionResult (renovationFiltersErr, "Failed to get the renovation filters of the project to look up the renovationFilterName. Nothing was written."));
+                continue;
+            }
+            GS::UniString availableNames;
+            const API_Guid guidOfName = FindRenovationFilterByName (renovationFilters, renovationFilterName, availableNames);
+            if (guidOfName == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME,
+                    "The project has no renovation filter named \"" + renovationFilterName + "\". Its renovation filters: " + availableNames +
+                    ". Nothing was written."));
+                continue;
+            }
+            if (renovFilterOS != nullptr && renovationFilterGuid != guidOfName) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    "renovationFilterGuid and renovationFilterName name different renovation filters. Give only one of them. Nothing was written."));
+                continue;
+            }
+            renovationFilterGuid = guidOfName;
+        }
+
+        if (renovFilterOS != nullptr || renovationFilterNameGiven) {
+            navigatorView.renovationFilterGuid = renovationFilterGuid;
         }
 
         SetUCharProperty (viewSettingsOS, "d3styleName", navigatorView.d3styleName);
@@ -1982,32 +2076,6 @@ GS::ObjectState SetActiveGraphicalOverrideCombinationCommand::Execute (const GS:
 #endif
 }
 
-struct RenovationFilter {
-    API_Guid      guid;
-    GS::UniString name;
-};
-
-// Every renovation filter of the project with its name. A filter whose name cannot be
-// read is still listed, with an empty name, so its guid stays usable.
-static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
-{
-    GS::Array<API_Guid> renovationFilterGuids;
-    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
-    if (err != NoError) {
-        return err;
-    }
-
-    for (const API_Guid& guid : renovationFilterGuids) {
-        GS::UniString name;
-        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
-            name.Clear ();
-        }
-        renovationFilters.Push ({ guid, name });
-    }
-
-    return NoError;
-}
-
 GetRenovationFiltersCommand::GetRenovationFiltersCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -2136,23 +2204,7 @@ GS::ObjectState SetActiveRenovationFilterCommand::Execute (const GS::ObjectState
         }
 
         GS::UniString availableNames;
-        API_Guid caseInsensitiveMatch = APINULLGuid;
-        for (const RenovationFilter& renovationFilter : renovationFilters) {
-            if (renovationFilter.name == name) {
-                renovationFilterGuid = renovationFilter.guid;
-                break;
-            }
-            if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
-                caseInsensitiveMatch = renovationFilter.guid;
-            }
-            if (!availableNames.IsEmpty ()) {
-                availableNames += ", ";
-            }
-            availableNames += "\"" + renovationFilter.name + "\"";
-        }
-        if (renovationFilterGuid == APINULLGuid) {
-            renovationFilterGuid = caseInsensitiveMatch;
-        }
+        renovationFilterGuid = FindRenovationFilterByName (renovationFilters, name, availableNames);
         if (renovationFilterGuid == APINULLGuid) {
             return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no renovation filter named \"" + name + "\". Its renovation filters: " + availableNames);
         }
