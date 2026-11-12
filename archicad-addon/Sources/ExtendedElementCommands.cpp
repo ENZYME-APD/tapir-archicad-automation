@@ -4406,6 +4406,82 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     return changed;
 }
 
+// The segment an item of the "segments" list of ModifyColumns writes: its segmentIndex, else its
+// position in the list, in the order GetDetailsOfElements returns the segments.
+static Int32 GetColumnSegmentIndex (const GS::ObjectState& segmentOs, UIndex position)
+{
+    Int32 segmentIndex = static_cast<Int32> (position);
+    segmentOs.Get ("segmentIndex", segmentIndex);
+    return segmentIndex;
+}
+
+// Checks the "segments" list of a ModifyColumns item (#2552) before anything is written, so a
+// wrong segment index, an unknown surface or an invalid veneer leaves the column as it was.
+static GS::Optional<GS::UniString> CheckColumnSegments (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    GS::Array<GS::ObjectState> segmentItems;
+    if (!details.Get ("segments", segmentItems)) {
+        return {};
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+        return GS::UniString ("Failed to read the segments of the column.");
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+
+    for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
+        const GS::ObjectState& segmentOs = segmentItems[i];
+        const Int32 segmentIndex = GetColumnSegmentIndex (segmentOs, i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            return GS::UniString::Printf ("segments[%d] writes segment %d, but the column has %d segments (segmentIndex 0 to %d).",
+                static_cast<int> (i), static_cast<int> (segmentIndex), static_cast<int> (nSegments), static_cast<int> (nSegments) - 1);
+        }
+        for (const char* key : { "extrusionSurfaceMaterial", "endsMaterial" }) {
+            GS::ObjectState materialOs;
+            bool overridden = false;
+            if (segmentOs.Get (key, materialOs) && materialOs.Get ("overridden", overridden) && overridden && !materialOs.Contains ("attributeId")) {
+                return GS::UniString::Printf ("segments[%d].%s is overridden but has no attributeId.", static_cast<int> (i), key);
+            }
+        }
+        const GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (
+            segmentOs, { "extrusionSurfaceMaterial", "endsMaterial" }, "");
+        if (idError.HasValue ()) {
+            return idError;
+        }
+        const GS::ObjectState* veneerOs = segmentOs.Get ("veneer");
+        if (veneerOs != nullptr) {
+            API_ColumnSegmentType probe = {};
+            const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, probe);
+            if (veneerError.HasValue ()) {
+                return veneerError;
+            }
+        }
+    }
+    return {};
+}
+
+static GS::Optional<GS::UniString> ApplyColumnSegment (const GS::ObjectState& segmentOs, API_ColumnSegmentType& segment)
+{
+    GS::ObjectState materialOs;
+    if (segmentOs.Get ("extrusionSurfaceMaterial", materialOs)) {
+        segment.extrusionSurfaceMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("endsMaterial", materialOs)) {
+        segment.endsMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    bool materialsChained = false;
+    if (segmentOs.Get ("materialsChained", materialsChained)) {
+        segment.materialsChained = materialsChained;
+    }
+    const GS::ObjectState* veneerOs = segmentOs.Get ("veneer");
+    if (veneerOs != nullptr) {
+        return ApplyColumnVeneer (*veneerOs, segment);
+    }
+    return {};
+}
+
 namespace {
 
 // The floor plan display settings of a beam that ModifyBeams writes (#2529), under the names
@@ -4655,7 +4731,9 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
     const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = details.Get ("profileId");
     const GS::ObjectState* veneerOs = details.Get ("veneer");
-    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && veneerOs == nullptr) {
+    GS::Array<GS::ObjectState> segmentItems;
+    const bool hasSegments = details.Get ("segments", segmentItems);
+    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && veneerOs == nullptr && !hasSegments) {
         return true;
     }
 
@@ -4692,6 +4770,20 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
                 segment.profileType = APISect_Normal;
             }
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        }
+    }
+
+    // After the fields for all segments, so a segment's own veneer wins. The indices were
+    // checked by CheckColumnSegments (#2552).
+    for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
+        const Int32 segmentIndex = GetColumnSegmentIndex (segmentItems[i], i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            continue;
+        }
+        const GS::Optional<GS::UniString> segmentError = ApplyColumnSegment (segmentItems[i], memo.columnSegments[segmentIndex]);
+        if (segmentError.HasValue ()) {
+            errorMessage = segmentError.Get ();
+            return false;
         }
     }
 
@@ -16903,7 +16995,14 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
-                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
+                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },
+                        "segments": {
+                            "type": "array",
+                            "description": "Writes the surfaces and the veneer of single segments of the column. Each item writes the segment given by its segmentIndex, else the segment at its position in this list (the order GetDetailsOfElements returns them); segments not listed stay as they are. Only the surface and veneer keys of a read segment are accepted: its cross section, taper and length are not written here. Applied after the fields above, so a segment's own veneer wins over veneer.",
+                            "items": {
+                                "$ref": "#/ColumnSegmentSurfacesModification"
+                            }
+                        },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -16962,6 +17061,11 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                     continue;
                 }
             }
+            const GS::Optional<GS::UniString> segmentsError = CheckColumnSegments (element.header.guid, item);
+            if (segmentsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentsError.Get ()));
+                continue;
+            }
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
@@ -16985,7 +17089,7 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 check.item = &item;
                 displayChecks.Push (check);
             }
-            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer");
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer") || item.Contains ("segments");
             if (!changed && !hasSectionFields) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No column fields to modify."));
                 continue;
@@ -17004,7 +17108,7 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item, sectionError);
                 if (!sectionOk) {
                     results.Push (sectionError.IsEmpty ()
-                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section.")
+                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments.")
                         : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
                     continue;
                 }
