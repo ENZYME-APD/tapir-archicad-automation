@@ -12,7 +12,7 @@ if not doors:
 createdPart = aclib.RunTapirCommand ('CreateLibraryParts', {
     'libraryParts': [{
         'name': 'Tapir Example Box',
-        'parentName': 'General GDL Object',
+        'parentName': 'Model Element',
         'path': 'TapirExamples/Tapir Example Box.gsm',
         'script3D': 'BLOCK A, B, 1'
     }],

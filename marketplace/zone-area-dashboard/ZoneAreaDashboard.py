@@ -326,6 +326,73 @@ def faded(rgb, amount: float = 0.7) -> tuple[int, int, int]:
     return tuple(round(c + (255 - c) * amount) for c in rgb[:3])
 
 
+# ---- the window's size ----
+
+# its smallest size (the width its five buttons and "Keep on top" need), and the size it opens at, never more than
+# SCREEN_SHARE of the screen
+MIN_WIDTH, MIN_HEIGHT = 800, 520
+OPEN_WIDTH, OPEN_HEIGHT = 800, 700
+SCREEN_SHARE = 0.85
+
+
+def window_size(screen_width: int, screen_height: int) -> tuple[int, int]:
+    """ The size the window opens at: OPEN_WIDTH x OPEN_HEIGHT, but never more than SCREEN_SHARE of the
+    screen, nor less than the smallest size. """
+    width = max(MIN_WIDTH, min(OPEN_WIDTH, int(screen_width * SCREEN_SHARE)))
+    height = max(MIN_HEIGHT, min(OPEN_HEIGHT, int(screen_height * SCREEN_SHARE)))
+    return width, height
+
+
+def scrolling_body(window: ScriptWindow) -> ttk.Frame:
+    """ The frame to build the window's content in, inside the window's body. When the window is shorter
+    than the content, the content scrolls and the buttons stay on the screen; when it is taller, the
+    content gets the extra height, as the body would give it. """
+    body = window.body
+    body.rowconfigure(0, weight=1)
+    background = window.style.lookup("TFrame", "background") or None
+    canvas = tk.Canvas(body, highlightthickness=0, borderwidth=0, width=1, height=1,
+                       **({"background": background} if background else {}))
+    scrollbar = ttk.Scrollbar(body, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.grid(row=0, column=0, sticky="nsew")
+    inner = ttk.Frame(canvas)
+    inner.columnconfigure(0, weight=1)
+    item = canvas.create_window((0, 0), window=inner, anchor="nw")
+
+    def fit(_event=None) -> None:
+        width, height = canvas.winfo_width(), canvas.winfo_height()
+        needed = inner.winfo_reqheight()
+        canvas.itemconfigure(item, width=width, height=max(needed, height))
+        canvas.configure(scrollregion=(0, 0, width, max(needed, height)))
+        if needed > height + 1:
+            scrollbar.grid(row=0, column=1, sticky="ns")
+        else:
+            scrollbar.grid_remove()
+            canvas.yview_moveto(0)
+
+    def wheel(event) -> None:
+        """ The mouse wheel scrolls the content while the pointer is over it, but not over a list or a
+        chart, which scroll or zoom themselves. """
+        if not scrollbar.winfo_ismapped():
+            return
+        pointed = canvas.winfo_containing(event.x_root, event.y_root)
+        if pointed is None or not str(pointed).startswith(str(canvas)) \
+                or pointed.winfo_class() in ("Treeview", "Canvas", "Text", "Listbox"):
+            return
+        step = -1 if (getattr(event, "num", 0) == 4 or getattr(event, "delta", 0) > 0) else 1
+        canvas.yview_scroll(step, "units")
+
+    canvas.bind("<Configure>", fit)
+    inner.bind("<Configure>", fit)
+    for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
+        canvas.bind_all(sequence, wheel, add="+")
+    root = window.root
+    root.minsize(MIN_WIDTH, MIN_HEIGHT)
+    width, height = window_size(root.winfo_screenwidth(), root.winfo_screenheight())
+    root.geometry(f"{width}x{height}")
+    return inner
+
+
 # ---- the window ----
 
 class ZoneAreaDashboard:
@@ -336,7 +403,7 @@ class ZoneAreaDashboard:
             "those zones in Archicad in their colour and fade the rest; Ctrl-click (Cmd-click on macOS) adds to "
             "the highlight, clicking again removes it. The tabs next to the table show charts; click a slice, bar, "
             "tile or legend entry to highlight its zones the same way.",
-            min_width=900, min_height=760)
+            min_width=MIN_WIDTH, min_height=MIN_HEIGHT)
         self.zones: list[dict] = []  # {"elementId", "guid", "floorIndex", "areas": {key: m²}, "values": {metric: text}}
         self.metrics: list[dict] = list(BUILT_IN_METRICS)
         self.loaded: set[str] = set()
@@ -367,7 +434,7 @@ class ZoneAreaDashboard:
     # ---- layout ----
 
     def _build_body(self) -> None:
-        body = self.window.body
+        body = scrolling_body(self.window)
         body.rowconfigure(3, weight=1)
         family = tkfont.nametofont("TkDefaultFont").actual("family")
         self.window.style.configure("Card.TFrame", relief="solid", borderwidth=1)
@@ -384,7 +451,7 @@ class ZoneAreaDashboard:
                         command=self.window.guarded(self.refresh)).grid(row=0, column=1, sticky="w", padx=(10, 0))
         ttk.Label(zones, text="Area:").grid(row=0, column=2, sticky="w", padx=(24, 0))
         self.area_kind = tk.StringVar(value=AREAS[0][0])
-        area = ttk.Combobox(zones, textvariable=self.area_kind, values=[label for label, _ in AREAS], width=34,
+        area = ttk.Combobox(zones, textvariable=self.area_kind, values=[label for label, _ in AREAS], width=22,
                             state="readonly")
         area.grid(row=0, column=3, sticky="w", padx=(6, 0))
         area.bind("<<ComboboxSelected>>", lambda _e: self.window.guarded(self.update_view)())
@@ -398,12 +465,12 @@ class ZoneAreaDashboard:
         grouping.grid(row=1, column=0, sticky="ew", pady=(8, 0))
         ttk.Label(grouping, text="Group by:").grid(row=0, column=0, sticky="w")
         self.group_by = tk.StringVar(value="Zone category")
-        self.group_box = ttk.Combobox(grouping, textvariable=self.group_by, width=34, state="readonly")
+        self.group_box = ttk.Combobox(grouping, textvariable=self.group_by, width=22, state="readonly")
         self.group_box.grid(row=0, column=1, sticky="w", padx=(6, 0))
         self.group_box.bind("<<ComboboxSelected>>", lambda _e: self.window.guarded(self.metrics_changed)())
         ttk.Label(grouping, text="Colour by:").grid(row=0, column=2, sticky="w", padx=(18, 0))
         self.colour_by = tk.StringVar(value="Zone category")
-        self.colour_box = ttk.Combobox(grouping, textvariable=self.colour_by, width=34, state="readonly")
+        self.colour_box = ttk.Combobox(grouping, textvariable=self.colour_by, width=22, state="readonly")
         self.colour_box.grid(row=0, column=3, sticky="w", padx=(6, 0))
         self.colour_box.bind("<<ComboboxSelected>>", lambda _e: self.window.guarded(self.metrics_changed)())
 
@@ -411,9 +478,9 @@ class ZoneAreaDashboard:
         for index in range(2):
             ttk.Label(grouping, text=f"Filter {index + 1}:").grid(row=1 + index, column=0, sticky="w", pady=(6, 0))
             metric = tk.StringVar(value=NO_FILTER)
-            box = ttk.Combobox(grouping, textvariable=metric, width=34, state="readonly")
+            box = ttk.Combobox(grouping, textvariable=metric, width=22, state="readonly")
             box.grid(row=1 + index, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
-            button = ttk.Menubutton(grouping, text="All values", width=30)
+            button = ttk.Menubutton(grouping, text="All values", width=20)
             button.grid(row=1 + index, column=2, columnspan=2, sticky="w", padx=(18, 0), pady=(6, 0))
             menu = tk.Menu(button, tearoff=False)
             button["menu"] = menu

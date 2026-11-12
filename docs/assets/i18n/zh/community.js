@@ -135,5 +135,20 @@
         '我们正在围绕 Archicad 自动化建设一个积极而多元的社区。',
     'Say hello on Discord, and tell us what you automate in Archicad.':
         '来 Discord 打个招呼，告诉我们你在 Archicad 中自动化了什么。',
-    'Join the Discord': '加入 Discord'
+    'Join the Discord': '加入 Discord',
+
+    // On the map (user-map.js)
+    "On the map": "地图",
+    "Where Tapir is <em>used.</em>": "Tapir 在哪里<em>被使用。</em>",
+    "The towns people named on Discord, counted per town: never a name or a message. Type <code>/where</code> and your town in any Discord channel to put it on the map.": "大家在 Discord 上提到的城市，按城市计数：从不记录姓名或消息内容。在任意 Discord 频道输入 <code>/where</code> 和你的城市，把它放上地图。",
+    "People on the map": "地图上的人数",
+    "Countries": "国家",
+    "Towns": "城市",
+    "A dot per town, larger where more people are. Land: Natural Earth.": "每个城市一个点，人越多点越大。陆地数据：Natural Earth。",
+    "Add your town on Discord": "在 Discord 上添加你的城市",
+    "{place}, {country}: {count} person": "{place}，{country}：{count} 人",
+    "{place}, {country}: {count} people": "{place}，{country}：{count} 人",
+    "{count} person": "{count} 人",
+    "{count} people": "{count} 人",
+    "World map of where people use Tapir: {people} people in {countries} countries. The list below names every country.": "Tapir 用户分布世界地图：{countries} 个国家的 {people} 人。下方列表列出了每个国家。"
 });

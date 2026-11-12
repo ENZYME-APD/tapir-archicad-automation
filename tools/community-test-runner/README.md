@@ -195,7 +195,8 @@ A pull request adds a JSON file to `archicad-addon/Test/checks/`. Example:
 - `params` may use `${name}` for values saved by earlier steps.
 - `save`: name → path into the answer (`a.b[0].c`, `elements[*].elementId.guid`).
 - `expect`: `path` (or `expr`, arithmetic over saved values) with one of `eq`, `ne`,
-  `approx` (+ `tol`), `lt`, `gt`, `len`, `contains`, `exists`; `name` labels the row.
+  `approx` (+ `tol`), `lt`, `gt`, `len`, `contains`, `exists`; `name` labels the row. The
+  expected value may use `${name}` too (`"eq": "${surface}"`).
 - Every element a step creates is deleted at the end; set `"creates": false` on steps that
   don't create anything. `teardown` steps run last.
 - Checks run on every language version of Archicad, each with its own template and defaults (stair

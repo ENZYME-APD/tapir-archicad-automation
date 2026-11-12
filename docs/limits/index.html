@@ -98,6 +98,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Anchor the sill or header of a window or door to the project zero or to a reference level</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_VerticalLinkID</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30) has only the wall bottom, the wall top and a story as the anchor of a window or door (<code>API_LinkSillTo&hellip;</code>, <code>API_LinkHeaderTo&hellip;</code>); there is no value for the project zero or a reference level.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2575">#2575</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">A camera with a name of its own, or an axonometric camera</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.</td>
@@ -119,6 +126,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2536">#2536</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change the baseline of an existing stair (move a flight end, a landing or a winder) and keep its GUID</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Recreate the stair on the new baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a>, which keeps its settings, Element ID, classifications, categories, properties and solid element operations, and returns the old and the new GUID. Its labels are lost.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The table of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>) does not list <code>API_StairID</code> among the types whose geometry or memo can change; there is no memo mask for <code>stairBaseLine</code> (only <code>APIMemoMask_StairRiser</code>, <code>StairTread</code> and <code>StairStructure</code>), and <code>ACAPI_Element_ChangeMemo</code> takes only <code>APIMemoMask_Polygon</code> (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2532">#2532</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read which slab or stair edge a railing is linked to, or link a railing to one</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the slab's outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.</td>
@@ -133,11 +147,55 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_MeshType</code> has no <code>displayOption</code>, <code>viewDepthLimitation</code>, uncut or overhead (<code>aboveView*</code>) line pen or type, and no <code>sectContLtype</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30), as <code>API_ShellBaseType</code> of roofs and shells has. Its floor plan members are <code>contPen</code>, <code>ltypeInd</code>, <code>levelPen</code>, <code>sectContPen</code>, the cut fill pens, <code>visibilityCont</code>, <code>visibilityFill</code> and the cover fill, which <a href="../archicad-addon/#ModifyMeshes">ModifyMeshes</a> writes.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2630">#2630</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> holds only <code>head</code>, <code>linkToSettings</code>, <code>defNode</code>, <code>defSegment</code>, <code>visibility</code>, <code>isAutoOnStoryVisibility</code>, <code>nVertices</code>, <code>referenceLinePen</code>, <code>contourPen</code>, <code>nNodes</code>, <code>nSegments</code> and <code>bottomOffset</code>; neither it nor <code>API_RailingSegmentType</code>, <code>API_RailingNodeType</code> and their post, rail, panel and baluster types has a break mark, symbol component, symbol override or 2D attribute field (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). The break mark fields (<code>breakLinePositionType</code>, <code>breakLineDistance</code>, <code>breakLineAngle</code>) are only in <code>API_StairType</code>, and the <code>ACAPI::</code> modules have no railing API.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2573">#2573</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_WallType</code>, <code>API_BeamSegmentType</code>, <code>API_ColumnSegmentType</code> and <code>API_AssemblySegmentData</code> have no field for an element&rsquo;s modifier values or a wall&rsquo;s stretch (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). <code>API_ElementMemo</code> holds only the profile geometry (<code>customOrigProfile</code>, <code>stretchedProfile</code>, <code>assemblySegmentProfiles</code>) and <code>customParams</code>, &ldquo;reserved for internal use&rdquo;; no <code>ACAPI_*</code> function reads or sets the values. The only table of modifier values is the analytical model&rsquo;s <code>API_AnalyticalCrossSection::profileParameters</code> (<code>APIdefs_AnalyticalModel.h</code>).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2587">#2587</a></td>
+                        </tr>
+
+                        <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Design options</th></tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read which design option, or the Main Model, is the default that new elements go to</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Create a temporary element, read its design option with <a href="../archicad-addon/#GetDesignOptionForElements">GetDesignOptionForElements</a>, then move it to the Main Model with <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a> (a null GUID as <code>designOptionId</code>) and delete it with <a href="../archicad-addon/#DeleteElements">DeleteElements</a>; an element in an option that is not shown cannot be deleted. Set the default with <a href="../archicad-addon/#SetDefaultDesignOption">SetDefaultDesignOption</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>DesignOptionManager</code> has <code>SetDesignOptionAsDefault</code> (<code>DesignOptionsAPI/ACAPI/DesignOptionManager.hpp</code>, AC29&ndash;AC30) but no function that returns the default, and <code>DesignOption</code> (<code>DesignOption.hpp</code>) has no default flag. AC27 (<code>DesignVariantAPI</code>) and AC28 have neither; AC25&ndash;AC26 have no design options.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or change which design options the current window shows, as the eye icons of the Design Options palette do</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Work with saved views: read and set the combination a View Map view shows with <a href="../archicad-addon/#GetDesignOptionCombinationOfViews">GetDesignOptionCombinationOfViews</a> and <a href="../archicad-addon/#SetDesignOptionCombinationOfViews">SetDesignOptionCombinationOfViews</a>, and the options of a combination with <a href="../archicad-addon/#SetActiveDesignOptionsInCombinations">SetActiveDesignOptionsInCombinations</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>DesignOptionManager::GetDesignOptionCombinationSettingsOf</code> takes a <code>View</code>, which only <code>FindViewByGuid</code> (<code>ArchicadAPI/ACAPI/View.hpp</code>) returns, for a View Map item; <code>DesignOptionCombinationViewSettings</code> can only <code>SetMainModelOnly</code> and <code>SetStandardCombination</code>. No function reads or sets the options of the current window (AC27&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Duplicate a design option or a design option set, as the duplicate button of the Design Options palette does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Create the set and its options with <a href="../archicad-addon/#CreateDesignOptionSets">CreateDesignOptionSets</a> and <a href="../archicad-addon/#CreateDesignOptions">CreateDesignOptions</a>. For the elements, list them with <a href="../archicad-addon/#GetElementsOfDesignOptions">GetElementsOfDesignOptions</a>, copy them with <a href="../archicad-addon/#CopyElements">CopyElements</a> and move the copies to the new option with <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>DesignOptionManager</code> (<code>DesignOptionsAPI/ACAPI/DesignOptionManager.hpp</code>, AC29&ndash;AC30) duplicates only a combination (<code>DuplicateDesignOptionCombination</code>); it has no function that duplicates a design option or a set. AC27&ndash;AC28 have none either.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Lock or colour the passive elements of design options, as the Design Options palette does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No passive-element setting in the <code>DesignOptionsAPI</code> headers or the <code>Inc</code> headers (<code>ACAPinc.h</code>, <code>APIdefs_*.h</code>) of AC27&ndash;AC30.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
                         </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
@@ -154,6 +212,13 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPinc.h</code> has only <code>ACAPI_Navigator_ModelViewOptions_Get</code>, <code>_GetNum</code> and <code>_Search</code> (AC27&ndash;AC30). In AC25&ndash;AC26 the combinations are attributes (<code>API_ModelViewOptionsID</code>); not checked there.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781">#781</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change the settings of an existing Layout Book subset (prefix, numbering style, start at, ...)</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Database.h</code> has only <code>ACAPI_Navigator_GetSubSetDefault</code>, <code>ACAPI_Navigator_CreateSubSet</code> and <code>ACAPI_Navigator_GetSubSet</code> for <code>API_SubSet</code> (AC27&ndash;AC30; <code>APIDb_GetSubSetDefaultID</code>, <code>APIDb_CreateSubSetID</code> and <code>APIDb_GetSubSetID</code> in AC25&ndash;AC26). No function changes the settings of an existing subset.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2702">#2702</a></td>
                         </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Project and files</th></tr>
@@ -200,6 +265,28 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No schedule export function (AC25&ndash;AC30); <code>ACAPI_ProjectOperation_Publish</code> (<code>APIDo_PublishID</code> in AC25&ndash;AC26) publishes a whole publisher set.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Create a revision Change without placing a Change Marker, or change the ID or description of an existing Change</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Create the Change together with its first marker with <a href="../archicad-addon/#CreateChangeMarkers">CreateChangeMarkers</a> (createChange). To change an existing Change, use Archicad&rsquo;s Change Manager.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The <code>ACAPI_Revision_*</code> functions (<code>ACAPI_Database.h</code>, AC27&ndash;AC30; <code>APIDb_*RVM*ID</code> in AC25&ndash;AC26) read Changes; the only one that writes, <code>ACAPI_Revision_ChangeRVMIssue</code>, changes an Issue. A Change is only created by <code>ACAPI_Element_Create</code>/<code>ACAPI_Element_CreateExt</code> of a Change Marker with <code>linkType</code> <code>APICMLT_CreateNewChange</code> (<code>API_ChangeMarkerType</code>, <code>APIdefs_Elements.h</code>).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2658">#2658</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the custom scheme fields of a revision Change</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Fill them in Archicad&rsquo;s Change Manager; <a href="../archicad-addon/#GetRevisionChanges">GetRevisionChanges</a> reads them back.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RVMChange::customData</code> (<code>APIdefs_Database.h</code>) is only filled by the reading functions; no <code>ACAPI_Revision_*</code> functions (<code>ACAPI_Database.h</code>, AC27&ndash;AC30; <code>APIDb_*RVM*ID</code> in AC25&ndash;AC26) writes a Change, and <code>API_ChangeMarkerType</code> has only <code>changeId</code> and <code>changeName</code> (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2658">#2658</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Add elements to a revision Change, or remove them from it</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Add them in Archicad&rsquo;s Change Manager; <a href="../archicad-addon/#GetRevisionChangesOfElements">GetRevisionChangesOfElements</a> reads which Changes an element belongs to.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Revision_GetRVMElemChangeIds</code> (<code>APIDb_GetRVMElemChangeIdsID</code> in AC25&ndash;AC26) only reads the Changes of an element; no function writes them (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2658">#2658</a></td>
                         </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Archicad's interface</th></tr>
