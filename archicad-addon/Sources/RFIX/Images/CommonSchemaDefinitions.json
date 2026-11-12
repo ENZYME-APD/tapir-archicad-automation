@@ -3325,7 +3325,7 @@
             },
             "surfaceId": {
                 "$ref": "#/AttributeId",
-                "description": "Optional per-face surface (render material) override. Uses the Morph's default surface when omitted. Ignored during creation in Archicad 25."
+                "description": "Optional per-face surface (render material) override. Uses the Morph's default surface (the morph's own surfaceId) when omitted, and takes precedence over it when given. Ignored in Archicad 25 and 26."
             }
         },
         "additionalProperties": false,

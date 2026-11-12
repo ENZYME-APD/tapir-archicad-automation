@@ -4380,8 +4380,13 @@ static Int32 GetOrAddEdge (void* bodyData, UInt32 a, UInt32 b, std::map<std::pai
 // ModifyMorphs (the latter via a "replace the whole body" flag, mirroring CreateProfiles'
 // replaceSkins). Does NOT set element.morph.bodyType/edgeType - the caller does that from the
 // same "body" object's bodyType/edgeDefault fields, since those live on API_Element, not the memo.
-bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo& memo, GS::UniString& errorOut)
+// hasFaceSurfacesOut, when given, is set to whether any face got its own surface.
+bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo& memo, GS::UniString& errorOut, bool* hasFaceSurfacesOut = nullptr)
 {
+    if (hasFaceSurfacesOut != nullptr) {
+        *hasFaceSurfacesOut = false;
+    }
+
     GS::Array<GS::ObjectState> verticesOS;
     bodyOS.Get ("vertices", verticesOS);
     GS::Array<GS::ObjectState> polygonsOS;
@@ -4511,6 +4516,9 @@ bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo&
                 return false;
             }
             material = faceSurfaceIndex;
+            if (hasFaceSurfacesOut != nullptr) {
+                *hasFaceSurfacesOut = true;
+            }
         }
 #else
         API_OverriddenAttribute material = {};
@@ -10699,6 +10707,7 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_DisposeElemMemoHdls (&memo);
             });
             GS::Optional<API_MorphEdgeTypeID> requestedEdgeType;
+            bool hasFaceSurfaces = false;
 
             if (sizeOS != nullptr) {
                 const API_Coord3D size = Get3DCoordinateFromObjectState (*sizeOS);
@@ -10712,7 +10721,7 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
             } else {
                 GS::UniString bodyError;
-                if (!BuildMorphBodyFromGeometry (*bodyOS, memo, bodyError)) {
+                if (!BuildMorphBodyFromGeometry (*bodyOS, memo, bodyError, &hasFaceSurfaces)) {
                     elements.Push (CreateErrorResponse (APIERR_GENERAL, bodyError));
                     continue;
                 }
@@ -10741,21 +10750,21 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 #endif
+            // The faces' surfaces are written by an ACAPI_Element_Change after the creation (see
+            // below), which a hidden or locked layer refuses as well.
+            if (hasFaceSurfaces) {
+                GS::UniString layerReason;
+                err = GetLayerChangeError (element.header.layer, layerReason);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, GS::UniString::Printf ("The morph was not created, because %T, so the surfaces of its faces cannot be set.", layerReason.ToPrintf ())));
+                    continue;
+                }
+            }
 
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create morph."));
                 continue;
-            }
-
-            // ACAPI_Element_Create discards element.morph.edgeType (see ApplyMorphEdgeType);
-            // on AC29+ this applies the requested edgeDefault to the created element.
-            if (requestedEdgeType.HasValue ()) {
-                err = ApplyMorphEdgeType (element.header.guid, requestedEdgeType.Get ());
-                if (err != NoError) {
-                    elements.Push (CreateErrorResponse (err, "Morph created, but failed to set its edge type."));
-                    continue;
-                }
             }
 
             // element.morph.material (the default-surface override, "surfaceId" on this command)
@@ -10770,6 +10779,45 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_ELEMENT_MASK_CLEAR (materialMask);
                 ACAPI_ELEMENT_MASK_SET (materialMask, API_MorphType, material);
                 ACAPI_Element_Change (&element, &materialMask, nullptr, 0, true);
+            }
+
+            // The faces' own surfaces (morphMaterialMapTable) are not kept by ACAPI_Element_Create
+            // either, and the change of the whole-morph surface above gives every face that surface
+            // (#2626). So the body is written again with its face surfaces, after that change, the
+            // way ModifyMorphs replaces a body (and the DevKit's Element_Test sets face materials).
+            if (hasFaceSurfaces) {
+                API_Element emptyMask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (emptyMask);
+                err = ACAPI_Element_Change (&element, &emptyMask, &memo, APIMemoMask_All, true);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Morph created, but failed to set the surfaces of its faces."));
+                    continue;
+                }
+                // A morph whose body was written again casts a shadow again (#2470), so the shadow
+                // settings it was created with are written again when Archicad did not keep them.
+                API_Element changedMorph = {};
+                changedMorph.header.guid = element.header.guid;
+                if (ACAPI_Element_Get (&changedMorph) == NoError &&
+                    (changedMorph.morph.castShadow != element.morph.castShadow || changedMorph.morph.receiveShadow != element.morph.receiveShadow)) {
+                    API_Element shadowMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (shadowMask);
+                    changedMorph.morph.castShadow = element.morph.castShadow;
+                    changedMorph.morph.receiveShadow = element.morph.receiveShadow;
+                    ACAPI_ELEMENT_MASK_SET (shadowMask, API_MorphType, castShadow);
+                    ACAPI_ELEMENT_MASK_SET (shadowMask, API_MorphType, receiveShadow);
+                    ACAPI_Element_Change (&changedMorph, &shadowMask, nullptr, 0, true);
+                }
+            }
+
+            // ACAPI_Element_Create discards element.morph.edgeType (see ApplyMorphEdgeType);
+            // on AC29+ this applies the requested edgeDefault to the created element. Done after
+            // the changes above, since a change of the body does not keep it either.
+            if (requestedEdgeType.HasValue ()) {
+                err = ApplyMorphEdgeType (element.header.guid, requestedEdgeType.Get ());
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Morph created, but failed to set its edge type."));
+                    continue;
+                }
             }
 
             // Per-item "id", as in CreateElementsCommandBase::Execute: an id that cannot be
