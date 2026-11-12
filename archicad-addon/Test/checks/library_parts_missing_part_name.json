@@ -12,7 +12,7 @@
         "libraryParts": [
           {
             "name": "TapirCheckLibMissing Box",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibMissing/TapirCheckLibMissing Box.gsm",
             "a": 1.0,
             "b": 1.0,

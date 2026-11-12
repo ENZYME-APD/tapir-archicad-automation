@@ -1,7 +1,8 @@
 """Creates a wall and places a 1 m x 1.5 m window in it with CreateWindows.
 
 centerOffset is measured along the wall from its begin point. The library part comes from the Window
-tool defaults, or from libraryPartName or favoriteName.
+tool defaults, or from libraryPartName or favoriteName. id sets the window's Element ID and layerIndex
+its layer; without them it gets the next automatic ID and the layer of the tool defaults.
 """
 import aclib
 
@@ -13,6 +14,7 @@ wall = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [{
 
 aclib.PrintJson (aclib.RunTapirCommand ('CreateWindows', {'windowsData': [{
     'ownerWallId': wall['elementId'],
+    'id': 'W-01',
     'centerOffset': 3.0,
     'sillHeight': 0.9,
     'width': 1.0,
