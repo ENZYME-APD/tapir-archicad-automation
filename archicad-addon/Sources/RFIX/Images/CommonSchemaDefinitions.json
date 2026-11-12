@@ -22393,7 +22393,8 @@
                 "type": "string"
             },
             "typeId": {
-                "$ref": "#/LibraryPartType"
+                "$ref": "#/LibraryPartType",
+                "description": "The type of the library part. For GDL objects it is the type of the tool that places it: 'Window', 'Door', 'Skylight', 'Lamp', 'Room', 'Label' or 'Object' (wall ends are placed by the Window or Door tool, so they are 'Window' or 'Door')."
             },
             "type": {
                 "type": "string",
@@ -22404,7 +22405,7 @@
                     "BinaryListCrit",
                     "Other"
                 ],
-                "description": "The kind of the library part file: a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when it cannot be read."
+                "description": "The kind of the library part file, not its type (see typeId): a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when Archicad cannot find the file by its fileName."
             }
         }
     },
