@@ -37,10 +37,13 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // is written by ModifyColumns right after the column is created.
         private static readonly ISet<string> ModifyColumnsKeys = new HashSet<string>
         {
-            "axisRotationAngle", "bottomOffset", "buildingMaterialId", "circleBased", "coreAnchor", "coverFill",
-            "cutFillBackgroundPen", "cutFillPen", "depth", "floorIndex", "height", "isFlipped", "isSlanted",
-            "isWidthAndHeightLinked", "origin", "profileId", "relativeTopStory", "slantAngle",
-            "slantDirectionAngle", "topOffset", "veneer", "width", "wrapping", "zCoordinate"
+            "aboveViewLinePen", "aboveViewLineTypeId", "axisRotationAngle", "belowViewLinePen",
+            "belowViewLineTypeId", "bottomOffset", "buildingMaterialId", "circleBased", "contourLineTypeId",
+            "contourPen", "coreAnchor", "coreSymbolPen", "coverFill", "cutFillBackgroundPen", "cutFillPen", "depth",
+            "displayOption", "floorIndex", "height", "hiddenLinePen", "hiddenLineTypeId", "isAutoOnStoryVisibility",
+            "isFlipped", "isSlanted", "isWidthAndHeightLinked", "origin", "profileId", "relativeTopStory",
+            "slantAngle", "slantDirectionAngle", "topOffset", "veneer", "veneerLinePen", "veneerLineTypeId",
+            "viewDepthLimitation", "visibility", "width", "wrapping", "zCoordinate"
         };
 
         // ModifyColumns takes the origin and the base elevation, so Create

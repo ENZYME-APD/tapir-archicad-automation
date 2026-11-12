@@ -127,6 +127,14 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+class CreatePicturesCommand : public CreateElementsCommandBase
+{
+public:
+    CreatePicturesCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
 class CreateHatchesCommand : public CreateElementsCommandBase
 {
 public:
@@ -233,6 +241,15 @@ private:
     mutable LevelDimensionTexts customTexts;
 };
 
+class CreateAngleDimensionsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateAngleDimensionsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
+};
+
 // Shared by CreateLevelDimensionsCommand and ModifyLevelDimensionsCommand: applies the pen, texts,
 // marker and origin settings of parameters to element.levelDimension, and sets their bits in mask
 // when it is not nullptr. Custom texts are stored in texts. Returns the error response of an invalid value.
@@ -279,6 +296,16 @@ class ModifyTextsCommand : public CommandBase
 {
 public:
     ModifyTextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyPicturesCommand : public CommandBase
+{
+public:
+    ModifyPicturesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

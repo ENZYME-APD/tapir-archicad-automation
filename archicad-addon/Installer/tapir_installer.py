@@ -1,8 +1,12 @@
 """Tapir Add-On Installer.
 
-Detects the installed Archicad versions, downloads the matching Tapir Add-On
-from the latest GitHub release, and places it into the Add-Ons folder of each
-Archicad installation so that Archicad loads it automatically on the next start.
+Detects the installed Archicad versions and downloads the matching Tapir Add-On
+from the latest GitHub release. By default it installs for the user who runs
+it, with no administrator rights: it copies the add-on into the user's own
+folder and adds it to Archicad's add-on list (the list of the Add-On Manager).
+Installed for all users of the computer, it places the add-on into the Add-Ons
+folder of each Archicad installation, which needs administrator rights.
+Either way, Archicad loads it on its next start.
 
 In update mode (--addOnFile) it replaces one given Tapir Add-On instead, and
 quits and restarts the Archicad that runs it: the Add-On's auto-update starts
@@ -18,6 +22,7 @@ import contextlib
 import http.client
 import json
 import os
+import pathlib
 import platform
 import plistlib
 import re
@@ -32,7 +37,13 @@ import threading
 import time
 import unicodedata
 import urllib.error
+import urllib.parse
 import urllib.request
+
+try:
+    import winreg
+except ImportError:  # not Windows: the module still imports, so the tests run anywhere
+    winreg = None
 
 INSTALLER_TITLE = 'Tapir Add-On Installer'
 LATEST_RELEASE_API_URL = 'https://api.github.com/repos/ENZYME-APD/tapir-archicad-automation/releases/latest'
@@ -66,7 +77,7 @@ DOWNLOAD_TIMEOUT_SECONDS = 60
 # connection, for a few minutes at a time. A download that fails like that is
 # tried again after these waits (seconds); any other failure is reported at once.
 DOWNLOAD_RETRY_WAITS_SECONDS = (5, 15, 30)
-PERMISSION_DENIED_TEXT = 'Permission denied. Close Archicad if it is running, or run the installer as administrator.'
+PERMISSION_DENIED_TEXT = 'Permission denied. Close Archicad if it is running, or choose Install for me.'
 # The first bytes of the add-on assets: the Windows add-on is a DLL, the macOS
 # one is zipped. A proxy or web filter may answer with a page of its own.
 ASSET_FILE_SIGNATURES = { '.apx' : b'MZ', '.zip' : b'PK\x03\x04' }
@@ -195,6 +206,27 @@ TEXTS = {
         'copyNextToFailed' : 'Failed to copy the add-on next to {0}: {1}',
         'replaceFailed' : 'Failed to replace {0}: {1}',
         'replaceAndMoveBackFailed' : 'Failed to replace {0}: {1}. The old add-on could not be moved back either: rename {2} back by hand.',
+        # Install for me, or for all users
+        'sectionInstallFor' : 'INSTALL',
+        'installForMe' : 'Install for me (no administrator rights needed)',
+        'installForAllUsers' : 'Install for all users of this computer (needs administrator rights)',
+        'closeArchicad' : 'Close Archicad {0} to finish installing Tapir.',
+        'closeArchicadToUninstall' : 'Close Archicad {0} to finish uninstalling Tapir.',
+        'startArchicadOnce' : 'Start Archicad {0} once and close it, then press Retry.',
+        'startArchicadOnceConsole' : 'Start Archicad {0} once and close it, then run the installer again.',
+        'installedForAllUsersAlready' : ('Tapir for Archicad {0} is installed for all users, and it is updated there. '
+            'Ask your administrator to remove it to install your own copy.'),
+        'allUsersCopyLeft' : ('Tapir for Archicad {0} is also installed for all users of this computer. '
+            'Uninstall it for all users (needs administrator rights) to remove it.'),
+        'forMeElevated' : ('The installer runs as administrator, so it cannot install for you: the Archicad settings it would change '
+            'are the administrator\'s, which may not be yours. Start it without administrator rights, or choose Install for all users.'),
+        'elevationFailed' : 'The installer could not be started with administrator rights (error {0}).',
+        'startedAsAdministrator' : 'The installer was started again with administrator rights.',
+        'buttonRetry' : 'Retry',
+        'buttonSkipVersion' : 'Skip this version',
+        'statusSkipped' : 'Skipped',
+        'skippedVersion' : 'Archicad {0} was skipped.',
+        'forMeAndAllUsers' : '--forMe and --allUsers cannot be combined.',
         # Console mode
         'foundInstallations' : 'Found Archicad installations:',
         'consoleInstallation' : 'Archicad {0} ({1})',
@@ -203,6 +235,9 @@ TEXTS = {
         'archicadVersionNotFound' : 'No Archicad {0} installation was found.',
         'wouldInstall' : 'Would install {0} into {1}',
         'installed' : 'Installed {0} into {1}',
+        'wouldInstallForMe' : 'Would install {0} for you into {1}',
+        'installedForMe' : 'Installed {0} for you into {1}',
+        'uninstalledForMe' : 'Uninstalled your Tapir from {0}',
         'wouldUninstall' : 'Would uninstall Tapir from {0}',
         'uninstalled' : 'Uninstalled Tapir from {0}',
         'notInstalledIn' : 'Tapir was not installed in {0}',
@@ -814,7 +849,579 @@ def UninstallAddOn (addOnsFolderPath):
     return True
 
 
-def DownloadAndInstallAddOn (installation, releaseInfo, dryRun, progressCallback = None):
+# --- Install for me ------------------------------------------------------------------------------
+# Archicad loads the add-ons on its Add-On Manager's list from anywhere, so Tapir is installed for
+# one user, without administrator rights, by copying it into the user's own folder and putting it
+# on that list. The community test runner loads pull request builds the same way every day
+# (tools/community-test-runner/runner_windows.py and runner_macos.py, tested in its tests/). The
+# installer is one standard library script built by PyInstaller and cannot import tools/, so the
+# runner's functions it needs are copied below. Each one names its twin: keep them identical
+# (test_per_user.py compares them with the runner's).
+
+INSTALL_FOR_ME = 'forMe'
+INSTALL_FOR_ALL_USERS = 'allUsers'
+PER_USER_FOLDER_NAME = 'Tapir'
+# Console mode exits with this code when an Archicad has no add-on list yet.
+EXIT_CODE_START_ARCHICAD_ONCE = 3
+# Up to this version Archicad loads no add-on from 'Include' while the same add-on is on
+# 'Disable' at another path: it loads neither (#1150; runner_windows.COLLIDES_UP_TO, which is 28).
+# Archicad 29 is not tested yet, so it is treated the same way. From Archicad 30 on, the user's
+# copy loads while the Tapir of the Add-Ons folder is on 'Disable' (#1088). On macOS every version
+# collides (runner_macos.AddOnList.swap_files).
+COLLIDES_UP_TO = 29
+
+ARCHICAD_KEY = r"Software\GRAPHISOFT\Archicad"  # twin: runner_windows.ARCHICAD_KEY
+LISTS = ("Include", "Disable")  # twin: runner_windows.LISTS
+REG_SZ = 1  # twin: runner_windows.REG_SZ (winreg.REG_SZ, also when winreg is missing)
+MANAGER = "Add-On Manager"  # twin: runner_macos.MANAGER
+SCHEME = "lan.null2://"  # twin: runner_macos.SCHEME (what Archicad writes for a path on the startup disk)
+
+
+def to_url(path):  # twin: runner_windows.to_url
+    return "lan.flat:///" + urllib.parse.quote(str(path).replace("\\", "/"), safe="/:")
+
+
+def from_url(url):  # twin: runner_windows.from_url
+    return pathlib.Path(urllib.parse.unquote(url.removeprefix("lan.flat:///")))
+
+
+def is_tapir(path):  # twin: runner_windows.is_tapir
+    """A Tapir add-on file, not a backup copy of one ('TapirAddOn_AC26_Win.apx.bak')."""
+    name = pathlib.Path(path).name.lower()
+    return name.startswith("tapiraddon") and name.endswith((".apx", ".bundle"))
+
+
+class Registry:  # twin: runner_windows.Registry
+    """The few registry operations the add-on list needs; tests replace it with a dict."""
+
+    def subkeys(self, path):
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, path) as key:
+                return [winreg.EnumKey(key, i) for i in range(winreg.QueryInfoKey(key)[0])]
+        except OSError:
+            return []
+
+    def read(self, path):
+        """All values of a key as {name: [value, kind]}; {} when the key is missing."""
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, path) as key:
+                values = {}
+                for i in range(winreg.QueryInfoKey(key)[1]):
+                    name, value, kind = winreg.EnumValue(key, i)
+                    values[name] = [value, kind]
+                return values
+        except OSError:
+            return {}
+
+    def write(self, path, values):
+        """Replaces every value of the key with exactly these."""
+        with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, path, 0, winreg.KEY_ALL_ACCESS) as key:
+            for name in list(self.read(path)):
+                winreg.DeleteValue(key, name)
+            for name, (value, kind) in values.items():
+                winreg.SetValueEx(key, name, 0, kind, value)
+
+
+def manager_key(registry, version):  # twin: runner_windows.manager_key
+    """The Add-On Manager key of this Archicad version (the one with the longest add-on list, if several)."""
+    names = [n for n in registry.subkeys(ARCHICAD_KEY) if n.startswith(f"Archicad {version}.")]
+    keys = [f"{ARCHICAD_KEY}\\{n}\\Add-On Manager" for n in names]
+    keys = [k for k in keys if registry.read(k + "\\Include") or registry.read(k)]
+    return max(keys, key=lambda k: len(registry.read(k + "\\Include")), default=None)
+
+
+def entries(values):  # twin: runner_windows.entries
+    return [v for n, (v, _) in sorted(values.items(), key=lambda kv: _number(kv[0])) if n.startswith("#")]
+
+
+def _number(name):  # twin: runner_windows._number
+    match = re.match(r"#(\d+)\.", name)
+    return int(match.group(1)) if match else 0
+
+
+def numbered(kind, urls):  # twin: runner_windows.numbered
+    values = {f"{kind} Number": [str(len(urls)), REG_SZ]}
+    values.update({f"#{i}.": [url, REG_SZ] for i, url in enumerate(urls, 1)})
+    return values
+
+
+def to_url_mac(path):  # twin: runner_macos.to_url
+    return SCHEME + urllib.parse.quote(str(path), safe="/")
+
+
+def from_url_mac(url):  # twin: runner_macos.from_url
+    return pathlib.Path(urllib.parse.unquote(re.sub(r"^lan\.\w+://", "", url)))
+
+
+class Preferences:  # twin: runner_macos.Preferences
+    """Archicad's preferences domains, through 'defaults'; tests replace it with a dict."""
+
+    def __init__(self, folder=None):
+        self.folder = folder or pathlib.Path.home() / "Library" / "Preferences"
+
+    def domains(self):
+        return sorted(p.stem for p in self.folder.glob("com.graphisoft.*.plist"))
+
+    def read(self, domain):
+        """The whole domain; {} when it does not exist."""
+        out = subprocess.run(["defaults", "export", domain, "-"], capture_output=True, timeout=60)
+        return plistlib.loads(out.stdout) if out.returncode == 0 and out.stdout else {}
+
+    def write(self, domain, key, value):
+        """Replaces one top-level value of the domain."""
+        subprocess.run(["defaults", "write", domain, key, plistlib.dumps(value).decode("utf-8")],
+                       check=True, capture_output=True, timeout=60)
+
+
+def manager_domain(prefs, version):  # twin: runner_macos.manager_domain
+    """The preferences domain with this Archicad version's Add-On Manager (the one with the longest add-on
+    list, if several). Not 'com.graphisoft.startup-ARM.AC-ARM 29.0.0 INT v1', which the start-up writes."""
+    names = [d for d in prefs.domains() if re.fullmatch(rf"com\.graphisoft\.AC[^ .]* {version}\..*", d)]
+    managers = {d: prefs.read(d).get(MANAGER) for d in names}
+    managers = {d: m for d, m in managers.items() if isinstance(m, dict)}
+    return max(managers, key=lambda d: len(managers[d].get("Include", {})), default=None)
+
+
+def entries_mac(values):  # twin: runner_macos.entries
+    numbered_names = [n for n in values if re.fullmatch(r"#\d+\.", n)]
+    return [values[n] for n in sorted(numbered_names, key=lambda n: int(n[1:-1]))]
+
+
+def numbered_mac(kind, urls):  # twin: runner_macos.numbered
+    return {f"{kind} Number": len(urls), **{f"#{i}.": url for i, url in enumerate(urls, 1)}}
+
+
+class AddOnListWin:
+    # Archicad's add-on lists in the user's registry: the Include and Disable
+    # subkeys of the Add-On Manager key of the version.
+    def __init__ (self, registry = None):
+        self.registry = registry if registry is not None else Registry ()
+
+    def Find (self, version):
+        return manager_key (self.registry, str (version))
+
+    def Read (self, location):
+        return { kind : self.registry.read (location + '\\' + kind) for kind in LISTS }
+
+    def Write (self, location, include, disable):
+        self.registry.write (location + '\\Include', numbered ('Include', include))
+        self.registry.write (location + '\\Disable', numbered ('Disable', disable))
+
+    def Entries (self, values):
+        return entries (values)
+
+    def ToUrl (self, path):
+        return to_url (path)
+
+    def FromUrl (self, url):
+        return from_url (url)
+
+
+class AddOnListMac:
+    # Archicad's add-on lists in the user's preferences: Include and Disable
+    # of the Add-On Manager value of the version's domain, through defaults.
+    def __init__ (self, prefs = None):
+        self.prefs = prefs if prefs is not None else Preferences ()
+
+    def Find (self, version):
+        return manager_domain (self.prefs, str (version))
+
+    def Read (self, location):
+        manager = self.prefs.read (location).get (MANAGER, {})
+        return { kind : manager.get (kind, {}) for kind in LISTS }
+
+    def Write (self, location, include, disable):
+        # Every other setting of the Add-On Manager stays as it is.
+        manager = self.prefs.read (location).get (MANAGER, {})
+        self.prefs.write (location, MANAGER, dict (manager, Include = numbered_mac ('Include', include), Disable = numbered_mac ('Disable', disable)))
+
+    def Entries (self, values):
+        return entries_mac (values)
+
+    def ToUrl (self, path):
+        return to_url_mac (path)
+
+    def FromUrl (self, url):
+        return from_url_mac (url)
+
+
+def CreateAddOnList ():
+    return AddOnListMac () if IsUsingMacOS () else AddOnListWin ()
+
+
+class ArchicadRunningError (InstallerError):
+    pass
+
+
+class ArchicadNotStartedError (InstallerError):
+    # The Archicad has no add-on list yet: Archicad creates it on its first start.
+    pass
+
+
+class AllUsersTapirError (InstallerError):
+    # A Tapir installed for all users keeps the user's own copy from loading.
+    pass
+
+
+def GetPerUserFolderPath ():
+    if IsUsingMacOS ():
+        return os.path.join (os.path.expanduser ('~'), 'Library', 'Application Support', PER_USER_FOLDER_NAME)
+    localAppDataPath = os.environ.get ('LOCALAPPDATA') or os.path.join (os.path.expanduser ('~'), 'AppData', 'Local')
+    return os.path.join (localAppDataPath, PER_USER_FOLDER_NAME)
+
+
+def GetPerUserAddOnPath (version):
+    # The name Archicad expects, as the release assets have it.
+    addOnName = 'TapirAddOn_AC{0}_Mac.bundle' if IsUsingMacOS () else 'TapirAddOn_AC{0}_Win.apx'
+    return os.path.join (GetPerUserFolderPath (), 'AC{0}'.format (version), addOnName.format (version))
+
+
+def GetAddOnListBackupPath (version):
+    return os.path.join (GetPerUserFolderPath (), 'addon-list-backup-AC{0}.json'.format (version))
+
+
+def ReadAddOnListBackup (version):
+    try:
+        with open (GetAddOnListBackupPath (version), 'r', encoding = 'utf-8') as backupFile:
+            backup = json.load (backupFile)
+        return backup if isinstance (backup, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def GetAllUsersTapirPaths (addOnsFolderPath):
+    # Every Tapir in the Add-Ons folder, which Archicad loads for every user
+    # (as runner_windows.AddOnList.install finds them).
+    if addOnsFolderPath is None or not os.path.isdir (addOnsFolderPath):
+        return []
+    return sorted (str (path) for path in pathlib.Path (addOnsFolderPath).rglob ('TapirAddOn*') if is_tapir (path))
+
+
+def CollidesWithAllUsersTapir (version):
+    return IsUsingMacOS () or version <= COLLIDES_UP_TO
+
+
+def IsRunningAsAdministratorWin ():
+    # Whether this process runs elevated. Always False on macOS, which asks
+    # for the administrator password per command instead.
+    if not IsUsingWindows ():
+        return False
+    try:
+        import ctypes
+        return bool (ctypes.windll.shell32.IsUserAnAdmin ())
+    except Exception:
+        return False
+
+
+def GetOwnCommandLine (arguments):
+    # The program and the arguments that start this installer again.
+    if getattr (sys, 'frozen', False):
+        return sys.executable, list (arguments)
+    return sys.executable, [os.path.abspath (sys.argv[0])] + list (arguments)
+
+
+def GetArgumentsForAllUsers (arguments):
+    return [argument for argument in arguments if argument not in ['--forMe', '--allUsers']] + ['--allUsers']
+
+
+def StartAsAdministratorWin (arguments):
+    # Starts this installer again with the administrator (UAC) prompt.
+    # Raises InstallerError when it was not started, also when the prompt
+    # was declined.
+    import ctypes
+    import ctypes.wintypes
+    program, programArguments = GetOwnCommandLine (arguments)
+    shell32 = ctypes.WinDLL ('shell32', use_last_error = True)
+    shell32.ShellExecuteW.argtypes = [ctypes.wintypes.HWND, ctypes.wintypes.LPCWSTR, ctypes.wintypes.LPCWSTR, ctypes.wintypes.LPCWSTR,
+        ctypes.wintypes.LPCWSTR, ctypes.c_int]
+    shell32.ShellExecuteW.restype = ctypes.c_void_p
+    SW_SHOWNORMAL = 1
+    result = shell32.ShellExecuteW (None, 'runas', program, subprocess.list2cmdline (programArguments), None, SW_SHOWNORMAL) or 0
+    # A value above 32 means success.
+    if result <= 32:
+        raise InstallerError (GetText ('elevationFailed', ctypes.get_last_error () or result))
+
+
+def NeedsAdministratorToReplaceWin (addOnFilePath):
+    # Whether the user cannot replace the add-on of update mode: its folder
+    # takes no new file (the probe file the Add-On uses too), or the file is
+    # read-only. A path that is not there is left to update mode to report.
+    addOnFilePath = os.path.normpath (os.path.abspath (addOnFilePath))
+    if not os.path.isfile (addOnFilePath):
+        return False
+    probePath = os.path.join (os.path.dirname (addOnFilePath), '.TapirWriteCheck_{0}'.format (os.getpid ()))
+    try:
+        os.close (os.open (probePath, os.O_WRONLY | os.O_CREAT | os.O_EXCL))
+        os.remove (probePath)
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return not os.access (addOnFilePath, os.W_OK)
+
+
+def GetRunningProcessPathsWin ():
+    # The executable paths of the processes this user can see.
+    import ctypes
+    import ctypes.wintypes
+    PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+    kernel32 = ctypes.WinDLL ('kernel32', use_last_error = True)
+    kernel32.K32EnumProcesses.argtypes = [ctypes.POINTER (ctypes.wintypes.DWORD), ctypes.wintypes.DWORD, ctypes.POINTER (ctypes.wintypes.DWORD)]
+    kernel32.K32EnumProcesses.restype = ctypes.wintypes.BOOL
+    kernel32.OpenProcess.argtypes = [ctypes.wintypes.DWORD, ctypes.wintypes.BOOL, ctypes.wintypes.DWORD]
+    kernel32.OpenProcess.restype = ctypes.wintypes.HANDLE
+    kernel32.QueryFullProcessImageNameW.argtypes = [ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD, ctypes.wintypes.LPWSTR, ctypes.POINTER (ctypes.wintypes.DWORD)]
+    kernel32.QueryFullProcessImageNameW.restype = ctypes.wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [ctypes.wintypes.HANDLE]
+    processCount = 4096
+    while True:
+        processIds = (ctypes.wintypes.DWORD * processCount) ()
+        neededSize = ctypes.wintypes.DWORD ()
+        if not kernel32.K32EnumProcesses (processIds, ctypes.sizeof (processIds), ctypes.byref (neededSize)):
+            return []
+        if neededSize.value < ctypes.sizeof (processIds):
+            break
+        processCount *= 2
+    paths = []
+    for processId in processIds[:neededSize.value // ctypes.sizeof (ctypes.wintypes.DWORD)]:
+        processHandle = kernel32.OpenProcess (PROCESS_QUERY_LIMITED_INFORMATION, False, processId)
+        if not processHandle:
+            continue
+        try:
+            pathLength = ctypes.wintypes.DWORD (32768)
+            pathBuffer = ctypes.create_unicode_buffer (pathLength.value)
+            if kernel32.QueryFullProcessImageNameW (processHandle, 0, pathBuffer, ctypes.byref (pathLength)):
+                paths.append (pathBuffer.value)
+        finally:
+            kernel32.CloseHandle (processHandle)
+    return paths
+
+
+def GetRunningProcessPathsMac ():
+    # The executable paths of the running processes (runner_macos.processes).
+    result = subprocess.run (['ps', '-axo', 'comm='], capture_output = True, text = True, timeout = 60)
+    return [line.strip () for line in result.stdout.splitlines () if line.strip ()]
+
+
+def IsArchicadRunning (installation):
+    # Whether the Archicad of this installation runs: on Windows its
+    # Archicad.exe, on macOS the program in its .app bundle.
+    try:
+        if IsUsingWindows ():
+            processPaths = GetRunningProcessPathsWin ()
+        elif IsUsingMacOS ():
+            processPaths = GetRunningProcessPathsMac ()
+        else:
+            return False
+    except Exception:
+        return False
+    installPath = os.path.normcase (os.path.normpath (installation.installPath)) + os.sep
+    for processPath in processPaths:
+        normalizedPath = os.path.normcase (os.path.normpath (processPath))
+        if not normalizedPath.startswith (installPath):
+            continue
+        if IsUsingMacOS ():
+            if '.app/contents/macos/' in processPath.lower () and os.path.basename (processPath).lower () == 'archicad':
+                return True
+        elif os.path.basename (normalizedPath) == 'archicad.exe':
+            return True
+    return False
+
+
+def CheckCanInstallForMe ():
+    # The add-on list of an elevated process is the administrator account's,
+    # which may not be the user's: a "for me" install must run as the user.
+    if IsRunningAsAdministratorWin ():
+        raise InstallerError (GetText ('forMeElevated'))
+
+
+def CopyAddOnForMe (downloadedFilePath, targetPath):
+    # Replaces the user's add-on with the downloaded one. The new copy is
+    # made next to it first, so a failure leaves the old one in place.
+    targetFolderPath = os.path.dirname (targetPath)
+    try:
+        os.makedirs (targetFolderPath, exist_ok = True)
+        if IsUsingMacOS ():
+            extractFolderPath = tempfile.mkdtemp (prefix = '.TapirInstaller_', dir = targetFolderPath)
+            try:
+                result = subprocess.run (['ditto', '-x', '-k', downloadedFilePath, extractFolderPath], capture_output = True, text = True)
+                if result.returncode != 0:
+                    raise InstallerError (GetText ('extractFailed', os.path.basename (downloadedFilePath), result.stderr.strip ()))
+                bundleNames = [entryName for entryName in os.listdir (extractFolderPath) if entryName.lower ().endswith ('.bundle')]
+                if len (bundleNames) != 1:
+                    raise InstallerError (GetText ('notOneBundle', os.path.basename (downloadedFilePath)))
+                RemovePath (targetPath)
+                os.rename (os.path.join (extractFolderPath, bundleNames[0]), targetPath)
+            finally:
+                shutil.rmtree (extractFolderPath, ignore_errors = True)
+        else:
+            newFilePath = GetNewAddOnPath (targetPath)
+            shutil.copyfile (downloadedFilePath, newFilePath)
+            os.replace (newFilePath, targetPath)
+    except PermissionError:
+        RemovePathQuietly (GetNewAddOnPath (targetPath))
+        raise InstallerError (GetText ('permissionDenied'))
+    except OSError as e:
+        RemovePathQuietly (GetNewAddOnPath (targetPath))
+        raise InstallerError (GetText ('installFailed', e))
+
+
+def AddToAddOnList (addOnList, location, version, targetPath, allUsersTapirPaths):
+    # Puts the user's add-on on Include in place of every other Tapir, takes
+    # it off Disable, and puts the Tapirs of the Add-Ons folder on Disable
+    # (as runner_windows.AddOnList.install does). Every other entry stays as
+    # it was. The lists as they were before the first install, and the
+    # entries the installer put on Disable, are saved first: uninstall takes
+    # off exactly those.
+    saved = addOnList.Read (location)
+    previousBackup = ReadAddOnListBackup (version)
+    targetUrl = addOnList.ToUrl (targetPath)
+    target = addOnList.FromUrl (targetUrl)
+    include = [url for url in addOnList.Entries (saved['Include']) if not is_tapir (addOnList.FromUrl (url))] + [targetUrl]
+    disable = [url for url in addOnList.Entries (saved['Disable']) if addOnList.FromUrl (url) != target]
+    addedToDisable = [addOnList.ToUrl (path) for path in allUsersTapirPaths if addOnList.ToUrl (path) not in disable]
+    disable += addedToDisable
+    if previousBackup is not None and previousBackup.get ('location') == location:
+        lists = previousBackup.get ('lists', saved)
+        addedToDisable = sorted (set (previousBackup.get ('addedToDisable', [])) | set (addedToDisable))
+    else:
+        lists = saved
+    backup = { 'location' : location, 'lists' : lists, 'addedToDisable' : addedToDisable }
+    backupPath = GetAddOnListBackupPath (version)
+    os.makedirs (os.path.dirname (backupPath), exist_ok = True)
+    with open (backupPath, 'w', encoding = 'utf-8') as backupFile:
+        json.dump (backup, backupFile, indent = 1)
+    addOnList.Write (location, include, disable)
+
+
+def InstallAddOnForMe (installation, downloadedFilePath, addOnList = None):
+    """Installs the downloaded add-on for the user who runs the installer.
+    Returns the path of the user's add-on, or raises InstallerError:
+    AllUsersTapirError when a Tapir of the Add-Ons folder keeps it from
+    loading, ArchicadRunningError while the Archicad runs (nothing is
+    written then) and ArchicadNotStartedError when the Archicad has no
+    add-on list yet (the add-on is copied then)."""
+    CheckCanInstallForMe ()
+    version = installation.version
+    targetPath = GetPerUserAddOnPath (version)
+    allUsersTapirPaths = GetAllUsersTapirPaths (installation.addOnsFolderPath)
+    if len (allUsersTapirPaths) > 0 and CollidesWithAllUsersTapir (version):
+        raise AllUsersTapirError (GetText ('installedForAllUsersAlready', version))
+    # Archicad writes its list back when it quits, over any change, and
+    # keeps its loaded add-on file locked on Windows.
+    if IsArchicadRunning (installation):
+        raise ArchicadRunningError (GetText ('closeArchicad', version))
+    CopyAddOnForMe (downloadedFilePath, targetPath)
+    if addOnList is None:
+        addOnList = CreateAddOnList ()
+    location = addOnList.Find (version)
+    if location is None:
+        raise ArchicadNotStartedError (GetText ('startArchicadOnce', version))
+    AddToAddOnList (addOnList, location, version, targetPath, allUsersTapirPaths)
+    return targetPath
+
+
+def RemoveEmptyFolder (folderPath):
+    try:
+        os.rmdir (folderPath)
+    except OSError:
+        pass
+
+
+def UninstallAddOnForMe (installation, addOnList = None):
+    """Removes the user's add-on of this Archicad and takes the entries the
+    installer made off its add-on list. Returns whether anything was
+    removed; raises ArchicadRunningError, and changes nothing, while the
+    Archicad runs and there is something to remove."""
+    CheckCanInstallForMe ()
+    version = installation.version
+    targetPath = GetPerUserAddOnPath (version)
+    backup = ReadAddOnListBackup (version)
+    if addOnList is None:
+        addOnList = CreateAddOnList ()
+    location = addOnList.Find (version)
+    newLists = None
+    if location is not None:
+        lists = addOnList.Read (location)
+        target = addOnList.FromUrl (addOnList.ToUrl (targetPath))
+        addedToDisable = set (backup.get ('addedToDisable', [])) if backup is not None else set ()
+        include = addOnList.Entries (lists['Include'])
+        disable = addOnList.Entries (lists['Disable'])
+        newInclude = [url for url in include if addOnList.FromUrl (url) != target]
+        newDisable = [url for url in disable if addOnList.FromUrl (url) != target and url not in addedToDisable]
+        if newInclude != include or newDisable != disable:
+            newLists = (newInclude, newDisable)
+    if newLists is None and not os.path.lexists (targetPath):
+        RemovePathQuietly (GetAddOnListBackupPath (version))
+        return False
+    if IsArchicadRunning (installation):
+        raise ArchicadRunningError (GetText ('closeArchicadToUninstall', version))
+    if newLists is not None:
+        addOnList.Write (location, newLists[0], newLists[1])
+    try:
+        RemovePath (targetPath)
+    except PermissionError:
+        raise InstallerError (GetText ('permissionDenied'))
+    RemovePathQuietly (GetAddOnListBackupPath (version))
+    RemoveEmptyFolder (os.path.dirname (targetPath))
+    RemoveEmptyFolder (GetPerUserFolderPath ())
+    return True
+
+
+def UninstallTapir (installation, installMode, addOnList = None):
+    """Removes the user's Tapir of this Archicad and the one installed for
+    all users. "For me" removes the one for all users too when the user may
+    (on macOS after the administrator password, as before), and otherwise
+    says that it is left. Returns whether anything was removed."""
+    if installMode == INSTALL_FOR_ME:
+        isRemoved = UninstallAddOnForMe (installation, addOnList)
+        if IsTapirInstalled (installation.addOnsFolderPath):
+            try:
+                isRemoved = UninstallAddOn (installation.addOnsFolderPath) or isRemoved
+            except InstallerError:
+                raise InstallerError (GetText ('allUsersCopyLeft', installation.version))
+        return isRemoved
+    # An elevated process would change the administrator's add-on list.
+    isRemoved = False
+    if not IsRunningAsAdministratorWin ():
+        isRemoved = UninstallAddOnForMe (installation, addOnList)
+    return UninstallAddOn (installation.addOnsFolderPath) or isRemoved
+
+
+def GetInstallMode (args):
+    # "For me" unless --allUsers or --addOnsFolder (an explicit Add-Ons folder)
+    # is given. Detection under --mockRoot (for testing) installs into the
+    # mocked Add-Ons folders. An installer that already runs as administrator
+    # (as the one built with PyInstaller's --uac-admin) installs for all users
+    # by default, as it did before: "for me" refuses to run elevated.
+    if args.forMe and args.allUsers:
+        raise InstallerError (GetText ('forMeAndAllUsers'))
+    if args.addOnsFolderPath is not None or args.allUsers:
+        return INSTALL_FOR_ALL_USERS
+    if args.forMe:
+        return INSTALL_FOR_ME
+    if args.mockRootPath is not None or IsRunningAsAdministratorWin ():
+        return INSTALL_FOR_ALL_USERS
+    return INSTALL_FOR_ME
+
+
+def NeedsAdministratorForAllUsers (args):
+    # Whether "for all users" must first start the installer again as
+    # administrator: on Windows, unless it runs elevated already. An explicit
+    # Add-Ons folder, a mocked detection and a dry run go on as they are.
+    return (IsUsingWindows () and not IsRunningAsAdministratorWin () and not args.dryRun
+        and args.addOnsFolderPath is None and args.mockRootPath is None)
+
+
+def GetInstalledAddOnPath (installation):
+    # The add-on of this Archicad: the user's own one first.
+    perUserAddOnPath = GetPerUserAddOnPath (installation.version)
+    if os.path.lexists (perUserAddOnPath):
+        return perUserAddOnPath
+    return None
+
+
+def DownloadAndInstallAddOn (installation, releaseInfo, dryRun, progressCallback = None, installMode = INSTALL_FOR_ALL_USERS):
     """Returns a human readable status string, or raises InstallerError."""
     asset = FindAssetForVersion (releaseInfo, installation.version)
     if asset is None:
@@ -822,6 +1429,10 @@ def DownloadAndInstallAddOn (installation, releaseInfo, dryRun, progressCallback
     downloadFolderPath = tempfile.mkdtemp (prefix = 'TapirInstaller_')
     try:
         downloadedFilePath = DownloadAsset (asset, downloadFolderPath, progressCallback)
+        if installMode == INSTALL_FOR_ME:
+            if dryRun:
+                return GetText ('wouldInstallForMe', asset['name'], GetPerUserAddOnPath (installation.version))
+            return GetText ('installedForMe', asset['name'], InstallAddOnForMe (installation, downloadedFilePath))
         if dryRun:
             return GetText ('wouldInstall', asset['name'], os.path.join (installation.addOnsFolderPath, TAPIR_SUBFOLDER_NAME))
         InstallAddOn (installation.addOnsFolderPath, downloadedFilePath)
@@ -1251,8 +1862,9 @@ def StartArchicad (archicadLocation):
         # open passes its environment on to Archicad.
         subprocess.Popen (['open', '-n', archicadLocation], env = environment)
     elif IsUsingWindows ():
-        # The installer runs as administrator (--uac-admin), so Archicad
-        # started directly would too. Explorer starts it as the logged in user.
+        # The installer may run as administrator (the Add-On starts it with
+        # the administrator prompt), so Archicad started directly would too.
+        # Explorer starts it as the logged in user.
         subprocess.Popen ([os.path.join (os.environ.get ('SystemRoot', 'C:\\Windows'), 'explorer.exe'), archicadLocation], env = environment)
     else:
         subprocess.Popen ([archicadLocation], env = environment)
@@ -1506,32 +2118,58 @@ def RunConsoleInstaller (args):
     try:
         if IsUpdateMode (args):
             return RunConsoleUpdate (args)
+        installMode = GetInstallMode (args)
+        if installMode == INSTALL_FOR_ALL_USERS and NeedsAdministratorForAllUsers (args):
+            StartAsAdministratorWin (GetArgumentsForAllUsers (sys.argv[1:]))
+            print (GetText ('startedAsAdministrator'))
+            return 0
+        if installMode == INSTALL_FOR_ME and not args.dryRun:
+            CheckCanInstallForMe ()
         installations = GetTargetInstallations (args)
         if len (installations) == 0:
             raise InstallerError (GetText ('noArchicadFound', MANUAL_INSTALL_URL))
         print (GetText ('foundInstallations'))
         for installation in installations:
-            installedVersion = GetInstalledTapirVersion (installation.addOnsFolderPath)
+            installedVersion = GetInstalledTapirVersionOf (installation)
             if installedVersion is None:
                 print ('  ' + GetText ('consoleInstallation', installation.version, installation.installPath))
             else:
                 print ('  ' + GetText ('consoleInstallationWithTapir', installation.version, installation.installPath, installedVersion))
         if args.uninstall:
+            exitCode = 0
             for installation in installations:
                 if args.dryRun:
                     print (GetText ('wouldUninstall', installation.addOnsFolderPath))
-                elif UninstallAddOn (installation.addOnsFolderPath):
-                    print (GetText ('uninstalled', installation.addOnsFolderPath))
-                else:
-                    print (GetText ('notInstalledIn', installation.addOnsFolderPath))
-            return 0
+                    continue
+                try:
+                    if UninstallTapir (installation, installMode):
+                        if installMode == INSTALL_FOR_ME:
+                            print (GetText ('uninstalledForMe', GetText ('archicadVersion', installation.version)))
+                        else:
+                            print (GetText ('uninstalled', installation.addOnsFolderPath))
+                    else:
+                        print (GetText ('notInstalledIn', installation.addOnsFolderPath))
+                except InstallerError as e:
+                    print (GetText ('consoleError', e), file = sys.stderr)
+                    exitCode = 1
+            return exitCode
         releaseInfo = GetLatestReleaseInfo ()
         print (GetText ('latestRelease', releaseInfo.get ('tag_name', '?')))
+        exitCode = 0
         for installation in installations:
-            print (DownloadAndInstallAddOn (installation, releaseInfo, args.dryRun))
-        if not args.dryRun:
+            # A version that cannot be installed now is skipped, the others
+            # are installed.
+            try:
+                print (DownloadAndInstallAddOn (installation, releaseInfo, args.dryRun, installMode = installMode))
+            except ArchicadNotStartedError:
+                print (GetText ('consoleError', GetText ('startArchicadOnceConsole', installation.version)), file = sys.stderr)
+                exitCode = EXIT_CODE_START_ARCHICAD_ONCE
+            except (ArchicadRunningError, AllUsersTapirError) as e:
+                print (GetText ('consoleError', e), file = sys.stderr)
+                exitCode = exitCode or 1
+        if not args.dryRun and exitCode == 0:
             print (GetText ('consoleDone'))
-        return 0
+        return exitCode
     except InstallerError as e:
         print (GetText ('consoleError', e), file = sys.stderr)
         return 1
@@ -1698,6 +2336,34 @@ def GetInstalledStatusText (addOnsFolderPath):
     return GetText ('statusInstalled') if version is None else GetText ('statusInstalledVersion', version)
 
 
+def ReadAddOnVersion (addOnPath):
+    try:
+        version = ReadAddOnVersionMac (addOnPath) if IsUsingMacOS () else ReadAddOnVersionWin (addOnPath)
+    except Exception:
+        return None
+    return version if isinstance (version, str) and re.fullmatch (r'\d+\.\d+\.\d+', version) else None
+
+
+def IsTapirInstalledOf (installation):
+    # Installed for the user or for all users.
+    return GetInstalledAddOnPath (installation) is not None or IsTapirInstalled (installation.addOnsFolderPath)
+
+
+def GetInstalledTapirVersionOf (installation):
+    # The version of the user's own Tapir, else of the one for all users.
+    perUserAddOnPath = GetInstalledAddOnPath (installation)
+    if perUserAddOnPath is not None:
+        version = ReadAddOnVersion (perUserAddOnPath)
+        if version is not None:
+            return version
+    return GetInstalledTapirVersion (installation.addOnsFolderPath)
+
+
+def GetInstalledStatusTextOf (installation):
+    version = GetInstalledTapirVersionOf (installation)
+    return GetText ('statusInstalled') if version is None else GetText ('statusInstalledVersion', version)
+
+
 def EnableWindowsHighDpi ():
     # Without this Windows renders the window at 96 DPI and stretches it,
     # which makes every text blurry on high resolution displays.
@@ -1860,7 +2526,7 @@ def RunGuiInstaller (args):
             self.titleLabel = tkinter.Label (textFrame, text = GetText ('archicadVersion', installation.version),
                 font = app.fonts['cardTitle'], bg = COLORS['surface'], fg = COLORS['text'], anchor = 'w')
             self.titleLabel.pack (fill = 'x')
-            self.pathLabel = tkinter.Label (textFrame, text = installation.addOnFilePath if isUpdateMode else installation.addOnsFolderPath,
+            self.pathLabel = tkinter.Label (textFrame, text = installation.addOnFilePath if isUpdateMode else self.GetTargetPath (),
                 font = app.fonts['small'], bg = COLORS['surface'], fg = COLORS['mutedText'], anchor = 'w')
             self.pathLabel.pack (fill = 'x')
             # The update statuses are longer ("Restarting Archicad...").
@@ -1876,11 +2542,23 @@ def RunGuiInstaller (args):
                 return
             for widget in [self.card, contentFrame, self.checkBox, textFrame, self.titleLabel, self.pathLabel]:
                 widget.bind ('<Button-1>', lambda event : self.Toggle ())
-            if IsTapirInstalled (installation.addOnsFolderPath):
-                self.SetStatus (GetInstalledStatusText (installation.addOnsFolderPath), 'success')
+            self.ShowInstalledStatus ()
+            self.UpdateLook ()
+
+        def GetTargetPath (self):
+            # Where the chosen install mode puts the add-on.
+            if self.app.installMode == INSTALL_FOR_ME:
+                return os.path.dirname (GetPerUserAddOnPath (self.installation.version))
+            return self.installation.addOnsFolderPath
+
+        def ShowInstalledStatus (self):
+            if IsTapirInstalledOf (self.installation):
+                self.SetStatus (GetInstalledStatusTextOf (self.installation), 'success')
             else:
                 self.SetStatus (GetText ('statusNotInstalled'), 'neutral')
-            self.UpdateLook ()
+
+        def ShowInstallMode (self):
+            self.pathLabel.configure (text = self.GetTargetPath ())
 
         def Toggle (self):
             if self.app.isWorking:
@@ -1925,6 +2603,10 @@ def RunGuiInstaller (args):
             # button cancels the wait.
             self.isWaitingForArchicad = False
             self.cancelEvent = None
+            try:
+                self.installMode = GetInstallMode (args)
+            except InstallerError:
+                self.installMode = INSTALL_FOR_ME
 
             family = GetFontFamily (self)
             self.fonts = {
@@ -1965,6 +2647,19 @@ def RunGuiInstaller (args):
             # Body
             bodyFrame = tkinter.Frame (self, bg = COLORS['window'])
             bodyFrame.pack (fill = 'both', expand = True, padx = Px (24), pady = (Px (18), Px (10)))
+            self.installModeVariable = tkinter.StringVar (self, value = self.installMode)
+            self.installModeButtons = []
+            if not isUpdateMode:
+                tkinter.Label (bodyFrame, text = GetText ('sectionInstallFor'), font = self.fonts['section'], bg = COLORS['window'],
+                    fg = COLORS['mutedText'], anchor = 'w').pack (fill = 'x', pady = (0, Px (4)))
+                modeFrame = tkinter.Frame (bodyFrame, bg = COLORS['window'])
+                modeFrame.pack (fill = 'x', pady = (0, Px (14)))
+                for modeValue, modeTextKey in [(INSTALL_FOR_ME, 'installForMe'), (INSTALL_FOR_ALL_USERS, 'installForAllUsers')]:
+                    modeButton = tkinter.Radiobutton (modeFrame, text = GetText (modeTextKey), value = modeValue, variable = self.installModeVariable,
+                        command = self.OnInstallModeChanged, font = self.fonts['body'], bg = COLORS['window'], fg = COLORS['text'],
+                        activebackground = COLORS['window'], selectcolor = COLORS['surface'], anchor = 'w', highlightthickness = 0)
+                    modeButton.pack (fill = 'x')
+                    self.installModeButtons.append (modeButton)
             sectionFrame = tkinter.Frame (bodyFrame, bg = COLORS['window'])
             sectionFrame.pack (fill = 'x', pady = (0, Px (8)))
             tkinter.Label (sectionFrame, text = GetText ('sectionUpdate' if isUpdateMode else 'sectionInstallations'), font = self.fonts['section'], bg = COLORS['window'], fg = COLORS['mutedText']).pack (side = 'left')
@@ -2113,6 +2808,88 @@ def RunGuiInstaller (args):
                 self.selectAllLabel.configure (text = GetText ('selectNone' if selectedCount == len (self.rows) else 'selectAll'))
             for row in self.rows:
                 row.UpdateLook ()
+            for modeButton in self.installModeButtons:
+                modeButton.configure (state = 'disabled' if self.isWorking else 'normal')
+
+        def OnInstallModeChanged (self):
+            if self.isWorking:
+                self.installModeVariable.set (self.installMode)
+                return
+            self.installMode = self.installModeVariable.get ()
+            self.resultLabel.pack_forget ()
+            for row in self.rows:
+                row.ShowInstallMode ()
+
+        def CanWorkInInstallMode (self):
+            # "For all users" on Windows starts the installer again as
+            # administrator, which then shows its own window, and "for me"
+            # does not run as administrator. Returns whether this window may
+            # do the work.
+            if self.installMode == INSTALL_FOR_ME:
+                try:
+                    CheckCanInstallForMe ()
+                except InstallerError as e:
+                    self.ShowResult (str (e), 'error')
+                    return False
+                return True
+            if not NeedsAdministratorForAllUsers (args):
+                return True
+            try:
+                StartAsAdministratorWin (GetArgumentsForAllUsers (sys.argv[1:]))
+            except InstallerError as e:
+                self.ShowResult (str (e), 'error')
+                return False
+            self.destroy ()
+            return False
+
+        def AskRetryOrSkip (self, text):
+            # Called from a work thread: shows the text with Retry and Skip
+            # this version, and returns True for Retry.
+            answer = { 'retry' : False }
+            answered = threading.Event ()
+
+            def Show ():
+                dialog = tkinter.Toplevel (self)
+                dialog.title (GetText ('installerTitle'))
+                dialog.configure (bg = COLORS['surface'])
+                dialog.resizable (False, False)
+                dialog.transient (self)
+                tkinter.Label (dialog, text = text, font = self.fonts['body'], bg = COLORS['surface'], fg = COLORS['text'],
+                    wraplength = Px (420), justify = 'left', anchor = 'w').pack (fill = 'x', padx = Px (20), pady = (Px (18), Px (14)))
+                buttonFrame = tkinter.Frame (dialog, bg = COLORS['surface'])
+                buttonFrame.pack (fill = 'x', padx = Px (20), pady = (0, Px (16)))
+
+                def Answer (isRetry):
+                    answer['retry'] = isRetry
+                    dialog.destroy ()
+                    answered.set ()
+
+                FlatButton (buttonFrame, GetText ('buttonRetry'), lambda : Answer (True), self.fonts['bodyBold'], 'primary').pack (side = 'right')
+                FlatButton (buttonFrame, GetText ('buttonSkipVersion'), lambda : Answer (False), self.fonts['body'], 'secondary').pack (side = 'right', padx = (0, Px (8)))
+                dialog.protocol ('WM_DELETE_WINDOW', lambda : Answer (False))
+                dialog.bind ('<Return>', lambda event : Answer (True))
+                dialog.bind ('<Escape>', lambda event : Answer (False))
+                try:
+                    dialog.grab_set ()
+                except tkinter.TclError:
+                    pass
+
+            self.RunOnUiThread (Show)
+            answered.wait ()
+            return answer['retry']
+
+        def RunWithRetry (self, row, work):
+            # Runs work () until it succeeds, asking Retry or Skip this version
+            # while Archicad runs or has no add-on list yet. Raises
+            # InstallerError with the skipped text when skipped.
+            while True:
+                try:
+                    return work ()
+                except (ArchicadRunningError, ArchicadNotStartedError) as e:
+                    self.SetRowStatus (row, GetText ('statusWaitingForArchicad'), 'warning')
+                    if not self.AskRetryOrSkip (str (e)):
+                        raise InstallerError (str (e) + ' ' + GetText ('skippedVersion', row.installation.version))
+                    self.SetRowStatus (row, GetText ('statusInstalling'), 'busy', 1.0)
 
         def OnSelectAllClicked (self):
             if self.isWorking or len (self.rows) == 0:
@@ -2129,10 +2906,14 @@ def RunGuiInstaller (args):
             return [row for row in self.rows if row.isSelected]
 
         def OnInstallClicked (self):
-            self.StartWork (self.UpdateInBackground if isUpdateMode else self.InstallInBackground)
+            if isUpdateMode:
+                self.StartWork (self.UpdateInBackground)
+            elif len (self.GetSelectedRows ()) > 0 and self.CanWorkInInstallMode ():
+                self.StartWork (self.InstallInBackground)
 
         def OnUninstallClicked (self):
-            self.StartWork (self.UninstallInBackground)
+            if len (self.GetSelectedRows ()) > 0 and self.CanWorkInInstallMode ():
+                self.StartWork (self.UninstallInBackground)
 
         def StartWork (self, workFunction):
             selectedRows = self.GetSelectedRows ()
@@ -2149,6 +2930,7 @@ def RunGuiInstaller (args):
             # parallel password dialogs would be confusing.
             installLock = threading.Lock ()
             errorTexts = [None] * len (selectedRows)
+            installMode = self.installMode
 
             def InstallRow (rowIndex, row):
                 try:
@@ -2165,10 +2947,16 @@ def RunGuiInstaller (args):
                         self.SetRowStatus (row, GetText ('statusWaitingToInstall'), 'busy', 1.0)
                         with installLock:
                             self.SetRowStatus (row, GetText ('statusInstalling'), 'busy', 1.0)
-                            InstallAddOn (row.installation.addOnsFolderPath, downloadedFilePath)
+                            if installMode == INSTALL_FOR_ME:
+                                self.RunWithRetry (row, lambda : InstallAddOnForMe (row.installation, downloadedFilePath))
+                            else:
+                                InstallAddOn (row.installation.addOnsFolderPath, downloadedFilePath)
                     finally:
                         shutil.rmtree (downloadFolderPath, ignore_errors = True)
-                    self.SetRowStatus (row, GetInstalledStatusText (row.installation.addOnsFolderPath), 'success')
+                    self.SetRowStatus (row, GetInstalledStatusTextOf (row.installation), 'success')
+                except AllUsersTapirError as e:
+                    self.SetRowStatus (row, GetText ('statusSkipped'), 'warning')
+                    errorTexts[rowIndex] = GetText ('versionError', row.installation.version, e)
                 except Exception as e:
                     self.SetRowStatus (row, GetText ('statusFailed'), 'error')
                     errorTexts[rowIndex] = GetText ('versionError', row.installation.version, e)
@@ -2226,9 +3014,10 @@ def RunGuiInstaller (args):
 
         def UninstallInBackground (self, selectedRows):
             errorTexts = []
+            installMode = self.installMode
             for row in selectedRows:
                 try:
-                    if UninstallAddOn (row.installation.addOnsFolderPath):
+                    if self.RunWithRetry (row, lambda : UninstallTapir (row.installation, installMode)):
                         self.SetRowStatus (row, GetText ('statusUninstalled'), 'neutral')
                     else:
                         self.SetRowStatus (row, GetText ('statusNotInstalled'), 'neutral')
@@ -2282,6 +3071,8 @@ def Main ():
     parser.add_argument ('--console', dest = 'console', action = 'store_true', help = 'run in console mode without the GUI')
     parser.add_argument ('--versions', dest = 'versions', type = str, default = None, help = 'comma separated Archicad versions to install for (e.g. 28,29); default: all detected')
     parser.add_argument ('--addOnsFolder', dest = 'addOnsFolderPath', type = str, default = None, help = 'install into this Add-Ons folder instead of the detected ones (requires --versions with one version)')
+    parser.add_argument ('--forMe', dest = 'forMe', action = 'store_true', help = 'install for the user who runs the installer, without administrator rights (the default)')
+    parser.add_argument ('--allUsers', dest = 'allUsers', action = 'store_true', help = 'install for all users of this computer, into the Add-Ons folders (needs administrator rights)')
     parser.add_argument ('--uninstall', dest = 'uninstall', action = 'store_true', help = 'remove the installed Tapir Add-On instead of installing it')
     parser.add_argument ('--dryRun', dest = 'dryRun', action = 'store_true', help = 'detect and download only, do not modify the Add-Ons folders')
     parser.add_argument ('--mockRoot', dest = 'mockRootPath', type = str, default = None, help = 'detect installations under this folder instead of the real system locations (for testing)')
@@ -2300,6 +3091,17 @@ def Main ():
     # Update mode shows its progress in the GUI, although --versions would
     # otherwise mean console mode.
     isUpdateMode = IsUpdateMode (args)
+    # An update of an add-on that the user cannot replace (one in the Add-Ons
+    # folder) needs administrator rights: the installer starts itself again
+    # with the administrator prompt. When that fails, it goes on with the
+    # user's rights and reports the error of the replace.
+    if (isUpdateMode and IsUsingWindows () and not args.dryRun and args.addOnFilePath
+            and not IsRunningAsAdministratorWin () and NeedsAdministratorToReplaceWin (args.addOnFilePath)):
+        try:
+            StartAsAdministratorWin (sys.argv[1:])
+            return 0
+        except InstallerError:
+            pass
     if args.console or (not isUpdateMode and (args.dryRun or args.uninstall or args.versions is not None or args.addOnsFolderPath is not None)):
         TryAttachWindowsConsole ()
         if len (unknownArgs) > 0:

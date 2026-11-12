@@ -4,10 +4,14 @@
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
+#include "Base64Converter.hpp"
+#include "File.hpp"
+#include "Location.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstring>
 #include <string>
 #include <utility>
 #include <vector>
@@ -188,6 +192,22 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            // Archicad creates an element on a hidden layer (the layer of the tool defaults, a
+            // favorite or layerIndex), but then refuses to write its id and to delete it again,
+            // so the element would stay with an automatic id while the item answers that it was
+            // not created (#2632). Refuse such an item before anything is created.
+            GS::UniString id;
+            const bool hasId = data.Get ("id", id);
+            if (hasId) {
+                GS::UniString layerReason;
+                err = GetLayerChangeError (element.header.layer, layerReason);
+                if (err != NoError) {
+                    elements (CreateErrorResponse (err, "The " + elemTypeName + " was not created, because " + layerReason +
+                        ", so its id cannot be set. Show or unlock the layer, or give the layerIndex of a visible, unlocked layer."));
+                    continue;
+                }
+            }
+
             const API_Element requestedElement = element;
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -198,8 +218,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             // As for the id below, a new element that could not be finished is deleted again.
             err = AfterCreate (requestedElement, element.header.guid, data);
             if (err != NoError) {
-                ACAPI_Element_Delete ({ element.header.guid });
-                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", so it was not created"));
+                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", " + DeleteUnfinishedElement (element.header.guid)));
                 continue;
             }
 
@@ -209,12 +228,10 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             // written leaves no half-done element behind: the new element is deleted again
             // and the item answers with the error, so the response never names an element
             // whose id is not the requested one.
-            GS::UniString id;
-            if (data.Get ("id", id)) {
+            if (hasId) {
                 err = ChangeElementId (element.header.guid, id);
                 if (err != NoError) {
-                    ACAPI_Element_Delete ({ element.header.guid });
-                    elements (CreateErrorResponse (err, "Failed to set the id of the new " + elemTypeName + ", so it was not created"));
+                    elements (CreateErrorResponse (err, "Failed to set the id of the new " + elemTypeName + ", " + DeleteUnfinishedElement (element.header.guid)));
                     continue;
                 }
             }
@@ -326,8 +343,16 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "height": {
                             "type": "number",
-                            "description": "Optional column height.",
+                            "description": "Optional explicit column height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or of the tool defaults. Cannot be combined with a non-zero relativeTopStory.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "relativeTopStory": {
+                            "type": "integer",
+                            "description": "Optional link of the column's top to another story, relative to its home story (1 is the story above); 0 means an explicit height. With a non-zero value Archicad computes the height from the story levels and topOffset. The linked story must exist. Cannot be combined with height. When omitted, the top link of the favorite or of the tool defaults is kept."
+                        },
+                        "topOffset": {
+                            "type": "number",
+                            "description": "Optional offset of the column's top from the level of the linked top story (negative is below it). Only has an effect when the top is linked (relativeTopStory non-zero, given here or kept from the favorite or the tool defaults)."
                         },
                         "axisRotationAngle": {
                             "type": "number",
@@ -347,7 +372,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "width": {
                             "type": "number",
-                            "description": "Cross section width of the column. Applied to all segments.",
+                            "description": "Cross section width of the column, the diameter of a round one. Applied to all segments.",
                             "exclusiveMinimum": 0.0
                         },
                         "depth": {
@@ -364,7 +389,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "isWidthAndHeightLinked": {
                             "type": "boolean",
-                            "description": "When true (the default), Archicad keeps width and depth equal and setting one changes the other - set to false to give width/depth independent values. Applied to all segments."
+                            "description": "When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the tool default (or favoriteName) is used. Applied to all segments."
                         },
                         "buildingMaterialId": {
                             "$ref": "#/AttributeId",
@@ -413,9 +438,30 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     element.column.bottomOffset = floorIndexAndOffset.second;
     element.column.origoPos.x = apiCoordinate.x;
     element.column.origoPos.y = apiCoordinate.y;
-    if (parameters.Get ("height", element.column.height)) {
+
+    // The top of the column: an explicit height (relativeTopStory 0), or a link to a story
+    // relative to the home story with an offset from that story's level, as ModifyColumns
+    // writes them (#2552). A non-zero link and a height in one item are refused, because
+    // Archicad computes the height from the story levels once the top is linked.
+    double height = 0.0;
+    const bool hasHeight = parameters.Get ("height", height);
+    double relativeTopStory = 0.0;
+    const bool hasRelativeTopStory = parameters.Get ("relativeTopStory", relativeTopStory);
+    const short topStoryLink = static_cast<short> (relativeTopStory);
+    if (hasHeight && hasRelativeTopStory && topStoryLink != 0) {
+        return CreateErrorResponse (APIERR_BADPARS, "Do not give 'height' together with a non-zero 'relativeTopStory': a column linked to a story gets its height from the story levels and 'topOffset'.");
+    }
+    if (hasRelativeTopStory && topStoryLink != 0 && stories.find (static_cast<short> (element.header.floorInd + topStoryLink)) == stories.end ()) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("'relativeTopStory' %d links the column to story %d, which does not exist.", static_cast<int> (topStoryLink), static_cast<int> (element.header.floorInd + topStoryLink)));
+    }
+    if (hasHeight) {
+        element.column.height = height;
         element.column.relativeTopStory = 0;
     }
+    if (hasRelativeTopStory) {
+        element.column.relativeTopStory = topStoryLink;
+    }
+    parameters.Get ("topOffset", element.column.topOffset);
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
 
     GS::UniString coreAnchor;
@@ -473,15 +519,7 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
                 }
             }
             API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
-            if (hasIsWidthAndHeightLinked) {
-                segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
-            }
-            if (hasWidth) {
-                segment.nominalWidth = width;
-            }
-            if (hasDepth) {
-                segment.nominalHeight = depth;
-            }
+            ApplySectionSize (segment, hasWidth ? GS::Optional<double> (width) : GS::Optional<double> (), hasDepth ? GS::Optional<double> (depth) : GS::Optional<double> (), hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
             if (hasCircleBased) {
                 segment.circleBased = circleBased;
             }
@@ -730,6 +768,10 @@ void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& deta
     coverFill.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, zone.floorFillInd)));
     coverFill.Add ("foregroundPen", static_cast<Int32> (zone.floorFillPen));
     coverFill.Add ("backgroundPen", static_cast<Int32> (zone.floorFillBGPen));
+    coverFill.Add ("use3DHatching", zone.use3DHatching);
+    coverFill.Add ("useLocalOrigo", zone.useLocalOrigo);
+    coverFill.Add ("locOrigo", Create2DCoordinateObjectState (zone.locOrigo));
+    coverFill.Add ("fillAngle", zone.fillAngle);
     details.Add ("coverFill", coverFill);
 }
 
@@ -805,6 +847,23 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
         if (coverFill.Get ("backgroundPen", backgroundPen)) {
             zone.floorFillBGPen = static_cast<short> (backgroundPen);
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, floorFillBGPen);
+        }
+        if (coverFill.Get ("use3DHatching", zone.use3DHatching) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, use3DHatching);
+        }
+        if (coverFill.Get ("useLocalOrigo", zone.useLocalOrigo) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, useLocalOrigo);
+        }
+        GS::ObjectState locOrigo;
+        if (coverFill.Get ("locOrigo", locOrigo)) {
+            // SetDetailsOfElements does not check typeSpecificDetails against the schema, so a
+            // coordinate that is left out keeps its value instead of becoming 0.
+            locOrigo.Get ("x", zone.locOrigo.x);
+            locOrigo.Get ("y", zone.locOrigo.y);
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, locOrigo);
+        }
+        if (coverFill.Get ("fillAngle", zone.fillAngle) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, fillAngle);
         }
     }
 
@@ -1092,11 +1151,12 @@ static void RefreshZoneOverlapCache ()
 // The first existing Zone of the new Zone's story that it would share area with.
 // For a manual Zone the polygon is compared; for an automatic one only its reference
 // point is known before creation, so it counts when that point is inside a Zone.
-static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, short floorInd, const ZoneArea& newZoneArea)
+// ModifyZones passes the Zone it changes as excludedGuid, which is not compared with itself.
+static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, short floorInd, const ZoneArea& newZoneArea, const API_Guid& excludedGuid = APINULLGuid)
 {
     RefreshZoneOverlapCache ();
     for (const ExistingZone& existing : zoneOverlapCache.zones) {
-        if (existing.floorInd != floorInd) {
+        if (existing.floorInd != floorInd || existing.guid == excludedGuid) {
             continue;
         }
         const bool overlaps = newZone.manual
@@ -1109,13 +1169,27 @@ static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, sho
     return nullptr;
 }
 
-static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& existing)
+// After ModifyZones has changed the polygon of a Zone, the later items of the same call
+// are compared with its new polygon, not with the one cached before the change.
+static void UpdateZoneOverlapCacheArea (const API_Guid& guid, const ZoneArea& area)
 {
+    for (ExistingZone& existing : zoneOverlapCache.zones) {
+        if (existing.guid == guid) {
+            existing.area = area;
+            return;
+        }
+    }
+}
+
+static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& existing, bool changedPolygon = false)
+{
+    const GS::UniString subject = changedPolygon ? "The new polygon of the zone" : "The new zone";
+    const GS::UniString action = changedPolygon ? "change the polygon" : "create the new zone";
     return CreateErrorResponse (APIERR_BADPARS,
-        "The new zone would overlap the existing zone '" + existing.numberStr + " " + existing.name + "' (" + APIGuidToString (existing.guid) +
+        subject + " would overlap the existing zone '" + existing.numberStr + " " + existing.name + "' (" + APIGuidToString (existing.guid) +
         ") on the same story, which Archicad answers with a modal warning dialog that blocks the API. "
-        "Move or delete that zone first, or set allowOverlap to true to create the new zone anyway. "
-        "Curved edges are compared by their chords, so a zone that only follows the curved edge of that zone may be refused although nothing overlaps; allowOverlap creates it too.");
+        "Move or delete that zone first, or set allowOverlap to true to " + action + " anyway. "
+        "Curved edges are compared by their chords, so a zone that only follows the curved edge of that zone may be refused although nothing overlaps; allowOverlap allows it too.");
 }
 
 } // namespace
@@ -1404,6 +1478,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "number",
                         "description" : "Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards."
                     },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                    },
                     "name": {
                         "type": "string",
                         "description" : "Name of the zone."
@@ -1486,6 +1565,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
 GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorIndex", element.header.floorInd);
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
 
     const API_Guid categoryAttrGuid = GetGuidFromArrayItem ("categoryAttributeId", parameters);
     if (categoryAttrGuid != APINULLGuid) {
@@ -1618,6 +1702,53 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+// The new polygon of a manual zone for ModifyZones: the same geometry (polygonCoordinates,
+// polygonArcs, holes) and the same checks as a manual zone of CreateZones. The memo is built
+// as for a Hatch, also a closed polygon with holes whose memo is changed in place
+// (BuildHatchPolygonMemo); the arcs are indexed the same way as in CreateZones.
+static GS::Optional<GS::UniString> BuildZonePolygonMemo (const GS::ObjectState& geometry, API_ZoneType& zone, API_ElementMemo& memo, ZoneArea& area)
+{
+    if (geometry.Get ("referencePosition") != nullptr) {
+        return GS::UniString ("geometry.referencePosition cannot be changed: an automatic zone is placed around its reference point when it is created. "
+            "Give the polygon of a manual zone (polygonCoordinates, polygonArcs, holes), or recreate the zone with CreateZones.");
+    }
+
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    GS::Array<GS::ObjectState> polygonArcs;
+    GS::Array<GS::ObjectState> holes;
+    if (!geometry.Get ("polygonCoordinates", polygonCoordinates)) {
+        return GS::UniString ("polygonCoordinates parameter is missing in geometry.");
+    }
+    geometry.Get ("polygonArcs", polygonArcs);
+    geometry.Get ("holes", holes);
+
+    if (polygonCoordinates.GetSize () >= 2 && IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
+        polygonCoordinates.Pop ();
+    }
+    if (polygonCoordinates.GetSize () < 3) {
+        return GS::UniString ("'polygonCoordinates' must contain at least 3 different coordinates.");
+    }
+    const GS::Optional<GS::UniString> holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
+    }
+
+    area.outline = GetRingFromObjectStates (polygonCoordinates);
+    area.holes.clear ();
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holePolygonOutline;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            area.holes.push_back (GetRingFromObjectStates (holePolygonOutline));
+        }
+    }
+
+    if (!BuildHatchPolygonMemo (polygonCoordinates, polygonArcs, holes, zone.poly, memo)) {
+        return GS::UniString ("Out of memory while building the polygon of the zone.");
+    }
+    return {};
+}
+
 ModifyZonesCommand::ModifyZonesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1635,7 +1766,7 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
         "properties": {
             "zonesWithDetails": {
                 "type": "array",
-                "description": "Array of Zone elements to modify, with the fields to change. Only the given fields are changed; the polygon and the omitted fields are kept. The same fields as the ZoneSettings of SetDetailsOfElements.",
+                "description": "Array of Zone elements to modify, with the fields to change. Only the given fields are changed and the omitted fields are kept; the polygon is kept unless geometry is given. The same fields as the ZoneSettings of SetDetailsOfElements, plus geometry and allowOverlap.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -1652,7 +1783,9 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
-                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." }
+                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
+                        "geometry": { "$ref": "#/ManualZoneGeometry", "description": "Optional new polygon of a manual zone (isManual true in GetDetailsOfElements): its outline, arcs and holes, the same geometry as a manual zone of CreateZones. The whole polygon is replaced and the zone keeps its GUID, properties and other settings; the stamp stays where it is unless stampPosition is given too. Refused for an automatic zone, whose polygon Archicad computes from its boundaries (see UpdateZones)." },
+                        "allowOverlap": { "type": "boolean", "description": "Optional, defaults to false, only used with geometry. As in CreateZones: a new polygon that would overlap another zone on the same story fails with an error naming that zone instead of risking Archicad's modal overlap warning, which blocks the API. Set it to true to change the polygon anyway." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -1687,6 +1820,11 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
     ElementChangeReporter changeReporter;
     changeReporter.AddElementIdsOf (zonesWithDetails);
 
+    // The overlap check of a new polygon (geometry) reads the project's Zones once per call,
+    // as CreateZones does; see ZoneOverlapCache.
+    zoneOverlapCache = ZoneOverlapCache {};
+    const GS::OnExit cacheGuard ([] () { zoneOverlapCache = ZoneOverlapCache {}; });
+
     ACAPI_CallUndoableCommand ("ModifyZones", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : zonesWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -1715,11 +1853,46 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
-            // No memo is passed, so the polygon is kept as it is.
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            // Without geometry no memo is passed, so the polygon is kept as it is.
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            UInt64 memoMask = 0;
+            ZoneArea newZoneArea;
+            const GS::ObjectState* geometry = item.Get ("geometry");
+            if (geometry != nullptr) {
+                if (!element.zone.manual) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                        "The polygon of an automatic zone cannot be given: Archicad computes it from the zone's boundaries (see UpdateZones). Only a manual zone (isManual true in GetDetailsOfElements) takes geometry."));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> geometryError = BuildZonePolygonMemo (*geometry, element.zone, memo, newZoneArea);
+                if (geometryError.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *geometryError));
+                    continue;
+                }
+
+                // As in CreateZones (#822): fail before Archicad can open its modal overlap warning.
+                bool allowOverlap = false;
+                item.Get ("allowOverlap", allowOverlap);
+                if (!allowOverlap) {
+                    const ExistingZone* overlapped = FindOverlappingZone (element.zone, element.header.floorInd, newZoneArea, element.header.guid);
+                    if (overlapped != nullptr) {
+                        executionResults (CreateFailedExecutionResult (CreateZoneOverlapErrorResponse (*overlapped, true)));
+                        continue;
+                    }
+                }
+
+                ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly);
+                memoMask = APIMemoMask_Polygon;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, memoMask != 0 ? &memo : nullptr, memoMask, true);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to modify the zone."));
+                executionResults (CreateFailedExecutionResult (err, geometry != nullptr ? "Failed to modify the zone or to change its polygon." : "Failed to modify the zone."));
                 continue;
+            }
+            if (geometry != nullptr) {
+                UpdateZoneOverlapCacheArea (element.header.guid, newZoneArea);
             }
 
             err = ReapplyZoneTopOffset (item, element.header.guid);
@@ -1758,6 +1931,27 @@ static const char* LineFamilySettingsSchemaProperties = R"(
                         "description": "Optional line type attribute. By default the current line type is used."
                     })";
 
+// The arrowheads of Line/PolyLine/Arc/Spline creation (not Circle, which has no ends).
+static const char* LineArrowsSchemaProperties = R"(
+                    "startArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "endArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },)";
+
+static GS::Optional<GS::ObjectState> SetLineArrowsParameters (const GS::ObjectState& parameters, const LineArrows& arrows)
+{
+    bool changed = false;
+    const GS::Optional<GS::UniString> error = ApplyLineArrows (parameters, arrows, changed);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+    return {};
+}
+
 static void SetLineFamilySettingsParameters (const GS::ObjectState& parameters, API_ExtendedPenType& linePen, API_AttributeIndex& ltypeInd, bool& roomSeparator)
 {
     short penIndex = 0;
@@ -1779,7 +1973,7 @@ CreatePolylinesCommand::CreatePolylinesCommand () :
 
 GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "polylinesData": {
@@ -1795,7 +1989,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new polyline. Polylines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no polyline. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -1811,7 +2005,11 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                     },
                     "lineTypeIndex": {
                         "type": "integer",
-                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used."
+                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used. Ignored when lineTypeId is given."
+                    },
+                    "lineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it. Takes precedence over lineTypeIndex. By default the current line type is used."
                     },
                     "penWeightMm": {
                         "type": "number",
@@ -1821,6 +2019,9 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "type": "boolean",
                         "description": "Is this a zone boundary line? Optional, defaults to false."
                     },
+                    "drawSegmentMode": {
+                        "$ref": "#/PolylineDrawSegmentMode"
+                    },)") + LineArrowsSchemaProperties + R"(
                     "coordinates": {
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
@@ -1896,8 +2097,11 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
         element.polyLine.linePen.colorOverridePenIndex = 0;
     }
 
+    const GS::ObjectState* lineTypeId = parameters.Get ("lineTypeId");
     Int32 lineTypeIndex = 0;
-    if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
+    if (lineTypeId != nullptr) {
+        element.polyLine.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeId));
+    } else if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
         element.polyLine.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
     }
 
@@ -1907,6 +2111,17 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
     }
 
     parameters.Get ("roomSeparator", element.polyLine.roomSeparator);
+
+    GS::UniString drawSegmentMode;
+    if (parameters.Get ("drawSegmentMode", drawSegmentMode) &&
+        !PolylineDrawSegmentModeFromString (drawSegmentMode, element.polyLine.drawSegmentMode)) {
+        return CreateErrorResponse (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous.");
+    }
+
+    GS::Optional<GS::ObjectState> arrowsError = SetLineArrowsParameters (parameters, GetLineArrows (element.polyLine));
+    if (arrowsError.HasValue ()) {
+        return arrowsError;
+    }
 
     GS::Array<GS::ObjectState> coordinates;
     GS::Array<GS::ObjectState> arcs;
@@ -1944,7 +2159,7 @@ GS::Optional<GS::UniString> CreateLineElementsCommand::GetInputParametersSchema 
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new line. Lines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no line. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -1959,7 +2174,7 @@ GS::Optional<GS::UniString> CreateLineElementsCommand::GetInputParametersSchema 
                     },
                     "endCoordinate": {
                         "$ref": "#/Coordinate2D"
-                    },)") + LineFamilySettingsSchemaProperties + R"(
+                    },)") + LineArrowsSchemaProperties + LineFamilySettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -1999,7 +2214,7 @@ GS::Optional<GS::ObjectState> CreateLineElementsCommand::SetTypeSpecificParamete
 
     SetLineFamilySettingsParameters (parameters, element.line.linePen, element.line.ltypeInd, element.line.roomSeparator);
 
-    return {};
+    return SetLineArrowsParameters (parameters, GetLineArrows (element.line));
 }
 
 CreateArcsCommand::CreateArcsCommand () :
@@ -2025,7 +2240,7 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new arc. Arcs have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no arc. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2048,7 +2263,20 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     "endAngle": {
                         "type": "number",
                         "description": "End angle of the arc in radians."
-                    },)") + LineFamilySettingsSchemaProperties + R"(
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Optional angle of the ellipse's 'a' axis in radians. Defaults to 0.0."
+                    },
+                    "ratio": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Optional 'a/b' ratio of the ellipse, as GetDetailsOfElements returns it. Defaults to 1.0, a circular arc."
+                    },
+                    "reflected": {
+                        "type": "boolean",
+                        "description": "Optional: is the ellipse reflected onto its smaller axis? By default the tool's (or the favorite's) setting is kept."
+                    },)") + LineArrowsSchemaProperties + LineFamilySettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -2087,12 +2315,15 @@ GS::Optional<GS::ObjectState> CreateArcsCommand::SetTypeSpecificParameters (API_
     parameters.Get ("radius", element.arc.r);
     element.arc.angle = 0.0;
     element.arc.ratio = 1.0;
+    parameters.Get ("angle", element.arc.angle);
+    parameters.Get ("ratio", element.arc.ratio);
+    parameters.Get ("reflected", element.arc.reflected);
     parameters.Get ("begAngle", element.arc.begAng);
     parameters.Get ("endAngle", element.arc.endAng);
 
     SetLineFamilySettingsParameters (parameters, element.arc.linePen, element.arc.ltypeInd, element.arc.roomSeparator);
 
-    return {};
+    return SetLineArrowsParameters (parameters, GetLineArrows (element.arc));
 }
 
 CreateCirclesCommand::CreateCirclesCommand () :
@@ -2118,7 +2349,7 @@ GS::Optional<GS::UniString> CreateCirclesCommand::GetInputParametersSchema () co
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new circle. Circles have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no circle. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2199,7 +2430,7 @@ GS::Optional<GS::UniString> CreateHotspotsCommand::GetInputParametersSchema () c
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new hotspot. Hotspots have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no hotspot. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2261,6 +2492,378 @@ GS::Optional<GS::ObjectState> CreateHotspotsCommand::SetTypeSpecificParameters (
     return {};
 }
 
+// The image formats the Picture tool takes (API_PictureFormat), told apart by their first bytes.
+enum class PictureFileFormat { Unknown, Bitmap, GIF, TIFF, JPEG, PNG };
+
+static UInt32 ReadPictureUInt16 (const unsigned char* p, bool bigEndian)
+{
+    return bigEndian ? ((UInt32) p[0] << 8) | p[1] : ((UInt32) p[1] << 8) | p[0];
+}
+
+static UInt32 ReadPictureUInt32 (const unsigned char* p, bool bigEndian)
+{
+    return bigEndian
+        ? ((UInt32) p[0] << 24) | ((UInt32) p[1] << 16) | ((UInt32) p[2] << 8) | p[3]
+        : ((UInt32) p[3] << 24) | ((UInt32) p[2] << 16) | ((UInt32) p[1] << 8) | p[0];
+}
+
+// Reads the format and the size in pixels from the header of an image file. Returns false when
+// the data is none of PNG, JPEG, GIF, TIFF and BMP or its size cannot be found. Only the header is
+// read: the image itself is decoded by Archicad. The size is needed to keep the proportions when
+// only the width or only the height is given.
+static bool GetPictureFileInfo (const unsigned char* data, UInt64 size, PictureFileFormat& format, UInt32& width, UInt32& height)
+{
+    format = PictureFileFormat::Unknown;
+    width = 0;
+    height = 0;
+
+    static const unsigned char pngSignature[8] = { 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A };
+    if (size >= 24 && memcmp (data, pngSignature, 8) == 0) {
+        // The IHDR chunk comes first: its width and height follow the chunk length and type.
+        format = PictureFileFormat::PNG;
+        width = ReadPictureUInt32 (data + 16, true);
+        height = ReadPictureUInt32 (data + 20, true);
+    } else if (size >= 10 && (memcmp (data, "GIF87a", 6) == 0 || memcmp (data, "GIF89a", 6) == 0)) {
+        format = PictureFileFormat::GIF;
+        width = ReadPictureUInt16 (data + 6, false);
+        height = ReadPictureUInt16 (data + 8, false);
+    } else if (size >= 26 && data[0] == 'B' && data[1] == 'M') {
+        format = PictureFileFormat::Bitmap;
+        const UInt32 headerSize = ReadPictureUInt32 (data + 14, false);
+        if (headerSize == 12) {
+            // BITMAPCOREHEADER: 16-bit sizes.
+            width = ReadPictureUInt16 (data + 18, false);
+            height = ReadPictureUInt16 (data + 20, false);
+        } else {
+            // BITMAPINFOHEADER and later: signed 32-bit sizes, a negative height is a top-down bitmap.
+            const Int32 signedWidth = (Int32) ReadPictureUInt32 (data + 18, false);
+            const Int32 signedHeight = (Int32) ReadPictureUInt32 (data + 22, false);
+            width = signedWidth < 0 ? 0 : (UInt32) signedWidth;
+            height = signedHeight < 0 ? (UInt32) (-(Int64) signedHeight) : (UInt32) signedHeight;
+        }
+    } else if (size >= 4 && data[0] == 0xFF && data[1] == 0xD8) {
+        format = PictureFileFormat::JPEG;
+        // The size is in the first start-of-frame segment (SOF0-SOF15 but DHT, JPG and DAC).
+        UInt64 pos = 2;
+        while (pos + 4 <= size) {
+            if (data[pos] != 0xFF) {
+                return false;
+            }
+            const unsigned char marker = data[pos + 1];
+            if (marker == 0xFF) {
+                // Fill byte before a marker.
+                ++pos;
+                continue;
+            }
+            if (marker == 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+                // Markers without a length.
+                pos += 2;
+                continue;
+            }
+            if (marker == 0xD9 || marker == 0xDA) {
+                // End of image or start of scan before any frame header.
+                return false;
+            }
+            const UInt32 length = ReadPictureUInt16 (data + pos + 2, true);
+            if (length < 2) {
+                return false;
+            }
+            if (marker >= 0xC0 && marker <= 0xCF && marker != 0xC4 && marker != 0xC8 && marker != 0xCC) {
+                if (pos + 9 > size) {
+                    return false;
+                }
+                height = ReadPictureUInt16 (data + pos + 5, true);
+                width = ReadPictureUInt16 (data + pos + 7, true);
+                break;
+            }
+            pos += 2 + length;
+        }
+    } else if (size >= 8 && ((data[0] == 'I' && data[1] == 'I' && data[2] == 42 && data[3] == 0) ||
+                             (data[0] == 'M' && data[1] == 'M' && data[2] == 0 && data[3] == 42))) {
+        format = PictureFileFormat::TIFF;
+        const bool bigEndian = data[0] == 'M';
+        // ImageWidth (256) and ImageLength (257) of the first image file directory.
+        const UInt64 ifdOffset = ReadPictureUInt32 (data + 4, bigEndian);
+        if (ifdOffset + 2 > size) {
+            return false;
+        }
+        const UInt32 entryCount = ReadPictureUInt16 (data + ifdOffset, bigEndian);
+        for (UInt32 i = 0; i < entryCount; ++i) {
+            const UInt64 entry = ifdOffset + 2 + (UInt64) i * 12;
+            if (entry + 12 > size) {
+                return false;
+            }
+            const UInt32 tag = ReadPictureUInt16 (data + entry, bigEndian);
+            if (tag != 256 && tag != 257) {
+                continue;
+            }
+            const UInt32 type = ReadPictureUInt16 (data + entry + 2, bigEndian);
+            UInt32 value = 0;
+            if (type == 3) {
+                value = ReadPictureUInt16 (data + entry + 8, bigEndian);
+            } else if (type == 4) {
+                value = ReadPictureUInt32 (data + entry + 8, bigEndian);
+            } else {
+                return false;
+            }
+            if (tag == 256) {
+                width = value;
+            } else {
+                height = value;
+            }
+        }
+    } else {
+        return false;
+    }
+
+    return width > 0 && height > 0;
+}
+
+static API_PictureFormat ToApiPictureFormat (PictureFileFormat format)
+{
+    switch (format) {
+        case PictureFileFormat::Bitmap: return APIPictForm_Bitmap;
+        case PictureFileFormat::GIF:    return APIPictForm_GIF;
+        case PictureFileFormat::TIFF:   return APIPictForm_TIFF;
+        case PictureFileFormat::JPEG:   return APIPictForm_JPEG;
+        case PictureFileFormat::PNG:    return APIPictForm_PNG;
+        default:                        return APIPictForm_Default;
+    }
+}
+
+// Where the anchor point of a picture box of this size is, relative to the box's bottom left corner.
+static API_Coord GetPictureAnchorOffset (API_AnchorID anchorPoint, double width, double height)
+{
+    API_Coord offset = { 0.0, 0.0 };
+    if (anchorPoint == APIAnc_MT || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_MB) {
+        offset.x = width / 2.0;
+    } else if (anchorPoint == APIAnc_RT || anchorPoint == APIAnc_RM || anchorPoint == APIAnc_RB) {
+        offset.x = width;
+    }
+    if (anchorPoint == APIAnc_LM || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_RM) {
+        offset.y = height / 2.0;
+    } else if (anchorPoint == APIAnc_LT || anchorPoint == APIAnc_MT || anchorPoint == APIAnc_RT) {
+        offset.y = height;
+    }
+    return offset;
+}
+
+CreatePicturesCommand::CreatePicturesCommand () :
+    CreateElementsCommandBase ("CreatePictures", API_PictureID, "picturesData")
+{
+}
+
+GS::Optional<GS::UniString> CreatePicturesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "picturesData": {
+            "type": "array",
+            "description": "Array of data to create Pictures.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Picture. Give the image either as a file (path) or as its bytes (imageData), not both.",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "The full path of a PNG, JPEG, GIF, TIFF or BMP image file. The image is copied into the project: the picture does not change when the file changes or is deleted later."
+                    },
+                    "imageData": {
+                        "type": "string",
+                        "description": "The PNG, JPEG, GIF, TIFF or BMP image file as base64 text, instead of path."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Optional name of the picture. By default the file name of path, or empty for imageData."
+                    },
+                    "position": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "Where the anchor point of the picture is placed, in model units (on a layout in layout units)."
+                    },
+                    "anchorPoint": {
+                        "$ref": "#/PictureAnchorPoint",
+                        "description": "The point of the picture's box that is placed at position and that the picture is rotated around. BottomLeft by default."
+                    },
+                    "width": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "The width of the picture in model units. When only height is given, the width keeps the proportions of the image."
+                    },
+                    "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "The height of the picture in model units. When only width is given, the height keeps the proportions of the image."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "The rotation angle of the picture in radians, around its anchor point. 0 by default."
+                    },
+                    "mirrored": {
+                        "type": "boolean",
+                        "description": "Mirror the picture to its local vertical axis. false by default."
+                    },
+                    "transparent": {
+                        "type": "boolean",
+                        "description": "Draw the white pixels of the picture transparent. false by default."
+                    },
+                    "floorInd": {
+                        "type": "number",
+                        "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Layer attribute index to place the picture on. Optional parameter, by default the layer of the Picture tool defaults is used."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "position"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the pictures in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the pictures are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "picturesData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreatePicturesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorInd", element.header.floorInd);
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
+    GS::UniString path;
+    GS::UniString imageData;
+    const bool hasPath = parameters.Get ("path", path) && !path.IsEmpty ();
+    const bool hasImageData = parameters.Get ("imageData", imageData) && !imageData.IsEmpty ();
+    if (hasPath == hasImageData) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give the image either as path or as imageData.");
+    }
+
+    // The picture is created from the bytes of the image file, as Graphisoft's Element_Test
+    // example does it: the file content goes to memo.pictHdl and its format to storageFormat.
+    GS::Array<char> bytes;
+    GS::UniString name;
+    if (hasPath) {
+        IO::File file (IO::Location (path), IO::File::OnNotFound::Fail);
+        if (file.GetStatus () != NoError || file.Open (IO::File::ReadMode) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Failed to open the image file '" + path + "'.");
+        }
+        UInt64 length = 0;
+        GSErrCode err = file.GetDataLength (&length);
+        if (err == NoError && (length == 0 || length > 0x7FFFFFFF)) {
+            err = APIERR_BADPARS;
+        }
+        if (err == NoError) {
+            bytes.SetSize ((USize) length);
+            USize read = 0;
+            err = file.ReadBin (bytes.GetContent (), (USize) length, &read);
+            if (err == NoError && read != (USize) length) {
+                err = APIERR_GENERAL;
+            }
+        }
+        file.Close ();
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the image file '" + path + "'.");
+        }
+
+        // The file name without its folder.
+        UIndex nameStart = 0;
+        for (UIndex i = 0; i < path.GetLength (); ++i) {
+            if (path[i] == GS::UniChar ('/') || path[i] == GS::UniChar ('\\')) {
+                nameStart = i + 1;
+            }
+        }
+        name = path.GetSubstring (nameStart, path.GetLength () - nameStart);
+    } else {
+        bytes = Base64Converter::Decode (imageData);
+        if (bytes.IsEmpty ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "imageData is not valid base64 text.");
+        }
+    }
+    parameters.Get ("name", name);
+
+    PictureFileFormat format = PictureFileFormat::Unknown;
+    UInt32 pixelWidth = 0;
+    UInt32 pixelHeight = 0;
+    if (!GetPictureFileInfo (reinterpret_cast<const unsigned char*> (bytes.GetContent ()), bytes.GetSize (), format, pixelWidth, pixelHeight)) {
+        return CreateErrorResponse (APIERR_BADPARS, "The image is not a PNG, JPEG, GIF, TIFF or BMP file, or its size cannot be read.");
+    }
+
+    double width = 0.0;
+    double height = 0.0;
+    const bool hasWidth = parameters.Get ("width", width);
+    const bool hasHeight = parameters.Get ("height", height);
+    if (!hasWidth && !hasHeight) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give the width, the height or both of the picture.");
+    }
+    if ((hasWidth && !(width > 0.0)) || (hasHeight && !(height > 0.0))) {
+        return CreateErrorResponse (APIERR_BADPARS, "The width and the height of the picture must be greater than 0.");
+    }
+    if (!hasWidth) {
+        width = height * pixelWidth / pixelHeight;
+    } else if (!hasHeight) {
+        height = width * pixelHeight / pixelWidth;
+    }
+
+    GS::ObjectState positionOS;
+    parameters.Get ("position", positionOS);
+    const API_Coord position = Get2DCoordinateFromObjectState (positionOS);
+
+    GS::UniString anchorPointString ("BottomLeft");
+    parameters.Get ("anchorPoint", anchorPointString);
+    const API_AnchorID anchorPoint = AnchorIdFromString (anchorPointString, APIAnc_LB);
+
+    // The box the picture fills, with its anchor point at position.
+    const API_Coord anchorOffset = GetPictureAnchorOffset (anchorPoint, width, height);
+    const double xMin = position.x - anchorOffset.x;
+    const double yMin = position.y - anchorOffset.y;
+
+    API_PictureType& picture = element.picture;
+    // With usePixelSize false Archicad takes the size from the whole destBox; the pixel sizes are
+    // ignored then, so they are only filled in (clamped to the short they are stored in).
+    picture.usePixelSize = false;
+    picture.directCreate = false;
+    picture.destBox.xMin = xMin;
+    picture.destBox.yMin = yMin;
+    picture.destBox.xMax = xMin + width;
+    picture.destBox.yMax = yMin + height;
+    picture.pixelSizeX = static_cast<short> (GS::Min<UInt32> (pixelWidth, 32767));
+    picture.pixelSizeY = static_cast<short> (GS::Min<UInt32> (pixelHeight, 32767));
+    picture.anchorPoint = anchorPoint;
+    picture.storageFormat = ToApiPictureFormat (format);
+    picture.rotAngle = 0.0;
+    parameters.Get ("angle", picture.rotAngle);
+    picture.mirrored = false;
+    parameters.Get ("mirrored", picture.mirrored);
+    picture.transparent = false;
+    parameters.Get ("transparent", picture.transparent);
+    GS::ucscpy (picture.pictName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) API_UniLongNameLen - 1)).Get ());
+
+    if (memo.pictHdl != nullptr) {
+        BMKillHandle ((GSHandle*) &memo.pictHdl);
+    }
+    memo.pictHdl = BMAllocateHandle ((GSSize) bytes.GetSize (), ALLOCATE_CLEAR, 0);
+    if (memo.pictHdl == nullptr) {
+        return CreateErrorResponse (APIERR_MEMFULL, "Not enough memory for the image.");
+    }
+    memcpy (*memo.pictHdl, bytes.GetContent (), bytes.GetSize ());
+
+    return {};
+}
+
 CreateHatchesCommand::CreateHatchesCommand () :
     CreateElementsCommandBase ("CreateHatches", API_HatchID, "hatchesData")
 {
@@ -2296,7 +2899,7 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     },
                     "coordinates": {
                         "type": "array",
-                        "description": "The 2D coordinates of the hatch outline. Do not repeat the first point at the end.",
+                        "description": "The 2D coordinates of the hatch outline. The first point may be repeated at the end, as in the closed outline GetDetailsOfElements returns; that last point is then ignored.",
                         "items": {
                             "$ref": "#/Coordinate2D"
                         },
@@ -2380,6 +2983,9 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
     parameters.Get ("coordinates", coordinates);
     parameters.Get ("arcs", arcs);
     parameters.Get ("holes", holes);
+    if (GetOpenHatchOutline (coordinates).GetSize () < 3) {
+        return CreateErrorResponse (APIERR_BADPARS, "The hatch outline must contain at least 3 coordinates, not counting a last one that repeats the first.");
+    }
     auto holesError = ValidateHoles (holes);
     if (holesError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, holesError.Get ());
@@ -2461,7 +3067,7 @@ GS::Optional<GS::UniString> CreateSplinesCommand::GetInputParametersSchema () co
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new spline. Splines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no spline. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2482,7 +3088,7 @@ GS::Optional<GS::UniString> CreateSplinesCommand::GetInputParametersSchema () co
                     "closed": {
                         "type": "boolean",
                         "description": "Is this a closed curve? Optional, defaults to false."
-                    },)") + LineFamilySettingsSchemaProperties + R"(
+                    },)") + LineArrowsSchemaProperties + LineFamilySettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -2526,7 +3132,7 @@ GS::Optional<GS::ObjectState> CreateSplinesCommand::SetTypeSpecificParameters (A
 
     SetLineFamilySettingsParameters (parameters, element.spline.linePen, element.spline.ltypeInd, element.spline.roomSeparator);
 
-    return {};
+    return SetLineArrowsParameters (parameters, GetLineArrows (element.spline));
 }
 
 // Shared schema builder for CreateObjects and CreateLamps.
@@ -2556,7 +3162,7 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
         "reflected": { "type": "boolean" },
         "useFixSize": { "type": "boolean" },
         "fixPoint": { "type": "integer", "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)." },
-        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level." },
+        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType." },
         "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
         "isAutoOnStoryVisibility": { "type": "boolean" },
         "visibility": {
@@ -3171,6 +3777,7 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    const Stories stories = GetStories ();
 
     ElementChangeReporter changeReporter;
     changeReporter.AddElementIdsOf (itemsWithDetails);
@@ -3203,7 +3810,7 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
             const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
             ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_AddPars);
 
-            auto applyErr = ApplyObjectLampDetails (element, memo, &mask, GetStories (), item);
+            auto applyErr = ApplyObjectLampDetails (element, memo, &mask, stories, item);
             if (applyErr.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (*applyErr));
                 continue;
@@ -3532,6 +4139,283 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
     return response;
 }
 
+ModifyPicturesCommand::ModifyPicturesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPicturesCommand::GetName () const
+{
+    return "ModifyPictures";
+}
+
+GS::Optional<GS::UniString> ModifyPicturesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "picturesWithDetails": {
+                "type": "array",
+                "description": "Array of Picture elements to modify, with the settings to change. Only the given settings are changed; the others are left as they are. The image itself is not changed. Archicad cannot change a picture in place, so a picture with a change is replaced by a new picture with the same image, layer, story and ID, and the original is deleted: the new picture has a new elementId (returned in elements), and labels, dimensions, properties and classifications of the original are not carried over.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is."
+                        },
+                        "anchorPoint": {
+                            "$ref": "#/PictureAnchorPoint",
+                            "description": "The new anchor point: the point of the picture's box that is placed at position, that stays in place when the size changes, and that the picture is rotated around. When given without position, the picture's box stays where it is and only the anchor point changes; on a rotated picture the rotation is then around the new anchor point, which can move the picture. When omitted, the anchor point is kept."
+                        },
+                        "width": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "description": "The new width of the picture in model units. When only width is given, the height changes in proportion, so the picture keeps its current proportions."
+                        },
+                        "height": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "description": "The new height of the picture in model units. When only height is given, the width changes in proportion, so the picture keeps its current proportions."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "The new rotation angle of the picture in radians, around its anchor point."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Mirror the picture to its local vertical axis. The picture's box stays where it is drawn."
+                        },
+                        "transparent": {
+                            "type": "boolean",
+                            "description": "Draw the white pixels of the picture transparent."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the picture."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "Optional database the pictures are in, e.g. a worksheet, a detail or a layout (see GetDatabases). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the pictures are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["picturesWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyPicturesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "One result per item of picturesWithDetails, in the same order. On success elementId is the picture's identifier after the change: a new one when a setting was changed (the picture is replaced), the given one when nothing was to change.",
+                "items": { "$ref": "#/ElementIdOrError" }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState ModifyPicturesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("picturesWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    // The optional databaseId is handled as CreatePictures does it (CreateElementsCommandBase::Execute):
+    // the database is switched inside the undoable command and switched back afterwards.
+    const GS::ObjectState* databaseIdOs = parameters.Get ("databaseId");
+    API_DatabaseInfo startingDatabase = {};
+    if (databaseIdOs != nullptr) {
+        API_WindowInfo startingWindow = {};
+        const bool hasStartingWindow = ACAPI_Window_GetCurrentWindow (&startingWindow) == NoError;
+        if (OpenDatabaseIfNeverOpened (GetGuidFromObjectState (*databaseIdOs)) && hasStartingWindow) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingWindow);
+            ACAPI_Window_ChangeWindow (&startingWindow);
+        }
+        const GSErrCode currentErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+        if (currentErr != NoError) {
+            return CreateErrorResponse (currentErr, "Failed to get the current database.");
+        }
+    }
+    GSErrCode databaseErr = NoError;
+
+    // ACAPI_Element_Change does not support pictures (API_PictureID is not in its list of element
+    // types in ACAPinc.h, and Archicad answers APIERR_BADID), so a changed picture is replaced: a
+    // copy with the new settings and the original's image (pictHdl memo) is created, then the
+    // original is deleted, as ChangeDrawingLink replaces a Drawing.
+    ACAPI_CallUndoableCommand ("ModifyPictures", [&] () -> GSErrCode {
+        if (databaseIdOs != nullptr) {
+            databaseErr = ChangeCurrentDatabaseTo (GetGuidFromObjectState (*databaseIdOs));
+            if (databaseErr != NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+                return NoError;
+            }
+        }
+        const GS::OnExit databaseGuard ([&] () {
+            if (databaseIdOs != nullptr) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+            }
+        });
+
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid originalGuid = GetGuidFromObjectState (*elementId);
+            API_Element element = {};
+            element.header.guid = originalGuid;
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_PictureID) {
+                elements (CreateErrorResponse (APIERR_BADID, "Element is not a Picture."));
+                continue;
+            }
+
+            API_PictureType& picture = element.picture;
+            bool anyChange = false;
+
+            GS::UniString anchorPointString;
+            const bool hasAnchorPoint = item.Get ("anchorPoint", anchorPointString);
+            const GS::ObjectState* positionOS = item.Get ("position");
+            double width = 0.0;
+            double height = 0.0;
+            const bool hasWidth = item.Get ("width", width);
+            const bool hasHeight = item.Get ("height", height);
+            bool mirrored = picture.mirrored;
+            item.Get ("mirrored", mirrored);
+            if (hasAnchorPoint || positionOS != nullptr || hasWidth || hasHeight || mirrored != picture.mirrored) {
+                if ((hasWidth && !(width > 0.0)) || (hasHeight && !(height > 0.0))) {
+                    elements (CreateErrorResponse (APIERR_BADPARS, "The width and the height of the picture must be greater than 0."));
+                    continue;
+                }
+                const double currentWidth = picture.destBox.xMax - picture.destBox.xMin;
+                const double currentHeight = picture.destBox.yMax - picture.destBox.yMin;
+                if ((hasWidth != hasHeight) && !(currentWidth > 0.0 && currentHeight > 0.0)) {
+                    elements (CreateErrorResponse (APIERR_GENERAL, "The picture has no size to keep the proportions of: give both width and height."));
+                    continue;
+                }
+                if (!hasWidth && !hasHeight) {
+                    width = currentWidth;
+                    height = currentHeight;
+                } else if (!hasWidth) {
+                    width = height * currentWidth / currentHeight;
+                } else if (!hasHeight) {
+                    height = width * currentHeight / currentWidth;
+                }
+
+                // The stored destBox of a mirrored picture is one width to the right of where the
+                // picture is drawn (seen in Archicad 29, reported on #2667), so the maths is done on
+                // the drawn box and the stored box is shifted back for a mirrored result.
+                const double currentDrawnXMin = picture.destBox.xMin - (picture.mirrored ? currentWidth : 0.0);
+
+                // The box: its anchor point is placed at position (the current anchor point when no
+                // position is given) and it gets the new size, as CreatePictures computes it.
+                const API_AnchorID anchorPoint = hasAnchorPoint ? AnchorIdFromString (anchorPointString, picture.anchorPoint) : picture.anchorPoint;
+                API_Coord position;
+                if (positionOS != nullptr) {
+                    position = Get2DCoordinateFromObjectState (*positionOS);
+                } else {
+                    // The (new) anchor point on the current box.
+                    const API_Coord currentOffset = GetPictureAnchorOffset (anchorPoint, currentWidth, currentHeight);
+                    position.x = currentDrawnXMin + currentOffset.x;
+                    position.y = picture.destBox.yMin + currentOffset.y;
+                }
+
+                const API_Coord anchorOffset = GetPictureAnchorOffset (anchorPoint, width, height);
+                picture.destBox.xMin = position.x - anchorOffset.x + (mirrored ? width : 0.0);
+                picture.destBox.yMin = position.y - anchorOffset.y;
+                picture.destBox.xMax = picture.destBox.xMin + width;
+                picture.destBox.yMax = picture.destBox.yMin + height;
+                picture.anchorPoint = anchorPoint;
+                picture.mirrored = mirrored;
+                anyChange = true;
+            }
+
+            double angle = 0.0;
+            if (item.Get ("angle", angle)) {
+                anyChange = anyChange || angle != picture.rotAngle;
+                picture.rotAngle = angle;
+            }
+            bool transparent = false;
+            if (item.Get ("transparent", transparent)) {
+                anyChange = anyChange || transparent != picture.transparent;
+                picture.transparent = transparent;
+            }
+            GS::UniString name;
+            if (item.Get ("name", name)) {
+                anyChange = anyChange || name != GS::UniString (picture.pictName);
+                GS::ucscpy (picture.pictName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) API_UniLongNameLen - 1)).Get ());
+            }
+
+            if (!anyChange) {
+                elements (CreateElementIdObjectState (originalGuid));
+                continue;
+            }
+
+            // The image of the original, so the new picture shows the same one.
+            API_ElementMemo originalMemo = {};
+            const GS::OnExit memoGuard ([&originalMemo] () { ACAPI_DisposeElemMemoHdls (&originalMemo); });
+            err = ACAPI_Element_GetMemo (originalGuid, &originalMemo, APIMemoMask_All);
+            if (err != NoError || originalMemo.pictHdl == nullptr) {
+                elements (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the image of the Picture."));
+                continue;
+            }
+            GS::UniString originalId;
+            const bool hasOriginalId = GetElementId (originalGuid, originalId) == NoError && !originalId.IsEmpty ();
+
+            // As CreatePictures creates a picture: the size is taken from the whole destBox. The
+            // new memo only lends the image; originalMemo owns it and disposes of it.
+            picture.usePixelSize = false;
+            picture.directCreate = false;
+            element.header.guid = APINULLGuid;
+            API_ElementMemo newMemo = {};
+            newMemo.pictHdl = originalMemo.pictHdl;
+            err = ACAPI_Element_Create (&element, &newMemo);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to create the changed Picture, so the original is kept as it was."));
+                continue;
+            }
+            const API_Guid newGuid = element.header.guid;
+
+            err = ACAPI_Element_Delete ({ originalGuid });
+            if (err != NoError) {
+                ACAPI_Element_Delete ({ newGuid });
+                elements (CreateErrorResponse (err, "Failed to replace the Picture: the original could not be deleted, so it is kept as it was."));
+                continue;
+            }
+            if (hasOriginalId) {
+                ChangeElementId (newGuid, originalId);
+            }
+            elements (CreateElementIdObjectState (newGuid));
+        }
+        return NoError;
+    });
+
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr, "Failed to switch to the database given by databaseId, so nothing was changed. A worksheet or detail whose window was never opened can be opened once with ChangeWindow by its databaseId.");
+    }
+    return response;
+}
+
 ModifyLabelsCommand::ModifyLabelsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -3562,7 +4446,19 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
                         },
                         "style": { "$ref": "#/TextStyleSettableDetails" },
                         "symbolStyle": { "$ref": "#/LabelSymbolStyleSettableDetails" },
-                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" }
+                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" },
+                        "begCoordinate": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new begin coordinate of the leader line: the point the label points at (where the arrow is). Only the leader line's begin moves; the label's text or symbol stays where it is."
+                        },
+                        "midCoordinate": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new mid coordinate of the leader line (its break point)."
+                        },
+                        "endCoordinate": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new end coordinate of the leader line, where the label's text or symbol sits: the text or symbol moves by as much as this point moves. To move the whole label, give all three coordinates moved by the same offset. GetDetailsOfElements returns the current ones."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3649,6 +4545,38 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                 if (leaderLineErr.HasValue ()) {
                     executionResults (CreateFailedExecutionResult (*leaderLineErr));
                     continue;
+                }
+            }
+
+            // Moving or re-pointing the label (#2666). The text or symbol sits at the end of the
+            // leader line, so it moves with endC; the DevKit's Element_Test moves a label the same
+            // way (UpdateOneLabel in Element_Tools.cpp: begC, midC, endC and u.text.loc or
+            // u.symbol.pos, changed together with one mask).
+            const GS::ObjectState* begCOS = item.Get ("begCoordinate");
+            if (begCOS != nullptr) {
+                element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
+                ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, begC);
+            }
+            const GS::ObjectState* midCOS = item.Get ("midCoordinate");
+            if (midCOS != nullptr) {
+                element.label.midC = Get2DCoordinateFromObjectState (*midCOS);
+                ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, midC);
+            }
+            const GS::ObjectState* endCOS = item.Get ("endCoordinate");
+            if (endCOS != nullptr) {
+                const API_Coord newEndC = Get2DCoordinateFromObjectState (*endCOS);
+                const double dx = newEndC.x - element.label.endC.x;
+                const double dy = newEndC.y - element.label.endC.y;
+                element.label.endC = newEndC;
+                ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, endC);
+                if (element.label.labelClass == APILblClass_Text) {
+                    element.label.u.text.loc.x += dx;
+                    element.label.u.text.loc.y += dy;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.loc);
+                } else {
+                    element.label.u.symbol.pos.x += dx;
+                    element.label.u.symbol.pos.y += dy;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.symbol.pos);
                 }
             }
 
@@ -3901,6 +4829,11 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                    },
                     "floorIndex": {
                         "type": "integer"
                     },
@@ -3917,7 +4850,47 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                     },
                     "buildingMaterialId": {
                         "$ref": "#/AttributeId",
-                        "description": "Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface."
+                        "description": "Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface; topMaterial, sideMaterial and bottomMaterial given in the same item are applied after that."
+                    },
+                    "topMaterial": {
+                        "$ref": "#/OverriddenMaterial",
+                        "description": "Optional override of the surface of the top of the mesh; overridden false clears the override."
+                    },
+                    "sideMaterial": {
+                        "$ref": "#/OverriddenMaterial",
+                        "description": "Optional override of the surface of the sides (skirt) of the mesh; overridden false clears the override."
+                    },
+                    "bottomMaterial": {
+                        "$ref": "#/OverriddenMaterial",
+                        "description": "Optional override of the surface of the bottom of the mesh; overridden false clears the override."
+                    },
+                    "materialsChained": {
+                        "type": "boolean",
+                        "description": "Optional: whether the surface overrides are chained (the chain button of the Model panel)."
+                    },
+                    "visibility": {
+                        "$ref": "#/StoryVisibility",
+                        "description": "Optional: the stories the contour of the mesh is shown on. Only the given fields change."
+                    },
+                    "fillVisibility": {
+                        "$ref": "#/StoryVisibility",
+                        "description": "Optional: the stories the cover fill of the mesh is shown on. Only the given fields change."
+                    },
+                    "cutFillPen": {
+                        "$ref": "#/OverriddenPen",
+                        "description": "Optional override of the pen of the cut fill (shown on solid meshes); overridden false clears the override."
+                    },
+                    "cutFillBackgroundPen": {
+                        "$ref": "#/OverriddenPen",
+                        "description": "Optional override of the background pen of the cut fill (shown on solid meshes); overridden false clears the override."
+                    },
+                    "sectionContourPen": {
+                        "type": "integer",
+                        "description": "Optional pen of the contour of the mesh where it is cut in sections."
+                    },
+                    "floorFill": {
+                        "$ref": "#/MeshFloorFill",
+                        "description": "Optional cover fill of the mesh in the floor plan. Only the given fields change."
                     },
                     "ridges": {
                         "$ref": "#/MeshRidges"
@@ -3981,6 +4954,11 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
 
 GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     parameters.Get ("floorIndex", element.header.floorInd);
     parameters.Get ("level", element.mesh.level);
     parameters.Get ("skirtLevel", element.mesh.skirtLevel);
@@ -4041,19 +5019,23 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("sublines", sublines);
     BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
 
-    // Building material of the mesh. Its top, side and bottom surface overrides are cleared, so the
-    // mesh shows the building material's own surface and follows later changes of it; an override
-    // left in the Mesh tool defaults would otherwise keep showing the old color.
-    const GS::ObjectState* buildingMaterialIdOS = parameters.Get ("buildingMaterialId");
-    if (buildingMaterialIdOS != nullptr) {
-        API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
-        if (!ResolveAttributeIndex (*buildingMaterialIdOS, API_BuildingMaterialID, buildingMaterialIndex)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Invalid mesh building material.");
-        }
-        element.mesh.buildingMaterial = buildingMaterialIndex;
-        element.mesh.topMat = API_OverriddenAttribute ();
-        element.mesh.sideMat = API_OverriddenAttribute ();
-        element.mesh.botMat = API_OverriddenAttribute ();
+    // Building material and surfaces of the mesh, written as ModifyMeshes writes them (#2630);
+    // ACAPI_Element_Create does not use the mask. A given building material clears the top, side
+    // and bottom surface overrides of the tool defaults first, so the mesh shows the building
+    // material's own surface unless the item gives its own overrides.
+    API_Element unusedMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
+    bool surfacesChanged = false;
+    const GS::Optional<GS::UniString> surfacesError = ApplyMeshStructureAndSurfaces (element, unusedMask, parameters, true, surfacesChanged);
+    if (surfacesError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, surfacesError.Get ());
+    }
+
+    // Floor plan and section settings, written as ModifyMeshes writes them (#2630).
+    bool floorPlanChanged = false;
+    const GS::Optional<GS::UniString> floorPlanError = ApplyMeshFloorPlanAndSection (element, unusedMask, parameters, floorPlanChanged);
+    if (floorPlanError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, floorPlanError.Get ());
     }
 
     return {};
@@ -4860,6 +5842,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     "id": {
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
@@ -6049,6 +7036,11 @@ static void RemoveDictionaryParameters (API_AddParType**& params)
 
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     parameters.Get ("floorInd", element.header.floorInd);
 
     const GS::ObjectState* begCOS = parameters.Get ("begCoordinate");
@@ -6838,6 +7830,205 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
     return ApplyLevelDimensionSettings (parameters, element, nullptr, customTexts);
 }
 
+CreateAngleDimensionsCommand::CreateAngleDimensionsCommand () :
+    CreateElementsCommandBase ("CreateAngleDimensions", API_AngleDimensionID, "angleDimensionsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateAngleDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "angleDimensionsData": {
+            "type": "array",
+            "description": "Array of data to create Angle Dimensions (the Angle Dimension tool). They are created in the current database (the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active), or in the one given by databaseId.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Angle Dimension: the angle between two lines, each given by two points. The dimension is static: it is not associated with the elements the points lie on.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of an Angle Dimension favorite to base the new element on. Its settings (layer, pens, markers, text style) are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "firstLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The first measured line."
+                    },
+                    "secondLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The second measured line. It must not be parallel to the first one."
+                    },
+                    "arcPosition": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "A point the dimension arc passes through. Its distance from the intersection of the two lines is the radius of the arc, and the side it lies on chooses which of the angles between the lines is measured, as clicking the arc's position does with the Angle Dimension tool."
+                    },
+                    "smallArc": {
+                        "type": "boolean",
+                        "description": "Measure the smaller angle between the lines (inner dimension) rather than the larger one (outer dimension). Optional parameter, by default the favorite's or the tool default's setting."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "The index of the floor to place the dimension on, when it is created on the floor plan. Optional parameter, by default the current floor is used."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Angle Dimension tool default is used."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension and witness lines. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "firstLine",
+                    "secondLine",
+                    "arcPosition"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a section, an elevation, a worksheet or a detail (see GetDatabases). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "angleDimensionsData"
+    ]
+})";
+}
+
+static GS::Optional<GS::ObjectState> GetAngleDimensionLine (const GS::ObjectState& parameters, const char* name, API_Coord& beg, API_Coord& end)
+{
+    const GS::ObjectState* lineOS = parameters.Get (name);
+    const GS::ObjectState* begOS = lineOS != nullptr ? lineOS->Get ("begCoordinate") : nullptr;
+    const GS::ObjectState* endOS = lineOS != nullptr ? lineOS->Get ("endCoordinate") : nullptr;
+    if (begOS == nullptr || endOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Missing '") + name + "' with 'begCoordinate' and 'endCoordinate'.");
+    }
+    beg = Get2DCoordinateFromObjectState (*begOS);
+    end = Get2DCoordinateFromObjectState (*endOS);
+    if (std::hypot (end.x - beg.x, end.y - beg.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Zero-length '") + name + "': 'begCoordinate' and 'endCoordinate' are identical.");
+    }
+    return {};
+}
+
+GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
+{
+    API_Coord a1 = {}, a2 = {}, b1 = {}, b2 = {};
+    {
+        auto error = GetAngleDimensionLine (parameters, "firstLine", a1, a2);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    {
+        auto error = GetAngleDimensionLine (parameters, "secondLine", b1, b2);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    const GS::ObjectState* arcPositionOS = parameters.Get ("arcPosition");
+    if (arcPositionOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'arcPosition' parameter.");
+    }
+    const API_Coord arcPosition = Get2DCoordinateFromObjectState (*arcPositionOS);
+
+    // The center of the dimension arc is the intersection of the two (infinite) lines,
+    // as the Angle Dimension tool puts it.
+    const double d1x = a2.x - a1.x, d1y = a2.y - a1.y;
+    const double d2x = b2.x - b1.x, d2y = b2.y - b1.y;
+    const double cross = d1x * d2y - d1y * d2x;
+    if (std::fabs (cross) < 1e-9 * std::hypot (d1x, d1y) * std::hypot (d2x, d2y)) {
+        return CreateErrorResponse (APIERR_BADPARS, "'firstLine' and 'secondLine' are parallel, so they have no angle to dimension.");
+    }
+    const double t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / cross;
+    API_Coord origo = {};
+    origo.x = a1.x + t * d1x;
+    origo.y = a1.y + t * d1y;
+    if (std::hypot (arcPosition.x - origo.x, arcPosition.y - origo.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, "'arcPosition' is the intersection of the two lines; it must be away from it, on the dimension arc.");
+    }
+
+    // A static angle dimension, as Do_CreateStaticAngleDimension of the DevKit's Element_Test
+    // example creates it: the four reference points, the arc position and its center.
+    element.angleDimension.base[0].loc = a1;
+    element.angleDimension.base[1].loc = a2;
+    element.angleDimension.base[2].loc = b1;
+    element.angleDimension.base[3].loc = b2;
+    element.angleDimension.pos = arcPosition;
+    element.angleDimension.origo = origo;
+
+    parameters.Get ("smallArc", element.angleDimension.smallArc);
+
+    Int32 floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = static_cast<short> (floorIndex);
+    }
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
+        }
+        element.angleDimension.linPen = static_cast<short> (pen);
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
+        }
+        element.angleDimension.note.noteSize = textHeight;
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
+        }
+        element.angleDimension.note.notePen = static_cast<short> (textPen);
+    }
+
+    return {};
+}
+
+// With a section or elevation window active, ACAPI_Element_Create of a dimension can report
+// success and hand back a GUID although no element was created (#510): the new element is
+// read back, so the caller gets an error instead of an id that resolves to nothing.
+GSErrCode CreateAngleDimensionsCommand::AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
+{
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    return ACAPI_Element_Get (&created) == NoError ? NoError : APIERR_GENERAL;
+}
+
 ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -6865,6 +8056,18 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSche
                     "position": {
                         "$ref": "#/Coordinate2D",
                         "description": "The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter."
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "New fixed level value in meters (absolute, from the project zero), as CreateLevelDimensions takes it. The dimension becomes static (the Static checkbox on) and shows this value; an owner element is kept, so staticLevel false later shows its height again. Cannot be given with parentElementId or with staticLevel false. Optional parameter."
+                    },
+                    "staticLevel": {
+                        "type": "boolean",
+                        "description": "The Static checkbox. true fixes the value the dimension shows now; false makes it associative again, so it shows the height of its owner element at the position, or the floor level when it has none. Optional parameter."
+                    },
+                    "parentElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter."
                     },)") + LevelDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
@@ -6893,12 +8096,63 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
     })";
 }
 
+// The static level, the Static checkbox and the owner element of an existing level dimension (#2656):
+// level makes it static with that value (the owner is kept), staticLevel switches the checkbox, and
+// parentElementId sets a new owner the way CreateLevelDimensions does and makes it associative.
+static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS::ObjectState& item, API_Element& element, API_Element& mask)
+{
+    double level = 0.0;
+    const bool hasLevel = item.Get ("level", level);
+    bool staticLevel = false;
+    const bool hasStaticLevel = item.Get ("staticLevel", staticLevel);
+    const bool hasParent = item.Contains ("parentElementId");
+
+    if (hasLevel && hasStaticLevel && !staticLevel) {
+        return CreateErrorResponse (APIERR_BADPARS, "level makes the level dimension static, it cannot be given with staticLevel false.");
+    }
+    if (hasParent && (hasLevel || (hasStaticLevel && staticLevel))) {
+        return CreateErrorResponse (APIERR_BADPARS, "parentElementId makes the level dimension associative, it cannot be given with level or with staticLevel true.");
+    }
+
+    if (hasParent) {
+        const API_Guid parentGuid = GetGuidFromArrayItem ("parentElementId", item);
+        API_Elem_Head parentElemHead = {};
+        parentElemHead.guid = parentGuid;
+        if (parentGuid == APINULLGuid || parentGuid == element.header.guid || ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
+        }
+#ifdef ServerMainVers_2600
+        element.levelDimension.parentType = parentElemHead.type;
+#else
+        element.levelDimension.parentType = parentElemHead.typeID;
+#endif
+        element.levelDimension.parentGuid = parentGuid;
+        element.levelDimension.staticLevel = false;
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentType);
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentGuid);
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+    }
+
+    if (hasLevel) {
+        element.levelDimension.level = level;
+        element.levelDimension.staticLevel = true;
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, level);
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+    } else if (hasStaticLevel) {
+        element.levelDimension.staticLevel = staticLevel;
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+    }
+
+    return {};
+}
+
 // The settings go through ApplyLevelDimensionSettings, as in CreateLevelDimensions; the position
 // through loc, which ACAPI_Element_Change accepts for level dimensions (as the DevKit's Element_Test
 // does in Do_LevelDimension_Edit). The font and style go to both texts, like the text height and pen.
 // The texts' content is written with the autotext flag off, as CreateElementsCommandBase does, so an
-// Autotext key is kept as a key. The parent element and the static level are not changed. The element
-// is read back, so a value Archicad did not take is reported as a failure.
+// Autotext key is kept as a key. The static level, the Static checkbox and the owner element go through
+// ApplyLevelDimensionLevelAndOwner. The element is read back, so a value Archicad did not take is
+// reported as a failure.
 GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> itemsWithDetails;
@@ -6945,6 +8199,12 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
                 ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, loc);
             }
 
+            auto levelError = ApplyLevelDimensionLevelAndOwner (item, element, mask);
+            if (levelError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (levelError.Get ()));
+                continue;
+            }
+
             LevelDimensionTexts customTexts;
             auto settingsError = ApplyLevelDimensionSettings (item, element, &mask, customTexts);
             if (settingsError.HasValue ()) {
@@ -6976,6 +8236,15 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
                 (std::abs (changed.levelDimension.loc.x - element.levelDimension.loc.x) > tolerance ||
                  std::abs (changed.levelDimension.loc.y - element.levelDimension.loc.y) > tolerance)) {
                 notApplied += " position";
+            }
+            if (item.Contains ("level") && std::abs (changed.levelDimension.level - element.levelDimension.level) > tolerance) {
+                notApplied += " level";
+            }
+            if (item.Contains ("staticLevel") && changed.levelDimension.staticLevel != element.levelDimension.staticLevel) {
+                notApplied += " staticLevel";
+            }
+            if (item.Contains ("parentElementId") && changed.levelDimension.parentGuid != element.levelDimension.parentGuid) {
+                notApplied += " parentElementId";
             }
             if (item.Contains ("pen") && changed.levelDimension.pen != element.levelDimension.pen) {
                 notApplied += " pen";

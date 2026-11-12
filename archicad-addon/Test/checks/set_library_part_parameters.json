@@ -1,0 +1,107 @@
+{
+  "title": "GetGDLParametersOfLibraryParts and SetLibraryPartParameters find the same embedded library part with and without the .gsm extension (#2527)",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "embedded library part",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheck2527",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLib2527/TapirCheck2527.gsm",
+            "a": 1.0,
+            "b": 0.4,
+            "script3D": "BLOCK A, B, 1"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts[0].name", "eq": "TapirCheck2527", "name": "part created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "[read by name, read by file name, missing file name]",
+      "command": "GetGDLParametersOfLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "libraryPartName": "TapirCheck2527" },
+          { "libraryPartName": "TapirCheck2527.gsm" },
+          { "libraryPartName": "TapirCheckNoSuchPart2527.gsm" }
+        ]
+      },
+      "expect": [
+        { "path": "gdlParametersOfLibraryParts", "len": 3, "name": "one item per library part" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[0].name", "eq": "A" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[0].value", "approx": 1.0, "name": "A by name" },
+        { "path": "gdlParametersOfLibraryParts[1].error", "exists": false, "name": "the file name with .gsm is found" },
+        { "path": "gdlParametersOfLibraryParts[1].parameters[0].value", "approx": 1.0, "name": "A by file name" },
+        { "path": "gdlParametersOfLibraryParts[2].error", "exists": true, "name": "a missing part is still an error" }
+      ]
+    },
+    {
+      "id": "[set A by name without extension, missing part without extension]",
+      "command": "SetLibraryPartParameters",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheck2527", "parameters": [{ "name": "A", "value": 1.2 }] },
+          { "name": "TapirCheckNoSuchPart2527", "parameters": [{ "name": "A", "value": 1.2 }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per library part" },
+        { "path": "executionResults[0].success", "eq": true, "name": "the name without extension is found and set" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a missing part fails" }
+      ]
+    },
+    {
+      "id": "A after the set, read by file name",
+      "command": "GetGDLParametersOfLibraryParts",
+      "creates": false,
+      "params": { "libraryParts": [{ "libraryPartName": "TapirCheck2527.gsm" }] },
+      "expect": [
+        { "path": "gdlParametersOfLibraryParts[0].parameters[0].value", "approx": 1.2, "name": "A is the new value" }
+      ]
+    },
+    {
+      "id": "set A by file name",
+      "command": "SetLibraryPartParameters",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheck2527.gsm", "parameters": [{ "name": "A", "value": 1.5 }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the file name still works" }
+      ]
+    },
+    {
+      "id": "A after the second set, read by name",
+      "command": "GetGDLParametersOfLibraryParts",
+      "creates": false,
+      "params": { "libraryParts": [{ "libraryPartName": "TapirCheck2527" }] },
+      "expect": [
+        { "path": "gdlParametersOfLibraryParts[0].parameters[0].value", "approx": 1.5, "name": "A is the second value" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLib2527/TapirCheck2527.gsm" },
+          { "path": "TapirCheckLib2527" }
+        ]
+      }
+    }
+  ]
+}

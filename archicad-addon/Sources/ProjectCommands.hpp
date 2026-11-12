@@ -2,6 +2,10 @@
 
 #include "CommandBase.hpp"
 
+// Saves the open solo project to its own file, as File > Save does, from whichever window is current
+// (the parameterless save of SaveProject; the Add-On update also uses it before Archicad is quit).
+GSErrCode SaveOpenProjectInPlace ();
+
 class GetProjectInfoCommand : public CommandBase
 {
 public:
