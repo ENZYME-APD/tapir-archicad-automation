@@ -11605,6 +11605,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetRawResponseSchema () const
 }
 
 static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, const GS::Array<GSIndex>& edgeIndices, const GS::Array<GS::ObjectState>& pivotEdges);
+static GS::Optional<GS::UniString> CheckRoofPivotEdgeAttributesApplied (const API_Guid& guid, const GS::Array<GS::ObjectState>& pivotEdges);
 
 GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
@@ -11752,6 +11753,14 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
                         err = ACAPI_Element_Change (&created, &createdMask, &createdMemo, APIMemoMask_AdditionalPolygon, true);
                         if (err != NoError) {
                             edgeError = "Failed to set the roof planes of the edges of the new roof, so it was not created.";
+                        } else {
+                            // The plane surfaces and cover fills are read back as ModifyRoofs does (#2582).
+                            auto appliedError = CheckRoofPivotEdgeAttributesApplied (element.header.guid, pivotEdges);
+                            if (appliedError.HasValue ()) {
+                                err = APIERR_GENERAL;
+                                edgeError = appliedError.Get ();
+                                edgeError.Append (" The roof was not created.");
+                            }
                         }
                     }
                 }
@@ -14173,6 +14182,74 @@ GS::ObjectState ModifyCurtainWallFramesCommand::Execute (const GS::ObjectState& 
     });
 }
 
+// The attributes a roof plane of a Multi-plane Roof can have of its own (Custom Plane Settings,
+// #2582): the key in pivotEdges[].levels[], the attribute type and the API_RoofSegmentData member.
+struct RoofSegmentAttributeField {
+    const char*         key;
+    API_AttrTypeID      type;
+    const char*         typeName;
+    API_AttributeIndex  API_RoofSegmentData::* member;
+};
+
+static const RoofSegmentAttributeField RoofSegmentAttributeFields[] = {
+    { "topMaterialId",    API_MaterialID, "Surface", &API_RoofSegmentData::topMaterial },
+    { "bottomMaterialId", API_MaterialID, "Surface", &API_RoofSegmentData::bottomMaterial },
+    { "coverFillId",      API_FilltypeID, "Fill",    &API_RoofSegmentData::coverFillType }
+};
+
+// The attribute index of the given key of a pivotEdges level, if the key is given; an error
+// when it names no attribute of its type.
+static GS::Optional<GS::UniString> GetRoofSegmentAttribute (const GS::ObjectState& level, const RoofSegmentAttributeField& field, UIndex edge, UIndex levelIndex, GS::Optional<API_AttributeIndex>& index)
+{
+    index = GS::NoValue;
+    GS::ObjectState idOs;
+    if (!level.Get (field.key, idOs)) {
+        return {};
+    }
+    const API_AttributeIndex found = GetAttributeIndexFromGuid (field.type, GetGuidFromObjectState (idOs));
+    if (found == ACAPI_CreateAttributeIndex (-1)) {
+        return GS::UniString::Printf ("No %s attribute was found for pivotEdges[%u].levels[%u].%s.", field.typeName, (unsigned) edge, (unsigned) levelIndex, field.key);
+    }
+    index = found;
+    return {};
+}
+
+// Reads the roof back after CreateRoofs or ModifyRoofs wrote its "pivotEdges" and names the first plane
+// surface or cover fill that Archicad did not apply (#2582).
+static GS::Optional<GS::UniString> CheckRoofPivotEdgeAttributesApplied (const API_Guid& guid, const GS::Array<GS::ObjectState>& pivotEdges)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&]() {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AdditionalPolygon) != NoError || memo.pivotPolyEdges == nullptr) {
+        return GS::UniString ("The roof planes could not be read back after the change.");
+    }
+    const GS::Array<GSIndex> edgeIndices = GetPivotEdgeIndices (memo);
+    if (edgeIndices.GetSize () != pivotEdges.GetSize ()) {
+        return GS::UniString ("The edges of the pivot polygon changed; the roof planes could not be checked.");
+    }
+    for (UIndex k = 0; k < pivotEdges.GetSize (); ++k) {
+        GS::Array<GS::ObjectState> levels;
+        if (!pivotEdges[k].Get ("levels", levels)) {
+            continue;
+        }
+        const API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[edgeIndices[k]];
+        for (UIndex j = 0; j < levels.GetSize (); ++j) {
+            for (const RoofSegmentAttributeField& field : RoofSegmentAttributeFields) {
+                GS::Optional<API_AttributeIndex> expected;
+                if (GetRoofSegmentAttribute (levels[j], field, k, j, expected).HasValue () || !expected.HasValue ()) {
+                    continue;
+                }
+                if (edge.levelEdgeData == nullptr || (Int32) j >= edge.nLevelEdgeData || !(edge.levelEdgeData[j].*field.member == expected.Get ())) {
+                    return GS::UniString::Printf ("Archicad did not apply pivotEdges[%u].levels[%u].%s.", (unsigned) k, (unsigned) j, field.key);
+                }
+            }
+        }
+    }
+    return {};
+}
+
 ModifyCurtainWallPanelsCommand::ModifyCurtainWallPanelsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -14382,6 +14459,16 @@ static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, c
                 if (levels[j].Get ("angleType", angleType) && angleType != "Sloped" && angleType != "Gable") {
                     return "Unknown angleType '" + angleType + "': use Sloped or Gable.";
                 }
+                for (const RoofSegmentAttributeField& field : RoofSegmentAttributeFields) {
+                    GS::Optional<API_AttributeIndex> index;
+                    auto attributeError = GetRoofSegmentAttribute (levels[j], field, k, j, index);
+                    if (attributeError.HasValue ()) {
+                        return attributeError;
+                    }
+                    if (write && index.HasValue ()) {
+                        segment.*field.member = index.Get ();
+                    }
+                }
                 if (!write) {
                     continue;
                 }
@@ -14411,6 +14498,9 @@ static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, c
             target.levelEdgeData[j].angle = source.levelEdgeData[j].angle;
             target.levelEdgeData[j].eavesOverhang = source.levelEdgeData[j].eavesOverhang;
             target.levelEdgeData[j].angleType = source.levelEdgeData[j].angleType;
+            target.levelEdgeData[j].topMaterial = source.levelEdgeData[j].topMaterial;
+            target.levelEdgeData[j].bottomMaterial = source.levelEdgeData[j].bottomMaterial;
+            target.levelEdgeData[j].coverFillType = source.levelEdgeData[j].coverFillType;
         }
     }
     return {};
@@ -15413,7 +15503,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the roof planes of the edges."));
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify the roof planes of the edges."));
+                    continue;
+                }
+                auto appliedError = CheckRoofPivotEdgeAttributesApplied (element.header.guid, pivotEdges);
+                results.Push (appliedError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, appliedError.Get ()) : CreateSuccessfulExecutionResult ());
                 continue;
             }
 
