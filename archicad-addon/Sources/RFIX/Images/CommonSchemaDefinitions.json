@@ -26775,7 +26775,7 @@
     },
     "CutPlane": {
         "type": "object",
-        "description": "Defines a 3D cut plane using the plane equation: pa*x + pb*y + pc*z + pd = 0",
+        "description": "A 3D cut plane: the points where pa*x + pb*y + pc*z = pd. The side its normal vector (pa, pb, pc) points to is cut away.",
         "properties": {
             "pa": {
                 "type": "number",
@@ -26791,7 +26791,15 @@
             },
             "pd": {
                 "type": "number",
-                "description": "Constant term in the plane equation, in meters. The distance of the plane from the origin along the normal vector."
+                "description": "The right-hand side of the plane equation, in meters: with a unit normal vector, the distance of the plane from the origin along the normal vector. A plane at y = 2 cutting away y > 2 is pa 0, pb 1, pc 0, pd 2."
+            },
+            "cutPen": {
+                "type": "integer",
+                "description": "The pen of the edges cut by this plane, from 1 to 255. Get3DCutPlanes leaves it out when the plane has no valid pen (pen 0, set by earlier versions of Set3DCutPlanes)."
+            },
+            "cutSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface the 3D window draws the faces cut by this plane with. Get3DCutPlanes leaves it out when the plane has no surface attribute (surface 0 draws them black)."
             }
         },
         "required": [
