@@ -1126,11 +1126,12 @@ static void RefreshZoneOverlapCache ()
 // The first existing Zone of the new Zone's story that it would share area with.
 // For a manual Zone the polygon is compared; for an automatic one only its reference
 // point is known before creation, so it counts when that point is inside a Zone.
-static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, short floorInd, const ZoneArea& newZoneArea)
+// ModifyZones passes the Zone it changes as excludedGuid, which is not compared with itself.
+static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, short floorInd, const ZoneArea& newZoneArea, const API_Guid& excludedGuid = APINULLGuid)
 {
     RefreshZoneOverlapCache ();
     for (const ExistingZone& existing : zoneOverlapCache.zones) {
-        if (existing.floorInd != floorInd) {
+        if (existing.floorInd != floorInd || existing.guid == excludedGuid) {
             continue;
         }
         const bool overlaps = newZone.manual
@@ -1143,13 +1144,27 @@ static const ExistingZone* FindOverlappingZone (const API_ZoneType& newZone, sho
     return nullptr;
 }
 
-static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& existing)
+// After ModifyZones has changed the polygon of a Zone, the later items of the same call
+// are compared with its new polygon, not with the one cached before the change.
+static void UpdateZoneOverlapCacheArea (const API_Guid& guid, const ZoneArea& area)
 {
+    for (ExistingZone& existing : zoneOverlapCache.zones) {
+        if (existing.guid == guid) {
+            existing.area = area;
+            return;
+        }
+    }
+}
+
+static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& existing, bool changedPolygon = false)
+{
+    const GS::UniString subject = changedPolygon ? "The new polygon of the zone" : "The new zone";
+    const GS::UniString action = changedPolygon ? "change the polygon" : "create the new zone";
     return CreateErrorResponse (APIERR_BADPARS,
-        "The new zone would overlap the existing zone '" + existing.numberStr + " " + existing.name + "' (" + APIGuidToString (existing.guid) +
+        subject + " would overlap the existing zone '" + existing.numberStr + " " + existing.name + "' (" + APIGuidToString (existing.guid) +
         ") on the same story, which Archicad answers with a modal warning dialog that blocks the API. "
-        "Move or delete that zone first, or set allowOverlap to true to create the new zone anyway. "
-        "Curved edges are compared by their chords, so a zone that only follows the curved edge of that zone may be refused although nothing overlaps; allowOverlap creates it too.");
+        "Move or delete that zone first, or set allowOverlap to true to " + action + " anyway. "
+        "Curved edges are compared by their chords, so a zone that only follows the curved edge of that zone may be refused although nothing overlaps; allowOverlap allows it too.");
 }
 
 } // namespace
@@ -1662,6 +1677,53 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+// The new polygon of a manual zone for ModifyZones: the same geometry (polygonCoordinates,
+// polygonArcs, holes) and the same checks as a manual zone of CreateZones. The memo is built
+// as for a Hatch, also a closed polygon with holes whose memo is changed in place
+// (BuildHatchPolygonMemo); the arcs are indexed the same way as in CreateZones.
+static GS::Optional<GS::UniString> BuildZonePolygonMemo (const GS::ObjectState& geometry, API_ZoneType& zone, API_ElementMemo& memo, ZoneArea& area)
+{
+    if (geometry.Get ("referencePosition") != nullptr) {
+        return GS::UniString ("geometry.referencePosition cannot be changed: an automatic zone is placed around its reference point when it is created. "
+            "Give the polygon of a manual zone (polygonCoordinates, polygonArcs, holes), or recreate the zone with CreateZones.");
+    }
+
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    GS::Array<GS::ObjectState> polygonArcs;
+    GS::Array<GS::ObjectState> holes;
+    if (!geometry.Get ("polygonCoordinates", polygonCoordinates)) {
+        return GS::UniString ("polygonCoordinates parameter is missing in geometry.");
+    }
+    geometry.Get ("polygonArcs", polygonArcs);
+    geometry.Get ("holes", holes);
+
+    if (polygonCoordinates.GetSize () >= 2 && IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
+        polygonCoordinates.Pop ();
+    }
+    if (polygonCoordinates.GetSize () < 3) {
+        return GS::UniString ("'polygonCoordinates' must contain at least 3 different coordinates.");
+    }
+    const GS::Optional<GS::UniString> holesError = ValidateHoles (holes);
+    if (holesError.HasValue ()) {
+        return holesError;
+    }
+
+    area.outline = GetRingFromObjectStates (polygonCoordinates);
+    area.holes.clear ();
+    for (const GS::ObjectState& hole : holes) {
+        GS::Array<GS::ObjectState> holePolygonOutline;
+        GS::Array<GS::ObjectState> holePolygonArcs;
+        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
+            area.holes.push_back (GetRingFromObjectStates (holePolygonOutline));
+        }
+    }
+
+    if (!BuildHatchPolygonMemo (polygonCoordinates, polygonArcs, holes, zone.poly, memo)) {
+        return GS::UniString ("Out of memory while building the polygon of the zone.");
+    }
+    return {};
+}
+
 ModifyZonesCommand::ModifyZonesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1679,7 +1741,7 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
         "properties": {
             "zonesWithDetails": {
                 "type": "array",
-                "description": "Array of Zone elements to modify, with the fields to change. Only the given fields are changed; the polygon and the omitted fields are kept. The same fields as the ZoneSettings of SetDetailsOfElements.",
+                "description": "Array of Zone elements to modify, with the fields to change. Only the given fields are changed and the omitted fields are kept; the polygon is kept unless geometry is given. The same fields as the ZoneSettings of SetDetailsOfElements, plus geometry and allowOverlap.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -1696,7 +1758,9 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
-                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." }
+                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
+                        "geometry": { "$ref": "#/ManualZoneGeometry", "description": "Optional new polygon of a manual zone (isManual true in GetDetailsOfElements): its outline, arcs and holes, the same geometry as a manual zone of CreateZones. The whole polygon is replaced and the zone keeps its GUID, properties and other settings; the stamp stays where it is unless stampPosition is given too. Refused for an automatic zone, whose polygon Archicad computes from its boundaries (see UpdateZones)." },
+                        "allowOverlap": { "type": "boolean", "description": "Optional, defaults to false, only used with geometry. As in CreateZones: a new polygon that would overlap another zone on the same story fails with an error naming that zone instead of risking Archicad's modal overlap warning, which blocks the API. Set it to true to change the polygon anyway." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -1731,6 +1795,11 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
     ElementChangeReporter changeReporter;
     changeReporter.AddElementIdsOf (zonesWithDetails);
 
+    // The overlap check of a new polygon (geometry) reads the project's Zones once per call,
+    // as CreateZones does; see ZoneOverlapCache.
+    zoneOverlapCache = ZoneOverlapCache {};
+    const GS::OnExit cacheGuard ([] () { zoneOverlapCache = ZoneOverlapCache {}; });
+
     ACAPI_CallUndoableCommand ("ModifyZones", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : zonesWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -1759,11 +1828,46 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
-            // No memo is passed, so the polygon is kept as it is.
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            // Without geometry no memo is passed, so the polygon is kept as it is.
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            UInt64 memoMask = 0;
+            ZoneArea newZoneArea;
+            const GS::ObjectState* geometry = item.Get ("geometry");
+            if (geometry != nullptr) {
+                if (!element.zone.manual) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                        "The polygon of an automatic zone cannot be given: Archicad computes it from the zone's boundaries (see UpdateZones). Only a manual zone (isManual true in GetDetailsOfElements) takes geometry."));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> geometryError = BuildZonePolygonMemo (*geometry, element.zone, memo, newZoneArea);
+                if (geometryError.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *geometryError));
+                    continue;
+                }
+
+                // As in CreateZones (#822): fail before Archicad can open its modal overlap warning.
+                bool allowOverlap = false;
+                item.Get ("allowOverlap", allowOverlap);
+                if (!allowOverlap) {
+                    const ExistingZone* overlapped = FindOverlappingZone (element.zone, element.header.floorInd, newZoneArea, element.header.guid);
+                    if (overlapped != nullptr) {
+                        executionResults (CreateFailedExecutionResult (CreateZoneOverlapErrorResponse (*overlapped, true)));
+                        continue;
+                    }
+                }
+
+                ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly);
+                memoMask = APIMemoMask_Polygon;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, memoMask != 0 ? &memo : nullptr, memoMask, true);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to modify the zone."));
+                executionResults (CreateFailedExecutionResult (err, geometry != nullptr ? "Failed to modify the zone or to change its polygon." : "Failed to modify the zone."));
                 continue;
+            }
+            if (geometry != nullptr) {
+                UpdateZoneOverlapCacheArea (element.header.guid, newZoneArea);
             }
 
             err = ReapplyZoneTopOffset (item, element.header.guid);
