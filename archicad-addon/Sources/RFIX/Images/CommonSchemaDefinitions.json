@@ -12697,6 +12697,104 @@
             "patternAmount"
         ]
     },
+    "RailingVerticalPositionChange": {
+        "type": "object",
+        "description": "Changes to the rails a railing component stands between (API_RailingVerticalPosData), with the fields GetDetailsOfElements returns in verticalPosition. Only the given fields change.",
+        "properties": {
+            "bottomRailIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the rail at the bottom of the component (API_RailingVerticalPosData::bottomRailIndex)."
+            },
+            "topRailIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the rail at the top of the component (API_RailingVerticalPosData::topRailIndex)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "RailingHorizontalPositionChange": {
+        "type": "object",
+        "description": "Changes to where along its pattern a railing component stands (API_RailingHorizontalPosData), with the fields GetDetailsOfElements returns in horizontalPosition. Only the given fields change.",
+        "properties": {
+            "position": {
+                "type": "number",
+                "description": "The position of the component along the pattern (API_RailingHorizontalPosData::position)."
+            },
+            "isStretchable": {
+                "type": "boolean",
+                "description": "True when the position stretches with the length of the pattern (API_RailingHorizontalPosData::isStretchable)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "RailingFrameChange": {
+        "type": "object",
+        "description": "Changes to the boundaries of a railing panel or baluster set within its pattern (API_RailingFrameData), with the fields GetDetailsOfElements returns in frame. Only the given fields change; placeIndex cannot be changed.",
+        "properties": {
+            "lateralOffset": {
+                "type": "number",
+                "description": "The sideways offset of the frame from the segment (API_RailingFrameData::yOffset)."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "The offset of the top of the frame (API_RailingFrameData::zTopOffset)."
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "The offset of the bottom of the frame (API_RailingFrameData::zBottomOffset)."
+            },
+            "beginOffset": {
+                "type": "number",
+                "description": "The offset of the beginning of the frame (API_RailingFrameData::xBeginOffset)."
+            },
+            "endOffset": {
+                "type": "number",
+                "description": "The offset of the end of the frame (API_RailingFrameData::xEndOffset)."
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPositionChange"
+            }
+        },
+        "additionalProperties": false
+    },
+    "RailingDistributionChange": {
+        "type": "object",
+        "description": "Changes to how a baluster set is repeated (API_RailingDistributionData), with the fields GetDetailsOfElements returns in distribution. Only the given fields change.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The distribution method (API_DistribTypeID): a number of Divisions, a fixed PatternLength, or the BestDivisionByLength (equal divisions no longer than length).",
+                "enum": [
+                    "Divisions",
+                    "PatternLength",
+                    "BestDivisionByLength"
+                ]
+            },
+            "alignment": {
+                "type": "string",
+                "description": "How the repetitions are aligned (API_PatternAlignID).",
+                "enum": [
+                    "StartWithPattern",
+                    "StartFromCenter",
+                    "CenterAligned",
+                    "EndWithPattern"
+                ]
+            },
+            "length": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "The length of one repetition (API_RailingDistributionData::length)."
+            },
+            "patternAmount": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The number of repetitions (API_RailingDistributionData::patternAmount)."
+            }
+        },
+        "additionalProperties": false
+    },
     "RailingPostDetails": {
         "type": "object",
         "description": "The details of a railing post (RailingPost, API_RailingPostType).",
