@@ -870,6 +870,42 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     return {};
 }
 
+void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details)
+{
+    GS::ObjectState surface;
+    surface.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, zone.material)));
+    surface.Add ("useOnAllSides", zone.oneMat);
+    details.Add ("surface", surface);
+}
+
+GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    GS::ObjectState surface;
+    if (!details.Get ("surface", surface)) {
+        return {};
+    }
+
+    // The attribute id is checked before anything is changed.
+    GS::Optional<API_AttributeIndex> surfaceIndex;
+    GS::ObjectState surfaceId;
+    if (surface.Get ("surfaceId", surfaceId)) {
+        surfaceIndex = GetAttributeIndexFromGuid (API_MaterialID, GetGuidFromObjectState (surfaceId));
+        if (*surfaceIndex == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Surface attribute was found for surface.surfaceId.");
+        }
+    }
+
+    if (surfaceIndex.HasValue ()) {
+        zone.material = *surfaceIndex;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, material);
+    }
+    if (surface.Get ("useOnAllSides", zone.oneMat) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, oneMat);
+    }
+
+    return {};
+}
+
 // The zone polygon display (gross or net, show_found_poly), the uniform stamp pen
 // (useStampPens and pen) and the area reduction (reducePercent) of a zone (#2631).
 // show_found_poly true uses the reference line of the bounding walls (gross), false
@@ -1395,6 +1431,10 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
     }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (details, element.zone, &mask);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
+    }
 
     const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (details, element.zone, &mask);
     if (displayError.HasValue ()) {
@@ -1586,6 +1626,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/ZoneCoverFill",
                         "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
                     },
+                    "surface": {
+                        "$ref": "#/ZoneSurface",
+                        "description": "Optional 3D surface of the zone (the Model panel). Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
                     "polygonDisplay": {
                         "$ref": "#/ZonePolygonDisplay",
                         "description": "Optional zone polygon display: Gross uses the reference line of the bounding walls, Net their inner edges. Only has an effect for a zone whose boundary is the reference line of the walls. When omitted, the value of the favorite or of the Zone tool defaults is kept."
@@ -1683,6 +1727,10 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (parameters, element.zone, nullptr);
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (parameters, element.zone, nullptr);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
     }
 
     const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (parameters, element.zone, nullptr);
@@ -1872,6 +1920,7 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
                         "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
+                        "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." },
                         "polygonDisplay": { "$ref": "#/ZonePolygonDisplay" },
                         "stampPen": { "$ref": "#/ZoneStampPen", "description": "Pen of the zone stamp. Only the given fields are changed." },
                         "reducePercent": { "$ref": "#/ZoneReducePercent" },
