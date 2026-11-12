@@ -1,0 +1,136 @@
+{
+  "title": "SetGDLParametersOfElements reports a written parameter that the object's Parameter Script sets back, and still writes the other given parameters (#2396)",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "an Object of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "save": { "objectParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "own object whose Parameter Script sets tapirFixed back",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "Tapir Check Script Sets Back 2396",
+            "parentId": "${objectParent}",
+            "type": "Object",
+            "path": "TapirCheckScriptSetsBack/Tapir Check Script Sets Back 2396.gsm",
+            "a": 1.0,
+            "b": 0.5,
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 0.5",
+            "parameterScript": "PARAMETERS tapirFixed = \"fixed\"",
+            "parameters": [
+              { "name": "tapirFixed", "type": "String", "value": "fixed", "description": "Tapir Fixed" },
+              { "name": "tapirFree", "type": "String", "value": "one", "description": "Tapir Free" }
+            ]
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 1, "name": "one answer" },
+        { "path": "libraryParts[0].path", "exists": true, "name": "library part created" },
+        { "path": "libraryParts[0].name", "eq": "Tapir Check Script Sets Back 2396", "name": "registered under the name CreateObjects looks for" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "reload the libraries, so the new part can be placed",
+      "command": "ReloadLibraries",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true, "name": "libraries reloaded" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "place object",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          {
+            "libraryPartName": "Tapir Check Script Sets Back 2396",
+            "coordinates": { "x": 970.0, "y": 970.0, "z": 0.0 },
+            "dimensions": { "x": 1.0, "y": 0.5, "z": 0.5 },
+            "useFixSize": false,
+            "angle": 0.0,
+            "reflected": false
+          }
+        ]
+      },
+      "save": { "object": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object placed" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "a parameter the script leaves alone is written",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithGDLParameters": [
+          {
+            "elementId": { "guid": "${object}" },
+            "gdlParameters": [ { "name": "tapirFree", "value": "two" } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "a kept value succeeds" }
+      ]
+    },
+    {
+      "id": "a parameter the script sets back is reported, the other one is written",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithGDLParameters": [
+          {
+            "elementId": { "guid": "${object}" },
+            "gdlParameters": [
+              { "name": "tapirFixed", "value": "changed" },
+              { "name": "tapirFree", "value": "three" }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": false, "name": "a value the Parameter Script sets back is not reported as success" },
+        { "path": "executionResults[0].error.message", "contains": "tapirFixed", "name": "the error names the parameter set back" }
+      ]
+    },
+    {
+      "id": "read back",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${object}" } } ] },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters[2].name", "eq": "tapirFixed", "name": "third parameter is tapirFixed" },
+        { "path": "gdlParametersOfElements[0].parameters[2].value", "eq": "fixed", "name": "tapirFixed is what the script sets" },
+        { "path": "gdlParametersOfElements[0].parameters[3].name", "eq": "tapirFree", "name": "fourth parameter is tapirFree" },
+        { "path": "gdlParametersOfElements[0].parameters[3].value", "eq": "three", "name": "the other given parameter was written" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckScriptSetsBack" }
+        ]
+      }
+    }
+  ]
+}

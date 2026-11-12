@@ -1,0 +1,76 @@
+{
+  "title": "GetDetailsOfElements returns the cross section, taper and length of each beam segment (#2551)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Beam" ],
+  "steps": [
+    {
+      "id": "beam with an explicit cross section",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 640.0, "y": 640.0 },
+            "endCoordinate": { "x": 646.0, "y": 640.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "profileAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.27,
+            "height": 0.53
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "the beam lists the geometry of its segments",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].geometry.width", "approx": 0.27, "name": "segment width" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.height", "approx": 0.53, "name": "segment height" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.circleBased", "eq": false },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.isHomogeneous", "eq": true, "name": "a new beam is not tapered" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.endWidth", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.endHeight", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.isEndWidthAndHeightLinked", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.lengthType", "exists": true, "name": "segment length read from the scheme" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.fixedLength", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.lengthProportion", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].leftMaterial", "exists": true, "name": "surfaces still read" }
+      ]
+    },
+    {
+      "id": "the beam's segments",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "save": { "s1": "subelements[0].beamSegments[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].beamSegments[0].elementId.guid", "exists": true, "name": "beam has a segment" }
+      ]
+    },
+    {
+      "id": "the BeamSegment reads its taper, index and length",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "BeamSegment" },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.27 },
+        { "path": "detailsOfElements[0].details.height", "approx": 0.53 },
+        { "path": "detailsOfElements[0].details.isHomogeneous", "eq": true },
+        { "path": "detailsOfElements[0].details.endWidth", "exists": true },
+        { "path": "detailsOfElements[0].details.endHeight", "exists": true },
+        { "path": "detailsOfElements[0].details.segmentIndex", "eq": 0, "name": "first segment of its beam" },
+        { "path": "detailsOfElements[0].details.length.lengthType", "exists": true, "name": "length read from the owner beam" }
+      ]
+    }
+  ]
+}

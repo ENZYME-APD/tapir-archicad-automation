@@ -12,9 +12,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
     // settings of the Curtain Wall Settings dialog, from
     // ToolSettings/CurtainWall.json. ReferenceLine defines a new curtain wall
     // (a polyline; only X and Y are used; each pair of consecutive vertices is
-    // one segment). CreateCurtainWalls and ModifyCurtainWalls take the same
-    // fields (ModifyCurtainWalls keeps the number of segments), so Create can
-    // update the curtain walls it made before.
+    // one segment). ModifyCurtainWalls takes the fields of CreateCurtainWalls
+    // (keeping the number of segments), so Create can update the curtain walls
+    // it made before, and also the floor plan display settings, which Create
+    // writes with ModifyCurtainWalls right after creating the curtain wall.
     public class CurtainWallsComponent : ElementToolComponent
     {
         protected override string ToolName => "CurtainWall";
@@ -37,7 +38,12 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
         private static readonly ISet<string> ModifyCurtainWallsKeys = new HashSet<string>
         {
-            "cells", "coordinates", "floorIndex", "height", "primaryPattern", "secondaryPattern", "zCoordinate"
+            "aboveViewLinePen", "aboveViewLineTypeId", "belowViewLinePen", "belowViewLineTypeId", "cells",
+            "coordinates", "cutProjectionMode", "displayOption", "floorIndex", "frameCutLinePen",
+            "frameCutLineTypeId", "height", "isAutoOnStoryVisibility", "overheadProjectionMode",
+            "panelCutLinePen", "panelCutLineTypeId", "pen", "primaryPattern", "secondaryPattern",
+            "uncutProjectionMode", "useFrameTypesAttributes", "usePanelTypesAttributes",
+            "viewDepthLimitation", "visibility", "zCoordinate"
         };
 
         // ModifyCurtainWalls takes the reference line (with the same number of
