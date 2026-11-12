@@ -19758,7 +19758,7 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                         },
                         "segments": {
                             "type": "array",
-                            "description": "Changes to single segments of the railing, applied after height. Only the given fields of the given segments change; the other segments, the nodes and the railing's GUID stay as they are.",
+                            "description": "Changes to single segments of the railing and to the top rail, rails and handrails of a segment, applied after height. Only the given fields of the given segments and components change; the other segments, the nodes and the railing's GUID stay as they are.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -19779,6 +19779,88 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                     "referenceLineLocation": {
                                         "$ref": "#/RailingReferenceLineLocation",
                                         "description": "The new location of this segment relative to the reference line. Applied before lateralOffset."
+                                    },
+                                    "toprail": {
+                                        "type": "object",
+                                        "description": "Changes to the top rail of this segment (API_RailingToprailType), applied after the fields of the segment.",
+                                        "properties": {
+                                            "visible": {
+                                                "type": "boolean",
+                                                "description": "Whether the top rail of this segment is shown (API_RailingToprailType::visible)."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "visible"
+                                        ]
+                                    },
+                                    "rails": {
+                                        "type": "array",
+                                        "description": "Changes to single rails of this segment (API_RailingRailType), applied after the top rail. Only the given fields of the given rails change.",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "index": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "description": "The index of the rail among the rails of this segment: the railingRails GetSubelementsOfHierarchicalElements lists whose owner (ownerElementId in GetDetailsOfElements) is this segment, in the order they are listed."
+                                                },
+                                                "visible": {
+                                                    "type": "boolean",
+                                                    "description": "Whether the rail is shown (API_RailingRailType::visible)."
+                                                },
+                                                "relative": {
+                                                    "type": "boolean",
+                                                    "description": "Whether the rail is relative (API_RailingRailType::relative)."
+                                                },
+                                                "horizontalOffset": {
+                                                    "type": "number",
+                                                    "description": "The horizontal offset of the rail from the segment (API_RailingRailType::horizontalOffset)."
+                                                },
+                                                "height": {
+                                                    "type": "number",
+                                                    "description": "The height of the rail (API_RailingRailType::height), as GetDetailsOfElements returns it."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "index"
+                                            ]
+                                        }
+                                    },
+                                    "handrails": {
+                                        "type": "array",
+                                        "description": "Changes to single handrails of this segment (API_RailingHandrailType), applied after the rails. Only the given fields of the given handrails change.",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "index": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "description": "The index of the handrail among the handrails of this segment: the railingHandrails GetSubelementsOfHierarchicalElements lists whose owner (ownerElementId in GetDetailsOfElements) is this segment, in the order they are listed."
+                                                },
+                                                "visible": {
+                                                    "type": "boolean",
+                                                    "description": "Whether the handrail is shown (API_RailingHandrailType::visible)."
+                                                },
+                                                "doubleHandrail": {
+                                                    "type": "boolean",
+                                                    "description": "API_RailingHandrailType::doubleHandrail, as GetDetailsOfElements returns it."
+                                                },
+                                                "horizontalOffset": {
+                                                    "type": "number",
+                                                    "description": "The horizontal offset of the handrail from the segment (API_RailingHandrailType::horizontalOffset)."
+                                                },
+                                                "height": {
+                                                    "type": "number",
+                                                    "description": "The height of the handrail (API_RailingHandrailType::height), as GetDetailsOfElements returns it."
+                                                }
+                                            },
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "index"
+                                            ]
+                                        }
                                     }
                                 },
                                 "additionalProperties": false,
@@ -19839,12 +19921,66 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
 
 namespace {
 
+// A change to one rail or handrail of a segment. relative is API_RailingRailType::relative for a rail
+// and API_RailingHandrailType::doubleHandrail for a handrail.
+struct RailingRailChange {
+    UInt32                  index = 0;
+    GS::Optional<bool>      visible;
+    GS::Optional<bool>      relative;
+    GS::Optional<double>    horizontalOffset;
+    GS::Optional<double>    height;
+};
+
 struct RailingSegmentChange {
     UInt32                                      index = 0;
     GS::Optional<double>                        height;
     GS::Optional<double>                        lateralOffset;
     GS::Optional<API_RailingRefLineLocationID>  referenceLineLocation;
+    GS::Optional<bool>                          toprailVisible;
+    GS::Array<RailingRailChange>                rails;
+    GS::Array<RailingRailChange>                handrails;
+
+    bool HasSegmentFields () const
+    {
+        return height.HasValue () || lateralOffset.HasValue () || referenceLineLocation.HasValue ();
+    }
 };
+
+// Reads the "rails" or "handrails" list of a segment change. relativeKey is "relative" or "doubleHandrail".
+GS::Optional<GS::UniString> ReadRailingRailChanges (const GS::ObjectState& entry, const char* listKey, const char* relativeKey, Int32 segmentIndex, GS::Array<RailingRailChange>& changes)
+{
+    GS::Array<GS::ObjectState> list;
+    if (!entry.Get (listKey, list)) {
+        return GS::NoValue;
+    }
+    for (const GS::ObjectState& railEntry : list) {
+        Int32 index = -1;
+        if (!railEntry.Get ("index", index) || index < 0) {
+            return GS::UniString::Printf ("segments: segment %d: every item of %s needs a non-negative index.", static_cast<int> (segmentIndex), listKey);
+        }
+        RailingRailChange change;
+        change.index = static_cast<UInt32> (index);
+        bool flag = false;
+        if (railEntry.Get ("visible", flag)) {
+            change.visible = flag;
+        }
+        if (railEntry.Get (relativeKey, flag)) {
+            change.relative = flag;
+        }
+        double value = 0.0;
+        if (railEntry.Get ("horizontalOffset", value)) {
+            change.horizontalOffset = value;
+        }
+        if (railEntry.Get ("height", value)) {
+            change.height = value;
+        }
+        if (!change.visible.HasValue () && !change.relative.HasValue () && !change.horizontalOffset.HasValue () && !change.height.HasValue ()) {
+            return GS::UniString::Printf ("segments: segment %d: no fields to modify for item %d of %s.", static_cast<int> (segmentIndex), static_cast<int> (index), listKey);
+        }
+        changes.Push (change);
+    }
+    return GS::NoValue;
+}
 
 struct RailingNodeChange {
     UInt32                  index = 0;
@@ -19889,7 +20025,22 @@ GS::Optional<GS::UniString> ReadRailingSegmentChanges (const GS::ObjectState& it
                 return GS::UniString::Printf ("segments: the referenceLineLocation of segment %d must be Left, Center or Right.", static_cast<int> (index));
             }
         }
-        if (!change.height.HasValue () && !change.lateralOffset.HasValue () && !change.referenceLineLocation.HasValue ()) {
+        GS::ObjectState toprail;
+        if (entry.Get ("toprail", toprail)) {
+            bool visible = false;
+            if (!toprail.Get ("visible", visible)) {
+                return GS::UniString::Printf ("segments: the toprail of segment %d needs visible.", static_cast<int> (index));
+            }
+            change.toprailVisible = visible;
+        }
+        GS::Optional<GS::UniString> railError = ReadRailingRailChanges (entry, "rails", "relative", index, change.rails);
+        if (!railError.HasValue ()) {
+            railError = ReadRailingRailChanges (entry, "handrails", "doubleHandrail", index, change.handrails);
+        }
+        if (railError.HasValue ()) {
+            return railError;
+        }
+        if (!change.HasSegmentFields () && !change.toprailVisible.HasValue () && change.rails.IsEmpty () && change.handrails.IsEmpty ()) {
             return GS::UniString::Printf ("segments: no fields to modify for segment %d.", static_cast<int> (index));
         }
         changes.Push (change);
@@ -20001,6 +20152,192 @@ GSErrCode ChangeRailingNode (const API_Guid& railingGuid, const RailingNodeChang
     return ACAPI_Element_Change (&node, &mask, nullptr, 0, true);
 }
 
+// The index-th component of a railing memo array (rails, handrails or top rails) whose owner is the
+// given segment, in the order of the memo, which is the order GetSubelementsOfHierarchicalElements lists.
+template <typename ComponentType>
+const ComponentType* FindRailingSegmentComponent (const ComponentType* components, const API_Guid& segmentGuid, UInt32 index)
+{
+    if (components == nullptr) {
+        return nullptr;
+    }
+    const GSSize count = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<ComponentType*> (components))) / sizeof (ComponentType);
+    UInt32 found = 0;
+    for (GSSize i = 0; i < count; ++i) {
+        if (components[i].owner == segmentGuid) {
+            if (found == index) {
+                return &components[i];
+            }
+            ++found;
+        }
+    }
+    return nullptr;
+}
+
+template <typename ComponentType>
+UInt32 CountRailingSegmentComponents (const ComponentType* components, const API_Guid& segmentGuid)
+{
+    if (components == nullptr) {
+        return 0;
+    }
+    const GSSize count = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<ComponentType*> (components))) / sizeof (ComponentType);
+    UInt32 found = 0;
+    for (GSSize i = 0; i < count; ++i) {
+        if (components[i].owner == segmentGuid) {
+            ++found;
+        }
+    }
+    return found;
+}
+
+const UInt64 RailingComponentMemoMask = APIMemoMask_RailingSegment | APIMemoMask_RailingRail | APIMemoMask_RailingHandrail | APIMemoMask_RailingToprail;
+
+// Checks before anything is changed that every segment with a top rail, rail or handrail change has
+// that component. Returns an error text, or nothing.
+GS::Optional<GS::UniString> CheckRailingComponentIndices (const API_Guid& railingGuid, UInt32 nSegments, const GS::Array<RailingSegmentChange>& changes)
+{
+    bool needsMemo = false;
+    for (const RailingSegmentChange& change : changes) {
+        needsMemo = needsMemo || change.toprailVisible.HasValue () || !change.rails.IsEmpty () || !change.handrails.IsEmpty ();
+    }
+    if (!needsMemo) {
+        return GS::NoValue;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (railingGuid, &memo, RailingComponentMemoMask) != NoError || memo.railingSegments == nullptr) {
+        return GS::UniString ("segments: failed to read the components of the railing.");
+    }
+    for (const RailingSegmentChange& change : changes) {
+        if (change.index >= nSegments) {
+            continue;
+        }
+        const API_Guid& segmentGuid = memo.railingSegments[change.index].head.guid;
+        if (change.toprailVisible.HasValue () && CountRailingSegmentComponents (memo.railingToprails, segmentGuid) == 0) {
+            return GS::UniString::Printf ("segments: segment %u has no top rail.", static_cast<unsigned> (change.index));
+        }
+        const UInt32 nRails = CountRailingSegmentComponents (memo.railingRails, segmentGuid);
+        for (const RailingRailChange& rail : change.rails) {
+            if (rail.index >= nRails) {
+                return GS::UniString::Printf ("segments: rails: index %u is not a rail of segment %u, which has %u rails.", static_cast<unsigned> (rail.index), static_cast<unsigned> (change.index), static_cast<unsigned> (nRails));
+            }
+        }
+        const UInt32 nHandrails = CountRailingSegmentComponents (memo.railingHandrails, segmentGuid);
+        for (const RailingRailChange& handrail : change.handrails) {
+            if (handrail.index >= nHandrails) {
+                return GS::UniString::Printf ("segments: handrails: index %u is not a handrail of segment %u, which has %u handrails.", static_cast<unsigned> (handrail.index), static_cast<unsigned> (change.index), static_cast<unsigned> (nHandrails));
+            }
+        }
+    }
+    return GS::NoValue;
+}
+
+enum class RailingComponentKind { Toprail, Rail, Handrail };
+
+// Changes the top rail, a rail or a handrail of a segment as a subelement, the way ChangeRailingSegment
+// changes a segment. The memo is read again for every change, so a component Archicad regenerated
+// after an earlier change is still found by its segment and index.
+GSErrCode ChangeRailingComponent (const API_Guid& railingGuid, UInt32 segmentIndex, RailingComponentKind kind, const RailingRailChange& change)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (railingGuid, &memo, RailingComponentMemoMask);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.railingSegments == nullptr) {
+        return APIERR_GENERAL;
+    }
+    const API_Guid segmentGuid = memo.railingSegments[segmentIndex].head.guid;
+    API_Element component = {};
+    if (kind == RailingComponentKind::Toprail) {
+        const API_RailingToprailType* toprail = FindRailingSegmentComponent (memo.railingToprails, segmentGuid, change.index);
+        if (toprail == nullptr) {
+            return APIERR_BADINDEX;
+        }
+        component.header = toprail->head;
+    } else if (kind == RailingComponentKind::Rail) {
+        const API_RailingRailType* rail = FindRailingSegmentComponent (memo.railingRails, segmentGuid, change.index);
+        if (rail == nullptr) {
+            return APIERR_BADINDEX;
+        }
+        component.header = rail->head;
+    } else {
+        const API_RailingHandrailType* handrail = FindRailingSegmentComponent (memo.railingHandrails, segmentGuid, change.index);
+        if (handrail == nullptr) {
+            return APIERR_BADINDEX;
+        }
+        component.header = handrail->head;
+    }
+    err = ACAPI_Element_Get (&component);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    if (kind == RailingComponentKind::Toprail) {
+        if (change.visible.HasValue ()) {
+            component.railingToprail.visible = change.visible.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingToprailType, visible);
+        }
+    } else if (kind == RailingComponentKind::Rail) {
+        if (change.visible.HasValue ()) {
+            component.railingRail.visible = change.visible.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingRailType, visible);
+        }
+        if (change.relative.HasValue ()) {
+            component.railingRail.relative = change.relative.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingRailType, relative);
+        }
+        if (change.horizontalOffset.HasValue ()) {
+            component.railingRail.horizontalOffset = change.horizontalOffset.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingRailType, horizontalOffset);
+        }
+        if (change.height.HasValue ()) {
+            component.railingRail.height = change.height.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingRailType, height);
+        }
+    } else {
+        if (change.visible.HasValue ()) {
+            component.railingHandrail.visible = change.visible.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingHandrailType, visible);
+        }
+        if (change.relative.HasValue ()) {
+            component.railingHandrail.doubleHandrail = change.relative.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingHandrailType, doubleHandrail);
+        }
+        if (change.horizontalOffset.HasValue ()) {
+            component.railingHandrail.horizontalOffset = change.horizontalOffset.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingHandrailType, horizontalOffset);
+        }
+        if (change.height.HasValue ()) {
+            component.railingHandrail.height = change.height.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_RailingHandrailType, height);
+        }
+    }
+    return ACAPI_Element_Change (&component, &mask, nullptr, 0, true);
+}
+
+// Compares a rail or handrail read back after the command with the change asked for, and appends what
+// differs to notApplied. kindName is "rail" or "handrail", relativeName "relative" or "doubleHandrail".
+void AppendRailingRailNotApplied (GS::UniString& notApplied, const char* kindName, const char* relativeName, UInt32 segmentIndex, const RailingRailChange& change,
+                                  bool visible, bool relative, double horizontalOffset, double height, double tolerance)
+{
+    const unsigned rail = static_cast<unsigned> (change.index);
+    const unsigned segment = static_cast<unsigned> (segmentIndex);
+    if (change.visible.HasValue () && visible != change.visible.Get ()) {
+        notApplied += GS::UniString::Printf (" visible of %s %u of segment %u is %s.", kindName, rail, segment, visible ? "true" : "false");
+    }
+    if (change.relative.HasValue () && relative != change.relative.Get ()) {
+        notApplied += GS::UniString::Printf (" %s of %s %u of segment %u is %s.", relativeName, kindName, rail, segment, relative ? "true" : "false");
+    }
+    if (change.horizontalOffset.HasValue () && std::abs (horizontalOffset - change.horizontalOffset.Get ()) > tolerance) {
+        notApplied += GS::UniString::Printf (" The horizontal offset of %s %u of segment %u is %.4f.", kindName, rail, segment, horizontalOffset);
+    }
+    if (change.height.HasValue () && std::abs (height - change.height.Get ()) > tolerance) {
+        notApplied += GS::UniString::Printf (" The height of %s %u of segment %u is %.4f.", kindName, rail, segment, height);
+    }
+}
+
 // What ModifyRailings asked a railing for, read back once the undoable command has ended.
 struct RailingCheck {
     UIndex      resultIndex = 0;
@@ -20022,7 +20359,8 @@ struct RailingCheck {
 // The fields of the railing element itself are changed first, without its memo: the reference line,
 // posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's Element_Test
 // (Do_Railing_Edit) changes it, and to every segment as a subelement. Then single segments and nodes are
-// changed as subelements (ChangeRailingSegment, ChangeRailingNode). The railing is read back once the
+// changed as subelements (ChangeRailingSegment, ChangeRailingNode), and so are the top rail, rails and
+// handrails of a segment (ChangeRailingComponent, #2572). The railing is read back once the
 // undoable command has ended, so a value Archicad did not take is reported as a failure instead of a success.
 GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
@@ -20086,6 +20424,9 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             GS::Array<RailingNodeChange> nodeChanges;
             if (!changeError.HasValue ()) {
                 changeError = ReadRailingNodeChanges (item, element.railing.nNodes, nodeChanges);
+            }
+            if (!changeError.HasValue ()) {
+                changeError = CheckRailingComponentIndices (element.header.guid, element.railing.nSegments, segmentChanges);
             }
             if (changeError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, changeError.Get ()));
@@ -20160,9 +20501,39 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             }
             if (subelementError.IsEmpty ()) {
                 for (const RailingSegmentChange& change : segmentChanges) {
-                    err = ChangeRailingSegment (element.header.guid, change);
-                    if (err != NoError) {
-                        subelementError = GS::UniString::Printf ("Failed to modify segment %u of the railing.", static_cast<unsigned> (change.index));
+                    if (change.HasSegmentFields ()) {
+                        err = ChangeRailingSegment (element.header.guid, change);
+                        if (err != NoError) {
+                            subelementError = GS::UniString::Printf ("Failed to modify segment %u of the railing.", static_cast<unsigned> (change.index));
+                            break;
+                        }
+                    }
+                    if (change.toprailVisible.HasValue ()) {
+                        RailingRailChange toprailChange;
+                        toprailChange.visible = change.toprailVisible.Get ();
+                        err = ChangeRailingComponent (element.header.guid, change.index, RailingComponentKind::Toprail, toprailChange);
+                        if (err != NoError) {
+                            subelementError = GS::UniString::Printf ("Failed to modify the top rail of segment %u of the railing.", static_cast<unsigned> (change.index));
+                            break;
+                        }
+                    }
+                    for (const RailingRailChange& rail : change.rails) {
+                        err = ChangeRailingComponent (element.header.guid, change.index, RailingComponentKind::Rail, rail);
+                        if (err != NoError) {
+                            subelementError = GS::UniString::Printf ("Failed to modify rail %u of segment %u of the railing.", static_cast<unsigned> (rail.index), static_cast<unsigned> (change.index));
+                            break;
+                        }
+                    }
+                    if (subelementError.IsEmpty ()) {
+                        for (const RailingRailChange& handrail : change.handrails) {
+                            err = ChangeRailingComponent (element.header.guid, change.index, RailingComponentKind::Handrail, handrail);
+                            if (err != NoError) {
+                                subelementError = GS::UniString::Printf ("Failed to modify handrail %u of segment %u of the railing.", static_cast<unsigned> (handrail.index), static_cast<unsigned> (change.index));
+                                break;
+                            }
+                        }
+                    }
+                    if (!subelementError.IsEmpty ()) {
                         break;
                     }
                 }
@@ -20280,7 +20651,7 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
 
                 API_ElementMemo memo = {};
                 const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-                err = ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment | APIMemoMask_RailingNode);
+                err = ACAPI_Element_GetMemo (changed.header.guid, &memo, RailingComponentMemoMask | APIMemoMask_RailingNode);
                 if (err != NoError) {
                     results[check.resultIndex] = CreateFailedExecutionResult (err, "Failed to read the segments and nodes of the railing back after the change.");
                     continue;
@@ -20329,6 +20700,42 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                         notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
                     } else if (memo.railingNodes[expected.first].unifyPatterns != expected.second) {
                         notApplied += GS::UniString::Printf (" unifyPatterns of node %u is %s.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].unifyPatterns ? "true" : "false");
+                    }
+                }
+                // The top rail, rails and handrails, found again by their segment and index, and
+                // compared with every change given for them.
+                for (const RailingSegmentChange& change : check.segmentChanges) {
+                    if (!change.toprailVisible.HasValue () && change.rails.IsEmpty () && change.handrails.IsEmpty ()) {
+                        continue;
+                    }
+                    if (!hasSegment (change.index)) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (change.index));
+                        continue;
+                    }
+                    const API_Guid segmentGuid = memo.railingSegments[change.index].head.guid;
+                    if (change.toprailVisible.HasValue ()) {
+                        const API_RailingToprailType* toprail = FindRailingSegmentComponent (memo.railingToprails, segmentGuid, 0);
+                        if (toprail == nullptr) {
+                            notApplied += GS::UniString::Printf (" The top rail of segment %u is gone.", static_cast<unsigned> (change.index));
+                        } else if (toprail->visible != change.toprailVisible.Get ()) {
+                            notApplied += GS::UniString::Printf (" visible of the top rail of segment %u is %s.", static_cast<unsigned> (change.index), toprail->visible ? "true" : "false");
+                        }
+                    }
+                    for (const RailingRailChange& railChange : change.rails) {
+                        const API_RailingRailType* rail = FindRailingSegmentComponent (memo.railingRails, segmentGuid, railChange.index);
+                        if (rail == nullptr) {
+                            notApplied += GS::UniString::Printf (" Rail %u of segment %u is gone.", static_cast<unsigned> (railChange.index), static_cast<unsigned> (change.index));
+                        } else {
+                            AppendRailingRailNotApplied (notApplied, "rail", "relative", change.index, railChange, rail->visible, rail->relative, rail->horizontalOffset, rail->height, tolerance);
+                        }
+                    }
+                    for (const RailingRailChange& handrailChange : change.handrails) {
+                        const API_RailingHandrailType* handrail = FindRailingSegmentComponent (memo.railingHandrails, segmentGuid, handrailChange.index);
+                        if (handrail == nullptr) {
+                            notApplied += GS::UniString::Printf (" Handrail %u of segment %u is gone.", static_cast<unsigned> (handrailChange.index), static_cast<unsigned> (change.index));
+                        } else {
+                            AppendRailingRailNotApplied (notApplied, "handrail", "doubleHandrail", change.index, handrailChange, handrail->visible, handrail->doubleHandrail, handrail->horizontalOffset, handrail->height, tolerance);
+                        }
                     }
                 }
             }
