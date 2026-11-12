@@ -2393,8 +2393,12 @@
     },
     "ProfileModifier": {
         "type": "object",
-        "description": "A stretchable edge-offset parameter of the profile, as named by the profile's author in the Profile Editor. Its value is a live geometric measurement matching what the Profile Editor's dimension shows.",
+        "description": "An offset modifier of the profile (Profile Manager, Modifiers): it moves edges of the profile's skins by the distance its dimension measures between two anchors. Its value is a live geometric measurement matching what the Profile Editor's dimension shows.",
         "properties": {
+            "modifierId": {
+                "type": "string",
+                "description": "Identifier of the modifier, stable for the lifetime of the profile. Pass it to CreateProfiles' renameProfileModifiers to rename the modifier."
+            },
             "name": {
                 "type": "string",
                 "description": "User-authored label, e.g. 'Largeur support'. Present only if the profile's author assigned one."
@@ -2402,9 +2406,102 @@
             "value": {
                 "type": "number",
                 "description": "Present only when the parameter's dimension anchors could be resolved to concrete positions."
+            },
+            "edges": {
+                "type": "array",
+                "description": "The edges the modifier moves.",
+                "items": {
+                    "$ref": "#/ProfileModifierEdge"
+                }
+            },
+            "begin": {
+                "$ref": "#/ProfileModifierAnchor",
+                "description": "The anchor the modifier's dimension starts at."
+            },
+            "end": {
+                "$ref": "#/ProfileModifierAnchor",
+                "description": "The anchor the modifier's dimension ends at."
+            },
+            "projectionAngle": {
+                "type": "number",
+                "description": "The direction, in radians from the x axis, the dimension is measured along. Present only when the dimension has one; otherwise it is measured along its nominal direction."
             }
         },
         "additionalProperties": false
+    },
+    "ProfileModifierEdge": {
+        "type": "object",
+        "description": "An edge of a profile skin that an offset modifier moves. Edge i of a skin runs from its outlineCoords[i] to outlineCoords[i + 1] (GetProfiles' skins[].outlineCoords, field skinOutlines); 0 and the last index are not edges of the drawn shape.",
+        "properties": {
+            "skinId": {
+                "type": "string",
+                "description": "The skin, from GetProfiles' skins[].skinId."
+            },
+            "edgeIndex": {
+                "type": "integer",
+                "description": "The edge of the skin, the same position as in GetProfiles' skins[].edges."
+            },
+            "direction": {
+                "type": "string",
+                "enum": [
+                    "Left",
+                    "Right"
+                ],
+                "description": "Which way Archicad moves the edge for a growing value, as it stores it. CreateProfiles works it out from the shape when it is omitted."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "skinId",
+            "edgeIndex"
+        ]
+    },
+    "ProfileModifierAnchor": {
+        "type": "object",
+        "description": "One end of an offset modifier's dimension. Fixed: a point (position). Vertex: a vertex of a skin (skinId, vertexIndex: a position in GetProfiles' skins[].outlineCoords, 1 or more). Edge: an edge of a skin (skinId, edgeIndex, as in ProfileModifierEdge), measured perpendicular to it. The other types follow the profile's bounding box corners or stretch zone limits and need nothing else.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Fixed",
+                    "Vertex",
+                    "Edge",
+                    "BoundingBoxUpperLeft",
+                    "BoundingBoxUpperRight",
+                    "BoundingBoxLowerLeft",
+                    "BoundingBoxLowerRight",
+                    "StretchZoneLeft",
+                    "StretchZoneRight",
+                    "StretchZoneBottom",
+                    "StretchZoneTop",
+                    "Undefined"
+                ]
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point of a Fixed anchor, in the coordinates of skins[].outlineCoords."
+            },
+            "skinId": {
+                "type": "string",
+                "description": "The skin of a Vertex or Edge anchor, from GetProfiles' skins[].skinId."
+            },
+            "vertexIndex": {
+                "type": "integer",
+                "description": "The vertex of a Vertex anchor: its position in the skin's outlineCoords."
+            },
+            "edgeIndex": {
+                "type": "integer",
+                "description": "The edge of an Edge anchor: edge i runs from outlineCoords[i] to outlineCoords[i + 1]."
+            },
+            "positiveSideOnRight": {
+                "type": "boolean",
+                "description": "Edge anchor: whether the dimension grows to the right of the edge, seen from its start to its end. CreateProfiles sets it so the value grows as the edge moves away from the other anchor when it is omitted."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
+        ]
     },
     "ElementProfileValues": {
         "type": "object",

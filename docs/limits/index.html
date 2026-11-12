@@ -271,6 +271,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The project functions (<code>ACAPI_ProjectOperation_*</code>; <code>APIDo_*ID</code> in AC25&ndash;AC26) open, create, save, close, print and publish, but none merges. <code>ACAPI_Element_Merge_Elements</code> is the Merge of construction elements, not of files.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Delete one offset modifier of a profile</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Rebuild the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a>' <code>replaceSkins</code> and <code>newSkins</code>, which drops every modifier, then add the ones to keep again with <code>newProfileModifiers</code> (Archicad 27 and later).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ProfileVectorImage</code> (<code>ProfileVectorImage.hpp</code>), <code>ProfileVectorImageOperations</code> and <code>VI::ProfileVectorImageBuilder</code> only add parameters, anchors and dimension control tools (<code>AddProfileParameter</code>, <code>AddOffsetParameter</code>, <code>AddOffsetParameterSetup</code>, <code>AddAnchor</code>, <code>AddDimControlTool</code>); none removes one, and <code>DisableControlViaParameter</code> only disables its control (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2586">#2586</a></td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Documents and publishing</th></tr>
                         <tr>
