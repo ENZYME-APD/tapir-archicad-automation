@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 03:09 UTC",
+ "generatedAt": "2026-11-12 03:24 UTC",
  "versions": [
   25,
   26,
@@ -25394,6 +25394,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2773,
+     "title": "Fix GetUnusedAttributes crash: bound profile edge indexes by the edge data (#2772)"
+    },
+    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     },
@@ -37566,6 +37570,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2773,
+     "title": "Fix GetUnusedAttributes crash: bound profile edge indexes by the edge data (#2772)"
+    },
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
