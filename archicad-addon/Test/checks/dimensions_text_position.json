@@ -1,0 +1,159 @@
+{
+  "title": "Dimension texts: textPlacement on creation and change, single texts moved by position and offset, given back to automatic, bad inputs refused",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a linear dimension with its texts in the line",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 900.0, "y": 899.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 900.0, "y": 900.0 } },
+              { "coordinate": { "x": 900.3, "y": 900.0 } },
+              { "coordinate": { "x": 904.0, "y": 900.0 } }
+            ],
+            "textHeight": 2.0,
+            "textPlacement": "InLine"
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "placement as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textPlacement", "eq": "InLine", "name": "texts in the line" }
+      ]
+    },
+    {
+      "id": "texts before the move",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "eq": false, "name": "short segment text placed automatically" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.x", "exists": true, "name": "text position read" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: placement below, short text moved to a position",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "textPlacement": "Below",
+            "texts": [
+              { "witnessPointIndex": 1, "position": { "x": 899.5, "y": 898.8 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "placement and move accepted" }
+      ]
+    },
+    {
+      "id": "texts after the move",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "eq": true, "name": "moved text fixed" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.x", "approx": 899.5, "name": "moved text x" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.y", "approx": 898.8, "name": "moved text y" },
+        { "path": "dimensionsData[0].witnessPoints[2].textPositionFixed", "eq": false, "name": "other text untouched" },
+        { "path": "dimensionsData[0].witnessPoints[2].dimensionValue", "approx": 3.7, "name": "measured value unchanged" }
+      ]
+    },
+    {
+      "id": "placement after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textPlacement", "eq": "Below", "name": "texts below the line" },
+        { "path": "detailsOfElements[0].details.dimensionLinePosition.y", "approx": 899.0, "name": "dimension line kept" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: moved text shifted by an offset",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "texts": [ { "witnessPointIndex": 1, "offset": { "x": 0.0, "y": -0.1 } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "offset accepted" }
+      ]
+    },
+    {
+      "id": "text after the offset",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.y", "approx": 898.7, "name": "text moved down by the offset" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.x", "approx": 899.5, "name": "x kept" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: text back to automatic",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "texts": [ { "witnessPointIndex": 1, "automatic": true } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "automatic accepted" }
+      ]
+    },
+    {
+      "id": "text after automatic",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "eq": false, "name": "text placed automatically again" }
+      ]
+    },
+    {
+      "id": "bad inputs refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "texts": [ { "witnessPointIndex": 9, "automatic": true } ] },
+          { "elementId": { "guid": "${d}" }, "texts": [ { "witnessPointIndex": 1, "position": { "x": 0.0, "y": 0.0 }, "offset": { "x": 0.0, "y": 0.0 } } ] },
+          { "elementId": { "guid": "${d}" }, "texts": [ { "witnessPointIndex": 1 } ] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "index out of range refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "position and offset together refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "no move given refused" }
+      ]
+    }
+  ]
+}

@@ -620,6 +620,30 @@ static GS::UniString WitnessFormToString (API_WitnessID witnessForm)
     }
 }
 
+// The Text placement of the Dimension Settings (above, in or below the dimension line).
+static GS::UniString TextPlacementToString (API_TextPosID textPos)
+{
+    switch (textPos) {
+        case APIPos_In:    return "InLine";
+        case APIPos_Below: return "Below";
+        default:           return "Above";
+    }
+}
+
+static bool ParseTextPlacementString (const GS::UniString& textPlacement, API_TextPosID& result)
+{
+    if (textPlacement == "Above") {
+        result = APIPos_Above;
+    } else if (textPlacement == "InLine") {
+        result = APIPos_In;
+    } else if (textPlacement == "Below") {
+        result = APIPos_Below;
+    } else {
+        return false;
+    }
+    return true;
+}
+
 static bool ParseWitnessFormString (const GS::UniString& witnessForm, API_WitnessID& result)
 {
     if (witnessForm == "None") {
@@ -690,6 +714,11 @@ static const char* DimensionSettingsSchemaProperties = R"(
                         "textFrame": {
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
+                        },
+                        "textPlacement": {
+                            "type": "string",
+                            "enum": ["Above", "InLine", "Below"],
+                            "description": "Optional placement of the texts against the dimension line, as the Text position buttons of the Dimension Settings: above it, in it (the line is broken around the text) or below it. A new dimension is Above without it."
                         },
                         "appearance": {
                             "type": "string",
@@ -799,6 +828,18 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         element.dimension.defNote.frame = textFrame;
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.frame);
+        }
+    }
+
+    GS::UniString textPlacement;
+    if (data.Get ("textPlacement", textPlacement)) {
+        API_TextPosID textPos = APIPos_Above;
+        if (!ParseTextPlacementString (textPlacement, textPos)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textPlacement' value: " + textPlacement);
+        }
+        element.dimension.textPos = textPos;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, textPos);
         }
     }
 
@@ -921,6 +962,7 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("textHeight", element.dimension.defNote.noteSize);
     details.Add ("textPen", static_cast<Int32> (element.dimension.defNote.notePen));
     details.Add ("textFrame", element.dimension.defNote.frame);
+    details.Add ("textPlacement", TextPlacementToString (element.dimension.textPos));
     details.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
     details.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
 }
@@ -11675,7 +11717,36 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                     "properties": {
                         "elementId": {
                             "$ref": "#/ElementId"
-                        },)") + DimensionSettingsSchemaProperties + R"(
+                        },)") + DimensionSettingsSchemaProperties + R"(,
+                        "texts": {
+                            "type": "array",
+                            "description": "Optional texts to move, as dragging a dimension text by hand does. The text of a segment belongs to the witness point that ends it, in the order GetDimensionData lists them: witnessPointIndex 1 is the text between points 0 and 1. A moved text keeps its place when the witness points move; automatic gives it back to Archicad's placement.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "witnessPointIndex": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "description": "Index of the witness point whose text is moved, as in the witnessPoints of GetDimensionData."
+                                    },
+                                    "position": {
+                                        "$ref": "#/Coordinate2D",
+                                        "description": "New position of the text, in model meters: the bottom left corner of the unrotated text (API_NoteType pos)."
+                                    },
+                                    "offset": {
+                                        "$ref": "#/Coordinate2D",
+                                        "description": "Move of the text in model meters, added to its textPosition as GetDimensionData reads it. A paper distance is the distance in mm times the scale divided by 1000 (2 mm at 1:50 is 0.1 m)."
+                                    },
+                                    "automatic": {
+                                        "type": "boolean",
+                                        "enum": [true],
+                                        "description": "Gives the text back to Archicad's automatic placement."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["witnessPointIndex"]
+                            }
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11686,6 +11757,66 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
         "required": ["dimensionsWithDetails"]
     })";
 }
+
+namespace {
+
+struct TextMove {
+    Int32 witnessPointIndex = 0;
+    bool fixed = true;
+    API_Coord position = {};
+};
+
+// Writes the "texts" of a ModifyAssociativeDimensions item into the witness points of memo
+// (API_DimElem note pos and fixPos, as a text dragged by hand), and returns the moves made so
+// they can be checked after the change. Returns the error message of an invalid item.
+GS::Optional<GS::UniString> ApplyTextMoves (const GS::ObjectState& item, const API_Element& element, API_ElementMemo& memo, GS::Array<TextMove>& moves)
+{
+    if (!item.Contains ("texts")) {
+        return {};
+    }
+    GS::Array<GS::ObjectState> texts;
+    auto error = GetElementArray (item, "texts", texts);
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (memo.dimElems == nullptr || *memo.dimElems == nullptr) {
+        return GS::UniString ("The dimension has no witness points to move texts of.");
+    }
+    for (const GS::ObjectState& text : texts) {
+        Int32 index = -1;
+        if (!text.Get ("witnessPointIndex", index) || index < 0 || index >= element.dimension.nDimElem) {
+            return GS::UniString::Printf ("'witnessPointIndex' must be between 0 and %d.", static_cast<int> (element.dimension.nDimElem) - 1);
+        }
+        bool automatic = false;
+        text.Get ("automatic", automatic);
+        const bool hasPosition = text.Contains ("position");
+        const bool hasOffset = text.Contains ("offset");
+        if ((automatic ? 1 : 0) + (hasPosition ? 1 : 0) + (hasOffset ? 1 : 0) != 1) {
+            return GS::UniString ("Give each text exactly one of 'position', 'offset' or 'automatic'.");
+        }
+
+        API_DimElem& dimElem = (*memo.dimElems)[index];
+        TextMove move;
+        move.witnessPointIndex = index;
+        if (automatic) {
+            dimElem.note.fixPos = false;
+            move.fixed = false;
+        } else if (hasPosition) {
+            dimElem.note.pos = Get2DCoordinateFromObjectState (*text.Get ("position"));
+            dimElem.note.fixPos = true;
+        } else {
+            const API_Coord offset = Get2DCoordinateFromObjectState (*text.Get ("offset"));
+            dimElem.note.pos.x += offset.x;
+            dimElem.note.pos.y += offset.y;
+            dimElem.note.fixPos = true;
+        }
+        move.position = dimElem.note.pos;
+        moves.Push (move);
+    }
+    return {};
+}
+
+} // namespace
 
 GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetRawResponseSchema () const
 {
@@ -11758,6 +11889,15 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 }
                 witnessPointsChanged = ApplyDimensionSettingsToWitnessPoints (item, element, memo);
             }
+            GS::Array<TextMove> textMoves;
+            if (item.Contains ("texts")) {
+                auto textsError = ApplyTextMoves (item, element, memo, textMoves);
+                if (textsError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, textsError.Get ()));
+                    continue;
+                }
+                witnessPointsChanged = witnessPointsChanged || !textMoves.IsEmpty ();
+            }
 
             err = ACAPI_Element_Change (&element, &mask, witnessPointsChanged ? &memo : nullptr, 0, true);
             if (err != NoError) {
@@ -11793,6 +11933,29 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             }
             if (item.Contains ("defaultWitnessForm") && changed.dimension.defWitnessForm != element.dimension.defWitnessForm) {
                 notApplied += " defaultWitnessForm";
+            }
+            if (item.Contains ("textPlacement") && changed.dimension.textPos != element.dimension.textPos) {
+                notApplied += " textPlacement";
+            }
+            if (!textMoves.IsEmpty ()) {
+                API_ElementMemo movedMemo = {};
+                const GS::OnExit movedMemoGuard ([&movedMemo] () { ACAPI_DisposeElemMemoHdls (&movedMemo); });
+                if (ACAPI_Element_GetMemo (changed.header.guid, &movedMemo) != NoError ||
+                    movedMemo.dimElems == nullptr || *movedMemo.dimElems == nullptr) {
+                    notApplied += " texts (not read back)";
+                } else {
+                    for (const TextMove& move : textMoves) {
+                        if (move.witnessPointIndex >= changed.dimension.nDimElem) {
+                            notApplied += GS::UniString::Printf (" texts[%d]", static_cast<int> (move.witnessPointIndex));
+                            continue;
+                        }
+                        const API_NoteType& note = (*movedMemo.dimElems)[move.witnessPointIndex].note;
+                        if (note.fixPos != move.fixed ||
+                            (move.fixed && (std::abs (note.pos.x - move.position.x) > tolerance || std::abs (note.pos.y - move.position.y) > tolerance))) {
+                            notApplied += GS::UniString::Printf (" texts[%d]", static_cast<int> (move.witnessPointIndex));
+                        }
+                    }
+                }
             }
             if (witnessPointsChanged) {
                 API_ElementMemo changedMemo = {};
@@ -15259,6 +15422,9 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("textHeight", dimElem.note.noteSize);
                 witnessPoint.Add ("textPen", static_cast<Int32> (dimElem.note.notePen));
                 witnessPoint.Add ("textFrame", dimElem.note.frame);
+                witnessPoint.Add ("textPosition", Create2DCoordinateObjectState (dimElem.note.pos));
+                witnessPoint.Add ("textPositionFixed", dimElem.note.fixPos);
+                witnessPoint.Add ("textAngle", dimElem.note.noteAngle);
 
                 // The witness parameters, as CreateAssociativeDimensions takes them, so a dimension
                 // placed by hand can be read back to learn what an element type needs (#633).

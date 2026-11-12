@@ -6119,6 +6119,18 @@
             "textFrame": {
                 "type": "boolean",
                 "description": "Whether the dimension text has a frame."
+            },
+            "textPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Position of the dimension text in model meters: the bottom left corner of the unrotated text (API_NoteType pos). ModifyAssociativeDimensions texts moves it."
+            },
+            "textPositionFixed": {
+                "type": "boolean",
+                "description": "Whether the text was moved from Archicad's automatic placement (by hand or with ModifyAssociativeDimensions texts)."
+            },
+            "textAngle": {
+                "type": "number",
+                "description": "Rotation of the dimension text in radians."
             }
         }
     },
@@ -14482,6 +14494,11 @@
             "textFrame": {
                 "type": "boolean",
                 "description": "The text frame of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
+            "textPlacement": {
+                "type": "string",
+                "description": "Placement of the texts against the dimension line, as the Text position buttons of the Dimension Settings.",
+                "enum": ["Above", "InLine", "Below"]
             },
             "defaultWitnessForm": {
                 "type": "string",
