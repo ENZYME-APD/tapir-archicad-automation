@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 11:55 UTC",
+ "generatedAt": "2026-11-12 13:02 UTC",
  "versions": [
   25,
   26,
@@ -6987,10 +6987,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2545,
-     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
     }
    ],
    "issues": [
@@ -7282,10 +7278,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2545,
-     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
     }
    ],
    "issues": [
@@ -7613,12 +7605,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2747,
-     "title": "SetElementNotificationClient: observe an explicit list of elements (elementsToObserve)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25383,10 +25370,6 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2545,
-     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
-    },
-    {
      "number": 2544,
      "title": "ModifyBeams: set the surfaces of a beam segment"
     },
@@ -31117,10 +31100,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2545,
-     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
     }
    ],
    "issues": []
@@ -37578,10 +37557,6 @@
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
     {
-     "number": 2747,
-     "title": "SetElementNotificationClient: observe an explicit list of elements (elementsToObserve)"
-    },
-    {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
     },
@@ -37608,10 +37583,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2545,
-     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
     },
     {
      "number": 2544,
@@ -43190,12 +43161,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2747,
-     "title": "SetElementNotificationClient: observe an explicit list of elements (elementsToObserve)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44269,10 +44235,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2545,
-     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
     }
    ],
    "issues": []
@@ -47413,10 +47375,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2545,
-     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
     }
    ],
    "issues": []

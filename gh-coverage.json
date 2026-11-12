@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 11:55 UTC",
+ "generatedAt": "2026-11-12 13:02 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -5218,7 +5218,7 @@
    "id": "CreateStairs",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
+   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5228,7 +5228,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 48,
+   "parameterCount": 51,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLinePoints",
@@ -5259,14 +5259,17 @@
     "stairsData.inputDirection",
     "stairsData.numberingType",
     "stairsData.reflectedCeilingPlanLayout",
+    "stairsData.relativeTopStory",
     "stairsData.risers",
     "stairsData.risers.crossSection",
+    "stairsData.rules",
     "stairsData.stairDisplayType",
     "stairsData.structureVisibility",
     "stairsData.structures",
     "stairsData.structures.bottomType",
     "stairsData.structures.horizontalThickness",
     "stairsData.structures.side",
+    "stairsData.topOffset",
     "stairsData.totalHeightLocked",
     "stairsData.treadDepthLocked",
     "stairsData.treads",
@@ -8208,7 +8211,7 @@
    "id": "ModifyStairs",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. Not written by this command: the baseline with its landings and winders, the top link, the break marks, lines and fills of the floor plan symbol, the headroom and the stair rules, except that a given going (treadDepth) is pinned in them as CreateStairs pins it; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
+   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders, the break marks, lines and fills of the floor plan symbol, and the headroom; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8218,7 +8221,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 40,
+   "parameterCount": 43,
    "coveredParameters": [
     "stairsWithDetails",
     "stairsWithDetails.elementId",
@@ -8243,14 +8246,17 @@
     "stairsWithDetails.inputDirection",
     "stairsWithDetails.numberingType",
     "stairsWithDetails.reflectedCeilingPlanLayout",
+    "stairsWithDetails.relativeTopStory",
     "stairsWithDetails.risers",
     "stairsWithDetails.risers.crossSection",
+    "stairsWithDetails.rules",
     "stairsWithDetails.stairDisplayType",
     "stairsWithDetails.structureVisibility",
     "stairsWithDetails.structures",
     "stairsWithDetails.structures.bottomType",
     "stairsWithDetails.structures.horizontalThickness",
     "stairsWithDetails.structures.side",
+    "stairsWithDetails.topOffset",
     "stairsWithDetails.treads",
     "stairsWithDetails.treads.nosingSlant",
     "stairsWithDetails.treads.nosingType",
@@ -8469,9 +8475,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 19,
+   "parameterCount": 20,
    "coveredParameters": [
     "elementTypesToObserve",
+    "elementsToObserve",
     "host",
     "notifyOn3DSettingsChanges",
     "notifyOnAttributeChanges",
