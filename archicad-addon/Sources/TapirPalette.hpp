@@ -154,6 +154,11 @@ private:
     ScriptList marketplaceScripts;   // the enabled scripts installed with the Script Manager, by name (#2408)
     bool hasCustomScript = false;   // the custom-scripts section and its separator are shown
     bool hasAddedScript = false;    // the added section and its separator are shown
+    // A configured repository could not be listed at the last load (AddScriptsFromRepositories). The palette is
+    // created while Archicad starts, maybe before the network is up, so the load is tried once more when the palette
+    // is first opened (#2731).
+    bool repositoryListingFailed = false;
+    bool repositoryListingRetried = false;
 
     // One item of scriptSelectionPopUp. Every reader of the dropdown goes through visibleItems: item i of the
     // dropdown is visibleItems[i - 1], so nothing counts sections and separators to find a script.
