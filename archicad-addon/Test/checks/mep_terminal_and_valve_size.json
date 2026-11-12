@@ -1,0 +1,172 @@
+{
+  "title": "ModifyMEPPorts sets the connection width and height of a placed air terminal and the diameter of a piping terminal, and refuses a height on a piping port; ModifyMEPElements refuses xSize on a route",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "two terminals",
+      "command": "CreateMEPElements",
+      "params": {
+        "elementsData": [
+          {
+            "type": "Terminal",
+            "domain": "Ventilation",
+            "position": { "x": 10.0, "y": -30.0, "z": 2.5 }
+          },
+          {
+            "type": "Terminal",
+            "domain": "Piping",
+            "position": { "x": 14.0, "y": -30.0, "z": 1.0 }
+          }
+        ]
+      },
+      "save": {
+        "vterm": "elements[0].elementId.guid",
+        "pterm": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "ventilation terminal created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "piping terminal created" }
+      ]
+    },
+    {
+      "id": "ports before",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${vterm}" } },
+          { "elementId": { "guid": "${pterm}" } }
+        ]
+      },
+      "save": {
+        "vport": "elementPorts[0].ports[0].portId",
+        "pport": "elementPorts[1].ports[0].portId"
+      },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].domain", "eq": "Ventilation" },
+        { "path": "elementPorts[1].ports[0].domain", "eq": "Piping" }
+      ]
+    },
+    {
+      "id": "resize the air terminal's connection",
+      "command": "ModifyMEPPorts",
+      "creates": false,
+      "params": {
+        "portsData": [
+          { "portId": "${vport}", "shape": "Rectangular", "width": 0.45, "height": 0.35 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the air terminal's connection",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${vterm}" } } ]
+      },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].shape", "eq": "Rectangular" },
+        { "path": "elementPorts[0].ports[0].width", "approx": 0.45, "name": "new width" },
+        { "path": "elementPorts[0].ports[0].height", "approx": 0.35, "name": "new height" }
+      ]
+    },
+    {
+      "id": "change the width only",
+      "command": "ModifyMEPPorts",
+      "creates": false,
+      "params": {
+        "portsData": [ { "portId": "${vport}", "width": 0.5 } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the width only change",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${vterm}" } } ]
+      },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].width", "approx": 0.5, "name": "new width" },
+        { "path": "elementPorts[0].ports[0].height", "approx": 0.35, "name": "height kept" }
+      ]
+    },
+    {
+      "id": "resize the piping terminal's connection",
+      "command": "ModifyMEPPorts",
+      "creates": false,
+      "params": {
+        "portsData": [ { "portId": "${pport}", "outerDiameter": 0.0603 } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the piping terminal's connection",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pterm}" } } ]
+      },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].outerDiameter", "approx": 0.0603, "name": "new outer diameter" }
+      ]
+    },
+    {
+      "id": "height of a piping port",
+      "command": "ModifyMEPPorts",
+      "creates": false,
+      "params": {
+        "portsData": [ { "portId": "${pport}", "height": 0.1 } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "a route",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [ { "x": 10.0, "y": -34.0, "z": 1.0 }, { "x": 14.0, "y": -34.0, "z": 1.0 } ]
+          }
+        ]
+      },
+      "save": {
+        "route": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "route created" }
+      ]
+    },
+    {
+      "id": "object size of a route",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${route}" }, "xSize": 0.5 } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused: not a terminal (or before Archicad 30)" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests of the plugin's connection to Archicad. The tested file is compiled
+    into this project directly, so the tests need neither Rhino nor Grasshopper
+    and run on any machine with the .NET SDK:
+
+      dotnet test grasshopper-plugin/TapirGrasshopperPlugin.Tests
+
+    This project is not part of TapirGrasshopperPlugin.sln, so the plugin's
+    build is unchanged by it.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\TapirGrasshopperPlugin\Types\ArchiCad\ArchicadConnection.cs" Link="ArchicadConnection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>

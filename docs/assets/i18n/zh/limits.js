@@ -38,6 +38,8 @@
         '读取栏杆关联到哪个楼板或楼梯的边缘，或将栏杆关联到某个边缘',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         '关闭栏杆的自动楼层可见性，以便设置它显示在哪些楼层',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        '设置网面的 Floor Plan Display、Show Projection、未剖切线和上方线，或剖切线的线型',
     'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
         '读取或设置栏杆的平面图符号：其折断线、显示哪些符号构件、它们的二维属性以及符号覆盖',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
@@ -81,6 +83,11 @@
     'Get the outcome of an Action Center check': '获取 Action Center 检查的结果',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         '用 <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a> 运行检查；发现问题时 Archicad 会显示 Action Center。对于热链接检查，用 <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> 读取每个源的状态（Archicad 27 起）。',
+
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        '设置使用轮廓的墙、梁或柱的轮廓修改器值，或其拉伸后的宽度和高度',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        '用 <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> 读取它们。要更改它们，请用 <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> 修改轮廓（为这些构件建一个副本，或修改轮廓本身），或在 Archicad 中构件的设置里设置。',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         '发现了 Archicad API 做不到的其他事情？请在 issue 中说明，并写出你查过的 DevKit 头文件，它就会被添加到这里。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">提交 issue</a>'
