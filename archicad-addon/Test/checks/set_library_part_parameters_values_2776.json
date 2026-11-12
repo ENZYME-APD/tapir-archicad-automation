@@ -1,18 +1,18 @@
 {
-  "title": "SetLibraryPartParameters changes the default values GetLibraryPartParameterValues reads, after the change that modifies a part of a local folder library in its file (#2776)",
+  "title": "SetLibraryPartParameters changes the default values GetLibraryPartParameterValues reads of an embedded library part, after the change that modifies a part of a local folder library in its file (#2776; the local folder path itself needs a saved project with a library folder and is not run here)",
   "minTapir": "2.0.1",
   "minArchicad": "28",
   "requiresEmpty": [],
   "steps": [
     {
-      "id": "embedded library part",
+      "id": "embedded library part under the Model Element (by main GUID)",
       "command": "CreateLibraryParts",
       "creates": false,
       "params": {
         "libraryParts": [
           {
             "name": "TapirCheck2776",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentId": "103E8D2C-8230-42E1-9597-46F84CCE28C0",
             "path": "TapirCheckLib2776/TapirCheck2776.gsm",
             "a": 1.0,
             "b": 0.4,
