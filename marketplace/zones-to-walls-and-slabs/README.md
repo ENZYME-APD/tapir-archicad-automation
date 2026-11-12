@@ -13,8 +13,8 @@ It works story by story, on as many stories as you select zones on.
 1. Select the zones, in a plan or in 3D, on one or several stories.
 2. Run the script from the Tapir palette.
 3. Pick the layer and the thickness of the internal partitions and of the
-   external walls, the slabs' layer and thickness or a Slab favorite, and the
-   gap tolerance (below). Untick **Slabs** to make walls only. Choose how the
+   external walls, or a Wall favorite for each, the slabs' layer and thickness
+   or a Slab favorite, and the gap tolerance (below). Untick **Slabs** to make walls only. Choose how the
    balustrades are made (Railing or Wall, with a favorite of that tool or a
    height), or untick **Balustrades**.
 4. Press **Preview**. The window lists, per story, how many zones it read, how
@@ -36,6 +36,7 @@ It works story by story, on as many stories as you select zones on.
 | Internal partitions: thickness | 0.10 m | Their thickness. The partition is centred on the shared edge (halfway between the two zones when they do not quite touch). |
 | External walls: layer | the Wall tool's default layer | The layer of the walls on the other edges. |
 | External walls: thickness | 0.30 m | Their thickness. The wall stands outside the zone, its inner face on the zone's edge. |
+| Partition favorite, External wall favorite | none | A Wall favorite of the project for that kind of wall. The walls are made with it, so it brings its layer, its structure (basic, composite or complex profile), its materials and everything else; the script still sets their line, story, bottom and height. The row's layer and thickness are then greyed out. The favorite's thickness is read when you press Preview (see What it changes), and the walls are placed with it, so an external wall's inner face is still on the zone's edge. When it cannot be read, the status line says so and the row's thickness is used. |
 | Slabs | on | Whether slabs are made. |
 | Slabs: layer | the Slab tool's default layer | The layer of the slabs, when no favorite is chosen. |
 | Slabs: thickness | 0.25 m | Their thickness, when no favorite is chosen (a Basic slab). |
@@ -84,13 +85,24 @@ It works story by story, on as many stories as you select zones on.
 
 ## What it changes
 
-It creates walls, slabs and balustrades (railings or walls). The walls are Basic
-walls (one building material, the Wall tool's default) with the reference line in
-the middle. Without a favorite the slabs are Basic slabs of the thickness given;
+It creates walls, slabs and balustrades (railings or walls). Without a favorite
+the walls are Basic walls (one building material, the Wall tool's default); with
+one, they are walls of that favorite. Either way their reference line is in the
+middle. Without a favorite the slabs are Basic slabs of the thickness given;
 everything else comes from the tools' defaults. A railing's posts, rails and
 panels come from the Railing tool defaults or its favorite. It changes nothing that is already in the project:
 existing walls and slabs are not looked at, so running it twice makes them twice.
-It writes no files.
+
+With a Wall favorite, Preview reads the favorite's thickness: no Tapir command
+returns it, so the script places one wall with the favorite, 50 m beyond the
+selected zones, reads its thickness and deletes it again. This shows as two
+steps in Archicad's Undo list. It is done once per favorite while the window is
+open.
+
+It remembers its settings (layers, thicknesses, favorites, the balustrade
+settings and the gap tolerance) in `Documents/Tapir/ZonesToWallsAndSlabs.json`,
+written when you press Preview and when you close the window. A layer or
+favorite that is not in the project you run it in is left at its default.
 
 ## Limits
 
@@ -105,6 +117,10 @@ It writes no files.
   along it.
 - A balustrade wall made from a favorite keeps the favorite's thickness and is
   centred on the same line, whatever that thickness is.
+- A partition or external wall made from a favorite is placed with its
+  reference line in the middle, whatever reference line the favorite has. Its
+  thickness is the thickness Archicad gives the wall made with it; for a complex
+  profile that is the profile's width as Archicad reports it.
 - Doors and windows are not made.
 - Zones farther apart than the gap tolerance each get their own external wall,
   which may overlap the other's.
@@ -115,5 +131,7 @@ It writes no files.
 
 Requested by @JBENEITEZ in
 [#2261](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2261),
-written with the Tapir issue bot. The geometry is tested without Archicad by
+written with the Tapir issue bot. The Wall favorites and the smaller window were
+requested by @JBENEITEZ in
+[#2736](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2736). The geometry is tested without Archicad by
 `archicad-addon/Test/test_zones_to_walls_and_slabs.py`.
