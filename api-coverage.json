@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 10:17 UTC",
+ "generatedAt": "2026-11-12 10:38 UTC",
  "versions": [
   25,
   26,
@@ -5650,10 +5650,6 @@
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
-    },
-    {
-     "number": 2683,
-     "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
     }
    ],
    "issues": []
@@ -5780,10 +5776,6 @@
     {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2560,
-     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
     {
      "number": 2550,
@@ -7301,10 +7293,6 @@
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
-     "number": 2599,
-     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
-    },
-    {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
     },
@@ -7882,10 +7870,6 @@
     {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2560,
-     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
     {
      "number": 2550,
@@ -12262,10 +12246,6 @@
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
-    },
-    {
-     "number": 2683,
-     "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
     }
    ],
    "issues": [
@@ -12597,12 +12577,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2683,
-     "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25383,10 +25358,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2773,
-     "title": "Fix GetUnusedAttributes crash: bound profile edge indexes by the edge data (#2772)"
-    },
-    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     },
@@ -25411,24 +25382,12 @@
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
-     "number": 2599,
-     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
-    },
-    {
-     "number": 2597,
-     "title": "[3/5] Profiles: read and set opening reference lines"
-    },
-    {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
-    },
-    {
-     "number": 2560,
-     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
     {
      "number": 2550,
@@ -31099,10 +31058,6 @@
     {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
-    },
-    {
-     "number": 2599,
-     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
     },
     {
      "number": 2571,
@@ -37564,10 +37519,6 @@
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
     {
-     "number": 2773,
-     "title": "Fix GetUnusedAttributes crash: bound profile edge indexes by the edge data (#2772)"
-    },
-    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     },
@@ -37596,24 +37547,8 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2683,
-     "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
-    },
-    {
-     "number": 2680,
-     "title": "[3/5] Zones: read and write the 3D surface (Model panel)"
-    },
-    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
-    },
-    {
-     "number": 2599,
-     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
-    },
-    {
-     "number": 2597,
-     "title": "[3/5] Profiles: read and set opening reference lines"
     },
     {
      "number": 2595,
@@ -37622,10 +37557,6 @@
     {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
-    },
-    {
-     "number": 2560,
-     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
     {
      "number": 2550,
@@ -44277,10 +44208,6 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2599,
-     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
-    },
-    {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
     },
@@ -47415,10 +47342,6 @@
     {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
-    },
-    {
-     "number": 2599,
-     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
     },
     {
      "number": 2571,

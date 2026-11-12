@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-11-12 10:17 UTC",
+ "generatedAt": "2026-11-12 10:38 UTC",
  "counts": {
   "done": 788,
   "open": 14,
   "not applicable": 1
  },
  "parameters": {
-  "all": 731,
-  "json": 52,
+  "all": 730,
+  "json": 53,
   "partial": 5
  },
  "items": [
@@ -5033,7 +5033,7 @@
    "id": "CreateColumns",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, top link (relativeTopStory, topOffset), slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. Not written by either command: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
+   "brief": "Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, top link (relativeTopStory, topOffset), slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. ModifyColumns writes the surfaces of single column segments (its segments list). Not written by either command: the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6447,7 +6447,7 @@
    "id": "CreateZones",
    "group": "Element Commands",
    "version": "1.1.8",
-   "brief": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, stamp pen, levels, contour line, cover fill, polygon display and area reduction), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
+   "brief": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, stamp pen, levels, contour line, cover fill, 3D surface, polygon display and area reduction), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6461,7 +6461,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 23,
+   "parameterCount": 24,
    "coveredParameters": [
     "zonesData",
     "zonesData.allowOverlap",
@@ -6487,7 +6487,8 @@
    "missingParameters": [
     "zonesData.polygonDisplay",
     "zonesData.reducePercent",
-    "zonesData.stampPen"
+    "zonesData.stampPen",
+    "zonesData.surface"
    ],
    "pullRequests": [],
    "issues": []
@@ -7036,7 +7037,7 @@
    "id": "CreateLabels",
    "group": "Element Commands",
    "version": "1.2.5",
-   "brief": "Creates Label elements based on the given parameters, optionally on a given layer.",
+   "brief": "Creates Label elements based on the given parameters, optionally on a given layer. A Symbol label can name its label library part in libraryPartName; it starts from the Symbol label settings of the Label tool default or of the favorite in favoriteName.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7050,7 +7051,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 17,
+   "parameterCount": 18,
    "coveredParameters": [
     "labelsData",
     "labelsData.begCoordinate",
@@ -7061,6 +7062,7 @@
     "labelsData.labelClass",
     "labelsData.layerIndex",
     "labelsData.leaderLine",
+    "labelsData.libraryPartName",
     "labelsData.midCoordinate",
     "labelsData.parentElementId",
     "labelsData.runs",
@@ -7423,7 +7425,7 @@
    "id": "ModifyColumns",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. Not written: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
+   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list overrides the extrusion and ends surfaces and the veneer of a given column segment, with the same keys GetDetailsOfElements returns for them. Not written: the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7436,8 +7438,8 @@
      "path": "Components/ElementsComponents/ModifyColumnsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 41,
+   "parameters": "json",
+   "parameterCount": 42,
    "coveredParameters": [
     "columnsWithDetails",
     "columnsWithDetails.aboveViewLinePen",
@@ -7481,7 +7483,9 @@
     "columnsWithDetails.wrapping",
     "columnsWithDetails.zCoordinate"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "columnsWithDetails.segments"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -7707,7 +7711,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang, pivotEdges and contourPolygon only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7721,7 +7725,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 44,
+   "parameterCount": 47,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7765,6 +7769,9 @@
     "roofsWithDetails.materialsChained",
     "roofsWithDetails.sectionContourLineTypeId",
     "roofsWithDetails.sectionContourPen",
+    "roofsWithDetails.segmentType",
+    "roofsWithDetails.segmentsByArc",
+    "roofsWithDetails.segmentsByCircle",
     "roofsWithDetails.sideMaterial",
     "roofsWithDetails.topMaterial",
     "roofsWithDetails.viewDepthLimitation",
@@ -8300,7 +8307,7 @@
    "id": "ModifyZones",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top link, floor thickness, contour line, cover fill, polygon display (gross or net) and area reduction - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).",
+   "brief": "Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top link, floor thickness, contour line, cover fill, 3D surface (one surface on all sides, or the surfaces of the bounding walls), polygon display (gross or net) and area reduction - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).",
    "status": "done",
    "reason": "",
    "components": [
@@ -8314,7 +8321,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 20,
+   "parameterCount": 21,
    "coveredParameters": [
     "zonesWithDetails",
     "zonesWithDetails.allowOverlap",
@@ -8337,7 +8344,8 @@
    "missingParameters": [
     "zonesWithDetails.polygonDisplay",
     "zonesWithDetails.reducePercent",
-    "zonesWithDetails.stampPen"
+    "zonesWithDetails.stampPen",
+    "zonesWithDetails.surface"
    ],
    "pullRequests": [],
    "issues": []
@@ -11529,7 +11537,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 49,
+   "parameterCount": 50,
    "coveredParameters": [
     "overwriteExisting",
     "profileDataArray",
@@ -11558,6 +11566,7 @@
     "profileDataArray.newProfileModifiers.projectionAngle",
     "profileDataArray.newSkins",
     "profileDataArray.nominalSize",
+    "profileDataArray.openingReferenceLines",
     "profileDataArray.otherGDLObjectType",
     "profileDataArray.renameProfileModifiers",
     "profileDataArray.renameProfileModifiers.modifierId",
