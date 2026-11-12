@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 05:39 UTC",
+ "generatedAt": "2026-11-12 07:30 UTC",
  "versions": [
   25,
   26,
@@ -2910,10 +2910,6 @@
     {
      "number": 2619,
      "title": "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type"
-    },
-    {
-     "number": 2558,
-     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
     }
    ],
    "issues": []
@@ -5693,12 +5689,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2603,
-     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5779,16 +5770,8 @@
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
-     "number": 2588,
-     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
      "number": 2560,
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
-    },
-    {
-     "number": 2558,
-     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
     },
     {
      "number": 2550,
@@ -6763,16 +6746,8 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2537,
-     "title": "ApplyFavoritesToElements: keep a stair's flight width"
-    },
-    {
      "number": 2522,
      "title": "ModifyRoofs: keep the side surface when the edge surfaces are written"
-    },
-    {
-     "number": 2400,
-     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
    "issues": []
@@ -6987,10 +6962,6 @@
     {
      "number": 2620,
      "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
-    },
-    {
-     "number": 2537,
-     "title": "ApplyFavoritesToElements: keep a stair's flight width"
     }
    ],
    "issues": []
@@ -7320,14 +7291,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2547,
-     "title": "[2/3] Beams: read and write the floor plan display settings"
-    },
-    {
-     "number": 2537,
-     "title": "ApplyFavoritesToElements: keep a stair's flight width"
     }
    ],
    "issues": [
@@ -7889,24 +7852,12 @@
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
-     "number": 2588,
-     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
      "number": 2560,
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
     {
-     "number": 2558,
-     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2400,
-     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
    "issues": [
@@ -11950,12 +11901,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2652,
-     "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12604,10 +12550,6 @@
     {
      "number": 2683,
      "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
-    },
-    {
-     "number": 2652,
-     "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
     }
    ],
    "issues": []
@@ -14212,12 +14154,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2706,
-     "title": "ReorderNavigatorItems: reorder a folder with only views and clone folders; API limits for per-view cut plane and clone folders"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25419,16 +25356,8 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2676,
-     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
-    },
-    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
-    },
-    {
-     "number": 2603,
-     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
     },
     {
      "number": 2599,
@@ -25443,14 +25372,6 @@
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
-     "number": 2590,
-     "title": "CreateProfiles: refuse unknown keys and unresolved attribute ids inside newSkins / skinOverrides / edgeOverrides"
-    },
-    {
-     "number": 2588,
-     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
     },
@@ -25459,16 +25380,8 @@
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
     {
-     "number": 2558,
-     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2547,
-     "title": "[2/3] Beams: read and write the floor plan display settings"
     },
     {
      "number": 2545,
@@ -25479,16 +25392,8 @@
      "title": "ModifyBeams: set the surfaces of a beam segment"
     },
     {
-     "number": 2543,
-     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
-    },
-    {
      "number": 2520,
      "title": "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated"
-    },
-    {
-     "number": 2400,
-     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
    "issues": []
@@ -31128,10 +31033,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2749,
-     "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -31144,20 +31045,8 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2676,
-     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
-    },
-    {
-     "number": 2603,
-     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    },
-    {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
-    },
-    {
-     "number": 2588,
-     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
     },
     {
      "number": 2571,
@@ -31168,16 +31057,8 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2547,
-     "title": "[2/3] Beams: read and write the floor plan display settings"
-    },
-    {
      "number": 2545,
      "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
-    },
-    {
-     "number": 2543,
-     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
     }
    ],
    "issues": []
@@ -37647,16 +37528,8 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2703,
-     "title": "[5/5] Zones: gross/net polygon display, uniform stamp pen and reduce area by %"
-    },
-    {
      "number": 2696,
      "title": "[3/5] Linear dimensions: text placement method and marker size"
-    },
-    {
-     "number": 2695,
-     "title": "[3/3] Labels: text direction (textWay) for Text labels; API limits for the rest"
     },
     {
      "number": 2684,
@@ -37671,20 +37544,8 @@
      "title": "[3/5] Zones: read and write the 3D surface (Model panel)"
     },
     {
-     "number": 2676,
-     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
-    },
-    {
-     "number": 2652,
-     "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
-    },
-    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
-    },
-    {
-     "number": 2603,
-     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
     },
     {
      "number": 2599,
@@ -37699,14 +37560,6 @@
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
-     "number": 2590,
-     "title": "CreateProfiles: refuse unknown keys and unresolved attribute ids inside newSkins / skinOverrides / edgeOverrides"
-    },
-    {
-     "number": 2588,
-     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
     },
@@ -37715,16 +37568,8 @@
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
     {
-     "number": 2558,
-     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2547,
-     "title": "[2/3] Beams: read and write the floor plan display settings"
     },
     {
      "number": 2545,
@@ -37733,14 +37578,6 @@
     {
      "number": 2544,
      "title": "ModifyBeams: set the surfaces of a beam segment"
-    },
-    {
-     "number": 2543,
-     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
-    },
-    {
-     "number": 2400,
-     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
    "issues": []
@@ -44368,10 +44205,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2749,
-     "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -44384,20 +44217,8 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2676,
-     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
-    },
-    {
-     "number": 2603,
-     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    },
-    {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
-    },
-    {
-     "number": 2588,
-     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
     },
     {
      "number": 2571,
@@ -44408,16 +44229,8 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2547,
-     "title": "[2/3] Beams: read and write the floor plan display settings"
-    },
-    {
      "number": 2545,
      "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
-    },
-    {
-     "number": 2543,
-     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
     }
    ],
    "issues": []
@@ -47532,10 +47345,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2749,
-     "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47548,20 +47357,8 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2676,
-     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
-    },
-    {
-     "number": 2603,
-     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    },
-    {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
-    },
-    {
-     "number": 2588,
-     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
     },
     {
      "number": 2571,
@@ -47572,16 +47369,8 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2547,
-     "title": "[2/3] Beams: read and write the floor plan display settings"
-    },
-    {
      "number": 2545,
      "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
-    },
-    {
-     "number": 2543,
-     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
     }
    ],
    "issues": []

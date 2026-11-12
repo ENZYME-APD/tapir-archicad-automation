@@ -4,14 +4,14 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **788 of 802** applicable Tapir commands have a Grasshopper component (98 %): ✅ 788 done, ⬜ 14 open, ➖ 1 not applicable.
 
-Parameters of the 788 used commands: 🟢 733 every parameter has an input, 🟡 50 the rest through a JSON input, 🟠 5 some parameters missing.
+Parameters of the 788 used commands: 🟢 731 every parameter has an input, 🟡 52 the rest through a JSON input, 🟠 5 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 42 |  |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 66 |  |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 96 % | 181 | 174 |  |  |  | 7 |  |  | 138 | 36 |  |
+| Element Commands | 96 % | 181 | 174 |  |  |  | 7 |  |  | 136 | 38 |  |
 | Element grouping Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 27 | 27 |  |  |  |  |  |  | 27 |  |  |
 | Property Commands | 100 % | 31 | 31 |  |  |  |  |  |  | 31 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 733 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-12 05:39 UTC.
+Updated 2026-11-12 07:30 UTC.
 
 | | Status |
 |---|---|
@@ -299,14 +299,14 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyAssociativeDimensions` 🟡 12/24 parameters – `ModifyAssociativeDimensionsComponent`<br><sub>no input: `dimensionsWithDetails.elevationOrigin`, `dimensionsWithDetails.layeredElementDimensions`, `dimensionsWithDetails.onlyDimensionText`, `dimensionsWithDetails.openingHeightsInChain`, `dimensionsWithDetails.openingHeightsNominal`, `dimensionsWithDetails.staticDimension`, `dimensionsWithDetails.witnessPointTexts`, `dimensionsWithDetails.witnessPointTexts.content`, `dimensionsWithDetails.witnessPointTexts.customText`, `dimensionsWithDetails.witnessPointTexts.index`, `dimensionsWithDetails.witnessPointTexts.resetTextPosition`, `dimensionsWithDetails.witnessPointTexts.superscript`</sub>
 - ✅ `GetDimensionData` 🟢 2/2 parameters – `GetDimensionDataComponent`
 - ✅ `GetOpeningTransformations` 🟢 1/1 parameters – `GetOpeningTransformationsComponent`
-- ✅ `CreateZones` 🟢 20/20 parameters – `CreateZonesComponent`, `ZonesComponent`
+- ✅ `CreateZones` 🟡 20/23 parameters – `CreateZonesComponent`, `ZonesComponent`<br><sub>no input: `zonesData.polygonDisplay`, `zonesData.reducePercent`, `zonesData.stampPen`</sub>
 - ✅ `CreatePolylines` 🟡 11/16 parameters – `CreatePolylinesComponent`, `PolylinesComponent`<br><sub>no input: `databaseId`, `polylinesData.drawSegmentMode`, `polylinesData.endArrow`, `polylinesData.lineTypeId`, `polylinesData.startArrow`</sub>
 - ✅ `CreateLineElements` 🟡 10/13 parameters – `CreateLineElementsComponent`, `LinesComponent`<br><sub>no input: `databaseId`, `linesData.endArrow`, `linesData.startArrow`</sub>
 - ✅ `CreateArcs` 🟡 13/18 parameters – `ArcsComponent`, `CreateArcsComponent`<br><sub>no input: `arcsData.endArrow`, `arcsData.ratio`, `arcsData.reflected`, `arcsData.startArrow`, `databaseId`</sub>
 - ✅ `CreateCircles` 🟡 10/11 parameters – `CirclesComponent`, `CreateCirclesComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateHotspots` 🟡 8/9 parameters – `CreateHotspotsComponent`, `HotspotsComponent`<br><sub>no input: `databaseId`</sub>
 - ⬜ `CreatePictures`
-- ✅ `CreateHatches` 🟡 17/18 parameters – `CreateHatchesComponent`, `FillsComponent`<br><sub>no input: `databaseId`</sub>
+- ✅ `CreateHatches` 🟡 17/21 parameters – `CreateHatchesComponent`, `FillsComponent`<br><sub>no input: `databaseId`, `hatchesData.contourLineTypeId`, `hatchesData.fillCategory`, `hatchesData.fillOrientation`</sub>
 - ✅ `CreateSplines` 🟡 10/13 parameters – `CreateSplinesComponent`, `SplinesComponent`<br><sub>no input: `databaseId`, `splinesData.endArrow`, `splinesData.startArrow`</sub>
 - ✅ `CreateObjects` 🟢 32/32 parameters – `CreateObjectsComponent`, `ObjectsComponent`
 - ✅ `CreateLamps` 🟢 34/34 parameters – `CreateLampsComponent`, `LampsComponent`
@@ -314,13 +314,13 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetGridElements` 🟢 1/1 parameters – `GetGridElementsComponent`
 - ✅ `CreateGridElements` 🟡 8/9 parameters – `CreateGridElementsComponent`<br><sub>no input: `gridElements.lengthMode`</sub>
 - ✅ `CreateMeshes` 🟢 28/28 parameters – `CreateMeshesComponent`, `MeshesComponent`
-- ✅ `CreateLabels` 🟡 15/16 parameters – `LabelElementsComponent`, `LabelsComponent`<br><sub>no input: `databaseId`</sub>
+- ✅ `CreateLabels` 🟡 15/17 parameters – `LabelElementsComponent`, `LabelsComponent`<br><sub>no input: `databaseId`, `labelsData.textWay`</sub>
 - ✅ `CreateTexts` 🟡 14/15 parameters – `CreateTextsComponent`, `TextsComponent`<br><sub>no input: `databaseId`</sub>
-- ✅ `CreateLevelDimensions` 🟡 17/26 parameters – `LevelDimensionsComponent`<br><sub>no input: `levelDimensionsData.bold`, `levelDimensionsData.customText`, `levelDimensionsData.fontIndex`, `levelDimensionsData.hideWithBaseElem`, `levelDimensionsData.italic`, `levelDimensionsData.secondCustomText`, `levelDimensionsData.secondTextContent`, `levelDimensionsData.textContent`, `levelDimensionsData.underline`</sub>
+- ✅ `CreateLevelDimensions` 🟢 26/26 parameters – `LevelDimensionsComponent`
 - ⬜ `CreateAngleDimensions`
-- ✅ `ModifyLevelDimensions` 🟡 14/24 parameters – `LevelDimensionsComponent`<br><sub>no input: `levelDimensionsWithDetails.bold`, `levelDimensionsWithDetails.customText`, `levelDimensionsWithDetails.fontIndex`, `levelDimensionsWithDetails.hideWithBaseElem`, `levelDimensionsWithDetails.italic`, `levelDimensionsWithDetails.secondCustomText`, `levelDimensionsWithDetails.secondTextContent`, `levelDimensionsWithDetails.staticLevel`, `levelDimensionsWithDetails.textContent`, `levelDimensionsWithDetails.underline`</sub>
+- ✅ `ModifyLevelDimensions` 🟡 23/24 parameters – `LevelDimensionsComponent`<br><sub>no input: `levelDimensionsWithDetails.staticLevel`</sub>
 - ✅ `ModifyWalls` 🟡 46/47 parameters – `ModifyWallsComponent`, `WallsApiComponent`, `WallsComponent`<br><sub>no input: `wallsWithDetails.endThickness`</sub>
-- ✅ `ModifyBeams` 🟡 26/27 parameters – `BeamsComponent`, `ModifyBeamsComponent`<br><sub>no input: `beamsWithDetails.segments`</sub>
+- ✅ `ModifyBeams` 🟡 26/45 parameters – `BeamsComponent`, `ModifyBeamsComponent`<br><sub>no input: `beamsWithDetails.aboveViewLinePen`, `beamsWithDetails.aboveViewLineTypeId`, `beamsWithDetails.belowViewLinePen`, `beamsWithDetails.belowViewLineTypeId`, `beamsWithDetails.cutContourLinePen`, `beamsWithDetails.cutContourLineTypeId`, `beamsWithDetails.displayOption`, `beamsWithDetails.hiddenLinePen`, `beamsWithDetails.hiddenLineTypeId`, `beamsWithDetails.isAutoOnStoryVisibility`, `beamsWithDetails.overheadProjectionMode`, `beamsWithDetails.referenceLinePen`, `beamsWithDetails.referenceLineTypeId`, `beamsWithDetails.segments`, `beamsWithDetails.showContourLines`, `beamsWithDetails.showReferenceAxis`, `beamsWithDetails.uncutProjectionMode`, `beamsWithDetails.viewDepthLimitation`, `beamsWithDetails.visibility`</sub>
 - ✅ `ModifySlabs` 🟡 18/21 parameters – `ModifySlabsComponent`, `SlabsComponent`<br><sub>no input: `slabsWithDetails.edgeSideMaterials`, `slabsWithDetails.edgeTrim`, `slabsWithDetails.edgeTrims`</sub>
 - ✅ `ModifyColumns` 🟢 41/41 parameters – `ColumnsComponent`, `ModifyColumnsComponent`
 - ✅ `ModifyWindows` 🟡 26/34 parameters – `ModifyWindowsComponent`, `WindowsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `windowsWithDetails.directionType`, `windowsWithDetails.fixPoint`, `windowsWithDetails.revealDepthLocation`, `windowsWithDetails.subFloorThickness`, `windowsWithDetails.surfaceId`, `windowsWithDetails.useObjectMaterials`, `windowsWithDetails.verticalLink`, `windowsWithDetails.verticalLinkStoryIndex`</sub>
@@ -335,14 +335,14 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyLamps` 🟢 26/26 parameters – `LampsComponent`, `ModifyLampsComponent`
 - ✅ `ModifyTexts` 🟢 8/8 parameters – `ModifyTextsComponent`, `TextsComponent`
 - ⬜ `ModifyPictures`
-- ✅ `ModifyLabels` 🟢 10/10 parameters – `LabelsComponent`, `ModifyLabelsComponent`
-- ✅ `ModifyCurtainWalls` 🟢 27/27 parameters – `CurtainWallsComponent`, `ModifyCurtainWallsComponent`
+- ✅ `ModifyLabels` 🟡 10/11 parameters – `LabelsComponent`, `ModifyLabelsComponent`<br><sub>no input: `labelsWithDetails.textWay`</sub>
+- ✅ `ModifyCurtainWalls` 🟢 30/30 parameters – `CurtainWallsComponent`, `ModifyCurtainWallsComponent`
 - ✅ `ModifyCurtainWallFrames` 🟢 9/9 parameters – `ModifyCurtainWallFramesComponent`
 - ⬜ `ModifyCurtainWallPanels`
 - ✅ `ModifyStairs` 🟡 15/40 parameters – `ModifyStairsComponent`<br><sub>no input: `stairsWithDetails.extraBottomTread`, `stairsWithDetails.extraTopTread`, `stairsWithDetails.floorPlanLayout`, `stairsWithDetails.inputDirection`, `stairsWithDetails.numberingType`, `stairsWithDetails.reflectedCeilingPlanLayout`, `stairsWithDetails.risers`, `stairsWithDetails.risers.crossSection`, `stairsWithDetails.stairDisplayType`, `stairsWithDetails.structureVisibility`, `stairsWithDetails.structures`, `stairsWithDetails.structures.bottomType`, `stairsWithDetails.structures.horizontalThickness`, `stairsWithDetails.structures.side`, `stairsWithDetails.treads`, `stairsWithDetails.treads.nosingSlant`, `stairsWithDetails.treads.nosingType`, `stairsWithDetails.treads.nosingValue`, `stairsWithDetails.treads.role`, `stairsWithDetails.treads.visible`, `stairsWithDetails.uniformDrainings`, `stairsWithDetails.uniformFinish`, `stairsWithDetails.uniformMonolithAttributes`, `stairsWithDetails.walkingLineOffset`, `stairsWithDetails.walkingLinePosition`</sub>
 - ⬜ `RecreateStairs`
 - ✅ `ChangeTextContent` 🟢 1/1 parameters – `ChangeTextContentComponent`
-- ✅ `ModifyZones` 🟢 17/17 parameters – `ModifyZonesComponent`, `ZonesComponent`
+- ✅ `ModifyZones` 🟡 17/20 parameters – `ModifyZonesComponent`, `ZonesComponent`<br><sub>no input: `zonesWithDetails.polygonDisplay`, `zonesWithDetails.reducePercent`, `zonesWithDetails.stampPen`</sub>
 - ✅ `MeasureTexts` 🟢 10/10 parameters – `MeasureTextsComponent`
 - ✅ `GetElementPreviewImage` 🟢 5/5 parameters – `GetElementPreviewImageComponent`
 - ✅ `GetRoomImage` 🟢 7/7 parameters – `GetRoomImageComponent`
@@ -485,7 +485,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateMEPSystems` 🟡 4/14 parameters – `CreateMEPSystemsComponent`<br><sub>no input: `mepSystemDataArray.centerLinePen`, `mepSystemDataArray.centerLineTypeId`, `mepSystemDataArray.contourPen`, `mepSystemDataArray.domain`, `mepSystemDataArray.fillBackgroundPen`, `mepSystemDataArray.fillId`, `mepSystemDataArray.fillPen`, `mepSystemDataArray.index`, `mepSystemDataArray.insulationMaterialId`, `mepSystemDataArray.materialId`</sub>
 - ✅ `CreatePenTables` 🟡 4/9 parameters – `CreatePenTablesComponent`<br><sub>no input: `penTableDataArray.index`, `penTableDataArray.isActiveForLayout`, `penTableDataArray.isActiveForModel`, `penTableDataArray.pens`, `penTableDataArray.sourceAttributeId`</sub>
 - ✅ `ModifyPens` 🟢 2/2 parameters – `ModifyPensComponent`
-- ✅ `CreateProfiles` 🟡 5/42 parameters – `CreateProfilesComponent`<br><sub>no input: `profileDataArray.addHotspots`, `profileDataArray.beamType`, `profileDataArray.coluType`, `profileDataArray.handrailType`, `profileDataArray.index`, `profileDataArray.moveVertices`, `profileDataArray.moveVertices.region`, `profileDataArray.moveVertices.region.xMax`, `profileDataArray.moveVertices.region.xMin`, `profileDataArray.moveVertices.region.yMax`, `profileDataArray.moveVertices.region.yMin`, `profileDataArray.moveVertices.skinIds`, `profileDataArray.moveVertices.vector`, `profileDataArray.newSkins`, `profileDataArray.nominalSize`, `profileDataArray.otherGDLObjectType`, `profileDataArray.replaceSkins`, `profileDataArray.skinOverrides`, `profileDataArray.skinOverrides.areaMethod`, `profileDataArray.skinOverrides.contourLineTypeId`, `profileDataArray.skinOverrides.contourPen`, `profileDataArray.skinOverrides.cutEndLinePen`, `profileDataArray.skinOverrides.cutEndLineTypeId`, `profileDataArray.skinOverrides.edgeOverrides`, `profileDataArray.skinOverrides.fillId`, `profileDataArray.skinOverrides.isCore`, `profileDataArray.skinOverrides.isFinish`, `profileDataArray.skinOverrides.skinId`, `profileDataArray.skinOverrides.surfaceId`, `profileDataArray.skinOverrides.visibleCutEndLines`, `profileDataArray.sourceAttributeId`, `profileDataArray.stretchZones`, `profileDataArray.stretchZones.horizontal`, `profileDataArray.stretchZones.removeHorizontal`, `profileDataArray.stretchZones.removeVertical`, `profileDataArray.stretchZones.vertical`, `profileDataArray.wallType`</sub>
+- ✅ `CreateProfiles` 🟡 7/49 parameters – `CreateProfilesComponent`<br><sub>no input: `profileDataArray.addHotspots`, `profileDataArray.beamType`, `profileDataArray.coluType`, `profileDataArray.handrailType`, `profileDataArray.index`, `profileDataArray.moveVertices`, `profileDataArray.moveVertices.region`, `profileDataArray.moveVertices.region.xMax`, `profileDataArray.moveVertices.region.xMin`, `profileDataArray.moveVertices.region.yMax`, `profileDataArray.moveVertices.region.yMin`, `profileDataArray.moveVertices.skinIds`, `profileDataArray.moveVertices.vector`, `profileDataArray.newProfileModifiers`, `profileDataArray.newProfileModifiers.edges`, `profileDataArray.newProfileModifiers.projectionAngle`, `profileDataArray.newSkins`, `profileDataArray.nominalSize`, `profileDataArray.otherGDLObjectType`, `profileDataArray.renameProfileModifiers`, `profileDataArray.renameProfileModifiers.modifierId`, `profileDataArray.replaceSkins`, `profileDataArray.skinOverrides`, `profileDataArray.skinOverrides.areaMethod`, `profileDataArray.skinOverrides.contourLineTypeId`, `profileDataArray.skinOverrides.contourPen`, `profileDataArray.skinOverrides.cutEndLinePen`, `profileDataArray.skinOverrides.cutEndLineTypeId`, `profileDataArray.skinOverrides.edgeOverrides`, `profileDataArray.skinOverrides.fillId`, `profileDataArray.skinOverrides.isCore`, `profileDataArray.skinOverrides.isFinish`, `profileDataArray.skinOverrides.skinId`, `profileDataArray.skinOverrides.surfaceId`, `profileDataArray.skinOverrides.visibleCutEndLines`, `profileDataArray.sourceAttributeId`, `profileDataArray.stretchZones`, `profileDataArray.stretchZones.horizontal`, `profileDataArray.stretchZones.removeHorizontal`, `profileDataArray.stretchZones.removeVertical`, `profileDataArray.stretchZones.vertical`, `profileDataArray.wallType`</sub>
 - ✅ `CreateBuildingMaterials` 🟡 5/21 parameters – `CreateBuildingMaterialsComponent`<br><sub>no input: `buildingMaterialDataArray.collisionDetection`, `buildingMaterialDataArray.connPriority`, `buildingMaterialDataArray.cutFillBackgroundPen`, `buildingMaterialDataArray.cutFillIndex`, `buildingMaterialDataArray.cutFillOrientation`, `buildingMaterialDataArray.cutFillPen`, `buildingMaterialDataArray.cutSurfaceIndex`, `buildingMaterialDataArray.density`, `buildingMaterialDataArray.embodiedCarbon`, `buildingMaterialDataArray.embodiedEnergy`, `buildingMaterialDataArray.heatCapacity`, `buildingMaterialDataArray.id`, `buildingMaterialDataArray.index`, `buildingMaterialDataArray.manufacturer`, `buildingMaterialDataArray.showUncutLines`, `buildingMaterialDataArray.thermalConductivity`</sub>
 - ✅ `CreateComposites` 🟡 6/14 parameters – `CreateCompositesComponent`<br><sub>no input: `compositeDataArray.index`, `compositeDataArray.separators`, `compositeDataArray.separators.linePen`, `compositeDataArray.separators.lineTypeId`, `compositeDataArray.skins`, `compositeDataArray.skins.framePen`, `compositeDataArray.skins.type`, `compositeDataArray.useWith`</sub>
 - ✅ `CreateSurfaces` 🟡 4/18 parameters – `CreateSurfacesComponent`<br><sub>no input: `surfaceDataArray.ambientReflection`, `surfaceDataArray.diffuseReflection`, `surfaceDataArray.emissionAttenuation`, `surfaceDataArray.emissionColor`, `surfaceDataArray.fillId`, `surfaceDataArray.index`, `surfaceDataArray.materialType`, `surfaceDataArray.shine`, `surfaceDataArray.specularColor`, `surfaceDataArray.specularReflection`, `surfaceDataArray.surfaceColor`, `surfaceDataArray.texture`, `surfaceDataArray.transparency`, `surfaceDataArray.transparencyAttenuation`</sub>
