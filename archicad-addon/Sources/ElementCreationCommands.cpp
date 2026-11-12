@@ -2631,6 +2631,23 @@ static API_PictureFormat ToApiPictureFormat (PictureFileFormat format)
     }
 }
 
+// Where the anchor point of a picture box of this size is, relative to the box's bottom left corner.
+static API_Coord GetPictureAnchorOffset (API_AnchorID anchorPoint, double width, double height)
+{
+    API_Coord offset = { 0.0, 0.0 };
+    if (anchorPoint == APIAnc_MT || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_MB) {
+        offset.x = width / 2.0;
+    } else if (anchorPoint == APIAnc_RT || anchorPoint == APIAnc_RM || anchorPoint == APIAnc_RB) {
+        offset.x = width;
+    }
+    if (anchorPoint == APIAnc_LM || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_RM) {
+        offset.y = height / 2.0;
+    } else if (anchorPoint == APIAnc_LT || anchorPoint == APIAnc_MT || anchorPoint == APIAnc_RT) {
+        offset.y = height;
+    }
+    return offset;
+}
+
 CreatePicturesCommand::CreatePicturesCommand () :
     CreateElementsCommandBase ("CreatePictures", API_PictureID, "picturesData")
 {
@@ -2810,18 +2827,9 @@ GS::Optional<GS::ObjectState> CreatePicturesCommand::SetTypeSpecificParameters (
     const API_AnchorID anchorPoint = AnchorIdFromString (anchorPointString, APIAnc_LB);
 
     // The box the picture fills, with its anchor point at position.
-    double xMin = position.x;
-    if (anchorPoint == APIAnc_MT || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_MB) {
-        xMin = position.x - width / 2.0;
-    } else if (anchorPoint == APIAnc_RT || anchorPoint == APIAnc_RM || anchorPoint == APIAnc_RB) {
-        xMin = position.x - width;
-    }
-    double yMin = position.y;
-    if (anchorPoint == APIAnc_LM || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_RM) {
-        yMin = position.y - height / 2.0;
-    } else if (anchorPoint == APIAnc_LT || anchorPoint == APIAnc_MT || anchorPoint == APIAnc_RT) {
-        yMin = position.y - height;
-    }
+    const API_Coord anchorOffset = GetPictureAnchorOffset (anchorPoint, width, height);
+    const double xMin = position.x - anchorOffset.x;
+    const double yMin = position.y - anchorOffset.y;
 
     API_PictureType& picture = element.picture;
     // With usePixelSize false Archicad takes the size from the whole destBox; the pixel sizes are
@@ -4127,6 +4135,283 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
 
     changeReporter.Report ();
 
+    return response;
+}
+
+ModifyPicturesCommand::ModifyPicturesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPicturesCommand::GetName () const
+{
+    return "ModifyPictures";
+}
+
+GS::Optional<GS::UniString> ModifyPicturesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "picturesWithDetails": {
+                "type": "array",
+                "description": "Array of Picture elements to modify, with the settings to change. Only the given settings are changed; the others are left as they are. The image itself is not changed. Archicad cannot change a picture in place, so a picture with a change is replaced by a new picture with the same image, layer, story and ID, and the original is deleted: the new picture has a new elementId (returned in elements), and labels, dimensions, properties and classifications of the original are not carried over.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is."
+                        },
+                        "anchorPoint": {
+                            "$ref": "#/PictureAnchorPoint",
+                            "description": "The new anchor point: the point of the picture's box that is placed at position, that stays in place when the size changes, and that the picture is rotated around. When given without position, the picture's box stays where it is and only the anchor point changes; on a rotated picture the rotation is then around the new anchor point, which can move the picture. When omitted, the anchor point is kept."
+                        },
+                        "width": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "description": "The new width of the picture in model units. When only width is given, the height changes in proportion, so the picture keeps its current proportions."
+                        },
+                        "height": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "description": "The new height of the picture in model units. When only height is given, the width changes in proportion, so the picture keeps its current proportions."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "The new rotation angle of the picture in radians, around its anchor point."
+                        },
+                        "mirrored": {
+                            "type": "boolean",
+                            "description": "Mirror the picture to its local vertical axis. The picture's box stays where it is drawn."
+                        },
+                        "transparent": {
+                            "type": "boolean",
+                            "description": "Draw the white pixels of the picture transparent."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The new name of the picture."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "Optional database the pictures are in, e.g. a worksheet, a detail or a layout (see GetDatabases). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the pictures are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["picturesWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyPicturesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "One result per item of picturesWithDetails, in the same order. On success elementId is the picture's identifier after the change: a new one when a setting was changed (the picture is replaced), the given one when nothing was to change.",
+                "items": { "$ref": "#/ElementIdOrError" }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements"]
+    })";
+}
+
+GS::ObjectState ModifyPicturesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("picturesWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    // The optional databaseId is handled as CreatePictures does it (CreateElementsCommandBase::Execute):
+    // the database is switched inside the undoable command and switched back afterwards.
+    const GS::ObjectState* databaseIdOs = parameters.Get ("databaseId");
+    API_DatabaseInfo startingDatabase = {};
+    if (databaseIdOs != nullptr) {
+        API_WindowInfo startingWindow = {};
+        const bool hasStartingWindow = ACAPI_Window_GetCurrentWindow (&startingWindow) == NoError;
+        if (OpenDatabaseIfNeverOpened (GetGuidFromObjectState (*databaseIdOs)) && hasStartingWindow) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingWindow);
+            ACAPI_Window_ChangeWindow (&startingWindow);
+        }
+        const GSErrCode currentErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+        if (currentErr != NoError) {
+            return CreateErrorResponse (currentErr, "Failed to get the current database.");
+        }
+    }
+    GSErrCode databaseErr = NoError;
+
+    // ACAPI_Element_Change does not support pictures (API_PictureID is not in its list of element
+    // types in ACAPinc.h, and Archicad answers APIERR_BADID), so a changed picture is replaced: a
+    // copy with the new settings and the original's image (pictHdl memo) is created, then the
+    // original is deleted, as ChangeDrawingLink replaces a Drawing.
+    ACAPI_CallUndoableCommand ("ModifyPictures", [&] () -> GSErrCode {
+        if (databaseIdOs != nullptr) {
+            databaseErr = ChangeCurrentDatabaseTo (GetGuidFromObjectState (*databaseIdOs));
+            if (databaseErr != NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+                return NoError;
+            }
+        }
+        const GS::OnExit databaseGuard ([&] () {
+            if (databaseIdOs != nullptr) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+            }
+        });
+
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid originalGuid = GetGuidFromObjectState (*elementId);
+            API_Element element = {};
+            element.header.guid = originalGuid;
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_PictureID) {
+                elements (CreateErrorResponse (APIERR_BADID, "Element is not a Picture."));
+                continue;
+            }
+
+            API_PictureType& picture = element.picture;
+            bool anyChange = false;
+
+            GS::UniString anchorPointString;
+            const bool hasAnchorPoint = item.Get ("anchorPoint", anchorPointString);
+            const GS::ObjectState* positionOS = item.Get ("position");
+            double width = 0.0;
+            double height = 0.0;
+            const bool hasWidth = item.Get ("width", width);
+            const bool hasHeight = item.Get ("height", height);
+            bool mirrored = picture.mirrored;
+            item.Get ("mirrored", mirrored);
+            if (hasAnchorPoint || positionOS != nullptr || hasWidth || hasHeight || mirrored != picture.mirrored) {
+                if ((hasWidth && !(width > 0.0)) || (hasHeight && !(height > 0.0))) {
+                    elements (CreateErrorResponse (APIERR_BADPARS, "The width and the height of the picture must be greater than 0."));
+                    continue;
+                }
+                const double currentWidth = picture.destBox.xMax - picture.destBox.xMin;
+                const double currentHeight = picture.destBox.yMax - picture.destBox.yMin;
+                if ((hasWidth != hasHeight) && !(currentWidth > 0.0 && currentHeight > 0.0)) {
+                    elements (CreateErrorResponse (APIERR_GENERAL, "The picture has no size to keep the proportions of: give both width and height."));
+                    continue;
+                }
+                if (!hasWidth && !hasHeight) {
+                    width = currentWidth;
+                    height = currentHeight;
+                } else if (!hasWidth) {
+                    width = height * currentWidth / currentHeight;
+                } else if (!hasHeight) {
+                    height = width * currentHeight / currentWidth;
+                }
+
+                // The stored destBox of a mirrored picture is one width to the right of where the
+                // picture is drawn (seen in Archicad 29, reported on #2667), so the maths is done on
+                // the drawn box and the stored box is shifted back for a mirrored result.
+                const double currentDrawnXMin = picture.destBox.xMin - (picture.mirrored ? currentWidth : 0.0);
+
+                // The box: its anchor point is placed at position (the current anchor point when no
+                // position is given) and it gets the new size, as CreatePictures computes it.
+                const API_AnchorID anchorPoint = hasAnchorPoint ? AnchorIdFromString (anchorPointString, picture.anchorPoint) : picture.anchorPoint;
+                API_Coord position;
+                if (positionOS != nullptr) {
+                    position = Get2DCoordinateFromObjectState (*positionOS);
+                } else {
+                    // The (new) anchor point on the current box.
+                    const API_Coord currentOffset = GetPictureAnchorOffset (anchorPoint, currentWidth, currentHeight);
+                    position.x = currentDrawnXMin + currentOffset.x;
+                    position.y = picture.destBox.yMin + currentOffset.y;
+                }
+
+                const API_Coord anchorOffset = GetPictureAnchorOffset (anchorPoint, width, height);
+                picture.destBox.xMin = position.x - anchorOffset.x + (mirrored ? width : 0.0);
+                picture.destBox.yMin = position.y - anchorOffset.y;
+                picture.destBox.xMax = picture.destBox.xMin + width;
+                picture.destBox.yMax = picture.destBox.yMin + height;
+                picture.anchorPoint = anchorPoint;
+                picture.mirrored = mirrored;
+                anyChange = true;
+            }
+
+            double angle = 0.0;
+            if (item.Get ("angle", angle)) {
+                anyChange = anyChange || angle != picture.rotAngle;
+                picture.rotAngle = angle;
+            }
+            bool transparent = false;
+            if (item.Get ("transparent", transparent)) {
+                anyChange = anyChange || transparent != picture.transparent;
+                picture.transparent = transparent;
+            }
+            GS::UniString name;
+            if (item.Get ("name", name)) {
+                anyChange = anyChange || name != GS::UniString (picture.pictName);
+                GS::ucscpy (picture.pictName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) API_UniLongNameLen - 1)).Get ());
+            }
+
+            if (!anyChange) {
+                elements (CreateElementIdObjectState (originalGuid));
+                continue;
+            }
+
+            // The image of the original, so the new picture shows the same one.
+            API_ElementMemo originalMemo = {};
+            const GS::OnExit memoGuard ([&originalMemo] () { ACAPI_DisposeElemMemoHdls (&originalMemo); });
+            err = ACAPI_Element_GetMemo (originalGuid, &originalMemo, APIMemoMask_All);
+            if (err != NoError || originalMemo.pictHdl == nullptr) {
+                elements (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the image of the Picture."));
+                continue;
+            }
+            GS::UniString originalId;
+            const bool hasOriginalId = GetElementId (originalGuid, originalId) == NoError && !originalId.IsEmpty ();
+
+            // As CreatePictures creates a picture: the size is taken from the whole destBox. The
+            // new memo only lends the image; originalMemo owns it and disposes of it.
+            picture.usePixelSize = false;
+            picture.directCreate = false;
+            element.header.guid = APINULLGuid;
+            API_ElementMemo newMemo = {};
+            newMemo.pictHdl = originalMemo.pictHdl;
+            err = ACAPI_Element_Create (&element, &newMemo);
+            if (err != NoError) {
+                elements (CreateErrorResponse (err, "Failed to create the changed Picture, so the original is kept as it was."));
+                continue;
+            }
+            const API_Guid newGuid = element.header.guid;
+
+            err = ACAPI_Element_Delete ({ originalGuid });
+            if (err != NoError) {
+                ACAPI_Element_Delete ({ newGuid });
+                elements (CreateErrorResponse (err, "Failed to replace the Picture: the original could not be deleted, so it is kept as it was."));
+                continue;
+            }
+            if (hasOriginalId) {
+                ChangeElementId (newGuid, originalId);
+            }
+            elements (CreateElementIdObjectState (newGuid));
+        }
+        return NoError;
+    });
+
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr, "Failed to switch to the database given by databaseId, so nothing was changed. A worksheet or detail whose window was never opened can be opened once with ChangeWindow by its databaseId.");
+    }
     return response;
 }
 

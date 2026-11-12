@@ -1354,6 +1354,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.9",
             "Modifies standalone Text elements based on the given parameters."
         );
+        err |= RegisterCommand<ModifyPicturesCommand> (
+            elementCommands, "2.0.1",
+            "Modifies Picture elements: moves them to a new position, resizes them to a width and height in model units (one of them keeps the picture's proportions), changes the anchor point, the angle, mirrored, transparent and the name. Only the given settings are changed and the image stays as it is. Archicad cannot change a picture in place, so a changed picture is replaced by a new one with the same image, layer, story and ID, and the new elementId is returned; labels, dimensions, properties and classifications of the original are not carried over. With databaseId the pictures are looked for in that database, e.g. a worksheet, a detail or a layout. GetDetailsOfElements reads the settings back."
+        );
         err |= RegisterCommand<ModifyLabelsCommand> (
             elementCommands, "1.5.9",
             "Modifies Label elements based on the given parameters: the text and its style, the symbol label's style, the leader line, and the leader line's coordinates, which move or re-point the label."
