@@ -1,0 +1,126 @@
+{
+  "title": "Linear dimensions: opening heights in the chain and the layered element options written and read back (#2663 part 5)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "dimension with opening heights, nominal, total and core",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "openingHeightsInChain": true,
+            "openingHeightsNominal": true,
+            "layeredElementDimensions": { "total": true, "core": true, "referenceLine": false },
+            "referencePoint": { "x": 860.0, "y": 859.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 860.0, "y": 860.0 } },
+              { "coordinate": { "x": 863.0, "y": 860.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "dimension with the opposite settings",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "openingHeightsInChain": false,
+            "openingHeightsNominal": false,
+            "layeredElementDimensions": { "total": false, "core": false, "referenceLine": true },
+            "referencePoint": { "x": 860.0, "y": 864.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 860.0, "y": 865.0 } },
+              { "coordinate": { "x": 862.0, "y": 865.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "d2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "second dimension created" }
+      ]
+    },
+    {
+      "id": "the dimensions read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.openingHeightsInChain", "eq": true, "name": "opening heights on" },
+        { "path": "detailsOfElements[0].details.openingHeightsNominal", "eq": true, "name": "nominal heights" },
+        { "path": "detailsOfElements[0].details.layeredElementDimensions.total", "eq": true, "name": "total on" },
+        { "path": "detailsOfElements[0].details.layeredElementDimensions.core", "eq": true, "name": "core on" },
+        { "path": "detailsOfElements[0].details.layeredElementDimensions.referenceLine", "eq": false, "name": "reference line off" },
+        { "path": "detailsOfElements[1].details.openingHeightsInChain", "eq": false, "name": "second: opening heights off" },
+        { "path": "detailsOfElements[1].details.openingHeightsNominal", "eq": false, "name": "second: with oversize" },
+        { "path": "detailsOfElements[1].details.layeredElementDimensions.total", "eq": false, "name": "second: total off" },
+        { "path": "detailsOfElements[1].details.layeredElementDimensions.core", "eq": false, "name": "second: core off" },
+        { "path": "detailsOfElements[1].details.layeredElementDimensions.referenceLine", "eq": true, "name": "second: reference line on" }
+      ]
+    },
+    {
+      "id": "GetDimensionData returns the details panel",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].openingHeightsInChain", "eq": true, "name": "opening heights in GetDimensionData" },
+        { "path": "dimensionsData[0].openingHeightsNominal", "eq": true, "name": "nominal in GetDimensionData" },
+        { "path": "dimensionsData[0].layeredElementDimensions.core", "eq": true, "name": "core in GetDimensionData" },
+        { "path": "dimensionsData[0].witnessPoints", "len": 2, "name": "two witness points" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions changes the details panel, one layered option alone",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "openingHeightsInChain": false, "openingHeightsNominal": false, "layeredElementDimensions": { "core": false } },
+          { "elementId": { "guid": "${d2}" }, "layeredElementDimensions": { "total": true } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "first change accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "second change accepted" }
+      ]
+    },
+    {
+      "id": "the details panel after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.openingHeightsInChain", "eq": false, "name": "opening heights off" },
+        { "path": "detailsOfElements[0].details.openingHeightsNominal", "eq": false, "name": "with oversize" },
+        { "path": "detailsOfElements[0].details.layeredElementDimensions.total", "eq": true, "name": "total kept" },
+        { "path": "detailsOfElements[0].details.layeredElementDimensions.core", "eq": false, "name": "core off" },
+        { "path": "detailsOfElements[0].details.layeredElementDimensions.referenceLine", "eq": false, "name": "reference line kept off" },
+        { "path": "detailsOfElements[0].details.witnessPointCount", "eq": 2, "name": "witness points kept" },
+        { "path": "detailsOfElements[1].details.layeredElementDimensions.total", "eq": true, "name": "second: total on" },
+        { "path": "detailsOfElements[1].details.layeredElementDimensions.referenceLine", "eq": true, "name": "second: reference line kept" },
+        { "path": "detailsOfElements[1].details.openingHeightsInChain", "eq": false, "name": "second: opening heights unchanged" }
+      ]
+    }
+  ]
+}

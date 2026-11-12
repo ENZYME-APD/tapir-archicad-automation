@@ -40,13 +40,14 @@
 <!-- /site-assets -->
 <link rel="stylesheet" href="community.css">
 <script src="community.js" defer></script>
+<script src="user-map.js" defer></script>
 </head>
 <body>
 <!-- site-header -->
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="wrap nav">
-        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/favicon.svg" alt="" width="30" height="30">Tapir</a>
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/tapir_mark_moss.svg" alt="" width="30" height="30">Tapir</a>
         <nav class="site-nav" aria-label="Site"><ul>
             <li><a href="../start/">Get started</a></li>
             <li><a href="../docs/">Docs</a></li>
@@ -176,11 +177,40 @@
             </section>
         </div>
 
+        <!-- The map: read from user-map.json (tools/generate_user_map.py); hidden until it was read. -->
+        <div id="map-section" hidden
+             data-place="{place}, {country}: {count} person" data-places="{place}, {country}: {count} people"
+             data-country="{count} person" data-countries="{count} people"
+             data-map-label="World map of where people use Tapir: {people} people in {countries} countries. The list below names every country."
+             data-i18n-attrs="data-place data-places data-country data-countries data-map-label">
+            <div class="dim" aria-hidden="true"><i></i><span data-i18n>On the map</span><i></i></div>
+            <section aria-labelledby="user-map">
+                <div class="sec-head">
+                    <h2 id="user-map" data-i18n>Where Tapir is <em>used.</em></h2>
+                    <p data-i18n>The towns people named on Discord, counted per town: never a name or a message. Type <code>/where</code> and your town in any Discord channel to put it on the map.</p>
+                </div>
+                <div class="figures map-figures" id="map-figures">
+                    <div data-total="people" hidden><strong></strong><span data-i18n>People on the map</span></div>
+                    <div data-total="countries" hidden><strong></strong><span data-i18n>Countries</span></div>
+                    <div data-total="places" hidden><strong></strong><span data-i18n>Towns</span></div>
+                </div>
+                <div class="map-card">
+                    <figure class="user-map">
+                        <div class="map-canvas" id="map-canvas" role="img"><div class="map-land" aria-hidden="true"></div></div>
+                        <figcaption data-i18n>A dot per town, larger where more people are. Land: Natural Earth.</figcaption>
+                    </figure>
+                    <ol class="country-list" id="country-list"></ol>
+                    <a class="btn btn-primary map-join" href="https://discord.gg/NAnSennmpY" data-i18n>Add your town on Discord</a>
+                </div>
+            </section>
+        </div>
+
         <div id="activity-section" hidden
              data-chart-label="Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number."
              data-months="Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
              data-month-label="{month} {year}"
-             data-i18n-attrs="data-chart-label data-months data-month-label">
+             data-total-label="Total"
+             data-i18n-attrs="data-chart-label data-months data-month-label data-total-label">
             <div class="dim" aria-hidden="true"><i></i><span data-i18n>Growth</span><i></i></div>
             <section aria-labelledby="activity">
                 <div class="sec-head">
@@ -190,12 +220,13 @@
                 <div class="activity-card">
                     <figure class="growth">
                         <ul class="growth-legend">
-                            <li data-key="commits" hidden data-i18n><i class="swatch layer-commits"></i>Commits</li>
-                            <li data-key="github" hidden data-i18n><i class="swatch layer-github"></i>Issues and pull requests</li>
-                            <li data-key="discordMessages" hidden data-i18n><i class="swatch layer-discordMessages"></i>Discord messages</li>
-                            <li data-key="discordMembers" hidden data-i18n><i class="swatch swatch-line"></i>Discord members, right scale</li>
+                            <li data-key="commits" hidden><button type="button" aria-pressed="true" data-i18n><i class="swatch layer-commits"></i>Commits</button></li>
+                            <li data-key="github" hidden><button type="button" aria-pressed="true" data-i18n><i class="swatch layer-github"></i>Issues and pull requests</button></li>
+                            <li data-key="discordMessages" hidden><button type="button" aria-pressed="true" data-i18n><i class="swatch layer-discordMessages"></i>Discord messages</button></li>
+                            <li data-key="discordMembers" hidden><button type="button" aria-pressed="true" data-i18n><i class="swatch swatch-line"></i>Discord members, right scale</button></li>
                         </ul>
-                        <div class="activity-chart" id="growth-chart"></div>
+                        <div class="activity-chart" id="growth-chart" tabindex="0" role="group" aria-label="Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them." data-i18n-attrs="aria-label"></div>
+                        <p class="visually-hidden" id="growth-readout" aria-live="polite"></p>
                         <figcaption data-i18n>Per month, stacked, on a square-root scale so the early years stay visible. Commits by people, without merges and bots; Discord messages include threads and forum posts. Discord members are the people in the server at the end of each month, counted by when they joined; people who later left are not included.</figcaption>
                     </figure>
                     <details class="activity-details">
