@@ -927,6 +927,194 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
     return true;
 }
 
+// The placeholder that stands for the measured value in a custom witness point text (#2663). The
+// note keeps Archicad's own autotext keyword for it, which ModifyAssociativeDimensions writes in its
+// place and GetDimensionData turns back into the placeholder. The keyword comes from the API from
+// Archicad 26 (API_NoteAutotextID), so Archicad 25 has none.
+static GS::UniString MeasuredValuePlaceholder ()
+{
+    return GS::UniString ("{MeasuredValue}");
+}
+
+static GS::Optional<GS::UniString> GetMeasuredValueKeyword ()
+{
+#if defined (ServerMainVers_2700)
+    GS::UniString keyword;
+    if (ACAPI_AutoText_GetNoteKeywordForAutotextID (API_NoteAutotextID::MeasuredValue, keyword) == NoError && !keyword.IsEmpty ()) {
+        return keyword;
+    }
+#elif defined (ServerMainVers_2600)
+    GS::UniString keyword;
+    if (ACAPI_Element_GetNoteKeywordForAutotextID (API_NoteAutotextID::MeasuredValue, keyword) == NoError && !keyword.IsEmpty ()) {
+        return keyword;
+    }
+#endif
+    return {};
+}
+
+// The text of a witness point's note, from contentUStr when Archicad filled it, else from content.
+static GS::UniString GetDimensionNoteText (const API_NoteType& note)
+{
+    if (note.contentUStr != nullptr) {
+        return *note.contentUStr;
+    }
+    return GS::UniString (note.content, CC_UTF8);
+}
+
+// The text of a witness point's note with the measured value autotext as MeasuredValuePlaceholder.
+static GS::UniString GetDimensionNoteTextWithPlaceholder (const API_NoteType& note)
+{
+    GS::UniString text = GetDimensionNoteText (note);
+    const GS::Optional<GS::UniString> keyword = GetMeasuredValueKeyword ();
+    if (keyword.HasValue ()) {
+        text.ReplaceAll (keyword.Get (), MeasuredValuePlaceholder ());
+    }
+    return text;
+}
+
+// One item of ModifyAssociativeDimensions' witnessPointTexts, as read from the input.
+struct WitnessPointText {
+    Int32 index = 0;
+    GS::Optional<API_NoteContentType> contentType;
+    GS::Optional<GS::UniString> customText;    // with Archicad's keyword in place of the placeholder
+    GS::Optional<bool> superscript;
+    bool resetTextPosition = false;
+};
+
+// Reads ModifyAssociativeDimensions' witnessPointTexts. A customText without content makes the
+// witness point show the custom text. Returns the error response of an invalid value.
+static GS::Optional<GS::ObjectState> ParseWitnessPointTexts (const GS::ObjectState& data, Int32 witnessPointCount, GS::Array<WitnessPointText>& result)
+{
+    if (!data.Contains ("witnessPointTexts")) {
+        return {};
+    }
+    GS::Array<GS::ObjectState> items;
+    if (!data.Get ("witnessPointTexts", items) || items.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "'witnessPointTexts' must be a non-empty array.");
+    }
+    for (const GS::ObjectState& item : items) {
+        WitnessPointText text;
+        if (!item.Get ("index", text.index)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Every item of 'witnessPointTexts' needs an 'index'.");
+        }
+        if (text.index < 0 || text.index >= witnessPointCount) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The witness point index %d is out of range: the dimension has %d witness points.", text.index, witnessPointCount));
+        }
+        for (const WitnessPointText& earlier : result) {
+            if (earlier.index == text.index) {
+                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The witness point index %d is given more than once in 'witnessPointTexts'.", text.index));
+            }
+        }
+
+        GS::UniString content;
+        if (item.Get ("content", content)) {
+            if (content == "MeasuredValue") {
+                text.contentType = API_NoteContent_Measured;
+            } else if (content == "CustomText") {
+                text.contentType = API_NoteContent_Custom;
+            } else {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown 'content' value: " + content);
+            }
+        }
+
+        GS::UniString customText;
+        if (item.Get ("customText", customText)) {
+            if (customText.Contains (MeasuredValuePlaceholder ())) {
+                const GS::Optional<GS::UniString> keyword = GetMeasuredValueKeyword ();
+                if (!keyword.HasValue ()) {
+                    return CreateErrorResponse (APIERR_BADPARS, "This Archicad version gives no autotext for the measured value, so 'customText' cannot contain " + MeasuredValuePlaceholder () + ".");
+                }
+                customText.ReplaceAll (MeasuredValuePlaceholder (), keyword.Get ());
+            }
+            text.customText = customText;
+            if (!text.contentType.HasValue ()) {
+                text.contentType = API_NoteContent_Custom;
+            }
+        }
+
+        bool superscript = false;
+        if (item.Get ("superscript", superscript)) {
+            text.superscript = superscript;
+        }
+        item.Get ("resetTextPosition", text.resetTextPosition);
+
+        if (!text.contentType.HasValue () && !text.customText.HasValue () && !text.superscript.HasValue () && !text.resetTextPosition) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The item of 'witnessPointTexts' with index %d changes nothing.", text.index));
+        }
+        result.Push (text);
+    }
+    return {};
+}
+
+// Writes the texts into the witness points of memo, as the DevKit's Element_Test does in
+// Do_Dimension_Test: the note's contentUStr belongs to the memo (ACAPI_DisposeElemMemoHdls frees it),
+// so a new text replaces it. Returns whether it changed any.
+static bool ApplyWitnessPointTexts (const GS::Array<WitnessPointText>& texts, const API_Element& element, API_ElementMemo& memo)
+{
+    if (texts.IsEmpty () || memo.dimElems == nullptr || *memo.dimElems == nullptr) {
+        return false;
+    }
+    for (const WitnessPointText& text : texts) {
+        if (text.index >= element.dimension.nDimElem) {
+            continue;
+        }
+        API_NoteType& note = (*memo.dimElems)[text.index].note;
+        if (text.contentType.HasValue ()) {
+            note.contentType = text.contentType.Get ();
+        }
+        if (text.customText.HasValue ()) {
+            if (note.contentUStr != nullptr) {
+                delete note.contentUStr;
+            }
+            note.contentUStr = new GS::UniString (text.customText.Get ());
+        }
+        if (text.superscript.HasValue ()) {
+            if (text.superscript.Get ()) {
+                note.effectBits = static_cast<unsigned short> (note.effectBits | APIEffect_SuperScript);
+            } else {
+                note.effectBits = static_cast<unsigned short> (note.effectBits & ~APIEffect_SuperScript);
+            }
+        }
+        if (text.resetTextPosition) {
+            note.fixPos = false;
+        }
+    }
+    return true;
+}
+
+// Compares the witness point texts Archicad kept (changedMemo) with the ones written, and adds the
+// names of those it did not take to notApplied.
+static void CheckWitnessPointTexts (const GS::Array<WitnessPointText>& texts, const API_ElementMemo& changedMemo, Int32 witnessPointCount, GS::UniString& notApplied)
+{
+    if (texts.IsEmpty ()) {
+        return;
+    }
+    if (changedMemo.dimElems == nullptr || *changedMemo.dimElems == nullptr) {
+        notApplied += " witnessPointTexts";
+        return;
+    }
+    for (const WitnessPointText& text : texts) {
+        const GS::UniString prefix = GS::UniString::Printf (" witnessPointTexts[index %d].", text.index);
+        if (text.index >= witnessPointCount) {
+            notApplied += prefix + "index";
+            continue;
+        }
+        const API_NoteType& note = (*changedMemo.dimElems)[text.index].note;
+        if (text.contentType.HasValue () && note.contentType != text.contentType.Get ()) {
+            notApplied += prefix + "content";
+        }
+        if (text.customText.HasValue () && GetDimensionNoteText (note) != text.customText.Get ()) {
+            notApplied += prefix + "customText";
+        }
+        if (text.superscript.HasValue () && ((note.effectBits & APIEffect_SuperScript) != 0) != text.superscript.Get ()) {
+            notApplied += prefix + "superscript";
+        }
+        if (text.resetTextPosition && note.fixPos) {
+            notApplied += prefix + "resetTextPosition";
+        }
+    }
+}
+
 } // namespace
 
 // Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it for
@@ -11851,6 +12039,40 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                     "properties": {
                         "elementId": {
                             "$ref": "#/ElementId"
+                        },
+                        "witnessPointTexts": {
+                            "type": "array",
+                            "minItems": 1,
+                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the reset to the automatic position. Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "index": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "description": "The witness point whose text is changed, counted from 0 in the order GetDimensionData returns them."
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "enum": ["MeasuredValue", "CustomText"],
+                                        "description": "Optional: show the measured value or the custom text (API note contentType)."
+                                    },
+                                    "customText": {
+                                        "type": "string",
+                                        "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). Without content the witness point shows the custom text."
+                                    },
+                                    "superscript": {
+                                        "type": "boolean",
+                                        "description": "Optional: show the text superscript (API note effectBits, APIEffect_SuperScript)."
+                                    },
+                                    "resetTextPosition": {
+                                        "type": "boolean",
+                                        "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["index"]
+                            }
                         },)") + DimensionSettingsSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -11934,6 +12156,15 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 }
                 witnessPointsChanged = ApplyDimensionSettingsToWitnessPoints (item, element, memo);
             }
+            GS::Array<WitnessPointText> witnessPointTexts;
+            auto textsError = ParseWitnessPointTexts (item, element.header.hasMemo ? element.dimension.nDimElem : 0, witnessPointTexts);
+            if (textsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (textsError.Get ()));
+                continue;
+            }
+            if (ApplyWitnessPointTexts (witnessPointTexts, element, memo)) {
+                witnessPointsChanged = true;
+            }
 
             err = ACAPI_Element_Change (&element, &mask, witnessPointsChanged ? &memo : nullptr, 0, true);
             if (err != NoError) {
@@ -11995,6 +12226,7 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                         notApplied += " witnessForm of the witness points";
                     }
                 }
+                CheckWitnessPointTexts (witnessPointTexts, changedMemo, changed.dimension.nDimElem, notApplied);
             }
             if (!notApplied.IsEmpty ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));
@@ -15441,6 +15673,10 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("textHeight", dimElem.note.noteSize);
                 witnessPoint.Add ("textPen", static_cast<Int32> (dimElem.note.notePen));
                 witnessPoint.Add ("textFrame", dimElem.note.frame);
+                witnessPoint.Add ("content", GS::UniString (dimElem.note.contentType == API_NoteContent_Custom ? "CustomText" : "MeasuredValue"));
+                witnessPoint.Add ("customText", GetDimensionNoteTextWithPlaceholder (dimElem.note));
+                witnessPoint.Add ("superscript", (dimElem.note.effectBits & APIEffect_SuperScript) != 0);
+                witnessPoint.Add ("textPositionFixed", dimElem.note.fixPos);
 
                 // The witness parameters, as CreateAssociativeDimensions takes them, so a dimension
                 // placed by hand can be read back to learn what an element type needs (#633).
