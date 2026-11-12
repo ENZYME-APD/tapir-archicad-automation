@@ -12698,8 +12698,8 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "begCoordinate": { "$ref": "#/Coordinate2D" },
-                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "begCoordinate": { "$ref": "#/Coordinate2D", "description": "The start of the wall's reference line. On a Polygonal wall it is the start of its reference edge, and a new value is only taken together with polygonOutline (the item fails otherwise)." },
+                        "endCoordinate": { "$ref": "#/Coordinate2D", "description": "The end of the wall's reference line. On a Polygonal wall it is the end of its reference edge, and a new value is only taken together with polygonOutline (the item fails otherwise)." },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
                         "thickness": {
@@ -12827,6 +12827,8 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
             const double previousSlantBeta = element.wall.slantBeta;
             const bool wasPolygonal = element.wall.type == APIWtyp_Poly;
             const bool hasOpenings = element.wall.hasWindow || element.wall.hasDoor;
+            const API_Coord previousBegC = element.wall.begC;
+            const API_Coord previousEndC = element.wall.endC;
             bool changed = ApplyWallDetails (element, mask, item);
             auto error = ApplyWallStructure (element, &mask, item, changed);
             if (error.HasValue ()) {
@@ -12841,6 +12843,16 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
             auto polygonalError = PreparePolygonalWall (element, mask, memo, item, wasPolygonal, isPolygonal, outlineGiven);
             if (polygonalError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, polygonalError.Get ()));
+                continue;
+            }
+            // The begC and endC of a polygonal wall are the ends of its reference edge, which
+            // PreparePolygonalWall checks only against a new outline. Moved on their own they
+            // would not be an edge of the wall's polygon, and Archicad crashes in the junction
+            // update then (#1914), so they are refused without polygonOutline. The values the
+            // wall already has (as GetDetailsOfElements returns them) are accepted.
+            if (isPolygonal && !outlineGiven &&
+                (!IsSame2DCoordinate (element.wall.begC, previousBegC) || !IsSame2DCoordinate (element.wall.endC, previousEndC))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'begCoordinate' and 'endCoordinate' of a Polygonal wall are the ends of its reference edge: send them with 'polygonOutline' in the same item to move them. Nothing was written."));
                 continue;
             }
             // Archicad cannot put an opening into a polygonal wall (see IsPolygonalWall), so what

@@ -167,6 +167,34 @@
       ]
     },
     {
+      "id": "refused: begCoordinate/endCoordinate alone move the reference edge of a polygonal wall off its outline (#1914)",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          { "elementId": { "guid": "${lwall}" }, "begCoordinate": { "x": 941.0, "y": 801.0 }, "endCoordinate": { "x": 945.0, "y": 801.0 } },
+          { "elementId": { "guid": "${lwall}" }, "endCoordinate": { "x": 950.0, "y": 800.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "both ends without polygonOutline refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "one end without polygonOutline refused" }
+      ]
+    },
+    {
+      "id": "the refused items wrote nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${lwall}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.geometryType", "eq": "Polygonal" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5 },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 940.0, "tol": 0.0001, "name": "reference edge start unchanged" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 947.0, "tol": 0.0001, "name": "reference edge end unchanged" },
+        { "path": "detailsOfElements[0].details.polygonOutline[1].x", "approx": 947.0, "tol": 0.0001 }
+      ]
+    },
+    {
       "id": "Basic structure and height on a polygonal wall keep it polygonal; Composite is refused",
       "command": "ModifyWalls",
       "creates": false,
