@@ -1349,7 +1349,9 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyCurtainWallsCommand> (
             elementCommands, "1.8.0",
-            "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls."
+            "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls; "
+            "and the floor plan display settings GetDetailsOfElements reads: story visibility, display option, view depth, cut, uncut and overhead projection modes, "
+            "and the pens and line types of the frame and panel cut lines and of the uncut and overhead lines."
         );
         err |= RegisterCommand<ModifyCurtainWallFramesCommand> (
             elementCommands, "2.0.0",

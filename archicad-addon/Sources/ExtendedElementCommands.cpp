@@ -11952,7 +11952,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
         "properties": {
             "curtainWallsWithDetails": {
                 "type": "array",
-                "description": "Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications.",
+                "description": "Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications, and the floor plan display fields GetDetailsOfElements returns for a curtain wall, under the same names. Every given field is read back, and one Archicad did not apply fails the item.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -11992,6 +11992,88 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                             "items": {
                                 "$ref": "#/CurtainWallPatternCell"
                             }
+                        },
+                        "visibility": {
+                            "$ref": "#/StoryVisibility",
+                            "description": "The stories the curtain wall is shown on (API_CurtainWallType::visibility), as GetDetailsOfElements returns it; for example only showOnHome true shows it on its home story only. Archicad only keeps it while isAutoOnStoryVisibility is false, so setting it without isAutoOnStoryVisibility also turns that off. The fields not given are false or 0. Confirmed live on Archicad 26 and 28 (#2529): showRelAbove 1 on a curtain wall in an empty project read back as 0, and the command then fails and names the visibility Archicad kept."
+                        },
+                        "isAutoOnStoryVisibility": {
+                            "type": "boolean",
+                            "description": "When true, Archicad recomputes 'visibility' automatically from the vertical extent of the curtain wall and ignores a visibility given together with it."
+                        },
+                        "displayOption": {
+                            "$ref": "#/DisplayOption",
+                            "description": "The floor plan display of the curtain wall (API_CurtainWallType::displayOption)."
+                        },
+                        "viewDepthLimitation": {
+                            "$ref": "#/ViewDepthLimitation",
+                            "description": "How far the curtain wall is shown on the floor plan (API_CurtainWallType::viewDepthLimitation)."
+                        },
+                        "cutProjectionMode": {
+                            "$ref": "#/ElemProjectionMode",
+                            "description": "Projection mode of the cut part of the curtain wall on the floor plan (API_CurtainWallType::cutProjectionMode)."
+                        },
+                        "uncutProjectionMode": {
+                            "$ref": "#/ElemProjectionMode",
+                            "description": "Projection mode of the uncut part (below the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::uncutProjectionMode)."
+                        },
+                        "overheadProjectionMode": {
+                            "$ref": "#/ElemProjectionMode",
+                            "description": "Projection mode of the overhead part (above the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::overheadProjectionMode)."
+                        },
+                        "pen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "The pen index of the curtain wall (API_CurtainWallType::pen)."
+                        },
+                        "frameCutLinePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLinePen). The frames only use it while useFrameTypesAttributes is false."
+                        },
+                        "frameCutLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLineType). The frames only use it while useFrameTypesAttributes is false."
+                        },
+                        "panelCutLinePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLinePen). The panels only use it while usePanelTypesAttributes is false."
+                        },
+                        "panelCutLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLineType). The panels only use it while usePanelTypesAttributes is false."
+                        },
+                        "useFrameTypesAttributes": {
+                            "type": "boolean",
+                            "description": "True makes the frames use the attributes of their frame types instead of frameCutLinePen and frameCutLineTypeId. Confirmed live on Archicad 26 and 28 (#2529): false written on a new curtain wall read back as true, and the command then fails with useFrameTypesAttributes not applied."
+                        },
+                        "usePanelTypesAttributes": {
+                            "type": "boolean",
+                            "description": "True makes the panels use the attributes of their panel types instead of panelCutLinePen and panelCutLineTypeId."
+                        },
+                        "belowViewLinePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the uncut lines, the curtain wall's view below the cut plane on the floor plan (API_CurtainWallType::uncutLinePen)."
+                        },
+                        "belowViewLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the uncut lines, the curtain wall's view below the cut plane on the floor plan (API_CurtainWallType::uncutLineType)."
+                        },
+                        "aboveViewLinePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the overhead lines, the curtain wall's view above the cut plane on the floor plan (API_CurtainWallType::overheadLinePen)."
+                        },
+                        "aboveViewLineTypeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Line type of the overhead lines, the curtain wall's view above the cut plane on the floor plan (API_CurtainWallType::overheadLineType), for example a dashed one."
                         }
                     },
                     "additionalProperties": false,
@@ -12027,6 +12109,147 @@ bool IsSameCurtainWallPattern (const API_CWSegmentPatternData& expected, const A
         }
     }
     return true;
+}
+
+bool ElemProjectionModeFromString (const GS::UniString& s, API_ElemProjectionModesID& out)
+{
+    if (s == "Symbolic")  { out = API_Symbolic; return true; }
+    if (s == "Projected") { out = API_Projected; return true; }
+    if (s == "Hybrid")    { out = API_Hybrid; return true; }
+    return false;
+}
+
+// The floor plan display fields of ModifyCurtainWalls (#2529), under the names GetDetailsOfElements
+// reads them with. Writes the given ones into element and mask; returns an error text and leaves the
+// curtain wall unchanged when one of them is not valid.
+GS::Optional<GS::UniString> ApplyCurtainWallDisplay (const GS::ObjectState& item, API_Element& element, API_Element& mask, bool& changed)
+{
+    API_CurtainWallType& cw = element.curtainWall;
+
+    GS::ObjectState visibilityOs;
+    const bool hasVisibility = item.Get ("visibility", visibilityOs);
+    bool isAutoOnStoryVisibility = false;
+    const bool hasIsAutoOnStoryVisibility = item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility);
+    if (hasVisibility) {
+        cw.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, visibility);
+        if (!hasIsAutoOnStoryVisibility) {
+            // As on walls and railings: while isAutoOnStoryVisibility is on, Archicad recomputes the
+            // visibility from the vertical extent of the curtain wall and drops the one given here.
+            cw.isAutoOnStoryVisibility = false;
+            ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, isAutoOnStoryVisibility);
+        }
+        changed = true;
+    }
+    if (hasIsAutoOnStoryVisibility) {
+        cw.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, isAutoOnStoryVisibility);
+        changed = true;
+    }
+
+    GS::UniString str;
+    if (item.Get ("displayOption", str)) {
+        if (!ElemDisplayOptionFromString (str, cw.displayOption)) {
+            return GS::UniString ("Invalid 'displayOption'.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, displayOption);
+        changed = true;
+    }
+    if (item.Get ("viewDepthLimitation", str)) {
+        if (!ViewDepthLimitationFromString (str, cw.viewDepthLimitation)) {
+            return GS::UniString ("Invalid 'viewDepthLimitation'.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, viewDepthLimitation);
+        changed = true;
+    }
+    if (item.Get ("cutProjectionMode", str)) {
+        if (!ElemProjectionModeFromString (str, cw.cutProjectionMode)) {
+            return GS::UniString ("Invalid 'cutProjectionMode': use Symbolic, Projected or Hybrid.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, cutProjectionMode);
+        changed = true;
+    }
+    if (item.Get ("uncutProjectionMode", str)) {
+        if (!ElemProjectionModeFromString (str, cw.uncutProjectionMode)) {
+            return GS::UniString ("Invalid 'uncutProjectionMode': use Symbolic, Projected or Hybrid.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, uncutProjectionMode);
+        changed = true;
+    }
+    if (item.Get ("overheadProjectionMode", str)) {
+        if (!ElemProjectionModeFromString (str, cw.overheadProjectionMode)) {
+            return GS::UniString ("Invalid 'overheadProjectionMode': use Symbolic, Projected or Hybrid.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, overheadProjectionMode);
+        changed = true;
+    }
+
+    const auto applyPen = [&] (const char* fieldName, short& target) -> GS::Optional<GS::UniString> {
+        Int32 pen = 0;
+        if (!item.Get (fieldName, pen)) {
+            return {};
+        }
+        if (pen < 1 || pen > 255) {
+            return GS::UniString::Printf ("'%s' must be a pen index between 1 and 255.", fieldName);
+        }
+        target = static_cast<short> (pen);
+        changed = true;
+        return {};
+    };
+    const auto applyLineType = [&] (const char* fieldName, API_AttributeIndex& target) -> GS::Optional<GS::UniString> {
+        bool hasValue = false;
+        API_AttributeIndex index = APIInvalidAttributeIndex;
+        GS::Optional<GS::UniString> attributeError = TryResolveAttributeField (item, fieldName, API_LinetypeID, hasValue, index);
+        if (attributeError.HasValue () || !hasValue) {
+            return attributeError;
+        }
+        target = index;
+        changed = true;
+        return {};
+    };
+
+    // Each error is returned before ACAPI_Element_Change runs, so a refused item changes nothing.
+    GS::Optional<GS::UniString> fieldError = applyPen ("pen", cw.pen);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("pen")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, pen);
+    fieldError = applyPen ("frameCutLinePen", cw.frameCutLinePen);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("frameCutLinePen")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, frameCutLinePen);
+    fieldError = applyPen ("panelCutLinePen", cw.panelCutLinePen);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("panelCutLinePen")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, panelCutLinePen);
+    fieldError = applyPen ("belowViewLinePen", cw.uncutLinePen);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("belowViewLinePen")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, uncutLinePen);
+    fieldError = applyPen ("aboveViewLinePen", cw.overheadLinePen);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("aboveViewLinePen")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, overheadLinePen);
+
+    fieldError = applyLineType ("frameCutLineTypeId", cw.frameCutLineType);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("frameCutLineTypeId")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, frameCutLineType);
+    fieldError = applyLineType ("panelCutLineTypeId", cw.panelCutLineType);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("panelCutLineTypeId")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, panelCutLineType);
+    fieldError = applyLineType ("belowViewLineTypeId", cw.uncutLineType);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("belowViewLineTypeId")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, uncutLineType);
+    fieldError = applyLineType ("aboveViewLineTypeId", cw.overheadLineType);
+    if (fieldError.HasValue ()) return fieldError;
+    if (item.Contains ("aboveViewLineTypeId")) ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, overheadLineType);
+
+    bool flag = false;
+    if (item.Get ("useFrameTypesAttributes", flag)) {
+        cw.useFrameTypesAttributes = flag;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, useFrameTypesAttributes);
+        changed = true;
+    }
+    if (item.Get ("usePanelTypesAttributes", flag)) {
+        cw.usePanelTypesAttributes = flag;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, usePanelTypesAttributes);
+        changed = true;
+    }
+    return {};
 }
 
 // Archicad 29 answers NoError to a curtain wall height change and keeps the old height (#2523):
@@ -12090,6 +12313,55 @@ GS::Optional<GS::UniString> ChangeCurtainWallHeightWithContours (const API_Eleme
     return {};
 }
 
+// The display fields of the item that the read back curtain wall does not have, as a text listing
+// them, empty when every given one was applied.
+GS::UniString CheckCurtainWallDisplay (const GS::ObjectState& item, const API_CurtainWallType& wanted, const API_CurtainWallType& got)
+{
+    GS::UniString notApplied;
+    if ((item.Contains ("isAutoOnStoryVisibility") || item.Contains ("visibility")) && got.isAutoOnStoryVisibility != wanted.isAutoOnStoryVisibility) {
+        notApplied += got.isAutoOnStoryVisibility ? " isAutoOnStoryVisibility is still true, so the visibility is computed by Archicad." : " isAutoOnStoryVisibility is false.";
+    }
+    // A visibility given with the automatic visibility on is recomputed by Archicad, so it is only
+    // compared when the automatic visibility is off.
+    if (item.Contains ("visibility") && !wanted.isAutoOnStoryVisibility && !got.isAutoOnStoryVisibility) {
+        const API_StoryVisibility& w = wanted.visibility;
+        const API_StoryVisibility& g = got.visibility;
+        if (g.showOnHome != w.showOnHome || g.showAllAbove != w.showAllAbove || g.showAllBelow != w.showAllBelow ||
+            g.showRelAbove != w.showRelAbove || g.showRelBelow != w.showRelBelow) {
+            notApplied += GS::UniString::Printf (" visibility is showOnHome %s, showAllAbove %s, showAllBelow %s, showRelAbove %d, showRelBelow %d.",
+                g.showOnHome ? "true" : "false", g.showAllAbove ? "true" : "false", g.showAllBelow ? "true" : "false",
+                static_cast<int> (g.showRelAbove), static_cast<int> (g.showRelBelow));
+        }
+    }
+    const auto checkValue = [&] (const char* fieldName, Int32 wantedValue, Int32 gotValue) {
+        if (item.Contains (fieldName) && wantedValue != gotValue) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", fieldName);
+        }
+    };
+    checkValue ("displayOption", static_cast<Int32> (wanted.displayOption), static_cast<Int32> (got.displayOption));
+    checkValue ("viewDepthLimitation", static_cast<Int32> (wanted.viewDepthLimitation), static_cast<Int32> (got.viewDepthLimitation));
+    checkValue ("cutProjectionMode", static_cast<Int32> (wanted.cutProjectionMode), static_cast<Int32> (got.cutProjectionMode));
+    checkValue ("uncutProjectionMode", static_cast<Int32> (wanted.uncutProjectionMode), static_cast<Int32> (got.uncutProjectionMode));
+    checkValue ("overheadProjectionMode", static_cast<Int32> (wanted.overheadProjectionMode), static_cast<Int32> (got.overheadProjectionMode));
+    checkValue ("pen", wanted.pen, got.pen);
+    checkValue ("frameCutLinePen", wanted.frameCutLinePen, got.frameCutLinePen);
+    checkValue ("panelCutLinePen", wanted.panelCutLinePen, got.panelCutLinePen);
+    checkValue ("belowViewLinePen", wanted.uncutLinePen, got.uncutLinePen);
+    checkValue ("aboveViewLinePen", wanted.overheadLinePen, got.overheadLinePen);
+    checkValue ("useFrameTypesAttributes", wanted.useFrameTypesAttributes ? 1 : 0, got.useFrameTypesAttributes ? 1 : 0);
+    checkValue ("usePanelTypesAttributes", wanted.usePanelTypesAttributes ? 1 : 0, got.usePanelTypesAttributes ? 1 : 0);
+    const auto checkLineType = [&] (const char* fieldName, API_AttributeIndex wantedValue, API_AttributeIndex gotValue) {
+        if (item.Contains (fieldName) && wantedValue != gotValue) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", fieldName);
+        }
+    };
+    checkLineType ("frameCutLineTypeId", wanted.frameCutLineType, got.frameCutLineType);
+    checkLineType ("panelCutLineTypeId", wanted.panelCutLineType, got.panelCutLineType);
+    checkLineType ("belowViewLineTypeId", wanted.uncutLineType, got.uncutLineType);
+    checkLineType ("aboveViewLineTypeId", wanted.overheadLineType, got.overheadLineType);
+    return notApplied;
+}
+
 GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& stories)
 {
     if (item.Get ("elementId") == nullptr) {
@@ -12134,6 +12406,11 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
         element.header.floorInd = floorIndex;
         ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         changed = true;
+    }
+
+    const auto displayError = ApplyCurtainWallDisplay (item, element, mask, changed);
+    if (displayError.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, displayError.Get ());
     }
 
     GS::Array<GS::ObjectState> coordinates;
@@ -12314,6 +12591,10 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
                 (secondaryPattern != nullptr && !IsSameCurtainWallPattern (memo.cWSegSecondaryPattern, readBackPattern.cWSegSecondaryPattern))) {
                 return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the pattern to the curtain wall.");
             }
+        }
+        const GS::UniString displayNotApplied = CheckCurtainWallDisplay (item, element.curtainWall, readBack.curtainWall);
+        if (!displayNotApplied.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString ("Archicad did not apply every floor plan display field to the curtain wall:") + displayNotApplied);
         }
     }
 
