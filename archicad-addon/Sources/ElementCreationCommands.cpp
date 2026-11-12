@@ -1989,7 +1989,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new polyline. Polylines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no polyline. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2159,7 +2159,7 @@ GS::Optional<GS::UniString> CreateLineElementsCommand::GetInputParametersSchema 
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new line. Lines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no line. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2240,7 +2240,7 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new arc. Arcs have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no arc. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2349,7 +2349,7 @@ GS::Optional<GS::UniString> CreateCirclesCommand::GetInputParametersSchema () co
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new circle. Circles have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no circle. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -2430,7 +2430,7 @@ GS::Optional<GS::UniString> CreateHotspotsCommand::GetInputParametersSchema () c
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new hotspot. Hotspots have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no hotspot. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
@@ -3067,7 +3067,7 @@ GS::Optional<GS::UniString> CreateSplinesCommand::GetInputParametersSchema () co
                     },
                     "id": {
                         "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        "description": "Optional Element ID of the new spline. Splines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no spline. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id)."
                     },
                     "floorInd": {
                         "type": "number",
