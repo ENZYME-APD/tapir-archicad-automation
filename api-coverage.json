@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 02:28 UTC",
+ "generatedAt": "2026-11-12 03:09 UTC",
  "versions": [
   25,
   26,
@@ -25402,10 +25402,6 @@
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
     {
-     "number": 2750,
-     "title": "ModifyStairs: pin a given going (treadDepth) in the stair rules, as CreateStairs does"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -37577,10 +37573,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2750,
-     "title": "ModifyStairs: pin a given going (treadDepth) in the stair rules, as CreateStairs does"
     },
     {
      "number": 2747,
