@@ -12,6 +12,11 @@ name: Discord Issue Bot
 # half hour, so the schedule runs at :13 and :43. A run that GitHub drops loses
 # nothing: each run scans the last day and continues after the 👀 checkpoint.
 #
+# The #share-a-script channel is handled differently: a script posted there
+# (a .py attachment or a long code block) is not classified, it becomes an
+# issue labelled script-share holding the whole file, which the issue bot
+# turns into a marketplace pull request.
+#
 # Setup and tuning: tools/discord-issue-bot/README.md. Until the secrets
 # and the DISCORD_CHANNEL_IDS variable are configured, runs exit quietly
 # without doing anything.
@@ -85,6 +90,16 @@ jobs:
         run: python -m unittest test_discord_issue_bot
         working-directory: tools/discord-issue-bot
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run the /triage command's unit tests
+        run: |
+          node --test worker.test.js
+          python -m unittest test_register_command
+        working-directory: tools/discord-issue-bot/triage-command
+
       - name: Install the Claude Code CLI
         env:
           # Only the fact that the token exists - npm install scripts must
@@ -106,6 +121,9 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_IDS: ${{ vars.DISCORD_CHANNEL_IDS }}
+          # Optional. The #share-a-script channel is found by its name; list its
+          # ID here (or in DISCORD_CHANNEL_IDS) if it is not among the watched ones.
+          DISCORD_SHARE_CHANNEL_IDS: ${{ vars.DISCORD_SHARE_CHANNEL_IDS }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}

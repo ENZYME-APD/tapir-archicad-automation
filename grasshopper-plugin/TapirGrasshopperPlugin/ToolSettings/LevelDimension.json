@@ -163,6 +163,66 @@
       "labelSource": null,
       "group": "Text Style",
       "subgroup": null
+    },
+    {
+      "get": "fontIndex",
+      "set": "fontIndex",
+      "apiMember": "API_NoteType::noteFont",
+      "apiDescription": "Font attribute index.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "fontName",
+      "set": "fontName",
+      "apiMember": "API_NoteType::noteFont",
+      "apiDescription": "Font attribute index, given and read as the name of the Font attribute.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "bold",
+      "set": "bold",
+      "apiMember": "API_NoteType::faceBits",
+      "apiDescription": "APIFace_Bold bit of the face bits.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "italic",
+      "set": "italic",
+      "apiMember": "API_NoteType::faceBits",
+      "apiDescription": "APIFace_Italic bit of the face bits.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "underline",
+      "set": "underline",
+      "apiMember": "API_NoteType::faceBits",
+      "apiDescription": "APIFace_Underline bit of the face bits.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "hideWithBaseElem",
+      "set": "hideWithBaseElem",
+      "apiMember": "API_LevelDimensionType::hideWithBaseElem",
+      "apiDescription": "Hide the dimension with its base element? (Archicad 29 and later)",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
     }
   ]
 }
