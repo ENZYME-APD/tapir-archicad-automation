@@ -16802,6 +16802,22 @@
                 "description": "The pen index of the fill background. 0 is a transparent background; -1 also occurs in projects and is accepted, so a value read with GetDetailsOfElements can always be written back.",
                 "minimum": -1,
                 "maximum": 255
+            },
+            "use3DHatching": {
+                "type": "boolean",
+                "description": "\"Use the fill of the surface\": true draws the cover fill with the vectorial 3D hatch of the zone's top surface instead of fillId."
+            },
+            "useLocalOrigo": {
+                "type": "boolean",
+                "description": "The orientation of the cover fill. true: the fill is linked to the zone (rotated), starting at locOrigo in the direction of fillAngle. false: the fill is linked to the project origin and is not rotated."
+            },
+            "locOrigo": {
+                "$ref": "#/Coordinate2D",
+                "description": "The origin of the cover fill when useLocalOrigo is true."
+            },
+            "fillAngle": {
+                "type": "number",
+                "description": "The angle of the cover fill when useLocalOrigo is true, in radians."
             }
         },
         "additionalProperties": false,
