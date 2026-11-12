@@ -11157,7 +11157,7 @@
             "lengthType": {
                 "type": "string",
                 "enum": [ "Fixed", "Proportional", "Unknown" ],
-                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
+                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave. Unknown is only returned, for a scheme Archicad reports as neither; the commands that write a length (AssemblySegmentLengthModification) accept only Fixed or Proportional."
             },
             "fixedLength": {
                 "type": "number",
