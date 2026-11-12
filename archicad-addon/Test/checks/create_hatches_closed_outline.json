@@ -1,0 +1,123 @@
+{
+  "title": "CreateHatches accepts a closed outline (last point repeating the first) and a copy made from GetDetailsOfElements' own coordinates and arcs",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Hatch" ],
+  "steps": [
+    {
+      "id": "a closed square, as in the issue, and an open one with an arc on its closing edge",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          {
+            "floorInd": 0,
+            "coordinates": [
+              { "x": 1514.0, "y": 220.0 },
+              { "x": 1515.0, "y": 220.0 },
+              { "x": 1515.0, "y": 221.0 },
+              { "x": 1514.0, "y": 221.0 },
+              { "x": 1514.0, "y": 220.0 }
+            ]
+          },
+          {
+            "floorInd": 0,
+            "coordinates": [
+              { "x": 1520.0, "y": 220.0 },
+              { "x": 1524.0, "y": 220.0 },
+              { "x": 1524.0, "y": 223.0 },
+              { "x": 1520.0, "y": 223.0 }
+            ],
+            "arcs": [ { "begIndex": 1, "endIndex": 2, "arcAngle": 0.5 } ]
+          }
+        ]
+      },
+      "save": { "h1": "elements[0].elementId.guid", "h2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].error", "exists": false, "name": "closed outline accepted" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "closed square created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "open hatch with an arc created" }
+      ]
+    },
+    {
+      "id": "read both back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${h1}" } }, { "elementId": { "guid": "${h2}" } } ]
+      },
+      "save": {
+        "c1": "detailsOfElements[0].details.coordinates",
+        "c2": "detailsOfElements[1].details.coordinates",
+        "a2": "detailsOfElements[1].details.arcs"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coordinates", "len": 5, "name": "closed square: four points and the closing point, no extra point" },
+        { "path": "detailsOfElements[0].details.coordinates[1].x", "approx": 1515.0 },
+        { "path": "detailsOfElements[0].details.coordinates[2].y", "approx": 221.0 },
+        { "path": "detailsOfElements[1].details.coordinates", "len": 5 },
+        { "path": "detailsOfElements[1].details.arcs", "len": 1 }
+      ]
+    },
+    {
+      "id": "copy both hatches from the coordinates and arcs GetDetailsOfElements returned",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          { "floorInd": 0, "coordinates": "${c1}" },
+          { "floorInd": 0, "coordinates": "${c2}", "arcs": "${a2}" }
+        ]
+      },
+      "save": { "k1": "elements[0].elementId.guid", "k2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "copy of the closed square created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "copy of the hatch with an arc created" }
+      ]
+    },
+    {
+      "id": "the copies have the same outline and arc",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${k1}" } }, { "elementId": { "guid": "${k2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coordinates", "len": 5, "name": "copied square: four points and the closing point" },
+        { "path": "detailsOfElements[0].details.coordinates[1].x", "approx": 1515.0 },
+        { "path": "detailsOfElements[0].details.coordinates[2].y", "approx": 221.0 },
+        { "path": "detailsOfElements[0].details.coordinates[4].x", "approx": 1514.0 },
+        { "path": "detailsOfElements[0].details.coordinates[4].y", "approx": 220.0 },
+        { "path": "detailsOfElements[1].details.coordinates", "len": 5, "name": "copied arc hatch: four points and the closing point" },
+        { "path": "detailsOfElements[1].details.coordinates[1].x", "approx": 1524.0 },
+        { "path": "detailsOfElements[1].details.coordinates[2].y", "approx": 223.0 },
+        { "path": "detailsOfElements[1].details.arcs", "len": 1, "name": "arc copied" },
+        { "path": "detailsOfElements[1].details.arcs[0].begIndex", "eq": 1 },
+        { "path": "detailsOfElements[1].details.arcs[0].endIndex", "eq": 2 },
+        { "path": "detailsOfElements[1].details.arcs[0].arcAngle", "approx": 0.5 }
+      ]
+    },
+    {
+      "id": "a closed outline of only two different points",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          {
+            "floorInd": 0,
+            "coordinates": [ { "x": 1530.0, "y": 220.0 }, { "x": 1531.0, "y": 220.0 }, { "x": 1530.0, "y": 220.0 } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "outline with fewer than three different points refused" }
+      ]
+    },
+    {
+      "id": "only the four valid hatches exist",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Hatch" },
+      "expect": [ { "path": "elements", "len": 4 } ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${h1}" } }, { "elementId": { "guid": "${h2}" } }, { "elementId": { "guid": "${k1}" } }, { "elementId": { "guid": "${k2}" } } ] } }
+  ]
+}

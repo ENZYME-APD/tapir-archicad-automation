@@ -5,14 +5,14 @@
   "requiresEmpty": [],
   "steps": [
     {
-      "id": "parent part under the General GDL Object (by main GUID)",
+      "id": "parent part under the Model Element (by name)",
       "command": "CreateLibraryParts",
       "creates": false,
       "params": {
         "libraryParts": [
           {
             "name": "TapirCheckLibFind Parent",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibFind/TapirCheckLibFind Parent.gsm",
             "a": 1.0,
             "b": 1.0,

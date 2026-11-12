@@ -1,5 +1,5 @@
 {
-  "title": "GetElementAtCoordinate finds a slab inside its outline, nothing outside it, and refuses a type that is not polygonal",
+  "title": "GetElementAtCoordinate finds a slab inside its outline (also one whose top is above the story level), nothing outside it, and refuses a type that is not polygonal",
   "minTapir": "1.8.1",
   "steps": [
     {
@@ -35,6 +35,35 @@
       "params": { "elementType": "Slab", "coordinate": { "x": 802, "y": 802 }, "filters": [ "IsVisibleByLayer" ] },
       "expect": [
         { "path": "found", "eq": true, "name": "found on its visible layer" }
+      ]
+    },
+    {
+      "id": "slab with its top well above the story level",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 1.5, "floorIndex": 0, "polygonCoordinates": [ { "x": 820, "y": 800 }, { "x": 824, "y": 800 }, { "x": 824, "y": 804 }, { "x": 820, "y": 804 } ] }
+        ]
+      },
+      "save": { "highSlab": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "inside the high slab, without z",
+      "command": "GetElementAtCoordinate",
+      "creates": false,
+      "params": { "elementType": "Slab", "coordinate": { "x": 822, "y": 802 } },
+      "expect": [
+        { "path": "found", "eq": true, "name": "found (#2635)" },
+        { "path": "elementId.guid", "eq": "${highSlab}", "name": "the high slab" }
+      ]
+    },
+    {
+      "id": "inside the high slab, z below its bottom",
+      "command": "GetElementAtCoordinate",
+      "creates": false,
+      "params": { "elementType": "Slab", "coordinate": { "x": 822, "y": 802 }, "z": 0 },
+      "expect": [
+        { "path": "found", "eq": false, "name": "a given z is still used as it is" }
       ]
     },
     {

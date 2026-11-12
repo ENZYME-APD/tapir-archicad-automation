@@ -1,0 +1,103 @@
+{
+  "title": "CreateLevelDimensions and ModifyLevelDimensions: measured or custom text content of both texts, read back by GetDetailsOfElements (#2656)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a static level dimension with the custom text FBOK",
+      "command": "CreateLevelDimensions",
+      "params": {
+        "levelDimensionsData": [
+          { "position": { "x": 840.0, "y": 800.0 }, "level": 0.5, "floorIndex": 0, "customText": "FBOK" }
+        ]
+      },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read the custom text back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "LevelDimension", "name": "a level dimension" },
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Custom", "name": "custom content as created" },
+        { "path": "detailsOfElements[0].details.customText", "eq": "FBOK", "name": "custom text as created" },
+        { "path": "detailsOfElements[0].details.level", "approx": 0.5, "name": "static level kept" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: another custom text and a custom second text",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "customText": "RDOK", "secondCustomText": "T2656" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "text change accepted" }
+      ]
+    },
+    {
+      "id": "texts after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Custom", "name": "still custom" },
+        { "path": "detailsOfElements[0].details.customText", "eq": "RDOK", "name": "new custom text" },
+        { "path": "detailsOfElements[0].details.secondTextContent", "eq": "Custom", "name": "second text custom" },
+        { "path": "detailsOfElements[0].details.secondCustomText", "eq": "T2656", "name": "second custom text" },
+        { "path": "detailsOfElements[0].details.position.x", "approx": 840.0, "name": "position kept" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: back to the measured value",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "textContent": "Measured" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "measured content accepted" }
+      ]
+    },
+    {
+      "id": "measured content after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Measured", "name": "measured content" },
+        { "path": "detailsOfElements[0].details.customText", "exists": false, "name": "no custom text reported" },
+        { "path": "detailsOfElements[0].details.secondTextContent", "eq": "Custom", "name": "second text left as it was" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: customText with textContent Measured",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "textContent": "Measured", "customText": "X" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "contradicting content refused" }
+      ]
+    },
+    {
+      "id": "the refused item changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Measured", "name": "content unchanged" }
+      ]
+    }
+  ]
+}
