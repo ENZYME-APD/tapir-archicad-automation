@@ -15309,6 +15309,43 @@
         "description": "Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).",
         "enum": ["Visible", "Hidden", "Unknown"]
     },
+    "StairRules": {
+        "type": "object",
+        "description": "The Rules and Standards of a Stair (API_StairRulesData): each limit as a value and whether it is applied (the check box of the rule). Archicad lays the steps out within the applied limits, so a stair can get another riser count and going than the ones given. SolveStairBaseline returns every field.",
+        "properties": {
+            "riserHeightMinValue": { "type": "number", "description": "Minimum riser height." },
+            "riserHeightMinApplied": { "type": "boolean", "description": "Whether the minimum riser height is applied." },
+            "riserHeightMaxValue": { "type": "number", "description": "Maximum riser height." },
+            "riserHeightMaxApplied": { "type": "boolean", "description": "Whether the maximum riser height is applied." },
+            "treadDepthMinValue": { "type": "number", "description": "Minimum going length." },
+            "treadDepthMinApplied": { "type": "boolean", "description": "Whether the minimum going length is applied." },
+            "treadDepthMaxValue": { "type": "number", "description": "Maximum going length." },
+            "treadDepthMaxApplied": { "type": "boolean", "description": "Whether the maximum going length is applied." },
+            "ruleMinValue": { "type": "number", "description": "Minimum of 2 risers + going (2R+G)." },
+            "ruleMinApplied": { "type": "boolean", "description": "Whether the minimum 2R+G is applied." },
+            "ruleMaxValue": { "type": "number", "description": "Maximum of 2 risers + going (2R+G)." },
+            "ruleMaxApplied": { "type": "boolean", "description": "Whether the maximum 2R+G is applied." },
+            "riserPlusGoingMinValue": { "type": "number", "description": "Minimum of riser height + going (R+G)." },
+            "riserPlusGoingMinApplied": { "type": "boolean", "description": "Whether the minimum R+G is applied." },
+            "riserPlusGoingMaxValue": { "type": "number", "description": "Maximum of riser height + going (R+G)." },
+            "riserPlusGoingMaxApplied": { "type": "boolean", "description": "Whether the maximum R+G is applied." },
+            "riserGoingRatioMinValue": { "type": "number", "description": "Minimum ratio of riser height to going (R/G)." },
+            "riserGoingRatioMinApplied": { "type": "boolean", "description": "Whether the minimum R/G is applied." },
+            "riserGoingRatioMaxValue": { "type": "number", "description": "Maximum ratio of riser height to going (R/G)." },
+            "riserGoingRatioMaxApplied": { "type": "boolean", "description": "Whether the maximum R/G is applied." },
+            "stairPitchMinValue": { "type": "number", "description": "Minimum stair pitch, as Archicad stores it." },
+            "stairPitchMinApplied": { "type": "boolean", "description": "Whether the minimum stair pitch is applied." },
+            "stairPitchMaxValue": { "type": "number", "description": "Maximum stair pitch, as Archicad stores it." },
+            "stairPitchMaxApplied": { "type": "boolean", "description": "Whether the maximum stair pitch is applied." },
+            "landingLengthMinValue": { "type": "number", "description": "Minimum length of an automatic landing." },
+            "landingLengthMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing length is applied." },
+            "walkingLineOffsetMinValue": { "type": "number", "description": "Minimum offset of an automatic landing (API_StairRulesData::walkingLineOffsetMinValue)." },
+            "walkingLineOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing offset is applied." },
+            "winderTurnOffsetMinValue": { "type": "number", "description": "Minimum winder width." },
+            "winderTurnOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum winder width is applied." }
+        },
+        "additionalProperties": false
+    },
     "StairLayoutSettings": {
         "type": "object",
         "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (part of API_StairLayoutData). Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout.",
@@ -28986,15 +29023,19 @@
             },
             "stepNum": {
                 "type": "integer",
-                "description": "Number of risers after the solver ran."
+                "description": "The number of risers as given, else the Stair tool default's. Not laid out: the solver checks the baseline only, and CreateStairs picks the riser count for totalHeight within rules (#2526)."
             },
             "riserHeight": {
                 "type": "number",
-                "description": "Height of each riser after the solver ran."
+                "description": "The riser height as given, else the Stair tool default's. Not laid out, like stepNum: CreateStairs picks it within rules."
             },
             "treadDepth": {
                 "type": "number",
-                "description": "Depth (going) of each tread after the solver ran."
+                "description": "The going as given, else the Stair tool default's stored going (which can read 0 or 1, #2525). Not laid out: the solver does not lay out the steps."
+            },
+            "rules": {
+                "$ref": "#/StairRules",
+                "description": "The Rules and Standards CreateStairs would create this stair with: the Stair tool defaults' rules, with the going pinned (treadDepthMinValue = treadDepthMaxValue = treadDepth, both applied, and the 2R+G, R+G and R/G rules released) when treadDepth is given, as CreateStairs pins it. Archicad lays the steps out within the applied limits when it creates the stair, so the riser count and riser height it picks for totalHeight must be within riserHeightMinValue..riserHeightMaxValue and the going within treadDepthMinValue..treadDepthMaxValue (each when applied); the stepNum, riserHeight and treadDepth above are only the given values or the tool defaults (#2526)."
             }
         },
         "additionalProperties": false,
@@ -29005,7 +29046,8 @@
             "flightWidth",
             "stepNum",
             "riserHeight",
-            "treadDepth"
+            "treadDepth",
+            "rules"
         ]
     },
     "ElementTriangulation": {
@@ -29470,7 +29512,7 @@
             "Solved",
             "NotSolved"
         ],
-        "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input."
+        "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input. It is about the baseline only: Correct does not mean that the riser count, riser height and going given fit totalHeight and the rules (#2526)."
     },
     "FavoriteSubelementType": {
         "type": "string",
