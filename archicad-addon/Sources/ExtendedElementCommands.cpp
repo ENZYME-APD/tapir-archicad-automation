@@ -3504,6 +3504,202 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     return changed;
 }
 
+namespace {
+
+// The floor plan display settings of a column that ModifyColumns writes (#2529), under the names
+// GetDetailsOfElements reads them.
+const char* ColumnDisplaySchemaProperties = R"(
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the column is shown on (Show On Stories), for example { \"showOnHome\": true } for the home story only. Setting it without isAutoOnStoryVisibility turns the automatic story visibility off, which Archicad would otherwise recompute it from. The item fails when Archicad does not take the given combination." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true, Archicad recomputes visibility automatically from the actual elevation of the column and ignores a visibility given together with it." },
+                        "displayOption": { "$ref": "#/DisplayOption" },
+                        "viewDepthLimitation": { "$ref": "#/ViewDepthLimitation" },
+                        "contourPen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the cut contour lines of the column core." },
+                        "contourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the cut contour lines of the column core." },
+                        "veneerLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the veneer lines of the column." },
+                        "veneerLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the veneer lines of the column." },
+                        "coreSymbolPen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the core symbol lines (slash, X or crosshair) of the column." },
+                        "belowViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the uncut lines of the column." },
+                        "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines of the column." },
+                        "aboveViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the overhead lines of the column." },
+                        "aboveViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the overhead lines of the column." },
+                        "hiddenLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the hidden lines of the column." },
+                        "hiddenLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the hidden lines of the column, for example a dashed line." },)";
+
+const char* ColumnDisplayKeys[] = {
+    "visibility", "isAutoOnStoryVisibility", "displayOption", "viewDepthLimitation",
+    "contourPen", "contourLineTypeId", "veneerLinePen", "veneerLineTypeId", "coreSymbolPen",
+    "belowViewLinePen", "belowViewLineTypeId", "aboveViewLinePen", "aboveViewLineTypeId",
+    "hiddenLinePen", "hiddenLineTypeId"
+};
+
+bool HasColumnDisplaySettings (const GS::ObjectState& details)
+{
+    for (const char* key : ColumnDisplayKeys) {
+        if (details.Contains (key)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+GS::Optional<GS::UniString> GetColumnDisplayLineType (const GS::ObjectState& details, const char* key, bool& has, API_AttributeIndex& lineType)
+{
+    const GS::ObjectState* lineTypeIdOs = details.Get (key);
+    has = lineTypeIdOs != nullptr;
+    if (!has) {
+        return {};
+    }
+    lineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeIdOs));
+    if (lineType == ACAPI_CreateAttributeIndex (-1)) {
+        return GS::UniString ("No Line Type attribute was found for ") + GS::UniString (key) + ".";
+    }
+    return {};
+}
+
+GS::Optional<GS::UniString> GetColumnDisplayPen (const GS::ObjectState& details, const char* key, bool& has, short& pen)
+{
+    Int32 value = 0;
+    has = details.Get (key, value);
+    if (!has) {
+        return {};
+    }
+    if (value < 1 || value > 255) {
+        return GS::UniString ("'") + GS::UniString (key) + "' must be a pen index from 1 to 255.";
+    }
+    pen = static_cast<short> (value);
+    return {};
+}
+
+// Writes the display settings given in details into element and mask. Everything is checked
+// before anything is written, so an invalid value leaves the column as it was.
+GS::Optional<GS::UniString> ApplyColumnDisplaySettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    API_ColumnType column = element.column;
+
+    GS::UniString str;
+    const bool hasDisplayOption = details.Get ("displayOption", str);
+    if (hasDisplayOption && !ElemDisplayOptionFromString (str, column.displayOption)) {
+        return GS::UniString ("Invalid 'displayOption'.");
+    }
+    const bool hasViewDepthLimitation = details.Get ("viewDepthLimitation", str);
+    if (hasViewDepthLimitation && !ViewDepthLimitationFromString (str, column.viewDepthLimitation)) {
+        return GS::UniString ("Invalid 'viewDepthLimitation'.");
+    }
+
+    bool hasCorePen = false, hasVenLinePen = false, hasCoreSymbolPen = false, hasBelowViewLinePen = false, hasAboveViewLinePen = false, hasHiddenLinePen = false;
+    bool hasContLtype = false, hasVenLineType = false, hasBelowViewLineType = false, hasAboveViewLineType = false, hasHiddenLineType = false;
+    const GS::Optional<GS::UniString> errors[] = {
+        GetColumnDisplayPen (details, "contourPen", hasCorePen, column.corePen),
+        GetColumnDisplayPen (details, "veneerLinePen", hasVenLinePen, column.venLinePen),
+        GetColumnDisplayPen (details, "coreSymbolPen", hasCoreSymbolPen, column.coreSymbolPen),
+        GetColumnDisplayPen (details, "belowViewLinePen", hasBelowViewLinePen, column.belowViewLinePen),
+        GetColumnDisplayPen (details, "aboveViewLinePen", hasAboveViewLinePen, column.aboveViewLinePen),
+        GetColumnDisplayPen (details, "hiddenLinePen", hasHiddenLinePen, column.hiddenLinePen),
+        GetColumnDisplayLineType (details, "contourLineTypeId", hasContLtype, column.contLtype),
+        GetColumnDisplayLineType (details, "veneerLineTypeId", hasVenLineType, column.venLineType),
+        GetColumnDisplayLineType (details, "belowViewLineTypeId", hasBelowViewLineType, column.belowViewLineType),
+        GetColumnDisplayLineType (details, "aboveViewLineTypeId", hasAboveViewLineType, column.aboveViewLineType),
+        GetColumnDisplayLineType (details, "hiddenLineTypeId", hasHiddenLineType, column.hiddenLineType)
+    };
+    for (const GS::Optional<GS::UniString>& error : errors) {
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    GS::ObjectState visibilityOs;
+    const bool hasVisibility = details.Get ("visibility", visibilityOs);
+    if (hasVisibility) {
+        column.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+        if (!details.Contains ("isAutoOnStoryVisibility")) {
+            // As on walls: while the automatic story visibility is on, Archicad recomputes the
+            // visibility from the column's elevation and drops the one given here.
+            column.isAutoOnStoryVisibility = false;
+        }
+    }
+    bool isAutoOnStoryVisibility = false;
+    const bool hasIsAutoOnStoryVisibility = details.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility);
+    if (hasIsAutoOnStoryVisibility) {
+        column.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+    }
+
+    element.column = column;
+    if (hasVisibility)                                  ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, visibility);
+    if (hasVisibility || hasIsAutoOnStoryVisibility)    ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, isAutoOnStoryVisibility);
+    if (hasDisplayOption)                               ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, displayOption);
+    if (hasViewDepthLimitation)                         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, viewDepthLimitation);
+    if (hasCorePen)                                     ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, corePen);
+    if (hasContLtype)                                   ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, contLtype);
+    if (hasVenLinePen)                                  ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, venLinePen);
+    if (hasVenLineType)                                 ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, venLineType);
+    if (hasCoreSymbolPen)                               ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coreSymbolPen);
+    if (hasBelowViewLinePen)                            ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, belowViewLinePen);
+    if (hasBelowViewLineType)                           ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, belowViewLineType);
+    if (hasAboveViewLinePen)                            ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, aboveViewLinePen);
+    if (hasAboveViewLineType)                           ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, aboveViewLineType);
+    if (hasHiddenLinePen)                               ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, hiddenLinePen);
+    if (hasHiddenLineType)                              ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, hiddenLineType);
+    if (HasColumnDisplaySettings (details)) {
+        changed = true;
+    }
+    return {};
+}
+
+// Compares the display settings given in details with the column as Archicad has it after the
+// change, and names every one it did not take. Empty when all were applied.
+GS::UniString GetColumnDisplaySettingsNotApplied (const API_ColumnType& wanted, const API_ColumnType& got, const GS::ObjectState& details)
+{
+    GS::UniString notApplied;
+    const auto checkEnum = [&] (const char* key, int wantedValue, int gotValue) {
+        if (details.Contains (key) && wantedValue != gotValue) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", key);
+        }
+    };
+    const auto checkPen = [&] (const char* key, short wantedPen, short gotPen) {
+        if (details.Contains (key) && wantedPen != gotPen) {
+            notApplied += GS::UniString::Printf (" %s is %d.", key, static_cast<int> (gotPen));
+        }
+    };
+    const auto checkLineType = [&] (const char* key, const API_AttributeIndex& wantedLineType, const API_AttributeIndex& gotLineType) {
+        if (details.Contains (key) && !(wantedLineType == gotLineType)) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", key);
+        }
+    };
+
+    const bool visibilityGiven = details.Contains ("visibility");
+    if ((visibilityGiven || details.Contains ("isAutoOnStoryVisibility")) && wanted.isAutoOnStoryVisibility != got.isAutoOnStoryVisibility) {
+        notApplied += got.isAutoOnStoryVisibility ? " isAutoOnStoryVisibility is still true." : " isAutoOnStoryVisibility is false.";
+    }
+    // A visibility given together with isAutoOnStoryVisibility true is recomputed by Archicad, so
+    // it is only compared while the automatic visibility is off.
+    if (visibilityGiven && !wanted.isAutoOnStoryVisibility && !got.isAutoOnStoryVisibility) {
+        const API_StoryVisibility& w = wanted.visibility;
+        const API_StoryVisibility& g = got.visibility;
+        if (g.showOnHome != w.showOnHome || g.showAllAbove != w.showAllAbove || g.showAllBelow != w.showAllBelow ||
+            g.showRelAbove != w.showRelAbove || g.showRelBelow != w.showRelBelow) {
+            notApplied += GS::UniString::Printf (" visibility is showOnHome %s, showAllAbove %s, showAllBelow %s, showRelAbove %d, showRelBelow %d.",
+                g.showOnHome ? "true" : "false", g.showAllAbove ? "true" : "false", g.showAllBelow ? "true" : "false",
+                static_cast<int> (g.showRelAbove), static_cast<int> (g.showRelBelow));
+        }
+    }
+    checkEnum ("displayOption", wanted.displayOption, got.displayOption);
+    checkEnum ("viewDepthLimitation", wanted.viewDepthLimitation, got.viewDepthLimitation);
+    checkPen ("contourPen", wanted.corePen, got.corePen);
+    checkPen ("veneerLinePen", wanted.venLinePen, got.venLinePen);
+    checkPen ("coreSymbolPen", wanted.coreSymbolPen, got.coreSymbolPen);
+    checkPen ("belowViewLinePen", wanted.belowViewLinePen, got.belowViewLinePen);
+    checkPen ("aboveViewLinePen", wanted.aboveViewLinePen, got.aboveViewLinePen);
+    checkPen ("hiddenLinePen", wanted.hiddenLinePen, got.hiddenLinePen);
+    checkLineType ("contourLineTypeId", wanted.contLtype, got.contLtype);
+    checkLineType ("veneerLineTypeId", wanted.venLineType, got.venLineType);
+    checkLineType ("belowViewLineTypeId", wanted.belowViewLineType, got.belowViewLineType);
+    checkLineType ("aboveViewLineTypeId", wanted.aboveViewLineType, got.aboveViewLineType);
+    checkLineType ("hiddenLineTypeId", wanted.hiddenLineType, got.hiddenLineType);
+    return notApplied;
+}
+
+} // namespace
+
 bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, const Stories& stories)
 {
     bool changed = false;
@@ -14956,7 +15152,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
-                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },)") + ColumnSurfaceAndFillSchemaProperties + R"(
+                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -14982,6 +15178,14 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
     }
 
     const Stories stories = GetStories ();
+
+    struct ColumnDisplayCheck {
+        UIndex                  resultIndex;
+        API_Guid                guid;
+        API_ColumnType          wanted;
+        const GS::ObjectState*  item;
+    };
+    GS::Array<ColumnDisplayCheck> displayChecks;
 
     return ExecuteModifyWithResults ("Modify Columns", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
@@ -15016,6 +15220,20 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, settingsError.Get ()));
                 continue;
             }
+            const GS::Optional<GS::UniString> displayError = ApplyColumnDisplaySettings (element, mask, item, changed);
+            if (displayError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, displayError.Get ()));
+                continue;
+            }
+            if (HasColumnDisplaySettings (item)) {
+                // This item's result is the next one pushed; it is checked after the command.
+                ColumnDisplayCheck check = {};
+                check.resultIndex = results.GetSize ();
+                check.guid = element.header.guid;
+                check.wanted = element.column;
+                check.item = &item;
+                displayChecks.Push (check);
+            }
             const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer");
             if (!changed && !hasSectionFields) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No column fields to modify."));
@@ -15040,6 +15258,27 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             }
 
             results.Push (CreateSuccessfulExecutionResult ());
+        }
+    }, [&](GS::Array<GS::ObjectState>& results) {
+        // Read back after the undoable command has ended, so a display setting Archicad did not
+        // take (a story visibility combination it drops, for example) fails the item instead of
+        // reporting a success (#2529).
+        for (const ColumnDisplayCheck& check : displayChecks) {
+            bool success = false;
+            if (check.resultIndex >= results.GetSize () || !results[check.resultIndex].Get ("success", success) || !success) {
+                continue;
+            }
+            API_Element changedElement = {};
+            changedElement.header.guid = check.guid;
+            GSErrCode err = ACAPI_Element_Get (&changedElement);
+            if (err != NoError) {
+                results[check.resultIndex] = CreateFailedExecutionResult (err, "Failed to read the column back after the change.");
+                continue;
+            }
+            const GS::UniString notApplied = GetColumnDisplaySettingsNotApplied (check.wanted, changedElement.column, *check.item);
+            if (!notApplied.IsEmpty ()) {
+                results[check.resultIndex] = CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every given display setting to the column; the other given fields were changed.") + notApplied);
+            }
         }
     });
 }
