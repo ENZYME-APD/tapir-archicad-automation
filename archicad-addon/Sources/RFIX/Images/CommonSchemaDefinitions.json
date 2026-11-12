@@ -15339,7 +15339,23 @@
             },
             "totalHeight": {
                 "type": "number",
-                "description": "Total height of the stair."
+                "description": "Total height of the stair. With a top link (set by relativeTopStory in CreateStairs and ModifyStairs) Archicad computes it from the story levels and topOffset. Archicad does not return the top link itself when the stair is read, so it is not reported here."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15); only used when the top is linked."
+            },
+            "treadDepthLocked": {
+                "type": "boolean",
+                "description": "Whether the going lengths are locked."
+            },
+            "totalHeightLocked": {
+                "type": "boolean",
+                "description": "Whether the total height is locked."
+            },
+            "rules": {
+                "$ref": "#/StairRules",
+                "description": "The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied."
             },
             "level": {
                 "type": "number",
@@ -15648,6 +15664,10 @@
             "riserHeight",
             "flightWidth",
             "totalHeight",
+            "topOffset",
+            "treadDepthLocked",
+            "totalHeightLocked",
+            "rules",
             "level",
             "zCoordinate",
             "finishVisible",
@@ -15666,7 +15686,7 @@
     },
     "StairRules": {
         "type": "object",
-        "description": "The Rules and Standards of a Stair (API_StairRulesData): each limit as a value and whether it is applied (the check box of the rule). Archicad lays the steps out within the applied limits, so a stair can get another riser count and going than the ones given. SolveStairBaseline returns every field.",
+        "description": "The Rules and Standards of a Stair (API_StairRulesData): each limit as a value and whether it is applied (the check box of the rule). Archicad lays the steps out within the applied limits, so a stair can get another riser count and going than the ones given. GetDetailsOfElements and SolveStairBaseline return every field; CreateStairs and ModifyStairs write only the given ones.",
         "properties": {
             "riserHeightMinValue": { "type": "number", "description": "Minimum riser height." },
             "riserHeightMinApplied": { "type": "boolean", "description": "Whether the minimum riser height is applied." },

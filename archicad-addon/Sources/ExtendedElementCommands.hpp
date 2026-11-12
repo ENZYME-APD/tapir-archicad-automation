@@ -441,6 +441,10 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element);
 // GetDetailsOfElements returns (#2660).
 void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& element);
 
+// The Rules and Standards of a stair (API_StairRulesData), with the keys of the StairRules
+// definition: GetDetailsOfElements and SolveStairBaseline return them (#2531, #2526).
+GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules);
+
 class CreateElevationsCommand : public CommandBase
 {
 public:
