@@ -2437,6 +2437,34 @@ GS::Optional<GS::UniString> CheckSurfaceAndFillAttributeIds (
 
 } // namespace
 
+// Writes the cross section size of a column or beam segment. Archicad keeps a linked segment
+// (isWidthAndHeightLinked, round columns too) square from nominalHeight, so a width written alone
+// was undone and the segment kept its old size. Linked, the given width (else the given height) is
+// written to both. A width and a height given together with different values unlink the segment,
+// unless isWidthAndHeightLinked is given.
+void ApplySectionSize (API_AssemblySegmentData& segment, const GS::Optional<double>& width, const GS::Optional<double>& height, bool hasIsWidthAndHeightLinked, bool isWidthAndHeightLinked)
+{
+    if (hasIsWidthAndHeightLinked) {
+        segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
+    } else if (width.HasValue () && height.HasValue () && std::fabs (width.Get () - height.Get ()) > 1e-9) {
+        segment.isWidthAndHeightLinked = false;
+    }
+    if (segment.isWidthAndHeightLinked) {
+        const GS::Optional<double>& size = width.HasValue () ? width : height;
+        if (size.HasValue ()) {
+            segment.nominalWidth = size.Get ();
+            segment.nominalHeight = size.Get ();
+        }
+        return;
+    }
+    if (width.HasValue ()) {
+        segment.nominalWidth = width.Get ();
+    }
+    if (height.HasValue ()) {
+        segment.nominalHeight = height.Get ();
+    }
+}
+
 GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
 {
     const GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (details, {}, "coverFill");
@@ -3597,15 +3625,7 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
             }
         }
         API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
-        if (hasIsWidthAndHeightLinked) {
-            segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
-        }
-        if (width.HasValue ()) {
-            segment.nominalWidth = width.Get ();
-        }
-        if (depth.HasValue ()) {
-            segment.nominalHeight = depth.Get ();
-        }
+        ApplySectionSize (segment, width, depth, hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
         if (hasCircleBased) {
             segment.circleBased = circleBased;
         }
@@ -3651,15 +3671,7 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
     for (GSSize i = 0; i < nSegments; ++i) {
         API_AssemblySegmentData& segment = memo.beamSegments[i].assemblySegmentData;
-        if (hasIsWidthAndHeightLinked) {
-            segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
-        }
-        if (width.HasValue ()) {
-            segment.nominalWidth = width.Get ();
-        }
-        if (height.HasValue ()) {
-            segment.nominalHeight = height.Get ();
-        }
+        ApplySectionSize (segment, width, height, hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
         if (hasCircleBased) {
             segment.circleBased = circleBased;
         }
@@ -5811,7 +5823,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         },
                         "isWidthAndHeightLinked": {
                             "type": "boolean",
-                            "description": "When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments."
+                            "description": "When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the tool default (or favoriteName) is used. Applied to all segments."
                         },
                         "buildingMaterialId": {
                             "$ref": "#/AttributeId",
@@ -5949,15 +5961,7 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
         GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
         for (GSSize i = 0; i < nSegments; ++i) {
             API_AssemblySegmentData& segment = memo.beamSegments[i].assemblySegmentData;
-            if (hasIsWidthAndHeightLinked) {
-                segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
-            }
-            if (width.HasValue ()) {
-                segment.nominalWidth = width.Get ();
-            }
-            if (height.HasValue ()) {
-                segment.nominalHeight = height.Get ();
-            }
+            ApplySectionSize (segment, width, height, hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
             if (hasCircleBased) {
                 segment.circleBased = circleBased;
             }
@@ -11249,7 +11253,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "anchorPoint": { "$ref": "#/BeamAnchorPoint" },
                         "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
-                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
+                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
@@ -14457,9 +14461,9 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "wrapping": { "type": "boolean" },
                         "topOffset": { "type": "number" },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column. Applied to all segments." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column, the diameter of a round one. Applied to all segments." },
                         "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments." },
-                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and depth equal and setting one changes the other - set to false first to give width/depth independent values. Applied to all segments." },
+                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
