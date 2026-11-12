@@ -14282,6 +14282,81 @@
             "origin"
         ]
     },
+    "AngleDimensionLine": {
+        "type": "object",
+        "description": "A line measured by an angle dimension, given by two of its points. The angle is measured between the two lines (they are extended to their intersection, the center of the dimension arc).",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate",
+            "endCoordinate"
+        ]
+    },
+    "AngleDimensionDetails": {
+        "type": "object",
+        "properties": {
+            "firstLine": {
+                "$ref": "#/AngleDimensionLine",
+                "description": "The first measured line: its first two reference points."
+            },
+            "secondLine": {
+                "$ref": "#/AngleDimensionLine",
+                "description": "The second measured line: its last two reference points."
+            },
+            "arcPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point the dimension arc was fitted to."
+            },
+            "arcCenter": {
+                "$ref": "#/Coordinate2D",
+                "description": "The center of the dimension arc, the intersection of the two lines."
+            },
+            "radius": {
+                "type": "number",
+                "description": "The radius of the dimension arc."
+            },
+            "measuredAngle": {
+                "type": "number",
+                "description": "The angle the dimension measures, in radians."
+            },
+            "smallArc": {
+                "type": "boolean",
+                "description": "Whether the smaller angle between the lines is measured (inner dimension) rather than the larger one."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Pen index of the dimension and witness lines."
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "Height of the dimension text in millimeters."
+            },
+            "textPen": {
+                "type": "integer",
+                "description": "Pen index of the dimension text."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "firstLine",
+            "secondLine",
+            "arcPosition",
+            "arcCenter",
+            "radius",
+            "measuredAngle",
+            "smallArc",
+            "pen",
+            "textHeight",
+            "textPen"
+        ]
+    },
     "DimensionDetails": {
         "type": "object",
         "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes. The witness points are read with GetDimensionData.",
@@ -15208,6 +15283,9 @@
             },
             {
                 "$ref": "#/LevelDimensionDetails"
+            },
+            {
+                "$ref": "#/AngleDimensionDetails"
             },
             {
                 "$ref": "#/DimensionDetails"

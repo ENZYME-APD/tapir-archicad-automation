@@ -3437,6 +3437,27 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
             }
 
+            case API_AngleDimensionID: {
+                // The reference points as CreateAngleDimensions takes them, and the measured angle.
+                GS::ObjectState firstLine;
+                firstLine.Add ("begCoordinate", Create2DCoordinateObjectState (elem.angleDimension.base[0].loc));
+                firstLine.Add ("endCoordinate", Create2DCoordinateObjectState (elem.angleDimension.base[1].loc));
+                GS::ObjectState secondLine;
+                secondLine.Add ("begCoordinate", Create2DCoordinateObjectState (elem.angleDimension.base[2].loc));
+                secondLine.Add ("endCoordinate", Create2DCoordinateObjectState (elem.angleDimension.base[3].loc));
+                typeSpecificDetails.Add ("firstLine", firstLine);
+                typeSpecificDetails.Add ("secondLine", secondLine);
+                typeSpecificDetails.Add ("arcPosition", Create2DCoordinateObjectState (elem.angleDimension.pos));
+                typeSpecificDetails.Add ("arcCenter", Create2DCoordinateObjectState (elem.angleDimension.origo));
+                typeSpecificDetails.Add ("radius", elem.angleDimension.radius);
+                typeSpecificDetails.Add ("measuredAngle", elem.angleDimension.dimVal);
+                typeSpecificDetails.Add ("smallArc", elem.angleDimension.smallArc);
+                typeSpecificDetails.Add ("pen", (Int32) elem.angleDimension.linPen);
+                typeSpecificDetails.Add ("textHeight", elem.angleDimension.note.noteSize);
+                typeSpecificDetails.Add ("textPen", (Int32) elem.angleDimension.note.notePen);
+                break;
+            }
+
             case API_ObjectID:
             case API_LampID:
                 AddObjectLampDetails (typeSpecificDetails, elem, stories);

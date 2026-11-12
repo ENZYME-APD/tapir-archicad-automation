@@ -6640,6 +6640,205 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
     return ApplyLevelDimensionSettings (parameters, element, nullptr);
 }
 
+CreateAngleDimensionsCommand::CreateAngleDimensionsCommand () :
+    CreateElementsCommandBase ("CreateAngleDimensions", API_AngleDimensionID, "angleDimensionsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateAngleDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "angleDimensionsData": {
+            "type": "array",
+            "description": "Array of data to create Angle Dimensions (the Angle Dimension tool). They are created in the current database (the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active), or in the one given by databaseId.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Angle Dimension: the angle between two lines, each given by two points. The dimension is static: it is not associated with the elements the points lie on.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of an Angle Dimension favorite to base the new element on. Its settings (layer, pens, markers, text style) are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "firstLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The first measured line."
+                    },
+                    "secondLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The second measured line. It must not be parallel to the first one."
+                    },
+                    "arcPosition": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "A point the dimension arc passes through. Its distance from the intersection of the two lines is the radius of the arc, and the side it lies on chooses which of the angles between the lines is measured, as clicking the arc's position does with the Angle Dimension tool."
+                    },
+                    "smallArc": {
+                        "type": "boolean",
+                        "description": "Measure the smaller angle between the lines (inner dimension) rather than the larger one (outer dimension). Optional parameter, by default the favorite's or the tool default's setting."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "The index of the floor to place the dimension on, when it is created on the floor plan. Optional parameter, by default the current floor is used."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Angle Dimension tool default is used."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension and witness lines. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "firstLine",
+                    "secondLine",
+                    "arcPosition"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a section, an elevation, a worksheet or a detail (see GetDatabases). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "angleDimensionsData"
+    ]
+})";
+}
+
+static GS::Optional<GS::ObjectState> GetAngleDimensionLine (const GS::ObjectState& parameters, const char* name, API_Coord& beg, API_Coord& end)
+{
+    const GS::ObjectState* lineOS = parameters.Get (name);
+    const GS::ObjectState* begOS = lineOS != nullptr ? lineOS->Get ("begCoordinate") : nullptr;
+    const GS::ObjectState* endOS = lineOS != nullptr ? lineOS->Get ("endCoordinate") : nullptr;
+    if (begOS == nullptr || endOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Missing '") + name + "' with 'begCoordinate' and 'endCoordinate'.");
+    }
+    beg = Get2DCoordinateFromObjectState (*begOS);
+    end = Get2DCoordinateFromObjectState (*endOS);
+    if (std::hypot (end.x - beg.x, end.y - beg.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Zero-length '") + name + "': 'begCoordinate' and 'endCoordinate' are identical.");
+    }
+    return {};
+}
+
+GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
+{
+    API_Coord a1 = {}, a2 = {}, b1 = {}, b2 = {};
+    {
+        auto error = GetAngleDimensionLine (parameters, "firstLine", a1, a2);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    {
+        auto error = GetAngleDimensionLine (parameters, "secondLine", b1, b2);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    const GS::ObjectState* arcPositionOS = parameters.Get ("arcPosition");
+    if (arcPositionOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'arcPosition' parameter.");
+    }
+    const API_Coord arcPosition = Get2DCoordinateFromObjectState (*arcPositionOS);
+
+    // The center of the dimension arc is the intersection of the two (infinite) lines,
+    // as the Angle Dimension tool puts it.
+    const double d1x = a2.x - a1.x, d1y = a2.y - a1.y;
+    const double d2x = b2.x - b1.x, d2y = b2.y - b1.y;
+    const double cross = d1x * d2y - d1y * d2x;
+    if (std::fabs (cross) < 1e-9 * std::hypot (d1x, d1y) * std::hypot (d2x, d2y)) {
+        return CreateErrorResponse (APIERR_BADPARS, "'firstLine' and 'secondLine' are parallel, so they have no angle to dimension.");
+    }
+    const double t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / cross;
+    API_Coord origo = {};
+    origo.x = a1.x + t * d1x;
+    origo.y = a1.y + t * d1y;
+    if (std::hypot (arcPosition.x - origo.x, arcPosition.y - origo.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, "'arcPosition' is the intersection of the two lines; it must be away from it, on the dimension arc.");
+    }
+
+    // A static angle dimension, as Do_CreateStaticAngleDimension of the DevKit's Element_Test
+    // example creates it: the four reference points, the arc position and its center.
+    element.angleDimension.base[0].loc = a1;
+    element.angleDimension.base[1].loc = a2;
+    element.angleDimension.base[2].loc = b1;
+    element.angleDimension.base[3].loc = b2;
+    element.angleDimension.pos = arcPosition;
+    element.angleDimension.origo = origo;
+
+    parameters.Get ("smallArc", element.angleDimension.smallArc);
+
+    Int32 floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = static_cast<short> (floorIndex);
+    }
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
+        }
+        element.angleDimension.linPen = static_cast<short> (pen);
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
+        }
+        element.angleDimension.note.noteSize = textHeight;
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
+        }
+        element.angleDimension.note.notePen = static_cast<short> (textPen);
+    }
+
+    return {};
+}
+
+// With a section or elevation window active, ACAPI_Element_Create of a dimension can report
+// success and hand back a GUID although no element was created (#510): the new element is
+// read back, so the caller gets an error instead of an id that resolves to nothing.
+GSErrCode CreateAngleDimensionsCommand::AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
+{
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    return ACAPI_Element_Get (&created) == NoError ? NoError : APIERR_GENERAL;
+}
+
 ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :
     CommandBase (CommonSchema::Used)
 {
