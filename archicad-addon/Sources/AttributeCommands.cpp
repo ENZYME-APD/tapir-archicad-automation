@@ -2954,6 +2954,60 @@ static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { retur
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.GetProfileItemPtr (); }
 #endif
 
+// Applies one ProfileEdgeOverride (CreateProfiles' skinOverrides[].edgeOverrides and newSkins[].edgeOverrides)
+// to an edge of a profile skin. An edge's surface is either the surface of the skin's building material
+// (ProfileEdgeData::SurfaceFromBuildMatFlag set) or the edge's own material, which is then a surface
+// (API_MaterialID) index - the profile attribute import maps it as one (MapImportedAttributeReferences), and the
+// Profile Manager calls it "Apply Custom Surface or Line Type to Profile Edge". surfaceId sets a custom
+// surface and clears the flag; surfaceFromBuildingMaterial, applied last, sets or clears the flag itself.
+static void ApplyProfileEdgeOverride (ProfileEdgeData& edgeData, const GS::ObjectState& edgeOverride)
+{
+    Int32 pen;
+    if (edgeOverride.Get ("pen", pen)) {
+        edgeData.SetPen ((short) pen);
+    }
+    bool isVisibleLine;
+    if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
+        edgeData.SetVisibleLine (isVisibleLine);
+    }
+    bool isInnerLine;
+    if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
+        edgeData.SetInnerLine (isInnerLine);
+    }
+    bool isCutEndLine;
+    if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
+        edgeData.SetCutEndLine (isCutEndLine);
+    }
+    GS::ObjectState lineTypeId;
+    if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
+        API_AttributeIndex idx;
+        if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, idx)) {
+            edgeData.SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
+        }
+    }
+    // Kept for compatibility: the edge's material is a surface index, so a building material is not stored in it,
+    // the edge only takes the surface of the skin's building material.
+    GS::ObjectState buildingMaterialId;
+    if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
+        API_AttributeIndex idx;
+        if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
+            edgeData.SetSurfaceFromBuildMat (true);
+        }
+    }
+    GS::ObjectState surfaceId;
+    if (edgeOverride.Get ("surfaceId", surfaceId)) {
+        API_AttributeIndex idx;
+        if (GetAttributeIndexFromAttributeId (surfaceId, API_MaterialID, idx)) {
+            edgeData.SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
+            edgeData.SetSurfaceFromBuildMat (false);
+        }
+    }
+    bool surfaceFromBuildingMaterial;
+    if (edgeOverride.Get ("surfaceFromBuildingMaterial", surfaceFromBuildingMaterial)) {
+        edgeData.SetSurfaceFromBuildMat (surfaceFromBuildingMaterial);
+    }
+}
+
 // The component area method of a profile skin (Profile Manager): the line or circle the skin's area is
 // projected onto, stored as the SkinProjectionProperties of its ProfileItem. Read as GetProfiles'
 // skins[].areaMethod, written by CreateProfiles' skinOverrides[].areaMethod and newSkins[].areaMethod.
@@ -3163,37 +3217,7 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
                 if (edgeData == nullptr) {
                     continue;
                 }
-                Int32 pen;
-                if (edgeOverride.Get ("pen", pen)) {
-                    edgeData->SetPen ((short) pen);
-                }
-                bool isVisibleLine;
-                if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
-                    edgeData->SetVisibleLine (isVisibleLine);
-                }
-                bool isInnerLine;
-                if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
-                    edgeData->SetInnerLine (isInnerLine);
-                }
-                bool isCutEndLine;
-                if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
-                    edgeData->SetCutEndLine (isCutEndLine);
-                }
-                GS::ObjectState lineTypeId;
-                if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
-                    API_AttributeIndex idx;
-                    if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, idx)) {
-                        edgeData->SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                    }
-                }
-                GS::ObjectState buildingMaterialId;
-                if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
-                    API_AttributeIndex idx;
-                    if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
-                        edgeData->SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                        edgeData->SetSurfaceFromBuildMat (true);
-                    }
-                }
+                ApplyProfileEdgeOverride (*edgeData, edgeOverride);
             }
         }
 
@@ -3580,6 +3604,8 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
     std::vector<ProfileEdgeData> edges (edgeCount);
     for (ProfileEdgeData& edge : edges) {
         edge.SetVisibleLine (true);
+        // Like a new edge in the Profile Manager: no custom surface, the skin's building material gives it.
+        edge.SetSurfaceFromBuildMat (true);
     }
     profileData.SetProfileEdgeData (edges);
     outHatch.SetProfileData (std::move (profileData));
@@ -3601,37 +3627,7 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
             if (edgeData == nullptr) {
                 continue;
             }
-            Int32 pen;
-            if (edgeOverride.Get ("pen", pen)) {
-                edgeData->SetPen ((short) pen);
-            }
-            bool isVisibleLine;
-            if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
-                edgeData->SetVisibleLine (isVisibleLine);
-            }
-            bool isInnerLine;
-            if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
-                edgeData->SetInnerLine (isInnerLine);
-            }
-            bool isCutEndLine;
-            if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
-                edgeData->SetCutEndLine (isCutEndLine);
-            }
-            GS::ObjectState lineTypeId;
-            if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
-                API_AttributeIndex idx;
-                if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, idx)) {
-                    edgeData->SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                }
-            }
-            GS::ObjectState buildingMaterialId;
-            if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
-                API_AttributeIndex idx;
-                if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
-                    edgeData->SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                    edgeData->SetSurfaceFromBuildMat (true);
-                }
-            }
+            ApplyProfileEdgeOverride (*edgeData, edgeOverride);
         }
     }
 
@@ -4046,9 +4042,16 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                                 const auto& edgesList = skin.AddList<GS::ObjectState> ("edges");
                                 ForEachProfileEdge (hatch, [&] (const ProfileEdgeData& edgeData) {
                                     GS::ObjectState edge;
-                                    GS::Optional<GS::ObjectState> edgeMaterialId = GetAttributeIdFromIndex (API_BuildingMaterialID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetMaterial ())));
-                                    if (edgeMaterialId.HasValue ()) {
-                                        edge.Add ("buildingMaterialId", *edgeMaterialId);
+                                    // The edge's material is a surface (its custom surface), used only when the edge
+                                    // does not take the surface of the skin's building material (see
+                                    // ApplyProfileEdgeOverride). With the flag set it is not an attribute reference.
+                                    const bool surfaceFromBuildMat = edgeData.IsSurfaceFromBuildMat ();
+                                    edge.Add ("surfaceFromBuildingMaterial", surfaceFromBuildMat);
+                                    if (!surfaceFromBuildMat) {
+                                        GS::Optional<GS::ObjectState> edgeSurfaceId = GetAttributeIdFromIndex (API_MaterialID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetMaterial ())));
+                                        if (edgeSurfaceId.HasValue ()) {
+                                            edge.Add ("surfaceId", *edgeSurfaceId);
+                                        }
                                     }
                                     edge.Add ("pen", (Int32) edgeData.GetPen ());
                                     GS::Optional<GS::ObjectState> edgeLineTypeId = GetAttributeIdFromIndex (API_LinetypeID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetLineType ())));
@@ -10880,7 +10883,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
         }
     }
     // Profiles: the building material, surface, fill and contour line type of every skin, the cut end line type
-    // of a profile skin and the building material and line type of its edges.
+    // of a profile skin and the custom surface and line type of its edges.
     attributes.Clear ();
     if (ACAPI_Attribute_GetAttributesByType (API_ProfileID, attributes) == NoError) {
         for (API_Attribute& listed : attributes) {
@@ -10925,7 +10928,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                         profileItem->SetCutEndLineType (FromPlainAttrIndex (newPlain));
                         changed = true;
                     }
-                    if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_BuildingMaterialID)) {
+                    if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_MaterialID)) {
                         const UIndex edgeCount = hatch.GetCoords ().GetSize ();
                         for (UIndex e = 0; e < edgeCount; ++e) {
                             ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (e);
@@ -10936,7 +10939,9 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                                 edgeData->SetLineType (FromPlainAttrIndex (newPlain));
                                 changed = true;
                             }
-                            if (job.type == API_BuildingMaterialID && RewritePlain (ToPlainAttrIndex (edgeData->GetMaterial ()), job, newPlain)) {
+                            // The edge's material is its custom surface, an attribute reference only when the edge
+                            // does not take the surface of the skin's building material.
+                            if (job.type == API_MaterialID && !edgeData->IsSurfaceFromBuildMat () && RewritePlain (ToPlainAttrIndex (edgeData->GetMaterial ()), job, newPlain)) {
                                 edgeData->SetMaterial (FromPlainAttrIndex (newPlain));
                                 changed = true;
                             }
@@ -12660,8 +12665,8 @@ void CollectReferencesOfAttributes (API_AttrTypeID typeID, const char* typeName,
 // - a surface: the fill of its vectorial hatching;
 // - an MEP system: its fill, center line type, body surface and insulation surface;
 // - a profile: per skin, its building material, surface or fill (each only when the skin is that kind of
-//   hatch), its contour and cut end line types, and the line type of each edge. An edge's own material is not
-//   checked: the DevKit does not say which attribute type ProfileEdgeData::material is.
+//   hatch), its contour and cut end line types, and the line type and custom surface of each edge (an edge
+//   that takes the surface of the skin's building material has no surface of its own).
 // Returns the number of attributes read.
 Int32 CollectAttributeOwnerReferences (GS::Array<AttributeOwnerReferences>& result, GS::Array<GS::UniString>& warnings)
 {
@@ -12724,6 +12729,10 @@ Int32 CollectAttributeOwnerReferences (GS::Array<AttributeOwnerReferences>& resu
                     Int32 edge = 0;
                     ForEachProfileEdge (hatch, [&] (const ProfileEdgeData& edgeData) {
                         references.Push ({ API_LinetypeID, ToPlainAttrIndex (edgeData.GetLineType ()), prefix + GS::UniString::Printf ("edges[%d].lineTypeId", (int) edge), false });
+                        const Int32 edgeSurface = ToPlainAttrIndex (edgeData.GetMaterial ());
+                        if (!edgeData.IsSurfaceFromBuildMat () && edgeSurface > 0) {
+                            references.Push ({ API_MaterialID, edgeSurface, prefix + GS::UniString::Printf ("edges[%d].surfaceId", (int) edge), false });
+                        }
                         ++edge;
                     });
                 }

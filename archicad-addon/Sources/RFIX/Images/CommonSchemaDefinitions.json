@@ -2552,8 +2552,13 @@
         "type": "object",
         "description": "One edge of a profile skin's outline.",
         "properties": {
-            "buildingMaterialId": {
-                "$ref": "#/AttributeIdArrayItem"
+            "surfaceFromBuildingMaterial": {
+                "type": "boolean",
+                "description": "Whether the edge takes the surface of the skin's building material. False when the edge has a custom surface (surfaceId)."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The custom surface of the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Only when surfaceFromBuildingMaterial is false and a surface is set."
             },
             "pen": {
                 "type": "integer"
@@ -3566,7 +3571,16 @@
                 "$ref": "#/AttributeIdArrayItem"
             },
             "buildingMaterialId": {
-                "$ref": "#/AttributeIdArrayItem"
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "Kept for compatibility: makes the edge take the surface of the skin's building material, like surfaceFromBuildingMaterial true. The building material itself is not stored on the edge."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "A custom surface for the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Sets surfaceFromBuildingMaterial to false."
+            },
+            "surfaceFromBuildingMaterial": {
+                "type": "boolean",
+                "description": "True: the edge takes the surface of the skin's building material, its custom surface is no longer used. False: the edge uses its custom surface (give surfaceId if it has none yet). Applied after buildingMaterialId and surfaceId."
             }
         },
         "additionalProperties": false,
