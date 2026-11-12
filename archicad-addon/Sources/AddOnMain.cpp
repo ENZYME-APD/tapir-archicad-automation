@@ -2345,11 +2345,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartScriptsCommand> (
             libraryCommands, "1.7.3",
-            "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
+            "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<SetLibraryPartMetadataCommand> (
             libraryCommands, "1.8.0",
-            "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
+            "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<GetLibraryPartPicturesCommand> (
             libraryCommands, "1.8.0",
@@ -2357,7 +2357,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartPicturesCommand> (
             libraryCommands, "1.8.0",
-            "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+            "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<GetLibraryPartCustomSectionCommand> (
             libraryCommands, "1.8.0",
@@ -2365,7 +2365,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartCustomSectionCommand> (
             libraryCommands, "1.8.0",
-            "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+            "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<CreateLibraryPartCommand> (
             libraryCommands, "1.8.0",
@@ -2385,11 +2385,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartPictureImagesCommand> (
             libraryCommands, "2.0.0",
-            "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+            "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<SetLibraryPartParametersCommand> (
             libraryCommands, "2.0.0",
-            "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28."
+            "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<GetLibraryPartScriptsCommand> (
             libraryCommands, "2.0.0",
