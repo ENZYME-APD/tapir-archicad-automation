@@ -1,0 +1,181 @@
+{
+  "title": "ModifyBeams writes the floor plan display settings GetDetailsOfElements reads for a beam (story visibility, display option, projection modes, shown lines, pens and line types) and refuses an unknown line type without changing the beam",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Beam" ],
+  "steps": [
+    {
+      "id": "a line type",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "line": "attributes[1].attributeId.guid" }
+    },
+    {
+      "id": "beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 900.0 },
+            "endCoordinate": { "x": 906.0, "y": 900.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "the display settings are read",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "exists": true },
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "exists": true },
+        { "path": "detailsOfElements[0].details.displayOption", "exists": true },
+        { "path": "detailsOfElements[0].details.viewDepthLimitation", "exists": true },
+        { "path": "detailsOfElements[0].details.uncutProjectionMode", "exists": true },
+        { "path": "detailsOfElements[0].details.overheadProjectionMode", "exists": true },
+        { "path": "detailsOfElements[0].details.showContourLines", "exists": true },
+        { "path": "detailsOfElements[0].details.showReferenceAxis", "exists": true },
+        { "path": "detailsOfElements[0].details.cutContourLinePen", "exists": true },
+        { "path": "detailsOfElements[0].details.belowViewLinePen", "exists": true },
+        { "path": "detailsOfElements[0].details.aboveViewLinePen", "exists": true },
+        { "path": "detailsOfElements[0].details.hiddenLinePen", "exists": true },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "exists": true }
+      ]
+    },
+    {
+      "id": "write the pens, line types and shown lines",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "cutContourLinePen": 21,
+            "belowViewLinePen": 22,
+            "aboveViewLinePen": 23,
+            "hiddenLinePen": 24,
+            "referenceLinePen": 25,
+            "hiddenLineTypeId": { "guid": "${line}" },
+            "aboveViewLineTypeId": { "guid": "${line}" },
+            "showContourLines": "ShowAlways",
+            "showReferenceAxis": "HideAlways"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pens and line types written" }
+      ]
+    },
+    {
+      "id": "read the pens, line types and shown lines",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.cutContourLinePen", "eq": 21 },
+        { "path": "detailsOfElements[0].details.belowViewLinePen", "eq": 22 },
+        { "path": "detailsOfElements[0].details.aboveViewLinePen", "eq": 23 },
+        { "path": "detailsOfElements[0].details.hiddenLinePen", "eq": 24 },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 25 },
+        { "path": "detailsOfElements[0].details.hiddenLineTypeId.guid", "eq": "${line}" },
+        { "path": "detailsOfElements[0].details.aboveViewLineTypeId.guid", "eq": "${line}" },
+        { "path": "detailsOfElements[0].details.showContourLines", "eq": "ShowAlways" },
+        { "path": "detailsOfElements[0].details.showReferenceAxis", "eq": "HideAlways" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 900.0, "name": "geometry kept" }
+      ]
+    },
+    {
+      "id": "write the display option and projection modes",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "displayOption": "CutOnly",
+            "uncutProjectionMode": "Projected",
+            "overheadProjectionMode": "Projected"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "display option written" }
+      ]
+    },
+    {
+      "id": "read the display option and projection modes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.displayOption", "eq": "CutOnly" },
+        { "path": "detailsOfElements[0].details.uncutProjectionMode", "eq": "Projected" },
+        { "path": "detailsOfElements[0].details.overheadProjectionMode", "eq": "Projected" }
+      ]
+    },
+    {
+      "id": "home story only",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "isAutoOnStoryVisibility": false,
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "home story only written" }
+      ]
+    },
+    {
+      "id": "read the story visibility",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true },
+        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": false },
+        { "path": "detailsOfElements[0].details.visibility.showAllBelow", "eq": false },
+        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 0 },
+        { "path": "detailsOfElements[0].details.visibility.showRelBelow", "eq": 0 }
+      ]
+    },
+    {
+      "id": "an unknown line type is refused",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "cutContourLinePen": 30,
+            "cutContourLineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown line type refused" }
+      ]
+    },
+    {
+      "id": "the refused change left the beam as it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.cutContourLinePen", "eq": 21, "name": "pen not written" }
+      ]
+    }
+  ]
+}

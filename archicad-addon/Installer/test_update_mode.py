@@ -1612,6 +1612,28 @@ class DownloadRetryTests (unittest.TestCase):
         self.assertEqual (self.requests, 2)
 
 
+class UpdateAvailableTests (unittest.TestCase):
+    def testParsesVersionsAndReleaseTags (self):
+        self.assertEqual (tapir_installer.ParseTapirVersion ('1.7.0'), (1, 7, 0))
+        self.assertEqual (tapir_installer.ParseTapirVersion ('v1.10.2'), (1, 10, 2))
+        for text in ['latest', '?', '', None, '1.7', '1.7.0.1', 'v1.7.0-beta']:
+            self.assertIsNone (tapir_installer.ParseTapirVersion (text), text)
+
+    def testUpdateIsAvailableOnlyForANewerRelease (self):
+        self.assertTrue (tapir_installer.IsUpdateAvailable ('1.6.0', '1.7.0'))
+        self.assertTrue (tapir_installer.IsUpdateAvailable ('1.9.3', 'v1.10.0'))
+        self.assertTrue (tapir_installer.IsUpdateAvailable ('1.99.0', '2.0.0'))
+        self.assertFalse (tapir_installer.IsUpdateAvailable ('1.7.0', '1.7.0'))
+        self.assertFalse (tapir_installer.IsUpdateAvailable ('1.7.1', '1.7.0'))
+        self.assertFalse (tapir_installer.IsUpdateAvailable (None, '1.7.0'))
+        self.assertFalse (tapir_installer.IsUpdateAvailable ('1.6.0', 'latest'))
+
+    def testReleaseVersionTextDropsTheTagPrefix (self):
+        self.assertEqual (tapir_installer.GetReleaseVersionText ('v1.7.0'), '1.7.0')
+        self.assertEqual (tapir_installer.GetReleaseVersionText ('1.7.0'), '1.7.0')
+        self.assertEqual (tapir_installer.GetReleaseVersionText ('latest'), 'latest')
+
+
 class LanguageTests (unittest.TestCase):
     def setUp (self):
         patcher = unittest.mock.patch.object (tapir_installer, 'LANGUAGE', tapir_installer.DEFAULT_LANGUAGE)

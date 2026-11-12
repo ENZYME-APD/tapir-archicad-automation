@@ -1,10 +1,12 @@
 """Creates a beam, then changes its cross section and adds a round hole with ModifyBeams,
-gives its segment its own top and bottom surfaces, and moves it: a new reference line and its
-absolute elevation (zCoordinate, as in CreateBeams).
+gives its segment its own top and bottom surfaces, moves it: a new reference line and its
+absolute elevation (zCoordinate, as in CreateBeams), changes its floor plan display: home story
+only, cut contour pen 21 and dashed hidden lines, and tapers one segment of the beam with segments.
 
 Only the given fields change; holes replaces every hole of the beam. segments changes single
 segments, chosen by segmentIndex (0 for a beam of one segment): their surfaces, in the shape
-GetDetailsOfElements returns them, and, last, the taper of one segment.
+GetDetailsOfElements returns them, and, last, the taper of one segment. The display settings
+have the names GetDetailsOfElements reads them under, so what it returns can be sent back.
 """
 import aclib
 
@@ -39,6 +41,18 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
     'begCoordinate': {'x': 1.0, 'y': 2.0},
     'endCoordinate': {'x': 7.0, 'y': 2.0},
     'zCoordinate': 2.5
+}]}))
+
+lineTypes = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Line'})['attributes']
+dashed = next ((a for a in lineTypes if 'dash' in a.get ('name', '').lower ()), lineTypes[-1])
+
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
+    'elementId': beam['elementId'],
+    'isAutoOnStoryVisibility': False,
+    'visibility': {'showOnHome': True, 'showAllAbove': False, 'showAllBelow': False, 'showRelAbove': 0, 'showRelBelow': 0},
+    'cutContourLinePen': 21,
+    'hiddenLinePen': 21,
+    'hiddenLineTypeId': dashed['attributeId']
 }]}))
 
 # segments changes single segments, picked by segmentIndex: here the first one is tapered to
