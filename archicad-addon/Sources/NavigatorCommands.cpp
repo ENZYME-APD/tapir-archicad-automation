@@ -4775,17 +4775,28 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
     // leaves there is none at all, and the whole call fails rather than reordering only some
     // of them. A container being reordered can't bounce through itself
     // (SetNavigatorItemPosition(x, x, ...) is nonsensical), so a second container is kept as
-    // the fallback bounce target for that one item; with only one container among the
-    // current children, that one item alone fails instead of corrupting the tree.
+    // the fallback bounce target for that one item.
+    // When no other sibling can host the item - a folder holding only views and clone
+    // folders (#2701), whose clone folders Archicad reports as API_UndefinedNavItem and
+    // which can't take a view - the item is bounced through the parent's own parent
+    // instead: out to the grandparent and back in are genuine re-parents too. Only a
+    // direct child of a map's root, which has no parent, is then left without a target.
     GS::Array<API_Guid> containerGuids;
     for (const API_NavigatorItem& child : currentChildren) {
         if (IsContainerNavItemType (child.itemType)) {
             containerGuids.Push (child.guid);
         }
     }
-    if (containerGuids.IsEmpty ()) {
+    API_Guid grandparentGuid = APINULLGuid;
+    {
+        API_NavigatorItem grandparentItem = {};
+        if (ACAPI_Navigator_GetNavigatorParentItem (&parentGuid, &grandparentItem) == NoError) {
+            grandparentGuid = grandparentItem.guid;
+        }
+    }
+    if (containerGuids.IsEmpty () && grandparentGuid == APINULLGuid) {
         return CreateErrorResponse (APIERR_BADPARS,
-            "None of the current children of parentNavigatorItemId can host another item (all are leaves), so there is no sibling to bounce items through.");
+            "None of the current children of parentNavigatorItemId can host another item (all are leaves), and parentNavigatorItemId has no parent of its own, so there is nothing to bounce items through.");
     }
     const GS::Guid parentGsGuid = APIGuid2GSGuid (parentGuid);
 
@@ -4804,8 +4815,8 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
             GSErrCode err = NoError;
             bool strandedInBounce = false;
             if (!alreadyPlaced) {
-                // A container can't bounce through itself; use another container instead, or
-                // fail just this one item when it is the only container among the children.
+                // A container can't bounce through itself; use another container instead, else
+                // the parent's parent, or fail just this one item when there is neither.
                 const API_Guid* bounceGuidPtr = nullptr;
                 for (const API_Guid& candidate : containerGuids) {
                     if (candidate != itemGuid) {
@@ -4813,9 +4824,12 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
                         break;
                     }
                 }
+                if (bounceGuidPtr == nullptr && grandparentGuid != APINULLGuid) {
+                    bounceGuidPtr = &grandparentGuid;
+                }
                 if (bounceGuidPtr == nullptr) {
                     executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
-                        "This item is the only sibling that can host another item, so it cannot be bounced through anything else to reposition it."));
+                        "This item is the only sibling that can host another item and parentNavigatorItemId has no parent of its own, so it cannot be bounced through anything else to reposition it."));
                     continue;
                 }
                 const GS::Guid sourceGsGuid = APIGuid2GSGuid (itemGuid);
@@ -4841,7 +4855,7 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
 
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, strandedInBounce
-                    ? "Failed to move the navigator item to its requested position, and the recovery move back to its parent also failed; the item may still be nested inside a sibling."
+                    ? "Failed to move the navigator item to its requested position, and the recovery move back to its parent also failed; the item may still be nested inside a sibling or in the parent's own parent."
                     : "Failed to move the navigator item to its requested position."));
                 // Leave previousGuidPtr as the last correctly placed item: chaining the next
                 // item after one that is not actually in position would only compound the error.

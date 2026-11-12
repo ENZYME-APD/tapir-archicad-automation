@@ -1,0 +1,241 @@
+{
+  "title": "CreateProfiles refuses unknown keys and unresolved attribute ids inside newSkins, skinOverrides and edgeOverrides (#2585)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "a surface",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "Surface"},
+      "save": {"surface": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "A: well-formed building material id is accepted",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2585 A",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "contourPen": 4,
+                "edgeOverrides": [{"edgeIndex": 1, "pen": 5}]
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"pA": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back A",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${pA}"}}]},
+      "save": {"skinA": "profiles[0].skins[0].skinId"},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].skins", "len": 1},
+        {"path": "profiles[0].skins[0].buildingMaterialId.attributeId.guid", "eq": "${bm}", "name": "skin has the building material"},
+        {"path": "profiles[0].skins[0].contourPen", "eq": 4}
+      ]
+    },
+    {
+      "id": "B: building material id without the attributeId wrapper is refused",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2585 B",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "buildingMaterialId": {"guid": "${bm}"}
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/newSkins/0/buildingMaterialId", "name": "the error names the path"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "C: surfaceId in an edge override (not a ProfileEdgeOverride key) is refused",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2585 C",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "edgeOverrides": [{"edgeIndex": 1, "surfaceId": {"attributeId": {"guid": "${surface}"}}}]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].error.message", "contains": "surfaceId", "name": "the error names the key"},
+        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/newSkins/0/edgeOverrides/0", "name": "the error names the path"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "D: an unknown key in a new skin is refused, the good item next to it is created",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2585 D",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "fooBar": 1
+              }
+            ]
+          },
+          {
+            "name": "TapirCheck Profile 2585 D good",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"pD": "attributeIds[1].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 2},
+        {"path": "attributeIds[0].error", "exists": true, "name": "bad item failed"},
+        {"path": "attributeIds[0].error.message", "contains": "fooBar", "name": "the error names the key"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "bad item created nothing"},
+        {"path": "attributeIds[1].error", "exists": false, "name": "good item created"}
+      ]
+    },
+    {
+      "id": "skinOverrides with an unknown key in an edge override is refused and changes nothing",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${pA}"},
+            "name": "TapirCheck Profile 2585 A",
+            "skinOverrides": [{"skinId": "${skinA}", "contourPen": 7, "edgeOverrides": [{"edgeIndex": 0, "penn": 8}]}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].error.message", "contains": "penn", "name": "the error names the key"},
+        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/skinOverrides/0/edgeOverrides/0", "name": "the error names the path"}
+      ]
+    },
+    {
+      "id": "skinOverrides with a guid of the wrong attribute type is refused",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${pA}"},
+            "name": "TapirCheck Profile 2585 A",
+            "skinOverrides": [{"skinId": "${skinA}", "contourPen": 7, "buildingMaterialId": {"attributeId": {"guid": "${surface}"}}}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].error.message", "contains": "skinOverrides/0/buildingMaterialId", "name": "the error names the path"}
+      ]
+    },
+    {
+      "id": "the refused overrides changed nothing",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${pA}"}}]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].skins[0].contourPen", "eq": 4, "name": "pen kept"},
+        {"path": "profiles[0].skins[0].buildingMaterialId.attributeId.guid", "eq": "${bm}", "name": "building material kept"}
+      ]
+    },
+    {
+      "id": "a well-formed skinOverride still works",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${pA}"},
+            "name": "TapirCheck Profile 2585 A",
+            "skinOverrides": [{"skinId": "${skinA}", "contourPen": 7}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the override",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${pA}"}}]},
+      "expect": [
+        {"path": "profiles[0].skins[0].contourPen", "eq": 7, "name": "pen written"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${pD}"}}}]}
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${pA}"}}}]}
+    }
+  ]
+}

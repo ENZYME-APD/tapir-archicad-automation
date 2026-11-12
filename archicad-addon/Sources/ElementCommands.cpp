@@ -435,13 +435,26 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
             level.Add ("angle", segment.angle);
             level.Add ("eavesOverhang", segment.eavesOverhang);
             level.Add ("angleType", segment.angleType == APIPolyRoof_SegmentAngleTypeGable ? "Gable" : "Sloped");
+            // The plane's own surfaces and cover fill (Custom Plane Settings, #2582).
+            const API_Guid topMaterial = GetAttributeGuidFromIndex (API_MaterialID, segment.topMaterial);
+            if (topMaterial != APINULLGuid) {
+                level.Add ("topMaterialId", CreateGuidObjectState (topMaterial));
+            }
+            const API_Guid bottomMaterial = GetAttributeGuidFromIndex (API_MaterialID, segment.bottomMaterial);
+            if (bottomMaterial != APINULLGuid) {
+                level.Add ("bottomMaterialId", CreateGuidObjectState (bottomMaterial));
+            }
+            const API_Guid coverFill = GetAttributeGuidFromIndex (API_FilltypeID, segment.coverFillType);
+            if (coverFill != APINULLGuid) {
+                level.Add ("coverFillId", CreateGuidObjectState (coverFill));
+            }
             levels (level);
         }
         pivotEdges (edgeOs);
     }
 }
 
-// The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
+// The length of a beam or column segment, from the element's assemblySegmentSchemes (#2551, #2552).
 static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
 {
     GS::ObjectState length;
@@ -647,6 +660,23 @@ static const char* ElemProjectionModeToString (API_ElemProjectionModesID project
         case API_Hybrid:    return "Hybrid";
         case API_Symbolic:
         default:            return "Symbolic";
+    }
+}
+
+static const char* BeamVisibleLinesToString (API_BeamVisibleLinesID visibleLines)
+{
+    switch (visibleLines) {
+        case APIBeamLineHideAlways: return "HideAlways";
+        case APIBeamLineByMVO:      return "ByMVO";
+        case APIBeamLineShowAlways:
+        default:                    return "ShowAlways";
+    }
+}
+
+static void AddLineTypeIdIfValid (GS::ObjectState& os, const char* key, API_AttributeIndex lineType)
+{
+    if (lineType != APIInvalidAttributeIndex) {
+        os.Add (key, CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, lineType)));
     }
 }
 
@@ -1685,6 +1715,13 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         API_Elem_Head reportedHead = {};
         reportedHead.guid = elemGuid;
         if (ACAPI_Element_GetHeader (&reportedHead) != NoError) {
+            // The walk also hands back items whose header Archicad cannot read: no other command finds them by
+            // their guid (ACAPI_Element_GetHeader, GetDetailsOfElements and API.GetTypesOfElements all fail), and
+            // GetAllElements does not list them, so they are left out (#2492). The owner of a section element is
+            // kept: its header may be readable only in the database it belongs to.
+            if (elemGuid == elemHead.guid) {
+                continue;
+            }
             reportedHead = elemHead;
         }
         const API_ElemTypeID reportedType = GetElemTypeId (reportedHead);
@@ -3131,6 +3168,25 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("isFlipped", elem.beam.isFlipped);
                 typeSpecificDetails.Add ("profileAngle", elem.beam.profileAngle);
                 typeSpecificDetails.Add ("anchorPoint", AnchorIdToString (static_cast<API_AnchorID> (elem.beam.anchorPoint)));
+                // The floor plan display settings, under the names ModifyBeams takes (#2529).
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.beam.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.beam.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.beam.displayOption));
+                typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.beam.viewDepthLimitation));
+                typeSpecificDetails.Add ("uncutProjectionMode", ElemProjectionModeToString (elem.beam.uncutProjectionMode));
+                typeSpecificDetails.Add ("overheadProjectionMode", ElemProjectionModeToString (elem.beam.overheadProjectionMode));
+                typeSpecificDetails.Add ("showContourLines", BeamVisibleLinesToString (elem.beam.showContourLines));
+                typeSpecificDetails.Add ("showReferenceAxis", BeamVisibleLinesToString (elem.beam.showReferenceAxis));
+                typeSpecificDetails.Add ("cutContourLinePen", (Int32) elem.beam.cutContourLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "cutContourLineTypeId", elem.beam.cutContourLineType);
+                typeSpecificDetails.Add ("belowViewLinePen", (Int32) elem.beam.belowViewLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "belowViewLineTypeId", elem.beam.belowViewLineType);
+                typeSpecificDetails.Add ("aboveViewLinePen", (Int32) elem.beam.aboveViewLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "aboveViewLineTypeId", elem.beam.aboveViewLineType);
+                typeSpecificDetails.Add ("hiddenLinePen", (Int32) elem.beam.hiddenLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "hiddenLineTypeId", elem.beam.hiddenLineType);
+                typeSpecificDetails.Add ("referenceLinePen", (Int32) elem.beam.refPen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "referenceLineTypeId", elem.beam.refLtype);
 #ifdef ServerMainVers_2700
                 typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.beam.cutFillPen));
                 typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.beam.cutFillBackgroundPen));
@@ -3222,6 +3278,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
                 AddZoneSurface (elem.zone, typeSpecificDetails);
+                AddZoneDisplayStampPenAndReduction (elem.zone, typeSpecificDetails);
                 typeSpecificDetails.Add ("height", elem.zone.roomHeight);
                 typeSpecificDetails.Add ("bottomOffset", elem.zone.roomBaseLev);
                 typeSpecificDetails.Add ("topOffset", elem.zone.roomTopOffset);
@@ -3362,6 +3419,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 GS::ObjectState leaderLineOS;
                 TextLabelDetails::AddLabelLeaderLineDetails (leaderLineOS, elem.label);
                 typeSpecificDetails.Add ("leaderLine", leaderLineOS);
+                TextLabelDetails::AddLabelTextWay (typeSpecificDetails, elem.label);
 
                 if (elem.label.labelClass == APILblClass_Text) {
                     GS::ObjectState styleOS;
@@ -3407,6 +3465,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // The settings ModifyAssociativeDimensions takes; the witness points are read
                 // with GetDimensionData.
                 AddDimensionDetails (typeSpecificDetails, elem);
+                break;
+
+            case API_RadialDimensionID:
+                // The stored data as it is; the DevKit does not document how the base is stored.
+                AddRadialDimensionDetails (typeSpecificDetails, elem);
                 break;
 
             case API_ChangeMarkerID: {
@@ -3555,6 +3618,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("roomSpecial", (Int32) elem.hatch.roomSpecial);
                 typeSpecificDetails.Add ("showArea", elem.hatch.showArea);
                 typeSpecificDetails.Add ("fillOrientation", CreateHatchOrientationObjectState (elem.hatch.hatchOrientation));
+                typeSpecificDetails.Add ("fillCategory", HatchFillCategoryToString (elem.hatch.determination));
+                typeSpecificDetails.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.hatch.ltypeInd)));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -3755,6 +3820,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddCurtainWallReferenceLine (elem, typeSpecificDetails);
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
+                typeSpecificDetails.Add ("offset", elem.curtainWall.offset);
+                typeSpecificDetails.Add ("nominalWidth", elem.curtainWall.nominalWidth);
                 typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.curtainWall.displayOption));
                 typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.curtainWall.viewDepthLimitation));
                 typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.curtainWall.visibility));
@@ -5189,19 +5256,19 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 GS::ObjectState fillOrientationOs;
                 if (typeSpecificDetails->Get ("fillOrientation", fillOrientationOs)) {
-                    API_HatchOrientation& orientation = elem.hatch.hatchOrientation;
-                    orientation = GetHatchOrientationFromObjectState (fillOrientationOs, orientation);
-                    GS::UniString typeStr;
-                    if (fillOrientationOs.Get ("origin") != nullptr) {
-                        // Archicad ignores the origin while the fill is snapped to the project origin (the
-                        // GlobalOrigo flag, set on every Global fill), so a given origin unsnaps it and turns
-                        // a Global fill into a Rotated one unless a type was sent as well.
-                        if (!fillOrientationOs.Get ("type", typeStr) && orientation.type == API_HatchGlobal) {
-                            orientation.type = API_HatchRotated;
-                        }
-                        orientation.flags &= ~APIHatchOrinFlag_GlobalOrigo;
-                    }
+                    ApplyHatchFillOrientation (fillOrientationOs, elem.hatch.hatchOrientation);
                     TAPIR_MASK_SET_HATCH_ORIENTATION (mask, API_HatchType, hatchOrientation);
+                    hasElementChanges = true;
+                }
+                GS::UniString fillCategory;
+                if (typeSpecificDetails->Get ("fillCategory", fillCategory) && HatchFillCategoryFromString (fillCategory, elem.hatch.determination)) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, determination);
+                    hasElementChanges = true;
+                }
+                const GS::ObjectState* contourLineTypeId = typeSpecificDetails->Get ("contourLineTypeId");
+                if (contourLineTypeId != nullptr) {
+                    elem.hatch.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, ltypeInd);
                     hasElementChanges = true;
                 }
             }
