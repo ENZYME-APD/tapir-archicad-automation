@@ -383,18 +383,6 @@ of #2765 that fixes it; strike it from this list in that part.
 - The section heads of `api-coverage/` and `gh-coverage/` ("Overview", "Checklist") lack the
   `<em>…</em>.` ending every other section head has, including the command reference's ("All <em>commands.</em>").
 
-**Page stylesheets that still draw the Legacy look in Standard** (part 4):
-
-- `community/community.css`, the map ("On the map", added after the Standard look): `.map-card` keeps
-  the 1.5 px ink border and square corners, the town dots, their halo and the country bars are
-  `--ochre` (so they ignore the Accent), and `.map-label` has square corners. No Standard rule exists
-  for any of them.
-- `assets/coverage.css`, the phone filter sheet of the coverage pages: `.chip-filter`'s 1.5 px ink top
-  line and `.sheet-done`'s pill shape and ink border have no Standard rule, while the Display menu's
-  sheet, its twin, has 1 px lines and an 8 px Done button.
-- `home.css`: the floor plan's Run button sets `color: #FFFFFF` in Standard, a literal instead of a
-  property.
-
 **Spacing and type off the scale** (part 5):
 
 - Card padding is 26 px (`.way`), 28 px (`.teaser`), 22 px (`.share-steps li`) and 26/24 px
