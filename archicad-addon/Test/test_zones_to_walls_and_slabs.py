@@ -341,6 +341,20 @@ class HelpersTest (unittest.TestCase):
         self.assertAlmostEqual (script.parse_length ('0,25'), 0.25)
         self.assertIsNone (script.parse_length ('thick'))
 
+    def test_window_size (self):
+        # #2736: 760 x 620 on a laptop screen, never more than 85 % of a small one, never less than 640 x 520
+        self.assertEqual (script.window_size (1440, 900), (760, 620))
+        self.assertEqual (script.window_size (1366, 768), (760, 620))
+        self.assertEqual (script.window_size (800, 600), (680, 520))
+        self.assertEqual (script.window_size (600, 400), (640, 520))
+
+    def test_probe_point_is_away_from_the_zones (self):
+        # #2736: the wall made to read a favorite's thickness stands beyond every zone
+        zones = {0: [rectangle (0, 0, 5, 4)], 1: [rectangle (-3, 2, 12, 6)]}
+        x, y = script.probe_point (zones)
+        self.assertGreaterEqual (x, 12 + script.PROBE_DISTANCE)
+        self.assertGreaterEqual (y, 6 + script.PROBE_DISTANCE)
+
 
 if __name__ == '__main__':
     unittest.main ()

@@ -1,6 +1,6 @@
 {
   "title": "CreateLibraryPartFromElements makes an object of a drawn circle, GetLibraryPart2DPrimitives reads its symbol back and InterpretGDLScript3D runs its 3D script (#1950)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Circle" ],
   "steps": [
     {
@@ -23,7 +23,7 @@
       "params": {
         "name": "TapirCheck Symbol 1950",
         "elements": [ { "elementId": { "guid": "${circle}" } } ],
-        "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+        "parentName": "Model Element",
         "folder": "TapirCheck1950",
         "overwrite": true,
         "placeable": true,
@@ -40,6 +40,34 @@
         { "path": "unId", "contains": "}-{", "name": "unique ID" },
         { "path": "a", "approx": 0.6, "tol": 0.001, "name": "A is the width of the circle" },
         { "path": "b", "approx": 0.6, "tol": 0.001, "name": "B is the depth of the circle" }
+      ]
+    },
+    {
+      "id": "the General GDL Object cannot be the parent (#2622)",
+      "command": "CreateLibraryPartFromElements",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Root Symbol 2622",
+        "elements": [ { "elementId": { "guid": "${circle}" } } ],
+        "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+        "folder": "TapirCheck1950",
+        "scripts": { "3D": "BLOCK A, B, 0.5" }
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" },
+        { "path": "error.message", "contains": "Model Element", "name": "the error names the parent to use" },
+        { "path": "unId", "exists": false, "name": "nothing created" }
+      ]
+    },
+    {
+      "id": "the refused root-parent part is not loaded",
+      "command": "GetLibraryPart2DPrimitives",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Root Symbol 2622"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true }
       ]
     },
     {
@@ -190,7 +218,7 @@
       "params": {
         "name": "TapirCheck Bad Symbol 1950",
         "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ],
-        "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+        "parentName": "Model Element",
         "folder": "TapirCheck1950"
       },
       "expect": [

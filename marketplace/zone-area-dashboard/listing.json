@@ -9,6 +9,12 @@
     "entry": "ZoneAreaDashboard.py",
     "versions": [
         {
+            "version": "1.1.2",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "The window opens smaller (800 x 700, at most 85 % of the screen), can be made as small as 800 x 520, and its content scrolls when the window is short."
+        },
+        {
             "version": "1.1.1",
             "archicadVersions": [25, 26, 27, 28, 29, 30],
             "minTapirVersion": "1.8.0",

@@ -39,6 +39,11 @@ story already have that zone's external wall; every other edge gets a
 balustrade, made with the Railing tool or as a low wall, centred over the
 external wall of the story below.
 
+The partitions and the external walls can each be made with a Wall favorite;
+its thickness is read by placing one wall with it away from the zones and
+deleting it again. The settings are remembered in
+Documents/Tapir/ZonesToWallsAndSlabs.json.
+
 Preview lists, per story, how many zones were read and how many walls, slabs,
 terraces and how much balustrade will be made, and draws them; Create makes the
 walls in one Undo step, the slabs in another and the balustrades in a third,
@@ -48,8 +53,10 @@ The geometry functions below do not talk to Archicad, so they are tested
 without it (archicad-addon/Test/test_zones_to_walls_and_slabs.py).
 """
 
+import json
 import math
 import sys
+from pathlib import Path
 
 SCRIPT_NAME = "Zones to Walls and Slabs"
 EPSILON = 1e-6
@@ -73,6 +80,14 @@ WALL_TOOL = "Wall"
 DIMMED_COLOR = [200, 200, 200, 160]
 ZONE_COLOR = [27, 127, 59, 255]
 CREATED_COLOR = [0, 130, 200, 255]
+# the window: its smallest size, the size it opens at (never more than SCREEN_SHARE of the screen), and
+# the height the preview keeps when the settings have to scroll
+MIN_WIDTH, MIN_HEIGHT = 640, 520
+OPEN_WIDTH, OPEN_HEIGHT = 760, 620
+SCREEN_SHARE = 0.85
+PREVIEW_MIN_HEIGHT = 230
+# a wall made with a favorite to read its thickness is placed this far from the selected zones, then deleted
+PROBE_DISTANCE = 50.0
 
 Point = tuple[float, float]
 
@@ -786,6 +801,32 @@ def parse_length(text: str) -> float | None:
         return None
 
 
+def window_size(screen_width: int, screen_height: int) -> tuple[int, int]:
+    """ The size the window opens at: OPEN_WIDTH x OPEN_HEIGHT, but never more than SCREEN_SHARE of the
+    screen, nor less than the smallest size. """
+    width = max(MIN_WIDTH, min(OPEN_WIDTH, int(screen_width * SCREEN_SHARE)))
+    height = max(MIN_HEIGHT, min(OPEN_HEIGHT, int(screen_height * SCREEN_SHARE)))
+    return width, height
+
+
+def probe_point(zones_by_floor: dict[int, list[dict]]) -> Point:
+    """ Where a wall made only to read a favorite's thickness goes: PROBE_DISTANCE beyond the zones, so it
+    touches nothing they will get. """
+    points = [p for zones in zones_by_floor.values() for z in zones for p in z["outline"]]
+    if not points:
+        return 0.0, 0.0
+    return max(p[0] for p in points) + PROBE_DISTANCE, max(p[1] for p in points) + PROBE_DISTANCE
+
+
+def settings_folder() -> Path:
+    """ Documents/Tapir, where Tapir keeps its own config.json as well. """
+    documents = Path.home() / "Documents"
+    return (documents if documents.is_dir() else Path.home()) / "Tapir"
+
+
+SETTINGS_FILE = settings_folder() / "ZonesToWallsAndSlabs.json"
+
+
 # ---- window ----
 
 def main() -> None:
@@ -812,9 +853,16 @@ def main() -> None:
                 "external wall outside every other edge, a slab under each story's zones and the zones of "
                 "the story below, and a balustrade around the terraces this leaves. Select the zones (on one or "
                 "several stories), press Preview, check the result, then press Create.",
-                min_width=880, min_height=800)
+                min_width=MIN_WIDTH, min_height=MIN_HEIGHT)
+            root = self.window.root
+            width, height = window_size(root.winfo_screenwidth(), root.winfo_screenheight())
+            root.geometry(f"{width}x{height}")
             self.layers: dict[str, int] = {}
             self.favorites: dict[str, list[str]] = {}
+            # the thickness of each Wall favorite read so far (None: it could not be read)
+            self.favorite_thicknesses: dict[str, float | None] = {}
+            # the saved settings are only written once they were read, so a failed start keeps them
+            self.settings_loaded = False
             # the last preview: {"settings", "stories": [{"floorIndex", "name", "zones", "walls", "height",
             # "note", "slabs", "slabPlacement"}]}
             self.preview: dict | None = None
@@ -824,104 +872,181 @@ def main() -> None:
             self.window.add_button("Create", self.create)
             self.window.add_button("Preview", self.make_preview, primary=True)
 
+        def _scrolling_frame(self, parent) -> ttk.Frame:
+            """ A frame in a canvas that scrolls when the window is too short for it, so the preview and
+            the buttons stay on the screen. Returns the frame to put the settings in. """
+            outer = ttk.Frame(parent)
+            outer.columnconfigure(0, weight=1)
+            outer.rowconfigure(0, weight=1)
+            background = self.window.style.lookup("TFrame", "background") or None
+            canvas = tk.Canvas(outer, highlightthickness=0, borderwidth=0, height=1,
+                               **({"background": background} if background else {}))
+            scrollbar = ttk.Scrollbar(outer, orient="vertical", command=canvas.yview)
+            canvas.configure(yscrollcommand=scrollbar.set)
+            canvas.grid(row=0, column=0, sticky="nsew")
+            inner = ttk.Frame(canvas)
+            canvas.create_window((0, 0), window=inner, anchor="nw", tags="inner")
+
+            def fit(_event=None) -> None:
+                needed = inner.winfo_reqheight()
+                room = parent.winfo_height() - PREVIEW_MIN_HEIGHT
+                shown = needed if parent.winfo_height() <= 1 else max(60, min(needed, room))
+                if int(canvas.cget("height")) != shown:
+                    canvas.configure(height=shown)
+                canvas.configure(scrollregion=(0, 0, inner.winfo_reqwidth(), needed))
+                if shown < needed:
+                    scrollbar.grid(row=0, column=1, sticky="ns")
+                else:
+                    scrollbar.grid_remove()
+                    canvas.yview_moveto(0)
+
+            def wheel(event) -> None:
+                """ The mouse wheel scrolls the settings while the pointer is over them. """
+                if not scrollbar.winfo_ismapped():
+                    return
+                pointed = canvas.winfo_containing(event.x_root, event.y_root)
+                if pointed is None or not str(pointed).startswith(str(canvas)):
+                    return
+                step = -1 if (getattr(event, "num", 0) == 4 or getattr(event, "delta", 0) > 0) else 1
+                canvas.yview_scroll(step, "units")
+
+            canvas.bind("<Configure>", lambda e: (canvas.itemconfigure("inner", width=e.width), fit()))
+            inner.bind("<Configure>", fit)
+            parent.bind("<Configure>", fit, add="+")
+            for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
+                canvas.bind_all(sequence, wheel, add="+")
+            outer.grid(row=0, column=0, sticky="nsew")
+            return inner
+
         def _build_body(self) -> None:
             body = self.window.body
             body.rowconfigure(1, weight=1)
 
-            settings = ttk.LabelFrame(body, text="New walls and slabs", padding=(10, 6))
-            settings.grid(row=0, column=0, sticky="ew")
+            holder = self._scrolling_frame(body)
+            holder.columnconfigure(0, weight=1)
+            settings = ttk.LabelFrame(holder, text="New walls and slabs", padding=(10, 6))
+            settings.grid(row=0, column=0, sticky="ew", padx=(0, 4))
             ttk.Label(settings, text="Layer").grid(row=0, column=1, sticky="w", padx=(6, 0))
             ttk.Label(settings, text="Thickness (m)").grid(row=0, column=2, sticky="w", padx=(6, 0))
             self.layer_vars: dict[str, tk.StringVar] = {}
             self.layer_boxes: list[ttk.Combobox] = []
+            self.wall_layer_boxes: dict[str, ttk.Combobox] = {}
             self.thickness_vars: dict[str, tk.StringVar] = {}
-            for row, (kind, label, default) in enumerate([(PARTITION, "Internal partitions:", DEFAULT_PARTITION_THICKNESS),
-                                                          (EXTERNAL, "External walls:", DEFAULT_EXTERNAL_THICKNESS)],
-                                                         start=1):
+            self.wall_thickness_entries: dict[str, ttk.Entry] = {}
+            self.wall_favorites: dict[str, tk.StringVar] = {}
+            self.wall_favorite_boxes: dict[str, ttk.Combobox] = {}
+            for row, (kind, label, favorite_label, default) in enumerate(
+                    [(PARTITION, "Internal partitions:", "Partition favorite:", DEFAULT_PARTITION_THICKNESS),
+                     (EXTERNAL, "External walls:", "External wall favorite:", DEFAULT_EXTERNAL_THICKNESS)]):
+                row = 1 + 2 * row
                 ttk.Label(settings, text=label).grid(row=row, column=0, sticky="w", pady=(3, 0))
                 self.layer_vars[kind] = tk.StringVar(value=NO_LAYER)
                 box = ttk.Combobox(settings, textvariable=self.layer_vars[kind], values=[NO_LAYER], state="readonly",
-                                   width=36)
+                                   width=28)
                 box.grid(row=row, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
                 self.layer_boxes.append(box)
+                self.wall_layer_boxes[kind] = box
                 self.thickness_vars[kind] = tk.StringVar(value=default)
-                ttk.Entry(settings, textvariable=self.thickness_vars[kind], width=8).grid(
-                    row=row, column=2, sticky="w", padx=(6, 0), pady=(3, 0))
+                entry = ttk.Entry(settings, textvariable=self.thickness_vars[kind], width=8)
+                entry.grid(row=row, column=2, sticky="w", padx=(6, 0), pady=(3, 0))
+                self.wall_thickness_entries[kind] = entry
+                ttk.Label(settings, text=favorite_label).grid(row=row + 1, column=0, sticky="w", pady=(3, 0))
+                self.wall_favorites[kind] = tk.StringVar(value=NO_FAVORITE)
+                favorite_box = ttk.Combobox(settings, textvariable=self.wall_favorites[kind], values=[NO_FAVORITE],
+                                            state="readonly", width=28)
+                favorite_box.grid(row=row + 1, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
+                favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_wall_fields())
+                self.wall_favorite_boxes[kind] = favorite_box
 
             self.make_slabs = tk.BooleanVar(value=True)
             ttk.Checkbutton(settings, text="Slabs:", variable=self.make_slabs,
-                            command=self._update_slab_fields).grid(row=3, column=0, sticky="w", pady=(3, 0))
+                            command=self._update_slab_fields).grid(row=5, column=0, sticky="w", pady=(6, 0))
             self.layer_vars[SLAB] = tk.StringVar(value=NO_SLAB_LAYER)
             self.slab_layer_box = ttk.Combobox(settings, textvariable=self.layer_vars[SLAB], values=[NO_SLAB_LAYER],
-                                               state="readonly", width=36)
-            self.slab_layer_box.grid(row=3, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
+                                               state="readonly", width=28)
+            self.slab_layer_box.grid(row=5, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
             self.thickness_vars[SLAB] = tk.StringVar(value=DEFAULT_SLAB_THICKNESS)
             self.slab_thickness_entry = ttk.Entry(settings, textvariable=self.thickness_vars[SLAB], width=8)
-            self.slab_thickness_entry.grid(row=3, column=2, sticky="w", padx=(6, 0), pady=(3, 0))
-            ttk.Label(settings, text="Slab favorite:").grid(row=4, column=0, sticky="w", pady=(3, 0))
+            self.slab_thickness_entry.grid(row=5, column=2, sticky="w", padx=(6, 0), pady=(6, 0))
+            ttk.Label(settings, text="Slab favorite:").grid(row=6, column=0, sticky="w", pady=(3, 0))
             self.slab_favorite = tk.StringVar(value=NO_FAVORITE)
             self.slab_favorite_box = ttk.Combobox(settings, textvariable=self.slab_favorite, values=[NO_FAVORITE],
-                                                  state="readonly", width=36)
-            self.slab_favorite_box.grid(row=4, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
+                                                  state="readonly", width=28)
+            self.slab_favorite_box.grid(row=6, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
             self.slab_favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_slab_fields())
 
             self.make_balustrades = tk.BooleanVar(value=True)
             ttk.Checkbutton(settings, text="Balustrades:", variable=self.make_balustrades,
-                            command=self._update_balustrade_fields).grid(row=5, column=0, sticky="w", pady=(6, 0))
+                            command=self._update_balustrade_fields).grid(row=7, column=0, sticky="w", pady=(6, 0))
             self.layer_vars[BALUSTRADE] = tk.StringVar(value=NO_LAYER)
             self.balustrade_layer_box = ttk.Combobox(settings, textvariable=self.layer_vars[BALUSTRADE],
-                                                     values=[NO_LAYER], state="readonly", width=36)
-            self.balustrade_layer_box.grid(row=5, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
+                                                     values=[NO_LAYER], state="readonly", width=28)
+            self.balustrade_layer_box.grid(row=7, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
             self.thickness_vars[BALUSTRADE] = tk.StringVar(value=DEFAULT_BALUSTRADE_THICKNESS)
             self.balustrade_thickness_entry = ttk.Entry(settings, textvariable=self.thickness_vars[BALUSTRADE],
                                                         width=8)
-            self.balustrade_thickness_entry.grid(row=5, column=2, sticky="w", padx=(6, 0), pady=(6, 0))
-            ttk.Label(settings, text="Balustrade tool, height (m):").grid(row=6, column=0, sticky="w", pady=(3, 0))
+            self.balustrade_thickness_entry.grid(row=7, column=2, sticky="w", padx=(6, 0), pady=(6, 0))
+            ttk.Label(settings, text="Balustrade tool, height (m):").grid(row=8, column=0, sticky="w", pady=(3, 0))
             self.balustrade_tool = tk.StringVar(value=RAILING_TOOL)
             self.balustrade_tool_box = ttk.Combobox(settings, textvariable=self.balustrade_tool,
                                                     values=[RAILING_TOOL, WALL_TOOL], state="readonly", width=12)
-            self.balustrade_tool_box.grid(row=6, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
+            self.balustrade_tool_box.grid(row=8, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
             self.balustrade_tool_box.bind("<<ComboboxSelected>>", lambda _e: self._balustrade_tool_changed())
             self.balustrade_height = tk.StringVar(value=DEFAULT_BALUSTRADE_HEIGHT)
             self.balustrade_height_entry = ttk.Entry(settings, textvariable=self.balustrade_height, width=8)
-            self.balustrade_height_entry.grid(row=6, column=2, sticky="w", padx=(6, 0), pady=(3, 0))
-            ttk.Label(settings, text="Balustrade favorite:").grid(row=7, column=0, sticky="w", pady=(3, 0))
+            self.balustrade_height_entry.grid(row=8, column=2, sticky="w", padx=(6, 0), pady=(3, 0))
+            ttk.Label(settings, text="Balustrade favorite:").grid(row=9, column=0, sticky="w", pady=(3, 0))
             self.balustrade_favorite = tk.StringVar(value=NO_BALUSTRADE_FAVORITE)
             self.balustrade_favorite_box = ttk.Combobox(settings, textvariable=self.balustrade_favorite,
-                                                        values=[NO_BALUSTRADE_FAVORITE], state="readonly", width=36)
-            self.balustrade_favorite_box.grid(row=7, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
+                                                        values=[NO_BALUSTRADE_FAVORITE], state="readonly", width=28)
+            self.balustrade_favorite_box.grid(row=9, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
             self.balustrade_favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_balustrade_fields())
-            ttk.Label(settings, text="On the terraces, along the edges no zone of the story stands on. A railing "
-                                     "takes its layer and thickness from the Railing tool or the favorite.",
-                      style="Muted.TLabel").grid(row=8, column=0, columnspan=3, sticky="w", pady=(2, 0))
+            self.balustrade_note = ttk.Label(settings, text="On the terraces, along the edges no zone of the story "
+                                                            "stands on. A railing takes its layer and thickness "
+                                                            "from the Railing tool or the favorite.",
+                                             style="Muted.TLabel", justify="left")
+            self.balustrade_note.grid(row=10, column=0, columnspan=3, sticky="w", pady=(2, 0))
 
-            ttk.Label(settings, text="Gap tolerance (m):").grid(row=9, column=0, sticky="w", pady=(6, 0))
+            ttk.Label(settings, text="Gap tolerance (m):").grid(row=11, column=0, sticky="w", pady=(6, 0))
             self.tolerance = tk.StringVar(value="")
-            ttk.Entry(settings, textvariable=self.tolerance, width=8).grid(row=9, column=2, sticky="w", padx=(6, 0),
-                                                                           pady=(6, 0))
-            ttk.Label(settings, text="Zone edges closer than this count as shared, and slabs close the gap. Empty: "
-                                     "the partition thickness.",
-                      style="Muted.TLabel").grid(row=10, column=0, columnspan=3, sticky="w", pady=(2, 0))
+            ttk.Entry(settings, textvariable=self.tolerance, width=8).grid(row=11, column=2, sticky="w",
+                                                                           padx=(6, 0), pady=(6, 0))
+            self.tolerance_note = ttk.Label(settings, text="Zone edges closer than this count as shared, and slabs "
+                                                           "close the gap. Empty: the partition thickness.",
+                                            style="Muted.TLabel", justify="left")
+            self.tolerance_note.grid(row=12, column=0, columnspan=3, sticky="w", pady=(2, 0))
+            # the notes wrap to the width the settings have
+            settings.bind("<Configure>", lambda e: [note.configure(wraplength=max(200, e.width - 30))
+                                                    for note in (self.balustrade_note, self.tolerance_note)],
+                          add="+")
 
             preview = ttk.Frame(body, padding=(0, 8, 0, 0))
             preview.grid(row=1, column=0, sticky="nsew")
-            preview.columnconfigure(0, weight=1)
-            preview.columnconfigure(1, weight=1)
+            # the list and the drawing share the width equally, whatever the list's columns ask for
+            preview.columnconfigure(0, weight=1, uniform="preview")
+            preview.columnconfigure(1, weight=1, uniform="preview")
             preview.rowconfigure(1, weight=1)
-            self.summary_label = ttk.Label(preview, text="Select zones in Archicad and press Preview.")
-            self.summary_label.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 4))
+            self.summary_label = ttk.Label(preview, text="Select zones in Archicad and press Preview.",
+                                           justify="left")
+            self.summary_label.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 4))
+            preview.bind("<Configure>", lambda e: self.summary_label.configure(wraplength=max(200, e.width - 4)),
+                         add="+")
             self.story_tree = make_tree(preview, [("story", "Story", 140, "w"), ("zones", "Zones", 50, "e"),
                                                   ("partitions", "Partitions", 70, "e"),
                                                   ("external", "External walls", 90, "e"),
                                                   ("height", "Wall height", 80, "e"),
                                                   ("slabs", "Slabs", 100, "e"), ("terraces", "Terraces", 100, "e"),
                                                   ("balustrade", "Balustrade", 80, "e"), ("note", "Note", 160, "w")],
-                                        height=8)
+                                        height=5)
             self.story_tree.configure(selectmode="browse")
+            # the columns are wider than half a small window: they scroll sideways
+            sideways = ttk.Scrollbar(self.story_tree.container, orient="horizontal", command=self.story_tree.xview)
+            self.story_tree.configure(xscrollcommand=sideways.set)
+            sideways.grid(row=1, column=0, sticky="ew")
             self.story_tree.container.grid(row=1, column=0, sticky="nsew")
             self.story_tree.bind("<<TreeviewSelect>>", lambda _e: self._draw())
             self.canvas = tk.Canvas(preview, background="white", highlightthickness=1, highlightbackground="#bbbbbb",
-                                    width=320, height=260)
+                                    width=200, height=120)
             self.canvas.grid(row=1, column=1, sticky="nsew", padx=(8, 0))
             self.canvas.bind("<Configure>", lambda _e: self._draw())
 
@@ -946,9 +1071,98 @@ def main() -> None:
                     favorites = []
                 self.favorites[tool] = sorted(str(f) for f in favorites)
             self.slab_favorite_box.configure(values=[NO_FAVORITE] + self.favorites["Slab"])
+            for box in self.wall_favorite_boxes.values():
+                box.configure(values=[NO_FAVORITE] + self.favorites[WALL_TOOL])
+            self.favorite_thicknesses = {}
             self._update_slab_fields()
             self._balustrade_tool_changed()
+            self._update_wall_fields()
+            self.load_settings()
+            self.settings_loaded = True
             self.window.set_status("Select the zones in Archicad, then press Preview.")
+
+        # ---- the settings of the last run, in Documents/Tapir ----
+
+        def _settings_data(self) -> dict:
+            return {
+                "layers": {kind: var.get() for kind, var in self.layer_vars.items()},
+                "thicknesses": {kind: var.get() for kind, var in self.thickness_vars.items()},
+                "wallFavorites": {kind: var.get() for kind, var in self.wall_favorites.items()},
+                "slabs": self.make_slabs.get(),
+                "slabFavorite": self.slab_favorite.get(),
+                "balustrades": self.make_balustrades.get(),
+                "balustradeTool": self.balustrade_tool.get(),
+                "balustradeHeight": self.balustrade_height.get(),
+                "balustradeFavorite": self.balustrade_favorite.get(),
+                "tolerance": self.tolerance.get(),
+            }
+
+        def load_settings(self) -> None:
+            """ The settings of the last run; a layer or favorite that is not in this project is left out. """
+            try:
+                with open(SETTINGS_FILE, encoding="utf-8") as file:
+                    data = json.load(file)
+            except (OSError, ValueError):
+                return
+            if not isinstance(data, dict):
+                return
+
+            def text(value) -> str | None:
+                return value if isinstance(value, str) else None
+
+            layers = data.get("layers") if isinstance(data.get("layers"), dict) else {}
+            for kind, var in self.layer_vars.items():
+                if text(layers.get(kind)) in self.layers:
+                    var.set(layers[kind])
+            thicknesses = data.get("thicknesses") if isinstance(data.get("thicknesses"), dict) else {}
+            for kind, var in self.thickness_vars.items():
+                if text(thicknesses.get(kind)) is not None and parse_length(thicknesses[kind]) is not None:
+                    var.set(thicknesses[kind])
+            wall_favorites = data.get("wallFavorites") if isinstance(data.get("wallFavorites"), dict) else {}
+            for kind, var in self.wall_favorites.items():
+                if text(wall_favorites.get(kind)) in self.favorites.get(WALL_TOOL, []):
+                    var.set(wall_favorites[kind])
+            if isinstance(data.get("slabs"), bool):
+                self.make_slabs.set(data["slabs"])
+            if text(data.get("slabFavorite")) in self.favorites.get("Slab", []):
+                self.slab_favorite.set(data["slabFavorite"])
+            if isinstance(data.get("balustrades"), bool):
+                self.make_balustrades.set(data["balustrades"])
+            if data.get("balustradeTool") in (RAILING_TOOL, WALL_TOOL):
+                self.balustrade_tool.set(data["balustradeTool"])
+                self._balustrade_tool_changed()
+            if text(data.get("balustradeFavorite")) in self.favorites.get(self.balustrade_tool.get(), []):
+                self.balustrade_favorite.set(data["balustradeFavorite"])
+            if text(data.get("balustradeHeight")) is not None and parse_length(data["balustradeHeight"]) is not None:
+                self.balustrade_height.set(data["balustradeHeight"])
+            if text(data.get("tolerance")) is not None:
+                self.tolerance.set(data["tolerance"])
+            self._update_wall_fields()
+            self._update_slab_fields()
+            self._update_balustrade_fields()
+
+        def save_settings(self) -> None:
+            if not self.settings_loaded:
+                return
+            try:
+                SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+                with open(SETTINGS_FILE, "w", encoding="utf-8") as file:
+                    json.dump(self._settings_data(), file, indent=2, ensure_ascii=False)
+            except OSError as e:
+                print(f"Cannot save the settings to {SETTINGS_FILE}: {e}")
+
+        # ---- the fields ----
+
+        def _wall_favorite(self, kind: str) -> str | None:
+            name = self.wall_favorites[kind].get()
+            return None if name == NO_FAVORITE else name
+
+        def _update_wall_fields(self) -> None:
+            """ A wall row's layer and thickness are used only without a favorite. """
+            for kind in (PARTITION, EXTERNAL):
+                own = self._wall_favorite(kind) is None
+                self.wall_layer_boxes[kind].configure(state="readonly" if own else "disabled")
+                self.wall_thickness_entries[kind].configure(state="normal" if own else "disabled")
 
         def _slab_favorite(self) -> str | None:
             name = self.slab_favorite.get()
@@ -986,14 +1200,26 @@ def main() -> None:
             self.slab_thickness_entry.configure(state="normal" if own else "disabled")
 
         def _settings(self) -> dict | None:
-            """ The thicknesses and the tolerance, or None after showing what is wrong. """
+            """ The thicknesses and the tolerance, or None after showing what is wrong. A wall row with a
+            favorite takes the favorite's thickness once Preview has read it, and its thickness field until
+            then or when it cannot be read. """
             settings = {}
             for kind, name in [(PARTITION, "partition"), (EXTERNAL, "external wall")]:
+                favorite = self._wall_favorite(kind)
+                settings[f"{kind}Favorite"] = favorite
+                read = self.favorite_thicknesses.get(favorite) if favorite is not None else None
+                if read is not None:
+                    settings[kind] = read
+                    settings[f"{kind}FromFavorite"] = True
+                    continue
                 value = parse_length(self.thickness_vars[kind].get())
                 if value is None or value <= EPSILON:
-                    self.window.set_status(f"The {name} thickness must be a positive number of metres.", "warning")
+                    self.window.set_status(f"The {name} thickness must be a positive number of metres"
+                                           + (" (it is used when the favorite's thickness cannot be read)."
+                                              if favorite is not None else "."), "warning")
                     return None
                 settings[kind] = value
+                settings[f"{kind}FromFavorite"] = False
             settings["slabs"] = self.make_slabs.get()
             settings["slabFavorite"] = self._slab_favorite() if settings["slabs"] else None
             settings[SLAB] = None
@@ -1062,6 +1288,11 @@ def main() -> None:
                     self.window.set_status("None of the selected zones has a polygon to read.", "warning")
                     return False
 
+                unread = self._read_favorite_thicknesses(zones_by_floor)
+                settings = self._settings()
+                if settings is None:
+                    return False
+
                 self.window.set_status("Working out the walls and slabs...")
                 slabs_by_floor = plan_slabs(zones_by_floor, settings["tolerance"]) if settings["slabs"] else {}
                 terraces_by_floor = plan_terraces(zones_by_floor, settings["tolerance"], settings[EXTERNAL])
@@ -1113,11 +1344,60 @@ def main() -> None:
             walls = sum(len(s["walls"]) for s in story_rows)
             slabs = sum(len(s["slabs"]) for s in story_rows)
             length = sum(polyline_length(b["points"], b["closed"]) for s in story_rows for b in s["balustrades"])
-            warning = any(s["note"] for s in story_rows)
+            warning = any(s["note"] for s in story_rows) or bool(unread)
+            unread_text = "".join(f" The thickness of the Wall favorite {name} could not be read: the thickness "
+                                  f"field is used for it." for name in unread)
             self.window.set_status(f"Preview: {walls} wall(s), {slabs} slab(s) and {length:.1f} m of balustrade on "
-                                   f"{len(story_rows)} story(s). Check them, then press Create.",
+                                   f"{len(story_rows)} story(s). Check them, then press Create.{unread_text}",
                                    "warning" if warning else "ok")
+            self.save_settings()
             return True
+
+        def _read_favorite_thicknesses(self, zones_by_floor: dict[int, list[dict]]) -> list[str]:
+            """ The thickness of each chosen Wall favorite not read yet. No command returns the structure of
+            a favorite, so one wall is made with it, away from the zones, read back and deleted again. It
+            shows in Archicad's Undo list. Returns the favorites whose thickness could not be read. """
+            unread = []
+            names = {self._wall_favorite(kind) for kind in (PARTITION, EXTERNAL)} - {None}
+            x, y = probe_point(zones_by_floor)
+            floor = min(zones_by_floor)
+            for name in sorted(names):
+                if name in self.favorite_thicknesses:
+                    if self.favorite_thicknesses[name] is None:
+                        unread.append(name)
+                    continue
+                thickness, probe = None, None
+                self.window.set_status(f"Reading the thickness of the Wall favorite {name}...")
+                try:
+                    made = run_tapir("CreateWalls", {"wallsData": [{
+                        "favoriteName": name, "begCoordinate": {"x": x, "y": y},
+                        "endCoordinate": {"x": x + 1.0, "y": y}, "floorIndex": floor, "zCoordinate": 0.0,
+                    }]}).get("elements", [])
+                    if made and isinstance(made[0], dict) and "elementId" in made[0]:
+                        probe = {"elementId": made[0]["elementId"]}
+                        details = get_details_of_elements([probe], ["details"])
+                        d = (details[0].get("details") or {}) if details else {}
+                        values = [float(d[key]) for key in ("begThickness", "endThickness")
+                                  if isinstance(d.get(key), (int, float))]
+                        if values and max(values) > EPSILON:
+                            thickness = max(values)
+                    else:
+                        print(f"The favorite {name} could not be placed to read its thickness: "
+                              f"{item_errors(made) if made else 'no answer'}")
+                except ArchicadError as error:
+                    print(f"The thickness of the favorite {name} could not be read: {error}")
+                finally:
+                    if probe is not None:
+                        try:
+                            run_tapir("DeleteElements", {"elements": [probe]})
+                        except ArchicadError as error:
+                            print(f"The wall made to read the favorite {name} could not be deleted: {error}")
+                self.favorite_thicknesses[name] = thickness
+                if thickness is None:
+                    unread.append(name)
+                else:
+                    print(f"The Wall favorite {name} is {thickness:g} m thick.")
+            return unread
 
         def _show_preview(self) -> None:
             self.story_tree.delete(*self.story_tree.get_children())
@@ -1139,9 +1419,13 @@ def main() -> None:
             walls = sum(len(s["walls"]) for s in rows)
             slabs = sum(len(s["slabs"]) for s in rows)
             terraces = sum(len(s["terraces"]) for s in rows)
+            walls_line = ""
+            if self.preview and any(self.preview["settings"][f"{kind}Favorite"] for kind in (PARTITION, EXTERNAL)):
+                walls_line = "\n" + "; ".join(self._wall_description(kind, self.preview["settings"])
+                                              for kind in (PARTITION, EXTERNAL)) + "."
             self.summary_label.configure(text=f"{zones} zone(s) on {stories} story(s): {walls} wall(s), {slabs} "
                                               f"slab(s), {terraces} terrace(s). Select a story to see it: slabs "
-                                              "dashed, terraces tinted, balustrades as dotted lines.")
+                                              f"dashed, terraces tinted, balustrades as dotted lines.{walls_line}")
             if rows:
                 self.story_tree.selection_set("0")
             self._draw()
@@ -1198,6 +1482,17 @@ def main() -> None:
                 self.canvas.create_line(*[c for p in line for c in to_canvas(p)], fill="#b0006a", width=3,
                                         dash=(2, 3))
 
+        def _wall_description(self, kind: str, settings: dict) -> str:
+            """ What a kind of wall is made of, for the preview and the confirmation. """
+            name = "Partitions" if kind == PARTITION else "External walls"
+            favorite = settings[f"{kind}Favorite"]
+            if favorite is None:
+                return f"{name}: {settings[kind]:g} m on {self.layer_vars[kind].get()}"
+            if settings[f"{kind}FromFavorite"]:
+                return f"{name}: the Wall favorite {favorite} ({settings[kind]:g} m thick)"
+            return (f"{name}: the Wall favorite {favorite} (its thickness could not be read: placed as "
+                    f"{settings[kind]:g} m thick)")
+
         def create(self) -> None:
             settings = self._settings()
             if settings is None:
@@ -1250,8 +1545,8 @@ def main() -> None:
                 balustrade_line = f"Balustrades: railings {settings['balustradeHeight']:g} m high"
             message = (f"Create {total} wall(s), {total_slabs} slab(s) and {total_length:.1f} m of balustrade?\n\n"
                        + "\n".join(lines[:20]) + ("\n..." if len(lines) > 20 else "")
-                       + f"\n\nPartitions: {settings[PARTITION]:g} m on {self.layer_vars[PARTITION].get()}"
-                       + f"\nExternal walls: {settings[EXTERNAL]:g} m on {self.layer_vars[EXTERNAL].get()}"
+                       + f"\n\n{self._wall_description(PARTITION, settings)}"
+                       + f"\n{self._wall_description(EXTERNAL, settings)}"
                        + f"\n{slab_line}\n{balustrade_line}")
             if not self.window.ask_ok_cancel(SCRIPT_NAME, message):
                 return
@@ -1259,19 +1554,25 @@ def main() -> None:
             items, story_of_item = [], []
             for story in rows:
                 for wall in story["walls"]:
+                    # with a favorite only the geometry comes from here: the line, the story, the bottom
+                    # and the height; the favorite brings its layer, structure and everything else
                     item = {
                         "begCoordinate": {"x": wall["start"][0], "y": wall["start"][1]},
                         "endCoordinate": {"x": wall["end"][0], "y": wall["end"][1]},
                         "floorIndex": story["floorIndex"],
                         "zCoordinate": 0.0,
                         "height": story["height"],
-                        "structureType": "Basic",
-                        "thickness": wall["thickness"],
                         "referenceLineLocation": "Center",
                         "offset": 0.0,
                     }
-                    if layer_of[wall["kind"]] is not None:
-                        item["layerIndex"] = layer_of[wall["kind"]]
+                    favorite = settings[f"{wall['kind']}Favorite"]
+                    if favorite is not None:
+                        item["favoriteName"] = favorite
+                    else:
+                        item["structureType"] = "Basic"
+                        item["thickness"] = wall["thickness"]
+                        if layer_of[wall["kind"]] is not None:
+                            item["layerIndex"] = layer_of[wall["kind"]]
                     items.append(item)
                     story_of_item.append(story["name"])
 
@@ -1387,8 +1688,12 @@ def main() -> None:
             run_tapir("HighlightElements", {"elements": [], "highlightedColors": []})
             self.window.set_status("The highlight is cleared.")
 
+        def close(self) -> None:
+            self.save_settings()
+            self.clear_highlight()
+
         def run(self) -> None:
-            self.window.run(on_start=self.load, on_close=self.clear_highlight)
+            self.window.run(on_start=self.load, on_close=self.close)
 
     require_archicad(SCRIPT_NAME)
     ZonesToWalls().run()
