@@ -4406,8 +4406,97 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     return changed;
 }
 
+// The cross section fields of a column segment, the same keys for the whole column (a ModifyColumns
+// item, applied to every segment) and for one segment (an item of its segments list, #2552).
+static void ApplyColumnSegmentCrossSection (const GS::ObjectState& details, API_AssemblySegmentData& segment)
+{
+    bool isWidthAndHeightLinked = false;
+    const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
+    ApplySectionSize (segment, GetOptionalDouble (details, "width"), GetOptionalDouble (details, "depth"), hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
+    bool circleBased = false;
+    if (details.Get ("circleBased", circleBased)) {
+        segment.circleBased = circleBased;
+    }
+    const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
+    const GS::ObjectState* profileIdOs = details.Get ("profileId");
+    if (profileIdOs != nullptr) {
+        segment.modelElemStructureType = API_ProfileStructure;
+        segment.profileType = APISect_Poly;
+        segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+        segment.circleBased = false;
+    } else if (buildingMaterialIdOs != nullptr) {
+        segment.modelElemStructureType = API_BasicStructure;
+        // A profiled segment keeps APISect_Poly, and with it its profile, unless the cross
+        // section is reset too (#1810, same as walls in #531).
+        if (segment.profileType == APISect_Poly) {
+            segment.profileType = APISect_Normal;
+        }
+        segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+    }
+}
+
+// The taper of one column segment, in the shape GetDetailsOfElements returns it (#2552).
+static void ApplyColumnSegmentTaper (const GS::ObjectState& taperOs, API_AssemblySegmentData& segment)
+{
+    bool value = false;
+    if (taperOs.Get ("isHomogeneous", value)) {
+        segment.isHomogeneous = value;
+    }
+    auto endWidth = GetOptionalDouble (taperOs, "endWidth");
+    if (endWidth.HasValue ()) {
+        segment.endWidth = endWidth.Get ();
+    }
+    auto endDepth = GetOptionalDouble (taperOs, "endDepth");
+    if (endDepth.HasValue ()) {
+        segment.endHeight = endDepth.Get ();
+    }
+    if (taperOs.Get ("isEndWidthAndDepthLinked", value)) {
+        segment.isEndWidthAndHeightLinked = value;
+    }
+}
+
+// The length scheme of one segment, in the shape GetDetailsOfElements returns it (#2552).
+static GS::Optional<GS::UniString> ApplyAssemblySegmentLength (const GS::ObjectState& lengthOs, API_AssemblySegmentSchemeData& scheme)
+{
+    GS::UniString lengthType;
+    if (lengthOs.Get ("lengthType", lengthType)) {
+        if (lengthType == "Fixed") {
+            scheme.lengthType = APIAssemblySegment_Fixed;
+        } else if (lengthType == "Proportional") {
+            scheme.lengthType = APIAssemblySegment_Proportional;
+        } else {
+            return GS::UniString ("length.lengthType must be Fixed or Proportional.");
+        }
+    }
+    auto fixedLength = GetOptionalDouble (lengthOs, "fixedLength");
+    if (fixedLength.HasValue ()) {
+        scheme.fixedLength = fixedLength.Get ();
+    }
+    auto lengthProportion = GetOptionalDouble (lengthOs, "lengthProportion");
+    if (lengthProportion.HasValue ()) {
+        scheme.lengthProportion = lengthProportion.Get ();
+    }
+    // Only the value of the lengthType is used, so only that one must be positive; GetDetailsOfElements
+    // returns the other one too, often as 0.
+    if (scheme.lengthType == APIAssemblySegment_Fixed && scheme.fixedLength <= 0.0) {
+        return GS::UniString ("length.fixedLength must be greater than 0 for a Fixed segment.");
+    }
+    if (scheme.lengthType == APIAssemblySegment_Proportional && scheme.lengthProportion <= 0.0) {
+        return GS::UniString ("length.lengthProportion must be greater than 0 for a Proportional segment.");
+    }
+    return {};
+}
+
+static GSSize GetAssemblySegmentSchemeCount (const API_ElementMemo& memo)
+{
+    if (memo.assemblySegmentSchemes == nullptr) {
+        return 0;
+    }
+    return BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+}
+
 // The segment an item of the "segments" list of ModifyColumns writes: its segmentIndex, else its
-// position in the list, in the order GetDetailsOfElements returns the segments.
+// position in the list, so the segments GetDetailsOfElements returns can be sent back as they are.
 static Int32 GetColumnSegmentIndex (const GS::ObjectState& segmentOs, UIndex position)
 {
     Int32 segmentIndex = static_cast<Int32> (position);
@@ -4416,7 +4505,8 @@ static Int32 GetColumnSegmentIndex (const GS::ObjectState& segmentOs, UIndex pos
 }
 
 // Checks the "segments" list of a ModifyColumns item (#2552) before anything is written, so a
-// wrong segment index, an unknown surface or an invalid veneer leaves the column as it was.
+// wrong segment index, an unknown attribute, a cross section that does not match its structureType,
+// an invalid length or an invalid veneer leaves the column as it was.
 static GS::Optional<GS::UniString> CheckColumnSegments (API_Guid elemGuid, const GS::ObjectState& details)
 {
     GS::Array<GS::ObjectState> segmentItems;
@@ -4426,10 +4516,11 @@ static GS::Optional<GS::UniString> CheckColumnSegments (API_Guid elemGuid, const
 
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.columnSegments == nullptr) {
         return GS::UniString ("Failed to read the segments of the column.");
     }
     const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+    const GSSize nSchemes = GetAssemblySegmentSchemeCount (memo);
 
     for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
         const GS::ObjectState& segmentOs = segmentItems[i];
@@ -4458,11 +4549,66 @@ static GS::Optional<GS::UniString> CheckColumnSegments (API_Guid elemGuid, const
                 return veneerError;
             }
         }
+
+        // The segment's own cross section.
+        const GS::ObjectState* buildingMaterialIdOs = segmentOs.Get ("buildingMaterialId");
+        if (buildingMaterialIdOs != nullptr &&
+            GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs)) == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString::Printf ("No Building Material attribute was found for segments[%d].buildingMaterialId.", static_cast<int> (i));
+        }
+        const GS::ObjectState* profileIdOs = segmentOs.Get ("profileId");
+        if (profileIdOs != nullptr &&
+            GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs)) == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString::Printf ("No Profile attribute was found for segments[%d].profileId.", static_cast<int> (i));
+        }
+        // structureType is taken so the segments GetDetailsOfElements returns can be sent back; the
+        // structure itself follows buildingMaterialId or profileId, so it must agree with them.
+        // The fields for all segments are applied first, so they decide when the item gives neither.
+        GS::UniString structureType;
+        if (segmentOs.Get ("structureType", structureType)) {
+            bool isProfile = memo.columnSegments[segmentIndex].assemblySegmentData.modelElemStructureType == API_ProfileStructure;
+            if (details.Contains ("profileId")) {
+                isProfile = true;
+            } else if (details.Contains ("buildingMaterialId")) {
+                isProfile = false;
+            }
+            if (profileIdOs != nullptr) {
+                isProfile = true;
+            } else if (buildingMaterialIdOs != nullptr) {
+                isProfile = false;
+            }
+            if (structureType != GS::UniString (isProfile ? "Profile" : "Basic")) {
+                return GS::UniString::Printf ("segments[%d].structureType does not match the cross section of the segment: give buildingMaterialId to make it Basic or profileId to make it Profile.", static_cast<int> (i));
+            }
+        }
+
+        const GS::ObjectState* taperOs = segmentOs.Get ("taper");
+        if (taperOs != nullptr) {
+            API_AssemblySegmentData probe = memo.columnSegments[segmentIndex].assemblySegmentData;
+            ApplyColumnSegmentTaper (*taperOs, probe);
+            if (!probe.isHomogeneous && (probe.endWidth <= 0.0 || probe.endHeight <= 0.0)) {
+                return GS::UniString::Printf ("segments[%d].taper: a tapered segment (isHomogeneous false) needs endWidth and endDepth greater than 0.", static_cast<int> (i));
+            }
+        }
+
+        const GS::ObjectState* lengthOs = segmentOs.Get ("length");
+        if (lengthOs != nullptr) {
+            if (segmentIndex >= nSchemes) {
+                return GS::UniString::Printf ("segments[%d].length: Archicad returned no length scheme for segment %d of the column.", static_cast<int> (i), static_cast<int> (segmentIndex));
+            }
+            API_AssemblySegmentSchemeData probe = memo.assemblySegmentSchemes[segmentIndex];
+            const GS::Optional<GS::UniString> lengthError = ApplyAssemblySegmentLength (*lengthOs, probe);
+            if (lengthError.HasValue ()) {
+                return GS::UniString::Printf ("segments[%d].", static_cast<int> (i)) + lengthError.Get ();
+            }
+        }
     }
     return {};
 }
 
-static GS::Optional<GS::UniString> ApplyColumnSegment (const GS::ObjectState& segmentOs, API_ColumnSegmentType& segment)
+// Writes one item of the "segments" list into its segment; scheme is the segment's length scheme,
+// or nullptr when the column has none for it (then CheckColumnSegments refused a length).
+static GS::Optional<GS::UniString> ApplyColumnSegment (const GS::ObjectState& segmentOs, API_ColumnSegmentType& segment, API_AssemblySegmentSchemeData* scheme, bool& schemeChanged)
 {
     GS::ObjectState materialOs;
     if (segmentOs.Get ("extrusionSurfaceMaterial", materialOs)) {
@@ -4474,6 +4620,19 @@ static GS::Optional<GS::UniString> ApplyColumnSegment (const GS::ObjectState& se
     bool materialsChained = false;
     if (segmentOs.Get ("materialsChained", materialsChained)) {
         segment.materialsChained = materialsChained;
+    }
+    ApplyColumnSegmentCrossSection (segmentOs, segment.assemblySegmentData);
+    const GS::ObjectState* taperOs = segmentOs.Get ("taper");
+    if (taperOs != nullptr) {
+        ApplyColumnSegmentTaper (*taperOs, segment.assemblySegmentData);
+    }
+    const GS::ObjectState* lengthOs = segmentOs.Get ("length");
+    if (lengthOs != nullptr && scheme != nullptr) {
+        const GS::Optional<GS::UniString> lengthError = ApplyAssemblySegmentLength (*lengthOs, *scheme);
+        if (lengthError.HasValue ()) {
+            return lengthError;
+        }
+        schemeChanged = true;
     }
     const GS::ObjectState* veneerOs = segmentOs.Get ("veneer");
     if (veneerOs != nullptr) {
@@ -4739,7 +4898,7 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
 
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.columnSegments == nullptr) {
         return false;
     }
 
@@ -4752,42 +4911,41 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
                 return false;
             }
         }
-        API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
-        ApplySectionSize (segment, width, depth, hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
-        if (hasCircleBased) {
-            segment.circleBased = circleBased;
-        }
-        if (profileIdOs != nullptr) {
-            segment.modelElemStructureType = API_ProfileStructure;
-            segment.profileType = APISect_Poly;
-            segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
-            segment.circleBased = false;
-        } else if (buildingMaterialIdOs != nullptr) {
-            segment.modelElemStructureType = API_BasicStructure;
-            // A profiled segment keeps APISect_Poly, and with it its profile, unless the cross
-            // section is reset too (#1810, same as walls in #531).
-            if (segment.profileType == APISect_Poly) {
-                segment.profileType = APISect_Normal;
-            }
-            segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
-        }
+        ApplyColumnSegmentCrossSection (details, memo.columnSegments[i].assemblySegmentData);
     }
 
-    // After the fields for all segments, so a segment's own veneer wins. The indices were
-    // checked by CheckColumnSegments (#2552).
+    // After the fields for all segments, so a segment's own values win. The items were checked by
+    // CheckColumnSegments (#2552).
+    const GSSize nSchemes = GetAssemblySegmentSchemeCount (memo);
+    bool schemeChanged = false;
     for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
         const Int32 segmentIndex = GetColumnSegmentIndex (segmentItems[i], i);
         if (segmentIndex < 0 || segmentIndex >= nSegments) {
             continue;
         }
-        const GS::Optional<GS::UniString> segmentError = ApplyColumnSegment (segmentItems[i], memo.columnSegments[segmentIndex]);
+        API_AssemblySegmentSchemeData* scheme = segmentIndex < nSchemes ? &memo.assemblySegmentSchemes[segmentIndex] : nullptr;
+        const GS::Optional<GS::UniString> segmentError = ApplyColumnSegment (segmentItems[i], memo.columnSegments[segmentIndex], scheme, schemeChanged);
         if (segmentError.HasValue ()) {
             errorMessage = segmentError.Get ();
             return false;
         }
     }
 
-    return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_ColumnSegment, &memo) == NoError;
+    if (!schemeChanged) {
+        return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_ColumnSegment, &memo) == NoError;
+    }
+
+    // ACAPI_Element_ChangeMemo is documented for polygons only; the segment schemes are written with
+    // ACAPI_Element_Change, as the DevKit's Element_Test example does for columns.
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return false;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, nSegments);
+    return ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme, true) == NoError;
 }
 
 static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details)
@@ -5046,18 +5204,11 @@ static GS::Optional<GS::UniString> ApplyBeamSegmentsToMemo (API_ElementMemo& mem
 
         const GS::ObjectState* lengthOs = geometry->Get ("length");
         if (lengthOs != nullptr) {
-            API_AssemblySegmentSchemeData& scheme = memo.assemblySegmentSchemes[segmentIndex];
-            GS::UniString lengthType;
-            if (lengthOs->Get ("lengthType", lengthType)) {
-                scheme.lengthType = (lengthType == "Proportional") ? APIAssemblySegment_Proportional : APIAssemblySegment_Fixed;
-            }
-            const auto fixedLength = GetOptionalDouble (*lengthOs, "fixedLength");
-            if (fixedLength.HasValue ()) {
-                scheme.fixedLength = fixedLength.Get ();
-            }
-            const auto lengthProportion = GetOptionalDouble (*lengthOs, "lengthProportion");
-            if (lengthProportion.HasValue ()) {
-                scheme.lengthProportion = lengthProportion.Get ();
+            // Shared with the column segments: only the value of the lengthType must be positive, so the
+            // length GetDetailsOfElements returns can be sent back as it is.
+            const GS::Optional<GS::UniString> lengthError = ApplyAssemblySegmentLength (*lengthOs, memo.assemblySegmentSchemes[segmentIndex]);
+            if (lengthError.HasValue ()) {
+                return GS::UniString::Printf ("segments[%u].geometry.", static_cast<unsigned int> (i)) + lengthError.Get ();
             }
         }
     }
@@ -17133,7 +17284,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },
                         "segments": {
                             "type": "array",
-                            "description": "Writes the surfaces and the veneer of single segments of the column. Each item writes the segment given by its segmentIndex, else the segment at its position in this list (the order GetDetailsOfElements returns them); segments not listed stay as they are. Only the surface and veneer keys of a read segment are accepted: its cross section, taper and length are not written here. Applied after the fields above, so a segment's own veneer wins over veneer.",
+                            "description": "Writes single segments of the column: their surfaces, veneer, cross section, taper and length. Each item writes the segment given by its segmentIndex, else the segment at its position in this list, so the segments GetDetailsOfElements returns can be sent back as they are; segments not listed stay as they are. Applied after the fields above, so a segment's own values win over the ones applied to all segments.",
                             "items": {
                                 "$ref": "#/ColumnSegmentSurfacesModification"
                             }

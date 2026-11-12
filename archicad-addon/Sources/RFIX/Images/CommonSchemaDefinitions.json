@@ -11383,7 +11383,7 @@
             "lengthType": {
                 "type": "string",
                 "enum": [ "Fixed", "Proportional", "Unknown" ],
-                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave. Unknown is only returned, for a scheme Archicad reports as neither; sent to a Modify or Create command it is treated as Fixed."
+                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave. Unknown is only returned, for a scheme Archicad reports as neither; the commands that write a length (AssemblySegmentLengthModification) accept only Fixed or Proportional."
             },
             "fixedLength": {
                 "type": "number",
@@ -11488,9 +11488,56 @@
             "materialsChained"
         ]
     },
+    "ColumnSegmentTaperModification": {
+        "type": "object",
+        "description": "The taper to write to a column segment, in the shape of ColumnSegmentTaper. Only the given fields change.",
+        "properties": {
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True for the same cross section at both ends of the segment (no taper), false to taper it to endWidth and endDepth."
+            },
+            "endWidth": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Cross section width at the end of the segment. Used only when isHomogeneous is false; it must then be greater than 0."
+            },
+            "endDepth": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Cross section depth (height) at the end of the segment. Used only when isHomogeneous is false; it must then be greater than 0."
+            },
+            "isEndWidthAndDepthLinked": {
+                "type": "boolean",
+                "description": "Whether Archicad keeps endWidth and endDepth linked. Set it to false first to give them independent values."
+            }
+        },
+        "additionalProperties": false
+    },
+    "AssemblySegmentLengthModification": {
+        "type": "object",
+        "description": "The length scheme to write to a segment of a beam or column, in the shape of AssemblySegmentLength. Only the given fields change; Archicad uses the value of the lengthType.",
+        "properties": {
+            "lengthType": {
+                "type": "string",
+                "enum": [ "Fixed", "Proportional" ],
+                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
+            },
+            "fixedLength": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The length of the segment, used when lengthType is Fixed; it must then be greater than 0."
+            },
+            "lengthProportion": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The proportion of the segment, used when lengthType is Proportional, as Archicad stores it and GetDetailsOfElements returns it; it must then be greater than 0."
+            }
+        },
+        "additionalProperties": false
+    },
     "ColumnSegmentSurfacesModification": {
         "type": "object",
-        "description": "The surfaces and the veneer to write to one segment of a column, with the surface and veneer keys of ColumnSegmentSurfaces (not its cross section, taper or length). Only the given fields change. Send overridden false to make a surface come from the cross section again.",
+        "description": "What to write to one segment of a column, in the shape of ColumnSegmentSurfaces: its surfaces and veneer, its own cross section, its taper and its length. Only the given fields change. Send overridden false to make a surface come from the cross section again.",
         "properties": {
             "segmentIndex": {
                 "type": "integer",
@@ -11512,6 +11559,44 @@
             "veneer": {
                 "$ref": "#/ColumnVeneer",
                 "description": "The veneer of this segment only; only the given fields change, thickness 0 removes it."
+            },
+            "structureType": {
+                "$ref": "#/SegmentStructureType",
+                "description": "Taken so the segments GetDetailsOfElements returns can be sent back. The structure follows buildingMaterialId (Basic) or profileId (Profile), so this must agree with them, or, when neither is given, with the structure the column-wide buildingMaterialId or profileId gives the segment, else its current one; otherwise the item is refused."
+            },
+            "width": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Cross section width of this segment (at its start when it is tapered)."
+            },
+            "depth": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Cross section depth (height) of this segment (at its start when it is tapered)."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "When true, Archicad keeps width and depth of this segment equal - set to false to give them independent values."
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section of this segment, false for rectangular. Ignored once profileId switches the segment to a custom profile."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Makes the cross section of this segment a building material (round or rectangular, per circleBased)."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Switches the cross section of this segment to this custom extruded profile (circleBased becomes false)."
+            },
+            "taper": {
+                "$ref": "#/ColumnSegmentTaperModification",
+                "description": "The taper of this segment."
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLengthModification",
+                "description": "The length scheme of this segment. Refused when Archicad returns no scheme for the segment."
             }
         },
         "additionalProperties": false
@@ -11700,28 +11785,6 @@
             "endHeight",
             "isEndWidthAndHeightLinked"
         ]
-    },
-    "AssemblySegmentLengthModification": {
-        "type": "object",
-        "description": "The length of a segment of a beam. Only the keys given are written.",
-        "properties": {
-            "lengthType": {
-                "type": "string",
-                "enum": [ "Fixed", "Proportional" ],
-                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
-            },
-            "fixedLength": {
-                "type": "number",
-                "exclusiveMinimum": 0.0,
-                "description": "The length of the segment. Archicad uses it when lengthType is Fixed."
-            },
-            "lengthProportion": {
-                "type": "number",
-                "exclusiveMinimum": 0.0,
-                "description": "The share of the length of the segment. Archicad uses it when lengthType is Proportional."
-            }
-        },
-        "additionalProperties": false
     },
     "BeamSegmentGeometryModification": {
         "type": "object",
