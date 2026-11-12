@@ -12688,6 +12688,9 @@
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
             },
+            "surface": {
+                "$ref": "#/ZoneSurface"
+            },
             "polygonDisplay": {
                 "$ref": "#/ZonePolygonDisplay"
             },
@@ -12714,6 +12717,7 @@
             "floorThickness",
             "contourLine",
             "coverFill",
+            "surface",
             "polygonDisplay",
             "stampPen",
             "reducePercent"
@@ -17168,6 +17172,9 @@
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
             },
+            "surface": {
+                "$ref": "#/ZoneSurface"
+            },
             "polygonDisplay": {
                 "$ref": "#/ZonePolygonDisplay"
             },
@@ -17242,6 +17249,22 @@
             "fillAngle": {
                 "type": "number",
                 "description": "The angle of the cover fill when useLocalOrigo is true, in radians."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneSurface": {
+        "type": "object",
+        "description": "The 3D surface of a zone (the Model panel of the Zone Settings dialog). GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface attribute of the zone's 3D body: of all its sides when useOnAllSides is true, otherwise of the sides that do not inherit a surface from a bounding element."
+            },
+            "useOnAllSides": {
+                "type": "boolean",
+                "description": "true: surfaceId is used on all sides of the zone. false: the sides inherit the surfaces of the bounding walls and trimming elements."
             }
         },
         "additionalProperties": false,

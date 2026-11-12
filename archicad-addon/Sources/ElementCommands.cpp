@@ -3277,6 +3277,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
+                AddZoneSurface (elem.zone, typeSpecificDetails);
                 AddZoneDisplayStampPenAndReduction (elem.zone, typeSpecificDetails);
                 typeSpecificDetails.Add ("height", elem.zone.roomHeight);
                 typeSpecificDetails.Add ("bottomOffset", elem.zone.roomBaseLev);
