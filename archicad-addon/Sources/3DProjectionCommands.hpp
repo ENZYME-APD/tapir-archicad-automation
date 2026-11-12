@@ -32,6 +32,28 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Creates empty Camera Sets (API_CamSetType), optionally making one the active set.
+class CreateCameraSetsCommand : public CommandBase
+{
+public:
+    CreateCameraSetsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Renames Camera Sets and makes one the active set.
+class ModifyCameraSetsCommand : public CommandBase
+{
+public:
+    ModifyCameraSetsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class Get3DStylesCommand : public CommandBase
 {
 public:

@@ -2711,6 +2711,14 @@ GSErrCode Initialize (void)
             navigatorCommands, "2.0.0",
             "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own."
         );
+        err |= RegisterCommand<CreateCameraSetsCommand> (
+            navigatorCommands, "2.0.1",
+            "Creates empty Camera Sets (camera paths) with the given names, and makes one the active Camera Set when isActive is true. Returns their element ids, which GetCameras lists as cameraSetElementId. Delete them with DeleteElements."
+        );
+        err |= RegisterCommand<ModifyCameraSetsCommand> (
+            navigatorCommands, "2.0.1",
+            "Renames Camera Sets (camera paths) and makes one of them the active Camera Set (isActive true); the set active before is then no longer active. Values not given are kept."
+        );
         err |= RegisterCommand<Get3DStylesCommand> (
             navigatorCommands, "2.0.0",
             "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses."
