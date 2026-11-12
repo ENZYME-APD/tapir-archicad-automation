@@ -188,6 +188,22 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            // Archicad creates an element on a hidden layer (the layer of the tool defaults, a
+            // favorite or layerIndex), but then refuses to write its id and to delete it again,
+            // so the element would stay with an automatic id while the item answers that it was
+            // not created (#2632). Refuse such an item before anything is created.
+            GS::UniString id;
+            const bool hasId = data.Get ("id", id);
+            if (hasId) {
+                GS::UniString layerReason;
+                err = GetLayerChangeError (element.header.layer, layerReason);
+                if (err != NoError) {
+                    elements (CreateErrorResponse (err, "The " + elemTypeName + " was not created, because " + layerReason +
+                        ", so its id cannot be set. Show or unlock the layer, or give the layerIndex of a visible, unlocked layer."));
+                    continue;
+                }
+            }
+
             const API_Element requestedElement = element;
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -198,8 +214,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             // As for the id below, a new element that could not be finished is deleted again.
             err = AfterCreate (requestedElement, element.header.guid, data);
             if (err != NoError) {
-                ACAPI_Element_Delete ({ element.header.guid });
-                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", so it was not created"));
+                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", " + DeleteUnfinishedElement (element.header.guid)));
                 continue;
             }
 
@@ -209,12 +224,10 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             // written leaves no half-done element behind: the new element is deleted again
             // and the item answers with the error, so the response never names an element
             // whose id is not the requested one.
-            GS::UniString id;
-            if (data.Get ("id", id)) {
+            if (hasId) {
                 err = ChangeElementId (element.header.guid, id);
                 if (err != NoError) {
-                    ACAPI_Element_Delete ({ element.header.guid });
-                    elements (CreateErrorResponse (err, "Failed to set the id of the new " + elemTypeName + ", so it was not created"));
+                    elements (CreateErrorResponse (err, "Failed to set the id of the new " + elemTypeName + ", " + DeleteUnfinishedElement (element.header.guid)));
                     continue;
                 }
             }

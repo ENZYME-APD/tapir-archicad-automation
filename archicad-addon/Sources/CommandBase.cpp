@@ -1966,3 +1966,11 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
     }
     return NoError;
 }
+
+GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid)
+{
+    if (ACAPI_Element_Delete ({ elementGuid }) == NoError) {
+        return "so it was not created";
+    }
+    return GS::UniString ("and Archicad refused to delete it again, so it was left in the project with elementId ") + APIGuidToString (elementGuid);
+}

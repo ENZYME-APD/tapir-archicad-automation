@@ -10812,6 +10812,19 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
+            // Archicad refuses to write the id of a morph on a hidden layer and to delete it
+            // again, so it would be left behind with an automatic id (#2632): check the layer first.
+            GS::UniString id;
+            const bool hasId = data.Get ("id", id);
+            if (hasId) {
+                GS::UniString layerReason;
+                err = GetLayerChangeError (element.header.layer, layerReason);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, GS::UniString::Printf ("The morph was not created, because %T, so its id cannot be set. Show or unlock the layer, or give the layerIndex of a visible, unlocked layer.", layerReason.ToPrintf ())));
+                    continue;
+                }
+            }
+
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, "Failed to create morph."));
@@ -10873,12 +10886,10 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
 
             // Per-item "id", as in CreateElementsCommandBase::Execute: an id that cannot be
             // written leaves no half-done morph behind, the new morph is deleted again.
-            GS::UniString id;
-            if (data.Get ("id", id)) {
+            if (hasId) {
                 err = ChangeElementId (element.header.guid, id);
                 if (err != NoError) {
-                    ACAPI_Element_Delete ({ element.header.guid });
-                    elements.Push (CreateErrorResponse (err, "Failed to set the id of the new morph, so it was not created."));
+                    elements.Push (CreateErrorResponse (err, "Failed to set the id of the new morph, " + DeleteUnfinishedElement (element.header.guid) + "."));
                     continue;
                 }
             }
