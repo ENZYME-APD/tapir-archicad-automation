@@ -1148,6 +1148,8 @@ GS::Optional<GS::UniString> SetGDLParametersOfElementsCommand::GetRawResponseSch
     })";
 }
 
+static GSErrCode SetGDLParametersOfRailingComponent (const API_Element& element, const GS::Array<GS::ObjectState>& elemGdlParameters, bool dryRun, GS::ObjectState& wouldChange, GS::UniString& errMessage);
+
 GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementsWithGDLParameters;
@@ -1217,7 +1219,10 @@ GS::ObjectState	SetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
                 // parameters of, so the frame has no GDL parameters to set.
                 errMessage = GS::UniString::Printf ("Curtain wall frame %T has no library part, so it has no GDL parameters", APIGuidToString (elemGuid).ToPrintf ());
             }
-            if (err == NoError) {
+            if (err != NoError && IsRailingComponentType (elemTypeId)) {
+                // No parameter session for a railing component: its own parameter memo is written.
+                err = SetGDLParametersOfRailingComponent (element, elemGdlParameters, dryRun, wouldChange, errMessage);
+            } else if (err == NoError) {
                 API_GetParamsType getParams = {};
                 // On a dry run, the parameter list before the first write, for the old values.
                 API_GetParamsType paramsBefore = {};
@@ -1873,10 +1878,12 @@ void AddLibPartAndGDLParameters (GS::ObjectState& os, Int32 libInd, API_AddParTy
     }
 }
 
-// Changes one parameter of the marker's parameter list in place. There is no parameter
-// interface (ACAPI_LibraryPart_OpenParameters) for a sub-element, so unlike
-// SetGDLParametersOfElements this writes the API_AddParType the marker was read with.
-static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const API_Guid& elemGuid, API_AddParType** params, GS::UniString& errMessage)
+// Changes one parameter of a stored parameter list in place: the marker's, or a railing
+// component's (ownerKind names which, for the messages). There is no parameter interface
+// (ACAPI_LibraryPart_OpenParameters) for these sub-elements, so unlike the rest of
+// SetGDLParametersOfElements this writes the API_AddParType the list was read with. The name of
+// the parameter written goes to writtenName when it is given.
+static GSErrCode SetOneStoredParameter (const GS::ObjectState& parameter, const API_Guid& elemGuid, API_AddParType** params, const char* ownerKind, GS::UniString& errMessage, GS::String* writtenName)
 {
     const GSSize nParams = BMGetHandleSize ((GSHandle) params) / sizeof (API_AddParType);
 
@@ -1892,7 +1899,7 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
             }
         }
         if (actParam == nullptr) {
-            errMessage = GS::UniString::Printf ("Invalid input: %s is not a parameter of the marker of element %T", name.ToCStr (), APIGuidToString (elemGuid).ToPrintf ());
+            errMessage = GS::UniString::Printf ("Invalid input: %s is not a parameter of the %s of element %T", name.ToCStr (), ownerKind, APIGuidToString (elemGuid).ToPrintf ());
             return APIERR_BADPARS;
         }
     } else if (parameter.Get ("index", index)) {
@@ -1904,7 +1911,7 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
             }
         }
         if (actParam == nullptr) {
-            errMessage = GS::UniString::Printf ("Invalid input: no marker parameter with index %d for element %T", index, APIGuidToString (elemGuid).ToPrintf ());
+            errMessage = GS::UniString::Printf ("Invalid input: no %s parameter with index %d for element %T", ownerKind, index, APIGuidToString (elemGuid).ToPrintf ());
             return APIERR_BADPARS;
         }
     } else {
@@ -1913,12 +1920,12 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
     }
 
     if (!parameter.Contains (ParameterValueFieldName)) {
-        errMessage = GS::UniString::Printf ("Invalid input: value is missing for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+        errMessage = GS::UniString::Printf ("Invalid input: value is missing for %s parameter %s of element %T", ownerKind, actParam->name, APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_BADPARS;
     }
 
     if (actParam->typeMod != API_ParSimple) {
-        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of the marker of element %T, array marker parameters are not supported", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+        errMessage = GS::UniString::Printf ("Invalid input: %s is an array parameter of the %s of element %T, array %s parameters are not supported", actParam->name, ownerKind, APIGuidToString (elemGuid).ToPrintf (), ownerKind);
         return APIERR_BADPARS;
     }
 
@@ -1932,7 +1939,7 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
         case APIParT_Profile: {
             Int32 value = 0;
             if (!parameter.Get (ParameterValueFieldName, value)) {
-                errMessage = GS::UniString::Printf ("Invalid input: the given value is not an integer for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not an integer for %s parameter %s of element %T", ownerKind, actParam->name, APIGuidToString (elemGuid).ToPrintf ());
                 return APIERR_BADPARS;
             }
             actParam->value.real = value;
@@ -1950,7 +1957,7 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
             } else if (parameter.Get (ParameterValueFieldName, integerValue)) {
                 actParam->value.real = integerValue;
             } else {
-                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a real number for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a real number for %s parameter %s of element %T", ownerKind, actParam->name, APIGuidToString (elemGuid).ToPrintf ());
                 return APIERR_BADPARS;
             }
             break;
@@ -1958,7 +1965,7 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
         case APIParT_LightSw: {
             GS::String value;
             if (!parameter.Get (ParameterValueFieldName, value) || (value != "On" && value != "Off")) {
-                errMessage = GS::UniString::Printf ("Invalid input: the given value is not 'On' or 'Off' for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not 'On' or 'Off' for %s parameter %s of element %T", ownerKind, actParam->name, APIGuidToString (elemGuid).ToPrintf ());
                 return APIERR_BADPARS;
             }
             actParam->value.real = (value == "Off" ? 0 : 1);
@@ -1967,7 +1974,7 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
         case APIParT_Boolean: {
             bool value = false;
             if (!parameter.Get (ParameterValueFieldName, value)) {
-                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a boolean for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a boolean for %s parameter %s of element %T", ownerKind, actParam->name, APIGuidToString (elemGuid).ToPrintf ());
                 return APIERR_BADPARS;
             }
             actParam->value.real = (value ? 1 : 0);
@@ -1977,7 +1984,7 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
         case APIParT_Title: {
             GS::UniString value;
             if (!parameter.Get (ParameterValueFieldName, value)) {
-                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a string for marker parameter %s of element %T", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+                errMessage = GS::UniString::Printf ("Invalid input: the given value is not a string for %s parameter %s of element %T", ownerKind, actParam->name, APIGuidToString (elemGuid).ToPrintf ());
                 return APIERR_BADPARS;
             }
             // uStr is a fixed buffer of API_UAddParStrLen characters, terminator included.
@@ -1986,8 +1993,123 @@ static GSErrCode SetOneMarkerParameter (const GS::ObjectState& parameter, const 
         }
         default:
         case APIParT_Dictionary:
-            errMessage = GS::UniString::Printf ("Invalid input: the type of marker parameter %s of element %T is not supported", actParam->name, APIGuidToString (elemGuid).ToPrintf ());
+            errMessage = GS::UniString::Printf ("Invalid input: the type of %s parameter %s of element %T is not supported", ownerKind, actParam->name, APIGuidToString (elemGuid).ToPrintf ());
             return APIERR_BADPARS;
+    }
+
+    if (writtenName != nullptr) {
+        *writtenName = actParam->name;
+    }
+    return NoError;
+}
+
+// SetGDLParametersOfElements for a railing component (post, rail, baluster, panel ...), which has
+// no parameter session (ACAPI_LibraryPart_OpenParameters fails on it, #2572). The parameters are
+// written to the component's own APIMemoMask_AddPars memo, the list GetGDLParametersOfElements
+// reads for it, and committed with ACAPI_Element_Change on the component. The DevKit lists
+// railing components neither for parameter sessions nor among the elements whose params memo
+// ACAPI_Element_Change changes, so every written value is read back afterwards and one Archicad
+// did not keep is reported as a failure. No Parameter Script runs here: only the given values
+// change, and a dry run lists only them.
+static GSErrCode SetGDLParametersOfRailingComponent (
+    const API_Element& element,
+    const GS::Array<GS::ObjectState>& elemGdlParameters,
+    bool dryRun,
+    GS::ObjectState& wouldChange,
+    GS::UniString& errMessage)
+{
+    const API_Guid elemGuid = element.header.guid;
+    const GS::UniString guidString = APIGuidToString (elemGuid);
+
+    API_ElementMemo memo = {};
+    API_ElementMemo memoBefore = {};
+    const GS::OnExit memoGuard ([&] () {
+        ACAPI_DisposeElemMemoHdls (&memo);
+        ACAPI_DisposeElemMemoHdls (&memoBefore);
+    });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_AddPars) != NoError || memo.params == nullptr ||
+        BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType) == 0) {
+        errMessage = GS::UniString::Printf ("Archicad gives no GDL parameters for the railing component with guid %T, so none can be set", guidString.ToPrintf ());
+        return APIERR_GENERAL;
+    }
+    if (ACAPI_Element_GetMemo (elemGuid, &memoBefore, APIMemoMask_AddPars) != NoError) {
+        memoBefore.params = nullptr;
+    }
+
+    GS::Array<GS::ObjectState> flatParameters;
+    for (const GS::ObjectState& elemGdlParametersItem : elemGdlParameters) {
+        GS::Array<GS::ObjectState> nestedParameters;
+        if (elemGdlParametersItem.Get ("parameters", nestedParameters)) {
+            // Legacy mode: old schema had nested list for parameters
+            for (const GS::ObjectState& nestedParameter : nestedParameters) {
+                flatParameters.Push (nestedParameter);
+            }
+        } else {
+            flatParameters.Push (elemGdlParametersItem);
+        }
+    }
+
+    GS::Array<GS::String> writtenNames;
+    for (const GS::ObjectState& parameter : flatParameters) {
+        GS::String writtenName;
+        const GSErrCode err = SetOneStoredParameter (parameter, elemGuid, memo.params, "railing component", errMessage, &writtenName);
+        if (err != NoError) {
+            return err;
+        }
+        if (!writtenNames.Contains (writtenName)) {
+            writtenNames.Push (writtenName);
+        }
+    }
+
+    API_GetParamsType paramsBefore = {};
+    paramsBefore.params = memoBefore.params;
+    API_GetParamsType paramsWritten = {};
+    paramsWritten.params = memo.params;
+
+    if (dryRun) {
+        // ACAPI_Element_Change refuses an element the user could not edit in Archicad either.
+        if (!DescribeElementEditRefusal (APIERR_GENERAL, element.header).IsEmpty ()) {
+            errMessage = GetElementChangeFailureMessage (APIERR_GENERAL, element.header);
+            return APIERR_GENERAL;
+        }
+        wouldChange = CreateGDLParametersWouldChange (paramsBefore, paramsWritten, writtenNames);
+        return NoError;
+    }
+
+    // Only the parameters change: the cleared mask leaves the component's own fields alone.
+    API_Element changed = element;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    GSErrCode err = ACAPI_Element_Change (&changed, &mask, &memo, APIMemoMask_AddPars, true);
+    if (err != NoError) {
+        errMessage = GetElementChangeFailureMessage (err, element.header);
+        return err;
+    }
+
+    API_ElementMemo memoAfter = {};
+    const GS::OnExit memoAfterGuard ([&memoAfter] () { ACAPI_DisposeElemMemoHdls (&memoAfter); });
+    err = ACAPI_Element_GetMemo (elemGuid, &memoAfter, APIMemoMask_AddPars);
+    if (err != NoError || memoAfter.params == nullptr) {
+        errMessage = GS::UniString::Printf ("The parameters of the railing component with guid %T were changed, but could not be read back to check them", guidString.ToPrintf ());
+        return (err != NoError) ? err : APIERR_GENERAL;
+    }
+    API_GetParamsType paramsAfter = {};
+    paramsAfter.params = memoAfter.params;
+
+    GS::UniString notKeptNames;
+    for (const GS::String& name : writtenNames) {
+        const API_AddParType* writtenParam = FindParameterByName (paramsWritten, name.ToCStr ());
+        const API_AddParType* readParam = FindParameterByName (paramsAfter, name.ToCStr ());
+        if (writtenParam == nullptr || readParam == nullptr || !IsSameParameterValue (*writtenParam, *readParam)) {
+            if (!notKeptNames.IsEmpty ()) {
+                notKeptNames.Append (", ");
+            }
+            notKeptNames.Append (GS::UniString (name.ToCStr ()));
+        }
+    }
+    if (!notKeptNames.IsEmpty ()) {
+        errMessage = GS::UniString::Printf ("Archicad accepted the change of the railing component with guid %T but did not keep the value of %T: reading the parameters back gives another value. The Archicad API documents no way to change the GDL parameters of a railing component; the railing's settings may set them.", guidString.ToPrintf (), notKeptNames.ToPrintf ());
+        return APIERR_GENERAL;
     }
 
     return NoError;
@@ -2244,7 +2366,7 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
                 if (err != NoError) {
                     break;
                 }
-                err = SetOneMarkerParameter (parameter, elemGuid, marker.memo.params, errMessage);
+                err = SetOneStoredParameter (parameter, elemGuid, marker.memo.params, "marker", errMessage, nullptr);
             }
 
             if (err == NoError) {
