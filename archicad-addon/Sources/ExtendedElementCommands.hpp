@@ -43,8 +43,24 @@ extern const char* BeamSurfaceAndFillSchemaProperties;
 extern const char* SlabSurfaceAndFillSchemaProperties;
 
 GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+// Writes width and height (a column's depth) of a column or beam segment; see the definition.
+void ApplySectionSize (API_AssemblySegmentData& segment, const GS::Optional<double>& width, const GS::Optional<double>& height, bool hasIsWidthAndHeightLinked, bool isWidthAndHeightLinked);
 GS::Optional<GS::UniString> ApplyBeamSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
 GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+
+// The building material (buildingMaterialId) and the top, side and bottom surface overrides
+// (topMaterial, sideMaterial, bottomMaterial, materialsChained) of a Mesh, shared by CreateMeshes
+// and ModifyMeshes (#2630). On a new element a given building material first clears the surface
+// overrides (the given ones are written after it); ModifyMeshes keeps them. Returns an error,
+// before anything is written, when a given attribute does not exist.
+GS::Optional<GS::UniString> ApplyMeshStructureAndSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool isNewElement, bool& changed);
+
+// The floor plan and section settings API_MeshType has (#2630): story visibility of the contour
+// (visibility) and of the cover fill (fillVisibility), the cut fill pens (cutFillPen,
+// cutFillBackgroundPen; before Archicad 27 through penOverride), sectionContourPen and the cover
+// fill (floorFill, #/MeshFloorFill), shared by CreateMeshes and ModifyMeshes. Only the given keys
+// and fields change. Returns an error, before anything is written, when a given fill does not exist.
+GS::Optional<GS::UniString> ApplyMeshFloorPlanAndSection (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
 
 // The extrusion body of an Opening element, in world coordinates: the outline lies in the plane through
 // anchorPoint spanned by xAxis and yAxis, as a box from profileXMin to profileXMax along xAxis and from
@@ -80,6 +96,7 @@ public:
     CreateBeamsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
 class CreateStairsCommand : public CreateElementsCommandBase
@@ -120,6 +137,16 @@ class ModifyStairsCommand : public CommandBase
 {
 public:
     ModifyStairsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateStairsCommand : public CommandBase
+{
+public:
+    RecreateStairsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

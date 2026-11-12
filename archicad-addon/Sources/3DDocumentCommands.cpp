@@ -716,7 +716,7 @@ static GS::Optional<GS::ObjectState> GetDatabaseOfNavigatorItem (const GS::Objec
     }
 
     API_NavigatorItem navigatorItem = {};
-    GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+    GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the navigator item.");
     }
