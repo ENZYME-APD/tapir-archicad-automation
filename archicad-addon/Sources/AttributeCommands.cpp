@@ -2779,7 +2779,7 @@ GS::Optional<GS::UniString> GetProfilesCommand::GetInputParametersSchema () cons
             },
             "fields": {
                 "type": "array",
-                "description": "Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.",
+                "description": "Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/stretchZones/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.",
                 "items": {
                     "$ref": "#/ProfileAttributeField"
                 }
@@ -3352,6 +3352,60 @@ static void ApplyProfileVertexMove (ProfileVectorImage& pvi, const GS::ObjectSta
     }
 }
 
+// Sets or removes the stretch zones of a profile (CreateProfiles' stretchZones), the ranges the Profile
+// Manager's width (horizontal, an x range) and height (vertical, a y range) stretch use. Zones that are
+// neither given nor removed are kept. Returns the error message for invalid input, else nothing.
+static GS::Optional<GS::UniString> ApplyProfileStretchZones (ProfileVectorImage& pvi, const GS::ObjectState& stretchZones)
+{
+    PVI::StretchData stretch = pvi.GetStretchData ();
+
+    const auto applyZone = [&] (const char* zoneKey, const char* removeKey, bool isHorizontal) -> GS::Optional<GS::UniString> {
+        bool remove = false;
+        stretchZones.Get (removeKey, remove);
+        GS::ObjectState zone;
+        const bool hasZone = stretchZones.Get (zoneKey, zone);
+        if (hasZone && remove) {
+            return GS::UniString::Printf ("stretchZones: %s and %s cannot both be given.", zoneKey, removeKey);
+        }
+        if (remove) {
+            if (isHorizontal) {
+                stretch.RemoveHorizontalZone ();
+            } else {
+                stretch.RemoveVerticalZone ();
+            }
+            return GS::NoValue;
+        }
+        if (!hasZone) {
+            return GS::NoValue;
+        }
+        double zoneMin = 0.0;
+        double zoneMax = 0.0;
+        zone.Get ("min", zoneMin);
+        zone.Get ("max", zoneMax);
+        if (!(zoneMin < zoneMax)) {
+            return GS::UniString::Printf ("stretchZones: the %s zone's min must be less than its max.", zoneKey);
+        }
+        if (isHorizontal) {
+            stretch.SetHorizontalZone (zoneMin, zoneMax);
+        } else {
+            stretch.SetVerticalZone (zoneMin, zoneMax);
+        }
+        return GS::NoValue;
+    };
+
+    GS::Optional<GS::UniString> error = applyZone ("horizontal", "removeHorizontal", true);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = applyZone ("vertical", "removeVertical", false);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    pvi.SetStretchData (stretch);
+    return GS::NoValue;
+}
+
 // Converts caller-supplied polygon contours (same 0-based polygonCoordinates/polygonArcs convention
 // used by e.g. CreateSlabs) into the coords/arcs/subPolyEnds triple a HatchObject's polygon geometry
 // needs, hiding the internal reserved-slot conventions from callers:
@@ -3861,7 +3915,7 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
 
         bool wantsGeometryDerivedFields = wantsField.Wants ("width") || wantsField.Wants ("height") ||
             wantsField.Wants ("minimumWidth") || wantsField.Wants ("minimumHeight") ||
-            wantsField.Wants ("widthStretchable") || wantsField.Wants ("heightStretchable") ||
+            wantsField.Wants ("widthStretchable") || wantsField.Wants ("heightStretchable") || wantsField.Wants ("stretchZones") ||
             wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins") ||
             wantsField.Wants ("nominalSize") || wantsField.Wants ("hotspots");
         if (wantsGeometryDerivedFields) {
@@ -3891,6 +3945,16 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 if (wantsField.Wants ("heightStretchable")) {
                     profile.Add ("heightStretchable", stretch.HasVerticalZone ());
+                }
+                if (wantsField.Wants ("stretchZones")) {
+                    GS::ObjectState stretchZones;
+                    if (stretch.HasHorizontalZone ()) {
+                        stretchZones.Add ("horizontal", GS::ObjectState ("min", stretch.GetHorizontalZoneMin (), "max", stretch.GetHorizontalZoneMax ()));
+                    }
+                    if (stretch.HasVerticalZone ()) {
+                        stretchZones.Add ("vertical", GS::ObjectState ("min", stretch.GetVerticalZoneMin (), "max", stretch.GetVerticalZoneMax ()));
+                    }
+                    profile.Add ("stretchZones", stretchZones);
                 }
                 if (wantsField.Wants ("nominalSize")) {
                     const ProfileNominalSize nominalSize = GetProfileNominalSize (pvi);
@@ -7853,6 +7917,29 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                             "type": "boolean",
                             "description": "AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet)."
                         },
+                        "stretchZones": {
+                            "type": "object",
+                            "description": "Sets or removes the stretch zones of the Profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), so a wall, beam or column using it can change its width or height. A Profile with a horizontal zone is widthStretchable, one with a vertical zone heightStretchable. Applied last, so the coordinates are those of the final geometry, as GetProfiles reports them in skins[].outlineCoords and stretchZones. A zone that is neither given nor removed is kept as it is (copied from sourceAttributeId, or preserved when overwriting).",
+                            "properties": {
+                                "horizontal": {
+                                    "$ref": "#/ProfileStretchZone",
+                                    "description": "The horizontal stretch zone (width): the x range of the profile that stretches when the element's width differs from the profile's."
+                                },
+                                "vertical": {
+                                    "$ref": "#/ProfileStretchZone",
+                                    "description": "The vertical stretch zone (height): the y range of the profile that stretches when the element's height differs from the profile's."
+                                },
+                                "removeHorizontal": {
+                                    "type": "boolean",
+                                    "description": "Removes the horizontal stretch zone, so the width is fixed. Cannot be given together with horizontal."
+                                },
+                                "removeVertical": {
+                                    "type": "boolean",
+                                    "description": "Removes the vertical stretch zone, so the height is fixed. Cannot be given together with vertical."
+                                }
+                            },
+                            "additionalProperties": false
+                        },
                         "nominalSize": {
                             "$ref": "#/ProfileNominalSize",
                             "description": "Sets the nominal width and height lines of the Profile (Profile Editor; read them with GetProfiles' nominalSize) at these positions, replacing the ones it has. right must be greater than left and top greater than bottom. Applied after skinOverrides, moveVertices and newSkins, in their final coordinates. Omit to keep the Profile's nominal size lines."
@@ -8119,6 +8206,24 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
         if (setNominalSize && profileDefs.profile_vectorImageItems != nullptr) {
             if (!SetProfileNominalSize (*profileDefs.profile_vectorImageItems, nominalSize)) {
                 attributeIds (CreateErrorResponse (APIERR_GENERAL, "Failed to set the nominal size lines of the Profile."));
+                if (hasSourceDefs) {
+                    ACAPI_DisposeAttrDefsHdlsExt (&sourceDefs);
+                }
+                continue;
+            }
+        }
+
+        // Applied last, so the zones are given in the final coordinates (after moveVertices and newSkins).
+        GS::ObjectState stretchZones;
+        if (profileData.Get ("stretchZones", stretchZones)) {
+            GS::Optional<GS::UniString> stretchError;
+            if (profileDefs.profile_vectorImageItems == nullptr) {
+                stretchError = GS::UniString ("stretchZones: the Profile has no geometry to set them on.");
+            } else {
+                stretchError = ApplyProfileStretchZones (*profileDefs.profile_vectorImageItems, stretchZones);
+            }
+            if (stretchError.HasValue ()) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, stretchError.Get ()));
                 if (hasSourceDefs) {
                     ACAPI_DisposeAttrDefsHdlsExt (&sourceDefs);
                 }
