@@ -9694,6 +9694,10 @@
                 "type": "string",
                 "description": "The name of the navigator item."
             },
+            "autoTextedName": {
+                "type": "string",
+                "description": "The name of the navigator item as it was given, with its autotext tokens (e.g. <PROJECTNUMBER>_<SourceID>_<SourceItemName>), while name holds it with the tokens resolved. Only present when the two differ, that is when the name contains autotext."
+            },
             "prefix": {
                 "type": "string",
                 "description": "The floor number for story items, an empty string for every other item type."
