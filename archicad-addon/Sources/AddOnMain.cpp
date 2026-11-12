@@ -1362,7 +1362,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyCurtainWallFramesCommand> (
             elementCommands, "2.0.0",
-            "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it."
+            "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. The frame element itself is changed, and read back to check that Archicad applied the change. A frame given its own contour or type without a classIndex is made a customized frame (GetDetailsOfElements reports its type as Custom) when Archicad does not keep the change on a frame of a class."
         );
         err |= RegisterCommand<ModifyCurtainWallPanelsCommand> (
             elementCommands, "2.0.1",

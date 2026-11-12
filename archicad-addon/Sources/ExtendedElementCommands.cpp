@@ -13249,8 +13249,31 @@ GS::Optional<GS::UniString> ModifyCurtainWallFramesCommand::GetRawResponseSchema
 
 namespace {
 
-// Experimental: ACAPI_Element_Change does not take a curtain wall frame on its own, so the frame is
-// changed in the memo of its owner curtain wall (cWallFrames), found there by its GUID.
+// Reads the frame back and tells whether it has the given values of the checked fields.
+bool CurtainWallFrameHasValues (const API_Guid& frameGuid, const API_CWFrameType& expected, bool checkContour, bool checkClass, bool checkType)
+{
+    API_Element actual = {};
+    actual.header.guid = frameGuid;
+    if (ACAPI_Element_Get (&actual) != NoError) {
+        return false;
+    }
+    const auto differs = [] (double a, double b) { return std::fabs (a - b) > 1e-6; };
+    if (checkContour && (differs (actual.cwFrame.a1, expected.a1) || differs (actual.cwFrame.a2, expected.a2) ||
+                         differs (actual.cwFrame.b1, expected.b1) || differs (actual.cwFrame.b2, expected.b2))) {
+        return false;
+    }
+    if (checkClass && actual.cwFrame.classID != expected.classID) {
+        return false;
+    }
+    if (checkType && actual.cwFrame.objectType != expected.objectType) {
+        return false;
+    }
+    return true;
+}
+
+// Experimental: the frame element itself is changed with ACAPI_Element_Change and a cwFrame mask, as the
+// DevKit's Element_Test does (Do_CurtainWall_Edit). Writing the frame into the cWallFrames memo of the
+// owner curtain wall is not applied by Archicad 29, which rebuilds the frames of the curtain wall (#2638).
 GS::ObjectState ModifyCurtainWallFrame (const GS::ObjectState& item)
 {
     if (item.Get ("frameId") == nullptr) {
@@ -13275,28 +13298,12 @@ GS::ObjectState ModifyCurtainWallFrame (const GS::ObjectState& item)
         return CreateFailedExecutionResult (err, "Failed to load the owner curtain wall of the frame.");
     }
 
-    constexpr UInt64 memoMask = APIMemoMask_CWallFrames | APIMemoMask_CWallFrameClasses;
-    API_ElementMemo memo = {};
-    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    err = ACAPI_Element_GetMemo (curtainWall.header.guid, &memo, memoMask);
-    if (err != NoError || memo.cWallFrames == nullptr) {
-        return CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the frames of the owner curtain wall.");
-    }
-
-    API_CWFrameType* frame = nullptr;
-    for (UInt32 i = 0; i < curtainWall.curtainWall.nFrames; ++i) {
-        if (memo.cWallFrames[i].head.guid == frameGuid) {
-            frame = &memo.cWallFrames[i];
-            break;
-        }
-    }
-    if (frame == nullptr) {
-        return CreateFailedExecutionResult (APIERR_BADID, "The frame was not found in the owner curtain wall.");
-    }
-
     // Everything is validated before anything is written.
-    API_CWFrameType changedFrame = *frame;
-    bool hasChange = false;
+    API_Element changed = frameElement;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    bool hasContour = false;
+    bool hasType = false;
 
     GS::ObjectState contour;
     if (item.Get ("frameContour", contour)) {
@@ -13304,23 +13311,28 @@ GS::ObjectState ModifyCurtainWallFrame (const GS::ObjectState& item)
             double value = 0.0;
             if (contour.Get (key, value)) {
                 target = value;
-                hasChange = true;
+                hasContour = true;
             }
         };
-        setValue ("a1", changedFrame.a1);
-        setValue ("a2", changedFrame.a2);
-        setValue ("b1", changedFrame.b1);
-        setValue ("b2", changedFrame.b2);
-        if (changedFrame.a1 < 0.0 || changedFrame.a2 < 0.0 || changedFrame.b1 < 0.0 || changedFrame.b2 < 0.0) {
+        setValue ("a1", changed.cwFrame.a1);
+        setValue ("a2", changed.cwFrame.a2);
+        setValue ("b1", changed.cwFrame.b1);
+        setValue ("b2", changed.cwFrame.b2);
+        if (changed.cwFrame.a1 < 0.0 || changed.cwFrame.a2 < 0.0 || changed.cwFrame.b1 < 0.0 || changed.cwFrame.b2 < 0.0) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "The frameContour values must not be negative.");
+        }
+        if (hasContour) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_CWFrameType, a1);
+            ACAPI_ELEMENT_MASK_SET (mask, API_CWFrameType, a2);
+            ACAPI_ELEMENT_MASK_SET (mask, API_CWFrameType, b1);
+            ACAPI_ELEMENT_MASK_SET (mask, API_CWFrameType, b2);
         }
     }
 
     Int32 classIndex = 0;
-    if (item.Get ("classIndex", classIndex)) {
-        const UInt32 nFrameClasses = memo.cWallFrameDefaults != nullptr
-            ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrameDefaults)) / sizeof (API_CWFrameType))
-            : curtainWall.curtainWall.nFrameDefaults;
+    const bool hasClass = item.Get ("classIndex", classIndex);
+    if (hasClass) {
+        const UInt32 nFrameClasses = curtainWall.curtainWall.nFrameDefaults;
         const bool builtIn = classIndex == APICWFrameClass_Merged || classIndex == APICWFrameClass_Division ||
                              classIndex == APICWFrameClass_Corner || classIndex == APICWFrameClass_Boundary;
         const bool custom = classIndex >= APICWFrameClass_FirstCustomClass &&
@@ -13328,56 +13340,55 @@ GS::ObjectState ModifyCurtainWallFrame (const GS::ObjectState& item)
         if (!builtIn && !custom) {
             return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("classIndex %d is not a frame class of the curtain wall (0 to 3, or 4 to %u).", classIndex, APICWFrameClass_FirstCustomClass + nFrameClasses - 1));
         }
-        changedFrame.classID = static_cast<UInt32> (classIndex);
-        if (custom && memo.cWallFrameDefaults != nullptr) {
-            GS::ucscpy (changedFrame.className, memo.cWallFrameDefaults[classIndex - APICWFrameClass_FirstCustomClass].className);
-        }
-        hasChange = true;
+        changed.cwFrame.classID = static_cast<UInt32> (classIndex);
+        ACAPI_ELEMENT_MASK_SET (mask, API_CWFrameType, classID);
     }
 
     GS::UniString typeName;
     if (item.Get ("type", typeName)) {
-        if (typeName == "Invisible")                      changedFrame.objectType = APICWFrObjectType_Invisible;
-        else if (typeName == "GDL")                       changedFrame.objectType = APICWFrObjectType_GDL;
-        else if (typeName == "InvisibleConnectedTurning") changedFrame.objectType = APICWFrObjectType_InvisibleConnectedTurning;
-        else if (typeName == "InvisibleConnectedStill")   changedFrame.objectType = APICWFrObjectType_InvisibleConnectedStill;
+        if (typeName == "Invisible")                      changed.cwFrame.objectType = APICWFrObjectType_Invisible;
+        else if (typeName == "GDL")                       changed.cwFrame.objectType = APICWFrObjectType_GDL;
+        else if (typeName == "InvisibleConnectedTurning") changed.cwFrame.objectType = APICWFrObjectType_InvisibleConnectedTurning;
+        else if (typeName == "InvisibleConnectedStill")   changed.cwFrame.objectType = APICWFrObjectType_InvisibleConnectedStill;
         else return CreateFailedExecutionResult (APIERR_BADPARS, "Unknown frame type.");
-        hasChange = true;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CWFrameType, objectType);
+        hasType = true;
     }
 
-    if (!hasChange) {
+    if (!hasContour && !hasClass && !hasType) {
         return CreateSuccessfulExecutionResult ();
     }
 
-    *frame = changedFrame;
-    API_Element mask = {};
-    ACAPI_ELEMENT_MASK_CLEAR (mask);
-    err = ACAPI_Element_Change (&curtainWall, &mask, &memo, APIMemoMask_CWallFrames, true);
+    err = ACAPI_Element_Change (&changed, &mask, nullptr, 0, true);
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to change the frame through the memo of the owner curtain wall.");
+        return CreateFailedExecutionResult (err, "Failed to change the frame.");
     }
 
     // Read it back: the experiment is only worth keeping when Archicad really applies the change.
-    API_ElementMemo checkMemo = {};
-    const GS::OnExit checkGuard ([&checkMemo] () { ACAPI_DisposeElemMemoHdls (&checkMemo); });
-    API_Element checkWall = {};
-    checkWall.header.guid = curtainWall.header.guid;
-    if (ACAPI_Element_Get (&checkWall) != NoError || ACAPI_Element_GetMemo (checkWall.header.guid, &checkMemo, APIMemoMask_CWallFrames) != NoError || checkMemo.cWallFrames == nullptr) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, "The change was written, but the frame could not be read back.");
-    }
-    for (UInt32 i = 0; i < checkWall.curtainWall.nFrames; ++i) {
-        const API_CWFrameType& actual = checkMemo.cWallFrames[i];
-        if (actual.head.guid != frameGuid) {
-            continue;
-        }
-        const auto differs = [] (double a, double b) { return std::fabs (a - b) > 1e-6; };
-        if (differs (actual.a1, changedFrame.a1) || differs (actual.a2, changedFrame.a2) || differs (actual.b1, changedFrame.b1) || differs (actual.b2, changedFrame.b2) ||
-            actual.classID != changedFrame.classID || actual.objectType != changedFrame.objectType) {
-            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the change but did not apply it (or rebuilt the frame).");
-        }
+    if (CurtainWallFrameHasValues (frameGuid, changed.cwFrame, hasContour, hasClass, hasType)) {
         return CreateSuccessfulExecutionResult ();
     }
-    return CreateFailedExecutionResult (APIERR_GENERAL, "The frame is no longer in the curtain wall after the change (its GUID may have changed).");
+
+    // A frame of a class may take its contour and type from the class, so a frame given its own contour or
+    // type without a class is made a customized frame, as the DevKit does for a panel given its own thickness.
+    if (!hasClass && (hasContour || hasType)) {
+        changed.cwFrame.classID = APICWFrameClass_Customized;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CWFrameType, classID);
+        err = ACAPI_Element_Change (&changed, &mask, nullptr, 0, true);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to change the frame into a customized frame.");
+        }
+        if (CurtainWallFrameHasValues (frameGuid, changed.cwFrame, hasContour, false, hasType)) {
+            return CreateSuccessfulExecutionResult ();
+        }
+    }
+
+    API_Element check = {};
+    check.header.guid = frameGuid;
+    if (ACAPI_Element_Get (&check) != NoError) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The frame no longer exists after the change (its GUID may have changed).");
+    }
+    return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the change but did not apply it (or rebuilt the frame).");
 }
 
 }
