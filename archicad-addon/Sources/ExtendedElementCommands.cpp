@@ -2499,6 +2499,9 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         memo.additionalPolyParcs = reinterpret_cast<API_PolyArc**> (memo.additionalPolyParcs == nullptr
             ? BMAllocateHandle (roofNArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0)
             : BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyParcs), roofNArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    } else if (memo.additionalPolyParcs != nullptr) {
+        // ModifyRoofs edits the roof's own memo: the arcs of the old pivot polygon must not stay.
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.additionalPolyParcs));
     }
 
     Int32 iCoord = 1;
@@ -15525,6 +15528,107 @@ static GS::Optional<GS::UniString> CheckRoofContour (const API_Guid& guid, const
     return {};
 }
 
+// The outline (first contour) of a roof with its arcs, in the keys ModifyRoofs takes, so that
+// 'holes' given without 'polygonOutline' keep it: the polygon of a single-plane roof, the pivot
+// polygon of a multi-plane roof. memo is the roof's memo from ACAPI_Element_GetMemo.
+static void GetCurrentRoofOutline (const API_ElementMemo& memo, bool isPlaneRoof, GS::Array<GS::ObjectState>& outline, GS::Array<GS::ObjectState>& arcs)
+{
+    // Only borrows the handles of memo, so it is never disposed.
+    API_ElementMemo polygonView = {};
+    if (isPlaneRoof) {
+        polygonView.coords = memo.coords;
+        polygonView.pends = memo.pends;
+        polygonView.parcs = memo.parcs;
+    } else {
+        polygonView.coords = memo.additionalPolyCoords;
+        polygonView.pends = memo.additionalPolyPends;
+        polygonView.parcs = memo.additionalPolyParcs;
+    }
+    if (polygonView.coords == nullptr) {
+        return;
+    }
+    GS::ObjectState current;
+    AddPolygonWithHolesFromMemoCoords (polygonView, current, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+    current.Get ("polygonOutline", outline);
+    current.Get ("polygonArcs", arcs);
+}
+
+// Resizes the pivot polygon data of a multi-plane roof's own memo (from ACAPI_Element_GetMemo)
+// after BuildRoofMemoFromGeometry gave it a pivot polygon of nCoords points and nSubPolys
+// contours, so that every array has the length Archicad expects: the vertex and edge IDs and
+// pivotPolyEdges one record per point (nCoords + 1), the contour IDs one per contour. The
+// records up to keepUpTo (the closing point of the outline, when the outline kept its point
+// count) stay as they were, so those edges keep their IDs and roof planes. The others are new:
+// ID 0, as API_ElementMemo asks for new vertices, edges and contours, and the roof planes of the
+// first edge of the old outline. An empty memo built from scratch (no IDs, no pivotPolyEdges) is
+// refused by ACAPI_Element_Change on an existing roof (Archicad 29, #2398).
+static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCount, GSIndex keepUpTo, Int32 nCoords, Int32 nSubPolys)
+{
+    const GSSize newCoordCount = nCoords + 1;
+    const auto resizeIds = [] (UInt32**& ids, GSSize count, GSIndex lastKept) {
+        if (ids == nullptr) {
+            return;
+        }
+        ids = reinterpret_cast<UInt32**> (BMReallocHandle (reinterpret_cast<GSHandle> (ids), count * sizeof (UInt32), REALLOC_CLEAR, 0));
+        if (ids == nullptr) {
+            return;
+        }
+        for (GSIndex i = lastKept + 1; i < count; ++i) {
+            (*ids)[i] = 0;
+        }
+    };
+    resizeIds (memo.additionalPolyVertexIDs, newCoordCount, keepUpTo);
+    resizeIds (memo.additionalPolyEdgeIDs, newCoordCount, keepUpTo);
+    resizeIds (memo.additionalPolyContourIDs, nSubPolys + 1, keepUpTo > 0 ? 1 : 0);
+
+    if (memo.pivotPolyEdges == nullptr) {
+        return;
+    }
+    const GSSize oldEdgeCount = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    if (oldEdgeCount < 2 || oldEdgeCount != oldCoordCount) {
+        return;
+    }
+
+    // The planes of the first edge of the old outline, for the new edges.
+    API_PivotPolyEdgeData templateEdge = memo.pivotPolyEdges[1];
+    GS::Array<API_RoofSegmentData> templateSegments;
+    for (Int32 j = 0; j < templateEdge.nLevelEdgeData && templateEdge.levelEdgeData != nullptr; ++j) {
+        API_RoofSegmentData segment = templateEdge.levelEdgeData[j];
+        segment.lcoo = {};
+        templateSegments.Push (segment);
+    }
+
+    // The records that are not kept give up their level data before the array is resized.
+    for (GSIndex i = keepUpTo + 1; i < oldEdgeCount; ++i) {
+        if (memo.pivotPolyEdges[i].levelEdgeData != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&memo.pivotPolyEdges[i].levelEdgeData));
+        }
+        memo.pivotPolyEdges[i] = {};
+    }
+    API_PivotPolyEdgeData* edges = reinterpret_cast<API_PivotPolyEdgeData*> (
+        BMReallocPtr (reinterpret_cast<GSPtr> (memo.pivotPolyEdges), newCoordCount * sizeof (API_PivotPolyEdgeData), REALLOC_CLEAR, 0));
+    if (edges == nullptr) {
+        return;
+    }
+    memo.pivotPolyEdges = edges;
+    for (GSIndex i = keepUpTo + 1; i < newCoordCount; ++i) {
+        API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];
+        edge = {};
+        edge.segmentType = templateEdge.segmentType;
+        edge.segmentsByArc = templateEdge.segmentsByArc;
+        edge.segmentsByCircle = templateEdge.segmentsByCircle;
+        if (!templateSegments.IsEmpty ()) {
+            edge.levelEdgeData = reinterpret_cast<API_RoofSegmentData*> (BMAllocatePtr (templateSegments.GetSize () * sizeof (API_RoofSegmentData), ALLOCATE_CLEAR, 0));
+            if (edge.levelEdgeData != nullptr) {
+                for (UIndex j = 0; j < templateSegments.GetSize (); ++j) {
+                    edge.levelEdgeData[j] = templateSegments[j];
+                }
+                edge.nLevelEdgeData = (Int32) templateSegments.GetSize ();
+            }
+        }
+    }
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -15565,7 +15669,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "contourPolygon": {
                             "type": "object",
-                            "description": "Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).",
+                            "description": "Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, holes (the holes of the pivot polygon), pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).",
                             "properties": {
                                 "polygonOutline": {
                                     "type": "array",
@@ -15598,7 +15702,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "compositeId": { "$ref": "#/AttributeId" },
                         "polygonOutline": {
                             "type": "array",
-                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. A multi-plane roof's contour follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline), or is written on its own with contourPolygon. The coordinates are plan (x, y) coordinates; the elevation is set with level.",
+                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. A multi-plane roof's contour follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline), or is written on its own with contourPolygon. The coordinates are plan (x, y) coordinates; the elevation is set with level. The roof gets the given 'holes', or none without them.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
@@ -15606,14 +15710,14 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": { "$ref": "#/Holes2D" },
+                        "holes": { "$ref": "#/Holes2D", "description": "The holes of the roof: of a single-plane roof in its polygon, of a multi-plane roof in its pivot polygon. Replaces the roof's holes; given without 'polygonOutline' the roof keeps its outline, and an empty array removes every hole. On a multi-plane roof the edges of an outline that keeps its number of points keep their roof planes; every other edge (a new hole's, or each edge of an outline with another number of points) gets the roof planes of the first edge of the old outline." },
                         "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the top of the roof; overridden false clears the override." },
                         "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the sides of the roof; overridden false clears the override. Edges with a custom surface (edgeSideMaterials) keep theirs." },
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the bottom of the roof; overridden false clears the override." },
                         "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "edgeSideMaterials": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline.",
+                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline or holes.",
                             "items": { "$ref": "#/OverriddenMaterial" }
                         },
                         "cutBodyType": {
@@ -15638,7 +15742,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTrims": {
                             "type": "array",
-                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline or contourPolygon, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
+                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -15657,14 +15761,14 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTypes": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline.",
+                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline or holes.",
                             "items": {
                                 "$ref": "#/RoofEdgeType"
                             }
                         },
                         "pivotEdges": {
                             "type": "array",
-                            "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
+                            "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline or holes.",
                             "items": { "$ref": "#/RoofPivotEdgeChange" }
                         },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
@@ -15717,20 +15821,20 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges' and 'contourPolygon' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (item.Contains ("contourPolygon") && (item.Contains ("polygonOutline") || item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'pivotEdges' or 'eavesOverhang', which make the contour from the pivot polygon."));
+            if (item.Contains ("contourPolygon") && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'holes', 'pivotEdges' or 'eavesOverhang', which make the contour from the pivot polygon."));
                 continue;
             }
             if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes") || item.Contains ("edgeSideMaterials"))) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTypes' and 'edgeSideMaterials' are only valid for single-plane roofs."));
                 continue;
             }
-            if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("contourPolygon"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline' or 'contourPolygon', which make new edges."));
+            if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("contourPolygon"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', 'holes' or 'contourPolygon', which make new edges."));
                 continue;
             }
-            if (item.Contains ("edgeTypes") && item.Contains ("polygonOutline")) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline', which makes new edges."));
+            if (item.Contains ("edgeTypes") && (item.Contains ("polygonOutline") || item.Contains ("holes"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
                 continue;
             }
             // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
@@ -15859,8 +15963,8 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
 
             GS::Array<GS::ObjectState> pivotEdges;
             if (item.Get ("pivotEdges", pivotEdges)) {
-                if (item.Contains ("polygonOutline")) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'pivotEdges' cannot be combined with 'polygonOutline', which makes new edges."));
+                if (item.Contains ("polygonOutline") || item.Contains ("holes")) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'pivotEdges' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
                     continue;
                 }
                 API_ElementMemo memo = {};
@@ -15992,8 +16096,13 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             GS::Array<GS::ObjectState> polygonOutline;
-            if (item.Get ("polygonOutline", polygonOutline)) {
-                if (polygonOutline.GetSize () < 3) {
+            const bool hasNewOutline = item.Get ("polygonOutline", polygonOutline);
+            GS::Array<GS::ObjectState> holes;
+            const bool hasHolesField = item.Get ("holes", holes);
+            if (hasNewOutline || hasHolesField) {
+                // 'holes' can be given on its own, as ModifySlabs takes it (#2398): the roof keeps
+                // its outline (a multi-plane roof its pivot polygon's outline) and gets these holes.
+                if (hasNewOutline && polygonOutline.GetSize () < 3) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
                     continue;
                 }
@@ -16005,9 +16114,15 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 ACAPI_Element_GetMemo (element.header.guid, &memo);
 
                 GS::Array<GS::ObjectState> polygonArcs;
-                GS::Array<GS::ObjectState> holes;
-                item.Get ("polygonArcs", polygonArcs);
-                item.Get ("holes", holes);
+                if (hasNewOutline) {
+                    item.Get ("polygonArcs", polygonArcs);
+                } else {
+                    GetCurrentRoofOutline (memo, isPlaneRoof, polygonOutline, polygonArcs);
+                    if (polygonOutline.GetSize () < 3) {
+                        results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read the outline of the roof."));
+                        continue;
+                    }
+                }
                 if (isPlaneRoof) {
                     // A single-plane roof keeps its outline in the polygon of the memo, as a Slab
                     // does. A memo built from scratch is refused there with APIERR_BADPOLY when the
@@ -16050,10 +16165,24 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 }
 
                 const API_ShellBaseType oldShellBase = element.roof.shellBase;
+                // The pivot edge data and the vertex, edge and contour IDs of the memo have one
+                // record per point of the old pivot polygon (pivotPolyEdges must be nCoords + 1
+                // long), so after a hole is added or removed they are resized to the new polygon
+                // (ResizeRoofPivotPolygonData). The roof's own memo is edited: a memo built from
+                // scratch was refused by ACAPI_Element_Change (#2398).
+                const GSSize oldCoordCount = memo.additionalPolyCoords == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
+                const GSSize oldPendCount = memo.additionalPolyPends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32);
+                const GSIndex oldOutlineEnd = oldPendCount >= 2 ? (*memo.additionalPolyPends)[1] : 0;
                 auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
+                }
+                const API_Polygon& pivotPolygon = element.roof.u.polyRoof.pivotPolygon;
+                const GSIndex newOutlineEnd = (*memo.additionalPolyPends)[1];
+                const GSIndex keepUpTo = oldOutlineEnd > 0 && oldOutlineEnd == newOutlineEnd ? newOutlineEnd : 0;
+                if (oldCoordCount != pivotPolygon.nCoords + 1 || oldPendCount != pivotPolygon.nSubPolys + 1) {
+                    ResizeRoofPivotPolygonData (memo, oldCoordCount, keepUpTo, pivotPolygon.nCoords, pivotPolygon.nSubPolys);
                 }
 
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
