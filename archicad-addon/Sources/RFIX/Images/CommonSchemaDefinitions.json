@@ -2279,6 +2279,13 @@
                     "$ref": "#/ProfileSkin"
                 }
             },
+            "openingReferenceLines": {
+                "type": "array",
+                "description": "The profile's opening reference lines (Profile Editor, \"Opening Reference\"): doors and windows in a wall with this profile are placed by them instead of by the profile's bounding box. Empty when the profile has none.",
+                "items": {
+                    "$ref": "#/ProfileOpeningReferenceLine"
+                }
+            },
             "nominalSize": {
                 "$ref": "#/ProfileNominalSize",
                 "description": "The positions of the profile's nominal width and height lines (Profile Editor), in the coordinates of skins[].outlineCoords. A profile without nominal size lines reports the bounds Archicad uses instead."
@@ -2296,6 +2303,25 @@
             "attributeId",
             "index",
             "name"
+        ]
+    },
+    "ProfileOpeningReferenceLine": {
+        "type": "object",
+        "description": "An opening reference line of a profile, in the coordinates GetProfiles reports in skins[].outlineCoords (x across the wall, y up). Openings are placed between the lines, at the heights where they cross the opening.",
+        "properties": {
+            "begin": {
+                "$ref": "#/Coordinate2D",
+                "description": "The start point of the line."
+            },
+            "end": {
+                "$ref": "#/Coordinate2D",
+                "description": "The end point of the line."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begin",
+            "end"
         ]
     },
     "ProfileStretchZones": {
@@ -4889,6 +4915,7 @@
             "profileModifiers",
             "skins",
             "skinOutlines",
+            "openingReferenceLines",
             "nominalSize",
             "hotspots"
         ]
@@ -10766,10 +10793,30 @@
             },
             "pivotPolygonOutline": {
                 "type": "array",
-                "description": "Multi-plane: the pivot polygon the planes rise from. This is the polygon ModifyRoofs' polygonOutline writes for a multi-plane roof. Arcs are not carried; a curved pivot edge comes back as its end points.",
+                "description": "Multi-plane: the pivot polygon the planes rise from. This is the polygon ModifyRoofs' polygonOutline writes for a multi-plane roof. Its curved edges are in pivotPolygonArcs.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
+            },
+            "pivotPolygonArcs": {
+                "type": "array",
+                "description": "Multi-plane: the arcs of pivotPolygonOutline, indexed into it from 0 as polygonArcs are; missing when every pivot edge is straight. This is the list ModifyRoofs' polygonArcs writes with the pivot polygon of a multi-plane roof.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "segmentType": {
+                "type": "string",
+                "enum": [ "SegmentsByCircle", "SegmentsByArc" ],
+                "description": "Multi-plane: how the curved edges of the pivot polygon are resolved into planes. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments."
+            },
+            "segmentsByArc": {
+                "type": "integer",
+                "description": "Multi-plane: the number of segments of each arc when segmentType is SegmentsByArc."
+            },
+            "segmentsByCircle": {
+                "type": "integer",
+                "description": "Multi-plane: the number of segments of a whole circle when segmentType is SegmentsByCircle."
             },
             "polygonOutline": {
                 "type": "array",
@@ -12779,6 +12826,9 @@
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
             },
+            "surface": {
+                "$ref": "#/ZoneSurface"
+            },
             "polygonDisplay": {
                 "$ref": "#/ZonePolygonDisplay"
             },
@@ -12805,6 +12855,7 @@
             "floorThickness",
             "contourLine",
             "coverFill",
+            "surface",
             "polygonDisplay",
             "stampPen",
             "reducePercent"
@@ -17259,6 +17310,9 @@
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
             },
+            "surface": {
+                "$ref": "#/ZoneSurface"
+            },
             "polygonDisplay": {
                 "$ref": "#/ZonePolygonDisplay"
             },
@@ -17333,6 +17387,22 @@
             "fillAngle": {
                 "type": "number",
                 "description": "The angle of the cover fill when useLocalOrigo is true, in radians."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneSurface": {
+        "type": "object",
+        "description": "The 3D surface of a zone (the Model panel of the Zone Settings dialog). GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface attribute of the zone's 3D body: of all its sides when useOnAllSides is true, otherwise of the sides that do not inherit a surface from a bounding element."
+            },
+            "useOnAllSides": {
+                "type": "boolean",
+                "description": "true: surfaceId is used on all sides of the zone. false: the sides inherit the surfaces of the bounding walls and trimming elements."
             }
         },
         "additionalProperties": false,

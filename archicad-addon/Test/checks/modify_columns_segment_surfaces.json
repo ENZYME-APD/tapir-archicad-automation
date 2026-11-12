@@ -10,9 +10,7 @@
       "params": { "attributeType": "Surface" },
       "save": {
         "surfA": "attributes[0].attributeId.guid",
-        "surfB": "attributes[1].attributeId.guid",
-        "surfAIndex": "attributes[0].index",
-        "surfBIndex": "attributes[1].index"
+        "surfB": "attributes[1].attributeId.guid"
       },
       "expect": [
         { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
@@ -115,19 +113,27 @@
       ]
     },
     {
-      "id": "the surfaces read back are the ones written",
+      "id": "compare the read surfaces with the written ones",
       "command": "GetSurfaces",
       "creates": false,
       "params": {
         "attributeIds": [
+          { "attributeId": { "guid": "${surfA}" } },
+          { "attributeId": { "guid": "${surfB}" } },
           { "attributeId": { "guid": "${readExtrusion}" } },
           { "attributeId": { "guid": "${readEnds}" } }
         ]
       },
-      "save": { "extrusionIndex": "surfaces[0].index", "endsIndex": "surfaces[1].index" },
+      "save": {
+        "surfAIndex": "surfaces[0].index",
+        "surfBIndex": "surfaces[1].index",
+        "readExtrusionIndex": "surfaces[2].index",
+        "readEndsIndex": "surfaces[3].index"
+      },
       "expect": [
-        { "expr": "${extrusionIndex} - ${surfAIndex}", "eq": 0, "name": "extrusion surface (refused items changed nothing)" },
-        { "expr": "${endsIndex} - ${surfBIndex}", "eq": 0, "name": "ends surface" }
+        { "expr": "${surfBIndex} - ${surfAIndex}", "ne": 0, "name": "two different surfaces" },
+        { "expr": "${readExtrusionIndex} - ${surfAIndex}", "eq": 0, "name": "extrusion surface (refused items changed nothing)" },
+        { "expr": "${readEndsIndex} - ${surfBIndex}", "eq": 0, "name": "ends surface" }
       ]
     },
     {
@@ -153,7 +159,9 @@
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
-      "save": { "keptEnds": "detailsOfElements[0].details.segments[0].endsMaterial.attributeId.guid" },
+      "save": {
+        "keptEnds": "detailsOfElements[0].details.segments[0].endsMaterial.attributeId.guid"
+      },
       "expect": [
         { "path": "detailsOfElements[0].details.segments[0].extrusionSurfaceMaterial.overridden", "eq": false, "name": "extrusion surface override cleared" },
         { "path": "detailsOfElements[0].details.segments[0].endsMaterial.overridden", "eq": true, "name": "ends surface still overridden" },
@@ -161,10 +169,14 @@
       ]
     },
     {
-      "id": "the ends surface is the one written",
+      "id": "compare the kept ends surface with the written one",
       "command": "GetSurfaces",
       "creates": false,
-      "params": { "attributeIds": [ { "attributeId": { "guid": "${keptEnds}" } } ] },
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${keptEnds}" } }
+        ]
+      },
       "save": { "keptEndsIndex": "surfaces[0].index" },
       "expect": [
         { "expr": "${keptEndsIndex} - ${surfBIndex}", "eq": 0, "name": "ends surface kept" }

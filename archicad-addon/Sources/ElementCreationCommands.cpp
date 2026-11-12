@@ -870,6 +870,42 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     return {};
 }
 
+void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details)
+{
+    GS::ObjectState surface;
+    surface.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, zone.material)));
+    surface.Add ("useOnAllSides", zone.oneMat);
+    details.Add ("surface", surface);
+}
+
+GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    GS::ObjectState surface;
+    if (!details.Get ("surface", surface)) {
+        return {};
+    }
+
+    // The attribute id is checked before anything is changed.
+    GS::Optional<API_AttributeIndex> surfaceIndex;
+    GS::ObjectState surfaceId;
+    if (surface.Get ("surfaceId", surfaceId)) {
+        surfaceIndex = GetAttributeIndexFromGuid (API_MaterialID, GetGuidFromObjectState (surfaceId));
+        if (*surfaceIndex == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Surface attribute was found for surface.surfaceId.");
+        }
+    }
+
+    if (surfaceIndex.HasValue ()) {
+        zone.material = *surfaceIndex;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, material);
+    }
+    if (surface.Get ("useOnAllSides", zone.oneMat) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, oneMat);
+    }
+
+    return {};
+}
+
 // The zone polygon display (gross or net, show_found_poly), the uniform stamp pen
 // (useStampPens and pen) and the area reduction (reducePercent) of a zone (#2631).
 // show_found_poly true uses the reference line of the bounding walls (gross), false
@@ -1395,6 +1431,10 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
     }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (details, element.zone, &mask);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
+    }
 
     const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (details, element.zone, &mask);
     if (displayError.HasValue ()) {
@@ -1586,6 +1626,10 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/ZoneCoverFill",
                         "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
                     },
+                    "surface": {
+                        "$ref": "#/ZoneSurface",
+                        "description": "Optional 3D surface of the zone (the Model panel). Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
                     "polygonDisplay": {
                         "$ref": "#/ZonePolygonDisplay",
                         "description": "Optional zone polygon display: Gross uses the reference line of the bounding walls, Net their inner edges. Only has an effect for a zone whose boundary is the reference line of the walls. When omitted, the value of the favorite or of the Zone tool defaults is kept."
@@ -1683,6 +1727,10 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (parameters, element.zone, nullptr);
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (parameters, element.zone, nullptr);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
     }
 
     const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (parameters, element.zone, nullptr);
@@ -1872,6 +1920,7 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
                         "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
+                        "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." },
                         "polygonDisplay": { "$ref": "#/ZonePolygonDisplay" },
                         "stampPen": { "$ref": "#/ZoneStampPen", "description": "Pen of the zone stamp. Only the given fields are changed." },
                         "reducePercent": { "$ref": "#/ZoneReducePercent" },
@@ -5980,7 +6029,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
-                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool default or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity), or is 'Symbol' when libraryPartName is given. 'Symbol' starts from the Symbol label settings of the Label tool default or of the favorite given in favoriteName: when those are a Text label, the item fails instead of placing a label without content."
+                    },
+                    "libraryPartName": {
+                        "type": "string",
+                        "description": "Optional name of the label library part of a Symbol label, as shown in the library (e.g. 'Flexi_Zone_Label'); without it the part of the Label tool default or of the favorite is used. The label gets the part's own default GDL parameters. It makes a Symbol label, so labelClass must be omitted or 'Symbol', and the Label tool default or the favorite must be a Symbol label (its other settings are kept). To switch the part of an existing label, use ChangeLibraryPartOfElements."
                     },
                     "text": {
                         "type": "string",
@@ -7244,8 +7297,20 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     // default names a symbol library part in u.symbol, see the Symbol branch below.
     const API_LblClassID defaultLabelClass = element.label.labelClass;
     GS::UniString labelClassStr;
-    if (parameters.Get ("labelClass", labelClassStr)) {
+    const bool hasLabelClass = parameters.Get ("labelClass", labelClassStr);
+    if (hasLabelClass) {
         element.label.labelClass = (labelClassStr == "Symbol") ? APILblClass_Symbol : APILblClass_Text;
+    }
+
+    // libraryPartName names the symbol label's library part, so it makes a Symbol label when
+    // labelClass is omitted, and contradicts an explicit 'Text'.
+    GS::UniString libraryPartName;
+    const bool hasLibraryPartName = parameters.Get ("libraryPartName", libraryPartName) && !libraryPartName.IsEmpty ();
+    if (hasLibraryPartName) {
+        if (hasLabelClass && element.label.labelClass != APILblClass_Symbol) {
+            return CreateErrorResponse (APIERR_BADPARS, "libraryPartName names the library part of a Symbol label, but labelClass is 'Text'. Omit labelClass or set it to 'Symbol'.");
+        }
+        element.label.labelClass = APILblClass_Symbol;
     }
 
     const GS::ObjectState* leaderLineOS = parameters.Get ("leaderLine");
@@ -7286,14 +7351,45 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
             }
         }
 
-        // u.symbol shares its storage with u.text: when the defaults are a Text label, u.symbol.libInd
-        // holds bytes of the text settings, which may by chance be a valid library part index of
-        // some unrelated library part. There is no input to name a symbol library part, so refuse
-        // instead of placing whatever that index points at (or nothing, as it did before).
+        // u.symbol shares its storage with u.text: when the defaults are a Text label, every u.symbol
+        // field (libInd, but also its pens, line type, surface and fill indices) holds bytes of the
+        // text settings, which may by chance be valid indices of something unrelated. Setting
+        // libInd alone from libraryPartName would leave the rest of them as that garbage, so refuse
+        // instead of placing a label from it (or nothing, as it did before).
         if (defaultLabelClass != APILblClass_Symbol) {
             GS::UniString favoriteName;
             const bool fromFavorite = parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
-            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("labelClass 'Symbol' needs a symbol library part, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("A Symbol label needs Symbol label settings to start from, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first. libraryPartName then chooses the library part.");
+        }
+
+        if (hasLibraryPartName) {
+            // The named part replaces the one of the defaults, with its own parameter list: the
+            // defaults' list belongs to their part. Only label library parts are searched.
+            API_LibPart libPart = {};
+            libPart.typeID = APILib_LabelID;
+            const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+            GS::ucscpy (libPart.docu_UName, libraryPartName.ToUStr (0, GS::Min (libraryPartName.GetLength (), maxNameLength)).Get ());
+            GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+            delete libPart.location;
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to resolve 'libraryPartName': no label library part with the name '" + libraryPartName + "' in the loaded libraries.");
+            }
+            double a = 0.0;
+            double b = 0.0;
+            Int32 addParNum = 0;
+            API_AddParType** addPars = nullptr;
+            err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
+            if (err != NoError || addPars == nullptr) {
+                if (addPars != nullptr) {
+                    ACAPI_DisposeAddParHdl (&addPars);
+                }
+                return CreateErrorResponse (err != NoError ? err : APIERR_BADINDEX, "Failed to read the parameters of the 'libraryPartName' library part.");
+            }
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = addPars;
+            element.label.u.symbol.libInd = libPart.index;
         }
 
         // A Symbol label is a library part instance, so ACAPI_Element_Create needs the library

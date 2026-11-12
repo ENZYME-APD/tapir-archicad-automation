@@ -2955,11 +2955,18 @@ static bool HatchHasCoreProfileItem (const HatchObject& hatch) { return hatch.Ha
 static bool HatchHasProfileInfo (const HatchObject& hatch) { return hatch.HasProfileInfo (); }
 static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { return hatch.GetProfileItem (); }
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.HasProfileInfo () ? &hatch.GetProfileItemNonConst () : nullptr; }
+// The number of edges GetProfileEdgeData (UIndex) may be called with: the size of the hatch's own edge vector,
+// not its coordinate count, which can be larger (seen in profiles migrated from older Archicad versions), and
+// an index past the vector's end makes Archicad stop with EXC_BREAKPOINT (#2772). 0 without profile info,
+// where GetProfileEdgeData would dereference an empty GS::Optional.
+static UIndex GetHatchProfileEdgeCount (const HatchObject& hatch) { return hatch.HasProfileInfo () ? (UIndex) hatch.GetProfileEdgeData ().size () : 0; }
 #else
 static bool HatchHasCoreProfileItem (const HatchObject& hatch) { const ProfileItem* item = hatch.GetProfileItemPtr (); return item != nullptr && item->IsCore (); }
 static bool HatchHasProfileInfo (const HatchObject& hatch) { return hatch.GetProfileItemPtr () != nullptr; }
 static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { return *hatch.GetProfileItemPtr (); }
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.GetProfileItemPtr (); }
+// Before AC27 the edge data is a raw array without a size of its own, one slot per coordinate.
+static UIndex GetHatchProfileEdgeCount (const HatchObject& hatch) { return hatch.GetProfileEdgeDataPtr () != nullptr ? hatch.GetCoords ().GetSize () : 0; }
 #endif
 
 // Archicad's own input validation refuses unknown keys at the top level of a CreateProfiles item, but not inside
@@ -3409,7 +3416,7 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
         if (override.Get ("edgeOverrides", edgeOverrides)) {
             for (const GS::ObjectState& edgeOverride : edgeOverrides) {
                 Int32 edgeIndex = -1;
-                if (!edgeOverride.Get ("edgeIndex", edgeIndex) || edgeIndex < 0) {
+                if (!edgeOverride.Get ("edgeIndex", edgeIndex) || edgeIndex < 0 || (UIndex) edgeIndex >= GetHatchProfileEdgeCount (hatch)) {
                     continue;
                 }
                 ProfileEdgeData* edgeData = hatch.GetProfileEdgeData ((UIndex) edgeIndex);
@@ -3842,7 +3849,7 @@ static void ForEachProfileEdge (const HatchObject& hatch, Func&& func)
         func (edgeData);
     }
 #else
-    UIndex edgeCount = hatch.GetCoords ().GetSize ();
+    UIndex edgeCount = GetHatchProfileEdgeCount (hatch);
     for (UIndex i = 0; i < edgeCount; ++i) {
         const ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (i);
         if (edgeData != nullptr) {
@@ -3906,6 +3913,118 @@ static GS::Optional<double> GetProfileModifierValue (const ProfileVectorImage& p
         return fabs (dx * cos (angle) + dy * sin (angle));
     }
     return GS::NoValue;
+}
+
+// Opening reference lines of a profile (Profile Editor, "Opening Reference"): the lines on the profile image's
+// dedicated opening reference layer. Doors and windows in a wall with this profile are placed by them instead
+// of by the profile's bounding box.
+static bool IsProfileOpeningReferenceLine (const Sy_LinType& line)
+{
+    return line.sy_fragmentIdx == ProfileVectorImageOperations::GetDedicatedOpeningReferenceLineLayer ();
+}
+
+static GS::Array<Sy_LinType> GetProfileLines (const ProfileVectorImage& pvi)
+{
+    GS::Array<Sy_LinType> lines;
+    for (ConstVectorImageIterator it (pvi.GetVectorImage ()); !it.IsEOI (); ++it) {
+        if (it->item_Typ == SyLine) {
+            const Sy_LinType* line = it;
+            lines.Push (*line);
+        }
+    }
+    return lines;
+}
+
+static GS::Optional<Sy_LinType> GetFirstProfileOpeningReferenceLine (const ProfileVectorImage& pvi)
+{
+    for (const Sy_LinType& line : GetProfileLines (pvi)) {
+        if (IsProfileOpeningReferenceLine (line)) {
+            return line;
+        }
+    }
+    return GS::NoValue;
+}
+
+struct ProfileLineSegment {
+    Coord begC;
+    Coord endC;
+};
+
+// Reads CreateProfiles' openingReferenceLines. Returns false (with the reason) for a line without both ends or
+// of zero length, so nothing of the profile is changed for a wrong input.
+static bool GetProfileOpeningReferenceLineSegments (const GS::Array<GS::ObjectState>& linesOS, GS::Array<ProfileLineSegment>& outSegments, GS::UniString& error)
+{
+    for (UIndex i = 0; i < linesOS.GetSize (); ++i) {
+        GS::ObjectState begOS, endOS;
+        if (!linesOS[i].Get ("begin", begOS) || !linesOS[i].Get ("end", endOS)) {
+            error = GS::UniString::Printf ("openingReferenceLines[%u] needs begin and end.", (unsigned int) i);
+            return false;
+        }
+        API_Coord beg = Get2DCoordinateFromObjectState (begOS);
+        API_Coord end = Get2DCoordinateFromObjectState (endOS);
+        double dx = end.x - beg.x;
+        double dy = end.y - beg.y;
+        if (dx * dx + dy * dy < 1e-12) {
+            error = GS::UniString::Printf ("openingReferenceLines[%u] has zero length.", (unsigned int) i);
+            return false;
+        }
+        ProfileLineSegment segment;
+        segment.begC.x = beg.x;
+        segment.begC.y = beg.y;
+        segment.endC.x = end.x;
+        segment.endC.y = end.y;
+        outSegments.Push (segment);
+    }
+    return true;
+}
+
+// Replaces every opening reference line of the profile with the given segments (none removes them all). The
+// VectorImage can only delete its lines by type, so every line is removed and the other lines (drafting and
+// construction lines, stretch lines) are added back unchanged. The new lines copy the settings (pen, line type,
+// draw index, profile flags) of an existing opening reference line; a profile without one gets Archicad's own
+// bounding-box opening lines first to copy them from, the way the Profile Editor makes them.
+static void SetProfileOpeningReferenceLines (ProfileVectorImage& pvi, const GS::Array<ProfileLineSegment>& segments)
+{
+    GS::Optional<Sy_LinType> lineTemplate;
+    if (!segments.IsEmpty ()) {
+        lineTemplate = GetFirstProfileOpeningReferenceLine (pvi);
+        if (!lineTemplate.HasValue ()) {
+            ProfileVectorImageOperations::AddBoundingOpeningLines (pvi);
+            lineTemplate = GetFirstProfileOpeningReferenceLine (pvi);
+        }
+    }
+
+    GS::Array<Sy_LinType> keptLines;
+    for (const Sy_LinType& line : GetProfileLines (pvi)) {
+        if (!IsProfileOpeningReferenceLine (line)) {
+            keptLines.Push (line);
+        }
+    }
+
+    {
+        VectorImageAccessGuard guard (&pvi);
+        VectorImage& vi = guard;
+        vi.DeleteItemsOfType (SyLine);
+    }
+
+    for (const Sy_LinType& line : keptLines) {
+        pvi.AddLineRec (line);
+    }
+
+    for (const ProfileLineSegment& segment : segments) {
+        Sy_LinType line;
+        if (lineTemplate.HasValue ()) {
+            line = *lineTemplate;
+        } else {
+            line = Sy_LinType (VBAttr::ExtendedPen ((short) 1), FromPlainAttrIndex (1), ProfileVectorImageOperations::GetDedicatedOpeningReferenceLineLayer (), (DrawIndex) 0,
+                               segment.begC.x, segment.begC.y, segment.endC.x, segment.endC.y);
+            line.specForProfile = 1;
+        }
+        line.sy_fragmentIdx = ProfileVectorImageOperations::GetDedicatedOpeningReferenceLineLayer ();
+        line.begC = segment.begC;
+        line.endC = segment.endC;
+        pvi.AddLineRec (line);
+    }
 }
 
 // Offset modifiers (Profile Manager, Modifiers): an offset parameter moves edges of the profile's skins by the
@@ -4427,7 +4546,7 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
             wantsField.Wants ("minimumWidth") || wantsField.Wants ("minimumHeight") ||
             wantsField.Wants ("widthStretchable") || wantsField.Wants ("heightStretchable") || wantsField.Wants ("stretchZones") ||
             wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins") ||
-            wantsField.Wants ("nominalSize") || wantsField.Wants ("hotspots");
+            wantsField.Wants ("openingReferenceLines") || wantsField.Wants ("nominalSize") || wantsField.Wants ("hotspots");
         if (wantsGeometryDerivedFields) {
             API_AttributeDefExt profileDefs = {};
             if (ACAPI_Attribute_GetDefExt (API_ProfileID, attr.header.index, &profileDefs) == NoError && profileDefs.profile_vectorImageItems != nullptr) {
@@ -4455,6 +4574,16 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 if (wantsField.Wants ("heightStretchable")) {
                     profile.Add ("heightStretchable", stretch.HasVerticalZone ());
+                }
+                if (wantsField.Wants ("openingReferenceLines")) {
+                    const auto& openingLinesList = profile.AddList<GS::ObjectState> ("openingReferenceLines");
+                    for (const Sy_LinType& line : GetProfileLines (pvi)) {
+                        if (IsProfileOpeningReferenceLine (line)) {
+                            openingLinesList (GS::ObjectState (
+                                "begin", GS::ObjectState ("x", line.begC.x, "y", line.begC.y),
+                                "end", GS::ObjectState ("x", line.endC.x, "y", line.endC.y)));
+                        }
+                    }
                 }
                 if (wantsField.Wants ("stretchZones")) {
                     GS::ObjectState stretchZones;
@@ -8435,6 +8564,13 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                             "description": "AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet)."
                         },)" // split: MSVC limits one string literal to 16380 characters
                         R"(
+                        "openingReferenceLines": {
+                            "type": "array",
+                            "description": "Replaces every opening reference line of the Profile (Profile Editor, \"Opening Reference\"; read them with GetProfiles' openingReferenceLines) with these lines; an empty array removes them all, so doors and windows in walls with this Profile are placed by its bounding box again. Omit to keep the lines the copied or overwritten Profile has. A wall profile normally has two, one on each side. Applied after skinOverrides, moveVertices and newSkins, in their final coordinates; the new lines take the pen and line type of the Profile's existing opening reference lines.",
+                            "items": {
+                                "$ref": "#/ProfileOpeningReferenceLine"
+                            }
+                        },
                         "newProfileModifiers": {
                             "type": "array",
                             "description": "Adds offset modifiers (Profile Manager, Modifiers) to the Profile, read back with GetProfiles' profileModifiers. Applied after skinOverrides, moveVertices and newSkins, so edges and anchors refer to the final shape; their skinIds come from GetProfiles, so a Profile built from newSkins gets its modifiers in a second CreateProfiles call with overwriteExisting. A modifier's value is the distance its dimension measures on the shape: draw the shape so it measures the default value you want. Archicad has no function to delete one modifier: to remove modifiers, rebuild the Profile with replaceSkins (which drops them all) and add the ones to keep again.",
@@ -8630,6 +8766,17 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
         }
 #endif
 
+        GS::Array<GS::ObjectState> openingReferenceLinesOS;
+        bool setOpeningReferenceLines = profileData.Get ("openingReferenceLines", openingReferenceLinesOS);
+        GS::Array<ProfileLineSegment> openingReferenceLines;
+        if (setOpeningReferenceLines) {
+            GS::UniString error;
+            if (!GetProfileOpeningReferenceLineSegments (openingReferenceLinesOS, openingReferenceLines, error)) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, error));
+                continue;
+            }
+        }
+
         // Checked before anything is read or changed, so a wrong areaMethod changes nothing of the profile.
         GS::UniString areaMethodError;
         GS::Array<GS::ObjectState> skinsWithAreaMethod;
@@ -8779,6 +8926,11 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
         }
 #endif
 
+        // After newSkins, so the bounding-box lines a profile without opening reference lines gets first fit
+        // its final shape.
+        if (setOpeningReferenceLines && profileDefs.profile_vectorImageItems != nullptr) {
+            SetProfileOpeningReferenceLines (*profileDefs.profile_vectorImageItems, openingReferenceLines);
+        }
         // After newSkins, so hotspots and nominal lines can be given in the final coordinates.
         if (!addHotspots.IsEmpty () && profileDefs.profile_vectorImageItems != nullptr) {
             AddProfileHotspots (*profileDefs.profile_vectorImageItems, addHotspots);
@@ -11534,7 +11686,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                         changed = true;
                     }
                     if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_MaterialID)) {
-                        const UIndex edgeCount = hatch.GetCoords ().GetSize ();
+                        const UIndex edgeCount = GetHatchProfileEdgeCount (hatch);
                         for (UIndex e = 0; e < edgeCount; ++e) {
                             ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (e);
                             if (edgeData == nullptr) {
