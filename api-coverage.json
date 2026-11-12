@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 09:16 UTC",
+ "generatedAt": "2026-11-12 09:52 UTC",
  "versions": [
   25,
   26,
@@ -6801,6 +6801,10 @@
    ],
    "issues": [
     {
+     "number": 2780,
+     "title": "Expose Zone tool defaults (stamp libInd/catInd): CreateZones fails when the template's default stamp is missing"
+    },
+    {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
     }
@@ -7516,6 +7520,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 2780,
+     "title": "Expose Zone tool defaults (stamp libInd/catInd): CreateZones fails when the template's default stamp is missing"
+    },
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
@@ -11902,7 +11910,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2780,
+     "title": "Expose Zone tool defaults (stamp libInd/catInd): CreateZones fails when the template's default stamp is missing"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetActParameters",
@@ -12222,7 +12235,12 @@
      "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2780,
+     "title": "Expose Zone tool defaults (stamp libInd/catInd): CreateZones fails when the template's default stamp is missing"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_GetSect_2DDrawHdl",
