@@ -8367,7 +8367,7 @@ GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () con
                         "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
                         "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
                         "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
-                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going." },)") + StairSettingsSchemaProperties + R"(
+                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -8872,6 +8872,37 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
+            auto treadDepth = GetOptionalDouble (item, "treadDepth");
+            if (treadDepth.HasValue ()) {
+                // Archicad lays the steps out from the stair rules, not from the plain treadDepth field
+                // ApplyStairSettings writes, so writing only that field changed nothing (#2525). The going
+                // is pinned in the rules as CreateStairs pins it (#425): a min == max bound with both
+                // *Applied flags set, and the standard's combined rules (2R+G, R+G, R/G) released, which
+                // otherwise override the pinned going whenever the two conflict. Pinned before
+                // ApplyStairSettings, as CreateStairs pins it before the settings that follow it.
+                API_StairRulesData& rules = element.stair.rules;
+                rules.treadDepthMinValue = treadDepth.Get ();
+                rules.treadDepthMaxValue = treadDepth.Get ();
+                rules.treadDepthMinApplied = true;
+                rules.treadDepthMaxApplied = true;
+                rules.ruleMinApplied = false;
+                rules.ruleMaxApplied = false;
+                rules.riserPlusGoingMinApplied = false;
+                rules.riserPlusGoingMaxApplied = false;
+                rules.riserGoingRatioMinApplied = false;
+                rules.riserGoingRatioMaxApplied = false;
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMinValue);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMaxValue);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.ruleMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.ruleMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserPlusGoingMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserPlusGoingMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserGoingRatioMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserGoingRatioMaxApplied);
+            }
+
             const GS::Optional<GS::UniString> settingsError = ApplyStairSettings (item, element, mask);
             if (settingsError.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *settingsError));

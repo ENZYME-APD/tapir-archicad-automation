@@ -1388,7 +1388,7 @@ GSErrCode Initialize (void)
             "and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on "
             "and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. "
             "CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. "
-            "Not written by this command: the baseline with its landings and winders, the top link, the break marks, lines and fills of the floor plan symbol, the headroom and the stair rules; "
+            "Not written by this command: the baseline with its landings and winders, the top link, the break marks, lines and fills of the floor plan symbol, the headroom and the stair rules, except that a given going (treadDepth) is pinned in them as CreateStairs pins it; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
         err |= RegisterCommand<RecreateStairsCommand> (
