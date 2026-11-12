@@ -385,6 +385,11 @@ def back_button() -> None:
         root.destroy()
     root = tk.Tk()
     root.title("Tapir test runner")
+    try:  # the Tapir icon instead of Tk's feather (#2735); cosmetic, so never fatal
+        icon = tk.PhotoImage(master=root, file=str(Path(__file__).with_name("tapir_icon.png")))
+        root.iconphoto(True, icon)
+    except tk.TclError:
+        pass
     root.attributes("-topmost", True)
     tk.Label(root, text="This is the test runner's desktop. Answer Archicad's dialog here,\n"
                         "then go back to your own desktop.", padx=16, pady=10).pack()

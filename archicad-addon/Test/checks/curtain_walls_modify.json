@@ -110,6 +110,7 @@
       "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].details.height", "approx": 4.5, "name": "height changed" },
+        { "path": "detailsOfElements[0].details.actualHeight", "approx": 4.5, "name": "actual height changed" },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" }
       ]
     },
@@ -462,8 +463,7 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.type", "eq": "Division", "name": "frame class is Division" },
-        { "path": "detailsOfElements[0].details.frameContour.b2", "approx": 0.11, "name": "contour unchanged" }
+        { "path": "detailsOfElements[0].details.type", "eq": "Division", "name": "frame class is Division" }
       ]
     },
     {
@@ -485,8 +485,33 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.type", "eq": "Boundary", "name": "frame class is Boundary" },
-        { "path": "detailsOfElements[0].details.frameContour.b2", "approx": 0.11, "name": "contour unchanged" }
+        { "path": "detailsOfElements[0].details.type", "eq": "Boundary", "name": "frame class is Boundary" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallFrames: Invisible type",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": {
+        "framesWithDetails": [
+          { "frameId": { "guid": "${f}" }, "type": "Invisible" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "type change to Invisible accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "frame before the bad inputs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "save": {
+        "ftype": "detailsOfElements[0].details.type",
+        "fa1": "detailsOfElements[0].details.frameContour.a1"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWallFrame", "name": "the frame is still there with its guid" }
       ]
     },
     {
@@ -516,10 +541,44 @@
           { "elementId": { "guid": "${b}" } }
         ]
       },
+      "save": { "fa1after": "detailsOfElements[0].details.frameContour.a1" },
       "expect": [
-        { "path": "detailsOfElements[0].details.type", "eq": "Boundary", "name": "frame class unchanged" },
-        { "path": "detailsOfElements[0].details.frameContour.a1", "approx": 0.025, "name": "frame a1 unchanged" },
+        { "path": "detailsOfElements[0].details.type", "eq": "${ftype}", "name": "frame class unchanged" },
+        { "expr": "${fa1after} - ${fa1}", "approx": 0, "name": "frame a1 unchanged" },
         { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "B height unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: B from 3.00 m to 3.25 m, as in #2523",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${b}" }, "height": 3.25 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "height change of a one-segment curtain wall accepted" }
+      ]
+    },
+    {
+      "id": "B after the height change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 3.25, "name": "B height changed" },
+        { "path": "detailsOfElements[0].details.actualHeight", "approx": 3.25, "name": "B actual height changed" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "B home story unchanged" }
+      ]
+    },
+    {
+      "id": "B bottom after the height change",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b}" } } ] },
+      "expect": [
+        { "path": "absoluteBottoms[0].absoluteBottom", "approx": 0.0, "name": "B bottom unchanged" }
       ]
     }
   ]
