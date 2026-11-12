@@ -1685,6 +1685,13 @@ static GSErrCode GetElementsInDrawOrderFromCurrentDatabase (const GS::ObjectStat
         API_Elem_Head reportedHead = {};
         reportedHead.guid = elemGuid;
         if (ACAPI_Element_GetHeader (&reportedHead) != NoError) {
+            // The walk also hands back items whose header Archicad cannot read: no other command finds them by
+            // their guid (ACAPI_Element_GetHeader, GetDetailsOfElements and API.GetTypesOfElements all fail), and
+            // GetAllElements does not list them, so they are left out (#2492). The owner of a section element is
+            // kept: its header may be readable only in the database it belongs to.
+            if (elemGuid == elemHead.guid) {
+                continue;
+            }
             reportedHead = elemHead;
         }
         const API_ElemTypeID reportedType = GetElemTypeId (reportedHead);
@@ -3406,6 +3413,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 // The settings ModifyAssociativeDimensions takes; the witness points are read
                 // with GetDimensionData.
                 AddDimensionDetails (typeSpecificDetails, elem);
+                break;
+
+            case API_RadialDimensionID:
+                // The stored data as it is; the DevKit does not document how the base is stored.
+                AddRadialDimensionDetails (typeSpecificDetails, elem);
                 break;
 
             case API_ChangeMarkerID: {
