@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 09:52 UTC",
+ "generatedAt": "2026-11-12 10:17 UTC",
  "versions": [
   25,
   26,
@@ -2908,6 +2908,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    },
+    {
      "number": 2619,
      "title": "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type"
     }
@@ -5644,6 +5648,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    },
+    {
      "number": 2683,
      "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
     }
@@ -5753,6 +5761,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -6795,6 +6807,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    },
+    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     }
@@ -7295,6 +7311,10 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
+     "number": 2545,
+     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
     }
    ],
    "issues": [
@@ -7514,6 +7534,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -11909,7 +11933,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    }
+   ],
    "issues": [
     {
      "number": 2780,
@@ -12230,6 +12259,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    },
     {
      "number": 2683,
      "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
@@ -29719,7 +29752,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    }
+   ],
    "issues": []
   },
   {
@@ -37521,6 +37559,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2781,
+     "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
+    },
     {
      "number": 2773,
      "title": "Fix GetUnusedAttributes crash: bound profile edge indexes by the edge data (#2772)"
