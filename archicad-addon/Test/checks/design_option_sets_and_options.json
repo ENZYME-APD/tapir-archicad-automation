@@ -1,6 +1,6 @@
 {
   "title": "Design option sets and options: create, reorder, rename, move to another set, set as default and delete",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "minArchicad": "29",
   "steps": [
     {
@@ -400,6 +400,47 @@
       ]
     },
     {
+      "id": "[delete option 1 while it holds the wall]",
+      "command": "DeleteDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${o1}" } } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per option" },
+        { "path": "executionResults[0].success", "eq": false, "name": "refused, without Archicad's modal dialog" },
+        { "path": "executionResults[0].error.message", "contains": "still holds 1 element", "name": "the error says it holds the wall" }
+      ]
+    },
+    {
+      "id": "[delete set B while its option 1 holds the wall]",
+      "command": "DeleteDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setB}" } } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per set" },
+        { "path": "executionResults[0].success", "eq": false, "name": "refused, without Archicad's modal dialog" },
+        { "path": "executionResults[0].error.message", "contains": "still holds 1 element", "name": "the error says an option holds the wall" }
+      ]
+    },
+    {
+      "id": "read: option 1 and set B kept",
+      "command": "GetDesignOptionForElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wall}" } } ] },
+      "expect": [
+        { "path": "designOptionForElements[0].type", "eq": "LinkedToDesignOption", "name": "the wall is still in option 1" },
+        { "path": "designOptionForElements[0].designOption.ownerSetName", "eq": "Tapir check set B2", "name": "set B is still there" }
+      ]
+    },
+    {
+      "id": "read: three options after the refused deletes",
+      "command": "GetDesignOptions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptions", "len": 3, "name": "no option deleted" }
+      ]
+    },
+    {
       "id": "probe wall back to the main model",
       "command": "MoveElementsToDesignOptions",
       "creates": false,
@@ -527,6 +568,7 @@
   ],
   "teardown": [
     { "command": "SetDefaultDesignOption", "params": {} },
+    { "command": "MoveElementsToDesignOptions", "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${wall}" }, "designOptionId": { "guid": "00000000-0000-0000-0000-000000000000" } } ] } },
     { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${o1}" } } ] } },
     { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${o2}" } } ] } },
     { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${o3}" } } ] } },

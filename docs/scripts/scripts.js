@@ -12,7 +12,8 @@
    names in the script's screenshots/ folder).
 
    A script's ID in the schedule is its category's code (data-code in the page's category list) and
-   its place in that category, by name: QA-01, QA-02, ...
+   its place in that category, by name: QA-01, QA-02, ... The schedule is in that order, or, chosen in
+   its Sort menu, by name or by author (the catalogue has no dates, so there is no order by time).
 
    A script's README, screenshots and code are read at the commit its newest version names. Anything
    that is missing or does not look right is left out rather than shown wrong; when the catalogue
@@ -273,8 +274,29 @@
             return { script: script, element: row, haystack: haystack };
         });
 
-        // The filters are kept in the address (q, category, archicad), so a filtered list can be shared.
+        // The orders the Sort menu offers; "category" is the order of rows (and of the IDs).
+        // Ties go by the category order, so the order is always the same.
+        var categoryOrder = rows.slice ();
+        var compareNames = function (a, b) {
+            return a.script.name.localeCompare (b.script.name, 'en', { sensitivity: 'base' });
+        };
+        var orders = {
+            category: categoryOrder,
+            name: rows.slice ().sort (function (a, b) {
+                return compareNames (a, b) || categoryOrder.indexOf (a) - categoryOrder.indexOf (b);
+            }),
+            author: rows.slice ().sort (function (a, b) {
+                return a.script.author.name.localeCompare (b.script.author.name, 'en', { sensitivity: 'base' }) ||
+                    compareNames (a, b) || categoryOrder.indexOf (a) - categoryOrder.indexOf (b);
+            })
+        };
+        var sort = byId ('script-sort');
+        var caption = byId ('script-caption');
+
+        // The filters and the order are kept in the address (q, category, archicad, sort), so a
+        // filtered list can be shared.
         var params = new URLSearchParams (window.location.search);
+        sort.value = Object.prototype.hasOwnProperty.call (orders, params.get ('sort')) ? params.get ('sort') : 'category';
         var wantedCategory = params.get ('category') && usedCategories[params.get ('category')] ? params.get ('category') : '';
         var wantedVersion = params.get ('archicad') && usedVersions[params.get ('archicad')] ? Number (params.get ('archicad')) : null;
         search.value = params.get ('q') || '';
@@ -333,8 +355,10 @@
             showActiveFilters ();
             var words = search.value.toLowerCase ().split (/\s+/).filter (Boolean);
             var shown = 0;
+            var order = Object.prototype.hasOwnProperty.call (orders, sort.value) ? sort.value : 'category';
+            caption.textContent = caption.getAttribute ('data-' + order);
             rowsBody.textContent = '';
-            rows.forEach (function (item) {
+            orders[order].forEach (function (item) {
                 var ok = words.every (function (word) { return item.haystack.indexOf (word) !== -1; }) &&
                     (!wantedCategory || item.script.category === wantedCategory) &&
                     (wantedVersion === null || item.script.newest.archicadVersions.indexOf (wantedVersion) !== -1);
@@ -356,6 +380,9 @@
             if (wantedVersion !== null) {
                 query.set ('archicad', String (wantedVersion));
             }
+            if (order !== 'category') {
+                query.set ('sort', order);
+            }
             var address = window.location.pathname + (query.toString () ? '?' + query.toString () : '');
             try {
                 window.history.replaceState (null, '', address);
@@ -363,6 +390,7 @@
         }
 
         search.addEventListener ('input', update);
+        sort.addEventListener ('change', update);
         byId ('script-filters').addEventListener ('submit', function (event) { event.preventDefault (); });
 
         update ();

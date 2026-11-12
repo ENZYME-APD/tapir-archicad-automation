@@ -38,6 +38,8 @@
         'पढ़ना कि railing किस slab या stair के किनारे से जुड़ी है, या railing को किसी किनारे से जोड़ना',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         'रेलिंग की स्वचालित स्टोरी दृश्यता बंद करना, ताकि वे स्टोरी तय की जा सकें जिन पर वह दिखती है',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'मेश का Floor Plan Display, Show Projection, बिना कटी और ऊपर की रेखाएँ या कट रेखा का प्रकार तय करना',
     'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
         'रेलिंग का floor plan symbol पढ़ना या सेट करना: उसका break mark, वह कौन-से symbol components दिखाती है, उनके 2D attributes और symbol overrides',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
@@ -81,6 +83,11 @@
     'Get the outcome of an Action Center check': 'Action Center check का नतीजा पाना',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Check को <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a> से चलाएँ; कोई समस्या मिलने पर Archicad Action Center दिखाता है। Hotlink check के लिए, हर source की स्थिति <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> से पढ़ें (Archicad 27 से)।',
+
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Profile इस्तेमाल करने वाली wall, beam या column के profile modifier values, या stretched width और height set करना',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'इन्हें <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> से पढ़ें। बदलने के लिए profile को <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> से बदलें (इन elements के लिए एक copy, या profile खुद), या Archicad में element की settings में set करें।',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'कुछ और मिला जो Archicad API नहीं कर सकता? जाँचे गए DevKit headers के साथ एक issue में बताएँ, और उसे यहाँ जोड़ा जाएगा। <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Issue खोलें</a>'

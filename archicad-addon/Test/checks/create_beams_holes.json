@@ -1,0 +1,108 @@
+{
+  "title": "CreateBeams takes the holes that ModifyBeams writes (#2551)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Beam" ],
+  "steps": [
+    {
+      "id": "beam with a rectangular and a circular hole",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 800.0, "y": 800.0 },
+            "endCoordinate": { "x": 805.0, "y": 800.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "width": 0.3,
+            "height": 0.5,
+            "isWidthAndHeightLinked": false,
+            "holes": [
+              { "type": "Rectangular", "centerX": 1.25, "centerZ": 0.0, "width": 0.18, "height": 0.12, "showContour": true },
+              { "type": "Circular", "centerX": 2.5, "centerZ": 0.0, "width": 0.15, "showContour": true }
+            ]
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "read the holes of the new beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.holes", "len": 2, "name": "two holes" },
+        { "path": "detailsOfElements[0].details.holes[0].type", "eq": "Rectangular", "name": "first hole rectangular" },
+        { "path": "detailsOfElements[0].details.holes[0].centerX", "approx": 1.25, "name": "first hole position" },
+        { "path": "detailsOfElements[0].details.holes[0].width", "approx": 0.18, "name": "first hole width" },
+        { "path": "detailsOfElements[0].details.holes[0].height", "approx": 0.12, "name": "first hole height" },
+        { "path": "detailsOfElements[0].details.holes[0].showContour", "eq": true, "name": "first hole contour shown" },
+        { "path": "detailsOfElements[0].details.holes[1].type", "eq": "Circular", "name": "second hole circular" },
+        { "path": "detailsOfElements[0].details.holes[1].centerX", "approx": 2.5, "name": "second hole position" },
+        { "path": "detailsOfElements[0].details.holes[1].width", "approx": 0.15, "name": "second hole diameter" },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.3, "name": "cross section width kept" },
+        { "path": "detailsOfElements[0].details.height", "approx": 0.5, "name": "cross section height kept" }
+      ]
+    },
+    {
+      "id": "beam without holes",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 800.0, "y": 810.0 },
+            "endCoordinate": { "x": 805.0, "y": 810.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "b2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "the beam without holes has none",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "no holes" }
+      ]
+    },
+    {
+      "id": "the holes round-trip through ModifyBeams",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b2}" },
+            "holes": [
+              { "type": "Circular", "centerX": 3.0, "centerZ": 0.0, "width": 0.1, "showContour": false }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "ModifyBeams still writes holes" }
+      ]
+    },
+    {
+      "id": "read the modified holes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "one hole" },
+        { "path": "detailsOfElements[0].details.holes[0].type", "eq": "Circular", "name": "circular" },
+        { "path": "detailsOfElements[0].details.holes[0].centerX", "approx": 3.0, "name": "position" },
+        { "path": "detailsOfElements[0].details.holes[0].showContour", "eq": false, "name": "contour hidden" }
+      ]
+    }
+  ]
+}
