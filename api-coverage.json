@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 00:18 UTC",
+ "generatedAt": "2026-11-12 02:15 UTC",
  "versions": [
   25,
   26,
@@ -3611,12 +3611,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3685,12 +3680,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5941,12 +5931,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2744,
-     "title": "GetElementsInDrawOrder: leave out items whose element cannot be read"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6766,10 +6751,6 @@
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
     {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
-    },
-    {
      "number": 2620,
      "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
     },
@@ -6940,10 +6921,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2746,
-     "title": "ModifySlabs: shrink an outline on a circle, never on the old points"
-    },
-    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     }
@@ -7040,10 +7017,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     },
     {
      "number": 2545,
@@ -7331,10 +7304,6 @@
     {
      "number": 2745,
      "title": "GetDetailsOfElements: radial dimension details; limits row for creating them"
-    },
-    {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     },
     {
      "number": 2620,
@@ -7868,18 +7837,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2744,
-     "title": "GetElementsInDrawOrder: leave out items whose element cannot be read"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2492,
-     "title": "GetElementsInDrawOrder returns GUIDs that no other command can resolve"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetHotspots",
@@ -31137,10 +31096,6 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
-    },
-    {
      "number": 2676,
      "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
     },
@@ -37662,10 +37617,6 @@
     {
      "number": 2683,
      "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
-    },
-    {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     },
     {
      "number": 2680,
@@ -44389,10 +44340,6 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
-    },
-    {
      "number": 2676,
      "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
     },
@@ -47559,10 +47506,6 @@
     {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
-    },
-    {
-     "number": 2681,
-     "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     },
     {
      "number": 2676,
