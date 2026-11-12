@@ -951,6 +951,15 @@ GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& hol
     return {};
 }
 
+GS::Array<GS::ObjectState> GetOpenHatchOutline (const GS::Array<GS::ObjectState>& coordinates)
+{
+    GS::Array<GS::ObjectState> outline = coordinates;
+    if (outline.GetSize () > 1 && IsSame2DCoordinate (outline.GetFirst (), outline.GetLast ())) {
+        outline.Pop ();
+    }
+    return outline;
+}
+
 // Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
 // (-1,0), and every contour (the main outline, plus each hole) needs its own
 // explicit closing vertex duplicating that contour's first point, whose vertexID
@@ -958,9 +967,15 @@ GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& hol
 // (not continued sequentially across contours) - confirmed live: global numbering
 // across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
 // per-contour numbering works. The holes are expected to be checked by ValidateHoles.
+// The outline may repeat its first point at the end, the closed form GetDetailsOfElements
+// returns; that point is dropped (GetOpenHatchOutline), as GetHoleGeometry drops it from
+// the holes. Arc indices stay valid: an arc ending on the dropped point ends on the
+// closing duplicate written below, at the same index.
 // Returns false (with poly untouched) when the memo handles could not be allocated.
-bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo)
+bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& outlineCoordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo)
 {
+    const GS::Array<GS::ObjectState> coordinates = GetOpenHatchOutline (outlineCoordinates);
+
     // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
     Int32 totalCoords = (Int32) coordinates.GetSize () + 1;
     Int32 totalArcs = (Int32) arcs.GetSize ();
