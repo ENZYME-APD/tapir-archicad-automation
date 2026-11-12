@@ -147,6 +147,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_MeshType</code> has no <code>displayOption</code>, <code>viewDepthLimitation</code>, uncut or overhead (<code>aboveView*</code>) line pen or type, and no <code>sectContLtype</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30), as <code>API_ShellBaseType</code> of roofs and shells has. Its floor plan members are <code>contPen</code>, <code>ltypeInd</code>, <code>levelPen</code>, <code>sectContPen</code>, the cut fill pens, <code>visibilityCont</code>, <code>visibilityFill</code> and the cover fill, which <a href="../archicad-addon/#ModifyMeshes">ModifyMeshes</a> writes.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2630">#2630</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>

@@ -32,17 +32,19 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // is written by Create, and the other way round.
         private static readonly ISet<string> CreateMeshesKeys = new HashSet<string>
         {
-            "bottomMaterial", "buildingMaterialId", "contourPen", "favoriteName", "floorIndex", "holes", "id",
-            "layerIndex", "level", "levelPen", "lineTypeIndex", "materialsChained", "polygonArcs",
-            "polygonCoordinates", "ridges", "showLines", "sideMaterial", "skirtLevel", "skirtType", "sublines",
-            "topMaterial"
+            "bottomMaterial", "buildingMaterialId", "contourPen", "cutFillBackgroundPen", "cutFillPen",
+            "favoriteName", "fillVisibility", "floorFill", "floorIndex", "holes", "id", "layerIndex", "level",
+            "levelPen", "lineTypeIndex", "materialsChained", "polygonArcs", "polygonCoordinates", "ridges",
+            "sectionContourPen", "showLines", "sideMaterial", "skirtLevel", "skirtType", "sublines",
+            "topMaterial", "visibility"
         };
 
         private static readonly ISet<string> ModifyMeshesKeys = new HashSet<string>
         {
-            "bottomMaterial", "buildingMaterialId", "contourPen", "floorIndex", "holes", "level", "levelPen",
-            "lineTypeIndex", "materialsChained", "polygonArcs", "polygonCoordinates", "ridges", "showLines",
-            "sideMaterial", "skirtLevel", "skirtType", "sublines", "topMaterial"
+            "bottomMaterial", "buildingMaterialId", "contourPen", "cutFillBackgroundPen", "cutFillPen",
+            "fillVisibility", "floorFill", "floorIndex", "holes", "level", "levelPen", "lineTypeIndex",
+            "materialsChained", "polygonArcs", "polygonCoordinates", "ridges", "sectionContourPen", "showLines",
+            "sideMaterial", "skirtLevel", "skirtType", "sublines", "topMaterial", "visibility"
         };
 
         // ModifyMeshes takes the polygon, so Create updates the meshes this

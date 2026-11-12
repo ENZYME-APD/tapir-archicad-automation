@@ -38,6 +38,8 @@
         'Lire à quel bord de dalle ou d\'escalier un garde-corps est lié, ou lier un garde-corps à l\'un d\'eux',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         'Désactiver la visibilité automatique par niveau d\'un garde-corps, pour pouvoir choisir les niveaux où il est affiché',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'Définir le Floor Plan Display, le Show Projection, les lignes non coupées et au-dessus ou le type de ligne de la coupe d\'un maillage',
     'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
         'Lire ou régler le symbole en plan d\'un garde-corps : sa ligne de coupure, les composants du symbole qu\'il affiche, leurs attributs 2D et les remplacements du symbole',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
