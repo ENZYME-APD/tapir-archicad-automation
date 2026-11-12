@@ -57,6 +57,21 @@ LIVE_PAGES = [
 ]
 
 
+def all_pages ():
+    """PAGES, then every other hand-written page under docs/ (a folder with an index.html that
+    is not a LIVE_PAGES page and not under assets/), as 'Docs', so a new page is in llms.txt and
+    the sitemap without an edit here."""
+    known = {p for p, _ in PAGES} | {p for p, _ in LIVE_PAGES}
+    found = sorted (path.parent.relative_to (DOCS).as_posix () + '/' for path in DOCS.rglob ('index.html')
+                    if path.parent != DOCS and 'assets' not in path.relative_to (DOCS).parts)
+    return PAGES + [(p, 'Docs') for p in found if p not in known]
+
+
+def marketplace_slugs ():
+    """The marketplace folders (those with a listing.json); each is a page of the Scripts page."""
+    return sorted (path.parent.name for path in (REPO_ROOT / 'marketplace').glob ('*/listing.json'))
+
+
 def site_url ():
     cname = DOCS / 'CNAME'
     if cname.exists ():
@@ -499,7 +514,7 @@ def build ():
     files = {}
 
     pages = []
-    for path, section in PAGES:
+    for path, section in all_pages ():
         source = DOCS / path / 'index.html'
         if not source.exists ():
             continue
@@ -555,7 +570,8 @@ def build ():
     files['llms-full.txt'] = '\n'.join (full).rstrip () + '\n'
 
     # sitemap.xml and robots.txt
-    urls = [p for p, _ in PAGES if (DOCS / p / 'index.html').exists ()] + [p for p, _ in LIVE_PAGES]
+    urls = ([p for p, _ in all_pages () if (DOCS / p / 'index.html').exists ()] + [p for p, _ in LIVE_PAGES]
+            + [f'scripts/?s={slug}' for slug in marketplace_slugs ()])
     files['sitemap.xml'] = ('<?xml version="1.0" encoding="UTF-8"?>\n'
                             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                             + ''.join (f'  <url><loc>{site}{u}</loc></url>\n' for u in urls)

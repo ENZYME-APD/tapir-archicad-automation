@@ -11,7 +11,8 @@
   "plainKeys": [
     "elementId",
     "favoriteName",
-    "id"
+    "id",
+    "templateElementId"
   ],
   "sources": {
     "help": [
@@ -85,8 +86,28 @@
       "subgroup": null
     },
     {
+      "get": "segments",
+      "set": "segments",
+      "apiMember": "API_ElementMemo::railingSegments (API_RailingSegmentType)",
+      "apiDescription": "The segments of the railing, one per pair of consecutive reference line vertices, each with its own height, lateral offset and reference line location.",
+      "label": null,
+      "labelSource": null,
+      "group": "Segment Settings",
+      "subgroup": null
+    },
+    {
+      "get": "nodes",
+      "set": "nodes",
+      "apiMember": "API_ElementMemo::railingNodes (API_RailingNodeType)",
+      "apiDescription": "The nodes of the railing, one per reference line vertex, each with its post offset, elevation and whether the pattern continues across it.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "visibility",
-      "set": null,
+      "set": "visibility",
       "apiMember": "API_RailingType::visibility",
       "apiDescription": "The story visibility of the element.",
       "label": null,
@@ -96,7 +117,7 @@
     },
     {
       "get": "isAutoOnStoryVisibility",
-      "set": null,
+      "set": "isAutoOnStoryVisibility",
       "apiMember": "API_RailingType::isAutoOnStoryVisibility",
       "apiDescription": "Recalculate the story visibility automatically according to the actual elevation of the railing.",
       "label": null,
@@ -106,7 +127,7 @@
     },
     {
       "get": "referenceLinePen",
-      "set": null,
+      "set": "referenceLinePen",
       "apiMember": "API_RailingType::referenceLinePen",
       "apiDescription": "The pen index of the Railing's reference line.",
       "label": null,
@@ -116,7 +137,7 @@
     },
     {
       "get": "contourPen",
-      "set": null,
+      "set": "contourPen",
       "apiMember": "API_RailingType::contourPen",
       "apiDescription": "The pen index of the Railing's contour line.",
       "label": null,

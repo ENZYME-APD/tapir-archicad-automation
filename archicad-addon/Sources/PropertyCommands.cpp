@@ -495,12 +495,7 @@ GS::Optional<GS::UniString> GetAllPropertiesCommand::GetInputParametersSchema ()
                 "type": "array",
                 "description": "Returns only the properties of these types. All types are returned when omitted.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "StaticBuiltIn",
-                        "DynamicBuiltIn",
-                        "Custom"
-                    ]
+                    "$ref": "#/PropertyDefinitionType"
                 }
             },
             "includeAvailability": {
@@ -1010,12 +1005,7 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfElementComponentsCommand::Ge
                                                 "type": "string"
                                             },
                                             "propertyType": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "StaticBuiltIn",
-                                                    "DynamicBuiltIn",
-                                                    "Custom"
-                                                ]
+                                                "$ref": "#/PropertyDefinitionType"
                                             }
                                         },
                                         "additionalProperties": false,
@@ -1601,6 +1591,21 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementDefaultsCommand::GetRawRes
     })";
 }
 
+// Archicad throws, instead of answering, for some built-in properties of some tool defaults (the
+// Label default's arrow pen with a Section window active), and an exception that reaches Archicad's
+// command loop ends Archicad. Turns it into APIERR_GENERAL.
+template <typename ArchicadCall>
+static GSErrCode CatchArchicadException (ArchicadCall&& archicadCall)
+{
+    try {
+        return archicadCall ();
+    } catch (...) {
+        return APIERR_GENERAL;
+    }
+}
+
+static const char* ToolDefaultPropertyThrewMessage = "Archicad failed to compute this property of the tool defaults.";
+
 GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementDefaultPropertyValues;
@@ -1657,7 +1662,11 @@ GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
             GS::Array<API_PropertyDefinition> propertyDefinitions;
             propertyDefinitions.Push (definition);
             GS::Array<API_Property> propertyValues;
-            err = TAPIR_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, propertyValues);
+            err = CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValuesOfDefaultElem (typeID, propertyDefinitions, propertyValues); });
+            if (err == APIERR_GENERAL) {
+                executionResults (CreateFailedExecutionResult (err, ToolDefaultPropertyThrewMessage));
+                continue;
+            }
             if (err != NoError || propertyValues.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_BADPROPERTY, "Failed to get property value for the element defaults"));
                 continue;
@@ -1730,54 +1739,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetRawResponse
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyValues": {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "$ref": "#/PropertyValueArrayItem"
-                                            },
-                                            {
-                                                "type": "object",
-                                                "description": "A property value with its status, returned when includeStatus is true.",
-                                                "properties": {
-                                                    "propertyValue": {
-                                                        "$ref": "#/PropertyValue",
-                                                        "description": "Missing when the value is not available or not evaluated."
-                                                    },
-                                                    "isAvailable": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the property definition is available for the attribute."
-                                                    },
-                                                    "isEditable": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the value of the property is editable for the attribute."
-                                                    },
-                                                    "isVisible": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the property definition is visible for the attribute."
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "isAvailable",
-                                                    "isEditable",
-                                                    "isVisible"
-                                                ]
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyValues"
-                            ]
+                            "$ref": "#/AttributePropertyValuesResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2063,36 +2025,7 @@ GS::Optional<GS::UniString> SetBuiltInPropertyValuesOfAttributesCommand::GetInpu
                 "type": "array",
                 "description": "The attributes and the built-in property values to set on each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "properties": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "propertyId": {
-                                        "$ref": "#/PropertyId"
-                                    },
-                                    "propertyValue": {
-                                        "$ref": "#/PropertyValue"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "propertyId",
-                                    "propertyValue"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "properties"
-                    ]
+                    "$ref": "#/AttributeBuiltInPropertyValues"
                 }
             }
         },
@@ -2512,14 +2445,7 @@ GS::Optional<GS::UniString> GetPropertiesOfToolDefaultsCommand::GetInputParamete
                 }
             },
             "filter": {
-                "type": "string",
-                "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, the user level built-in ones, or all of them. The default is All. From Archicad 28 the API no longer separates the two kinds of built-in properties, so there FundamentalBuiltIn and UserLevelBuiltIn both return every built-in property.",
-                "enum": [
-                    "UserDefined",
-                    "FundamentalBuiltIn",
-                    "UserLevelBuiltIn",
-                    "All"
-                ]
+                "$ref": "#/ToolDefaultPropertyFilter"
             },
             "includeValues": {
                 "type": "boolean",
@@ -2544,44 +2470,7 @@ GS::Optional<GS::UniString> GetPropertiesOfToolDefaultsCommand::GetRawResponseSc
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "properties": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyName": {
-                                                "type": "string"
-                                            },
-                                            "propertyGroupId": {
-                                                "$ref": "#/PropertyGroupId"
-                                            },
-                                            "propertyValue": {
-                                                "$ref": "#/PropertyValue",
-                                                "description": "The value in the tool default, in the format of GetPropertyValuesOfElements. Only returned when includeValues is true."
-                                            },
-                                            "error": {
-                                                "$ref": "#/Error",
-                                                "description": "Why the value could not be read. Only returned when includeValues is true."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId",
-                                            "propertyName",
-                                            "propertyGroupId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "properties"
-                            ]
+                            "$ref": "#/ToolDefaultProperties"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2658,8 +2547,10 @@ GS::ObjectState GetPropertiesOfToolDefaultsCommand::Execute (const GS::ObjectSta
                 };
 
                 API_Property propertyValue;
-                err = TAPIR_Element_GetPropertyValueOfDefaultElem (typeID, definition.guid, propertyValue);
-                if (err != NoError) {
+                err = CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValueOfDefaultElem (typeID, definition.guid, propertyValue); });
+                if (err == APIERR_GENERAL) {
+                    addError (err, ToolDefaultPropertyThrewMessage);
+                } else if (err != NoError) {
                     addError (err, "Failed to get the property value of the tool defaults");
                 } else if (propertyValue.status == API_Property_NotAvailable || propertyValue.status == API_Property_NotEvaluated) {
                     addError (APIERR_BADPROPERTY, "Not available or not evaluated property");
@@ -3353,14 +3244,16 @@ GS::ObjectState CreatePropertyDefinitionsCommand::Execute (const GS::ObjectState
 
             GS::Array<GS::ObjectState> possibleEnumValues;
             if (propertyDefinition->Get ("possibleEnumValues", possibleEnumValues)) {
-                API_SingleEnumerationVariant v;
-                v.displayVariant.type = apiPropertyDefinition.valueType;
-                v.keyVariant.type = API_PropertyGuidValueType;
                 for (const GS::ObjectState& e : possibleEnumValues) {
                     const GS::ObjectState* enumValue = e.Get ("enumValue");
                     if (enumValue == nullptr) {
                         continue;
                     }
+                    // A fresh value for each option: a reused one kept the nonlocalized
+                    // value of the option before, and Archicad refuses duplicate ones.
+                    API_SingleEnumerationVariant v;
+                    v.displayVariant.type = apiPropertyDefinition.valueType;
+                    v.keyVariant.type = API_PropertyGuidValueType;
                     v.keyVariant.guidValue = GetRandomGuid ();
 
                     if (!enumValue->Get ("displayValue", v.displayVariant.uniStringValue)) {
@@ -4025,18 +3918,43 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
     parameters.Get ("properties", properties);
 
     GS::Array<API_Guid> propertyGuids;
+    GS::Array<API_PropertyDefinition> propertyDefinitions;
     for (const GS::ObjectState& property : properties) {
         const GS::ObjectState* propertyId = property.Get ("propertyId");
         if (propertyId != nullptr) {
-            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
-            if (propertyGuid != APINULLGuid) {
-                propertyGuids.Push (propertyGuid);
+            // A property that does not exist makes Archicad fail the whole call,
+            // so only the existing ones are asked for; the others become error items below.
+            API_PropertyDefinition definition = {};
+            definition.guid = GetGuidFromObjectState (*propertyId);
+            if (definition.guid != APINULLGuid && ACAPI_Property_GetPropertyDefinition (definition) == NoError) {
+                propertyGuids.Push (definition.guid);
+                propertyDefinitions.Push (definition);
             }
         }
     }
 
     GS::Array<API_Property> fetchedProperties;
-    GSErrCode err = TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties);
+    GS::HashTable<API_Guid, GSErrCode> failedProperties;
+    GSErrCode err = propertyGuids.IsEmpty () ? NoError :
+        CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties); });
+    if (err == APIERR_GENERAL) {
+        // One property threw: ask for them one by one, so that the others still answer.
+        // The single read leaves the definition out, which the value string needs, so the one read above is kept.
+        fetchedProperties.Clear ();
+        err = NoError;
+        for (const API_PropertyDefinition& definition : propertyDefinitions) {
+            API_Property property;
+            const GSErrCode propertyErr = CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValueOfDefaultElem (elemTypeId, definition.guid, property); });
+            if (propertyErr != NoError) {
+                if (!failedProperties.ContainsKey (definition.guid)) {
+                    failedProperties.Add (definition.guid, propertyErr);
+                }
+                continue;
+            }
+            property.definition = definition;
+            fetchedProperties.Push (property);
+        }
+    }
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get property values of the tool default");
     }
@@ -4060,6 +3978,11 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
 
         const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
+        if (failedProperties.ContainsKey (propertyGuid)) {
+            const GSErrCode propertyErr = failedProperties[propertyGuid];
+            propertyValues (CreateErrorResponse (propertyErr, propertyErr == APIERR_GENERAL ? ToolDefaultPropertyThrewMessage : "Failed to get the property value of the tool defaults"));
+            continue;
+        }
         if (!propertyMap.ContainsKey (propertyGuid)) {
             propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
             continue;
@@ -4763,22 +4686,7 @@ GS::Optional<GS::UniString> GetPropertyAvailabilityOfDefaultsCommand::GetRawResp
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "available": {
-                                    "type": "boolean",
-                                    "description": "Whether the property is available for the tool default of the element type."
-                                },
-                                "visible": {
-                                    "type": "boolean",
-                                    "description": "Whether the property is visible for the tool default of the element type."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "available",
-                                "visible"
-                            ]
+                            "$ref": "#/DefaultPropertyAvailability"
                         },
                         {
                             "$ref": "#/ErrorItem"

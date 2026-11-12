@@ -87,8 +87,10 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          Community page data (generate_community_data.py),
                          marketplace folder checker (check_marketplace.py) and
                          Scripts page catalogue (generate_catalogue.py),
-                         site copies for AI assistants (generate_llm_files.py)
+                         site copies for AI assistants (generate_llm_files.py),
+                         release notes summary (release_notes.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
+    triage-command/      The Discord /triage slash command (Cloudflare Worker that starts that workflow)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
 ```
@@ -423,6 +425,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   example, each page as `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
   warns), and pushes them to `main` when they changed (never hand-edit those docs).
   Run both scripts yourself to update them earlier; `--check` reports stale files.
+  The release notes are the installer links, a short summary written by
+  `tools/release_notes.py` (the new commands per group, the new Grasshopper components
+  and marketplace scripts, who made the pull requests, the new contributors and the
+  compare link) and the code signing line, not GitHub's list of every pull request,
+  which is used only when the summary cannot be written.
 - `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
   write access: it answers, closes verified already-fixed issues, or opens a
@@ -545,6 +552,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   no workflow on their own; see
   [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)). It is
   scheduled at :13 and :43, off the full and half hour that GitHub drops most.
+  `/triage` in Discord starts it on demand through the Worker in
+  [tools/discord-issue-bot/triage-command/](tools/discord-issue-bot/triage-command/README.md).
 - `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
   to `main`, a release, issue events, hourly (which picks up pull request changes)
   and by hand, it runs
@@ -590,7 +599,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   marketplace scripts, read by `docs/scripts/scripts.js` and the site's live
   script count) to the same branch with `tools/generate_catalogue.py`, which needs
   the full history for each version's commit, URL and SHA-256; a push run writes
-  only that and leaves `community.json` as it is. Its runs never cancel each
+  only that and leaves `community.json` as it is. Daily and by hand it also writes
+  `user-map.json` with `tools/generate_user_map.py`: the towns people name on Discord
+  (the /where slash command of tools/discord-where/, answers to the location question in #welcome-and-rules, and "I'm from ..." anywhere),
+  placed with OpenStreetMap's Nominatim and counted per town, never a name or a message,
+  read by `docs/community/user-map.js` (the map); it needs the bot's Message Content
+  Intent, and `tools/user_map_overrides.json` corrects a message it misreads. Its runs never cancel each
   other. It never runs on pull request events and never checks out pull request
   code; `SITE_DATA=false` turns it off.
 

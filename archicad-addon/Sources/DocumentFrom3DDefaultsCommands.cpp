@@ -150,13 +150,7 @@ static const char* DocumentFrom3DDefaultsProperties = R"(
             "description": "Transparency of the model."
         },
         "intPlanConn": {
-            "type": "string",
-            "description": "The connection of the 3D Document to the model.",
-            "enum": [
-                "Online",
-                "Offline",
-                "Drawing"
-            ]
+            "$ref": "#/Document3DPlanConnection"
         },
         "materialFrom3D": {
             "type": "boolean",
@@ -171,13 +165,7 @@ static const char* DocumentFrom3DDefaultsProperties = R"(
             "description": "The index of the uniform surface (material), used when materialFrom3D is false."
         },
         "boundaryDisplay": {
-            "type": "string",
-            "description": "How the boundary contours are displayed.",
-            "enum": [
-                "UncutContours",
-                "NoContours",
-                "OverrideContours"
-            ]
+            "$ref": "#/Document3DBoundaryDisplay"
         },
         "boundaryPen": {
             "type": "integer",
@@ -188,30 +176,12 @@ static const char* DocumentFrom3DDefaultsProperties = R"(
             "description": "The index of the line type of the boundary contours, used with OverrideContours."
         },
         "attributeOptions": {
-            "type": "object",
-            "description": "The uniform attribute options (cut and uncut surfaces, shading, hidden edges).",
-            "properties": {
-                "shouldUseUniformCutAttributes": { "type": "boolean", "description": "Use uniform attributes on the cut surfaces." },
-                "uniformLineType": { "type": "integer", "description": "The index of the uniform line type of the cut surfaces." },
-                "uniformFillPen": { "type": "integer", "description": "The uniform fill pen of the cut surfaces." },
-                "uniformFillBkgPen": { "type": "integer", "description": "The uniform fill background pen of the cut surfaces." },
-                "shouldUseUncutSurfaceFill": { "type": "boolean", "description": "Fill the uncut surfaces." },
-                "uncutSurfaceBkgPen": { "type": "integer", "description": "The background pen of the uncut surfaces." },
-                "shouldUseElemPen": { "type": "boolean", "description": "Use a uniform pen for the element contours." },
-                "elemPen": { "type": "integer", "description": "The uniform pen of the element contours." },
-                "shadFillPen": { "type": "integer", "description": "The pen of the shadow fill." },
-                "shadFill": { "type": "integer", "description": "The index of the shadow fill." },
-                "shadFillBkgPen": { "type": "integer", "description": "The background pen of the shadow fill." },
-                "shadContPen": { "type": "integer", "description": "The pen of the shadow contours." },
-                "hiddenEdgeLineType": { "type": "integer", "description": "The index of the line type of the hidden edges." },
-                "hiddenEdgeLinePen": { "type": "integer", "description": "The pen of the hidden edges." }
-            },
-            "additionalProperties": false
+            "$ref": "#/Document3DAttributeOptions"
         }
 )";
 
 GetDocumentFrom3DDefaultsCommand::GetDocumentFrom3DDefaultsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 GS::String GetDocumentFrom3DDefaultsCommand::GetName () const

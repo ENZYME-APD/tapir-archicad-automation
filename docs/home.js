@@ -2,8 +2,8 @@
    assets/site.js. The page is complete without it: without JavaScript the plan shows the numbered
    doors and the palette bar (script menu and Run) stays hidden. Every text it shows is in the
    page's HTML, translated there (data-i18n, see assets/i18n/README.md); the script names stay
-   English, as in the palette. Under
-   prefers-reduced-motion the demo shows each result at once and the ticker stands still. */
+   English, as in the palette. With less motion (the Display menu's Motion Reduced, or System under
+   prefers-reduced-motion) the demo shows each result at once and the ticker stands still. */
 (function () {
     'use strict';
 
@@ -11,7 +11,13 @@
         return document.getElementById (id);
     }
 
+    // The Display menu's Motion (data-motion on <html>, see assets/site.js): Reduced and Full decide,
+    // System (no attribute) follows prefers-reduced-motion.
     function reducedMotion () {
+        var choice = document.documentElement.getAttribute ('data-motion');
+        if (choice === 'reduced' || choice === 'full') {
+            return choice === 'reduced';
+        }
         return !!(window.matchMedia && window.matchMedia ('(prefers-reduced-motion: reduce)').matches);
     }
 
@@ -36,9 +42,17 @@
         var timers = [];
 
         // Moss shades: the Property Highlighter only colours the view. Ochre is kept for what a
-        // script changes in the model (the door numbers) and for the check's markers.
-        function heatColor (area) {
-            return area < 15 ? '#E3E9E1' : area <= 25 ? '#B9C7B4' : '#8FA58C';
+        // script changes in the model (the door numbers) and for the check's markers. The colours
+        // are home.css's --plan-heat-* properties, given by these classes, so a zone follows the
+        // site's look when it changes without being drawn again.
+        var heatClasses = ['heat-low', 'heat-mid', 'heat-high'];
+
+        function heatClass (area) {
+            return area < 15 ? 'heat-low' : area <= 25 ? 'heat-mid' : 'heat-high';
+        }
+
+        function colourZone (zone) {
+            zone.classList.add (heatClass (Number (zone.getAttribute ('data-area'))));
         }
 
         function setStatus (name, text) {
@@ -73,9 +87,7 @@
         }
 
         function colourZones () {
-            for (var i = 0; i < zones.length; i++) {
-                zones[i].setAttribute ('fill', heatColor (Number (zones[i].getAttribute ('data-area'))));
-            }
+            Array.prototype.forEach.call (zones, colourZone);
         }
 
         function run (option) {
@@ -89,7 +101,7 @@
             plan.classList.toggle ('heat', kind === 'heat');
 
             for (var i = 0; i < zones.length; i++) {
-                zones[i].setAttribute ('fill', '#FFFFFF');
+                zones[i].classList.remove.apply (zones[i].classList, heatClasses);
             }
             for (var j = 0; j < tags.length; j++) {
                 tags[j].classList.remove ('hidden-tag');
@@ -124,9 +136,7 @@
                 });
             } else if (kind === 'heat') {
                 Array.prototype.forEach.call (zones, function (zone, index) {
-                    later (function () {
-                        zone.setAttribute ('fill', heatColor (Number (zone.getAttribute ('data-area'))));
-                    }, 200 + index * 180);
+                    later (function () { colourZone (zone); }, 200 + index * 180);
                 });
             }
             later (function () {
@@ -155,17 +165,24 @@
 
     // ---- The command ticker: its names twice, so the loop has no seam. ----
 
+    // A ticker that stood still at load starts when the visitor chooses more motion; with Reduced
+    // chosen later, it stops (assets/site.css switches every animation off).
+    var tickerStarted = false;
+
     function setUpTicker () {
         var track = byId ('ticker-track');
-        if (!track || reducedMotion ()) {
+        if (!track || tickerStarted || reducedMotion ()) {
             return;
         }
+        tickerStarted = true;
         var names = Array.prototype.slice.call (track.children);
         names.forEach (function (name) {
             track.appendChild (name.cloneNode (true));
         });
         track.classList.add ('moving');
     }
+
+    document.addEventListener ('tapir-display-change', setUpTicker);
 
     function init () {
         // The demo reads its texts (data-running, data-done) from the HTML, so it waits until

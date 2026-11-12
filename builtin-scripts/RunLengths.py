@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "quantities-scheduling"
 # changes = "files"
 # ///
 
@@ -272,7 +273,9 @@ class RunLengths:
                 if selection is not None and not members & selection:
                     continue
                 network = next((networks[g] for g in members if g in networks), "(not connected)") if networks else ""
-                system_id = guid_of(route.get("mepSystemId", {}).get("attributeId"))
+                # {"guid": ...}; Tapir 2.0.0 and earlier wrapped it in {"attributeId": ...}
+                system_ref = route.get("mepSystemId") or {}
+                system_id = guid_of(system_ref.get("attributeId") or system_ref)
                 system = system_names.get(system_id, "(unknown system)")
                 nodes = {guid_of(n): n["position"] for n in route.get("nodes", []) if "position" in n}
                 polyline = route.get("polyline", [])

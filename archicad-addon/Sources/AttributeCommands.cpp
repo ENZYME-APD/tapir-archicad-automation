@@ -5,6 +5,8 @@
 #include "GSUnID.hpp"
 #include "ProfileVectorImage.hpp"
 #include "ProfileAdditionalInfo.hpp"
+#include "ProfileVectorImageOperations.hpp"
+#include "SyHot.hpp"
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
@@ -91,7 +93,26 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     }
     DisposeAttribute (attribute);
 
-    attributeIndex = attribute.header.index;
+    // Archicad finds an attribute by its guid whatever type is asked for, so a layer's guid given as a
+    // Fill would give the layer's index, which is some other fill. Read the attribute of the asked type
+    // at that index back and accept it only when it is the same attribute.
+    const API_Guid guid = attribute.header.guid;
+    const API_AttributeIndex index = attribute.header.index;
+    if (attribute.header.typeID != attributeType) {
+        return false;
+    }
+    API_Attribute check = {};
+    check.header.typeID = attributeType;
+    check.header.index = index;
+    if (ACAPI_Attribute_Get (&check) != NoError) {
+        return false;
+    }
+    DisposeAttribute (check);
+    if (check.header.guid != guid) {
+        return false;
+    }
+
+    attributeIndex = index;
     return true;
 }
 
@@ -2758,7 +2779,7 @@ GS::Optional<GS::UniString> GetProfilesCommand::GetInputParametersSchema () cons
             },
             "fields": {
                 "type": "array",
-                "description": "Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.",
+                "description": "Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/stretchZones/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.",
                 "items": {
                     "$ref": "#/ProfileAttributeField"
                 }
@@ -2933,6 +2954,162 @@ static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { retur
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.GetProfileItemPtr (); }
 #endif
 
+// Applies one ProfileEdgeOverride (CreateProfiles' skinOverrides[].edgeOverrides and newSkins[].edgeOverrides)
+// to an edge of a profile skin. An edge's surface is either the surface of the skin's building material
+// (ProfileEdgeData::SurfaceFromBuildMatFlag set) or the edge's own material, which is then a surface
+// (API_MaterialID) index - the profile attribute import maps it as one (MapImportedAttributeReferences), and the
+// Profile Manager calls it "Apply Custom Surface or Line Type to Profile Edge". surfaceId sets a custom
+// surface and clears the flag; surfaceFromBuildingMaterial, applied last, sets or clears the flag itself.
+static void ApplyProfileEdgeOverride (ProfileEdgeData& edgeData, const GS::ObjectState& edgeOverride)
+{
+    Int32 pen;
+    if (edgeOverride.Get ("pen", pen)) {
+        edgeData.SetPen ((short) pen);
+    }
+    bool isVisibleLine;
+    if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
+        edgeData.SetVisibleLine (isVisibleLine);
+    }
+    bool isInnerLine;
+    if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
+        edgeData.SetInnerLine (isInnerLine);
+    }
+    bool isCutEndLine;
+    if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
+        edgeData.SetCutEndLine (isCutEndLine);
+    }
+    GS::ObjectState lineTypeId;
+    if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
+        API_AttributeIndex idx;
+        if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, idx)) {
+            edgeData.SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
+        }
+    }
+    // Kept for compatibility: the edge's material is a surface index, so a building material is not stored in it,
+    // the edge only takes the surface of the skin's building material.
+    GS::ObjectState buildingMaterialId;
+    if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
+        API_AttributeIndex idx;
+        if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
+            edgeData.SetSurfaceFromBuildMat (true);
+        }
+    }
+    GS::ObjectState surfaceId;
+    if (edgeOverride.Get ("surfaceId", surfaceId)) {
+        API_AttributeIndex idx;
+        if (GetAttributeIndexFromAttributeId (surfaceId, API_MaterialID, idx)) {
+            edgeData.SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
+            edgeData.SetSurfaceFromBuildMat (false);
+        }
+    }
+    bool surfaceFromBuildingMaterial;
+    if (edgeOverride.Get ("surfaceFromBuildingMaterial", surfaceFromBuildingMaterial)) {
+        edgeData.SetSurfaceFromBuildMat (surfaceFromBuildingMaterial);
+    }
+}
+
+// The component area method of a profile skin (Profile Manager): the line or circle the skin's area is
+// projected onto, stored as the SkinProjectionProperties of its ProfileItem. Read as GetProfiles'
+// skins[].areaMethod, written by CreateProfiles' skinOverrides[].areaMethod and newSkins[].areaMethod.
+static GS::ObjectState GetProfileAreaMethod (const ProfileItem& profileItem)
+{
+    const SkinProjectionProperties& projection = profileItem.GetSkinProjectionProperties ();
+    if (!projection.HasProjectionShape ()) {
+        return GS::ObjectState ("type", GS::UniString ("None"));
+    }
+    if (projection.GetProjectionType () == SkinProjectionProperties::SPT_Circle) {
+        return GS::ObjectState (
+            "type", GS::UniString ("Circle"),
+            "center", GS::ObjectState ("x", projection.GetCircleOrigo ().x, "y", projection.GetCircleOrigo ().y),
+            "radius", projection.GetCircleRadius ());
+    }
+    return GS::ObjectState (
+        "type", GS::UniString ("Line"),
+        "lineBegin", GS::ObjectState ("x", projection.GetLineCoord1 ().x, "y", projection.GetLineCoord1 ().y),
+        "lineEnd", GS::ObjectState ("x", projection.GetLineCoord2 ().x, "y", projection.GetLineCoord2 ().y));
+}
+
+// Checks an areaMethod input; returns false with the reason when a field its type needs is missing or wrong.
+static bool CheckProfileAreaMethod (const GS::ObjectState& areaMethod, GS::UniString& error)
+{
+    GS::UniString type;
+    areaMethod.Get ("type", type);
+    if (type == "None") {
+        return true;
+    }
+    if (type == "Line") {
+        GS::ObjectState begOS, endOS;
+        if (!areaMethod.Get ("lineBegin", begOS) || !areaMethod.Get ("lineEnd", endOS)) {
+            error = "areaMethod of type Line needs lineBegin and lineEnd.";
+            return false;
+        }
+        API_Coord beg = Get2DCoordinateFromObjectState (begOS);
+        API_Coord end = Get2DCoordinateFromObjectState (endOS);
+        if ((end.x - beg.x) * (end.x - beg.x) + (end.y - beg.y) * (end.y - beg.y) < 1e-12) {
+            error = "areaMethod's lineBegin and lineEnd must differ.";
+            return false;
+        }
+        return true;
+    }
+    if (type == "Circle") {
+        GS::ObjectState centerOS;
+        double radius = 0.0;
+        if (!areaMethod.Get ("center", centerOS) || !areaMethod.Get ("radius", radius)) {
+            error = "areaMethod of type Circle needs center and radius.";
+            return false;
+        }
+        if (radius <= 0.0) {
+            error = "areaMethod's radius must be greater than 0.";
+            return false;
+        }
+        return true;
+    }
+    error = "areaMethod's type must be None, Line or Circle.";
+    return false;
+}
+
+// Applies an areaMethod checked by CheckProfileAreaMethod. None removes the projection shape; the coordinates of
+// the other type are kept, as the Profile Manager keeps them.
+static void ApplyProfileAreaMethod (ProfileItem& profileItem, const GS::ObjectState& areaMethod)
+{
+    SkinProjectionProperties projection = profileItem.GetSkinProjectionProperties ();
+    GS::UniString type;
+    areaMethod.Get ("type", type);
+    if (type == "Line") {
+        GS::ObjectState begOS, endOS;
+        areaMethod.Get ("lineBegin", begOS);
+        areaMethod.Get ("lineEnd", endOS);
+        API_Coord beg = Get2DCoordinateFromObjectState (begOS);
+        API_Coord end = Get2DCoordinateFromObjectState (endOS);
+        Coord begC;
+        begC.x = beg.x;
+        begC.y = beg.y;
+        Coord endC;
+        endC.x = end.x;
+        endC.y = end.y;
+        projection.SetProjectionType (SkinProjectionProperties::SPT_Line);
+        projection.SetLineCoord1 (begC);
+        projection.SetLineCoord2 (endC);
+        projection.SetHasProjectionShape (true);
+    } else if (type == "Circle") {
+        GS::ObjectState centerOS;
+        double radius = 0.0;
+        areaMethod.Get ("center", centerOS);
+        areaMethod.Get ("radius", radius);
+        API_Coord center = Get2DCoordinateFromObjectState (centerOS);
+        Coord centerC;
+        centerC.x = center.x;
+        centerC.y = center.y;
+        projection.SetProjectionType (SkinProjectionProperties::SPT_Circle);
+        projection.SetCircleOrigo (centerC);
+        projection.SetCircleRadius (radius);
+        projection.SetHasProjectionShape (true);
+    } else {
+        projection.SetHasProjectionShape (false);
+    }
+    profileItem.SetSkinProjectionProperties (projection);
+}
+
 // Applies caller-supplied overrides (from CreateProfiles' skinOverrides) to one skin of a profile's vector
 // image, matched by the skinId GetProfiles reports. Mutation goes through Archicad's own HatchObject/
 // ProfileItem setters - the same objects GetProfiles reads via their const getters - so this genuinely
@@ -3023,6 +3200,10 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
                     profileItem->SetCutEndLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
                 }
             }
+            GS::ObjectState areaMethod;
+            if (override.Get ("areaMethod", areaMethod)) {
+                ApplyProfileAreaMethod (*profileItem, areaMethod);
+            }
         }
 
         GS::Array<GS::ObjectState> edgeOverrides;
@@ -3036,37 +3217,7 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
                 if (edgeData == nullptr) {
                     continue;
                 }
-                Int32 pen;
-                if (edgeOverride.Get ("pen", pen)) {
-                    edgeData->SetPen ((short) pen);
-                }
-                bool isVisibleLine;
-                if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
-                    edgeData->SetVisibleLine (isVisibleLine);
-                }
-                bool isInnerLine;
-                if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
-                    edgeData->SetInnerLine (isInnerLine);
-                }
-                bool isCutEndLine;
-                if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
-                    edgeData->SetCutEndLine (isCutEndLine);
-                }
-                GS::ObjectState lineTypeId;
-                if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
-                    API_AttributeIndex idx;
-                    if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, idx)) {
-                        edgeData->SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                    }
-                }
-                GS::ObjectState buildingMaterialId;
-                if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
-                    API_AttributeIndex idx;
-                    if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
-                        edgeData->SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                        edgeData->SetSurfaceFromBuildMat (true);
-                    }
-                }
+                ApplyProfileEdgeOverride (*edgeData, edgeOverride);
             }
         }
 
@@ -3223,6 +3374,60 @@ static void ApplyProfileVertexMove (ProfileVectorImage& pvi, const GS::ObjectSta
     if (stretchChanged) {
         pvi.SetStretchData (stretch);
     }
+}
+
+// Sets or removes the stretch zones of a profile (CreateProfiles' stretchZones), the ranges the Profile
+// Manager's width (horizontal, an x range) and height (vertical, a y range) stretch use. Zones that are
+// neither given nor removed are kept. Returns the error message for invalid input, else nothing.
+static GS::Optional<GS::UniString> ApplyProfileStretchZones (ProfileVectorImage& pvi, const GS::ObjectState& stretchZones)
+{
+    PVI::StretchData stretch = pvi.GetStretchData ();
+
+    const auto applyZone = [&] (const char* zoneKey, const char* removeKey, bool isHorizontal) -> GS::Optional<GS::UniString> {
+        bool remove = false;
+        stretchZones.Get (removeKey, remove);
+        GS::ObjectState zone;
+        const bool hasZone = stretchZones.Get (zoneKey, zone);
+        if (hasZone && remove) {
+            return GS::UniString::Printf ("stretchZones: %s and %s cannot both be given.", zoneKey, removeKey);
+        }
+        if (remove) {
+            if (isHorizontal) {
+                stretch.RemoveHorizontalZone ();
+            } else {
+                stretch.RemoveVerticalZone ();
+            }
+            return GS::NoValue;
+        }
+        if (!hasZone) {
+            return GS::NoValue;
+        }
+        double zoneMin = 0.0;
+        double zoneMax = 0.0;
+        zone.Get ("min", zoneMin);
+        zone.Get ("max", zoneMax);
+        if (!(zoneMin < zoneMax)) {
+            return GS::UniString::Printf ("stretchZones: the %s zone's min must be less than its max.", zoneKey);
+        }
+        if (isHorizontal) {
+            stretch.SetHorizontalZone (zoneMin, zoneMax);
+        } else {
+            stretch.SetVerticalZone (zoneMin, zoneMax);
+        }
+        return GS::NoValue;
+    };
+
+    GS::Optional<GS::UniString> error = applyZone ("horizontal", "removeHorizontal", true);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = applyZone ("vertical", "removeVertical", false);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    pvi.SetStretchData (stretch);
+    return GS::NoValue;
 }
 
 // Converts caller-supplied polygon contours (same 0-based polygonCoordinates/polygonArcs convention
@@ -3386,6 +3591,10 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
             profileItem.SetCutEndLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
         }
     }
+    GS::ObjectState areaMethod;
+    if (skinDef.Get ("areaMethod", areaMethod)) {
+        ApplyProfileAreaMethod (profileItem, areaMethod);
+    }
 
     HatchProfileData profileData;
     profileData.SetProfileItem (profileItem);
@@ -3395,6 +3604,8 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
     std::vector<ProfileEdgeData> edges (edgeCount);
     for (ProfileEdgeData& edge : edges) {
         edge.SetVisibleLine (true);
+        // Like a new edge in the Profile Manager: no custom surface, the skin's building material gives it.
+        edge.SetSurfaceFromBuildMat (true);
     }
     profileData.SetProfileEdgeData (edges);
     outHatch.SetProfileData (std::move (profileData));
@@ -3416,37 +3627,7 @@ static bool BuildHatchFromSkinDefinition (const GS::ObjectState& skinDef, HatchO
             if (edgeData == nullptr) {
                 continue;
             }
-            Int32 pen;
-            if (edgeOverride.Get ("pen", pen)) {
-                edgeData->SetPen ((short) pen);
-            }
-            bool isVisibleLine;
-            if (edgeOverride.Get ("isVisibleLine", isVisibleLine)) {
-                edgeData->SetVisibleLine (isVisibleLine);
-            }
-            bool isInnerLine;
-            if (edgeOverride.Get ("isInnerLine", isInnerLine)) {
-                edgeData->SetInnerLine (isInnerLine);
-            }
-            bool isCutEndLine;
-            if (edgeOverride.Get ("isCutEndLine", isCutEndLine)) {
-                edgeData->SetCutEndLine (isCutEndLine);
-            }
-            GS::ObjectState lineTypeId;
-            if (edgeOverride.Get ("lineTypeId", lineTypeId)) {
-                API_AttributeIndex idx;
-                if (GetAttributeIndexFromAttributeId (lineTypeId, API_LinetypeID, idx)) {
-                    edgeData->SetLineType (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                }
-            }
-            GS::ObjectState buildingMaterialId;
-            if (edgeOverride.Get ("buildingMaterialId", buildingMaterialId)) {
-                API_AttributeIndex idx;
-                if (GetAttributeIndexFromAttributeId (buildingMaterialId, API_BuildingMaterialID, idx)) {
-                    edgeData->SetMaterial (FromPlainAttrIndex (GetAttributeIndex (idx)));
-                    edgeData->SetSurfaceFromBuildMat (true);
-                }
-            }
+            ApplyProfileEdgeOverride (*edgeData, edgeOverride);
         }
     }
 
@@ -3528,6 +3709,144 @@ static GS::Optional<double> GetProfileModifierValue (const ProfileVectorImage& p
     return GS::NoValue;
 }
 
+// The hotspots of a profile (Profile Editor): the hotspot records of its vector image, which walls, beams and
+// columns with this profile show.
+static GS::Array<Sy_HotType> GetProfileHotspots (const ProfileVectorImage& pvi)
+{
+    GS::Array<Sy_HotType> hotspots;
+    for (ConstVectorImageIterator it (pvi.GetVectorImage ()); !it.IsEOI (); ++it) {
+        if (it->item_Typ == SyHots) {
+            const Sy_HotType* hotspot = it;
+            hotspots.Push (*hotspot);
+        }
+    }
+    return hotspots;
+}
+
+// Adds hotspots to a profile (CreateProfiles' addHotspots). Existing hotspots are never removed: Archicad ties
+// the hotspots that lie on a skin vertex to that vertex by their id, and the DevKit cannot tie a re-added one
+// again. A new hotspot copies the settings (pen, layer, type, flags) of the profile's first hotspot, with a new
+// id; a profile without hotspots gets Archicad's defaults (pen 1, the construction layer).
+static void AddProfileHotspots (ProfileVectorImage& pvi, const GS::Array<Coord>& positions)
+{
+    const GS::Array<Sy_HotType> existing = GetProfileHotspots (pvi);
+    for (const Coord& position : positions) {
+        Sy_HotType hotspot;
+        if (!existing.IsEmpty ()) {
+            hotspot = existing[0];
+            hotspot.SetNewUniqueId ();
+            hotspot.c = position;
+        } else {
+            hotspot = Sy_HotType ((short) 0, (short) 0, 0, position, 0.0);
+            hotspot.sy_pen = 1;
+            hotspot.sy_fragmentIdx = ProfileVectorImageOperations::GetDedicatedConstructionLayer ();
+        }
+        pvi.AddHotspotRec (hotspot);
+    }
+}
+
+struct ProfileNominalSize {
+    double left = 0.0;
+    double right = 0.0;
+    double bottom = 0.0;
+    double top = 0.0;
+};
+
+static ProfileNominalSize GetProfileNominalSize (const ProfileVectorImage& pvi)
+{
+    Box2DData nominalBox;
+    ProfileVectorImageOperations::GetNominalBounds (pvi, nominalBox);
+    ProfileNominalSize size;
+    size.left = nominalBox.xMin;
+    size.right = nominalBox.xMax;
+    size.bottom = nominalBox.yMin;
+    size.top = nominalBox.yMax;
+    return size;
+}
+
+static bool IsProfileNominalSize (const ProfileVectorImage& pvi, const ProfileNominalSize& wanted)
+{
+    const double eps = 1e-6;
+    const ProfileNominalSize actual = GetProfileNominalSize (pvi);
+    return fabs (actual.left - wanted.left) < eps && fabs (actual.right - wanted.right) < eps &&
+        fabs (actual.bottom - wanted.bottom) < eps && fabs (actual.top - wanted.top) < eps;
+}
+
+// Sets the nominal width and height lines of a profile (Profile Editor) to fixed positions. The DevKit adds them
+// with AddNominalSizeAnchors, which does not replace lines the profile already has; those are replaced by their
+// anchor ids. The DevKit does not say which id is which line, so both readings are tried, and the result is
+// checked with GetNominalBounds. Returns false when the nominal size could not be set; the caller then does not
+// save the profile.
+static bool SetProfileNominalSize (ProfileVectorImage& pvi, const ProfileNominalSize& size)
+{
+    const double midX = (size.left + size.right) / 2.0;
+    const double midY = (size.bottom + size.top) / 2.0;
+    PVI::Anchor left;
+    left.SetFixed (size.left, midY);
+    PVI::Anchor right;
+    right.SetFixed (size.right, midY);
+    PVI::Anchor bottom;
+    bottom.SetFixed (midX, size.bottom);
+    PVI::Anchor top;
+    top.SetFixed (midX, size.top);
+
+    ProfileVectorImageOperations::AddNominalSizeAnchors (pvi, left, right, bottom, top);
+    if (IsProfileNominalSize (pvi, size)) {
+        return true;
+    }
+
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalLAnchorID, left);
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalUAnchorID, right);
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalLAnchorID, bottom);
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalUAnchorID, top);
+    if (IsProfileNominalSize (pvi, size)) {
+        return true;
+    }
+
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalLAnchorID, left);
+    pvi.ReplaceAnchor (PVI::NominalSizeVerticalUAnchorID, right);
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalLAnchorID, bottom);
+    pvi.ReplaceAnchor (PVI::NominalSizeHorizontalUAnchorID, top);
+    return IsProfileNominalSize (pvi, size);
+}
+
+// The profileModifiers of a profile: each edge-offset parameter of pvi with its value measured on pvi
+// and its name from parameterNames (the profile attribute's profile_vectorImageParameterNames), when
+// given. GetProfiles measures them on the profile attribute, GetProfileValuesOfElements on the
+// stretched profile of an element (#2587).
+static GS::Array<GS::ObjectState> GetProfileModifiers (const ProfileVectorImage& pvi, const GS::HashTable<PVI::ProfileParameterId, GS::UniString>* parameterNames)
+{
+    GS::Array<GS::ObjectState> modifiers;
+    const GS::HashTable<GS::Guid, HatchObject>& hatches = pvi.GetConstHatchObjects ();
+    const auto& paramTable = pvi.GetParameterTable ();
+    // Parameter names are user-authored free text (assigned when the profile's author draws
+    // each dimension in the Profile Editor), not derived from any other profile data - they
+    // live in the sibling profile_vectorImageParameterNames table, keyed by the same
+    // ProfileParameterId as GetParameterTable().
+    paramTable.Enumerate ([&] (const PVI::ProfileParameterId& paramId, const GS::HashSet<PVI::ProfileParameterSetupId>& setupIds) {
+        if (setupIds.IsEmpty ()) {
+            return;
+        }
+        // Every setup in the set is a per-skin-instance variant of the same logical parameter;
+        // any one of them yields the parameter's current (shared) value.
+        PVI::ProfileParameterSetupId representativeSetupId = *setupIds.Begin ();
+        const PVI::ProfileVectorImageParameter& param = pvi.GetParameterDef (representativeSetupId);
+        GS::Optional<double> value = GetProfileModifierValue (pvi, param, hatches);
+        GS::ObjectState modifier;
+        if (parameterNames != nullptr) {
+            const GS::UniString* name = nullptr;
+            if (parameterNames->Get (paramId, &name) && name != nullptr) {
+                modifier.Add ("name", *name);
+            }
+        }
+        if (value.HasValue ()) {
+            modifier.Add ("value", *value);
+        }
+        modifiers.Push (modifier);
+    });
+    return modifiers;
+}
+
 GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> attributeIds;
@@ -3592,8 +3911,9 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
 
         bool wantsGeometryDerivedFields = wantsField.Wants ("width") || wantsField.Wants ("height") ||
             wantsField.Wants ("minimumWidth") || wantsField.Wants ("minimumHeight") ||
-            wantsField.Wants ("widthStretchable") || wantsField.Wants ("heightStretchable") ||
-            wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins");
+            wantsField.Wants ("widthStretchable") || wantsField.Wants ("heightStretchable") || wantsField.Wants ("stretchZones") ||
+            wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins") ||
+            wantsField.Wants ("nominalSize") || wantsField.Wants ("hotspots");
         if (wantsGeometryDerivedFields) {
             API_AttributeDefExt profileDefs = {};
             if (ACAPI_Attribute_GetDefExt (API_ProfileID, attr.header.index, &profileDefs) == NoError && profileDefs.profile_vectorImageItems != nullptr) {
@@ -3622,6 +3942,30 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                 if (wantsField.Wants ("heightStretchable")) {
                     profile.Add ("heightStretchable", stretch.HasVerticalZone ());
                 }
+                if (wantsField.Wants ("stretchZones")) {
+                    GS::ObjectState stretchZones;
+                    if (stretch.HasHorizontalZone ()) {
+                        stretchZones.Add ("horizontal", GS::ObjectState ("min", stretch.GetHorizontalZoneMin (), "max", stretch.GetHorizontalZoneMax ()));
+                    }
+                    if (stretch.HasVerticalZone ()) {
+                        stretchZones.Add ("vertical", GS::ObjectState ("min", stretch.GetVerticalZoneMin (), "max", stretch.GetVerticalZoneMax ()));
+                    }
+                    profile.Add ("stretchZones", stretchZones);
+                }
+                if (wantsField.Wants ("nominalSize")) {
+                    const ProfileNominalSize nominalSize = GetProfileNominalSize (pvi);
+                    profile.Add ("nominalSize", GS::ObjectState (
+                        "left", nominalSize.left,
+                        "right", nominalSize.right,
+                        "bottom", nominalSize.bottom,
+                        "top", nominalSize.top));
+                }
+                if (wantsField.Wants ("hotspots")) {
+                    const auto& hotspotsList = profile.AddList<GS::ObjectState> ("hotspots");
+                    for (const Sy_HotType& hotspot : GetProfileHotspots (pvi)) {
+                        hotspotsList (GS::ObjectState ("x", hotspot.c.x, "y", hotspot.c.y));
+                    }
+                }
 
                 if (wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins")) {
                     const GS::HashTable<GS::Guid, HatchObject>& hatches = pvi.GetConstHatchObjects ();
@@ -3638,32 +3982,9 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
 
                     if (wantsField.Wants ("profileModifiers")) {
                         const auto& modifiersList = profile.AddList<GS::ObjectState> ("profileModifiers");
-                        const auto& paramTable = pvi.GetParameterTable ();
-                        // Parameter names are user-authored free text (assigned when the profile's author draws
-                        // each dimension in the Profile Editor), not derived from any other profile data - they
-                        // live in the sibling profile_vectorImageParameterNames table, keyed by the same
-                        // ProfileParameterId as GetParameterTable().
-                        paramTable.Enumerate ([&] (const PVI::ProfileParameterId& paramId, const GS::HashSet<PVI::ProfileParameterSetupId>& setupIds) {
-                            if (setupIds.IsEmpty ()) {
-                                return;
-                            }
-                            // Every setup in the set is a per-skin-instance variant of the same logical parameter;
-                            // any one of them yields the parameter's current (shared) value.
-                            PVI::ProfileParameterSetupId representativeSetupId = *setupIds.Begin ();
-                            const PVI::ProfileVectorImageParameter& param = pvi.GetParameterDef (representativeSetupId);
-                            GS::Optional<double> value = GetProfileModifierValue (pvi, param, hatches);
-                            GS::ObjectState modifier;
-                            if (profileDefs.profile_vectorImageParameterNames != nullptr) {
-                                const GS::UniString* name = nullptr;
-                                if (profileDefs.profile_vectorImageParameterNames->Get (paramId, &name) && name != nullptr) {
-                                    modifier.Add ("name", *name);
-                                }
-                            }
-                            if (value.HasValue ()) {
-                                modifier.Add ("value", *value);
-                            }
+                        for (const GS::ObjectState& modifier : GetProfileModifiers (pvi, profileDefs.profile_vectorImageParameterNames)) {
                             modifiersList (modifier);
-                        });
+                        }
                     }
 
                     if (wantsField.Wants ("skins")) {
@@ -3716,13 +4037,21 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                                 if (cutEndLineTypeId.HasValue ()) {
                                     skin.Add ("cutEndLineTypeId", *cutEndLineTypeId);
                                 }
+                                skin.Add ("areaMethod", GetProfileAreaMethod (profileItem));
 
                                 const auto& edgesList = skin.AddList<GS::ObjectState> ("edges");
                                 ForEachProfileEdge (hatch, [&] (const ProfileEdgeData& edgeData) {
                                     GS::ObjectState edge;
-                                    GS::Optional<GS::ObjectState> edgeMaterialId = GetAttributeIdFromIndex (API_BuildingMaterialID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetMaterial ())));
-                                    if (edgeMaterialId.HasValue ()) {
-                                        edge.Add ("buildingMaterialId", *edgeMaterialId);
+                                    // The edge's material is a surface (its custom surface), used only when the edge
+                                    // does not take the surface of the skin's building material (see
+                                    // ApplyProfileEdgeOverride). With the flag set it is not an attribute reference.
+                                    const bool surfaceFromBuildMat = edgeData.IsSurfaceFromBuildMat ();
+                                    edge.Add ("surfaceFromBuildingMaterial", surfaceFromBuildMat);
+                                    if (!surfaceFromBuildMat) {
+                                        GS::Optional<GS::ObjectState> edgeSurfaceId = GetAttributeIdFromIndex (API_MaterialID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetMaterial ())));
+                                        if (edgeSurfaceId.HasValue ()) {
+                                            edge.Add ("surfaceId", *edgeSurfaceId);
+                                        }
                                     }
                                     edge.Add ("pen", (Int32) edgeData.GetPen ());
                                     GS::Optional<GS::ObjectState> edgeLineTypeId = GetAttributeIdFromIndex (API_LinetypeID, ACAPI_CreateAttributeIndex (ToPlainAttrIndex (edgeData.GetLineType ())));
@@ -7523,6 +7852,10 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                     "cutEndLineTypeId": {
                                         "$ref": "#/AttributeIdArrayItem"
                                     },
+                                    "areaMethod": {
+                                        "$ref": "#/ProfileAreaMethod",
+                                        "description": "Sets the component area method of this skin (read it with GetProfiles' skins[].areaMethod). None removes it."
+                                    },
                                     "edgeOverrides": {
                                         "type": "array",
                                         "description": "Modifications to specific edges of this skin, targeted by their position (0-based) in GetProfiles' skins[].edges.",
@@ -7586,6 +7919,40 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                         "replaceSkins": {
                             "type": "boolean",
                             "description": "AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet)."
+                        },
+                        "stretchZones": {
+                            "type": "object",
+                            "description": "Sets or removes the stretch zones of the Profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), so a wall, beam or column using it can change its width or height. A Profile with a horizontal zone is widthStretchable, one with a vertical zone heightStretchable. Applied last, so the coordinates are those of the final geometry, as GetProfiles reports them in skins[].outlineCoords and stretchZones. A zone that is neither given nor removed is kept as it is (copied from sourceAttributeId, or preserved when overwriting).",
+                            "properties": {
+                                "horizontal": {
+                                    "$ref": "#/ProfileStretchZone",
+                                    "description": "The horizontal stretch zone (width): the x range of the profile that stretches when the element's width differs from the profile's."
+                                },
+                                "vertical": {
+                                    "$ref": "#/ProfileStretchZone",
+                                    "description": "The vertical stretch zone (height): the y range of the profile that stretches when the element's height differs from the profile's."
+                                },
+                                "removeHorizontal": {
+                                    "type": "boolean",
+                                    "description": "Removes the horizontal stretch zone, so the width is fixed. Cannot be given together with horizontal."
+                                },
+                                "removeVertical": {
+                                    "type": "boolean",
+                                    "description": "Removes the vertical stretch zone, so the height is fixed. Cannot be given together with vertical."
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "nominalSize": {
+                            "$ref": "#/ProfileNominalSize",
+                            "description": "Sets the nominal width and height lines of the Profile (Profile Editor; read them with GetProfiles' nominalSize) at these positions, replacing the ones it has. right must be greater than left and top greater than bottom. Applied after skinOverrides, moveVertices and newSkins, in their final coordinates. Omit to keep the Profile's nominal size lines."
+                        },
+                        "addHotspots": {
+                            "type": "array",
+                            "description": "Adds hotspots to the Profile at these positions (Profile Editor; read them with GetProfiles' hotspots), in the final coordinates after skinOverrides, moveVertices and newSkins. The Profile's existing hotspots are kept: Archicad ties a hotspot on a skin vertex to that vertex, and the Archicad API cannot tie it again once removed, so hotspots cannot be removed or moved here. New hotspots take the settings of the Profile's first hotspot.",
+                            "items": {
+                                "$ref": "#/Coordinate2D"
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -7685,6 +8052,48 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             continue;
         }
 #endif
+
+        // Checked before anything is read or changed, so a wrong areaMethod changes nothing of the profile.
+        GS::UniString areaMethodError;
+        GS::Array<GS::ObjectState> skinsWithAreaMethod;
+        profileData.Get ("skinOverrides", skinsWithAreaMethod);
+        skinsWithAreaMethod.Append (newSkins);
+        for (const GS::ObjectState& skin : skinsWithAreaMethod) {
+            GS::ObjectState areaMethod;
+            if (skin.Get ("areaMethod", areaMethod) && !CheckProfileAreaMethod (areaMethod, areaMethodError)) {
+                break;
+            }
+        }
+        if (!areaMethodError.IsEmpty ()) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, areaMethodError));
+            continue;
+        }
+
+        GS::ObjectState nominalSizeOS;
+        const bool setNominalSize = profileData.Get ("nominalSize", nominalSizeOS);
+        ProfileNominalSize nominalSize;
+        if (setNominalSize) {
+            if (!nominalSizeOS.Get ("left", nominalSize.left) || !nominalSizeOS.Get ("right", nominalSize.right) ||
+                !nominalSizeOS.Get ("bottom", nominalSize.bottom) || !nominalSizeOS.Get ("top", nominalSize.top)) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, "nominalSize needs left, right, bottom and top."));
+                continue;
+            }
+            if (nominalSize.right <= nominalSize.left || nominalSize.top <= nominalSize.bottom) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, "nominalSize's right must be greater than left, and top greater than bottom."));
+                continue;
+            }
+        }
+
+        GS::Array<GS::ObjectState> addHotspotsOS;
+        profileData.Get ("addHotspots", addHotspotsOS);
+        GS::Array<Coord> addHotspots;
+        for (const GS::ObjectState& hotspotOS : addHotspotsOS) {
+            API_Coord position = Get2DCoordinateFromObjectState (hotspotOS);
+            Coord c;
+            c.x = position.x;
+            c.y = position.y;
+            addHotspots.Push (c);
+        }
 
         API_AttributeDefExt sourceDefs = {};
         bool hasSourceDefs = false;
@@ -7792,6 +8201,38 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             }
         }
 #endif
+
+        // After newSkins, so hotspots and nominal lines can be given in the final coordinates.
+        if (!addHotspots.IsEmpty () && profileDefs.profile_vectorImageItems != nullptr) {
+            AddProfileHotspots (*profileDefs.profile_vectorImageItems, addHotspots);
+        }
+        if (setNominalSize && profileDefs.profile_vectorImageItems != nullptr) {
+            if (!SetProfileNominalSize (*profileDefs.profile_vectorImageItems, nominalSize)) {
+                attributeIds (CreateErrorResponse (APIERR_GENERAL, "Failed to set the nominal size lines of the Profile."));
+                if (hasSourceDefs) {
+                    ACAPI_DisposeAttrDefsHdlsExt (&sourceDefs);
+                }
+                continue;
+            }
+        }
+
+        // Applied last, so the zones are given in the final coordinates (after moveVertices and newSkins).
+        GS::ObjectState stretchZones;
+        if (profileData.Get ("stretchZones", stretchZones)) {
+            GS::Optional<GS::UniString> stretchError;
+            if (profileDefs.profile_vectorImageItems == nullptr) {
+                stretchError = GS::UniString ("stretchZones: the Profile has no geometry to set them on.");
+            } else {
+                stretchError = ApplyProfileStretchZones (*profileDefs.profile_vectorImageItems, stretchZones);
+            }
+            if (stretchError.HasValue ()) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, stretchError.Get ()));
+                if (hasSourceDefs) {
+                    ACAPI_DisposeAttrDefsHdlsExt (&sourceDefs);
+                }
+                continue;
+            }
+        }
 
         if (doesExist) {
             GSErrCode err = ACAPI_Attribute_ModifyExt (&profile, &profileDefs);
@@ -8386,27 +8827,14 @@ GS::ObjectState GetFontsByNameCommand::Execute (const GS::ObjectState& parameter
     const auto& fonts = response.AddList<GS::ObjectState> ("fonts");
 
     for (const GS::UniString& fontName : fontNames) {
-        // Archicad searches by the name uniStringNamePtr points at and reports the index of the font
-        // it found in the head, the way ACAPI_Attribute_Search does for attributes - which fonts
-        // were before Archicad 27 (API_FontID), with their own API (ACAPI_Font_SearchFont) since.
-        GS::UniString nameToSearch = fontName;
-        short fontIndex = 0;
-#ifdef ServerMainVers_2700
-        API_FontType font = {};
-        font.head.uniStringNamePtr = &nameToSearch;
-        const GSErrCode err = ACAPI_Font_SearchFont (font);
-        fontIndex = static_cast<short> (font.head.index);
-#else
-        API_Attr_Head attrHead = {};
-        attrHead.typeID = API_FontID;
-        attrHead.uniStringNamePtr = &nameToSearch;
-        const GSErrCode err = ACAPI_Attribute_Search (&attrHead);
-        fontIndex = static_cast<short> (GetAttributeIndex (attrHead.index));
-#endif
-        if (err != NoError) {
-            fonts (CreateErrorResponse (err, GS::UniString::Printf ("No loaded font is named '%T'.", fontName.ToPrintf ())));
+        // Archicad's own font search, which also finds a family name with the script Archicad lists
+        // it with ("Arial" as "Arial Western"), limited to the loaded fonts (see SearchLoadedFont).
+        const GS::Optional<short> foundIndex = SearchLoadedFont (fontName);
+        if (!foundIndex.HasValue ()) {
+            fonts (CreateErrorResponse (APIERR_BADNAME, GS::UniString::Printf ("No loaded font is named '%T'.", fontName.ToPrintf ())));
             continue;
         }
+        const short fontIndex = *foundIndex;
 
         // The name is read back from the font found rather than echoed, so the caller sees it as
         // Archicad carries it even when the search matched a differently written name.
@@ -8505,16 +8933,7 @@ GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "pairs": {
-                                    "$ref": "#/UserDataPairs"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "pairs"
-                            ]
+                            "$ref": "#/AttributeUserData"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -10464,7 +10883,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
         }
     }
     // Profiles: the building material, surface, fill and contour line type of every skin, the cut end line type
-    // of a profile skin and the building material and line type of its edges.
+    // of a profile skin and the custom surface and line type of its edges.
     attributes.Clear ();
     if (ACAPI_Attribute_GetAttributesByType (API_ProfileID, attributes) == NoError) {
         for (API_Attribute& listed : attributes) {
@@ -10509,7 +10928,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                         profileItem->SetCutEndLineType (FromPlainAttrIndex (newPlain));
                         changed = true;
                     }
-                    if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_BuildingMaterialID)) {
+                    if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_MaterialID)) {
                         const UIndex edgeCount = hatch.GetCoords ().GetSize ();
                         for (UIndex e = 0; e < edgeCount; ++e) {
                             ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (e);
@@ -10520,7 +10939,9 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                                 edgeData->SetLineType (FromPlainAttrIndex (newPlain));
                                 changed = true;
                             }
-                            if (job.type == API_BuildingMaterialID && RewritePlain (ToPlainAttrIndex (edgeData->GetMaterial ()), job, newPlain)) {
+                            // The edge's material is its custom surface, an attribute reference only when the edge
+                            // does not take the surface of the skin's building material.
+                            if (job.type == API_MaterialID && !edgeData->IsSurfaceFromBuildMat () && RewritePlain (ToPlainAttrIndex (edgeData->GetMaterial ()), job, newPlain)) {
                                 edgeData->SetMaterial (FromPlainAttrIndex (newPlain));
                                 changed = true;
                             }
@@ -12244,8 +12665,8 @@ void CollectReferencesOfAttributes (API_AttrTypeID typeID, const char* typeName,
 // - a surface: the fill of its vectorial hatching;
 // - an MEP system: its fill, center line type, body surface and insulation surface;
 // - a profile: per skin, its building material, surface or fill (each only when the skin is that kind of
-//   hatch), its contour and cut end line types, and the line type of each edge. An edge's own material is not
-//   checked: the DevKit does not say which attribute type ProfileEdgeData::material is.
+//   hatch), its contour and cut end line types, and the line type and custom surface of each edge (an edge
+//   that takes the surface of the skin's building material has no surface of its own).
 // Returns the number of attributes read.
 Int32 CollectAttributeOwnerReferences (GS::Array<AttributeOwnerReferences>& result, GS::Array<GS::UniString>& warnings)
 {
@@ -12308,6 +12729,10 @@ Int32 CollectAttributeOwnerReferences (GS::Array<AttributeOwnerReferences>& resu
                     Int32 edge = 0;
                     ForEachProfileEdge (hatch, [&] (const ProfileEdgeData& edgeData) {
                         references.Push ({ API_LinetypeID, ToPlainAttrIndex (edgeData.GetLineType ()), prefix + GS::UniString::Printf ("edges[%d].lineTypeId", (int) edge), false });
+                        const Int32 edgeSurface = ToPlainAttrIndex (edgeData.GetMaterial ());
+                        if (!edgeData.IsSurfaceFromBuildMat () && edgeSurface > 0) {
+                            references.Push ({ API_MaterialID, edgeSurface, prefix + GS::UniString::Printf ("edges[%d].surfaceId", (int) edge), false });
+                        }
                         ++edge;
                     });
                 }
@@ -13208,6 +13633,168 @@ GS::ObjectState RenameAttributesCommand::Execute (const GS::ObjectState& paramet
             continue;
         }
         executionResults (RenameAttribute (GetGuidFromObjectState (*attributeId), newName));
+    }
+
+    return response;
+}
+
+// One item of GetProfileValuesOfElements (#2587): a profile as an element uses it, measured on
+// the element's stretched profile. The modifier names come from the profile attribute profileAttr;
+// segmentIndex is the beam or column segment, or -1 for a wall.
+static GS::ObjectState GetElementProfileValue (const ProfileVectorImage& stretchedProfile, const API_AttributeIndex& profileAttr, Int32 segmentIndex)
+{
+    GS::ObjectState profile;
+    if (segmentIndex >= 0) {
+        profile.Add ("segmentIndex", segmentIndex);
+    }
+    GS::Optional<GS::ObjectState> profileId = GetAttributeIdFromIndex (API_ProfileID, profileAttr);
+    if (profileId.HasValue ()) {
+        profile.Add ("profileId", *profileId);
+    }
+    const Box2DData bounds = stretchedProfile.GetBuildingBounds ();
+    profile.Add ("width", bounds.xMax - bounds.xMin);
+    profile.Add ("height", bounds.yMax - bounds.yMin);
+
+    API_AttributeDefExt profileDefs = {};
+    const bool hasDefs = IsPositiveAttributeIndex (profileAttr) && ACAPI_Attribute_GetDefExt (API_ProfileID, profileAttr, &profileDefs) == NoError;
+    const auto& modifiersList = profile.AddList<GS::ObjectState> ("profileModifiers");
+    for (const GS::ObjectState& modifier : GetProfileModifiers (stretchedProfile, hasDefs ? profileDefs.profile_vectorImageParameterNames : nullptr)) {
+        modifiersList (modifier);
+    }
+    if (hasDefs) {
+        ACAPI_DisposeAttrDefsHdlsExt (&profileDefs);
+    }
+    return profile;
+}
+
+GetProfileValuesOfElementsCommand::GetProfileValuesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetProfileValuesOfElementsCommand::GetName () const
+{
+    return "GetProfileValuesOfElements";
+}
+
+GS::Optional<GS::UniString> GetProfileValuesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetProfileValuesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "profileValuesOfElements": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ElementProfileValuesOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "profileValuesOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetProfileValuesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    if (!parameters.Get ("elements", elements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& profileValuesOfElements = response.AddList<GS::ObjectState> ("profileValuesOfElements");
+
+    for (const GS::ObjectState& item : elements) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            profileValuesOfElements (CreateErrorResponse (APIERR_BADPARS, "Missing 'elementId' parameter."));
+            continue;
+        }
+        const API_Guid elementGuid = GetGuidFromObjectState (*elementId);
+
+        API_Element element = {};
+        element.header.guid = elementGuid;
+        GSErrCode err = ACAPI_Element_Get (&element);
+        if (err != NoError) {
+            profileValuesOfElements (CreateErrorResponse (err, "Failed to get the element."));
+            continue;
+        }
+        const API_ElemTypeID typeId = GetElemTypeId (element.header);
+        if (typeId != API_WallID && typeId != API_BeamID && typeId != API_ColumnID) {
+            profileValuesOfElements (CreateErrorResponse (APIERR_BADELEMENTTYPE, "Not a wall, beam or column."));
+            continue;
+        }
+
+        GS::Array<GS::ObjectState> profiles;
+        API_ElementMemo memo = {};
+        const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        if (typeId == API_WallID) {
+            if (element.wall.modelElemStructureType == API_ProfileStructure) {
+                err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_StretchedProfile);
+                if (err != NoError) {
+                    profileValuesOfElements (CreateErrorResponse (err, "Failed to get the stretched profile of the wall."));
+                    continue;
+                }
+                if (memo.stretchedProfile != nullptr) {
+                    profiles.Push (GetElementProfileValue (*memo.stretchedProfile, element.wall.profileAttr, -1));
+                }
+            }
+        } else {
+            // A beam or column keeps a profile per Profile segment, each naming its segment.
+            const bool isBeam = typeId == API_BeamID;
+            err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_AssemblySegmentProfile | (isBeam ? APIMemoMask_BeamSegment : APIMemoMask_ColumnSegment));
+            if (err != NoError) {
+                profileValuesOfElements (CreateErrorResponse (err, "Failed to get the segment profiles of the element."));
+                continue;
+            }
+            const GSSize nSegments = isBeam
+                ? (memo.beamSegments == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType))
+                : (memo.columnSegments == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType));
+            const GSSize nProfiles = memo.assemblySegmentProfiles == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentProfiles)) / sizeof (API_AssemblySegmentProfileData);
+            for (GSSize i = 0; i < nProfiles; ++i) {
+                const API_AssemblySegmentProfileData& segmentProfile = memo.assemblySegmentProfiles[i];
+                if (segmentProfile.stretchedProfile == nullptr) {
+                    continue;
+                }
+                const GSSize segmentIndex = static_cast<GSSize> (segmentProfile.segmentIndex);
+                API_AttributeIndex profileAttr = APIInvalidAttributeIndex;
+                if (segmentIndex < nSegments) {
+                    profileAttr = isBeam
+                        ? memo.beamSegments[segmentIndex].assemblySegmentData.profileAttr
+                        : memo.columnSegments[segmentIndex].assemblySegmentData.profileAttr;
+                }
+                profiles.Push (GetElementProfileValue (*segmentProfile.stretchedProfile, profileAttr, static_cast<Int32> (segmentProfile.segmentIndex)));
+            }
+        }
+
+        GS::ObjectState result;
+        result.Add ("elementId", CreateGuidObjectState (elementGuid));
+        const auto& profilesList = result.AddList<GS::ObjectState> ("profiles");
+        for (const GS::ObjectState& profile : profiles) {
+            profilesList (profile);
+        }
+        profileValuesOfElements (result);
     }
 
     return response;

@@ -1,7 +1,7 @@
 # Tapir
 
 > Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad 25–30, by
-> ENZYME-APD and its community. It adds 641 JSON commands to Archicad's own JSON API, a palette
+> ENZYME-APD and its community. It adds 789 JSON commands to Archicad's own JSON API, a palette
 > that runs Python scripts in one click and a Grasshopper plugin (package `tapir` on the Rhino Package
 > Manager); community MCP servers let AI assistants drive Archicad through it. A new release ships
 > every Monday.
@@ -31,20 +31,26 @@ plugin send the same JSON. Every command, with its parameters and an example, is
 
 ## Docs
 
-- [Tapir - automation for Archicad](https://archicad-api.com/index.md): Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.
-- [Get started](https://archicad-api.com/start/index.md): Install Tapir, run a script from the Tapir palette in Archicad, add more scripts, write a first Python script and install the Grasshopper plugin.
-- [Docs](https://archicad-api.com/docs/index.md): Tapir's documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.
-- [Scripts](https://archicad-api.com/scripts/index.md): Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.
-- [Share a script](https://archicad-api.com/scripts/share/index.md): Share an Archicad script you wrote: send it on Discord or as a pull request, and it is checked, adapted to work in any office and listed with your name.
-- [Grasshopper](https://archicad-api.com/grasshopper/index.md): Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.
-- [Tapir and AI](https://archicad-api.com/ai/index.md): Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.
-- [Tutorials](https://archicad-api.com/tutorials/index.md): Videos that show Tapir at work in Archicad and Grasshopper: installing it, selecting elements, columns, Grasshopper, spreadsheet sync and filtering.
+- [Tapir – free Archicad automation: Python, JSON API, Grasshopper](https://archicad-api.com/index.md): Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.
+- [Automate Archicad with Python – get started | Tapir](https://archicad-api.com/start/index.md): Install Tapir, run a script from the Tapir palette in Archicad, add more scripts, write a first Python script and install the Grasshopper plugin.
+- [Archicad automation docs | Tapir](https://archicad-api.com/docs/index.md): Tapir's documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.
+- [Free Archicad Python scripts | Tapir](https://archicad-api.com/scripts/index.md): Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.
+- [Share an Archicad script | Tapir](https://archicad-api.com/scripts/share/index.md): Share an Archicad script you wrote: send it on Discord or as a pull request, and it is checked, adapted to work in any office and listed with your name.
+- [Archicad Grasshopper live connection | Tapir](https://archicad-api.com/grasshopper/index.md): Connect Grasshopper live to a running Archicad with the Tapir plugin: read, change and create Archicad elements from Rhino geometry, without writing code.
+- [Control Archicad with AI assistants (MCP) | Tapir](https://archicad-api.com/ai/index.md): Control Archicad with Claude and other AI assistants through Tapir: the Tapir MCP servers, a prompt to start with, and how to let an AI write a script.
+- [Archicad automation tutorials | Tapir](https://archicad-api.com/tutorials/index.md): Videos that show Tapir at work in Archicad and Grasshopper: installing it, selecting elements, columns, Grasshopper, spreadsheet sync and filtering.
+- [What the Archicad API can't do | Tapir](https://archicad-api.com/limits/index.md): What people ask for that Graphisoft's Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.
+- [Batch rename views in Archicad | Tapir](https://archicad-api.com/tutorials/batch-rename-views/index.md): Rename the views of the Archicad View Map in one go with a Tapir script: find and replace, a prefix and a suffix, or a pattern with a counter, checked first.
+- [Connect Grasshopper to Archicad | Tapir](https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/index.md): Install the Tapir Add-On and the tapir package for Rhino, then build a first Grasshopper definition that reads an Archicad wall and changes its height.
+- [Export Archicad element properties to Excel with Python | Tapir](https://archicad-api.com/tutorials/export-properties-to-excel/index.md): Write the property values of Archicad elements into an Excel or CSV file, one row per element, with a Tapir script; edit them in Excel and read them back.
+- [Your first Archicad Python script | Tapir](https://archicad-api.com/tutorials/first-python-script/index.md): Install Tapir, write a short Python script that calls one Tapir command through aclib, and run it from the Tapir palette in Archicad, no packages needed.
+- [Number doors and windows by room in Archicad | Tapir](https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/index.md): Give every Archicad door and window an Element ID from the zone it opens into, such as 1.04-D1, numbered within each zone, with a Tapir script.
 
 ## Project
 
-- [Community](https://archicad-api.com/community/index.md): Ask on Discord, report a bug, test a fix: how Tapir's community and its bots turn a report into a release.
-- [Roadmap](https://archicad-api.com/roadmap/index.md): How to ask for a feature in Tapir, what is being asked for now, and what shipped recently.
-- [About Tapir](https://archicad-api.com/about/index.md): Why Tapir exists, how it grew from Enzyme's R&D and Tibor Lorántfy's JSON template into an open-source project, the people behind it and how to support it.
+- [Community – Archicad automation with Tapir](https://archicad-api.com/community/index.md): Ask on Discord, report a bug, test a fix in your Archicad: how Tapir's community and its bots turn a report into a release, and how the project grew.
+- [Tapir roadmap – Archicad automation](https://archicad-api.com/roadmap/index.md): How to ask for a feature in Tapir, the Archicad add-on, what people are asking for now, what shipped from the old list and which ideas are still open.
+- [About Tapir – open-source Archicad add-on](https://archicad-api.com/about/index.md): Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme's R&D and Tibor Lorántfy's JSON template, who builds it and how to support it.
 
 ## Reference
 

@@ -741,51 +741,6 @@ static GS::ObjectState SetRoutingParameters (const GS::ObjectState& elementData)
 
 #endif
 
-// The schema of the routing parameters, shared by the response of GetMEPRoutingParameters.
-static const char* RoutingSegmentParametersReadSchema = R"({
-    "type": "object",
-    "description": "The routing segment default parameters of the routing element (RoutingElement::GetRoutingSegmentDefaultParameters).",
-    "properties": {
-        "crossSectionShape": { "$ref": "#/MEPCrossSectionShape" },
-        "crossSectionWidth": { "type": "number" },
-        "crossSectionHeight": { "type": "number" },
-        "crossSectionReferenceId": { "type": "integer" },
-        "preferenceTableId": { "$ref": "#/Guid" },
-        "anchor": { "type": "string" },
-        "referenceLineOffsetX": { "type": "number" },
-        "referenceLineOffsetY": { "type": "number" },
-        "wallThickness": { "type": "number" },
-        "flangeSize": { "type": "number" },
-        "connectionStyle": { "type": "string", "enum": [ "SimpleBody", "Flanged", "Welded" ] }
-    },
-    "additionalProperties": false,
-    "required": []
-})";
-
-static const char* ElbowParametersReadSchema = R"({
-    "type": "object",
-    "description": "Elbow parameters. Archicad 29 or newer.",
-    "properties": {
-        "factorRadius": { "type": "number" },
-        "preferenceTableId": { "$ref": "#/Guid" }
-    },
-    "additionalProperties": false,
-    "required": []
-})";
-
-static const char* TransitionParametersReadSchema = R"({
-    "type": "object",
-    "description": "Transition parameters. preferenceTableId is given from Archicad 29.",
-    "properties": {
-        "angle": { "type": "number" },
-        "offsetY": { "type": "number" },
-        "offsetZ": { "type": "number" },
-        "preferenceTableId": { "$ref": "#/Guid" }
-    },
-    "additionalProperties": false,
-    "required": []
-})";
-
 GetMEPRoutingParametersCommand::GetMEPRoutingParametersCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -815,7 +770,7 @@ GS::Optional<GS::UniString> GetMEPRoutingParametersCommand::GetInputParametersSc
 
 GS::Optional<GS::UniString> GetMEPRoutingParametersCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "routingParameters": {
@@ -825,56 +780,7 @@ GS::Optional<GS::UniString> GetMEPRoutingParametersCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "type": {
-                                    "type": "string",
-                                    "enum": [
-                                        "RoutingElement",
-                                        "RoutingNode",
-                                        "RoutingSegment"
-                                    ]
-                                },
-                                "routingNodeParameters": {
-                                    "type": "object",
-                                    "description": "The routing node default parameters of a routing element (RoutingElement::GetRoutingNodeDefaultParameters). The elbow is given from Archicad 29.",
-                                    "properties": {
-                                        "preferredTransitionPlacement": {
-                                            "type": "string",
-                                            "enum": [
-                                                "SmallToLarge",
-                                                "LargeToSmall"
-                                            ]
-                                        },
-                                        "elbow": )") + ElbowParametersReadSchema + R"(,
-                                        "transition": )" + TransitionParametersReadSchema + R"(
-                                    },
-                                    "additionalProperties": false,
-                                    "required": []
-                                },
-                                "routingSegmentParameters": )" + RoutingSegmentParametersReadSchema + R"(,
-                                "elbowParameters": )" + ElbowParametersReadSchema + R"(,
-                                "transitionParameters": )" + TransitionParametersReadSchema + R"(,
-                                "rigidSegmentParameters": {
-                                    "type": "object",
-                                    "description": "The rigid segment default parameters of a routing segment (RoutingSegment::GetRigidSegmentDefaultParameters). Archicad 28 only.",
-                                    "properties": {
-                                        "width": { "type": "number" },
-                                        "height": { "type": "number" },
-                                        "shape": { "$ref": "#/MEPCrossSectionShape" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": []
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId",
-                                "type"
-                            ]
+                            "$ref": "#/MEPRoutingParameters"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -974,91 +880,7 @@ GS::Optional<GS::UniString> SetMEPRoutingParametersCommand::GetInputParametersSc
                 "type": "array",
                 "description": "The routing parameters to change. Only the given keys are changed. An item gives either routingNodeParameters and/or routingSegmentParameters for a routing element, or elbowParameters and/or transitionParameters for a routing node.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "routingNodeParameters": {
-                            "type": "object",
-                            "description": "The routing node default parameters of a routing element (RoutingElement::Modifier::SetRoutingNodeDefaultParameters). Archicad 29 or newer.",
-                            "properties": {
-                                "elbow": {
-                                    "type": "object",
-                                    "properties": {
-                                        "factorRadius": { "type": "number" },
-                                        "preferenceTableId": {
-                                            "$ref": "#/Guid",
-                                            "description": "An elbow preference table, as returned by GetMEPPreferenceTables."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": []
-                                },
-                                "transition": {
-                                    "type": "object",
-                                    "properties": {
-                                        "preferenceTableId": {
-                                            "$ref": "#/Guid",
-                                            "description": "A transition preference table, as returned by GetMEPPreferenceTables."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": []
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": []
-                        },
-                        "routingSegmentParameters": {
-                            "type": "object",
-                            "description": "The routing segment default parameters of a routing element (RoutingElement::Modifier::SetRoutingSegmentDefaultParameters).",
-                            "properties": {
-                                "crossSectionShape": { "$ref": "#/MEPCrossSectionShape" },
-                                "crossSectionWidth": { "type": "number" },
-                                "crossSectionHeight": { "type": "number" },
-                                "crossSectionReferenceId": {
-                                    "type": "integer",
-                                    "description": "Cross section reference id of the segment preference table. Resolved against preferenceTableId if given, otherwise against the table already set."
-                                },
-                                "preferenceTableId": {
-                                    "$ref": "#/Guid",
-                                    "description": "A segment preference table, as returned by GetMEPPreferenceTables."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": []
-                        },
-                        "elbowParameters": {
-                            "type": "object",
-                            "description": "The elbow parameters of a routing node (RoutingNode::Modifier::SetElbowDefaultParameters). Archicad 29 or newer.",
-                            "properties": {
-                                "factorRadius": { "type": "number" },
-                                "preferenceTableId": {
-                                    "$ref": "#/Guid",
-                                    "description": "An elbow preference table, as returned by GetMEPPreferenceTables."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": []
-                        },
-                        "transitionParameters": {
-                            "type": "object",
-                            "description": "The transition parameters of a routing node (RoutingNode::Modifier::SetTransitionDefaultParameters). Archicad 29 or newer.",
-                            "properties": {
-                                "preferenceTableId": {
-                                    "$ref": "#/Guid",
-                                    "description": "A transition preference table, as returned by GetMEPPreferenceTables."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": []
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElementMEPRoutingParameters"
                 }
             }
         },

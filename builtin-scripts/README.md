@@ -92,9 +92,11 @@ these parts, in this order:
 
    `changes` says what running the script can change: `model` (anything in the project), `files`
    (it only writes files) or `read-only` (nothing). The palette shows it as *Changes the model*,
-   *Writes files* or *Read only*; when in doubt, write `model`. A built-in script needs only
-   `changes`. A [marketplace](#sharing-your-script) script also needs `category` (one of the
-   [marketplace's categories](../marketplace/README.md#categories)), `archicad-versions` (the
+   *Writes files* or *Read only*; when in doubt, write `model`. `category` is one of the
+   [marketplace's categories](../marketplace/README.md#categories); the palette groups the scripts
+   by it, and a script without one is listed under *Other*. A built-in script needs `changes` and
+   `category` (the category of its marketplace copy, when it has one). A
+   [marketplace](#sharing-your-script) script also needs `archicad-versions` (the
    Archicad versions it works in) and `min-tapir-version` (the newest of the versions the
    [command reference](https://archicad-api.com/archicad-addon/) shows
    for the Tapir commands it uses). [marketplace/README.md](../marketplace/README.md#the-scripts-headers)
@@ -214,7 +216,10 @@ it, download the script into a folder on your computer and add that folder to `l
 ```
 
 On macOS the path looks like `/Users/me/Documents/Tapir scripts`. A marketplace folder holds no
-copies of `utilities/` or `aclib/`, so a script that imports them needs copies of those folders next
-to it. Then choose *Reload scripts...* in the palette: the script appears as
+copies of `utilities/` or `aclib/`. With a Tapir Add-On newer than 2.0.0 that is fine: the palette
+runs every Python script with the folder of the built-in scripts it downloaded on `PYTHONPATH`, so a
+script that imports them finds the palette's copies (copies next to the script are still used
+first). With 2.0.0 or older, copy `utilities/` and `aclib/` from `builtin-scripts/` next to the
+script, otherwise it stops with "No module named 'utilities'". Then choose *Reload scripts...* in the palette: the script appears as
 `<file name> (Marketplace)`. The website's [Get started](https://archicad-api.com/start/#marketplace)
 page shows the same steps.

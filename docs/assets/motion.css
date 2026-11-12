@@ -1,7 +1,17 @@
 /* Motion prototype: the drawing set comes alive as you scroll. Everything here is gated by
-   html.motion (set by motion.js) and switched off by prefers-reduced-motion, so the page never
-   renders blank without JavaScript. */
-:root { --ease: cubic-bezier(.2, .8, .2, 1) }
+   html.motion (set by motion.js) and switched off by the Display menu's Motion Reduced, or by
+   prefers-reduced-motion unless Motion is Full, so the page never renders blank without JavaScript. */
+:root { --ease: cubic-bezier(.2, .8, .2, 1);
+    /* The colours, textures, shadows and font drawn here (the palette is site.css's): the crosshair,
+       the terminal's live dot, the header's scroll shadow, the button's sheen and the splash. */
+    --ochre-light-28: rgba(212, 168, 118, .28); --signal: #7FB77E; --signal-60: rgba(127, 183, 126, .6);
+    --shadow-header: 0 6px 18px -8px rgba(0, 0, 0, .45);
+    --sheen: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .45) 50%, transparent 70%);
+    --cream-05: rgba(244, 241, 234, .05);
+    --texture-splash: linear-gradient(var(--cream-05) 1px, transparent 1px), linear-gradient(90deg, var(--cream-05) 1px, transparent 1px);
+    --splash-font: "Fraunces", Georgia, serif;
+    /* The Tapir mark in cream (a data URL cannot take a property, so the colour is in it). */
+    --splash-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23F4F1EA'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") }
 
 /* 1. Scroll reveal, staggered within a group */
 .motion .rv { opacity: 0; transform: translateY(22px); transition: opacity .7s var(--ease), transform .7s var(--ease); transition-delay: var(--d, 0s) }
@@ -30,17 +40,23 @@
 @keyframes m-grid { to { background-position: 240px 240px } }
 
 /* 4. Cursor coordinates in the page head, like a CAD crosshair (mouse only) */
-.m-coords { position: absolute; pointer-events: none; font: 500 11px var(--mono); color: var(--ochre-light); opacity: 0; transition: opacity .2s; white-space: nowrap; transform: translate(14px, 14px); z-index: 2 }
-.m-cross-x, .m-cross-y { position: absolute; pointer-events: none; background: rgba(212, 168, 118, .28); opacity: 0; transition: opacity .2s; z-index: 1 }
+.m-coords { position: absolute; pointer-events: none; font: 500 .6875rem var(--mono); color: var(--ochre-light); opacity: 0; transition: opacity .2s; white-space: nowrap; transform: translate(14px, 14px); z-index: 2 }
+.m-cross-x, .m-cross-y { position: absolute; pointer-events: none; background: var(--ochre-light-28); opacity: 0; transition: opacity .2s; z-index: 1 }
 .m-cross-x { left: 0; right: 0; height: 1px } .m-cross-y { top: 0; bottom: 0; width: 1px }
 .page-head.m-hover .m-coords, .page-head.m-hover .m-cross-x, .page-head.m-hover .m-cross-y { opacity: 1 }
 
 /* 5. Figures count up (motion.js), and their number gets a short ochre underline */
 .motion .figures strong { display: inline-block }
 
-/* 6. Timeline: a moss line is drawn down the steps as you scroll */
+/* 6. Timeline, Legacy look only: under each step's number an ochre segment runs down to 12px above
+   the next number and fills as you scroll to that step. It is placed in the number column (grid
+   column 1, so it is centred at every width), and motion.js measures where it starts and ends
+   (--seg-top, --seg-h) from the numbers and how far it is filled (--prog). The Standard look has none. */
 .motion .timeline { position: relative }
-.motion .timeline::before { content: ""; position: absolute; left: 23px; top: 70px; bottom: 20px; width: 2px; background: linear-gradient(var(--ochre), var(--ochre)) no-repeat; background-size: 2px var(--prog, 0%); opacity: .5 }
+:root[data-style="legacy"].motion .timeline > li { position: relative }
+:root[data-style="legacy"].motion .timeline > li:not(:last-child)::after { content: ""; position: absolute; grid-column: 1 / 2; grid-row: auto;
+    left: 50%; top: var(--seg-top, 0); width: 2px; height: var(--seg-h, 0); transform: translateX(-50%); pointer-events: none;
+    background: linear-gradient(var(--ochre), var(--ochre)) no-repeat; background-size: 2px var(--prog, 0%); opacity: .5 }
 .motion .timeline .n { transition: transform .6s var(--ease), color .4s } .motion .timeline > li.rv:not(.in) .n { transform: scale(.6) }
 
 /* 7. Terminal: the code is typed in line by line once it is on screen */
@@ -48,16 +64,16 @@
 .motion .term pre .ln.on { opacity: 1; transform: none }
 .motion .term pre .caret { display: inline-block; width: 7px; height: 1.1em; background: var(--ochre-light); vertical-align: -.2em; animation: m-blink 1s steps(1) infinite }
 @keyframes m-blink { 50% { opacity: 0 } }
-.motion .term .bar::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #7FB77E; margin-right: 8px; vertical-align: 1px; animation: m-ping 2.4s infinite }
-@keyframes m-ping { 0% { box-shadow: 0 0 0 0 rgba(127, 183, 126, .6) } 80%, 100% { box-shadow: 0 0 0 7px transparent } }
+.motion .term .bar::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--signal); margin-right: 8px; vertical-align: 1px; animation: m-ping 2.4s infinite }
+@keyframes m-ping { 0% { box-shadow: 0 0 0 0 var(--signal-60) } 80%, 100% { box-shadow: 0 0 0 7px transparent } }
 
 /* 8. Header: a shadow once the page scrolls */
 .site-header { transition: box-shadow .25s }
-.site-header.m-scrolled { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .45) }
+.site-header.m-scrolled { box-shadow: var(--shadow-header) }
 
 /* 9. Buttons and links: the arrow nudges, the primary button gets a sheen */
 .btn-primary { position: relative; overflow: hidden }
-.btn-primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .45) 50%, transparent 70%); transform: translateX(-120%); transition: transform .7s var(--ease) }
+.btn-primary::after { content: ""; position: absolute; inset: 0; background: var(--sheen); transform: translateX(-120%); transition: transform .7s var(--ease) }
 .btn-primary:hover::after { transform: translateX(120%) }
 .way > a::after, .way .go-links a::after, .teaser .go { display: inline-block; transition: transform .2s ease }
 .way > a:hover::after, .way .go-links a:hover::after { transform: translateX(4px) }
@@ -68,22 +84,29 @@
 .motion .stack .wire { background: linear-gradient(90deg, transparent, var(--ochre), transparent) no-repeat; background-size: 30% 1px; background-position: -40% 100%; animation: m-wire 2.6s linear infinite; padding-bottom: 4px }
 @keyframes m-wire { to { background-position: 140% 100% } }
 
+/* Less motion (the Display menu's Motion, see site.css): under System when the system asks for it, unless
+   Full is chosen, and always with Reduced, which also keeps the arrows and the play button still on hover
+   (motion.js does not run then, so html.motion is not set). */
 @media (prefers-reduced-motion: reduce) {
-    .motion .rv, .motion .dim::before, .motion .dim::after, .motion .dim i, .motion .dim span, .motion .term pre .ln { opacity: 1 !important; transform: none !important }
-    .m-coords, .m-cross-x, .m-cross-y { display: none }
+    :root:not([data-motion="full"]) .motion .rv, :root:not([data-motion="full"]) .motion .dim::before, :root:not([data-motion="full"]) .motion .dim::after,
+    :root:not([data-motion="full"]) .motion .dim i, :root:not([data-motion="full"]) .motion .dim span, :root:not([data-motion="full"]) .motion .term pre .ln { opacity: 1 !important; transform: none !important }
+    :root:not([data-motion="full"]) .m-coords, :root:not([data-motion="full"]) .m-cross-x, :root:not([data-motion="full"]) .m-cross-y { display: none }
 }
+:root[data-motion="reduced"] .m-coords, :root[data-motion="reduced"] .m-cross-x, :root[data-motion="reduced"] .m-cross-y, :root[data-motion="reduced"] .btn-primary::after { display: none }
+:root[data-motion="reduced"] .way > a:hover::after, :root[data-motion="reduced"] .way .go-links a:hover::after, :root[data-motion="reduced"] .teaser:hover .go,
+:root[data-motion="reduced"] .video:hover .play { transform: none }
 
 /* 11. Splash on the first page of a visit: the Tapir mark and name wait in the middle of a moss
    screen, an ochre pen line plots under them while the page loads, then they fly into the header.
    The inline script in <head> sets html.m-splash before the first paint; motion.js lifts it. The
    splash is the header's brand at 7/3 of its size (24 px name, 30 px mark, 10 px gap). If the
    script never runs, it fades out by itself after 5 s. */
-html.m-splash::before { content: ""; position: fixed; inset: 0; background: #2D3A30; z-index: 1000;
-    background-image: linear-gradient(rgba(244, 241, 234, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .05) 1px, transparent 1px);
+html.m-splash::before { content: ""; position: fixed; inset: 0; background: var(--moss); z-index: 1000;
+    background-image: var(--texture-splash);
     background-size: 24px 24px; animation: m-splash-gone .4s ease 5s forwards }
 html.m-splash::after { content: "Tapir"; position: fixed; left: 50%; top: 50%; z-index: 1001; transform: translate(-50%, -50%);
-    font: 900 56px/1 "Fraunces", Georgia, serif; font-variation-settings: "opsz" 24; color: #F4F1EA; padding: .3em 0 .3em 1.667em; white-space: nowrap; box-sizing: content-box; width: 2.8122em; /* "Tapir" in Fraunces 900, opsz 24: the box, and so the mark, stays put while the font loads */
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23F4F1EA'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") no-repeat left center / 1.25em, linear-gradient(#D4A876, #D4A876) no-repeat left bottom / 0% 3px;
+    font: 900 56px/1 var(--splash-font); font-variation-settings: "opsz" 24; color: var(--cream); padding: .3em 0 .3em 1.667em; white-space: nowrap; box-sizing: content-box; width: 2.8122em; /* "Tapir" in Fraunces 900, opsz 24: the box, and so the mark, stays put while the font loads */
+    background: var(--splash-mark) no-repeat left center / 1.25em, linear-gradient(var(--ochre-light), var(--ochre-light)) no-repeat left bottom / 0% 3px;
     transition: color .35s ease;
     animation: m-splash-in .5s cubic-bezier(.2, .8, .2, 1) both, m-splash-load 1.4s cubic-bezier(.6, 0, .2, 1) .3s infinite, m-splash-gone .4s ease 5s forwards }
 @keyframes m-splash-in { from { opacity: 0; transform: translate(-50%, -40%) } }
@@ -112,3 +135,40 @@ html.m-splash:not(.m-font)::after { color: transparent }
 /* While the splash is up, the page's own entrance waits so it plays as the splash lifts. */
 .m-hold .page-head h1, .m-hold .page-head .h1, .m-hold .page-head p, .m-hold .page-head .crumb, .m-hold .page-head h1::after, .m-hold .page-head h1::before, .m-hold .page-head .h1::after, .m-hold .page-head .h1::before { animation-play-state: paused }
 html.m-splash.m-fade::after { opacity: 0; transition: opacity .4s ease }
+
+/* The Standard look (see the end of site.css): the accent instead of ochre, no grid, a soft header
+   shadow, and a plain splash: the page background with the name in ink, set in Inter 700 like the
+   header's brand. The mark is never recoloured with a filter (#2476, 3a): in Light it is
+   tapir_mark_moss.svg (inlined here, the mark in moss, #2515), as the header shows it, so it lands on
+   the header's mark; in Dark it stays the cream mark. Inter has no optical sizes, so the box takes the name's own width (motion.js
+   measures it when the splash lifts) instead of the fixed width of the Fraunces name. */
+:root:not([data-style="legacy"]) {
+    --ochre-light-28: rgba(31, 107, 78, .28); --signal: #4CB88A; --signal-60: rgba(76, 184, 138, .6);
+    --shadow-header: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06); --texture-splash: none;
+    --splash-font: var(--body);
+    --splash-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%232D3A30'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") }
+:root:not([data-style="legacy"])[data-theme="dark"] { --shadow-header: none;
+    --splash-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23F4F1EA'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) { --shadow-header: none;
+    --splash-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23F4F1EA'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") } }
+/* High contrast (see site.css): no header shadow, the crosshair in the link blue. */
+:root:not([data-style="legacy"])[data-theme="contrast"] { --shadow-header: none; --ochre-light-28: rgba(11, 79, 168, .28) }
+:root:not([data-style="legacy"]).m-splash::before { background-color: var(--bg) }
+:root:not([data-style="legacy"]).m-splash::after { font-weight: 700; font-variation-settings: normal; width: auto; color: var(--fg);
+    background: var(--splash-mark) no-repeat left center / 1.25em, linear-gradient(var(--link), var(--link)) no-repeat left bottom / 0% 3px }
+:root:not([data-style="legacy"]).m-splash:not(.m-font)::after { color: transparent }
+:root:not([data-style="legacy"]).m-splash.m-fly::after { background-size: 1.25em, 0% 3px }
+:root:not([data-style="legacy"]) .motion .page-head h1::after, :root:not([data-style="legacy"]) .motion .page-head .h1::after,
+:root:not([data-style="legacy"]) .motion .page-head h1::before, :root:not([data-style="legacy"]) .motion .page-head .h1::before { background: var(--link) }
+:root:not([data-style="legacy"]) .motion .term pre .caret { background: var(--pre-focus) }
+/* The terminal's dot is the accent (#2509); its ping fades out from the dot's own colour. */
+:root:not([data-style="legacy"]) .motion .term .bar::before { background: var(--link); animation-name: m-ping-accent }
+@keyframes m-ping-accent { 0% { box-shadow: 0 0 0 0 var(--link) } 80%, 100% { box-shadow: 0 0 0 7px transparent } }
+:root:not([data-style="legacy"]) .m-coords { color: var(--link) }
+:root:not([data-style="legacy"]) .motion .page-head { animation: none }
+:root:not([data-style="legacy"]) .motion .stack .wire { background-image: linear-gradient(90deg, transparent, var(--accent-fill), transparent) }
+/* The Display menu's Font (see site.css): the splash draws the name in the chosen font. In Legacy that
+   is not Fraunces (which is then not loaded), so, like Standard's, the box takes the name's own width.
+   The splash stays 56 px whatever the Text size, like the header's brand it lands on. */
+:root[data-style="legacy"][data-font] { --splash-font: var(--display) }
+:root[data-style="legacy"][data-font].m-splash::after { font-variation-settings: normal; width: auto }

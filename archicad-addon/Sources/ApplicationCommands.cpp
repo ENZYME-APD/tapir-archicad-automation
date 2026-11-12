@@ -481,22 +481,7 @@ GS::Optional<GS::UniString> GetPrinterAndPlotterInfoCommand::GetRawResponseSchem
                 "description": "The printer selected in Archicad, or an error when it cannot be read.",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the selected printer."
-                            },
-                            "portrait": {
-                                "type": "boolean",
-                                "description": "The selected orientation: true for portrait, false for landscape."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "name",
-                            "portrait"
-                        ]
+                        "$ref": "#/PrinterInfo"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -508,22 +493,7 @@ GS::Optional<GS::UniString> GetPrinterAndPlotterInfoCommand::GetRawResponseSchem
                 "description": "The plotter selected in Archicad, or an error when it cannot be read.",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the selected plotter."
-                            },
-                            "model": {
-                                "type": "string",
-                                "description": "The model of the selected plotter."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "name",
-                            "model"
-                        ]
+                        "$ref": "#/PlotterInfo"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -892,7 +862,10 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         }
 
         API_NavigatorItem navigatorItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
+        if (err == APIERR_BADID) {
+            return CreateFailedExecutionResult (err, "navigatorItemId is not an item of the Navigator. The databaseId of a window (e.g. as CreateLayout returns it) goes in databaseId.");
+        }
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to get navigator item from guid");
         }
@@ -1188,21 +1161,7 @@ GS::Optional<GS::UniString> CloseWindowsCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "The windows to close.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "databaseId": {
-                            "$ref": "#/DatabaseId",
-                            "description": "The database shown in the window, as GetDatabases, GetContainingDatabases or GetDatabaseIdFromNavigatorItemId return it."
-                        },
-                        "windowType": {
-                            "$ref": "#/WindowType",
-                            "description": "Optional. When given, the window is only closed when its database is of this type."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "databaseId"
-                    ]
+                    "$ref": "#/WindowToClose"
                 }
             }
         },
@@ -2265,8 +2224,7 @@ GS::Optional<GS::UniString> RunActionCenterChecksCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The Action Center checks to run, in this order. Omitted means [\"Hotlinks\"]. \"Hotlinks\" is available on every Archicad version; \"All\", \"Libraries\", \"Drawings\" and \"Licenses\" only on Archicad 25, later versions return an error for them in their execution result.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Hotlinks", "All", "Libraries", "Drawings", "Licenses"]
+                    "$ref": "#/ActionCenterCheck"
                 },
                 "minItems": 1
             }
@@ -2387,7 +2345,7 @@ GS::ObjectState RedrawCurrentDatabaseCommand::Execute (const GS::ObjectState& /*
 // ---------------------------------------------------------------------------
 
 GetProductVersionInfoCommand::GetProductVersionInfoCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -2447,8 +2405,7 @@ GS::Optional<GS::UniString> GetProductVersionInfoCommand::GetRawResponseSchema (
             "availableDomains": {
                 "type": "array",
                 "items": {
-                    "type": "string",
-                    "enum": ["Architecture", "MEP"]
+                    "$ref": "#/ProductDomain"
                 },
                 "description": "The domains available in the running Archicad. Archicad 29 or later."
             },
@@ -2636,6 +2593,23 @@ GS::Optional<GS::UniString> Set3DCutawayStatusCommand::GetRawResponseSchema () c
     })";
 }
 
+GSErrCode Set3DCutawayEnabled (bool enabled)
+{
+#ifdef TAPIR_HAS_CUTTING_PLANE
+    auto cuttingPlane = ACAPI::Cutaway::GetCuttingPlane ();
+    if (cuttingPlane.IsErr ()) {
+        return cuttingPlane.UnwrapErr ().kind;
+    }
+    auto result = cuttingPlane->Set3DCutawayStatus (enabled);
+    return result.IsErr () ? result.UnwrapErr ().kind : NoError;
+#elif !defined (ServerMainVers_2800)
+    return ACAPI_CuttingPlane_Set3DCutawayStatus (&enabled);
+#else
+    UNUSED_PARAMETER (enabled);
+    return APIERR_NOTSUPPORTED;
+#endif
+}
+
 GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef TAPIR_HAS_CUTTING_PLANE
@@ -2646,9 +2620,9 @@ GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& param
 
     bool cutawayEnabled = false;
     if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
-        auto result = cuttingPlane->Set3DCutawayStatus (cutawayEnabled);
-        if (result.IsErr ()) {
-            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to turn 3D Cutaway on or off.");
+        GSErrCode err = Set3DCutawayEnabled (cutawayEnabled);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to turn 3D Cutaway on or off.");
         }
     }
 
@@ -2665,7 +2639,7 @@ GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& param
     // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
     bool cutawayEnabled = false;
     if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
-        GSErrCode err = ACAPI_CuttingPlane_Set3DCutawayStatus (&cutawayEnabled);
+        GSErrCode err = Set3DCutawayEnabled (cutawayEnabled);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to turn 3D Cutaway on or off. Is the 3D window open?");
         }
@@ -3488,10 +3462,7 @@ GS::Optional<GS::UniString> GetPolygonFromUserCommand::GetInputParametersSchema 
                 "default": "Click polygon nodes and finish the input"
             },
             "method": {
-                "type": "string",
-                "description": "Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.",
-                "enum": ["General", "Rect", "RotRect", "Polyline"],
-                "default": "General"
+                "$ref": "#/PolygonInputMethod"
             },
             "snapFilter": {
                 "$ref": "#/SnapFilter",
@@ -3805,22 +3776,7 @@ GS::Optional<GS::UniString> ModelToScreenCommand::GetRawResponseSchema () const
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "h": {
-                                    "type": "integer",
-                                    "description": "Horizontal pixel position from the left edge of the view window."
-                                },
-                                "v": {
-                                    "type": "integer",
-                                    "description": "Vertical pixel position from the top edge of the view window."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "h",
-                                "v"
-                            ]
+                            "$ref": "#/ScreenPoint"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3892,26 +3848,7 @@ GS::Optional<GS::UniString> ScreenToModelCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Pixel positions local to the current Archicad view window (not global desktop coordinates).",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "h": {
-                            "type": "integer",
-                            "description": "Horizontal pixel position from the left edge of the view window.",
-                            "minimum": -32768,
-                            "maximum": 32767
-                        },
-                        "v": {
-                            "type": "integer",
-                            "description": "Vertical pixel position from the top edge of the view window.",
-                            "minimum": -32768,
-                            "maximum": 32767
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "h",
-                        "v"
-                    ]
+                    "$ref": "#/ScreenPointInput"
                 }
             }
         },

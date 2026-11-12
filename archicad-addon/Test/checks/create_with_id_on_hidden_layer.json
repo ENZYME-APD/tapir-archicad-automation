@@ -1,0 +1,91 @@
+{
+  "title": "Create commands with an id on a hidden layer refuse the item and leave no element behind (#2632)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Column", "Morph" ],
+  "steps": [
+    {
+      "id": "a hidden layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check hidden layer 2632", "isHidden": true, "isLocked": false }
+        ],
+        "overwriteExisting": true
+      },
+      "save": { "hiddenLayer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "index of the hidden layer",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${hiddenLayer}" } } ]
+      },
+      "save": { "hiddenIndex": "layers[0].index" },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": true, "name": "the layer is hidden" }
+      ]
+    },
+    {
+      "id": "a column with an id on the hidden layer, and one with an id on layer 1",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          { "id": "CHK-2632-HIDDEN", "layerIndex": "${hiddenIndex}", "floorIndex": 0, "coordinates": { "x": 920.0, "y": 920.0, "z": 0.0 } },
+          { "id": "CHK-2632-SHOWN", "layerIndex": 1, "floorIndex": 0, "coordinates": { "x": 925.0, "y": 920.0, "z": 0.0 } }
+        ]
+      },
+      "save": { "shownColumn": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 2 },
+        { "path": "elements[0].error.code", "exists": true, "name": "column on the hidden layer refused" },
+        { "path": "elements[0].error.message", "contains": "hidden", "name": "the error says the layer is hidden" },
+        { "path": "elements[0].elementId", "exists": false, "name": "no guid for the refused column" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "column on a shown layer created" }
+      ]
+    },
+    {
+      "id": "only the column on the shown layer exists",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Column" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "no column left behind on the hidden layer" },
+        { "path": "elements[0].elementId.guid", "eq": "${shownColumn}", "name": "the remaining column is the one on the shown layer" }
+      ]
+    },
+    {
+      "id": "the column on the shown layer has its id",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${shownColumn}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].id", "eq": "CHK-2632-SHOWN", "name": "id applied" }
+      ]
+    },
+    {
+      "id": "a morph with an id on the hidden layer",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          { "id": "CHK-2632-MORPH", "layerIndex": "${hiddenIndex}", "floorIndex": 0, "basePoint": { "x": 930.0, "y": 920.0, "z": 0.0 }, "size": { "x": 1.0, "y": 1.0, "z": 1.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error.code", "exists": true, "name": "morph on the hidden layer refused" },
+        { "path": "elements[0].error.message", "contains": "hidden", "name": "the error says the layer is hidden" }
+      ]
+    },
+    {
+      "id": "no morph left behind",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Morph" },
+      "expect": [
+        { "path": "elements", "len": 0, "name": "no morph left behind on the hidden layer" }
+      ]
+    }
+  ]
+}

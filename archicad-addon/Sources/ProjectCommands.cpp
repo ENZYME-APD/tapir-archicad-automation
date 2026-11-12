@@ -247,7 +247,25 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
     // parameter." Passing an empty UniString instead does not clear it.
     const bool clearTheField = projectInfoValue.IsEmpty ();
 
-    GSErrCode err = ACAPI_AutoText_SetAnAutoText (&projectInfoId,
+    // ACAPI_AutoText_SetAnAutoText reports success for an id that is not in the project,
+    // so look the id up in the autotext list first.
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    GSErrCode err = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve project information fields.");
+    }
+    bool fieldFound = false;
+    for (const auto& autoText : autoTexts) {
+        if (autoText[1] == projectInfoId) {
+            fieldFound = true;
+            break;
+        }
+    }
+    if (!fieldFound) {
+        return CreateErrorResponse (APIERR_BADPARS, "The project information field does not exist.");
+    }
+
+    err = ACAPI_AutoText_SetAnAutoText (&projectInfoId,
                                                   clearTheField ? nullptr : &projectInfoValue);
     if (err != NoError) {
         return CreateErrorResponse (err, clearTheField
@@ -904,25 +922,7 @@ GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetRawResponseSchema () con
                 "type": "array",
                 "description": "The autotexts available in the notes of the given owner type, in ascending order of autotextId.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "autotextId": {
-                            "type": "integer",
-                            "description": "The numeric value of the autotext's API_NoteAutotextID in the Archicad API."
-                        },
-                        "elementTypes": {
-                            "type": "array",
-                            "description": "The element types the autotext is available for.",
-                            "items": {
-                                "$ref": "#/ElementType"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "autotextId",
-                        "elementTypes"
-                    ]
+                    "$ref": "#/NoteAutotextDetails"
                 }
             }
         },
@@ -1885,22 +1885,7 @@ GS::Optional<GS::UniString> RenameProjectInfoGroupsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "The Project Info groups to rename, each with its new name.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the group. It must not be used by another group.",
-                            "minLength": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoGroupId",
-                        "name"
-                    ]
+                    "$ref": "#/ProjectInfoGroupRename"
                 },
                 "minItems": 1
             }
@@ -2036,20 +2021,7 @@ GS::Optional<GS::UniString> MoveProjectInfoGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The Project Info groups to move, in the order the moves are made.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId"
-                        },
-                        "beforeProjectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId",
-                            "description": "The group to move the group before. When omitted, the group is moved to the end of the group list."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoGroupId"
-                    ]
+                    "$ref": "#/ProjectInfoGroupMove"
                 },
                 "minItems": 1
             }
@@ -2920,34 +2892,8 @@ static bool IsFileOfOpenProject (const IO::Location& location)
         projectInfo.location->ToDisplayText ().Compare (location.ToDisplayText (), CaseInsensitive) == GS::UniString::Equal;
 }
 
-GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GSErrCode SaveOpenProjectInPlace ()
 {
-    GS::UniString projectPath;
-    if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
-        IO::Location fileLoc (projectPath);
-        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, fileLoc);
-        if (!overwriteRefusal.IsEmpty ()) {
-            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
-        }
-        // The project's own file takes the plain save below: a Save As to its own location would
-        // also overwrite a project that Archicad opened read-only, which the plain save refuses.
-        if (!IsFileOfOpenProject (fileLoc)) {
-            API_FileSavePars fsp = {};
-            fsp.fileTypeID = APIFType_PlanFile;
-            fsp.file = &fileLoc;
-            GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
-            if (err != NoError) {
-                return CreateFailedExecutionResult (err, "Failed to save the project to the given path.");
-            }
-            return CreateSuccessfulExecutionResult ();
-        }
-    } else {
-        bool overwrite = true;
-        if (parameters.Get ("overwrite", overwrite) && !overwrite) {
-            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite false needs projectPath: a save in place always overwrites the project's own file, nothing was written.");
-        }
-    }
-
     // The parameterless save acts on the current window - "saves the content of
     // the current window", ACAPI_Automate.h - so from a 3D, section or other
     // non-plan window it tries to save that window's content, which has no file
@@ -2975,9 +2921,54 @@ GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, 
         }
     });
 
-    const GSErrCode err = ACAPI_ProjectOperation_Save ();
+    return ACAPI_ProjectOperation_Save ();
+}
+
+// Why a save in place failed, from the errors ACAPI_ProjectOperation_Save documents. The message
+// names the code too, because some clients show only an error's message.
+static GS::UniString DescribeSaveInPlaceFailure (GSErrCode err)
+{
+    switch (err) {
+        case APIERR_READONLY:
+            return "Failed to save the project (APIERR_READONLY): it is open read-only (from an archive, or a file that is locked or open elsewhere) or has never been saved; save it to a new file with projectPath. A save from another window than the Floor Plan also fails this way when the Floor Plan window could not be activated.";
+        case APIERR_REFUSEDCMD:
+            return "Failed to save the project (APIERR_REFUSEDCMD): Archicad refused the command, as it does while another add-on command or an unfinished input such as a selection rectangle is running. Try again when Archicad is idle.";
+        default:
+            return GS::UniString::Printf ("Failed to save the project (error code %d).", err);
+    }
+}
+
+GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString projectPath;
+    if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
+        IO::Location fileLoc (projectPath);
+        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, fileLoc);
+        if (!overwriteRefusal.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+        }
+        // The project's own file takes the plain save below: a Save As to its own location would
+        // also overwrite a project that Archicad opened read-only, which the plain save refuses.
+        if (!IsFileOfOpenProject (fileLoc)) {
+            API_FileSavePars fsp = {};
+            fsp.fileTypeID = APIFType_PlanFile;
+            fsp.file = &fileLoc;
+            GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to save the project to the given path (error code %d).", err));
+            }
+            return CreateSuccessfulExecutionResult ();
+        }
+    } else {
+        bool overwrite = true;
+        if (parameters.Get ("overwrite", overwrite) && !overwrite) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite false needs projectPath: a save in place always overwrites the project's own file, nothing was written.");
+        }
+    }
+
+    const GSErrCode err = SaveOpenProjectInPlace ();
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to save the project.");
+        return CreateFailedExecutionResult (err, DescribeSaveInPlaceFailure (err));
     }
     return CreateSuccessfulExecutionResult ();
 }
@@ -7919,17 +7910,7 @@ GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The source files of hotlinks of the project, for example the location of each node GetHotlinks returns.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "location": {
-                            "type": "string",
-                            "description": "Absolute path of the hotlink's source file."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "location"
-                    ]
+                    "$ref": "#/HotlinkSourceReference"
                 }
             }
         },
@@ -7952,25 +7933,7 @@ GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "enum": [
-                                        "AuthCanceld",
-                                        "SourceMissing",
-                                        "SourceAvailable",
-                                        "SourceNotAccessible",
-                                        "SourceIncompatible",
-                                        "SourceOffline"
-                                    ],
-                                    "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status"
-                            ]
+                            "$ref": "#/HotlinkSourceStatusResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -8098,39 +8061,7 @@ GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The values to convert.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "value": {
-                            "type": "number",
-                            "description": "The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference."
-                        },
-                        "preference": {
-                            "type": "string",
-                            "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
-                            "enum": [
-                                "WorkModel",
-                                "WorkLayout",
-                                "WorkAngle",
-                                "DimLinear",
-                                "DimAngle",
-                                "DimRadial",
-                                "DimLevel",
-                                "DimElevation",
-                                "DimDoorWindow",
-                                "DimParapet",
-                                "DimArea",
-                                "CalcLength",
-                                "CalcArea",
-                                "CalcVolume",
-                                "CalcAngle"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "value",
-                        "preference"
-                    ]
+                    "$ref": "#/UnitValueConversionData"
                 }
             }
         },
@@ -8153,27 +8084,7 @@ GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetRawResponseSchema () co
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "convertedValue": {
-                                    "type": "string",
-                                    "description": "The value as Archicad shows it in the unit of the preference, without the extra accuracy decimals. It may contain the unit."
-                                },
-                                "extraAccuracy": {
-                                    "type": "string",
-                                    "description": "The extra accuracy decimals, if any (at most two). Empty when there are none."
-                                },
-                                "unit": {
-                                    "type": "string",
-                                    "description": "The unit of the preference. It may be empty."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "convertedValue",
-                                "extraAccuracy",
-                                "unit"
-                            ]
+                            "$ref": "#/ConvertedUnitValue"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -8253,27 +8164,7 @@ GS::Optional<GS::UniString> GetRenovationStatusNamesCommand::GetRawResponseSchem
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "description": "The renovation status.",
-                                    "enum": [
-                                        "Existing",
-                                        "New",
-                                        "Demolished"
-                                    ]
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the status as the running Archicad shows it (localized)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status",
-                                "name"
-                            ]
+                            "$ref": "#/RenovationStatusName"
                         },
                         {
                             "$ref": "#/ErrorItem"

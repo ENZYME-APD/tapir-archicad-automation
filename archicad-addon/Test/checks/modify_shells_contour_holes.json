@@ -1,0 +1,203 @@
+{
+  "title": "GetDetailsOfElements reads a shell's contour and holes, ModifyShells replaces them and keeps the shell (#2431)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "extruded vault with two holes and no contour",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1000.0, "y": 1000.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 },
+            "holes": [
+              {
+                "coordinates": [ { "x": -1.0, "y": 2.0 }, { "x": 1.0, "y": 2.0 }, { "x": 1.0, "y": 3.0 }, { "x": -1.0, "y": 3.0 } ],
+                "depth": 10.0
+              },
+              {
+                "coordinates": [ { "x": -1.0, "y": 5.0 }, { "x": 1.0, "y": 5.0 }, { "x": 1.0, "y": 6.0 }, { "x": -1.0, "y": 6.0 } ],
+                "depth": 10.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "shell created" }
+      ]
+    },
+    {
+      "id": "the holes are read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded" },
+        { "path": "detailsOfElements[0].details.contour", "exists": false, "name": "no contour yet" },
+        { "path": "detailsOfElements[0].details.holes", "len": 2, "name": "two holes" },
+        { "path": "detailsOfElements[0].details.holes[0].coordinates", "len": 4, "name": "four corners, no closing point" },
+        { "path": "detailsOfElements[0].details.holes[0].coordinates[2].x", "approx": 1.0 },
+        { "path": "detailsOfElements[0].details.holes[0].coordinates[2].y", "approx": 3.0 },
+        { "path": "detailsOfElements[0].details.holes[0].depth", "approx": 10.0 },
+        { "path": "detailsOfElements[0].details.holes[1].depth", "approx": 10.0 },
+        { "path": "detailsOfElements[0].details.holes[0].plane.zAxis.z", "approx": 1.0, "name": "hole plane is the base plane" }
+      ]
+    },
+    {
+      "id": "add a contour and change the second hole's depth",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "contour": {
+              "coordinates": [ { "x": -2.0, "y": 1.0 }, { "x": 2.0, "y": 1.0 }, { "x": 2.0, "y": 7.0 }, { "x": -2.0, "y": 7.0 } ]
+            },
+            "holes": [
+              {
+                "coordinates": [ { "x": -1.0, "y": 2.0 }, { "x": 1.0, "y": 2.0 }, { "x": 1.0, "y": 3.0 }, { "x": -1.0, "y": 3.0 } ],
+                "depth": 10.0
+              },
+              {
+                "coordinates": [ { "x": -1.0, "y": 5.0 }, { "x": 1.0, "y": 5.0 }, { "x": 1.0, "y": 6.0 }, { "x": -1.0, "y": 6.0 } ],
+                "plane": { "origin": { "x": 0.0, "y": 0.0, "z": 1.0 } },
+                "depth": 5.0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "contour and holes written" }
+      ]
+    },
+    {
+      "id": "same shell, new contour and depth, the rest kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "same GUID is still the extruded shell" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" },
+        { "path": "detailsOfElements[0].details.contour.coordinates", "len": 4, "name": "contour read back" },
+        { "path": "detailsOfElements[0].details.contour.coordinates[2].x", "approx": 2.0 },
+        { "path": "detailsOfElements[0].details.contour.coordinates[2].y", "approx": 7.0 },
+        { "path": "detailsOfElements[0].details.holes", "len": 2, "name": "still two holes" },
+        { "path": "detailsOfElements[0].details.holes[0].depth", "approx": 10.0, "name": "first hole kept" },
+        { "path": "detailsOfElements[0].details.holes[0].coordinates[0].y", "approx": 2.0 },
+        { "path": "detailsOfElements[0].details.holes[1].depth", "approx": 5.0, "name": "second hole's new depth" },
+        { "path": "detailsOfElements[0].details.holes[1].plane.origin.z", "approx": 1.0, "name": "second hole's new plane" }
+      ]
+    },
+    {
+      "id": "only the contour is replaced: the holes stay",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "contour": {
+              "coordinates": [ { "x": -2.5, "y": 0.5 }, { "x": 2.5, "y": 0.5 }, { "x": 2.5, "y": 7.5 }, { "x": -2.5, "y": 7.5 } ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the holes survived the contour change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contour.coordinates[2].x", "approx": 2.5 },
+        { "path": "detailsOfElements[0].details.holes", "len": 2 },
+        { "path": "detailsOfElements[0].details.holes[1].depth", "approx": 5.0 }
+      ]
+    },
+    {
+      "id": "refused items change nothing",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "contour": {
+              "coordinates": [ { "x": -2.0, "y": 1.0 }, { "x": 2.0, "y": 1.0 }, { "x": 2.0, "y": 7.0 } ]
+            },
+            "removeContour": true
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "holes": [
+              { "coordinates": [ { "x": -1.0, "y": 2.0 }, { "x": 1.0, "y": 2.0 }, { "x": 1.0, "y": 3.0 } ] }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "contour and removeContour together refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "hole without depth refused" }
+      ]
+    },
+    {
+      "id": "nothing changed by the refused items",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contour.coordinates[2].x", "approx": 2.5 },
+        { "path": "detailsOfElements[0].details.holes", "len": 2 }
+      ]
+    },
+    {
+      "id": "remove the contour and every hole",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "removeContour": true, "holes": [] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "no contour and no holes left, still one shell",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contour", "exists": false, "name": "contour removed" },
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "holes removed" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2 }
+      ]
+    },
+    {
+      "id": "only the one shell",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Shell" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "modified in place, not recreated" }
+      ]
+    }
+  ]
+}

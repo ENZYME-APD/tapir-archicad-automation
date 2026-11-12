@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "element-data-properties"
 # changes = "read-only"
 # ///
 
@@ -14,7 +15,10 @@ Colors the elements in the model by the value of a chosen property, with a
 legend of the values and their element counts. Text values get one color each;
 number values can also be grouped into ranges with a color gradient. Select
 values in the legend to highlight only those, double-click one to select its
-elements in Archicad.
+elements in Archicad. Classification properties are listed by the ID and name of
+their classification items, not by their GUIDs. The sub-elements of curtain walls,
+stairs, railings, columns and beams can be listed on their own ("Sub-elements" type)
+or left out of "All types" ("Exclude sub-elements").
 """
 
 import colorsys
@@ -22,7 +26,7 @@ import re
 import tkinter as tk
 from tkinter import ttk
 
-from utilities.archicad import batched, get_elements, run_tapir, select_elements
+from utilities.archicad import batched, get_elements, run_command, run_tapir, select_elements
 from utilities.ui import ScriptWindow, make_tree, require_archicad
 
 SCRIPT_NAME = "Property Highlighter"
@@ -32,9 +36,21 @@ EMPTY = "(empty)"
 NOT_A_NUMBER = "(not a number)"
 SPECIAL_COLOR = (150, 150, 150)
 ALL_TYPES = "All types"
+SUB_ELEMENTS = "Sub-elements"
 ELEMENT_TYPES = [
     ALL_TYPES, "Wall", "Column", "Beam", "Slab", "Roof", "Shell", "Morph", "Mesh", "Window", "Door", "Skylight",
-    "Opening", "Object", "Lamp", "Zone", "CurtainWall", "Stair", "Railing",
+    "Opening", "Object", "Lamp", "Zone", "CurtainWall", "Stair", "Railing", SUB_ELEMENTS,
+]
+# The parts of curtain walls, stairs, railings, columns and beams. "All types" lists them too;
+# the "Sub-elements" choice lists only them, and "Exclude sub-elements" leaves them out.
+SUB_ELEMENT_TYPES = [
+    "CurtainWallSegment", "CurtainWallFrame", "CurtainWallPanel", "CurtainWallJunction", "CurtainWallAccessory",
+    "Riser", "Tread", "StairStructure",
+    "RailingToprail", "RailingHandrail", "RailingRail", "RailingPost", "RailingInnerPost", "RailingBaluster",
+    "RailingPanel", "RailingSegment", "RailingNode", "RailingBalusterSet", "RailingPattern", "RailingToprailEnd",
+    "RailingHandrailEnd", "RailingRailEnd", "RailingToprailConnection", "RailingHandrailConnection",
+    "RailingRailConnection", "RailingEndFinish",
+    "ColumnSegment", "BeamSegment",
 ]
 # Easy to tell apart colors for the first values; more values get generated hues.
 DISTINCT_COLORS = [
@@ -60,6 +76,23 @@ def gradient_color(t: float) -> tuple[int, int, int]:
     i = min(int(t), len(GRADIENT) - 2)
     f = t - i
     return tuple(round(a + (b - a) * f) for a, b in zip(GRADIENT[i], GRADIENT[i + 1]))
+
+
+_GUID = re.compile(r"\{?[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}?")
+
+
+def guid_key(text: str) -> str | None:
+    """ The GUID of a value such as a classification property's, always spelled the same way, or None. """
+    text = text.strip()
+    return text.strip("{}").upper() if _GUID.fullmatch(text) else None
+
+
+def classification_label(item: dict) -> str:
+    """ "ID Name" of a classification item, or only one of them when the other is empty or the same. """
+    item_id, name = item.get("id", "").strip(), item.get("name", "").strip()
+    if item_id and name and item_id != name:
+        return f"{item_id} {name}"
+    return item_id or name
 
 
 _NUMBER = re.compile(r"[-+−]?\d[\d.,'\s  ]*")
@@ -131,7 +164,13 @@ class PropertyHighlighter:
             row=0, column=4, sticky="w", padx=(6, 0))
         self.visible_only = tk.BooleanVar(value=True)
         ttk.Checkbutton(elements, text="Only elements on visible layers", variable=self.visible_only).grid(
-            row=1, column=0, columnspan=5, sticky="w", pady=(6, 0))
+            row=1, column=0, columnspan=3, sticky="w", pady=(6, 0))
+        self.exclude_sub_elements = tk.BooleanVar(value=False)
+        exclude = ttk.Checkbutton(elements, text="Exclude sub-elements", variable=self.exclude_sub_elements)
+        exclude.grid(row=1, column=3, columnspan=2, sticky="w", padx=(18, 0), pady=(6, 0))
+        # Only "All types" lists sub-elements together with other elements, so only there can they be left out.
+        self.element_type.trace_add("write", lambda *_: exclude.state(
+            ["!disabled"] if self.element_type.get() == ALL_TYPES else ["disabled"]))
 
         properties = ttk.LabelFrame(body, text="Property", padding=(10, 6))
         properties.grid(row=1, column=0, sticky="nsew", pady=(8, 0))
@@ -214,10 +253,8 @@ class PropertyHighlighter:
         if prop is None:
             self.window.set_status("Pick a property in the list first.", "warning")
             return
-        element_types = None if self.element_type.get() == ALL_TYPES else [self.element_type.get()]
-        filters = ["IsVisibleByLayer"] if self.visible_only.get() else []
         with self.window.busy("Reading the elements..."):
-            elements = get_elements(self.scope.get(), element_types, filters)
+            elements = self._chosen_elements()
             values: list[str] = []
             for chunk in batched(elements):
                 self.window.set_status(f"Reading the values... {len(values)} / {len(elements)}")
@@ -229,11 +266,53 @@ class PropertyHighlighter:
                         values.append(NOT_AVAILABLE)
                     else:
                         values.append(item["propertyValue"].get("value", "") or EMPTY)
+            values = self._with_classification_names(values)
 
         self.property = prop
         self.values = list(zip(elements, values))
         self.legend.selection_set(())
         self._regroup()
+
+    def _chosen_elements(self) -> list[dict]:
+        """ The elements of the chosen scope and type, without the sub-elements when they are excluded. """
+        scope, choice = self.scope.get(), self.element_type.get()
+        filters = ["IsVisibleByLayer"] if self.visible_only.get() else []
+        if choice == SUB_ELEMENTS:
+            return get_elements(scope, SUB_ELEMENT_TYPES, filters)
+        if choice != ALL_TYPES:
+            return get_elements(scope, [choice], filters)
+        elements = get_elements(scope, None, filters)
+        if self.exclude_sub_elements.get():
+            sub_elements = {e["elementId"]["guid"].upper() for e in get_elements(scope, SUB_ELEMENT_TYPES, filters)}
+            elements = [e for e in elements if e["elementId"]["guid"].upper() not in sub_elements]
+        return elements
+
+    def _read_classification_labels(self) -> dict[str, str]:
+        """ The label of every classification item of the project, by its GUID (guid_key). """
+        self.window.set_status("Reading the classification items...")
+        labels: dict[str, str] = {}
+
+        def collect(classification_items: list[dict]) -> None:
+            for wrapper in classification_items:
+                item = wrapper.get("classificationItem", {})
+                key = guid_key(item.get("classificationItemId", {}).get("guid", ""))
+                if key:
+                    labels[key] = classification_label(item)
+                collect(item.get("children", []))
+
+        for system in run_command("GetAllClassificationSystems").get("classificationSystems", []):
+            tree = run_command("GetAllClassificationsInSystem",
+                               {"classificationSystemId": system["classificationSystemId"]})
+            collect(tree.get("classificationItems", []))
+        return labels
+
+    def _with_classification_names(self, values: list[str]) -> list[str]:
+        """ The values with the GUIDs of classification items (the values of a classification property)
+        replaced by the items' ID and name; other values, and GUIDs of no classification item, stay. """
+        if not any(guid_key(value) for value in values):
+            return values
+        labels = self._read_classification_labels()
+        return [labels.get(guid_key(value) or "", value) for value in values]
 
     def _regroup(self) -> None:
         if self.property is None:

@@ -953,6 +953,11 @@ inline GSErrCode ACAPI_Element_GetElementInfoString (const API_Guid* elementGuid
     return ACAPI_Database (APIDb_GetElementInfoStringID, (void*) elementGuid, infoString);
 }
 
+inline GSErrCode ACAPI_Element_ChangeElementInfoString (const API_Guid* elementGuid, const GS::UniString* infoString)
+{
+    return ACAPI_Database (APIDb_ChangeElementInfoStringID, (void*) elementGuid, (void*) infoString);
+}
+
 inline GSErrCode ACAPI_Element_GetCompoundInfoString (const API_Guid* elementGuid, GS::UniString* infoString)
 {
     return ACAPI_Database (APIDb_GetCompoundInfoStringID, (void*) elementGuid, infoString);
@@ -1439,6 +1444,20 @@ inline GSErrCode TAPIR_Element_GetCategoryValueDefault (API_ElemTypeID typeID, c
     return ACAPI_Element_GetCategoryValueDefault (typeID, category, &categoryValue);
 #else
     return ACAPI_Element_GetCategoryValueDefault (typeID, APIVarId_Generic, category, &categoryValue);
+#endif
+#endif
+}
+
+// Sets the value of one element category in the tool defaults of an element type.
+inline GSErrCode TAPIR_Element_SetCategoryValueDefault (API_ElemTypeID typeID, const API_ElemCategory& category, const API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_SetCategoryValueDefault (typeID, category, categoryValue);
+#else
+#if defined ServerMainVers_2600
+    return ACAPI_Element_SetCategoryValueDefault (typeID, category, categoryValue);
+#else
+    return ACAPI_Element_SetCategoryValueDefault (typeID, APIVarId_Generic, category, categoryValue);
 #endif
 #endif
 }

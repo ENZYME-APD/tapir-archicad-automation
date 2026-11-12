@@ -332,101 +332,7 @@ GS::Optional<GS::UniString> GetFavoriteDetailsCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "favorite": {
-                                    "type": "string",
-                                    "description": "The name of the favorite."
-                                },
-                                "elementType": {
-                                    "type": "string",
-                                    "description": "The element type of the favorite, as in GetFavoritesByType."
-                                },
-                                "classifications": {
-                                    "type": "array",
-                                    "description": "The classifications the favorite applies, one per classification system.",
-                                    "items": {
-                                        "$ref": "#/ClassificationIdArrayItem"
-                                    }
-                                },
-                                "properties": {
-                                    "type": "array",
-                                    "description": "The property values stored in the favorite.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyName": {
-                                                "type": "string"
-                                            },
-                                            "status": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "HasValue",
-                                                    "NotEvaluated",
-                                                    "NotAvailable"
-                                                ],
-                                                "description": "The evaluation status of the value. propertyValue is only present for HasValue."
-                                            },
-                                            "isDefault": {
-                                                "type": "boolean",
-                                                "description": "True if the value is the default value of the property."
-                                            },
-                                            "propertyValue": {
-                                                "$ref": "#/PropertyValue"
-                                            },
-                                            "error": {
-                                                "$ref": "#/Error"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId",
-                                            "propertyName",
-                                            "status",
-                                            "isDefault"
-                                        ]
-                                    }
-                                },
-                                "categoryValues": {
-                                    "type": "array",
-                                    "description": "The element category values (e.g. Structural Function, Position, Renovation Status) stored in the favorite.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "categoryId": {
-                                                "$ref": "#/GuidId"
-                                            },
-                                            "categoryName": {
-                                                "type": "string"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/GuidId"
-                                            },
-                                            "categoryValueName": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "categoryId",
-                                            "categoryName",
-                                            "categoryValueId",
-                                            "categoryValueName"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "favorite",
-                                "elementType",
-                                "classifications",
-                                "properties",
-                                "categoryValues"
-                            ]
+                            "$ref": "#/FavoriteDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -453,6 +359,17 @@ static GS::UniString PropertyValueStatusToString (API_PropertyValueStatus status
 
 #ifdef ServerMainVers_2900
 static GSErrCode GetPathOfFavoriteFolder (const ACAPI::Favorite::FavoriteFolder& folder, GS::Array<GS::UniString>& path, GS::UniString& errorMessage);
+
+// The path of the folder the Favorite is in, the folder names from the root down; empty in the root.
+static GSErrCode GetFolderPathOfFavorite (const ACAPI::Favorite::Favorite& favorite, GS::Array<GS::UniString>& path)
+{
+    const auto parentFolder = favorite.GetParentFolder ();
+    if (parentFolder.IsErr ()) {
+        return parentFolder.UnwrapErr ().kind;
+    }
+    GS::UniString errorMessage;
+    return GetPathOfFavoriteFolder (parentFolder.Unwrap (), path, errorMessage);
+}
 #endif
 
 // ACAPI_Favorite_Get refuses (APIERR_REFUSEDCMD) a Favorite whose settings Archicad cannot hand
@@ -514,17 +431,37 @@ static GSErrCode GetFavoriteWithoutElementSettings (API_Favorite& favorite, GSEr
             favorite.elemCategoryValues->Push (categoryValue);
         }
     }
-    if (favorite.folder.HasValue ()) {
-        const auto parentFolder = source.Unwrap ().GetParentFolder ();
-        GS::UniString errorMessage;
-        if (parentFolder.IsErr () || GetPathOfFavoriteFolder (parentFolder.Unwrap (), *favorite.folder, errorMessage) != NoError) {
-            return refusedErr;
-        }
+    if (favorite.folder.HasValue () && GetFolderPathOfFavorite (source.Unwrap (), *favorite.folder) != NoError) {
+        return refusedErr;
     }
     return NoError;
 #else
     UNUSED_PARAMETER (favorite);
     return refusedErr;
+#endif
+}
+
+// Archicad 29 and later answer an empty API_Favorite::folder from ACAPI_Favorite_Get, whatever
+// folder the Favorite is in (#2641): this replaces it with the path the Favorite manager gives.
+// Keeps what ACAPI_Favorite_Get gave when the Favorite manager cannot read it, and does nothing
+// before Archicad 29.
+static void FillFolderOfFavoriteFromManager (API_Favorite& favorite)
+{
+#ifdef ServerMainVers_2900
+    if (!favorite.folder.HasValue ()) {
+        return;
+    }
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto source = manager.GetFavoriteByName (favorite.name);
+    if (source.IsErr ()) {
+        return;
+    }
+    GS::Array<GS::UniString> path;
+    if (GetFolderPathOfFavorite (source.Unwrap (), path) == NoError) {
+        *favorite.folder = path;
+    }
+#else
+    UNUSED_PARAMETER (favorite);
 #endif
 }
 
@@ -749,26 +686,7 @@ GS::Optional<GS::UniString> CreateFavoritesFromElementsCommand::GetInputParamete
             "favoritesFromElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "The identifier of the element and the name of the new favorite.",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "favorite": {
-                            "type": "string"
-                        },
-                        "folder": {
-                            "type": "array",
-                            "description": "Optional folder hierarchy in the Favorites palette to place the new favorite under. Empty/omitted = root.",
-                            "items": { "type": "string" }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "favorite"
-                    ]
+                    "$ref": "#/FavoriteFromElement"
                 }
             }
         },
@@ -1180,9 +1098,7 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () 
                 "description": "Absolute path on the AC host. With the prefs format: a Favorites file (.prefs) or folder. With the xml format: the folder of Favorite files, as ExportFavorites writes it. With the legacyPRF format: the .prf file."
             },
             "format": {
-                "type": "string",
-                "enum": ["prefs", "xml", "legacyPRF"],
-                "description": "The format to import from, the counterpart of the format of ExportFavorites. prefs (the default) works in every Archicad version. xml imports Favorite files from a folder, and legacyPRF a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+                "$ref": "#/FavoriteImportFormat"
             },
             "fileNames": {
                 "type": "array",
@@ -1199,9 +1115,7 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () 
                 "description": "Only with the prefs format: if true and `path` is a folder, the folder structure is preserved."
             },
             "conflictPolicy": {
-                "type": "string",
-                "enum": ["Error", "Skip", "Overwrite", "Append", "OverwriteExisting", "RenameNew"],
-                "description": "How to resolve name conflicts. The prefs format takes Error, Skip, Overwrite or Append, default Overwrite. The xml and legacyPRF formats take Error, Skip, OverwriteExisting or RenameNew, default Error."
+                "$ref": "#/FavoriteImportConflictPolicy"
             }
         },
         "required": ["path"],
@@ -1556,12 +1470,17 @@ static GSErrCode ApplyFavoriteToOpening (const API_Element& targetElement, API_F
 // fields are read off the target before the Favorite is applied and written back afterwards,
 // with the same calls ModifyWindows/ModifyDoors/ModifyWalls/SetDetailsOfElements use for them.
 // A field the target's type does not have is ignored.
+// The cross section of a Column ('width', 'depth') and of a Beam ('width', 'height') is a
+// Favorite setting (#2553): it lives in the segments of the memo, which the Favorite's memo
+// replaces, so it is kept by writing the target's segment sizes back into the new segments.
+// A Column's 'height' is its height, not a cross section size.
 struct KeptFields
 {
     bool id = false;
     bool layerIndex = false;
     bool width = false;
     bool height = false;
+    bool depth = false;
     bool sillHeight = false;
     bool referenceLineLocation = false;
     bool topOffset = false;
@@ -1569,7 +1488,18 @@ struct KeptFields
 
     bool Any () const
     {
-        return id || layerIndex || width || height || sillHeight || referenceLineLocation || topOffset || relativeTopStory;
+        return id || layerIndex || width || height || depth || sillHeight || referenceLineLocation || topOffset || relativeTopStory;
+    }
+
+    // Whether a size of the cross section of a Column or Beam is kept, so that the target's
+    // segments must be read before the Favorite is applied.
+    bool AnySectionSize (const API_Elem_Head& header) const
+    {
+        switch (GetElemTypeId (header)) {
+            case API_ColumnID: return width || depth;
+            case API_BeamID:   return width || height;
+            default:           return false;
+        }
     }
 };
 
@@ -1584,6 +1514,8 @@ static GS::Optional<GS::UniString> ParseKeptFields (const GS::Array<GS::UniStrin
             kept.width = true;
         } else if (name == "height") {
             kept.height = true;
+        } else if (name == "depth") {
+            kept.depth = true;
         } else if (name == "sillHeight") {
             kept.sillHeight = true;
         } else if (name == "referenceLineLocation") {
@@ -1599,14 +1531,79 @@ static GS::Optional<GS::UniString> ParseKeptFields (const GS::Array<GS::UniStrin
     return {};
 }
 
+// Copies the kept sizes of the cross section from the target's segments as they were before the
+// Favorite was applied into its segments now. The Favorite can bring a different number of
+// segments; a segment past the old ones takes the sizes of the last old one. The end sizes of
+// a tapered segment are kept too: an old segment that was not tapered gives its nominal size,
+// so a kept cross section stays the same along the whole element.
+template <typename SegmentType>
+static void CopySectionSizes (const SegmentType* before, GSSize nBefore, SegmentType* after, GSSize nAfter, bool keepWidth, bool keepHeight)
+{
+    if (before == nullptr || after == nullptr || nBefore <= 0) {
+        return;
+    }
+    for (GSSize i = 0; i < nAfter; ++i) {
+        const API_AssemblySegmentData& source = before[i < nBefore ? i : nBefore - 1].assemblySegmentData;
+        API_AssemblySegmentData& target = after[i].assemblySegmentData;
+        if (keepWidth) {
+            target.nominalWidth = source.nominalWidth;
+            target.endWidth = source.isHomogeneous ? source.nominalWidth : source.endWidth;
+        }
+        if (keepHeight) {
+            target.nominalHeight = source.nominalHeight;
+            target.endHeight = source.isHomogeneous ? source.nominalHeight : source.endHeight;
+        }
+    }
+}
+
+// Writes the kept sizes of a Column's or Beam's cross section back from `segmentsBefore`, its
+// segments read with APIMemoMask_ColumnSegment or APIMemoMask_BeamSegment before the Favorite
+// was applied, with the same memo call ModifyColumns/ModifyBeams change the cross section with.
+static GSErrCode RestoreKeptSectionSizes (const API_Element& element, const API_ElementMemo& segmentsBefore, const KeptFields& kept)
+{
+    const API_ElemTypeID typeId = GetElemTypeId (element.header);
+    if (typeId != API_ColumnID && typeId != API_BeamID) {
+        return NoError;
+    }
+    const UInt64 memoMask = typeId == API_ColumnID ? APIMemoMask_ColumnSegment : APIMemoMask_BeamSegment;
+
+    API_ElementMemo memo = {};
+    const GS::OnExit disposeMemo ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (element.header.guid, &memo, memoMask);
+    if (err != NoError) {
+        return err;
+    }
+
+    if (typeId == API_ColumnID) {
+        if (memo.columnSegments == nullptr || segmentsBefore.columnSegments == nullptr) {
+            return NoError;
+        }
+        const GSSize nBefore = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (segmentsBefore.columnSegments)) / sizeof (API_ColumnSegmentType));
+        const GSSize nAfter = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType));
+        CopySectionSizes (segmentsBefore.columnSegments, nBefore, memo.columnSegments, nAfter, kept.width, kept.depth);
+    } else {
+        if (memo.beamSegments == nullptr || segmentsBefore.beamSegments == nullptr) {
+            return NoError;
+        }
+        const GSSize nBefore = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (segmentsBefore.beamSegments)) / sizeof (API_BeamSegmentType));
+        const GSSize nAfter = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType));
+        CopySectionSizes (segmentsBefore.beamSegments, nBefore, memo.beamSegments, nAfter, kept.width, kept.height);
+    }
+
+    API_Guid guid = element.header.guid;
+    return ACAPI_Element_ChangeMemo (guid, memoMask, &memo);
+}
+
 // Writes the kept fields back from `elementBefore`, the target as ACAPI_Element_Get returned it
 // before the Favorite was applied, and from `memoBefore`, its memo read with
 // APIMemoMask_ElemInfoString - the Element ID lives there (see GetDetailsOfElements), not in the
 // API_Element struct. The element is read again after the apply and only the kept fields are
 // copied into it and masked, the way ModifyWindows/ModifyWalls change them, so nothing else of
 // the now stale `elementBefore` is written. The ID is restored last, with the same memo mask it
-// was read with, so the Favorite's own properties cannot overwrite it afterwards.
-static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_ElementMemo& memoBefore, const KeptFields& kept)
+// was read with, so the Favorite's own properties cannot overwrite it afterwards. A kept size of
+// a Column's or Beam's cross section is written back from `segmentsBefore` (see
+// RestoreKeptSectionSizes).
+static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_ElementMemo& memoBefore, const API_ElementMemo& segmentsBefore, const KeptFields& kept)
 {
     API_Element element = {};
     element.header.guid = elementBefore.header.guid;
@@ -1706,6 +1703,13 @@ static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_Elemen
         }
     }
 
+    if (kept.AnySectionSize (element.header)) {
+        err = RestoreKeptSectionSizes (element, segmentsBefore, kept);
+        if (err != NoError) {
+            return err;
+        }
+    }
+
     if (kept.id) {
         // An element whose ID is empty may come back without the string at all; the memo must
         // carry one for the write, and ACAPI_DisposeElemMemoHdls frees it with the rest.
@@ -1762,21 +1766,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "The elements and the Favorite to apply to each. Give this or favorite.",
                 "items": {
-                    "type": "object",
-                    "description": "The identifier of the element and the name of the Favorite to apply to it.",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "favorite": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "favorite"
-                    ]
+                    "$ref": "#/FavoriteToApply"
                 }
             },
             "favorite": {
@@ -1809,7 +1799,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "keepFields": {
                 "type": "array",
-                "description": "Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.",
+                "description": "Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall; 'width' and 'depth' (the cross section) to a Column, and 'width' and 'height' (the cross section) to a Beam. The cross section of a Column or Beam is a Favorite setting and is applied unless it is kept. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.",
                 "items": {
                     "$ref": "#/FavoriteKeepField"
                 }
@@ -1897,6 +1887,17 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
         }
     }
 
+    // So are the segments of a Column or Beam whose cross section is kept (#2553).
+    API_ElementMemo targetSegmentsMemo = {};
+    const GS::OnExit disposeTargetSegmentsMemo ([&targetSegmentsMemo] () { ACAPI_DisposeElemMemoHdls (&targetSegmentsMemo); });
+    if (options.keptFields.AnySectionSize (targetElement.header)) {
+        const UInt64 segmentsMask = GetElemTypeId (targetElement.header) == API_ColumnID ? APIMemoMask_ColumnSegment : APIMemoMask_BeamSegment;
+        err = ACAPI_Element_GetMemo (targetGuid, &targetSegmentsMemo, segmentsMask);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read the cross section of the element");
+        }
+    }
+
     // ACAPI_Element_ChangeParameters (unlike ACAPI_Element_Change) only ever touches
     // settings-type parameters of the API_Element itself, never its geometry, and
     // always keeps the target's own guid - exactly the "apply favorite settings"
@@ -1949,7 +1950,7 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
     }
 
     if (options.keptFields.Any ()) {
-        err = RestoreKeptFields (targetElement, targetIdMemo, options.keptFields);
+        err = RestoreKeptFields (targetElement, targetIdMemo, targetSegmentsMemo, options.keptFields);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "The favorite was applied, but a field listed in keepFields could not be restored");
         }
@@ -2169,7 +2170,13 @@ GS::ObjectState UpdateFavoritesFromElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
-            GSErrCode err = ACAPI_Favorite_Change (favorite);
+            // Without a mask ACAPI_Favorite_Change answers NoError and keeps the old settings:
+            // a Favorite updated from a 0.3 m wall still placed the 0.2 m wall it was made
+            // from (#2470). Every field of the element and every memo part are written, as
+            // CreateFavoritesFromElements captures all of them.
+            API_Element mask;
+            ACAPI_ELEMENT_MASK_SETFULL (mask);
+            GSErrCode err = ACAPI_Favorite_Change (favorite, &mask, APIMemoMask_All);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to update the favorite"));
                 continue;
@@ -2712,83 +2719,7 @@ GS::Optional<GS::UniString> GetFavoriteContentsCommand::GetRawResponseSchema () 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the Favorite."
-                                },
-                                "folderPath": {
-                                    "type": "array",
-                                    "description": "The path of the folder the Favorite is in, as Archicad gives it. Empty for the root folder.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "classifications": {
-                                    "$ref": "#/ClassificationIdsOrErrors",
-                                    "description": "The classifications stored with the Favorite, in the format of GetClassificationsOfElements."
-                                },
-                                "categoryValues": {
-                                    "type": "array",
-                                    "description": "The element category values stored with the Favorite, in the format of GetCategoryValuesOfElements.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "$ref": "#/ElementCategoryType"
-                                            },
-                                            "categoryId": {
-                                                "$ref": "#/ElementCategoryId"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/ElementCategoryValueId"
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The localized name of the value, for display only."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "type",
-                                            "categoryId",
-                                            "categoryValueId",
-                                            "name"
-                                        ]
-                                    }
-                                },
-                                "properties": {
-                                    "type": "array",
-                                    "description": "The property values stored with the Favorite. Each has propertyValue, in the format of GetPropertyValuesOfElements, or an error when its value cannot be read.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyValue": {
-                                                "$ref": "#/PropertyValue"
-                                            },
-                                            "error": {
-                                                "$ref": "#/Error"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name",
-                                "folderPath",
-                                "classifications",
-                                "categoryValues",
-                                "properties"
-                            ]
+                            "$ref": "#/FavoriteContents"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2886,24 +2817,7 @@ GS::Optional<GS::UniString> DeleteFavoritesWithManagerCommand::GetInputParameter
                 "type": "array",
                 "description": "The Favorites to delete.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the Favorite."
-                        },
-                        "folderPath": {
-                            "type": "array",
-                            "description": "The folder the Favorite is in, the folder names from the root of the Favorites palette down, in the format GetFavoriteContents returns. When given, the Favorite is only looked for directly in that folder. Omit it to find the Favorite by name anywhere.",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/FavoriteNameAndFolder"
                 }
             }
         },
@@ -3352,27 +3266,7 @@ GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetRawResponseSchema () co
             "favorites": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the Favorite."
-                        },
-                        "elementType": {
-                            "$ref": "#/ElementType"
-                        },
-                        "folder": {
-                            "type": "array",
-                            "items": { "type": "string" },
-                            "description": "The folder hierarchy of the Favorite in the file or folder. Empty = root."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "elementType",
-                        "folder"
-                    ]
+                    "$ref": "#/FavoriteFileEntry"
                 }
             }
         },
@@ -3549,6 +3443,7 @@ GS::ObjectState GetFavoriteSettingsCommand::Execute (const GS::ObjectState& para
             favoriteSettingsAdder (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
             continue;
         }
+        FillFolderOfFavoriteFromManager (favorite);
 
         const API_ElemTypeID elemTypeId = GetElemTypeId (favorite.element.header);
 
@@ -3631,25 +3526,10 @@ GS::Optional<GS::UniString> CreateFavoriteCommand::GetInputParametersSchema () c
                 "description": "The folder of the Favorites palette to create the Favorite in, as the folder names from the root down. The folder must exist. Empty or omitted = root."
             },
             "source": {
-                "type": "object",
-                "description": "Where the settings of the new Favorite come from: exactly one of favoriteName and toolDefault.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Take the settings of this Favorite."
-                    },
-                    "toolDefault": {
-                        "type": "string",
-                        "enum": ["Opening"],
-                        "description": "Take the current settings of this tool."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/FavoriteSettingsSource"
             },
             "conflictPolicy": {
-                "type": "string",
-                "enum": ["Error", "Skip", "OverwriteExisting", "RenameNew"],
-                "description": "What to do when a Favorite with this name already exists: Error fails, Skip leaves the existing Favorite unchanged, OverwriteExisting gives the existing Favorite the new settings (its folder does not change), RenameNew creates the Favorite with ' (2)', ' (3)', ... appended to the name. Default Error."
+                "$ref": "#/FavoriteCreationConflictPolicy"
             }
         },
         "additionalProperties": false,
@@ -3675,9 +3555,7 @@ GS::Optional<GS::UniString> CreateFavoriteCommand::GetRawResponseSchema () const
                 "description": "The folder of the Favorite, as the folder names from the root down. Empty for the root. Missing when Archicad cannot read it."
             },
             "outcome": {
-                "type": "string",
-                "enum": ["Created", "Skipped", "Overwritten"],
-                "description": "Created for a new Favorite (also with RenameNew), Skipped or Overwritten when a Favorite with the name already existed."
+                "$ref": "#/FavoriteCreationOutcome"
             }
         },
         "additionalProperties": false,
@@ -4358,146 +4236,7 @@ GS::Optional<GS::UniString> GetFavoriteDefaultsCommand::GetRawResponseSchema () 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "favorite": {
-                                    "type": "string",
-                                    "description": "The name of the Favorite."
-                                },
-                                "elementType": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "layerIndex": {
-                                    "type": "integer",
-                                    "description": "The index of the layer the Favorite places its elements on."
-                                },
-                                "elementId": {
-                                    "type": "string",
-                                    "description": "The element ID stored with the Favorite. Absent when it is empty."
-                                },
-                                "folder": {
-                                    "type": "array",
-                                    "description": "The folder hierarchy of the Favorite in the Favorites palette, outermost folder first. Empty for the root.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "libPart": {
-                                    "$ref": "#/LibPartDetails",
-                                    "description": "The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read."
-                                },
-                                "parameters": {
-                                    "type": "array",
-                                    "description": "The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.",
-                                    "items": {
-                                        "$ref": "#/StoredGDLParameter"
-                                    }
-                                },
-                                "marker": {
-                                    "type": "object",
-                                    "description": "The marker stored with the Favorite, for the element types that have one. Absent when the Favorite has no marker - that is not an error.",
-                                    "properties": {
-                                        "elementType": {
-                                            "$ref": "#/ElementType"
-                                        },
-                                        "libPart": {
-                                            "$ref": "#/LibPartDetails",
-                                            "description": "The library part of the marker. Absent when it could not be read."
-                                        },
-                                        "parameters": {
-                                            "type": "array",
-                                            "description": "The GDL parameters of the marker.",
-                                            "items": {
-                                                "$ref": "#/StoredGDLParameter"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "elementType",
-                                        "parameters"
-                                    ]
-                                },
-                                "subElements": {
-                                    "type": "array",
-                                    "description": "The sub-elements stored with the Favorite, for example the frames and panels of a Curtain Wall.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "elementType": {
-                                                "$ref": "#/ElementType"
-                                            },
-                                            "libPart": {
-                                                "$ref": "#/LibPartDetails",
-                                                "description": "The library part of the sub-element. Absent when it has none or it could not be read."
-                                            },
-                                            "parameters": {
-                                                "type": "array",
-                                                "description": "The GDL parameters of the sub-element.",
-                                                "items": {
-                                                    "$ref": "#/StoredGDLParameter"
-                                                }
-                                            },
-                                            "subTypes": {
-                                                "type": "array",
-                                                "description": "The kinds of the sub-element: the API_SubElementType flags set on it, without their APISubElement_ prefix.",
-                                                "items": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "MainMarker",
-                                                        "SHMarker",
-                                                        "CommonMarker",
-                                                        "CWFrameClass",
-                                                        "CWPanelClass",
-                                                        "CWJunction",
-                                                        "CWAccessory",
-                                                        "StairRiser",
-                                                        "StairTread",
-                                                        "StairStructure",
-                                                        "StairFPDMarker",
-                                                        "StairRCPDMarker",
-                                                        "RailingNode",
-                                                        "RailingSegment",
-                                                        "RailingPost",
-                                                        "RailingInnerPost",
-                                                        "RailingRail",
-                                                        "RailingHandrail",
-                                                        "RailingToprail",
-                                                        "RailingPanel",
-                                                        "RailingBaluster",
-                                                        "RailingPattern",
-                                                        "RailingBalusterSet",
-                                                        "RailingRailEnd",
-                                                        "RailingHandrailEnd",
-                                                        "RailingToprailEnd",
-                                                        "RailingRailConnection",
-                                                        "RailingHandrailConnection",
-                                                        "RailingToprailConnection",
-                                                        "RailingFinish",
-                                                        "CWTag",
-                                                        "NoElem",
-                                                        "NoParams"
-                                                    ]
-                                                }
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "elementType",
-                                            "parameters",
-                                            "subTypes"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "favorite",
-                                "elementType",
-                                "layerIndex",
-                                "parameters",
-                                "subElements"
-                            ]
+                            "$ref": "#/FavoriteDefaults"
                         },
                         {
                             "$ref": "#/ErrorItem"

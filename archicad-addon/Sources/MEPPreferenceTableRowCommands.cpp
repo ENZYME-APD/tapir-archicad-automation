@@ -11,11 +11,21 @@
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPDuctRectangularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPCableCarrierSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPPipeElbowPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeBranchPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctElbowPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctBranchPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTableContainer.hpp"
 #ifdef ServerMainVers_2900
 #include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
 #include "ACAPI/MEPDuctTransitionPreferenceTable.hpp"
+#include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctTransitionPreferenceTableContainer.hpp"
 #endif
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <optional>
@@ -44,115 +54,6 @@ using namespace ACAPI::MEP;
 // The rows of the preference tables, found by their key: the reference ids and, for branch and elbow rows
 // from Archicad 29, the angle. Archicad 28 finds the rows by the reference ids only. Archicad 27 has one
 // kind of preference table, with a list of values for each shape; its rows are found by shape and index.
-
-static const char* PreferenceTableRowKeySchema = R"({
-                "type": "object",
-                "description": "The key of a row. Segment tables: referenceId. Elbow tables: referenceId and angle. Branch tables: mainAxisReferenceId, branchAxisReferenceId and branchAxisAngle. Transition tables: beginReferenceId and endReferenceId. The angles are as GetMEPPreferenceTables returns them; Archicad 28 finds the rows by their reference ids only and rejects a key with an angle. Archicad 27: shape and index (AddMEPPreferenceTableRows: shape only).",
-                "properties": {
-                    "shape": {
-                        "type": "string",
-                        "description": "Archicad 27 only: the shape whose list of values the row is in.",
-                        "enum": [
-                            "Circular",
-                            "Rectangular"
-                        ]
-                    },
-                    "index": {
-                        "type": "integer",
-                        "description": "Archicad 27 only: the index of the row in the list of its shape, from 0.",
-                        "minimum": 0
-                    },
-                    "referenceId": {
-                        "type": "integer",
-                        "minimum": 0
-                    },
-                    "angle": {
-                        "type": "number"
-                    },
-                    "mainAxisReferenceId": {
-                        "type": "integer",
-                        "minimum": 0
-                    },
-                    "branchAxisReferenceId": {
-                        "type": "integer",
-                        "minimum": 0
-                    },
-                    "branchAxisAngle": {
-                        "type": "number"
-                    },
-                    "beginReferenceId": {
-                        "type": "integer",
-                        "minimum": 0
-                    },
-                    "endReferenceId": {
-                        "type": "integer",
-                        "minimum": 0
-                    }
-                },
-                "additionalProperties": false
-            })";
-
-static const char* PreferenceTableRowValuesSchema = R"({
-                "type": "object",
-                "description": "The values of a row, lengths in meters. Segment tables: diameter, wallThickness and description. Elbow tables: diameter, radius and description. Branch tables: mainAxisDiameter, branchAxisDiameter, length, branchOffset, connectionLength and description. Pipe transition tables: beginDiameter, endDiameter, length and description. Duct transition tables: beginDiameter, endDiameter, angle and description. Archicad 27: value and description.",
-                "properties": {
-                    "value": {
-                        "type": "number",
-                        "description": "Archicad 27 only: the value of the row."
-                    },
-                    "diameter": {
-                        "type": "number"
-                    },
-                    "wallThickness": {
-                        "type": "number"
-                    },
-                    "radius": {
-                        "type": "number"
-                    },
-                    "mainAxisDiameter": {
-                        "type": "number"
-                    },
-                    "branchAxisDiameter": {
-                        "type": "number"
-                    },
-                    "length": {
-                        "type": "number"
-                    },
-                    "branchOffset": {
-                        "type": "number"
-                    },
-                    "connectionLength": {
-                        "type": "number"
-                    },
-                    "beginDiameter": {
-                        "type": "number"
-                    },
-                    "endDiameter": {
-                        "type": "number"
-                    },
-                    "angle": {
-                        "type": "number"
-                    },
-                    "description": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false
-            })";
-
-static const char* PreferenceTableIdSchema = R"({
-                "type": "object",
-                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
-            })";
 
 #ifdef ServerMainVers_2800
 
@@ -671,6 +572,20 @@ static GS::ObjectState CreateFailedPreferenceTableRowResults (UIndex count, GSEr
     return response;
 }
 
+// Whether the preference table container lists the id. TableT::Get with the id of a table of another container, or of no
+// table, stops Archicad 29 ("Object doesn't exist in Database!", then the fatal "Loading of the object failed"), so the
+// container is asked first. Within a container a table of the other type is fine: Get answers an error (circular and
+// rectangular duct segment tables share a container).
+template <typename ContainerResultT>
+static bool ListsPreferenceTable (const ContainerResultT& container, const ACAPI::MEP::UniqueID& id)
+{
+    if (container.IsErr ()) {
+        return false;
+    }
+    const auto tableIds = container->GetPreferenceTables ();
+    return std::any_of (tableIds.begin (), tableIds.end (), [&] (const auto& tableId) { return tableId.GetGuid () == id.GetGuid (); });
+}
+
 // Calls func with the preference table of the tableId parameter.
 template <typename FuncT>
 static GS::ObjectState WithRowPreferenceTable (const GS::ObjectState& parameters, const FuncT& func)
@@ -679,38 +594,56 @@ static GS::ObjectState WithRowPreferenceTable (const GS::ObjectState& parameters
     parameters.Get ("tableId", tableIdData);
     const auto id = Adapter::UniqueID (GetGuidFromObjectState (tableIdData));
 
-    if (auto table = PipeBranchPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeBranchPreferenceTableContainer (), id)) {
+        if (auto table = PipeBranchPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctBranchPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctBranchPreferenceTableContainer (), id)) {
+        if (auto table = DuctBranchPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = PipeElbowPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeElbowPreferenceTableContainer (), id)) {
+        if (auto table = PipeElbowPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctElbowPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctElbowPreferenceTableContainer (), id)) {
+        if (auto table = DuctElbowPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = PipeSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeSegmentPreferenceTableContainer (), id)) {
+        if (auto table = PipeSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctCircularSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctSegmentPreferenceTableContainer (), id)) {
+        if (auto table = DuctCircularSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
+        // The rectangular tables are in the same container as the circular ones; their Get picks them.
+        if (auto table = DuctRectangularSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
 #ifdef ServerMainVers_2900
-    if (auto table = PipeTransitionPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeTransitionPreferenceTableContainer (), id)) {
+        if (auto table = PipeTransitionPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctTransitionPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctTransitionPreferenceTableContainer (), id)) {
+        if (auto table = DuctTransitionPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
 #endif
-    // The rectangular tables are in the same container as the circular ones; their Get picks them.
-    if (auto table = DuctRectangularSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
-    }
-    if (auto table = CableCarrierSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetCableCarrierSegmentPreferenceTableContainer (), id)) {
+        if (auto table = CableCarrierSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
     return CreateErrorResponse (APIERR_BADID, "The tableId is not a segment, branch, elbow or transition preference table.");
 }
@@ -1051,14 +984,19 @@ GS::String GetMEPPreferenceTableRowsCommand::GetName () const
 
 GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "tableId": )") + PreferenceTableIdSchema + R"(,
+            "tableId": {
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
+            },
             "keys": {
                 "type": "array",
                 "description": "The keys of the rows to get.",
-                "items": )" + PreferenceTableRowKeySchema + R"(
+                "items": {
+                    "$ref": "#/MEPPreferenceRowKey"
+                }
             }
         },
         "additionalProperties": false,
@@ -1071,7 +1009,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetInputParameters
 
 GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "exists": {
@@ -1101,21 +1039,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "key": )") + PreferenceTableRowKeySchema + R"(,
-                                "valid": {
-                                    "type": "boolean",
-                                    "description": "Whether the row is valid. Archicad 27: whether the list of the shape has a row with the index."
-                                },
-                                "values": )" + PreferenceTableRowValuesSchema + R"(
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "key",
-                                "valid",
-                                "values"
-                            ]
+                            "$ref": "#/MEPPreferenceRowDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1213,24 +1137,18 @@ GS::String SetMEPPreferenceTableRowsCommand::GetName () const
 
 GS::Optional<GS::UniString> SetMEPPreferenceTableRowsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "tableId": )") + PreferenceTableIdSchema + R"(,
+            "tableId": {
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
+            },
             "rows": {
                 "type": "array",
                 "description": "The rows to change. Only the given values are set.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "key": )" + PreferenceTableRowKeySchema + R"(,
-                        "values": )" + PreferenceTableRowValuesSchema + R"(
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "key",
-                        "values"
-                    ]
+                    "$ref": "#/MEPPreferenceRowUpdate"
                 }
             }
         },
@@ -1253,21 +1171,7 @@ GS::Optional<GS::UniString> SetMEPPreferenceTableRowsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "success": {
-                                    "type": "boolean",
-                                    "enum": [ true ]
-                                },
-                                "index": {
-                                    "type": "integer",
-                                    "description": "Archicad 27 only: the index of the row after the call, which can differ from the index of its key when setting a value moves rows. The keys are the indices before the call."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "success"
-                            ]
+                            "$ref": "#/MEPPreferenceRowUpdateResult"
                         },
                         {
                             "$ref": "#/FailedExecutionResult"
@@ -1355,23 +1259,18 @@ GS::String AddMEPPreferenceTableRowsCommand::GetName () const
 
 GS::Optional<GS::UniString> AddMEPPreferenceTableRowsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "tableId": )") + PreferenceTableIdSchema + R"(,
+            "tableId": {
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
+            },
             "rows": {
                 "type": "array",
                 "description": "The rows to add, with their key and optionally their values. Branch tables from Archicad 28, elbow and transition tables from Archicad 29. Segment tables have a row for each reference id, so no row can be added to them. Archicad 27: the key has the shape only, the table gives the index.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "key": )" + PreferenceTableRowKeySchema + R"(,
-                        "values": )" + PreferenceTableRowValuesSchema + R"(
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "key"
-                    ]
+                    "$ref": "#/MEPPreferenceRowAddition"
                 }
             }
         },
@@ -1394,22 +1293,7 @@ GS::Optional<GS::UniString> AddMEPPreferenceTableRowsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "success": {
-                                    "type": "boolean",
-                                    "enum": [ true ]
-                                },
-                                "index": {
-                                    "type": "integer",
-                                    "description": "The index of the new row in the table. Archicad 27: in the list of its shape, after the call."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "success",
-                                "index"
-                            ]
+                            "$ref": "#/MEPPreferenceRowAdditionResult"
                         },
                         {
                             "$ref": "#/FailedExecutionResult"
@@ -1516,14 +1400,19 @@ GS::String DeleteMEPPreferenceTableRowsCommand::GetName () const
 
 GS::Optional<GS::UniString> DeleteMEPPreferenceTableRowsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "tableId": )") + PreferenceTableIdSchema + R"(,
+            "tableId": {
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
+            },
             "keys": {
                 "type": "array",
                 "description": "The keys of the rows to delete. Segment tables, and the elbow tables of Archicad 28, have a row for each reference id, which is emptied instead. Archicad 27: the indices are those before the call; the rows are deleted from the highest index down.",
-                "items": )" + PreferenceTableRowKeySchema + R"(
+                "items": {
+                    "$ref": "#/MEPPreferenceRowKey"
+                }
             }
         },
         "additionalProperties": false,
@@ -1627,30 +1516,6 @@ GS::ObjectState DeleteMEPPreferenceTableRowsCommand::Execute (const GS::ObjectSt
 }
 #endif
 
-static const char* AC27PreferenceTableDomainSchema = R"({
-                "type": "string",
-                "description": "The MEP domain of a preference table container.",
-                "enum": [
-                    "Piping",
-                    "Ventilation",
-                    "CableCarrier"
-                ]
-            })";
-
-static const char* AC27PreferenceTableIdSchema = R"({
-                "type": "object",
-                "description": "The id of a preference table, for the tableId of the preference table row commands.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
-            })";
-
 GetMEPPreferenceTableContainersCommand::GetMEPPreferenceTableContainersCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1663,13 +1528,16 @@ GS::String GetMEPPreferenceTableContainersCommand::GetName () const
 
 GS::Optional<GS::UniString> GetMEPPreferenceTableContainersCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "domains": {
                 "type": "array",
                 "description": "The domains whose preference tables to list. Defaults to all three.",
-                "items": )") + AC27PreferenceTableDomainSchema + R"(
+                "items": {
+                    "$ref": "#/MEPPreferenceTableDomain",
+                    "description": "The MEP domain of a preference table container."
+                }
             }
         },
         "additionalProperties": false
@@ -1678,7 +1546,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableContainersCommand::GetInputPara
 
 GS::Optional<GS::UniString> GetMEPPreferenceTableContainersCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "containers": {
@@ -1687,55 +1555,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableContainersCommand::GetRawRespon
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "domain": )") + AC27PreferenceTableDomainSchema + R"(,
-                                "exists": {
-                                    "type": "boolean",
-                                    "description": "Whether the container exists."
-                                },
-                                "tables": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "tableId": )" + AC27PreferenceTableIdSchema + R"(,
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "exists": {
-                                                "type": "boolean"
-                                            },
-                                            "sizes": {
-                                                "type": "object",
-                                                "description": "The number of rows of each shape.",
-                                                "properties": {
-                                                    "Circular": {
-                                                        "type": "integer"
-                                                    },
-                                                    "Rectangular": {
-                                                        "type": "integer"
-                                                    }
-                                                },
-                                                "additionalProperties": false
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "tableId",
-                                            "name",
-                                            "exists",
-                                            "sizes"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "domain",
-                                "exists",
-                                "tables"
-                            ]
+                            "$ref": "#/MEPPreferenceTableContainer"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1810,10 +1630,13 @@ GS::String CreateMEPPreferenceTablesCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateMEPPreferenceTablesCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "domain": )") + AC27PreferenceTableDomainSchema + R"(,
+            "domain": {
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of a preference table container."
+            },
             "tables": {
                 "type": "array",
                 "description": "The tables to add, empty, to the preference table container of the domain.",
@@ -1841,7 +1664,7 @@ GS::Optional<GS::UniString> CreateMEPPreferenceTablesCommand::GetInputParameters
 
 GS::Optional<GS::UniString> CreateMEPPreferenceTablesCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "executionResults": {
@@ -1850,19 +1673,7 @@ GS::Optional<GS::UniString> CreateMEPPreferenceTablesCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "success": {
-                                    "type": "boolean",
-                                    "enum": [ true ]
-                                },
-                                "tableId": )") + AC27PreferenceTableIdSchema + R"(
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "success",
-                                "tableId"
-                            ]
+                            "$ref": "#/MEPPreferenceTableCreationResult"
                         },
                         {
                             "$ref": "#/FailedExecutionResult"

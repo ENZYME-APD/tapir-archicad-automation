@@ -695,6 +695,12 @@ GS::ObjectState Set3DFilterAndCutSettingsCommand::Execute (const GS::ObjectState
         return CreateErrorResponse (APIERR_BADPARS, input.GetError ());
     }
 
+    // ACAPI_View_Change3DImageSets hides the MEP elements in 3D, whatever else the map holds, even
+    // with only an API_ZombieElemID entry (#2614). MEP elements are external elements, whose element
+    // type is API_ExternalElemID, so that type is shown explicitly. An API_ZombieElemID entry would
+    // override every other entry, so it is never passed.
+    filter.elemTypeFilter.erase (API_ZombieElemID);
+    filter.elemTypeFilter[API_ExternalElemID] = true;
     err = ACAPI_CallUndoableCommand ("Set3DFilterAndCutSettingsCommand", [&] () -> GSErrCode {
         return ACAPI_View_Change3DImageSets (&filter, &mustConvert);
     });
@@ -807,7 +813,7 @@ GS::ObjectState FindDimensionStandardCommand::Execute (const GS::ObjectState& pa
 // ---------------------------------------------------------------------------------------------
 
 SetPlaceSettingsCommand::SetPlaceSettingsCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {}
 
 GS::String SetPlaceSettingsCommand::GetName () const
@@ -821,24 +827,7 @@ GS::Optional<GS::UniString> SetPlaceSettingsCommand::GetInputParametersSchema ()
     "type": "object",
     "properties": {
         "placeInfo": {
-            "type": "object",
-            "description": "The place settings to change (API_PlaceInfo), with its field names. Only the given keys are changed; an empty object changes nothing and returns the current settings.",
-            "properties": {
-                "longitude": { "type": "number", "description": "Longitude in degrees." },
-                "latitude": { "type": "number", "description": "Latitude in degrees." },
-                "altitude": { "type": "number", "description": "Altitude in meters." },
-                "north": { "type": "number", "description": "The north direction in radians." },
-                "year": { "type": "integer", "minimum": 0, "maximum": 65535 },
-                "month": { "type": "integer", "minimum": 1, "maximum": 12 },
-                "day": { "type": "integer", "minimum": 1, "maximum": 31 },
-                "hour": { "type": "integer", "minimum": 0, "maximum": 23 },
-                "minute": { "type": "integer", "minimum": 0, "maximum": 59 },
-                "second": { "type": "integer", "minimum": 0, "maximum": 59 },
-                "sumTime": { "type": "boolean", "description": "Whether summer time (+1 hour) is on." },
-                "timeZoneInMinutes": { "type": "integer", "description": "The time zone, in minutes from Greenwich." },
-                "timeZoneOffset": { "type": "integer", "description": "Tells apart time zones with the same timeZoneInMinutes." }
-            },
-            "additionalProperties": false
+            "$ref": "#/PlaceSettingsUpdate"
         }
     },
     "additionalProperties": false,

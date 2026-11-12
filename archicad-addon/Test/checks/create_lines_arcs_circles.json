@@ -1,5 +1,5 @@
 {
-  "title": "CreateLineElements, CreateArcs and CreateCircles keep the geometry, pen, story, layer and id, and refuse degenerate items",
+  "title": "CreateLineElements, CreateArcs and CreateCircles keep the geometry, pen, story and layer, and refuse degenerate items (the Element ID is in element_id_on_2d_drafting_elements.json)",
   "minTapir": "1.8.1",
   "requiresEmpty": [ "Line", "Arc", "Circle" ],
   "steps": [
@@ -14,8 +14,7 @@
             "floorInd": 0,
             "layerIndex": 1,
             "linePenIndex": 5,
-            "roomSeparator": false,
-            "id": "CHK-LINE-1"
+            "roomSeparator": false
           },
           {
             "begCoordinate": { "x": 600.0, "y": 610.0 },
@@ -50,7 +49,6 @@
         { "path": "detailsOfElements[0].details.roomSeparator", "eq": false },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
         { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
-        { "path": "detailsOfElements[0].id", "eq": "CHK-LINE-1", "name": "id applied" },
         { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorInd 1 applied" },
         { "path": "detailsOfElements[1].details.endCoordinate.y", "approx": 615.0, "name": "second line's end kept" },
         { "path": "detailsOfElements[1].details.linePenIndex", "eq": 7, "name": "pen 7 applied" },
@@ -70,8 +68,7 @@
             "floorInd": 0,
             "layerIndex": 1,
             "linePenIndex": 4,
-            "roomSeparator": false,
-            "id": "CHK-ARC-1"
+            "roomSeparator": false
           }
         ]
       },
@@ -95,8 +92,7 @@
         { "path": "detailsOfElements[0].details.begAngle", "approx": 0.0, "name": "begin angle kept" },
         { "path": "detailsOfElements[0].details.endAngle", "approx": 1.5707963267948966, "name": "end angle kept" },
         { "path": "detailsOfElements[0].details.ratio", "approx": 1.0, "name": "circular, not elliptic" },
-        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 4, "name": "pen applied" },
-        { "path": "detailsOfElements[0].id", "eq": "CHK-ARC-1", "name": "id applied" }
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 4, "name": "pen applied" }
       ]
     },
     {
@@ -110,8 +106,7 @@
             "floorInd": 0,
             "layerIndex": 1,
             "linePenIndex": 3,
-            "roomSeparator": false,
-            "id": "CHK-CIRCLE-1"
+            "roomSeparator": false
           },
           {
             "origin": { "x": 650.0, "y": 600.0 },
@@ -144,7 +139,6 @@
         { "path": "detailsOfElements[0].details.ratio", "approx": 1.0, "name": "circular, not elliptic" },
         { "path": "detailsOfElements[0].details.linePenIndex", "eq": 3, "name": "pen 3 applied" },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0 },
-        { "path": "detailsOfElements[0].id", "eq": "CHK-CIRCLE-1", "name": "id applied" },
         { "path": "detailsOfElements[1].details.radius", "approx": 0.75, "name": "second radius kept" },
         { "path": "detailsOfElements[1].details.linePenIndex", "eq": 6, "name": "pen 6 applied" },
         { "path": "detailsOfElements[1].details.roomSeparator", "eq": true, "name": "roomSeparator applied" },
@@ -258,5 +252,12 @@
       "params": { "elementType": "Circle" },
       "expect": [ { "path": "elements", "len": 2 } ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${l2}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${a1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${c2}" } } ] } }
   ]
 }

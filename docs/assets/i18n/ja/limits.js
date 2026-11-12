@@ -34,6 +34,16 @@
         '互いにトリムし合う 2 つの屋根またはシェルの間のトリムを、片方向だけ削除する',
     'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
         '<a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a> でトリムを削除し（両方向が削除されます）、もう一方の方向を <a href="../archicad-addon/#TrimElements">TrimElements</a> で再びトリムしてください。',
+    'Read which slab or stair edge a railing is linked to, or link a railing to one':
+        '手すりがどのスラブまたは階段のエッジに関連付けられているかを読み取る、または手すりをエッジに関連付ける',
+    'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
+        '手すりのフロア表示の自動設定をオフにして、表示するフロアを指定できるようにする',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'メッシュの Floor Plan Display、Show Projection、切断されない線と上方の線、または切断線の線種を設定する',
+    'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
+        '手すりの平面図シンボルを読み取る、または設定する：切断線、表示するシンボル構成要素、その2D属性、シンボルの上書き',
+    'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
+        '<a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> でスラブの輪郭を読み取り、<a href="../archicad-addon/#CreateRailings">CreateRailings</a> でそのエッジに沿って静的な手すりを作成してください。スラブが変わったら、手すりを削除して作成し直します。',
 
     // Navigator and views
     'Navigator and views': 'ナビゲータとビュー',
@@ -73,6 +83,11 @@
     'Get the outcome of an Action Center check': 'Action Center のチェック結果を取得する',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         '<a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a> でチェックを実行します。問題が見つかると Archicad が Action Center を表示します。ホットリンクのチェックでは、<a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> で各ソースの状態を読み取れます（Archicad 27 以降）。',
+
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'プロファイルを使う壁、梁、柱のプロファイル修正値、またはストレッチされた幅と高さを設定する',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        '<a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> で読み取れます。変更するには、<a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> でプロファイルを変更する（これらの要素用のコピー、またはプロファイル自体）か、Archicad で要素の設定から設定してください。',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Archicad API にできないことをほかにも見つけましたか？確認した DevKit のヘッダーを添えて issue で知らせてください。ここに追加します。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">issue を作成</a>'

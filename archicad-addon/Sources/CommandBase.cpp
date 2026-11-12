@@ -105,6 +105,63 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+static bool NavigatorTreeContains (API_NavigatorItem item, API_NavigatorMapID mapId, const API_Guid& guid)
+{
+    if (item.guid == guid) {
+        return true;
+    }
+    item.mapId = mapId;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) != NoError) {
+        return false;
+    }
+    for (const API_NavigatorItem& child : children) {
+        if (NavigatorTreeContains (child, mapId, guid)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsNavigatorItemGuid (const API_Guid& guid)
+{
+    for (const API_NavigatorMapID mapId : { API_ProjectMap, API_PublicViewMap, API_MyViewMap, API_LayoutMap, API_PublisherSets }) {
+        // A project has one set of each map, except the publisher sets.
+        Int32 setCount = 1;
+        if (mapId == API_PublisherSets && ACAPI_Navigator_GetNavigatorSetNum (&setCount) != NoError) {
+            continue;
+        }
+        for (Int32 ii = 0; ii < setCount; ++ii) {
+            API_NavigatorSet navigatorSet = {};
+            navigatorSet.mapId = mapId;
+            if (ACAPI_Navigator_GetNavigatorSet (&navigatorSet, &ii) != NoError) {
+                continue;
+            }
+            if (navigatorSet.rootGuid == guid) {
+                return true;
+            }
+            // The root guid comes from Archicad itself, so it is a navigator item.
+            API_NavigatorItem rootItem = {};
+            if (ACAPI_Navigator_GetNavigatorItem (&navigatorSet.rootGuid, &rootItem) != NoError) {
+                continue;
+            }
+            if (NavigatorTreeContains (rootItem, mapId, guid)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item)
+{
+    if (guid == APINULLGuid || !IsNavigatorItemGuid (guid)) {
+        return APIERR_BADID;
+    }
+    API_Guid itemGuid = guid;
+    return ACAPI_Navigator_GetNavigatorItem (&itemGuid, &item);
+}
+
 bool IsDryRun (const GS::ObjectState& parameters)
 {
     bool dryRun = false;
@@ -894,6 +951,15 @@ GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& hol
     return {};
 }
 
+GS::Array<GS::ObjectState> GetOpenHatchOutline (const GS::Array<GS::ObjectState>& coordinates)
+{
+    GS::Array<GS::ObjectState> outline = coordinates;
+    if (outline.GetSize () > 1 && IsSame2DCoordinate (outline.GetFirst (), outline.GetLast ())) {
+        outline.Pop ();
+    }
+    return outline;
+}
+
 // Hatch is a CLOSED polygon (unlike PolyLine): coords[0] dummy is (0,0) not
 // (-1,0), and every contour (the main outline, plus each hole) needs its own
 // explicit closing vertex duplicating that contour's first point, whose vertexID
@@ -901,9 +967,15 @@ GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& hol
 // (not continued sequentially across contours) - confirmed live: global numbering
 // across contours reproducibly failed with APIERR_BADPOLY for a hatch with holes,
 // per-contour numbering works. The holes are expected to be checked by ValidateHoles.
+// The outline may repeat its first point at the end, the closed form GetDetailsOfElements
+// returns; that point is dropped (GetOpenHatchOutline), as GetHoleGeometry drops it from
+// the holes. Arc indices stay valid: an arc ending on the dropped point ends on the
+// closing duplicate written below, at the same index.
 // Returns false (with poly untouched) when the memo handles could not be allocated.
-bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo)
+bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& outlineCoordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo)
 {
+    const GS::Array<GS::ObjectState> coordinates = GetOpenHatchOutline (outlineCoordinates);
+
     // Each contour: N unique coords -> N+1 stored coords (with closing duplicate).
     Int32 totalCoords = (Int32) coordinates.GetSize () + 1;
     Int32 totalArcs = (Int32) arcs.GetSize ();
@@ -1148,6 +1220,242 @@ GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& param
         return { floorIndex, zPos - GetZPos (floorIndex, 0.0, stories) };
     }
     return GetFloorIndexAndOffset (zPos, stories);
+}
+
+GS::UniString PolylineDrawSegmentModeToString (short drawSegmentMode)
+{
+    return drawSegmentMode == 1 ? "Continuous" : "SegmentBySegment";
+}
+
+bool PolylineDrawSegmentModeFromString (const GS::UniString& str, short& out)
+{
+    if (str == "SegmentBySegment") {
+        out = 0;
+        return true;
+    }
+    if (str == "Continuous") {
+        out = 1;
+        return true;
+    }
+    return false;
+}
+
+// The names of API_ArrowID, in the order of the enum (the same in every DevKit from AC25).
+struct ArrowTypeName {
+    API_ArrowID arrowType;
+    const char* name;
+};
+
+static const ArrowTypeName ArrowTypeNames[] = {
+    { APIArr_EmptyCirc,      "EmptyCircle" },
+    { APIArr_CrossCircIs,    "CrossCircle" },
+    { APIArr_FullCirc,       "FullCircle" },
+    { APIArr_SlashLine15,    "SlashLine15" },
+    { APIArr_OpenArrow15,    "OpenArrow15" },
+    { APIArr_ClosArrow15,    "ClosedArrow15" },
+    { APIArr_FullArrow15,    "FullArrow15" },
+    { APIArr_SlashLine30,    "SlashLine30" },
+    { APIArr_OpenArrow30,    "OpenArrow30" },
+    { APIArr_ClosArrow30,    "ClosedArrow30" },
+    { APIArr_FullArrow30,    "FullArrow30" },
+    { APIArr_SlashLine45,    "SlashLine45" },
+    { APIArr_OpenArrow45,    "OpenArrow45" },
+    { APIArr_ClosArrow45,    "ClosedArrow45" },
+    { APIArr_FullArrow45,    "FullArrow45" },
+    { APIArr_SlashLine60,    "SlashLine60" },
+    { APIArr_OpenArrow60,    "OpenArrow60" },
+    { APIArr_ClosArrow60,    "ClosedArrow60" },
+    { APIArr_FullArrow60,    "FullArrow60" },
+    { APIArr_SlashLine90,    "SlashLine90" },
+    { APIArr_PepitaCirc,     "PepitaCircle" },
+    { APIArr_BandArrow,      "BandArrow" },
+    { APIArr_HalfArrowCcw15, "HalfArrowCcw15" },
+    { APIArr_HalfArrowCw15,  "HalfArrowCw15" },
+    { APIArr_HalfArrowCcw30, "HalfArrowCcw30" },
+    { APIArr_HalfArrowCw30,  "HalfArrowCw30" },
+    { APIArr_HalfArrowCcw45, "HalfArrowCcw45" },
+    { APIArr_HalfArrowCw45,  "HalfArrowCw45" },
+    { APIArr_HalfArrowCcw60, "HalfArrowCcw60" },
+    { APIArr_HalfArrowCw60,  "HalfArrowCw60" },
+    { APIArr_SlashLine75,    "SlashLine75" }
+};
+
+static GS::UniString ArrowTypeToString (API_ArrowID arrowType)
+{
+    for (const ArrowTypeName& entry : ArrowTypeNames) {
+        if (entry.arrowType == arrowType) {
+            return entry.name;
+        }
+    }
+    return GS::UniString::Printf ("%d", (int) arrowType);
+}
+
+static bool ArrowTypeFromString (const GS::UniString& str, API_ArrowID& out)
+{
+    for (const ArrowTypeName& entry : ArrowTypeNames) {
+        if (str == entry.name) {
+            out = entry.arrowType;
+            return true;
+        }
+    }
+    return false;
+}
+
+static GS::ObjectState CreateLineArrowObjectState (bool visible, API_ArrowID arrowType, double arrowSize, short arrowPen)
+{
+    return GS::ObjectState (
+        "visible", visible,
+        "type", ArrowTypeToString (arrowType),
+        "size", arrowSize,
+        "pen", arrowPen);
+}
+
+void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows)
+{
+#ifdef ServerMainVers_2900
+    os.Add ("startArrow", CreateLineArrowObjectState (arrows.start.arrowVisibility, arrows.start.arrowType, arrows.start.arrowSize, arrows.start.arrowPen));
+    os.Add ("endArrow", CreateLineArrowObjectState (arrows.end.arrowVisibility, arrows.end.arrowType, arrows.end.arrowSize, arrows.end.arrowPen));
+#else
+    os.Add ("startArrow", CreateLineArrowObjectState (arrows.data.begArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
+    os.Add ("endArrow", CreateLineArrowObjectState (arrows.data.endArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
+#endif
+}
+
+namespace {
+
+// One end's requested values; a given arrow object shows its arrowhead unless visible is false.
+struct RequestedLineArrow {
+    bool                     given = false;
+    bool                     visible = true;
+    GS::Optional<API_ArrowID> type;
+    GS::Optional<double>     size;
+    GS::Optional<short>      pen;
+};
+
+}
+
+static GS::Optional<GS::UniString> ReadRequestedLineArrow (const GS::ObjectState& parameters, const char* key, RequestedLineArrow& out)
+{
+    const GS::ObjectState* arrow = parameters.Get (key);
+    if (arrow == nullptr) {
+        return {};
+    }
+    out.given = true;
+    arrow->Get ("visible", out.visible);
+    GS::UniString typeStr;
+    if (arrow->Get ("type", typeStr)) {
+        API_ArrowID arrowType = APIArr_EmptyCirc;
+        if (!ArrowTypeFromString (typeStr, arrowType)) {
+            return GS::UniString::Printf ("%s.type '%T' is not an arrowhead type.", key, typeStr.ToPrintf ());
+        }
+        out.type = arrowType;
+    }
+    double size = 0.0;
+    if (arrow->Get ("size", size)) {
+        if (size <= 0.0) {
+            return GS::UniString::Printf ("%s.size must be greater than 0.", key);
+        }
+        out.size = size;
+    }
+    Int32 pen = 0;
+    if (arrow->Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return GS::UniString::Printf ("%s.pen must be between 1 and 255.", key);
+        }
+        out.pen = (short) pen;
+    }
+    return {};
+}
+
+GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, const LineArrows& arrows, bool& changed)
+{
+    RequestedLineArrow start;
+    RequestedLineArrow end;
+    GS::Optional<GS::UniString> error = ReadRequestedLineArrow (parameters, "startArrow", start);
+    if (!error.HasValue ()) {
+        error = ReadRequestedLineArrow (parameters, "endArrow", end);
+    }
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (!start.given && !end.given) {
+        return {};
+    }
+
+#ifdef ServerMainVers_2900
+    const auto apply = [] (const RequestedLineArrow& requested, API_ArrowData& data) {
+        if (!requested.given) {
+            return;
+        }
+        data.arrowVisibility = requested.visible;
+        if (requested.type.HasValue ()) {
+            data.arrowType = requested.type.Get ();
+        }
+        if (requested.size.HasValue ()) {
+            data.arrowSize = requested.size.Get ();
+        }
+        if (requested.pen.HasValue ()) {
+            data.arrowPen = requested.pen.Get ();
+        }
+    };
+    apply (start, arrows.start);
+    apply (end, arrows.end);
+    // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
+    if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+        arrows.linked = false;
+    }
+#else
+    // Both ends share one type, size and pen before Archicad 29.
+    if (start.type.HasValue () && end.type.HasValue () && start.type.Get () != end.type.Get ()) {
+        return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead type: startArrow.type and endArrow.type must be the same.");
+    }
+    if (start.size.HasValue () && end.size.HasValue () && start.size.Get () != end.size.Get ()) {
+        return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead size: startArrow.size and endArrow.size must be the same.");
+    }
+    if (start.pen.HasValue () && end.pen.HasValue () && start.pen.Get () != end.pen.Get ()) {
+        return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead pen: startArrow.pen and endArrow.pen must be the same.");
+    }
+    if (start.given) {
+        arrows.data.begArrow = start.visible;
+    }
+    if (end.given) {
+        arrows.data.endArrow = end.visible;
+    }
+    for (const RequestedLineArrow* requested : { &start, &end }) {
+        if (requested->type.HasValue ()) {
+            arrows.data.arrowType = requested->type.Get ();
+        }
+        if (requested->size.HasValue ()) {
+            arrows.data.arrowSize = requested->size.Get ();
+        }
+        if (requested->pen.HasValue ()) {
+            arrows.data.arrowPen = requested->pen.Get ();
+        }
+    }
+#endif
+    changed = true;
+    return {};
+}
+
+void SetLineArrowsMask (const LineArrows& maskArrows)
+{
+    // ACAPI_ELEMENT_MASK_SET marks a member by its first byte, so each member is marked by itself.
+    const auto mark = [] (auto& member) { *reinterpret_cast<char*> (&member) = -1; };
+#ifdef ServerMainVers_2900
+    for (API_ArrowData* data : { &maskArrows.start, &maskArrows.end }) {
+        mark (data->arrowType);
+        mark (data->arrowVisibility);
+        mark (data->arrowPen);
+        mark (data->arrowSize);
+    }
+    mark (maskArrows.linked);
+#else
+    mark (maskArrows.data.arrowType);
+    mark (maskArrows.data.begArrow);
+    mark (maskArrows.data.endArrow);
+    mark (maskArrows.data.arrowPen);
+    mark (maskArrows.data.arrowSize);
+#endif
 }
 
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID)
@@ -1526,7 +1834,27 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
     // Last, Archicad's own font search, as GetFontsByName uses: it also resolves a family name
     // ("Century Gothic") to the font Archicad lists with its script ("Century Gothic Western", or
     // "Century Gothic Occidental" in Spanish), so scripts need not know the language's suffix
-    // (issue #1824). Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
+    // (issue #1824).
+    return SearchLoadedFont (fontName);
+}
+
+static Int32 GetLoadedFontCount ()
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Font_GetFontNum ();
+#else
+    API_AttributeIndex count = 0;
+    if (ACAPI_Attribute_GetNum (API_FontID, &count) != NoError) {
+        return 0;
+    }
+    return static_cast<Int32> (count);
+#endif
+}
+
+GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
+{
+    // Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
+    const Int32 loadedFontCount = GetLoadedFontCount ();
     GS::UniString nameToSearch = fontName;
 #ifdef ServerMainVers_2700
     API_FontType font = {};
@@ -1545,8 +1873,10 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
     const short foundIndex = static_cast<short> (GetAttributeIndex (attrHead.index));
 #endif
 
-    // Only an index that names a loaded font is returned.
-    if (!GetFontNameFromIndex (foundIndex).HasValue ()) {
+    // Only an index of a font that was loaded before the search is returned: on Archicad 26 and 28
+    // (German) a name no font has was answered with NoError and a new index (1907, 1908), as if
+    // the search had added the font to the list (#2470).
+    if (foundIndex < 1 || foundIndex > loadedFontCount || !GetFontNameFromIndex (foundIndex).HasValue ()) {
         return GS::NoValue;
     }
     return foundIndex;
@@ -1685,6 +2015,8 @@ GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_Database
         filterItem.itemType = API_WorksheetDrawingNavItem;
     } else if (database.typeID == APIWind_DetailID) {
         filterItem.itemType = API_DetailDrawingNavItem;
+    } else if (database.typeID == APIWind_DocumentFrom3DID) {
+        filterItem.itemType = API_DocumentFrom3DNavItem;
     } else {
         return {};
     }
@@ -1840,16 +2172,58 @@ void DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coor
     mirrored = det < 0.0;
 }
 
-GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id)
 {
-    // Only the info string part of the memo is filled and masked, so nothing else of the
-    // element is touched. ACAPI_DisposeElemMemoHdls deletes elemInfoString, the same way
-    // it frees the one ACAPI_Element_GetMemo allocates in GetDetailsOfElements.
+    if (ACAPI_Element_GetElementInfoString (&elementGuid, &id) == NoError) {
+        return NoError;
+    }
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    memo.elemInfoString = new GS::UniString (id);
+    const GSErrCode err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_ElemInfoString);
+    if (err != NoError) {
+        return err;
+    }
+    id = memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString;
+    return NoError;
+}
 
-    // ACAPI_Element_ChangeMemo takes the guid by non-const reference.
-    API_Guid guid = elementGuid;
-    return ACAPI_Element_ChangeMemo (guid, APIMemoMask_ElemInfoString, &memo);
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+{
+    // Not the elemInfoString memo part: writing it answers NoError on polylines and
+    // splines and leaves their ID empty (#2470). Before Archicad 27 MigrationHelper.hpp
+    // calls APIDb_ChangeElementInfoStringID.
+    GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elementGuid, &id);
+    if (err == APIERR_BADID || err == APIERR_BADELEMENTTYPE) {
+        // Some element types are not handled by that call although they have an ID: it answers
+        // APIERR_BADID for an Opening (#2629). Their ID is written through the elemInfoString
+        // memo part instead; the read back below catches a write Archicad did not keep.
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        memo.elemInfoString = new GS::UniString (id);
+        API_Guid guid = elementGuid;
+        const GSErrCode memoErr = ACAPI_Element_ChangeMemo (guid, APIMemoMask_ElemInfoString, &memo);
+        if (memoErr != NoError) {
+            return err;
+        }
+        err = NoError;
+    }
+    if (err != NoError) {
+        return err;
+    }
+
+    // Read back: an ID Archicad answered NoError for but did not keep is a failure, so a
+    // caller never reports an ID the element does not have.
+    GS::UniString written;
+    if (GetElementId (elementGuid, written) != NoError || written != id) {
+        return APIERR_REFUSEDPAR;
+    }
+    return NoError;
+}
+
+GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid)
+{
+    if (ACAPI_Element_Delete ({ elementGuid }) == NoError) {
+        return "so it was not created";
+    }
+    return GS::UniString ("and Archicad refused to delete it again, so it was left in the project with elementId ") + APIGuidToString (elementGuid);
 }

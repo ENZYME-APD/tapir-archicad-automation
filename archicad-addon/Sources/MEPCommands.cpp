@@ -1,5 +1,6 @@
 #include "MEPCommands.hpp"
 #include "NotificationCommands.hpp"
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -185,7 +186,7 @@ static GS::UniString PreferredTransitionPlacementToString (PreferredTransitionPl
 
 static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
 {
-    return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+    return CreateGuidObjectState (GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
 }
 
 // The settings every port has (PortBase), read through the port class of the port's domain.
@@ -446,8 +447,10 @@ static API_Guid MEPUniqueIDToAPIGuid (const ACAPI::MEP::UniqueID& id)
     return GSGuid2APIGuid (id.GetGuid ());
 }
 
-// Sets the layer of one element through the classic element API; the MEP API has no layer setter.
-static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_AttributeIndex& layerIndex)
+// Changes header fields of one element through the classic element API, for what the MEP API has no
+// setter for. setFields sets the fields on the header and on the mask, or returns false when they
+// already have the wanted values, and then nothing is changed.
+static GSErrCode ChangeHeaderOfElement (const API_Guid& elemGuid, const std::function<bool (API_Elem_Head& header, API_Element& mask)>& setFields)
 {
     API_Element element = {};
     element.header.guid = elemGuid;
@@ -457,9 +460,19 @@ static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_Attribut
     }
     API_Element mask = {};
     ACAPI_ELEMENT_MASK_CLEAR (mask);
-    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
-    element.header.layer = layerIndex;
+    if (!setFields (element.header, mask)) {
+        return NoError;
+    }
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_AttributeIndex& layerIndex)
+{
+    return ChangeHeaderOfElement (elemGuid, [&] (API_Elem_Head& header, API_Element& mask) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+        header.layer = layerIndex;
+        return true;
+    });
 }
 
 // The layer given for a new routing element has to exist and must not be locked, since an element
@@ -482,20 +495,14 @@ static GS::Optional<GS::ObjectState> GetErrorIfLayerNotUsable (Int32 layerIndex)
 // story setter (Graphisoft's MEP_Test example changes it the same way).
 static GSErrCode SetFloorIndexOfElement (const API_Guid& elemGuid, short floorIndex)
 {
-    API_Element element = {};
-    element.header.guid = elemGuid;
-    GSErrCode err = ACAPI_Element_Get (&element);
-    if (err != NoError) {
-        return err;
-    }
-    if (element.header.floorInd == floorIndex) {
-        return NoError;
-    }
-    API_Element mask = {};
-    ACAPI_ELEMENT_MASK_CLEAR (mask);
-    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-    element.header.floorInd = floorIndex;
-    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    return ChangeHeaderOfElement (elemGuid, [&] (API_Elem_Head& header, API_Element& mask) {
+        if (header.floorInd == floorIndex) {
+            return false;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+        header.floorInd = floorIndex;
+        return true;
+    });
 }
 
 // Calls changeElement for a routing element and for all its parts: routing segments, rigid segments,
@@ -597,14 +604,14 @@ static bool AreSamePositions (const std::vector<API_Coord3D>& positions1, const 
 
 // The 'floorIndex' of an item of CreateMEPRoutingElements or CreateMEPElements. Returns an error
 // response for an index that is not a story of the project, nullopt in floorIndex when not given.
-static GS::Optional<GS::ObjectState> GetFloorIndexParameter (const GS::ObjectState& itemData, std::optional<short>& floorIndex)
+// The callers read the stories once before their loop over the items.
+static GS::Optional<GS::ObjectState> GetFloorIndexParameter (const GS::ObjectState& itemData, const Stories& stories, std::optional<short>& floorIndex)
 {
     floorIndex.reset ();
     Int32 floorIndexValue = 0;
     if (!itemData.Get ("floorIndex", floorIndexValue)) {
         return GS::NoValue;
     }
-    const Stories stories = GetStories ();
     if (floorIndexValue < std::numeric_limits<short>::min () || floorIndexValue > std::numeric_limits<short>::max () ||
         stories.find (static_cast<short> (floorIndexValue)) == stories.end ()) {
         return CreateErrorResponse (APIERR_BADINDEX, "The 'floorIndex' parameter does not refer to an existing story; nothing was placed.");
@@ -987,7 +994,7 @@ static GS::UniString GetMEPElementDomainName (const API_Guid& classId)
 
 static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
 {
-    return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+    return CreateGuidObjectState (GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
 }
 
 #ifdef ServerMainVers_2900
@@ -2015,84 +2022,7 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "type": {
-                                    "$ref": "#/MEPElementType"
-                                },
-                                "domain": {
-                                    "type": "string",
-                                    "description": "The MEP domain (Ventilation, Piping or CableCarrier), empty if the element has none."
-                                },
-                                "insulationThickness": {
-                                    "type": "number",
-                                    "description": "The insulation thickness. RigidSegment, Elbow, Branch and Transition."
-                                },
-                                "routingSegmentId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing segment the rigid segment belongs to (see GetMEPRoutingElements). RigidSegment."
-                                },
-                                "routingNodeId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing node the elbow or transition belongs to (see GetMEPRoutingElements). Elbow and Transition."
-                                },
-                                "controlPoints": {
-                                    "type": "array",
-                                    "description": "The control points of the flexible segment. FlexibleSegment.",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                },
-                                "polyline": {
-                                    "$ref": "#/MEPFlexibleSegmentPolyline",
-                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see CreateMEPFlexibleSegments). FlexibleSegment."
-                                },
-                                "factorRadius": {
-                                    "type": "number",
-                                    "description": "The radius factor of the elbow (Elbow::GetFactorRadius). Elbow, from Archicad 29."
-                                },
-                                "preferenceTableId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow and Transition, from Archicad 29."
-                                },
-                                "branchAngle": {
-                                    "type": "number",
-                                    "description": "The angle of the branch, as returned by Branch::GetBranchAngle. Branch."
-                                },
-                                "branchLength": {
-                                    "type": "number",
-                                    "description": "The length of the branch. Branch."
-                                },
-                                "offsetY": {
-                                    "type": "number",
-                                    "description": "The Y offset of the transition (Transition::GetOffsetY). Transition."
-                                },
-                                "offsetZ": {
-                                    "type": "number",
-                                    "description": "The Z offset of the transition (Transition::GetOffsetZ). Transition."
-                                },
-                                "widerPortId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The port at the wider end of the transition (see GetMEPPorts). Transition."
-                                },
-                                "narrowerPortId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The port at the narrower end of the transition (see GetMEPPorts). Transition."
-                                },
-                                "isControlledByPreference": {
-                                    "type": "boolean",
-                                    "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId",
-                                "type",
-                                "domain"
-                            ]
+                            "$ref": "#/MEPElementDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2416,95 +2346,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create MEP routing elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "$ref": "#/MEPDomain"
-                        },
-                        "nodeCoordinates": {
-                            "type": "array",
-                            "description": "The corner points of the route polyline.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 2
-                        },
-                        "crossSectionWidth": {
-                            "type": "number",
-                            "description": "Optional cross section width applied to all segments."
-                        },
-                        "crossSectionHeight": {
-                            "type": "number",
-                            "description": "Optional cross section height applied to all segments."
-                        },
-                        "crossSectionShape": {
-                            "$ref": "#/MEPCrossSectionShape",
-                            "description": "Optional; applied to all segments."
-                        },
-                        "crossSectionReferenceId": {
-                            "type": "integer",
-                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default."
-                        },
-                        "preferenceTableId": {
-                            "$ref": "#/Guid",
-                            "description": "Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Optional MEP system attribute."
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional home story index (as returned by GetStories) of the routing element and all its parts. The node coordinates stay absolute: the route is placed at them, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
-                        },
-                        "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                            "properties": {
-                                "routingNode": {
-                                    "type": "object",
-                                    "description": "The routing node default: the elbows and transitions placed at the nodes of the route. Available from Archicad 29.",
-                                    "properties": {
-                                        "elbow": {
-                                            "type": "object",
-                                            "properties": {
-                                                "preferenceTableId": {
-                                                    "$ref": "#/Guid",
-                                                    "description": "The guid of an elbow preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                                },
-                                                "factorRadius": {
-                                                    "type": "number",
-                                                    "description": "The radius factor of the elbows placed at the nodes."
-                                                }
-                                            },
-                                            "additionalProperties": false
-                                        },
-                                        "transition": {
-                                            "type": "object",
-                                            "properties": {
-                                                "preferenceTableId": {
-                                                    "$ref": "#/Guid",
-                                                    "description": "The guid of a transition preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                                }
-                                            },
-                                            "additionalProperties": false
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "domain",
-                        "nodeCoordinates"
-                    ]
+                    "$ref": "#/MEPRoutingElementData"
                 }
             }
         },
@@ -2541,6 +2383,7 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
 
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("Create MEP Routing Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& routingElementData : routingElementsData) {
@@ -2571,7 +2414,7 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             }
 
             std::optional<short> floorIndex;
-            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (routingElementData, floorIndex);
+            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (routingElementData, stories, floorIndex);
             if (floorIndexError.HasValue ()) {
                 elements (floorIndexError.Get ());
                 continue;
@@ -2743,104 +2586,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Array of data to create MEP elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "$ref": "#/MEPComponentType"
-                        },
-                        "domain": {
-                            "$ref": "#/MEPDomain",
-                            "description": "Required for all types except Equipment. For Equipment it only selects the ports that mepSystemId is applied to."
-                        },
-                        "position": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "Optional library part to place instead of the one in the tool's settings, as listed by GetAvailableLibraryParts. Its ports replace the default ones, so 'ports' refers to the ports of this library part. Its ports keep the MEP system of the library part, which may be none, so give 'mepSystemId' with it to connect it. If it is not found, the item fails and nothing is placed."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "Optional size along the local x axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "Optional size along the local y axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Optional MEP system of the ports of the element's domain (of every port when an Equipment item has no domain). The 'mepSystemId' of an entry of 'ports' overrides it for that port."
-                        },
-                        "ports": {
-                            "type": "array",
-                            "description": "Optional changes to single ports of the element before it is placed. The values are in meters.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "portIndex": {
-                                        "type": "integer",
-                                        "description": "Zero-based index of the port in the library part."
-                                    },
-                                    "mepSystemId": {
-                                        "$ref": "#/AttributeId",
-                                        "description": "The MEP system of the port."
-                                    },
-                                    "shape": {
-                                        "$ref": "#/MEPCrossSectionShape",
-                                        "description": "The shape of the port."
-                                    },
-                                    "width": {
-                                        "type": "number",
-                                        "description": "The width of the port."
-                                    },
-                                    "height": {
-                                        "type": "number",
-                                        "description": "The height of a ventilation or cable carrier port."
-                                    },
-                                    "diameter": {
-                                        "type": "number",
-                                        "description": "The diameter of a piping port."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "portIndex"
-                                ]
-                            }
-                        },
-                        "orientationDirection": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional direction vector of the orientation. Defaults to (1, 0, 0)."
-                        },
-                        "orientationRotation": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional rotation vector of the orientation. Defaults to (0, 1, 0)."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional home story index (as returned by GetStories). The position stays absolute: the element is placed at it, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
-                        },
-                        "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                            "properties": {
-                                "insulationThickness": {
-                                    "type": "number",
-                                    "description": "The insulation thickness in meters."
-                                },
-                                "removeInsulation": {
-                                    "type": "boolean",
-                                    "description": "If true, the element is placed without insulation. Cannot be combined with insulationThickness."
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "type",
-                        "position"
-                    ]
+                    "$ref": "#/MEPElementData"
                 }
             }
         },
@@ -2877,6 +2623,7 @@ GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parame
 
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("Create MEP Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementData : elementsData) {
@@ -2917,7 +2664,7 @@ GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parame
             }
 
             std::optional<short> floorIndex;
-            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (elementData, floorIndex);
+            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (elementData, stories, floorIndex);
             if (floorIndexError.HasValue ()) {
                 elements (floorIndexError.Get ());
                 continue;
@@ -2968,99 +2715,7 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to modify MEP routing elements. Only provided fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "crossSectionWidth": {
-                            "type": "number",
-                            "description": "New cross section width applied to all segments."
-                        },
-                        "crossSectionHeight": {
-                            "type": "number",
-                            "description": "New cross section height applied to all segments."
-                        },
-                        "crossSectionShape": {
-                            "$ref": "#/MEPCrossSectionShape",
-                            "description": "The new shape is applied to all segments."
-                        },
-                        "crossSectionReferenceId": {
-                            "type": "integer",
-                            "description": "New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use."
-                        },
-                        "preferenceTableId": {
-                            "$ref": "#/Guid",
-                            "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
-                        },
-                        "branchPreferenceTableId": {
-                            "$ref": "#/Guid",
-                            "description": "New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element."
-                        },
-                        "anchor": {
-                            "$ref": "#/MEPRoutingAnchor",
-                            "description": "Applied to all segments of the routing element."
-                        },
-                        "referenceLineOffsetX": {
-                            "type": "number",
-                            "description": "New horizontal offset of the reference line from the anchor point, applied to all segments."
-                        },
-                        "referenceLineOffsetY": {
-                            "type": "number",
-                            "description": "New vertical offset of the reference line from the anchor point, applied to all segments."
-                        },
-                        "wallThickness": {
-                            "type": "number",
-                            "description": "New wall thickness applied to all segments."
-                        },
-                        "flangeSize": {
-                            "type": "number",
-                            "description": "New flange size applied to all segments. Needs the Flanged connection style, which can be set in the same call."
-                        },
-                        "insulationThickness": {
-                            "type": "number",
-                            "minimum": 0,
-                            "description": "New insulation thickness of the route, as Insulation in its settings: applied to the rigid segments of all segments and to the elbows (bends in Archicad 28) and transitions at all nodes. 0 removes the insulation. Not applicable to the CableCarrier domain."
-                        },
-                        "connectionStyle": {
-                            "$ref": "#/MEPConnectionStyle",
-                            "description": "New connection style applied to all segments."
-                        },
-                        "preferredTransitionPlacement": {
-                            "$ref": "#/MEPPreferredTransitionPlacement",
-                            "description": "New preferred transition placement applied to all nodes."
-                        },
-                        "cutPlanePosition": {
-                            "$ref": "#/MEPCutPlanePosition",
-                            "description": "New cut plane position of the routing element. Available from Archicad 29."
-                        },
-                        "floorPlanDisplayOption": {
-                            "$ref": "#/MEPFloorPlanDisplayOption",
-                            "description": "New floor plan display option of the routing element. Available from Archicad 29."
-                        },
-                        "showProjection": {
-                            "$ref": "#/MEPShowProjection",
-                            "description": "New show projection setting of the routing element. Available from Archicad 29."
-                        },
-                        "onStoryVisibility": {
-                            "$ref": "#/MEPOnStoryVisibility",
-                            "description": "New on-story visibility of the routing element. Available from Archicad 29."
-                        },
-                        "nodePositions": {
-                            "type": "array",
-                            "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/MEPRoutingElementModificationData"
                 }
             }
         },
@@ -3370,37 +3025,7 @@ GS::Optional<GS::UniString> ModifyMEPPortsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "Array of data to modify MEP ports. Only provided fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "portId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to modify, as returned by GetMEPPorts."
-                        },
-                        "shape": {
-                            "$ref": "#/MEPCrossSectionShape",
-                            "description": "New shape of the port."
-                        },
-                        "connectionStyle": {
-                            "$ref": "#/MEPConnectionStyle",
-                            "description": "New connection style of the port. Available from Archicad 30."
-                        },
-                        "flowDirection": {
-                            "$ref": "#/MEPFlowDirection",
-                            "description": "New flow direction of a piping or ventilation port."
-                        },
-                        "outerDiameter": {
-                            "type": "number",
-                            "description": "New outer diameter of a piping port."
-                        },
-                        "nominalSize": {
-                            "type": "string",
-                            "description": "New nominal size of a piping port. Available from Archicad 30."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "portId"
-                    ]
+                    "$ref": "#/MEPPortModificationData"
                 }
             }
         },
@@ -3462,11 +3087,15 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
         GS::UniString flowDirectionStr;
         GS::UniString nominalSize;
         double outerDiameter = 0.0;
+        double width = 0.0;
+        double height = 0.0;
         const bool hasShape = portData.Get ("shape", shapeStr);
         const bool hasConnectionStyle = portData.Get ("connectionStyle", connectionStyleStr);
         const bool hasFlowDirection = portData.Get ("flowDirection", flowDirectionStr);
         const bool hasNominalSize = portData.Get ("nominalSize", nominalSize);
         const bool hasOuterDiameter = portData.Get ("outerDiameter", outerDiameter);
+        const bool hasWidth = portData.Get ("width", width);
+        const bool hasHeight = portData.Get ("height", height);
         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
         const std::optional<ConnectionStyle> connectionStyle = MEPEnumFromString (ConnectionStyleNames, connectionStyleStr);
         const std::optional<FlowDirection> flowDirection = MEPEnumFromString (FlowDirectionNames, flowDirectionStr);
@@ -3490,17 +3119,28 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'flowDirection' needs a piping or ventilation port, 'outerDiameter' and 'nominalSize' need a piping port."));
             continue;
         }
+        // A piping port is round: its size is its outer diameter, as in CreateMEPElements' port settings.
+        if (hasHeight && domain == Domain::Piping) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'height' needs a ventilation or cable carrier port; give the size of a piping port as 'outerDiameter'."));
+            continue;
+        }
 
         const API_Guid ownerElementGuid = MEPUniqueIDToAPIGuid (port->GetMEPElementId ());
         changeReporter.Add (ownerElementGuid);
 
         bool success = true;
 
-        if (hasShape || hasConnectionStyle) {
+        if (hasShape || hasConnectionStyle || hasWidth || hasHeight) {
             bool settersSucceeded = true;
             ACAPI::Result<void> result = port->Modify ([&](PortBase::Modifier& modifier) {
                 if (shape.has_value ()) {
                     settersSucceeded &= modifier.SetShape (shape.value ()).IsOk ();
+                }
+                if (hasWidth) {
+                    settersSucceeded &= modifier.SetWidth (width).IsOk ();
+                }
+                if (hasHeight) {
+                    settersSucceeded &= modifier.SetHeight (height).IsOk ();
                 }
 #ifdef ServerMainVers_3000
                 if (connectionStyle.has_value ()) {
@@ -3623,22 +3263,7 @@ GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "Array of connections to create.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "routingElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The routing element to connect to. When connecting two routes, the first or last node of the 'connectToId' route must lie exactly on this route (on its centerline, not within a tolerance). For a tee, this is the main route, which is split and gets the branch element."
-                        },
-                        "connectToId": {
-                            "$ref": "#/ElementId",
-                            "description": "The MEP element or routing element connected to 'routingElementId'. For a tee, this is the branch route, whose first or last node lies on the main route. Two routes must have the same domain and MEP system; an MEP element's port must match the route in domain and MEP system, lie on its first or last node and point in the opposite direction."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "routingElementId",
-                        "connectToId"
-                    ]
+                    "$ref": "#/MEPConnectionData"
                 }
             }
         },
@@ -3814,22 +3439,7 @@ GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetInputParameter
                 "type": "array",
                 "description": "The pairs of ports to check.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "portId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to check, as returned by GetMEPPorts."
-                        },
-                        "otherPortId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to connect it to, as returned by GetMEPPorts."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "portId",
-                        "otherPortId"
-                    ]
+                    "$ref": "#/MEPPortPair"
                 }
             }
         },
@@ -3852,17 +3462,7 @@ GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "isConnectable": {
-                                    "type": "boolean",
-                                    "description": "Whether the port can be connected to the other port."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "isConnectable"
-                            ]
+                            "$ref": "#/MEPPortConnectability"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3941,7 +3541,8 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of the segment preference tables."
             },
             "includeFittingTables": {
                 "type": "boolean",
@@ -4433,23 +4034,14 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of the segment preference tables."
             },
             "tablesToAdd": {
                 "type": "array",
                 "description": "New tables to add to the domain, before the other changes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "$ref": "#/MEPPreferenceTableType"
-                        },
-                        "name": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["type", "name"]
+                    "$ref": "#/MEPPreferenceTableAddition"
                 }
             },
             "tables": {
@@ -4922,10 +4514,22 @@ static GS::ObjectState ModifyPreferenceTable (TableT& table, const GS::ObjectSta
     return CreateSuccessfulExecutionResult ();
 }
 
-// Changes the table if the id is a table of type TableT; gives nothing otherwise.
-template <typename TableT>
-static std::optional<GS::ObjectState> TryModifyPreferenceTable (const ACAPI::MEP::UniqueID& id, const GS::ObjectState& tableData)
+// Changes the table if the id is one of the container's tables and a table of type TableT; gives nothing otherwise. The
+// container is asked first: TableT::Get with the id of a table of another container, e.g. a branch table's id for
+// PipeSegmentPreferenceTable, stops Archicad 29 ("Object doesn't exist in Database!", then the fatal "Loading of the
+// object failed"). Within a container a table of the other type is fine: Get answers an error (circular and
+// rectangular duct segment tables share a container).
+template <typename TableT, typename ContainerResultT>
+static std::optional<GS::ObjectState> TryModifyPreferenceTable (const ContainerResultT& container, const ACAPI::MEP::UniqueID& id, const GS::ObjectState& tableData)
 {
+    if (container.IsErr ()) {
+        return std::nullopt;
+    }
+    const auto tableIds = container->GetPreferenceTables ();
+    const bool listed = std::any_of (tableIds.begin (), tableIds.end (), [&] (const auto& tableId) { return tableId.GetGuid () == id.GetGuid (); });
+    if (!listed) {
+        return std::nullopt;
+    }
     auto table = TableT::Get (id);
     if (table.IsErr ()) {
         return std::nullopt;
@@ -4941,34 +4545,34 @@ static GS::ObjectState ModifyPreferenceTableOfDomain (Domain domain, const GS::O
 
     std::optional<GS::ObjectState> result;
     if (domain == Domain::CableCarrier) {
-        result = TryModifyPreferenceTable<CableCarrierSegmentPreferenceTable> (id, tableData);
+        result = TryModifyPreferenceTable<CableCarrierSegmentPreferenceTable> (GetCableCarrierSegmentPreferenceTableContainer (), id, tableData);
     } else if (domain == Domain::Piping) {
-        result = TryModifyPreferenceTable<PipeSegmentPreferenceTable> (id, tableData);
+        result = TryModifyPreferenceTable<PipeSegmentPreferenceTable> (GetPipeSegmentPreferenceTableContainer (), id, tableData);
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<PipeElbowPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<PipeElbowPreferenceTable> (GetPipeElbowPreferenceTableContainer (), id, tableData);
         }
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<PipeBranchPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<PipeBranchPreferenceTable> (GetPipeBranchPreferenceTableContainer (), id, tableData);
         }
 #ifdef ServerMainVers_2900
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<PipeTransitionPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<PipeTransitionPreferenceTable> (GetPipeTransitionPreferenceTableContainer (), id, tableData);
         }
 #endif
     } else {
-        result = TryModifyPreferenceTable<DuctCircularSegmentPreferenceTable> (id, tableData);
+        result = TryModifyPreferenceTable<DuctCircularSegmentPreferenceTable> (GetDuctSegmentPreferenceTableContainer (), id, tableData);
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctRectangularSegmentPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctRectangularSegmentPreferenceTable> (GetDuctSegmentPreferenceTableContainer (), id, tableData);
         }
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctElbowPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctElbowPreferenceTable> (GetDuctElbowPreferenceTableContainer (), id, tableData);
         }
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctBranchPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctBranchPreferenceTable> (GetDuctBranchPreferenceTableContainer (), id, tableData);
         }
 #ifdef ServerMainVers_2900
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctTransitionPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctTransitionPreferenceTable> (GetDuctTransitionPreferenceTableContainer (), id, tableData);
         }
 #endif
     }
@@ -5650,41 +5254,13 @@ GS::Optional<GS::UniString> GetElectricalProjectSettingsCommand::GetRawResponseS
             "wiringTypes": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "crossSectionalArea": {
-                            "type": "number",
-                            "description": "The cross-sectional area of the wire in square millimeters."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "crossSectionalArea"
-                    ]
+                    "$ref": "#/ElectricalWiringType"
                 }
             },
             "loadClassifications": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "demandFactor": {
-                            "type": "number",
-                            "description": "The demand factor, between 0 and 1."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "demandFactor"
-                    ]
+                    "$ref": "#/ElectricalLoadClassification"
                 }
             }
         },
@@ -5962,49 +5538,7 @@ GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "Array of data to create electrical panels. The fields that are not given are taken from the default settings of the Electrical Panel tool.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "position": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "The anchor point of the new panel."
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0)."
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "panelName": {
-                            "type": "string"
-                        },
-                        "circuitNamePrefix": {
-                            "type": "string"
-                        },
-                        "circuitIdStyle": {
-                            "type": "integer"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "position"
-                    ]
+                    "$ref": "#/ElectricalPanelData"
                 }
             }
         },
@@ -6133,56 +5667,7 @@ GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of data to create electrical devices. The fields that are not given are taken from the default settings of the Electrical Device tool.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "position": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "The anchor point of the new device."
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0)."
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "apparentPower": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The apparent power in VA."
-                        },
-                        "isApparentPowerEnabled": {
-                            "type": "boolean"
-                        },
-                        "loadClassificationName": {
-                            "type": "string",
-                            "description": "One of the load classifications of the electrical project settings, or an empty string for none."
-                        },
-                        "circuitId": {
-                            "$ref": "#/ElementId",
-                            "description": "The circuit to connect the new device to."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "position"
-                    ]
+                    "$ref": "#/ElectricalDeviceData"
                 }
             }
         },
@@ -6327,50 +5812,7 @@ GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "Array of data to modify electrical panels. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "panelName": {
-                            "type": "string"
-                        },
-                        "circuitNamePrefix": {
-                            "type": "string"
-                        },
-                        "circuitIdStyle": {
-                            "type": "integer"
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation"
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElectricalPanelModificationData"
                 }
             }
         },
@@ -6442,36 +5884,7 @@ GS::Optional<GS::UniString> CreateElectricalCircuitsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create electrical circuits. Each item adds one circuit to the given panel.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "electricalPanelId": {
-                            "$ref": "#/ElementId",
-                            "description": "The panel to add the new circuit to."
-                        },
-                        "description": {
-                            "type": "string"
-                        },
-                        "voltage": {
-                            "type": "number"
-                        },
-                        "wiringTypeName": {
-                            "type": "string",
-                            "description": "One of the wiring types of the electrical project settings, or an empty string for none."
-                        },
-                        "isPhaseAUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseBUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseCUsed": {
-                            "type": "boolean"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "electricalPanelId"
-                    ]
+                    "$ref": "#/ElectricalCircuitData"
                 }
             }
         },
@@ -6711,35 +6124,7 @@ GS::Optional<GS::UniString> ModifyElectricalCircuitsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to modify electrical circuits. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "description": {
-                            "type": "string"
-                        },
-                        "voltage": {
-                            "type": "number"
-                        },
-                        "wiringTypeName": {
-                            "type": "string",
-                            "description": "One of the wiring types of the electrical project settings, or an empty string for none."
-                        },
-                        "isPhaseAUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseBUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseCUsed": {
-                            "type": "boolean"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElectricalCircuitModificationData"
                 }
             }
         },
@@ -6828,53 +6213,7 @@ GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of data to modify electrical devices. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "apparentPower": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The apparent power in VA."
-                        },
-                        "isApparentPowerEnabled": {
-                            "type": "boolean"
-                        },
-                        "loadClassificationName": {
-                            "type": "string",
-                            "description": "One of the load classifications of the electrical project settings, or an empty string for none."
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation"
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElectricalDeviceModificationData"
                 }
             }
         },
@@ -6951,22 +6290,7 @@ GS::Optional<GS::UniString> ConnectToElectricalCircuitsCommand::GetInputParamete
                 "type": "array",
                 "description": "Array of electrical devices or panels and the circuits to connect them to. A panel connected to a circuit becomes a sub-panel of the panel of that circuit.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "An electrical device or an electrical panel."
-                        },
-                        "circuitId": {
-                            "$ref": "#/ElementId",
-                            "description": "The electrical circuit to connect to."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "circuitId"
-                    ]
+                    "$ref": "#/ElectricalCircuitConnectionData"
                 }
             }
         },
@@ -7433,16 +6757,7 @@ GS::Optional<GS::UniString> CreateMEPSystemGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "Array of data to create system groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/MEPSystemGroupData"
                 }
             }
         },
@@ -7533,29 +6848,7 @@ GS::Optional<GS::UniString> CreateMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create physical systems.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "systemGroupId": {
-                            "$ref": "#/MEPSystemGroupId",
-                            "description": "The system group the new physical system belongs to."
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "rootElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The MEP system attribute used as the category of the physical system."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "systemGroupId",
-                        "name"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemData"
                 }
             }
         },
@@ -7698,21 +6991,7 @@ GS::Optional<GS::UniString> ModifyMEPSystemGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "Array of data to modify system groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "systemGroupId": {
-                            "$ref": "#/MEPSystemGroupId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the system group."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "systemGroupId",
-                        "name"
-                    ]
+                    "$ref": "#/MEPSystemGroupModificationData"
                 }
             }
         },
@@ -7803,28 +7082,7 @@ GS::Optional<GS::UniString> ModifyMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to modify physical systems. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "physicalSystemId": {
-                            "$ref": "#/MEPPhysicalSystemId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the physical system."
-                        },
-                        "rootElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The MEP system attribute used as the category of the physical system."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "physicalSystemId"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemModificationData"
                 }
             }
         },
@@ -7940,16 +7198,7 @@ GS::Optional<GS::UniString> DeleteMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "The physical systems to remove from their system groups. Their member elements are not deleted.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "physicalSystemId": {
-                            "$ref": "#/MEPPhysicalSystemId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "physicalSystemId"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemIdArrayItem"
                 }
             }
         },
@@ -8215,12 +7464,9 @@ static void AddMEPToolDefault (GS::ObjectState& os, const char* fieldName, ACAPI
 static GS::ObjectState CreateRigidSegmentDefaultDetails (const RigidSegmentDefault& rigidSegmentDefault)
 {
     GS::ObjectState rigidSegmentOs;
-#ifndef ServerMainVers_2900
-    // Archicad 29 has no size getters on the rigid segment default.
-    rigidSegmentOs.Add ("shape", ConnectorShapeToString (rigidSegmentDefault.GetShape ()));
-    rigidSegmentOs.Add ("width", rigidSegmentDefault.GetWidth ());
-    rigidSegmentOs.Add ("height", rigidSegmentDefault.GetHeight ());
-#endif
+    // The shape and size are not read: Archicad 29 has no size getters on the rigid segment default,
+    // and on Archicad 28 they stop Archicad with the MEP API assertion "Unhandled shape!" (#2468);
+    // the size of a rigid segment comes from the routing segment default (routingElement.routingSegment).
     AddMEPNumber (rigidSegmentOs, "insulationThickness", rigidSegmentDefault.GetInsulationThickness ());
     return rigidSegmentOs;
 }
@@ -8327,36 +7573,7 @@ GS::Optional<GS::UniString> GetMEPToolDefaultsCommand::GetRawResponseSchema () c
                 "description": "The default of the Equipment tool, which has no domain. Left out when Archicad gives none."
             },
             "electricalPanel": {
-                "type": "object",
-                "description": "The default of the Electrical Panel tool, which has no domain. Available from Archicad 30.",
-                "properties": {
-                    "libraryPartId": {
-                        "$ref": "#/LibPartUnId",
-                        "description": "The library part the tool places."
-                    },
-                    "panelName": {
-                        "type": "string"
-                    },
-                    "circuitNamePrefix": {
-                        "type": "string"
-                    },
-                    "circuitIdStyle": {
-                        "type": "integer",
-                        "description": "The index of the circuit id style."
-                    },
-                    "circuitDefaultCount": {
-                        "type": "integer",
-                        "description": "The number of circuit defaults of the panel default."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "libraryPartId",
-                    "panelName",
-                    "circuitNamePrefix",
-                    "circuitIdStyle",
-                    "circuitDefaultCount"
-                ]
+                "$ref": "#/ElectricalPanelToolDefaults"
             }
         },
         "additionalProperties": false,
@@ -8586,20 +7803,7 @@ GS::Optional<GS::UniString> GetMEPPhysicalSystemsOfElementsCommand::GetRawRespon
                 "type": "array",
                 "description": "The physical systems of each given element, in the order of the elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "physicalSystemIds": {
-                            "type": "array",
-                            "description": "The physical systems the element is part of. Empty for an element of no physical system.",
-                            "items": {
-                                "$ref": "#/MEPPhysicalSystemId"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "physicalSystemIds"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemsOfElement"
                 }
             }
         },
@@ -8743,44 +7947,7 @@ GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetInputParameters
                 "type": "array",
                 "description": "Array of data to place MEP flexible segments with the current settings of the Flexible Segment tool of their domain (see GetMEPToolDefaults).",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "$ref": "#/MEPDomain"
-                        },
-                        "controlPoints": {
-                            "type": "array",
-                            "description": "The control points of the flexible segment, from its beginning to its end. Give either 'controlPoints' or 'polyline'.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 2
-                        },
-                        "startOrientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Optional orientation at the beginning, with 'controlPoints'. Defaults to the direction from the first control point to the second one, with a horizontal rotation vector perpendicular to it."
-                        },
-                        "endOrientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Optional orientation at the end, with 'controlPoints'. Defaults to the direction from the last but one control point to the last one, with a horizontal rotation vector perpendicular to it."
-                        },
-                        "polyline": {
-                            "$ref": "#/MEPFlexibleSegmentPolyline",
-                            "description": "The flexible segment as alternating line and spline parts that connect at their ends, instead of 'controlPoints'. Archicad places polyline flexible segments in the Piping domain only."
-                        },
-                        "startDirection": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional direction vector at the beginning, with 'polyline'. Only when the first part is a spline."
-                        },
-                        "endDirection": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional direction vector at the end, with 'polyline'. Only when the last part is a spline."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "domain"
-                    ]
+                    "$ref": "#/MEPFlexibleSegmentCreationData"
                 }
             }
         },
@@ -8888,47 +8055,7 @@ GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Array of data to create MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "$ref": "#/MEPDomain",
-                            "description": "Optional domain of the Take-Off tool whose settings are used. Defaults to the domain of the segment's routing element. Archicad currently only has Ventilation take-offs."
-                        },
-                        "segmentId": {
-                            "$ref": "#/ElementId",
-                            "description": "The routing segment to place the take-off on (the elementId of an item of 'segments' returned by GetMEPRoutingElements)."
-                        },
-                        "distanceFromBeginning": {
-                            "type": "number",
-                            "description": "The distance of the take-off from the beginning of the segment, in meters. Must not be negative or more than the length of the segment.",
-                            "minimum": 0
-                        },
-                        "rotationAroundMainAxis": {
-                            "type": "number",
-                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Archicad places take-offs only at quarter turns, so it must be a multiple of pi/2 (negative values and full turns are allowed). Defaults to 0, which places the take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right, 3*pi/2 (or -pi/2) faces down."
-                        },
-                        "length": {
-                            "type": "number",
-                            "description": "Optional length of the take-off in meters, set after placing it; must be positive. The length of the Take-Off tool when not given.",
-                            "exclusiveMinimum": 0
-                        },
-                        "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the settings of the Take-Off tool before the take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed. The insulation thickness of a take-off cannot be set (Archicad stops with a fatal error).",
-                            "properties": {
-                                "removeInsulation": {
-                                    "type": "boolean",
-                                    "description": "If true, the take-off is placed without insulation."
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "segmentId",
-                        "distanceFromBeginning"
-                    ]
+                    "$ref": "#/MEPTakeOffCreationData"
                 }
             }
         },
@@ -9145,8 +8272,13 @@ struct MEPElementChanges {
 #endif
     std::optional<double>       width;
     std::optional<double>       height;
+    std::optional<double>       xSize;
+    std::optional<double>       ySize;
 
-    bool ChangesPlacement () const          { return anchorPoint != nullptr || orientation != nullptr || libraryPartId != nullptr; }
+    bool ChangesPlacement () const
+    {
+        return anchorPoint != nullptr || orientation != nullptr || libraryPartId != nullptr || xSize.has_value () || ySize.has_value ();
+    }
     bool ChangesFlexibleSegment () const
     {
 #ifdef ServerMainVers_2800
@@ -9199,6 +8331,17 @@ static std::optional<GS::ObjectState> GetMEPElementChanges (const GS::ObjectStat
     if (elementData.Get ("height", value)) {
         changes.height = value;
     }
+    if (elementData.Get ("xSize", value)) {
+        changes.xSize = value;
+    }
+    if (elementData.Get ("ySize", value)) {
+        changes.ySize = value;
+    }
+#ifndef ServerMainVers_3000
+    if (changes.xSize.has_value () || changes.ySize.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "'xSize' and 'ySize' require Archicad 30 or newer.");
+    }
+#endif
     return std::nullopt;
 }
 
@@ -9240,15 +8383,31 @@ static std::optional<GS::ObjectState> ModifyMEPFlexibleSegment (FlexibleSegment&
     return std::nullopt;
 }
 
-// Changes the anchor point, orientation and library part of a modifiable MEP element (a terminal,
-// accessory, equipment, fitting or flexible segment).
+// Changes the anchor point, orientation, library part and (from Archicad 30) the library part's size of
+// a modifiable MEP element (a terminal, accessory, equipment, fitting or flexible segment).
 static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableElement& element, const ACAPI::MEP::UniqueID& elemId, const MEPElementChanges& changes)
 {
+    std::optional<GS::UniString> setterError;
+#ifdef ServerMainVers_3000
+    const auto checkSetter = [&] (const ACAPI::Result<void>& result, const char* what) {
+        if (result.IsErr () && !setterError.has_value ()) {
+            setterError = MEPErrorText (GS::UniString ("Failed to set the '") + what + "' of the MEP element.", result.UnwrapErr ());
+        }
+    };
+#endif
     ACAPI::Result<void> modifyResult = element.Modify ([&](ModifiableElementBase::Modifier& modifier) {
-        // The library part first, the placement is meant for the new library part.
+        // The library part first, the placement and the size are meant for the new library part.
         if (changes.libraryPartId != nullptr) {
             modifier.SetObjectId (GetGuidFromObjectState (*changes.libraryPartId));
         }
+#ifdef ServerMainVers_3000
+        if (changes.xSize.has_value ()) {
+            checkSetter (modifier.SetObjectXSize (changes.xSize.value ()), "xSize");
+        }
+        if (changes.ySize.has_value ()) {
+            checkSetter (modifier.SetObjectYSize (changes.ySize.value ()), "ySize");
+        }
+#endif
         if (changes.anchorPoint != nullptr) {
             modifier.SetAnchorPoint (Get3DCoordinateFromObjectState (*changes.anchorPoint));
         }
@@ -9256,6 +8415,9 @@ static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableEleme
             modifier.SetOrientation (GetMEPOrientationOfInput (*changes.orientation));
         }
     }, "Modify MEP Element Placement");
+    if (setterError.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, setterError.value ());
+    }
     if (modifyResult.IsErr ()) {
         return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, MEPErrorText ("Failed to modify the placement of the MEP element.", modifyResult.UnwrapErr ()));
     }
@@ -9266,13 +8428,26 @@ static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableEleme
             return CreateFailedExecutionResult (APIERR_BADPARS, "The library part given in 'libraryPartId' was not found, the element keeps its library part. The other changes were made.");
         }
     }
+#ifdef ServerMainVers_3000
+    if (changes.xSize.has_value () || changes.ySize.has_value ()) {
+        // Some library parts calculate their own size and ignore the given one without an error.
+        ACAPI::Result<ModifiableElement> modified = ModifiableElement::Get (elemId);
+        const double tolerance = 1e-4;
+        if (modified.IsOk () &&
+            ((changes.xSize.has_value () && std::fabs (modified->GetObjectXSize () - changes.xSize.value ()) > tolerance) ||
+             (changes.ySize.has_value () && std::fabs (modified->GetObjectYSize () - changes.ySize.value ()) > tolerance))) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made.");
+        }
+    }
+#endif
     return std::nullopt;
 }
 
 // Makes the changes of one item of ModifyMEPElements. Every element the changes need is looked up
 // before anything is changed, so an item with a field that does not fit its element changes nothing.
-// The one exception: Archicad only shows that it did not find a 'libraryPartId' after the placement
-// was changed, so that error comes after the item's other changes were made.
+// The exceptions: Archicad only shows that it did not find a 'libraryPartId', or that the library part
+// keeps its own size instead of 'xSize' or 'ySize', after the placement was changed, so those errors
+// come after the item's other changes were made.
 static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
 {
     const GS::ObjectState* elementId = elementData.Get ("elementId");
@@ -9297,7 +8472,7 @@ static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
     }
     ACAPI::Result<ModifiableElement> modifiableElement = ModifiableElement::Get (elemId);
     if (changes.ChangesPlacement () && modifiableElement.IsErr ()) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "'anchorPoint', 'orientation' and 'libraryPartId' belong to terminals, accessories, equipment, fittings and flexible segments, and the element is not one of them.");
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'anchorPoint', 'orientation', 'libraryPartId', 'xSize' and 'ySize' belong to terminals, accessories, equipment, fittings and flexible segments, and the element is not one of them.");
     }
     if (changes.ChangesFlexibleSegment ()) {
         const std::optional<GS::ObjectState> failure = ModifyMEPFlexibleSegment (*flexibleSegment.operator-> (), changes);
@@ -9335,48 +8510,7 @@ GS::Optional<GS::UniString> ModifyMEPElementsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The MEP elements to modify, each with the fields to change. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "The new anchor point of a terminal, accessory, equipment, fitting or flexible segment."
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "The new orientation of a terminal, accessory, equipment, fitting or flexible segment."
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part a terminal, accessory, equipment or fitting uses, as listed by GetAvailableLibraryParts. If it is not found, the element keeps its library part and the item fails."
-                        },
-                        "controlPoints": {
-                            "type": "array",
-                            "description": "The new control points of a flexible segment, from its beginning to its end. Not together with 'polyline'.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 2
-                        },
-                        "polyline": {
-                            "$ref": "#/MEPFlexibleSegmentPolyline",
-                            "description": "The new geometry of a Piping flexible segment as alternating line and spline parts that connect at their ends. Not together with 'controlPoints'. Available from Archicad 28."
-                        },
-                        "width": {
-                            "type": "number",
-                            "description": "The new width of a flexible segment."
-                        },
-                        "height": {
-                            "type": "number",
-                            "description": "The new height of a flexible segment."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/MEPElementModificationData"
                 }
             }
         },
@@ -9433,5 +8567,922 @@ GS::ObjectState ModifyMEPElementsCommand::Execute (const GS::ObjectState& parame
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2800
+
+// How far apart, in meters, RebuildMEPRoutingElements counts points as the same: a node on the
+// straight line between its neighbours (removeCollinearNodes), a new node at an old node, a new
+// segment along an old one.
+static constexpr double RouteGeometryTolerance = 0.001;
+
+static double GetDistance (const API_Coord3D& point1, const API_Coord3D& point2)
+{
+    const double dx = point1.x - point2.x;
+    const double dy = point1.y - point2.y;
+    const double dz = point1.z - point2.z;
+    return std::sqrt (dx * dx + dy * dy + dz * dz);
+}
+
+static double GetDistanceOfPointFromSegment (const API_Coord3D& point, const API_Coord3D& begin, const API_Coord3D& end)
+{
+    const API_Coord3D direction = { end.x - begin.x, end.y - begin.y, end.z - begin.z };
+    const API_Coord3D fromBegin = { point.x - begin.x, point.y - begin.y, point.z - begin.z };
+    const double lengthSquare = direction.x * direction.x + direction.y * direction.y + direction.z * direction.z;
+    const double ratio = lengthSquare > 0.0
+        ? std::clamp ((fromBegin.x * direction.x + fromBegin.y * direction.y + fromBegin.z * direction.z) / lengthSquare, 0.0, 1.0)
+        : 0.0;
+    const API_Coord3D closest = { begin.x + ratio * direction.x, begin.y + ratio * direction.y, begin.z + ratio * direction.z };
+    return GetDistance (point, closest);
+}
+
+// Leaves out the inner nodes where the route goes straight on, and the nodes on top of the previous
+// one: a node is left out when it, and every node left out since the last kept one, lies within
+// RouteGeometryTolerance of the segment from the last kept node to the next node.
+static std::vector<API_Coord3D> RemoveCollinearNodes (const std::vector<API_Coord3D>& nodes)
+{
+    if (nodes.size () < 3) {
+        return nodes;
+    }
+    std::vector<API_Coord3D> keptNodes = { nodes.front () };
+    size_t lastKeptIndex = 0;
+    for (size_t i = 1; i + 1 < nodes.size (); ++i) {
+        bool isOnStraight = true;
+        for (size_t j = lastKeptIndex + 1; j <= i && isOnStraight; ++j) {
+            isOnStraight = GetDistanceOfPointFromSegment (nodes[j], nodes[lastKeptIndex], nodes[i + 1]) <= RouteGeometryTolerance;
+        }
+        if (!isOnStraight) {
+            keptNodes.push_back (nodes[i]);
+            lastKeptIndex = i;
+        }
+    }
+    keptNodes.push_back (nodes.back ());
+    return keptNodes;
+}
+
+// What RebuildMEPRoutingElements carries over from the old route to the rebuilt one, read before
+// the old route is deleted.
+struct RoutingElementIdentity {
+    API_Elem_Head                                   header = {};
+    GS::UniString                                   elementId;
+    GS::Array<GS::Pair<API_Guid, API_Guid>>         classificationItems;
+    GS::Array<API_Property>                         customPropertyValues;
+    std::vector<ACAPI::MEP::UniqueID>               connectedElementIds;
+};
+
+static GSErrCode GetRoutingElementIdentity (RoutingElement& routingElement, const API_Guid& routingElementGuid, RoutingElementIdentity& identity)
+{
+    API_Element element = {};
+    element.header.guid = routingElementGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    identity.header = element.header;
+    GetElementId (routingElementGuid, identity.elementId);
+    ACAPI_Element_GetClassificationItems (routingElementGuid, identity.classificationItems);
+
+    // Only the values set on the element itself; the others follow from the property definitions.
+    GS::Array<API_PropertyDefinition> definitions;
+    GS::Array<API_Property> properties;
+    if (ACAPI_Element_GetPropertyDefinitions (routingElementGuid, API_PropertyDefinitionFilter_UserDefined, definitions) == NoError &&
+        ACAPI_Element_GetPropertyValues (routingElementGuid, definitions, properties) == NoError) {
+        for (const API_Property& property : properties) {
+            if (property.status == API_Property_HasValue && !property.isDefault) {
+                identity.customPropertyValues.Push (property);
+            }
+        }
+    }
+
+    for (const std::optional<ACAPI::MEP::UniqueID>& portId : { routingElement.GetLogicallyConnectedPortIdAtRouteBegin (), routingElement.GetLogicallyConnectedPortIdAtRouteEnd () }) {
+        if (!portId.has_value ()) {
+            continue;
+        }
+        ACAPI::Result<Port> port = Port::Get (portId.value ());
+        if (port.IsOk ()) {
+            identity.connectedElementIds.push_back (port->GetMEPElementId ());
+        }
+    }
+    return NoError;
+}
+
+#ifdef ServerMainVers_2900
+using ElbowOrBendDefault = ElbowDefault;
+#else
+// Archicad 28 calls the elbows bends.
+using ElbowOrBendDefault = BendDefault;
+#endif
+
+// A routing segment of a route: where it lies, its guids and every setting a segment can have of
+// its own, so the segment of the rebuilt route that lies along it can get them.
+struct RoutingSegmentRecord {
+    API_Guid                                guid = APINULLGuid;
+    API_Coord3D                             begin = {};
+    API_Coord3D                             end = {};
+    ConnectorShape                          shape = ConnectorShape::Rectangular;
+    double                                  width = 0.0;
+    double                                  height = 0.0;
+    std::optional<uint32_t>                 referenceId;
+    std::optional<ACAPI::MEP::UniqueID>     preferenceTableId;
+    API_AnchorID                            anchor = APIAnc_MM;
+    double                                  referenceLineOffsetX = 0.0;
+    double                                  referenceLineOffsetY = 0.0;
+    double                                  wallThickness = 0.0;
+    ConnectionStyle                         connectionStyle = ConnectionStyle::SimpleBody;
+    std::optional<double>                   flangeSize;
+    std::optional<RigidSegmentDefault>      rigidSegmentDefault;
+    std::vector<API_Guid>                   rigidSegmentGuids;
+};
+
+// A routing node of a route: its position, its guids and the settings a node can have of its own.
+struct RoutingNodeRecord {
+    API_Guid                                guid = APINULLGuid;
+    API_Coord3D                             position = {};
+    PreferredTransitionPlacement            preferredTransitionPlacement = PreferredTransitionPlacement::LargeToSmall;
+    std::optional<ElbowOrBendDefault>       elbowDefault;
+    std::optional<TransitionDefault>        transitionDefault;
+    std::vector<API_Guid>                   elbowGuids;
+    std::vector<API_Guid>                   transitionGuids;
+};
+
+static std::vector<API_Guid> ToAPIGuids (const std::vector<ACAPI::MEP::UniqueID>& ids)
+{
+    std::vector<API_Guid> guids;
+    for (const ACAPI::MEP::UniqueID& id : ids) {
+        guids.push_back (MEPUniqueIDToAPIGuid (id));
+    }
+    return guids;
+}
+
+static std::optional<RoutingSegmentRecord> GetRoutingSegmentRecord (const ACAPI::MEP::UniqueID& segmentId)
+{
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return std::nullopt;
+    }
+    ACAPI::Result<RoutingNode> beginNode = RoutingNode::Get (segment->GetBeginNodeId ());
+    ACAPI::Result<RoutingNode> endNode = RoutingNode::Get (segment->GetEndNodeId ());
+    if (beginNode.IsErr () || endNode.IsErr ()) {
+        return std::nullopt;
+    }
+    RoutingSegmentRecord record;
+    record.guid = MEPUniqueIDToAPIGuid (segmentId);
+    record.begin = beginNode->GetPosition ();
+    record.end = endNode->GetPosition ();
+    record.shape = segment->GetCrossSectionShape ();
+    record.width = segment->GetCrossSectionWidth ();
+    record.height = segment->GetCrossSectionHeight ();
+    record.referenceId = ToOptional (segment->GetCrossSectionReferenceId ());
+    record.preferenceTableId = segment->GetPreferenceTableId ();
+    record.anchor = segment->GetAnchor ();
+    record.referenceLineOffsetX = segment->GetReferenceLineOffsetX ();
+    record.referenceLineOffsetY = segment->GetReferenceLineOffsetY ();
+    record.wallThickness = segment->GetWallThickness ();
+    record.connectionStyle = segment->GetConnectionStyle ();
+    record.flangeSize = segment->GetFlangeSize ();
+    record.rigidSegmentDefault = segment->GetRigidSegmentDefaultParameters ();
+    record.rigidSegmentGuids = ToAPIGuids (segment->GetRigidSegmentIds ());
+    return record;
+}
+
+static std::optional<RoutingNodeRecord> GetRoutingNodeRecord (const ACAPI::MEP::UniqueID& nodeId)
+{
+    ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+    if (node.IsErr ()) {
+        return std::nullopt;
+    }
+    RoutingNodeRecord record;
+    record.guid = MEPUniqueIDToAPIGuid (nodeId);
+    record.position = node->GetPosition ();
+    record.preferredTransitionPlacement = node->GetPreferredTransitionPlacement ();
+#ifdef ServerMainVers_2900
+    record.elbowDefault = node->GetElbowDefaultParameters ();
+    record.elbowGuids = ToAPIGuids (node->GetElbowIds ());
+#else
+    record.elbowDefault = node->GetBendDefaultParameters ();
+    record.elbowGuids = ToAPIGuids (node->GetBendIds ());
+#endif
+    record.transitionDefault = node->GetTransitionDefaultParameters ();
+    record.transitionGuids = ToAPIGuids (node->GetTransitionIds ());
+    return record;
+}
+
+static std::vector<RoutingSegmentRecord> GetRoutingSegmentRecords (const RoutingElement& routingElement)
+{
+    std::vector<RoutingSegmentRecord> records;
+    for (const ACAPI::MEP::UniqueID& segmentId : routingElement.GetRoutingSegmentIds ()) {
+        std::optional<RoutingSegmentRecord> record = GetRoutingSegmentRecord (segmentId);
+        if (record.has_value ()) {
+            records.push_back (std::move (record.value ()));
+        }
+    }
+    return records;
+}
+
+static std::vector<RoutingNodeRecord> GetRoutingNodeRecords (const RoutingElement& routingElement)
+{
+    std::vector<RoutingNodeRecord> records;
+    for (const ACAPI::MEP::UniqueID& nodeId : routingElement.GetRoutingNodeIds ()) {
+        std::optional<RoutingNodeRecord> record = GetRoutingNodeRecord (nodeId);
+        if (record.has_value ()) {
+            records.push_back (std::move (record.value ()));
+        }
+    }
+    return records;
+}
+
+// The length along which the segment from begin to end lies along the old segment: both its ends
+// within RouteGeometryTolerance of the old segment's line, overlapping it by more than the
+// tolerance. 0 when it does not lie along it.
+static double GetOverlapAlongSegment (const API_Coord3D& begin, const API_Coord3D& end, const RoutingSegmentRecord& oldSegment)
+{
+    const double oldLength = GetDistance (oldSegment.begin, oldSegment.end);
+    if (oldLength <= RouteGeometryTolerance) {
+        return 0.0;
+    }
+    const API_Coord3D direction = {
+        (oldSegment.end.x - oldSegment.begin.x) / oldLength,
+        (oldSegment.end.y - oldSegment.begin.y) / oldLength,
+        (oldSegment.end.z - oldSegment.begin.z) / oldLength
+    };
+    // The position of the point along the old segment's line, and whether it lies on that line.
+    const auto project = [&] (const API_Coord3D& point, double& along) {
+        const API_Coord3D fromBegin = { point.x - oldSegment.begin.x, point.y - oldSegment.begin.y, point.z - oldSegment.begin.z };
+        along = fromBegin.x * direction.x + fromBegin.y * direction.y + fromBegin.z * direction.z;
+        const API_Coord3D onLine = { oldSegment.begin.x + along * direction.x, oldSegment.begin.y + along * direction.y, oldSegment.begin.z + along * direction.z };
+        return GetDistance (point, onLine) <= RouteGeometryTolerance;
+    };
+    double beginAlong = 0.0;
+    double endAlong = 0.0;
+    if (!project (begin, beginAlong) || !project (end, endAlong)) {
+        return 0.0;
+    }
+    const double overlap = std::min (std::max (beginAlong, endAlong), oldLength) - std::max (std::min (beginAlong, endAlong), 0.0);
+    return overlap > RouteGeometryTolerance ? overlap : 0.0;
+}
+
+// The old segment the segment from begin to end lies along most, and in overlapped every old
+// segment it lies along.
+static std::optional<size_t> FindOldSegmentLyingAlong (const API_Coord3D& begin, const API_Coord3D& end, const std::vector<RoutingSegmentRecord>& oldSegments, std::vector<size_t>& overlapped)
+{
+    std::optional<size_t> mostOverlapped;
+    double mostOverlap = 0.0;
+    overlapped.clear ();
+    for (size_t i = 0; i < oldSegments.size (); ++i) {
+        const double overlap = GetOverlapAlongSegment (begin, end, oldSegments[i]);
+        if (overlap <= 0.0) {
+            continue;
+        }
+        overlapped.push_back (i);
+        if (overlap > mostOverlap) {
+            mostOverlap = overlap;
+            mostOverlapped = i;
+        }
+    }
+    return mostOverlapped;
+}
+
+static std::optional<size_t> FindOldNodeAt (const API_Coord3D& position, const std::vector<RoutingNodeRecord>& oldNodes)
+{
+    for (size_t i = 0; i < oldNodes.size (); ++i) {
+        if (GetDistance (position, oldNodes[i].position) <= RouteGeometryTolerance) {
+            return i;
+        }
+    }
+    return std::nullopt;
+}
+
+static bool HaveSameSize (const RoutingSegmentRecord& segment1, const RoutingSegmentRecord& segment2)
+{
+    constexpr double SizeTolerance = 1e-6;
+    return segment1.shape == segment2.shape &&
+        std::fabs (segment1.width - segment2.width) <= SizeTolerance &&
+        std::fabs (segment1.height - segment2.height) <= SizeTolerance &&
+        segment1.referenceId == segment2.referenceId;
+}
+
+// Gives the segment the settings of the old segment: only those that differ, so a value the
+// segment's preference table fixes is not set again. Runs inside the caller's undoable command.
+static bool SetRoutingSegmentSettings (const ACAPI::MEP::UniqueID& segmentId, const RoutingSegmentRecord& current, const RoutingSegmentRecord& wanted)
+{
+    constexpr double ValueTolerance = 1e-6;
+    const auto differs = [&] (double value1, double value2) { return std::fabs (value1 - value2) > ValueTolerance; };
+    const bool preferenceTableDiffers = wanted.preferenceTableId.has_value () &&
+        (!current.preferenceTableId.has_value () || MEPUniqueIDToAPIGuid (current.preferenceTableId.value ()) != MEPUniqueIDToAPIGuid (wanted.preferenceTableId.value ()));
+    const bool sizeDiffers = preferenceTableDiffers || !HaveSameSize (current, wanted);
+
+    ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+    if (segment.IsErr ()) {
+        return false;
+    }
+    bool allSet = true;
+    const auto check = [&] (const ACAPI::Result<void>& result) { allSet &= result.IsOk (); };
+    ACAPI::Result<void> result = segment->Modify ([&] (RoutingSegment::Modifier& modifier) {
+        // As in CreateMEPRoutingElements: the preference table first, as the reference id is
+        // resolved against it, then the shape, then the size.
+        if (preferenceTableDiffers) {
+            check (modifier.SetPreferenceTableId (wanted.preferenceTableId.value ()));
+        }
+        if (sizeDiffers) {
+            check (modifier.SetCrossSectionShape (wanted.shape));
+            if (wanted.shape == ConnectorShape::Circular) {
+                // A circular segment refuses a width or height; its reference id gives its size.
+                if (wanted.referenceId.has_value ()) {
+                    check (modifier.SetCrossSectionReferenceId (wanted.referenceId.value ()));
+                }
+            } else {
+                check (modifier.SetCrossSectionWidth (wanted.width));
+                check (modifier.SetCrossSectionHeight (wanted.height));
+            }
+        }
+        if (current.anchor != wanted.anchor) {
+            modifier.SetAnchor (wanted.anchor);
+        }
+        if (differs (current.referenceLineOffsetX, wanted.referenceLineOffsetX)) {
+            modifier.SetReferenceLineOffsetX (wanted.referenceLineOffsetX);
+        }
+        if (differs (current.referenceLineOffsetY, wanted.referenceLineOffsetY)) {
+            modifier.SetReferenceLineOffsetY (wanted.referenceLineOffsetY);
+        }
+        if (differs (current.wallThickness, wanted.wallThickness)) {
+            check (modifier.SetWallThickness (wanted.wallThickness));
+        }
+        if (current.connectionStyle != wanted.connectionStyle) {
+            check (modifier.SetConnectionStyle (wanted.connectionStyle));
+        }
+        if (wanted.flangeSize.has_value () && (!current.flangeSize.has_value () || differs (current.flangeSize.value (), wanted.flangeSize.value ()))) {
+            check (modifier.SetFlangeSize (wanted.flangeSize.value ()));
+        }
+        // The rigid segment settings (insulation, ...) cannot be compared, so they are always set.
+        if (wanted.rigidSegmentDefault.has_value ()) {
+            check (modifier.SetRigidSegmentDefaultParameters (wanted.rigidSegmentDefault.value ()));
+        }
+    }, "Rebuild MEP Routing Element");
+    return result.IsOk () && allSet;
+}
+
+// Gives the node the settings of the old node. Runs inside the caller's undoable command.
+static bool SetRoutingNodeSettings (const ACAPI::MEP::UniqueID& nodeId, const RoutingNodeRecord& wanted)
+{
+    ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+    if (node.IsErr ()) {
+        return false;
+    }
+    bool allSet = true;
+    ACAPI::Result<void> result = node->Modify ([&] (RoutingNode::Modifier& modifier) {
+        modifier.SetPreferredTransitionPlacement (wanted.preferredTransitionPlacement);
+        if (wanted.elbowDefault.has_value ()) {
+#ifdef ServerMainVers_2900
+            allSet &= modifier.SetElbowDefaultParameters (wanted.elbowDefault.value ()).IsOk ();
+#else
+            allSet &= modifier.SetBendDefaultParameters (wanted.elbowDefault.value ()).IsOk ();
+#endif
+        }
+        if (wanted.transitionDefault.has_value ()) {
+            allSet &= modifier.SetTransitionDefaultParameters (wanted.transitionDefault.value ()).IsOk ();
+        }
+    }, "Rebuild MEP Routing Element");
+    return result.IsOk () && allSet;
+}
+
+// Gives every segment of the rebuilt route the settings of the old segment it lies along most, and
+// every node those of the old node at its position. A segment along no old segment (a new end, or a
+// new path) takes the settings its nearest neighbour along the route took, the one before it first,
+// as Archicad continues a route with the size of the segment it is drawn from; only when no segment
+// lies along an old one do they keep the route's uncustomized settings. Nodes without an old
+// counterpart keep the route's uncustomized settings. Returns the warnings.
+static std::vector<GS::UniString> SetPartSettingsFromOldParts (const RoutingElement& rebuilt, const std::vector<RoutingSegmentRecord>& oldSegments, const std::vector<RoutingNodeRecord>& oldNodes)
+{
+    std::vector<GS::UniString> warnings;
+    struct SegmentMatch {
+        ACAPI::MEP::UniqueID            id;
+        RoutingSegmentRecord            record;
+        std::optional<size_t>           oldIndex;
+        std::vector<size_t>             overlapped;
+    };
+    std::vector<SegmentMatch> matches;
+    for (const ACAPI::MEP::UniqueID& segmentId : rebuilt.GetRoutingSegmentIds ()) {
+        const std::optional<RoutingSegmentRecord> segment = GetRoutingSegmentRecord (segmentId);
+        if (!segment.has_value ()) {
+            continue;
+        }
+        SegmentMatch match { segmentId, segment.value (), std::nullopt, {} };
+        match.oldIndex = FindOldSegmentLyingAlong (segment->begin, segment->end, oldSegments, match.overlapped);
+        matches.push_back (match);
+    }
+    std::vector<std::optional<size_t>> settingsFrom (matches.size ());
+    for (size_t i = 0; i < matches.size (); ++i) {
+        settingsFrom[i] = matches[i].oldIndex;
+        for (size_t distance = 1; !settingsFrom[i].has_value () && distance < matches.size (); ++distance) {
+            if (i >= distance && matches[i - distance].oldIndex.has_value ()) {
+                settingsFrom[i] = matches[i - distance].oldIndex;
+            } else if (i + distance < matches.size () && matches[i + distance].oldIndex.has_value ()) {
+                settingsFrom[i] = matches[i + distance].oldIndex;
+            }
+        }
+    }
+    for (size_t i = 0; i < matches.size (); ++i) {
+        if (!settingsFrom[i].has_value ()) {
+            continue;
+        }
+        const RoutingSegmentRecord* segment = &matches[i].record;
+        const ACAPI::MEP::UniqueID& segmentId = matches[i].id;
+        const std::vector<size_t>& overlapped = matches[i].overlapped;
+        const RoutingSegmentRecord& oldSegment = oldSegments[settingsFrom[i].value ()];
+        const bool liesAlongOtherSizes = std::any_of (overlapped.begin (), overlapped.end (), [&] (size_t j) { return !HaveSameSize (oldSegments[j], oldSegment); });
+        if (liesAlongOtherSizes) {
+            warnings.push_back (GS::UniString::Printf (
+                "Segment %T lies along old segments of different sizes; it took the size and settings of old segment %T, which it overlaps most.",
+                APIGuidToString (segment->guid).ToPrintf (), APIGuidToString (oldSegment.guid).ToPrintf ()));
+        }
+        if (!SetRoutingSegmentSettings (segmentId, *segment, oldSegment)) {
+            warnings.push_back (GS::UniString::Printf (
+                "Not every setting of old segment %T could be given to segment %T.",
+                APIGuidToString (oldSegment.guid).ToPrintf (), APIGuidToString (segment->guid).ToPrintf ()));
+        }
+    }
+    for (const ACAPI::MEP::UniqueID& nodeId : rebuilt.GetRoutingNodeIds ()) {
+        ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
+        if (node.IsErr ()) {
+            continue;
+        }
+        const std::optional<size_t> oldIndex = FindOldNodeAt (node->GetPosition (), oldNodes);
+        if (oldIndex.has_value () && !SetRoutingNodeSettings (nodeId, oldNodes[oldIndex.value ()])) {
+            warnings.push_back (GS::UniString::Printf (
+                "Not every setting of old node %T could be given to node %T.",
+                APIGuidToString (oldNodes[oldIndex.value ()].guid).ToPrintf (), APIGuidToString (MEPUniqueIDToAPIGuid (nodeId)).ToPrintf ()));
+        }
+    }
+    return warnings;
+}
+
+// One item of the guidMap of RebuildMEPRoutingElements; an old part without a new counterpart has
+// no newGuid, a new part without an old counterpart no oldGuid.
+static GS::ObjectState CreateGuidMapItem (const char* kind, const API_Guid& oldGuid, const API_Guid& newGuid)
+{
+    GS::ObjectState item ("kind", GS::UniString (kind));
+    if (oldGuid != APINULLGuid) {
+        item.Add ("oldGuid", APIGuidToString (oldGuid));
+    }
+    if (newGuid != APINULLGuid) {
+        item.Add ("newGuid", APIGuidToString (newGuid));
+    }
+    return item;
+}
+
+// Pairs the old guids with the new ones by index; the leftovers have no counterpart.
+static void AddPairedGuids (std::vector<GS::ObjectState>& guidMap, const char* kind, const std::vector<API_Guid>& oldGuids, const std::vector<API_Guid>& newGuids)
+{
+    for (size_t i = 0; i < std::max (oldGuids.size (), newGuids.size ()); ++i) {
+        guidMap.push_back (CreateGuidMapItem (kind,
+            i < oldGuids.size () ? oldGuids[i] : APINULLGuid,
+            i < newGuids.size () ? newGuids[i] : APINULLGuid));
+    }
+}
+
+// Maps the parts of the old route to those of the rebuilt one by where they lie: a segment to the
+// old segment it lies along most (its rigid segments to the old ones by order when both segments
+// have the same ends), a node to the old node at its position (its elbows and transitions to the
+// old node's by order). Every old and every new part is listed.
+static std::vector<GS::ObjectState> CreatePartsGuidMap (const RoutingElement& rebuilt, const std::vector<RoutingSegmentRecord>& oldSegments, const std::vector<RoutingNodeRecord>& oldNodes)
+{
+    std::vector<GS::ObjectState> guidMap;
+    std::vector<bool> isOldSegmentMapped (oldSegments.size (), false);
+    std::vector<bool> areOldRigidSegmentsMapped (oldSegments.size (), false);
+    for (const RoutingSegmentRecord& segment : GetRoutingSegmentRecords (rebuilt)) {
+        std::vector<size_t> overlapped;
+        const std::optional<size_t> oldIndex = FindOldSegmentLyingAlong (segment.begin, segment.end, oldSegments, overlapped);
+        if (!oldIndex.has_value ()) {
+            guidMap.push_back (CreateGuidMapItem ("Segment", APINULLGuid, segment.guid));
+            AddPairedGuids (guidMap, "RigidSegment", {}, segment.rigidSegmentGuids);
+            continue;
+        }
+        const RoutingSegmentRecord& oldSegment = oldSegments[oldIndex.value ()];
+        isOldSegmentMapped[oldIndex.value ()] = true;
+        guidMap.push_back (CreateGuidMapItem ("Segment", oldSegment.guid, segment.guid));
+        const bool hasSameEnds =
+            (GetDistance (segment.begin, oldSegment.begin) <= RouteGeometryTolerance && GetDistance (segment.end, oldSegment.end) <= RouteGeometryTolerance) ||
+            (GetDistance (segment.begin, oldSegment.end) <= RouteGeometryTolerance && GetDistance (segment.end, oldSegment.begin) <= RouteGeometryTolerance);
+        if (hasSameEnds && !areOldRigidSegmentsMapped[oldIndex.value ()]) {
+            areOldRigidSegmentsMapped[oldIndex.value ()] = true;
+            AddPairedGuids (guidMap, "RigidSegment", oldSegment.rigidSegmentGuids, segment.rigidSegmentGuids);
+        } else {
+            AddPairedGuids (guidMap, "RigidSegment", {}, segment.rigidSegmentGuids);
+        }
+    }
+    for (size_t i = 0; i < oldSegments.size (); ++i) {
+        if (!isOldSegmentMapped[i]) {
+            guidMap.push_back (CreateGuidMapItem ("Segment", oldSegments[i].guid, APINULLGuid));
+        }
+        if (!areOldRigidSegmentsMapped[i]) {
+            AddPairedGuids (guidMap, "RigidSegment", oldSegments[i].rigidSegmentGuids, {});
+        }
+    }
+
+    std::vector<bool> isOldNodeMapped (oldNodes.size (), false);
+    for (const RoutingNodeRecord& node : GetRoutingNodeRecords (rebuilt)) {
+        std::optional<size_t> oldIndex = FindOldNodeAt (node.position, oldNodes);
+        if (oldIndex.has_value () && isOldNodeMapped[oldIndex.value ()]) {
+            oldIndex.reset ();
+        }
+        if (!oldIndex.has_value ()) {
+            guidMap.push_back (CreateGuidMapItem ("Node", APINULLGuid, node.guid));
+            AddPairedGuids (guidMap, "Elbow", {}, node.elbowGuids);
+            AddPairedGuids (guidMap, "Transition", {}, node.transitionGuids);
+            continue;
+        }
+        const RoutingNodeRecord& oldNode = oldNodes[oldIndex.value ()];
+        isOldNodeMapped[oldIndex.value ()] = true;
+        guidMap.push_back (CreateGuidMapItem ("Node", oldNode.guid, node.guid));
+        AddPairedGuids (guidMap, "Elbow", oldNode.elbowGuids, node.elbowGuids);
+        AddPairedGuids (guidMap, "Transition", oldNode.transitionGuids, node.transitionGuids);
+    }
+    for (size_t i = 0; i < oldNodes.size (); ++i) {
+        if (!isOldNodeMapped[i]) {
+            guidMap.push_back (CreateGuidMapItem ("Node", oldNodes[i].guid, APINULLGuid));
+            AddPairedGuids (guidMap, "Elbow", oldNodes[i].elbowGuids, {});
+            AddPairedGuids (guidMap, "Transition", oldNodes[i].transitionGuids, {});
+        }
+    }
+    return guidMap;
+}
+
+// Gives the rebuilt route the layer, home story, renovation status, element ID, classifications and
+// property values of the old one, and connects it to the elements the old one was connected to at
+// its ends. Returns the warnings for what could not be carried over.
+static std::vector<GS::UniString> CarryOverRoutingElementIdentity (const ACAPI::MEP::UniqueID& rebuiltId, const RoutingElementIdentity& identity)
+{
+    std::vector<GS::UniString> notCarriedOver;
+    const API_Guid rebuiltGuid = MEPUniqueIDToAPIGuid (rebuiltId);
+
+    const GSErrCode layerAndStatusErr = ChangeRoutingElementAndParts (rebuiltId, [&] (const API_Guid& elemGuid) {
+        return ChangeHeaderOfElement (elemGuid, [&] (API_Elem_Head& header, API_Element& mask) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+            ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, renovationStatus);
+            header.layer = identity.header.layer;
+            header.renovationStatus = identity.header.renovationStatus;
+            return true;
+        });
+    });
+    if (layerAndStatusErr != NoError) {
+        notCarriedOver.push_back ("the layer and renovation status");
+    }
+
+    if (SetHomeStoryOfPlacedMEPElement (rebuiltId, true, identity.header.floorInd).HasValue ()) {
+        notCarriedOver.push_back ("the home story");
+    }
+
+    if (!identity.elementId.IsEmpty () && ChangeElementId (rebuiltGuid, identity.elementId) != NoError) {
+        notCarriedOver.push_back ("the element ID");
+    }
+
+    for (const auto& systemAndItem : identity.classificationItems) {
+        if (ACAPI_Element_AddClassificationItem (rebuiltGuid, systemAndItem.second) != NoError) {
+            notCarriedOver.push_back ("a classification");
+        }
+    }
+
+    if (!identity.customPropertyValues.IsEmpty () && ACAPI_Element_SetProperties (rebuiltGuid, identity.customPropertyValues) != NoError) {
+        notCarriedOver.push_back ("the property values");
+    }
+
+    for (const ACAPI::MEP::UniqueID& connectedElementId : identity.connectedElementIds) {
+        ACAPI::Result<RoutingElement> rebuilt = RoutingElement::Get (rebuiltId);
+        bool isConnected = false;
+        if (rebuilt.IsOk ()) {
+            rebuilt->Modify ([&] (RoutingElement::Modifier& modifier) {
+                isConnected = modifier.ConnectLogically (connectedElementId).IsOk ();
+            }, "Connect MEP Elements");
+        }
+        if (!isConnected) {
+            notCarriedOver.push_back (GS::UniString::Printf ("the connection to the element with guid %T",
+                APIGuidToString (MEPUniqueIDToAPIGuid (connectedElementId)).ToPrintf ()));
+        }
+    }
+
+    std::vector<GS::UniString> warnings;
+    for (const GS::UniString& what : notCarriedOver) {
+        warnings.push_back (GS::UniString ("The rebuilt route did not get ") + what + " of the old one.");
+    }
+    return warnings;
+}
+
+// A part Archicad deletes with the route and Place does not make again, so a rebuild would lose it:
+// a tee (Branch) at either end, or a take-off on one of its segments.
+static std::optional<GS::UniString> FindPartDeletedWithRoute (const RoutingElement& routingElement, const RoutingElementIdentity& identity)
+{
+    for (const ACAPI::MEP::UniqueID& connectedId : identity.connectedElementIds) {
+        if (ACAPI::MEP::Branch::Get (connectedId).IsOk ()) {
+            return GS::UniString::Printf ("The route ends at the tee (Branch) %T, which Archicad deletes with the route",
+                APIGuidToString (MEPUniqueIDToAPIGuid (connectedId)).ToPrintf ());
+        }
+    }
+    for (const ACAPI::MEP::UniqueID& segmentId : routingElement.GetRoutingSegmentIds ()) {
+        ACAPI::Result<RoutingSegment> segment = RoutingSegment::Get (segmentId);
+        if (segment.IsErr ()) {
+            continue;
+        }
+        for (const ACAPI::MEP::UniqueID& rigidSegmentId : segment->GetRigidSegmentIds ()) {
+            ACAPI::Result<RigidSegment> rigidSegment = RigidSegment::Get (rigidSegmentId);
+            if (rigidSegment.IsErr ()) {
+                continue;
+            }
+            for (const ACAPI::MEP::UniqueID& connectedId : rigidSegment->GetDirectConnectedMEPElementIds ()) {
+                if (TakeOff::Get (connectedId).IsOk ()) {
+                    return GS::UniString::Printf ("The take-off %T sits on the route, and Archicad deletes it with the route",
+                        APIGuidToString (MEPUniqueIDToAPIGuid (connectedId)).ToPrintf ());
+                }
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+// Rebuilds one route in RebuildMEPRoutingElements: deletes it and places it again along the given
+// nodes, from its own settings, under its own guid when Archicad allows it, and gives its segments
+// and nodes the settings of the old ones they lie along or at. Runs inside the caller's undoable
+// command. Returns the item of the response: the rebuilt route's id with its guidMap and warnings,
+// or an error.
+static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid, const GS::ObjectState& item)
+{
+    ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (routingElementGuid));
+    if (routingElement.IsErr ()) {
+        return CreateErrorResponse (routingElement.UnwrapErr ().kind, "The 'routingElementId' is not an MEP routing element.");
+    }
+
+    std::vector<API_Coord3D> nodes;
+    GS::Array<GS::ObjectState> nodeCoordinates;
+    if (item.Get ("nodeCoordinates", nodeCoordinates)) {
+        for (const GS::ObjectState& nodeCoordinate : nodeCoordinates) {
+            nodes.push_back (Get3DCoordinateFromObjectState (nodeCoordinate));
+        }
+    } else {
+        nodes = routingElement->GetPolyLine ();
+    }
+    bool removeCollinearNodes = false;
+    if (item.Get ("removeCollinearNodes", removeCollinearNodes) && removeCollinearNodes) {
+        nodes = RemoveCollinearNodes (nodes);
+    }
+    bool resetCustomSegments = false;
+    item.Get ("resetCustomSegments", resetCustomSegments);
+    // The route is deleted before it is placed again, so a route that cannot be placed is refused first.
+    if (nodes.size () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "The route needs at least 2 nodes; nothing was changed.");
+    }
+    for (size_t i = 1; i < nodes.size (); ++i) {
+        if (GetDistance (nodes[i], nodes[i - 1]) <= RouteGeometryTolerance) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+                "Node %u lies on node %u, which makes a segment without length; nothing was changed.", static_cast<UInt32> (i), static_cast<UInt32> (i - 1)));
+        }
+    }
+
+    RoutingElementIdentity identity;
+    GSErrCode err = GetRoutingElementIdentity (*routingElement, routingElementGuid, identity);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the routing element; nothing was changed.");
+    }
+    const std::optional<GS::UniString> lostPart = FindPartDeletedWithRoute (*routingElement, identity);
+    if (lostPart.has_value ()) {
+        return CreateErrorResponse (APIERR_REFUSEDPAR, lostPart.value () +
+            "; nothing was changed. ModifyMEPRoutingElements nodePositions moves the nodes and keeps it.");
+    }
+    const std::vector<RoutingSegmentRecord> oldSegments = GetRoutingSegmentRecords (*routingElement);
+    const std::vector<RoutingNodeRecord> oldNodes = GetRoutingNodeRecords (*routingElement);
+
+    // The route's own settings, with the uncustomized segment and node settings for every segment
+    // and node; the customized ones are given to the parts after placing, unless reset.
+    RoutingElementDefault routingElementDefault = routingElement->PickUpDefault ();
+    const RoutingSegmentDefault segmentDefault = routingElement->GetRoutingSegmentDefaultParameters ();
+    const RoutingNodeDefault nodeDefault = routingElement->GetRoutingNodeDefaultParameters ();
+    routingElementDefault.Modify ([&] (RoutingElementDefault::Modifier& modifier) {
+        modifier.SetRoutingSegmentDefault (segmentDefault);
+        modifier.SetRoutingNodeDefault (nodeDefault);
+    });
+
+    err = ACAPI_Element_Delete ({ routingElementGuid });
+    if (err != NoError) {
+        const GS::UniString reason = DescribeElementEditRefusal (err, identity.header);
+        return CreateErrorResponse (err, reason.IsEmpty ()
+            ? GS::UniString ("Failed to delete the routing element to rebuild it; nothing was changed.")
+            : GS::UniString ("The routing element cannot be rebuilt because ") + reason + "; nothing was changed.");
+    }
+
+    // Place takes a guid only for the route (requiredId); its segments, nodes and fittings always
+    // get new guids, which the guidMap pairs with the old ones.
+    const std::map<UInt32, RoutingSegmentRectangularCrossSectionData> noRectangularCrossSections;
+    const std::map<UInt32, RoutingSegmentCircularCrossSectionData> noCircularCrossSections;
+    std::optional<ACAPI::MEP::UniqueID> rebuiltId;
+    ACAPI::Result<ACAPI::MEP::UniqueID> placedUnderOwnGuid = routingElementDefault.Place (nodes, noRectangularCrossSections, noCircularCrossSections, routingElementGuid);
+    if (placedUnderOwnGuid.IsOk ()) {
+        rebuiltId = placedUnderOwnGuid.Unwrap ();
+    } else {
+        // Archicad may keep the guid of the deleted route; then the route gets a new one.
+        ACAPI::Result<ACAPI::MEP::UniqueID> placedUnderNewGuid = routingElementDefault.Place (nodes, noRectangularCrossSections, noCircularCrossSections);
+        if (placedUnderNewGuid.IsErr ()) {
+            return CreateErrorResponse (placedUnderNewGuid.UnwrapErr ().kind,
+                "The routing element was deleted but could not be placed again along the nodes; undo the command in Archicad to get it back.");
+        }
+        rebuiltId = placedUnderNewGuid.Unwrap ();
+    }
+
+    std::vector<GS::UniString> warnings;
+    if (!resetCustomSegments) {
+        ACAPI::Result<RoutingElement> rebuilt = RoutingElement::Get (rebuiltId.value ());
+        if (rebuilt.IsOk ()) {
+            warnings = SetPartSettingsFromOldParts (*rebuilt, oldSegments, oldNodes);
+        } else {
+            warnings.push_back ("The settings of the old segments and nodes could not be given to the rebuilt route.");
+        }
+    }
+    for (const GS::UniString& warning : CarryOverRoutingElementIdentity (rebuiltId.value (), identity)) {
+        warnings.push_back (warning);
+    }
+
+    const API_Guid rebuiltGuid = MEPUniqueIDToAPIGuid (rebuiltId.value ());
+    GS::ObjectState result = CreateElementIdObjectState (rebuiltGuid);
+    const auto& guidMap = result.AddList<GS::ObjectState> ("guidMap");
+    ACAPI::Result<RoutingElement> rebuilt = RoutingElement::Get (rebuiltId.value ());
+    if (rebuilt.IsOk ()) {
+        for (const GS::ObjectState& guidMapItem : CreatePartsGuidMap (*rebuilt, oldSegments, oldNodes)) {
+            guidMap (guidMapItem);
+        }
+    } else {
+        warnings.push_back ("The parts of the rebuilt route could not be read, so the guidMap is empty.");
+    }
+    if (!warnings.empty ()) {
+        const auto& warningList = result.AddList<GS::UniString> ("warnings");
+        for (const GS::UniString& warning : warnings) {
+            warningList (warning);
+        }
+    }
+    return result;
+}
+
+#endif
+
+RebuildMEPRoutingElementsCommand::RebuildMEPRoutingElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RebuildMEPRoutingElementsCommand::GetName () const
+{
+    return "RebuildMEPRoutingElements";
+}
+
+GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "routingElements": {
+                "type": "array",
+                "description": "The routing elements to rebuild. Each is deleted and placed again. Every segment, node and fitting gets a new guid (see guidMap); labels, dimensions and other things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node count stays the same: it keeps every guid.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "routingElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The routing element (duct, pipe or cable carrier route) to rebuild."
+                        },
+                        "nodeCoordinates": {
+                            "type": "array",
+                            "description": "The new corner points of the route, at least 2, absolute like the polyline GetMEPRoutingElements returns. Fewer or more points than the route has nodes remove or add nodes. Omitted: the route's current polyline.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "minItems": 2
+                        },
+                        "removeCollinearNodes": {
+                            "type": "boolean",
+                            "description": "Leaves out every inner node that lies on the straight line between its neighbours (within 1 mm), as Purge Unused MEP Nodes does, and every node on top of the previous one. Default false."
+                        },
+                        "resetCustomSegments": {
+                            "type": "boolean",
+                            "description": "True gives every segment and node the route's uncustomized settings, as Reset Custom Segments does. False (default) gives each new segment the size and settings of the old segment it lies along most (within 1 mm), and each new node those of the old node at its position; a segment along no old segment takes the settings of its nearest neighbour along the route (the one before it first), and nodes without an old counterpart take the route's uncustomized settings."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "routingElementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "routingElements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "type": "array",
+                "description": "One item for each given routing element, in order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "description": "The rebuilt routing element.",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The rebuilt route: its old guid when Archicad let it keep it, else a new one."
+                                },
+                                "guidMap": {
+                                    "type": "array",
+                                    "description": "The parts of the old route paired with those of the rebuilt one, which all have new guids: a segment with the old segment it lies along most (its rigid segments by order when both segments have the same ends), a node with the old node at its position (its elbows and transitions by order). Every old and every new part is listed once or more; an old segment that two new segments lie along is listed with each.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "kind": {
+                                                "type": "string",
+                                                "enum": [ "Segment", "RigidSegment", "Node", "Elbow", "Transition" ],
+                                                "description": "The kind of part. Elbows are called bends in Archicad 28."
+                                            },
+                                            "oldGuid": {
+                                                "$ref": "#/Guid",
+                                                "description": "The guid of the part of the old route. Left out for a new part without an old counterpart."
+                                            },
+                                            "newGuid": {
+                                                "$ref": "#/Guid",
+                                                "description": "The guid of the part of the rebuilt route. Left out for an old part without a new counterpart."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "kind"
+                                        ]
+                                    }
+                                },
+                                "warnings": {
+                                    "type": "array",
+                                    "description": "What was not carried over: a setting of a segment or node, the layer, home story, renovation status, element ID, a classification, the property values or a connection of the route, and the new segments that lie along old segments of different sizes. Left out when everything was carried over.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "guidMap"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState RebuildMEPRoutingElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> routingElements;
+    if (!parameters.Get ("routingElements", routingElements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'routingElements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    // The rebuilt routes are reported to the notification clients as changed, or as deleted when
+    // they got a new guid (#1825).
+    ElementChangeReporter changeReporter;
+
+    ACAPI_CallUndoableCommand ("Rebuild MEP Routing Elements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : routingElements) {
+            const GS::ObjectState* routingElementId = item.Get ("routingElementId");
+            if (routingElementId == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'routingElementId' parameter."));
+                continue;
+            }
+            const API_Guid routingElementGuid = GetGuidFromObjectState (*routingElementId);
+            changeReporter.Add (routingElementGuid);
+            elements (RebuildRoutingElement (routingElementGuid, item));
+        }
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }
