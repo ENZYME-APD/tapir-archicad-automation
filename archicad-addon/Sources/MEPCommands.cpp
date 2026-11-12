@@ -604,14 +604,14 @@ static bool AreSamePositions (const std::vector<API_Coord3D>& positions1, const 
 
 // The 'floorIndex' of an item of CreateMEPRoutingElements or CreateMEPElements. Returns an error
 // response for an index that is not a story of the project, nullopt in floorIndex when not given.
-static GS::Optional<GS::ObjectState> GetFloorIndexParameter (const GS::ObjectState& itemData, std::optional<short>& floorIndex)
+// The callers read the stories once before their loop over the items.
+static GS::Optional<GS::ObjectState> GetFloorIndexParameter (const GS::ObjectState& itemData, const Stories& stories, std::optional<short>& floorIndex)
 {
     floorIndex.reset ();
     Int32 floorIndexValue = 0;
     if (!itemData.Get ("floorIndex", floorIndexValue)) {
         return GS::NoValue;
     }
-    const Stories stories = GetStories ();
     if (floorIndexValue < std::numeric_limits<short>::min () || floorIndexValue > std::numeric_limits<short>::max () ||
         stories.find (static_cast<short> (floorIndexValue)) == stories.end ()) {
         return CreateErrorResponse (APIERR_BADINDEX, "The 'floorIndex' parameter does not refer to an existing story; nothing was placed.");
@@ -2383,6 +2383,7 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
 
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("Create MEP Routing Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& routingElementData : routingElementsData) {
@@ -2413,7 +2414,7 @@ GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             }
 
             std::optional<short> floorIndex;
-            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (routingElementData, floorIndex);
+            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (routingElementData, stories, floorIndex);
             if (floorIndexError.HasValue ()) {
                 elements (floorIndexError.Get ());
                 continue;
@@ -2622,6 +2623,7 @@ GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parame
 
     GS::ObjectState response;
     const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    const Stories stories = GetStories ();
 
     ACAPI_CallUndoableCommand ("Create MEP Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementData : elementsData) {
@@ -2662,7 +2664,7 @@ GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parame
             }
 
             std::optional<short> floorIndex;
-            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (elementData, floorIndex);
+            const GS::Optional<GS::ObjectState> floorIndexError = GetFloorIndexParameter (elementData, stories, floorIndex);
             if (floorIndexError.HasValue ()) {
                 elements (floorIndexError.Get ());
                 continue;
