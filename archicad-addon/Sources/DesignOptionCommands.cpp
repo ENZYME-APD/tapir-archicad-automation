@@ -247,6 +247,41 @@ static GS::Guid CollectDesignOptionsByGuid (const GS::Array<GS::ObjectState>& ac
     }
     return optionPtr == nullptr ? optionGuid : GS::Guid ();
 }
+
+// Deleting a design option that still holds elements makes Archicad open its
+// modal "Design Option Missing" dialog inside the command, which blocks every
+// further JSON call until someone presses OK (#2621); the DevKit has no
+// silent flag for it. Returns the failed execution result naming the
+// elements of option (itemName names the option, or the set it is in, in the
+// message) when it holds any; no value when it is empty and can be deleted.
+static GS::Optional<GS::ObjectState> CheckDesignOptionHasNoElements (const DesignOptionManager& manager, const DesignOption& option, const GS::UniString& itemName)
+{
+    auto elements = manager.GetElementsOfDesignOption (option);
+    if (elements.IsErr ()) {
+        return CreateFailedExecutionResult (elements.UnwrapErr ().kind, GS::UniString ("Failed to get the elements of design option '") + option.GetName () + "'.");
+    }
+    const std::vector<API_Guid>& elementGuids = elements.Unwrap ();
+    if (elementGuids.empty ()) {
+        return GS::NoValue;
+    }
+
+    const size_t maxNamed = 5;
+    GS::UniString guidList;
+    for (size_t i = 0; i < elementGuids.size () && i < maxNamed; ++i) {
+        if (i > 0) {
+            guidList += ", ";
+        }
+        guidList += APIGuidToString (elementGuids[i]);
+    }
+    if (elementGuids.size () > maxNamed) {
+        guidList += ", ...";
+    }
+
+    return CreateFailedExecutionResult (APIERR_REFERENCEEXIST,
+        GS::UniString ("Not deleted: ") + itemName + " still holds " + GS::ValueToUniString (static_cast<Int64> (elementGuids.size ())) + " element(s) in design option '" + option.GetName () + "' (" + guidList + "). "
+        "Move them to the main model or another design option with MoveElementsToDesignOptions, or delete them, first; "
+        "Archicad would otherwise open its modal 'Design Option Missing' dialog and block the JSON API.");
+}
 #endif
 
 GetDesignOptionsCommand::GetDesignOptionsCommand () :
@@ -1950,6 +1985,10 @@ GS::ObjectState DeleteDesignOptionsCommand::Execute (const GS::ObjectState& para
         return ForEachDesignOptionItemInUndoStep (designOptions, *allDesignOptions, "designOptionId", "design option", CreateFailedExecutionResult,
             "Delete Design Options", "executionResults",
             [&] (const GS::ObjectState& /*designOption*/, DesignOption& option) -> GS::ObjectState {
+            const GS::Optional<GS::ObjectState> elementsError = CheckDesignOptionHasNoElements (manager, option, "the design option");
+            if (elementsError.HasValue ()) {
+                return *elementsError;
+            }
             auto result = manager.DeleteDesignOption (option);
             return result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to delete design option.");
         });
@@ -2019,6 +2058,18 @@ GS::ObjectState DeleteDesignOptionSetsCommand::Execute (const GS::ObjectState& p
         return ForEachDesignOptionItemInUndoStep (designOptionSets, *sets, "designOptionSetId", "design option set", CreateFailedExecutionResult,
             "Delete Design Option Sets", "executionResults",
             [&] (const GS::ObjectState& /*designOptionSet*/, DesignOptionSet& set) -> GS::ObjectState {
+            // Deleting a set deletes its options, so it is refused like
+            // DeleteDesignOptions when any of them still holds elements.
+            auto optionsOfSet = manager.GetDesignOptionsOfSet (set);
+            if (optionsOfSet.IsErr ()) {
+                return CreateFailedExecutionResult (optionsOfSet.UnwrapErr ().kind, "Failed to get the design options of the design option set.");
+            }
+            for (const DesignOption& option : optionsOfSet.Unwrap ()) {
+                const GS::Optional<GS::ObjectState> elementsError = CheckDesignOptionHasNoElements (manager, option, "the design option set");
+                if (elementsError.HasValue ()) {
+                    return *elementsError;
+                }
+            }
             auto result = manager.DeleteDesignOptionSet (set);
             return result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to delete design option set.");
         });

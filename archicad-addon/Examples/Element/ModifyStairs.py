@@ -1,7 +1,9 @@
-"""Creates a straight stair, then changes its width, its walking line, its tread thickness and its structure with ModifyStairs.
+"""Creates a straight stair, then changes its width, its walking line, its tread thickness, its structure and its floor plan display with ModifyStairs.
 
-Makes the flights monolithic with a smooth underside and numbers the steps on the risers, reads the
-stair back with GetDetailsOfElements, then deletes the stair it created.
+Makes the flights monolithic with a smooth underside, numbers the steps on the risers, shows the
+stair on its home story only in the floor plan without the walking line, and on its home story and
+one story up in the reflected ceiling plan without the structure. Reads the stair back with
+GetDetailsOfElements, then deletes the stair it created.
 """
 import aclib
 
@@ -18,7 +20,10 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyStairs', {'stairsWithDetails': [{
     'walkingLinePosition': 'Center',
     'numberingType': 'Risers',
     'treads': [{'role': 'Run', 'visible': True, 'thickness': 0.04}],
-    'structures': [{'role': 'Run', 'side': 'UnderSide', 'visible': True, 'structureType': 'Monolith', 'bottomType': 'Smooth', 'thickness': 0.18}]
+    'structures': [{'role': 'Run', 'side': 'UnderSide', 'visible': True, 'structureType': 'Monolith', 'bottomType': 'Smooth', 'thickness': 0.18}],
+    'stairDisplayType': 'Custom',
+    'floorPlanLayout': {'storyVisibility': 'HomeStoryOnly', 'showWalkingLine': False, 'showStructure': True},
+    'reflectedCeilingPlanLayout': {'storyVisibility': 'HomeAndOneStoryUp', 'showWalkingLine': True, 'showStructure': False}
 }]}))
 
 aclib.PrintJson (aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': stairs}))
