@@ -15197,6 +15197,81 @@
             "depthCoordinates"
         ]
     },
+    "PictureDetails": {
+        "type": "object",
+        "description": "The settings of a Picture element (an image placed with the Picture tool on a floor plan, worksheet, detail or layout).",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the picture (API_PictureType::pictName), usually the name of the image file it was placed from."
+            },
+            "mimeType": {
+                "type": "string",
+                "description": "The MIME type of the image, e.g. image/png or image/jpeg. Empty when Archicad does not report it."
+            },
+            "box": {
+                "$ref": "#/BoundingBox2D",
+                "description": "The box the picture is drawn in, in model units, before its rotation by angle. For an unmirrored picture this is API_PictureType::destBox; a mirrored picture is drawn one width away from its stored destBox (along the rotated x axis), and this box is the drawn one, so a mirrored and an unmirrored picture drawn at the same place report the same box."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the picture in model units: box.xMax - box.xMin."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the picture in model units: box.yMax - box.yMin."
+            },
+            "pixelWidth": {
+                "type": "integer",
+                "description": "The width of the image in pixels."
+            },
+            "pixelHeight": {
+                "type": "integer",
+                "description": "The height of the image in pixels."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle of the picture in radians."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Whether the picture is mirrored to its local vertical axis."
+            },
+            "transparent": {
+                "type": "boolean",
+                "description": "Whether the white pixels of the picture are drawn transparent."
+            },
+            "anchorPoint": {
+                "type": "string",
+                "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
+                "enum": [
+                    "TopLeft",
+                    "TopCenter",
+                    "TopRight",
+                    "MiddleLeft",
+                    "Center",
+                    "MiddleRight",
+                    "BottomLeft",
+                    "BottomCenter",
+                    "BottomRight"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "mimeType",
+            "box",
+            "width",
+            "height",
+            "pixelWidth",
+            "pixelHeight",
+            "angle",
+            "mirrored",
+            "transparent",
+            "anchorPoint"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -15338,6 +15413,9 @@
             },
             {
                 "$ref": "#/SectionDetails"
+            },
+            {
+                "$ref": "#/PictureDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
