@@ -61,6 +61,12 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 // the path; empty otherwise.
 GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location);
 
+// The navigator item of a guid given by the caller. A guid that belongs to another kind of object (an
+// element, a database, an attribute, ...) makes ACAPI_Navigator_GetNavigatorItem fail an ODB
+// assertion, and Archicad quits (#2342, Archicad 29 and 30). So the guid is looked for in the navigator
+// trees first, and one that is in none of them gets APIERR_BADID.
+GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item);
+
 // The optional boolean "dryRun" input of the commands that delete or change (#2195), the #/DryRun
 // schema definition. A dry run makes every check of a real run and resolves the same targets, with
 // the same errors, but changes nothing in the project. A command reads the flag once with
@@ -224,6 +230,11 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 // The GetDetailsOfElements keys of a Skylight, the ones CreateSkylights and ModifySkylights write
 // (ApplySkylightDetails) - defined next to them in ExtendedElementCommands.cpp.
 void AddSkylightDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
+// The GetDetailsOfElements keys of a Window or Door for its anchor, sub-floor, reveal anchor,
+// surface and plane settings (#2575), the ones ApplyWindowOrDoorDetails writes, plus the values
+// Archicad computes - defined next to them in ExtendedElementCommands.cpp.
+void AddWindowOrDoorPositioningDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
 
 // Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
 GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
@@ -441,3 +452,10 @@ GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id);
 // APIERR_REFUSEDPAR when Archicad did not keep it. Must be called inside an undoable
 // command. Defined in CommandBase.cpp.
 GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);
+
+// Deletes a new element that a create command could not finish (its id or a later setting could
+// not be written) and returns the end of the item's error message: "so it was not created", or,
+// when Archicad refuses the delete too, that the element was left in the project, with its guid,
+// so the caller is never told that an existing element does not exist (#2632). Must be called
+// inside an undoable command. Defined in CommandBase.cpp.
+GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid);

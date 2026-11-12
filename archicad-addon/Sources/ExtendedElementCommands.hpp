@@ -43,6 +43,8 @@ extern const char* BeamSurfaceAndFillSchemaProperties;
 extern const char* SlabSurfaceAndFillSchemaProperties;
 
 GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+// Writes width and height (a column's depth) of a column or beam segment; see the definition.
+void ApplySectionSize (API_AssemblySegmentData& segment, const GS::Optional<double>& width, const GS::Optional<double>& height, bool hasIsWidthAndHeightLinked, bool isWidthAndHeightLinked);
 GS::Optional<GS::UniString> ApplyBeamSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
 GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
 
@@ -94,6 +96,7 @@ public:
     CreateBeamsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
 class CreateStairsCommand : public CreateElementsCommandBase
@@ -134,6 +137,16 @@ class ModifyStairsCommand : public CommandBase
 {
 public:
     ModifyStairsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateStairsCommand : public CommandBase
+{
+public:
+    RecreateStairsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -284,6 +297,16 @@ class ModifyCurtainWallFramesCommand : public CommandBase
 {
 public:
     ModifyCurtainWallFramesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyCurtainWallPanelsCommand : public CommandBase
+{
+public:
+    ModifyCurtainWallPanelsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

@@ -186,7 +186,7 @@ static GS::UniString PreferredTransitionPlacementToString (PreferredTransitionPl
 
 static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
 {
-    return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+    return CreateGuidObjectState (GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
 }
 
 // The settings every port has (PortBase), read through the port class of the port's domain.
@@ -988,7 +988,7 @@ static GS::UniString GetMEPElementDomainName (const API_Guid& classId)
 
 static GS::ObjectState CreateMEPSystemIdObjectState (const API_AttributeIndex& attributeIndex)
 {
-    return CreateIdObjectState ("attributeId", GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
+    return CreateGuidObjectState (GetAttributeGuidFromIndex (API_MEPSystemID, attributeIndex));
 }
 
 #ifdef ServerMainVers_2900

@@ -88,6 +88,13 @@ a comment on the issue or the `claude-fix` label still starts it. To start
 it for issues filed earlier, run the workflow by hand with *dry run*
 checked and their numbers in *triage issues*.
 
+## Starting a scan from Discord
+
+`/triage` in the Discord server starts this workflow at once (options `dry_run`
+and `lookback_minutes`), for the people allowed to use it, which helps when
+GitHub drops scheduled runs. It is a separate small Worker, not part of this
+workflow: see [triage-command/](triage-command/README.md).
+
 ## One-time setup
 
 ### 1. Create the Discord bot

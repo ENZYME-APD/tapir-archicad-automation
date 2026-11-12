@@ -188,6 +188,22 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 continue;
             }
 
+            // Archicad creates an element on a hidden layer (the layer of the tool defaults, a
+            // favorite or layerIndex), but then refuses to write its id and to delete it again,
+            // so the element would stay with an automatic id while the item answers that it was
+            // not created (#2632). Refuse such an item before anything is created.
+            GS::UniString id;
+            const bool hasId = data.Get ("id", id);
+            if (hasId) {
+                GS::UniString layerReason;
+                err = GetLayerChangeError (element.header.layer, layerReason);
+                if (err != NoError) {
+                    elements (CreateErrorResponse (err, "The " + elemTypeName + " was not created, because " + layerReason +
+                        ", so its id cannot be set. Show or unlock the layer, or give the layerIndex of a visible, unlocked layer."));
+                    continue;
+                }
+            }
+
             const API_Element requestedElement = element;
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -198,8 +214,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             // As for the id below, a new element that could not be finished is deleted again.
             err = AfterCreate (requestedElement, element.header.guid, data);
             if (err != NoError) {
-                ACAPI_Element_Delete ({ element.header.guid });
-                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", so it was not created"));
+                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", " + DeleteUnfinishedElement (element.header.guid)));
                 continue;
             }
 
@@ -209,12 +224,10 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             // written leaves no half-done element behind: the new element is deleted again
             // and the item answers with the error, so the response never names an element
             // whose id is not the requested one.
-            GS::UniString id;
-            if (data.Get ("id", id)) {
+            if (hasId) {
                 err = ChangeElementId (element.header.guid, id);
                 if (err != NoError) {
-                    ACAPI_Element_Delete ({ element.header.guid });
-                    elements (CreateErrorResponse (err, "Failed to set the id of the new " + elemTypeName + ", so it was not created"));
+                    elements (CreateErrorResponse (err, "Failed to set the id of the new " + elemTypeName + ", " + DeleteUnfinishedElement (element.header.guid)));
                     continue;
                 }
             }
@@ -326,8 +339,16 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "height": {
                             "type": "number",
-                            "description": "Optional column height.",
+                            "description": "Optional explicit column height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or of the tool defaults. Cannot be combined with a non-zero relativeTopStory.",
                             "exclusiveMinimum": 0.0
+                        },
+                        "relativeTopStory": {
+                            "type": "integer",
+                            "description": "Optional link of the column's top to another story, relative to its home story (1 is the story above); 0 means an explicit height. With a non-zero value Archicad computes the height from the story levels and topOffset. The linked story must exist. Cannot be combined with height. When omitted, the top link of the favorite or of the tool defaults is kept."
+                        },
+                        "topOffset": {
+                            "type": "number",
+                            "description": "Optional offset of the column's top from the level of the linked top story (negative is below it). Only has an effect when the top is linked (relativeTopStory non-zero, given here or kept from the favorite or the tool defaults)."
                         },
                         "axisRotationAngle": {
                             "type": "number",
@@ -347,7 +368,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "width": {
                             "type": "number",
-                            "description": "Cross section width of the column. Applied to all segments.",
+                            "description": "Cross section width of the column, the diameter of a round one. Applied to all segments.",
                             "exclusiveMinimum": 0.0
                         },
                         "depth": {
@@ -364,7 +385,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "isWidthAndHeightLinked": {
                             "type": "boolean",
-                            "description": "When true (the default), Archicad keeps width and depth equal and setting one changes the other - set to false to give width/depth independent values. Applied to all segments."
+                            "description": "When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the tool default (or favoriteName) is used. Applied to all segments."
                         },
                         "buildingMaterialId": {
                             "$ref": "#/AttributeId",
@@ -413,9 +434,30 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     element.column.bottomOffset = floorIndexAndOffset.second;
     element.column.origoPos.x = apiCoordinate.x;
     element.column.origoPos.y = apiCoordinate.y;
-    if (parameters.Get ("height", element.column.height)) {
+
+    // The top of the column: an explicit height (relativeTopStory 0), or a link to a story
+    // relative to the home story with an offset from that story's level, as ModifyColumns
+    // writes them (#2552). A non-zero link and a height in one item are refused, because
+    // Archicad computes the height from the story levels once the top is linked.
+    double height = 0.0;
+    const bool hasHeight = parameters.Get ("height", height);
+    double relativeTopStory = 0.0;
+    const bool hasRelativeTopStory = parameters.Get ("relativeTopStory", relativeTopStory);
+    const short topStoryLink = static_cast<short> (relativeTopStory);
+    if (hasHeight && hasRelativeTopStory && topStoryLink != 0) {
+        return CreateErrorResponse (APIERR_BADPARS, "Do not give 'height' together with a non-zero 'relativeTopStory': a column linked to a story gets its height from the story levels and 'topOffset'.");
+    }
+    if (hasRelativeTopStory && topStoryLink != 0 && stories.find (static_cast<short> (element.header.floorInd + topStoryLink)) == stories.end ()) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("'relativeTopStory' %d links the column to story %d, which does not exist.", static_cast<int> (topStoryLink), static_cast<int> (element.header.floorInd + topStoryLink)));
+    }
+    if (hasHeight) {
+        element.column.height = height;
         element.column.relativeTopStory = 0;
     }
+    if (hasRelativeTopStory) {
+        element.column.relativeTopStory = topStoryLink;
+    }
+    parameters.Get ("topOffset", element.column.topOffset);
     parameters.Get ("axisRotationAngle", element.column.axisRotationAngle);
 
     GS::UniString coreAnchor;
@@ -473,15 +515,7 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
                 }
             }
             API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
-            if (hasIsWidthAndHeightLinked) {
-                segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
-            }
-            if (hasWidth) {
-                segment.nominalWidth = width;
-            }
-            if (hasDepth) {
-                segment.nominalHeight = depth;
-            }
+            ApplySectionSize (segment, hasWidth ? GS::Optional<double> (width) : GS::Optional<double> (), hasDepth ? GS::Optional<double> (depth) : GS::Optional<double> (), hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
             if (hasCircleBased) {
                 segment.circleBased = circleBased;
             }
@@ -1404,6 +1438,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "number",
                         "description" : "Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards."
                     },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                    },
                     "name": {
                         "type": "string",
                         "description" : "Name of the zone."
@@ -1486,6 +1525,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
 GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorIndex", element.header.floorInd);
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
 
     const API_Guid categoryAttrGuid = GetGuidFromArrayItem ("categoryAttributeId", parameters);
     if (categoryAttrGuid != APINULLGuid) {
@@ -2556,7 +2600,7 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
         "reflected": { "type": "boolean" },
         "useFixSize": { "type": "boolean" },
         "fixPoint": { "type": "integer", "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)." },
-        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level." },
+        "offset": { "$ref": "#/Coordinate2D", "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType." },
         "useFixedAngle": { "type": "boolean", "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify." },
         "isAutoOnStoryVisibility": { "type": "boolean" },
         "visibility": {
@@ -6475,6 +6519,30 @@ static const char* LevelDimensionSettingsSchemaProperties = R"(
                     "origin": {
                         "$ref": "#/DimensionOrigin",
                         "description": "The origin the level is measured from. Optional parameter."
+                    },
+                    "fontName": {
+                        "type": "string",
+                        "description": "Font of the dimension text (Text Style of the Level Dimension settings), applied to both texts of the marker: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given. Optional parameter."
+                    },
+                    "fontIndex": {
+                        "type": "integer",
+                        "description": "Font of the dimension text given by its Font attribute index, applied to both texts of the marker. Optional parameter."
+                    },
+                    "bold": {
+                        "type": "boolean",
+                        "description": "Bold dimension text. Optional parameter, the other styles are kept."
+                    },
+                    "italic": {
+                        "type": "boolean",
+                        "description": "Italic dimension text. Optional parameter, the other styles are kept."
+                    },
+                    "underline": {
+                        "type": "boolean",
+                        "description": "Underlined dimension text. Optional parameter, the other styles are kept."
+                    },
+                    "hideWithBaseElem": {
+                        "type": "boolean",
+                        "description": "Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter."
                     })";
 
 GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
@@ -6558,6 +6626,54 @@ GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, origin);
         }
+    }
+
+    // The Text Style of the settings dialog: one font and style for both texts of the marker,
+    // as textHeight and textPen (#2656).
+    GS::Optional<short> fontIndex;
+    const auto fontErr = TextLabelDetails::GetFontIndexFromDetails (parameters, fontIndex);
+    if (fontErr.HasValue ()) {
+        return fontErr;
+    }
+    if (fontIndex.HasValue ()) {
+        element.levelDimension.note1.noteFont = *fontIndex;
+        element.levelDimension.note2.noteFont = *fontIndex;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.noteFont);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.noteFont);
+        }
+    }
+
+    const unsigned short faceBits = element.levelDimension.note1.faceBits;
+    bool bold = (faceBits & APIFace_Bold) != 0;
+    bool italic = (faceBits & APIFace_Italic) != 0;
+    bool underline = (faceBits & APIFace_Underline) != 0;
+    bool faceChanged = false;
+    faceChanged |= parameters.Get ("bold", bold);
+    faceChanged |= parameters.Get ("italic", italic);
+    faceChanged |= parameters.Get ("underline", underline);
+    if (faceChanged) {
+        // Only the three styles of the dialog are set; any other bit Archicad keeps there stays.
+        const unsigned short styleBits = static_cast<unsigned short> (APIFace_Bold | APIFace_Italic | APIFace_Underline);
+        const unsigned short newBits = static_cast<unsigned short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0));
+        element.levelDimension.note1.faceBits = static_cast<unsigned short> ((element.levelDimension.note1.faceBits & ~styleBits) | newBits);
+        element.levelDimension.note2.faceBits = static_cast<unsigned short> ((element.levelDimension.note2.faceBits & ~styleBits) | newBits);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.faceBits);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.faceBits);
+        }
+    }
+
+    if (parameters.Contains ("hideWithBaseElem")) {
+#ifdef ServerMainVers_2900
+        parameters.Get ("hideWithBaseElem", element.levelDimension.hideWithBaseElem);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, hideWithBaseElem);
+        }
+#else
+        // The Level Dimension of the Archicad 25-28 API has no hideWithBaseElem field.
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, "'hideWithBaseElem' of a level dimension is available from Archicad 29.");
+#endif
     }
 
     return {};
@@ -6673,6 +6789,205 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
     return ApplyLevelDimensionSettings (parameters, element, nullptr);
 }
 
+CreateAngleDimensionsCommand::CreateAngleDimensionsCommand () :
+    CreateElementsCommandBase ("CreateAngleDimensions", API_AngleDimensionID, "angleDimensionsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateAngleDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "angleDimensionsData": {
+            "type": "array",
+            "description": "Array of data to create Angle Dimensions (the Angle Dimension tool). They are created in the current database (the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active), or in the one given by databaseId.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Angle Dimension: the angle between two lines, each given by two points. The dimension is static: it is not associated with the elements the points lie on.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of an Angle Dimension favorite to base the new element on. Its settings (layer, pens, markers, text style) are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "firstLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The first measured line."
+                    },
+                    "secondLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The second measured line. It must not be parallel to the first one."
+                    },
+                    "arcPosition": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "A point the dimension arc passes through. Its distance from the intersection of the two lines is the radius of the arc, and the side it lies on chooses which of the angles between the lines is measured, as clicking the arc's position does with the Angle Dimension tool."
+                    },
+                    "smallArc": {
+                        "type": "boolean",
+                        "description": "Measure the smaller angle between the lines (inner dimension) rather than the larger one (outer dimension). Optional parameter, by default the favorite's or the tool default's setting."
+                    },
+                    "floorIndex": {
+                        "type": "integer",
+                        "description": "The index of the floor to place the dimension on, when it is created on the floor plan. Optional parameter, by default the current floor is used."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Angle Dimension tool default is used."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension and witness lines. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "firstLine",
+                    "secondLine",
+                    "arcPosition"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a section, an elevation, a worksheet or a detail (see GetDatabases). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "angleDimensionsData"
+    ]
+})";
+}
+
+static GS::Optional<GS::ObjectState> GetAngleDimensionLine (const GS::ObjectState& parameters, const char* name, API_Coord& beg, API_Coord& end)
+{
+    const GS::ObjectState* lineOS = parameters.Get (name);
+    const GS::ObjectState* begOS = lineOS != nullptr ? lineOS->Get ("begCoordinate") : nullptr;
+    const GS::ObjectState* endOS = lineOS != nullptr ? lineOS->Get ("endCoordinate") : nullptr;
+    if (begOS == nullptr || endOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Missing '") + name + "' with 'begCoordinate' and 'endCoordinate'.");
+    }
+    beg = Get2DCoordinateFromObjectState (*begOS);
+    end = Get2DCoordinateFromObjectState (*endOS);
+    if (std::hypot (end.x - beg.x, end.y - beg.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Zero-length '") + name + "': 'begCoordinate' and 'endCoordinate' are identical.");
+    }
+    return {};
+}
+
+GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
+{
+    API_Coord a1 = {}, a2 = {}, b1 = {}, b2 = {};
+    {
+        auto error = GetAngleDimensionLine (parameters, "firstLine", a1, a2);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    {
+        auto error = GetAngleDimensionLine (parameters, "secondLine", b1, b2);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    const GS::ObjectState* arcPositionOS = parameters.Get ("arcPosition");
+    if (arcPositionOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'arcPosition' parameter.");
+    }
+    const API_Coord arcPosition = Get2DCoordinateFromObjectState (*arcPositionOS);
+
+    // The center of the dimension arc is the intersection of the two (infinite) lines,
+    // as the Angle Dimension tool puts it.
+    const double d1x = a2.x - a1.x, d1y = a2.y - a1.y;
+    const double d2x = b2.x - b1.x, d2y = b2.y - b1.y;
+    const double cross = d1x * d2y - d1y * d2x;
+    if (std::fabs (cross) < 1e-9 * std::hypot (d1x, d1y) * std::hypot (d2x, d2y)) {
+        return CreateErrorResponse (APIERR_BADPARS, "'firstLine' and 'secondLine' are parallel, so they have no angle to dimension.");
+    }
+    const double t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / cross;
+    API_Coord origo = {};
+    origo.x = a1.x + t * d1x;
+    origo.y = a1.y + t * d1y;
+    if (std::hypot (arcPosition.x - origo.x, arcPosition.y - origo.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, "'arcPosition' is the intersection of the two lines; it must be away from it, on the dimension arc.");
+    }
+
+    // A static angle dimension, as Do_CreateStaticAngleDimension of the DevKit's Element_Test
+    // example creates it: the four reference points, the arc position and its center.
+    element.angleDimension.base[0].loc = a1;
+    element.angleDimension.base[1].loc = a2;
+    element.angleDimension.base[2].loc = b1;
+    element.angleDimension.base[3].loc = b2;
+    element.angleDimension.pos = arcPosition;
+    element.angleDimension.origo = origo;
+
+    parameters.Get ("smallArc", element.angleDimension.smallArc);
+
+    Int32 floorIndex = 0;
+    if (parameters.Get ("floorIndex", floorIndex)) {
+        element.header.floorInd = static_cast<short> (floorIndex);
+    }
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
+        }
+        element.angleDimension.linPen = static_cast<short> (pen);
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
+        }
+        element.angleDimension.note.noteSize = textHeight;
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
+        }
+        element.angleDimension.note.notePen = static_cast<short> (textPen);
+    }
+
+    return {};
+}
+
+// With a section or elevation window active, ACAPI_Element_Create of a dimension can report
+// success and hand back a GUID although no element was created (#510): the new element is
+// read back, so the caller gets an error instead of an id that resolves to nothing.
+GSErrCode CreateAngleDimensionsCommand::AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
+{
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    return ACAPI_Element_Get (&created) == NoError ? NoError : APIERR_GENERAL;
+}
+
 ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -6730,8 +7045,8 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
 
 // The settings go through ApplyLevelDimensionSettings, as in CreateLevelDimensions; the position
 // through loc, which ACAPI_Element_Change accepts for level dimensions (as the DevKit's Element_Test
-// does in Do_LevelDimension_Edit). The parent element, the static level and the texts' content are
-// not changed. The element is read back, so a value Archicad did not take is reported as a failure.
+// does in Do_LevelDimension_Edit). The font and style go to both texts, like the text height and pen.
+// The parent element, the static level and the texts' content are not changed. The element is read back, so a value Archicad did not take is reported as a failure.
 GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> itemsWithDetails;
@@ -6821,6 +7136,19 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
             if (item.Contains ("origin") && changed.levelDimension.origin != element.levelDimension.origin) {
                 notApplied += " origin";
             }
+            if ((item.Contains ("fontName") || item.Contains ("fontIndex")) && changed.levelDimension.note1.noteFont != element.levelDimension.note1.noteFont) {
+                notApplied += " font";
+            }
+            const unsigned short styleBits = static_cast<unsigned short> (APIFace_Bold | APIFace_Italic | APIFace_Underline);
+            if ((item.Contains ("bold") || item.Contains ("italic") || item.Contains ("underline")) &&
+                (changed.levelDimension.note1.faceBits & styleBits) != (element.levelDimension.note1.faceBits & styleBits)) {
+                notApplied += " text style";
+            }
+#ifdef ServerMainVers_2900
+            if (item.Contains ("hideWithBaseElem") && changed.levelDimension.hideWithBaseElem != element.levelDimension.hideWithBaseElem) {
+                notApplied += " hideWithBaseElem";
+            }
+#endif
             if (!notApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));
                 continue;

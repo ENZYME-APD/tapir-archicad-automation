@@ -84,6 +84,11 @@
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Check को <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a> से चलाएँ; कोई समस्या मिलने पर Archicad Action Center दिखाता है। Hotlink check के लिए, हर source की स्थिति <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> से पढ़ें (Archicad 27 से)।',
 
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Profile इस्तेमाल करने वाली wall, beam या column के profile modifier values, या stretched width और height set करना',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'इन्हें <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> से पढ़ें। बदलने के लिए profile को <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> से बदलें (इन elements के लिए एक copy, या profile खुद), या Archicad में element की settings में set करें।',
+
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'कुछ और मिला जो Archicad API नहीं कर सकता? जाँचे गए DevKit headers के साथ एक issue में बताएँ, और उसे यहाँ जोड़ा जाएगा। <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Issue खोलें</a>'
 });

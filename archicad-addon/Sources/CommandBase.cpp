@@ -105,6 +105,63 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+static bool NavigatorTreeContains (API_NavigatorItem item, API_NavigatorMapID mapId, const API_Guid& guid)
+{
+    if (item.guid == guid) {
+        return true;
+    }
+    item.mapId = mapId;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) != NoError) {
+        return false;
+    }
+    for (const API_NavigatorItem& child : children) {
+        if (NavigatorTreeContains (child, mapId, guid)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsNavigatorItemGuid (const API_Guid& guid)
+{
+    for (const API_NavigatorMapID mapId : { API_ProjectMap, API_PublicViewMap, API_MyViewMap, API_LayoutMap, API_PublisherSets }) {
+        // A project has one set of each map, except the publisher sets.
+        Int32 setCount = 1;
+        if (mapId == API_PublisherSets && ACAPI_Navigator_GetNavigatorSetNum (&setCount) != NoError) {
+            continue;
+        }
+        for (Int32 ii = 0; ii < setCount; ++ii) {
+            API_NavigatorSet navigatorSet = {};
+            navigatorSet.mapId = mapId;
+            if (ACAPI_Navigator_GetNavigatorSet (&navigatorSet, &ii) != NoError) {
+                continue;
+            }
+            if (navigatorSet.rootGuid == guid) {
+                return true;
+            }
+            // The root guid comes from Archicad itself, so it is a navigator item.
+            API_NavigatorItem rootItem = {};
+            if (ACAPI_Navigator_GetNavigatorItem (&navigatorSet.rootGuid, &rootItem) != NoError) {
+                continue;
+            }
+            if (NavigatorTreeContains (rootItem, mapId, guid)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item)
+{
+    if (guid == APINULLGuid || !IsNavigatorItemGuid (guid)) {
+        return APIERR_BADID;
+    }
+    API_Guid itemGuid = guid;
+    return ACAPI_Navigator_GetNavigatorItem (&itemGuid, &item);
+}
+
 bool IsDryRun (const GS::ObjectState& parameters)
 {
     bool dryRun = false;
@@ -1882,7 +1939,21 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
     // Not the elemInfoString memo part: writing it answers NoError on polylines and
     // splines and leaves their ID empty (#2470). Before Archicad 27 MigrationHelper.hpp
     // calls APIDb_ChangeElementInfoStringID.
-    const GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elementGuid, &id);
+    GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elementGuid, &id);
+    if (err == APIERR_BADID || err == APIERR_BADELEMENTTYPE) {
+        // Some element types are not handled by that call although they have an ID: it answers
+        // APIERR_BADID for an Opening (#2629). Their ID is written through the elemInfoString
+        // memo part instead; the read back below catches a write Archicad did not keep.
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        memo.elemInfoString = new GS::UniString (id);
+        API_Guid guid = elementGuid;
+        const GSErrCode memoErr = ACAPI_Element_ChangeMemo (guid, APIMemoMask_ElemInfoString, &memo);
+        if (memoErr != NoError) {
+            return err;
+        }
+        err = NoError;
+    }
     if (err != NoError) {
         return err;
     }
@@ -1894,4 +1965,12 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
         return APIERR_REFUSEDPAR;
     }
     return NoError;
+}
+
+GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid)
+{
+    if (ACAPI_Element_Delete ({ elementGuid }) == NoError) {
+        return "so it was not created";
+    }
+    return GS::UniString ("and Archicad refused to delete it again, so it was left in the project with elementId ") + APIGuidToString (elementGuid);
 }
