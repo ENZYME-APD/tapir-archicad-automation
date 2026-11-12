@@ -3528,6 +3528,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 
             case API_DrawingID: {
                 typeSpecificDetails.Add ("pos",           Create2DCoordinateObjectState (elem.drawing.pos));
+                // Output only (API_DrawingType::offset): equal to pos when the drawing is clipped
+                // with a frame polygon, otherwise the subvector of pos and the anchor's coordinate.
+                typeSpecificDetails.Add ("offset",        Create2DCoordinateObjectState (elem.drawing.offset));
                 typeSpecificDetails.Add ("angle",         elem.drawing.angle);
                 typeSpecificDetails.Add ("ratio",         elem.drawing.ratio);
                 typeSpecificDetails.Add ("drawingScale",  elem.drawing.drawingScale);
@@ -3973,13 +3976,12 @@ struct RequestedDrawingSettings {
     GS::Optional<API_ColorModeValues>         colorMode;
     GS::Optional<bool>                        isTransparentBk;
     GS::Optional<double>                      rasterizeDPI;
-    GS::Optional<API_AnchorID>                anchorPoint;
     GS::Optional<bool>                        useOwnOrigoAsAnchor;
 
     bool HasValue () const
     {
         return penTableUsageMode.HasValue () || penTableIndex.HasValue () || colorMode.HasValue () ||
-            isTransparentBk.HasValue () || rasterizeDPI.HasValue () || anchorPoint.HasValue () || useOwnOrigoAsAnchor.HasValue ();
+            isTransparentBk.HasValue () || rasterizeDPI.HasValue () || useOwnOrigoAsAnchor.HasValue ();
     }
 
     // The names of the given settings the drawing does not have, comma separated; empty when all were taken.
@@ -3996,8 +3998,6 @@ struct RequestedDrawingSettings {
             names.Push ("isTransparentBackground");
         if (rasterizeDPI.HasValue () && GS::Abs (drawing.rasterizeDPI - *rasterizeDPI) > 1e-6)
             names.Push ("rasterizeDPI");
-        if (anchorPoint.HasValue () && drawing.anchorPoint != *anchorPoint)
-            names.Push ("anchorPoint");
         if (useOwnOrigoAsAnchor.HasValue () && drawing.useOwnOrigoAsAnchor != *useOwnOrigoAsAnchor)
             names.Push ("useOwnOriginAsAnchor");
 
@@ -4345,14 +4345,55 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, rasterizeDPI);
                             requestedDrawingSettings.rasterizeDPI = elem.drawing.rasterizeDPI;
                         }
-                        // Drawing Settings > Size and Display: the anchor point the drawing is placed by.
+                        // Drawing Settings > Size and Display: the anchor point the drawing is
+                        // placed by. Graphisoft support confirmed ACAPI_Element_Change resets
+                        // anchorPoint back to BottomLeft whenever it is changed together with
+                        // useOwnOrigoAsAnchor, or while useOwnOrigoAsAnchor is already false, in
+                        // one combined mask - exactly the shape of the shared mask/call this
+                        // command uses below for everything else, so going through it here would
+                        // silently lose the requested anchorPoint (or fail it via NotApplied).
+                        // Applied as two separate calls instead, right away: first anchorPoint
+                        // together with useOwnOrigoAsAnchor forced true, then, unless
+                        // useOwnOrigoAsAnchor is also requested true, a second call (whose mask
+                        // excludes anchorPoint) sets it back to false alone.
                         GS::UniString anchorPointStr;
                         if (typeSpecificDetails->Get ("anchorPoint", anchorPointStr) &&
                             DrawingAnchorPointFromString (anchorPointStr, elem.drawing.anchorPoint)) {
-                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, anchorPoint);
-                            requestedDrawingSettings.anchorPoint = elem.drawing.anchorPoint;
-                        }
-                        if (typeSpecificDetails->Get ("useOwnOriginAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
+                            const API_AnchorID requestedAnchorPoint = elem.drawing.anchorPoint;
+                            bool requestedUseOwnOrigoAsAnchor = elem.drawing.useOwnOrigoAsAnchor;
+                            typeSpecificDetails->Get ("useOwnOriginAsAnchor", requestedUseOwnOrigoAsAnchor);
+
+                            API_Element anchorElem = elem;
+                            API_Element anchorMask = {};
+                            ACAPI_ELEMENT_MASK_CLEAR (anchorMask);
+                            anchorElem.drawing.anchorPoint = requestedAnchorPoint;
+                            anchorElem.drawing.useOwnOrigoAsAnchor = true;
+                            ACAPI_ELEMENT_MASK_SET (anchorMask, API_DrawingType, anchorPoint);
+                            ACAPI_ELEMENT_MASK_SET (anchorMask, API_DrawingType, useOwnOrigoAsAnchor);
+                            err = ACAPI_Element_Change (&anchorElem, &anchorMask, nullptr, 0, true);
+                            if (err != NoError) {
+                                ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                executionResults (CreateFailedExecutionResult (err, "Failed to set the anchor point of the drawing"));
+                                continue;
+                            }
+                            elem.drawing.anchorPoint = requestedAnchorPoint;
+                            elem.drawing.useOwnOrigoAsAnchor = true;
+
+                            if (!requestedUseOwnOrigoAsAnchor) {
+                                API_Element restoreElem = elem;
+                                API_Element restoreMask = {};
+                                ACAPI_ELEMENT_MASK_CLEAR (restoreMask);
+                                restoreElem.drawing.useOwnOrigoAsAnchor = false;
+                                ACAPI_ELEMENT_MASK_SET (restoreMask, API_DrawingType, useOwnOrigoAsAnchor);
+                                err = ACAPI_Element_Change (&restoreElem, &restoreMask, nullptr, 0, true);
+                                if (err != NoError) {
+                                    ACAPI_DisposeElemMemoHdls (&clipMemo);
+                                    executionResults (CreateFailedExecutionResult (err, "Failed to restore useOwnOriginAsAnchor after setting the anchor point"));
+                                    continue;
+                                }
+                                elem.drawing.useOwnOrigoAsAnchor = false;
+                            }
+                        } else if (typeSpecificDetails->Get ("useOwnOriginAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
                             requestedDrawingSettings.useOwnOrigoAsAnchor = elem.drawing.useOwnOrigoAsAnchor;
                         }

@@ -13106,6 +13106,10 @@
                 "$ref": "#/Coordinate2D",
                 "description": "Position of the drawing on the layout, in meters. Without a clip polygon it is the lower left corner of the drawing (before rotation); with one it is where the origin of the source view lands (a modelOffset can move it by modelOffset * drawingScale)."
             },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Output only (API_DrawingType::offset). Equal to pos when isCutWithFrame is true; otherwise the subvector of pos and the anchorPoint's coordinate on the drawing's bounding box. Unlike pos, this is always where the source view's model origin lands on the layout, regardless of anchorPoint/useOwnOriginAsAnchor."
+            },
             "angle": {
                 "type": "number",
                 "description": "Rotation angle of the drawing in radians."
