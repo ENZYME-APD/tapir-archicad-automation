@@ -2727,6 +2727,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "2.0.1",
             "Creates perspective cameras, each added at the end of the path of the given Camera Set, from the camera and target positions (with their heights) and optionally the view cone, roll angle, two-point perspective, sun (by angles or by date and time) and pen; the rest comes from the Camera tool defaults. Returns their element ids, which GetCameras lists. Delete them with DeleteElements."
         );
+        err |= RegisterCommand<ModifyCamerasCommand> (
+            navigatorCommands, "2.0.1",
+            "Changes perspective cameras: the camera and target positions (with their heights), view cone, roll angle, two-point perspective, sun (by angles or by date and time) and pen. Values not given are kept; each camera keeps its element id, its Camera Set and its place in the path. View cone and roll angle are in the units GetCameras returns them."
+        );
         err |= RegisterCommand<Get3DStylesCommand> (
             navigatorCommands, "2.0.0",
             "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses."

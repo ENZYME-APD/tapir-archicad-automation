@@ -65,6 +65,18 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Changes the position, target, view cone, roll angle, two-point perspective, sun and pen of
+// perspective cameras (API_CameraType), keeping their GUIDs and their places in the path.
+class ModifyCamerasCommand : public CommandBase
+{
+public:
+    ModifyCamerasCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class Get3DStylesCommand : public CommandBase
 {
 public:
