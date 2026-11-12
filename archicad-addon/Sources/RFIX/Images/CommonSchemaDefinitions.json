@@ -11152,11 +11152,12 @@
     },
     "AssemblySegmentLength": {
         "type": "object",
-        "description": "How the length of a segment is set (its segment scheme): a fixed length, or a proportion of the length the fixed segments leave. Both values are returned; Archicad uses the one of the lengthType.",
+        "description": "How the length of a segment of a beam or column is set (its segment scheme): a fixed length, or a proportion of the length the fixed segments leave. Both values are returned; Archicad uses the one of the lengthType.",
         "properties": {
             "lengthType": {
                 "type": "string",
-                "enum": [ "Fixed", "Proportional", "Unknown" ]
+                "enum": [ "Fixed", "Proportional", "Unknown" ],
+                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave. Unknown is only returned, for a scheme Archicad reports as neither; sent to a Modify or Create command it is treated as Fixed."
             },
             "fixedLength": {
                 "type": "number",
@@ -11381,31 +11382,6 @@
             "height",
             "isWidthAndHeightLinked",
             "circleBased"
-        ]
-    },
-    "AssemblySegmentLength": {
-        "type": "object",
-        "description": "The length of a segment of a beam, from the beam's segment schemes.",
-        "properties": {
-            "lengthType": {
-                "type": "string",
-                "enum": [ "Fixed", "Proportional" ],
-                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
-            },
-            "fixedLength": {
-                "type": "number",
-                "description": "The length of the segment. Archicad uses it when lengthType is Fixed."
-            },
-            "lengthProportion": {
-                "type": "number",
-                "description": "The share of the length of the segment. Archicad uses it when lengthType is Proportional."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "lengthType",
-            "fixedLength",
-            "lengthProportion"
         ]
     },
     "BeamSegmentGeometry": {
