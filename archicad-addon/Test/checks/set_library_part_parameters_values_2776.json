@@ -1,7 +1,7 @@
 {
-  "title": "SetLibraryPartParameters changes the default values GetLibraryPartParameterValues reads of an embedded library part, after the change that modifies a part of a local folder library in its file (#2776; the local folder path itself needs a saved project with a library folder and is not run here)",
+  "title": "SetLibraryPartParameters changes the default values GetLibraryPartParameterValues reads of an embedded library part, after the change that modifies a part of a local folder library in its file (#2776; the local folder path itself needs a saved project with a library folder and is not run here; from AC29, because Archicad 28 does not report a part of the embedded library editable, which this change does not touch)",
   "minTapir": "2.0.1",
-  "minArchicad": "28",
+  "minArchicad": "29",
   "requiresEmpty": [],
   "steps": [
     {
