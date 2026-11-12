@@ -29,8 +29,9 @@
 #include <limits>
 
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
-// (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Arcs are
-// not carried: a curved pivot edge comes back as its end points (schema says so).
+// (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Its arcs
+// (additionalPolyParcs) go to pivotPolygonArcs, indexed into pivotPolygonOutline from 0
+// as polygonArcs are (#2582).
 static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -47,7 +48,25 @@ static void AddPivotPolygonFromMemo (const API_Guid& guid, GS::ObjectState& os)
     for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
         coords (Create2DCoordinateObjectState ((*memo.additionalPolyCoords)[i]));
     }
+    const GSSize nArcs = memo.additionalPolyParcs == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyParcs)) / sizeof (API_PolyArc);
+    if (nArcs > 0) {
+        const auto& arcs = os.AddList<GS::ObjectState> ("pivotPolygonArcs");
+        for (GSIndex i = 0; i < nArcs; ++i) {
+            const API_PolyArc& arc = (*memo.additionalPolyParcs)[i];
+            // only the arcs of the outline; those of the holes lie past its closing vertex
+            if (arc.begIndex >= 1 && arc.endIndex <= last && arc.begIndex < arc.endIndex) {
+                arcs (CreatePolyArcObjectState (arc));
+            }
+        }
+    }
     ACAPI_DisposeElemMemoHdls (&memo);
+}
+
+// The curve resolution of a multi-plane roof's curved pivot edges (API_PolyRoofData), with
+// the API_ShellBaseSegmentTypeID names (#2582).
+static GS::UniString RoofSegmentTypeToString (API_ShellBaseSegmentTypeID segmentType)
+{
+    return segmentType == APIShellBase_SegmentsByArc ? "SegmentsByArc" : "SegmentsByCircle";
 }
 
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType);
@@ -90,6 +109,9 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
             level.Add ("angle", roof.u.polyRoof.levelData[i].levelAngle);
             levels (level);
         }
+        os.Add ("segmentType", RoofSegmentTypeToString (roof.u.polyRoof.segmentType));
+        os.Add ("segmentsByArc", (Int32) roof.u.polyRoof.segmentsByArc);
+        os.Add ("segmentsByCircle", (Int32) roof.u.polyRoof.segmentsByCircle);
         if (partMemo == nullptr) {
             AddPivotPolygonFromMemo (guid, os);
             AddPivotEdgesFromMemo (guid, os);
@@ -3277,6 +3299,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
+                AddZoneSurface (elem.zone, typeSpecificDetails);
                 AddZoneDisplayStampPenAndReduction (elem.zone, typeSpecificDetails);
                 typeSpecificDetails.Add ("height", elem.zone.roomHeight);
                 typeSpecificDetails.Add ("bottomOffset", elem.zone.roomBaseLev);

@@ -4406,6 +4406,82 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     return changed;
 }
 
+// The segment an item of the "segments" list of ModifyColumns writes: its segmentIndex, else its
+// position in the list, in the order GetDetailsOfElements returns the segments.
+static Int32 GetColumnSegmentIndex (const GS::ObjectState& segmentOs, UIndex position)
+{
+    Int32 segmentIndex = static_cast<Int32> (position);
+    segmentOs.Get ("segmentIndex", segmentIndex);
+    return segmentIndex;
+}
+
+// Checks the "segments" list of a ModifyColumns item (#2552) before anything is written, so a
+// wrong segment index, an unknown surface or an invalid veneer leaves the column as it was.
+static GS::Optional<GS::UniString> CheckColumnSegments (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    GS::Array<GS::ObjectState> segmentItems;
+    if (!details.Get ("segments", segmentItems)) {
+        return {};
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+        return GS::UniString ("Failed to read the segments of the column.");
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+
+    for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
+        const GS::ObjectState& segmentOs = segmentItems[i];
+        const Int32 segmentIndex = GetColumnSegmentIndex (segmentOs, i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            return GS::UniString::Printf ("segments[%d] writes segment %d, but the column has %d segments (segmentIndex 0 to %d).",
+                static_cast<int> (i), static_cast<int> (segmentIndex), static_cast<int> (nSegments), static_cast<int> (nSegments) - 1);
+        }
+        for (const char* key : { "extrusionSurfaceMaterial", "endsMaterial" }) {
+            GS::ObjectState materialOs;
+            bool overridden = false;
+            if (segmentOs.Get (key, materialOs) && materialOs.Get ("overridden", overridden) && overridden && !materialOs.Contains ("attributeId")) {
+                return GS::UniString::Printf ("segments[%d].%s is overridden but has no attributeId.", static_cast<int> (i), key);
+            }
+        }
+        const GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (
+            segmentOs, { "extrusionSurfaceMaterial", "endsMaterial" }, "");
+        if (idError.HasValue ()) {
+            return idError;
+        }
+        const GS::ObjectState* veneerOs = segmentOs.Get ("veneer");
+        if (veneerOs != nullptr) {
+            API_ColumnSegmentType probe = {};
+            const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, probe);
+            if (veneerError.HasValue ()) {
+                return veneerError;
+            }
+        }
+    }
+    return {};
+}
+
+static GS::Optional<GS::UniString> ApplyColumnSegment (const GS::ObjectState& segmentOs, API_ColumnSegmentType& segment)
+{
+    GS::ObjectState materialOs;
+    if (segmentOs.Get ("extrusionSurfaceMaterial", materialOs)) {
+        segment.extrusionSurfaceMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("endsMaterial", materialOs)) {
+        segment.endsMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    bool materialsChained = false;
+    if (segmentOs.Get ("materialsChained", materialsChained)) {
+        segment.materialsChained = materialsChained;
+    }
+    const GS::ObjectState* veneerOs = segmentOs.Get ("veneer");
+    if (veneerOs != nullptr) {
+        return ApplyColumnVeneer (*veneerOs, segment);
+    }
+    return {};
+}
+
 namespace {
 
 // The floor plan display settings of a beam that ModifyBeams writes (#2529), under the names
@@ -4655,7 +4731,9 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
     const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = details.Get ("profileId");
     const GS::ObjectState* veneerOs = details.Get ("veneer");
-    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && veneerOs == nullptr) {
+    GS::Array<GS::ObjectState> segmentItems;
+    const bool hasSegments = details.Get ("segments", segmentItems);
+    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && veneerOs == nullptr && !hasSegments) {
         return true;
     }
 
@@ -4692,6 +4770,20 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
                 segment.profileType = APISect_Normal;
             }
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        }
+    }
+
+    // After the fields for all segments, so a segment's own veneer wins. The indices were
+    // checked by CheckColumnSegments (#2552).
+    for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
+        const Int32 segmentIndex = GetColumnSegmentIndex (segmentItems[i], i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            continue;
+        }
+        const GS::Optional<GS::UniString> segmentError = ApplyColumnSegment (segmentItems[i], memo.columnSegments[segmentIndex]);
+        if (segmentError.HasValue ()) {
+            errorMessage = segmentError.Get ();
+            return false;
         }
     }
 
@@ -15515,6 +15607,88 @@ static GS::Optional<GS::UniString> CheckRoofEdgeSideMaterials (const API_Guid& g
     return {};
 }
 
+// The curve resolution of a multi-plane roof's curved pivot edges (segmentType, segmentsByArc
+// and segmentsByCircle of API_PolyRoofData, see ModifyRoofs) (#2582). given tells whether any
+// of them was in the item. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyRoofSegmentation (API_Element& element, API_Element& mask, const GS::ObjectState& item, bool& given)
+{
+    given = false;
+    GS::UniString segmentType;
+    const bool hasSegmentType = item.Get ("segmentType", segmentType);
+    if (hasSegmentType && segmentType != "SegmentsByCircle" && segmentType != "SegmentsByArc") {
+        return "Unknown segmentType '" + segmentType + "': use SegmentsByCircle or SegmentsByArc.";
+    }
+    Int32 segmentsByArc = 0;
+    const bool hasSegmentsByArc = item.Get ("segmentsByArc", segmentsByArc);
+    if (hasSegmentsByArc && segmentsByArc < 1) {
+        return GS::UniString ("'segmentsByArc' must be at least 1.");
+    }
+    Int32 segmentsByCircle = 0;
+    const bool hasSegmentsByCircle = item.Get ("segmentsByCircle", segmentsByCircle);
+    if (hasSegmentsByCircle && segmentsByCircle < 3) {
+        return GS::UniString ("'segmentsByCircle' must be at least 3.");
+    }
+
+    API_PolyRoofData& polyRoof = element.roof.u.polyRoof;
+    if (hasSegmentType) {
+        polyRoof.segmentType = segmentType == "SegmentsByArc" ? APIShellBase_SegmentsByArc : APIShellBase_SegmentsByCircle;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.segmentType);
+    }
+    if (hasSegmentsByArc) {
+        polyRoof.segmentsByArc = segmentsByArc;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.segmentsByArc);
+    }
+    if (hasSegmentsByCircle) {
+        polyRoof.segmentsByCircle = segmentsByCircle;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.segmentsByCircle);
+    }
+    given = hasSegmentType || hasSegmentsByArc || hasSegmentsByCircle;
+    return {};
+}
+
+// Each pivot edge of a multi-plane roof carries its own curve resolution too
+// (API_PivotPolyEdgeData), which the roof's planes are built from, so the roof's values are
+// copied to every edge, the closing vertex of each contour included (#2582).
+static void CopyRoofSegmentationToPivotEdges (const API_PolyRoofData& polyRoof, API_ElementMemo& memo)
+{
+    if (memo.pivotPolyEdges == nullptr) {
+        return;
+    }
+    const GSSize nEdges = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    for (GSIndex i = 0; i < nEdges; ++i) {
+        memo.pivotPolyEdges[i].segmentType = polyRoof.segmentType;
+        memo.pivotPolyEdges[i].segmentsByArc = polyRoof.segmentsByArc;
+        memo.pivotPolyEdges[i].segmentsByCircle = polyRoof.segmentsByCircle;
+    }
+}
+
+// Reads the roof back after ModifyRoofs wrote the given curve resolution, and names what
+// Archicad did not apply (#2582).
+static GS::Optional<GS::UniString> CheckRoofSegmentation (const API_Guid& guid, const GS::ObjectState& item)
+{
+    API_Element element = {};
+    element.header.guid = guid;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return GS::UniString ("Modified the roof, but failed to read it back to check the segmentation.");
+    }
+    const API_PolyRoofData& polyRoof = element.roof.u.polyRoof;
+    GS::UniString segmentType;
+    if (item.Get ("segmentType", segmentType)) {
+        const API_ShellBaseSegmentTypeID expected = segmentType == "SegmentsByArc" ? APIShellBase_SegmentsByArc : APIShellBase_SegmentsByCircle;
+        if (polyRoof.segmentType != expected) {
+            return "Archicad did not apply segmentType '" + segmentType + "'.";
+        }
+    }
+    Int32 segments = 0;
+    if (item.Get ("segmentsByArc", segments) && polyRoof.segmentsByArc != segments) {
+        return GS::UniString::Printf ("Archicad did not apply segmentsByArc %d: the roof has %d.", (int) segments, (int) polyRoof.segmentsByArc);
+    }
+    if (item.Get ("segmentsByCircle", segments) && polyRoof.segmentsByCircle != segments) {
+        return GS::UniString::Printf ("Archicad did not apply segmentsByCircle %d: the roof has %d.", (int) segments, (int) polyRoof.segmentsByCircle);
+    }
+    return {};
+}
+
 // Reads a multi-plane roof back after ModifyRoofs wrote its contourPolygon (#2582): the overhang
 // must be Manual, the contour's outline must have the given points and the contour as many holes
 // as given. The points are compared as a set, as Archicad may start the outline at another vertex.
@@ -15725,6 +15899,21 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 "$ref": "#/RoofLevel"
                             }
                         },
+                        "segmentType": {
+                            "type": "string",
+                            "enum": [ "SegmentsByCircle", "SegmentsByArc" ],
+                            "description": "Multi-plane roofs only: how the curved edges of the pivot polygon (polygonArcs) are resolved into planes, as GetDetailsOfElements reports it. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments. Written to the roof and to every edge of its pivot polygon; the roof is read back and the item fails when Archicad did not apply it. Cannot be combined with contourPolygon, as none of segmentsByArc and segmentsByCircle can."
+                        },
+                        "segmentsByArc": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Multi-plane roofs only: the number of segments of each arc with segmentType SegmentsByArc. Written as segmentType is."
+                        },
+                        "segmentsByCircle": {
+                            "type": "integer",
+                            "minimum": 3,
+                            "description": "Multi-plane roofs only: the number of segments of a whole circle with segmentType SegmentsByCircle. Written as segmentType is."
+                        },
                         "structureType": {
                             "$ref": "#/RoofStructureType"
                         },
@@ -15747,7 +15936,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "edgeSideMaterials": {
                             "type": "array",
-                            "description": "The custom surface of each edge of the roof's polygon (single-plane roofs) or contour (multi-plane roofs, the polygonOutline and holes of GetDetailsOfElements, not the pivot polygon), one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. The roof is read back after writing, and the item fails when an edge does not have the surface given for it. Cannot be combined with polygonOutline, holes or contourPolygon, nor, on a multi-plane roof, with eavesOverhang or pivotEdges, which make the contour again.",
+                            "description": "The custom surface of each edge of the roof's polygon (single-plane roofs) or contour (multi-plane roofs, the polygonOutline and holes of GetDetailsOfElements, not the pivot polygon), one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. The roof is read back after writing, and the item fails when an edge does not have the surface given for it. Cannot be combined with polygonOutline, holes or contourPolygon, nor, on a multi-plane roof, with eavesOverhang, pivotEdges, segmentType, segmentsByArc or segmentsByCircle, which make the contour again.",
                             "items": { "$ref": "#/OverriddenMaterial" }
                         },
                         "cutBodyType": {
@@ -15772,7 +15961,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTrims": {
                             "type": "array",
-                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
+                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with pivotEdges, eavesOverhang, segmentType, segmentsByArc or segmentsByCircle, which move the contour.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -15847,12 +16036,15 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
             // The fields of the other roof class would be written into the wrong member of
             // the roof's union (u.planeRoof / u.polyRoof), so they are refused.
-            if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") || item.Contains ("contourPolygon"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges' and 'contourPolygon' are only valid for multi-plane roofs."));
+            if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") || item.Contains ("contourPolygon") ||
+                                item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges', 'contourPolygon', 'segmentType', 'segmentsByArc' and 'segmentsByCircle' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (item.Contains ("contourPolygon") && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'holes', 'pivotEdges' or 'eavesOverhang', which make the contour from the pivot polygon."));
+            // The segmentation of curved pivot edges makes the contour again too (#2582).
+            if (item.Contains ("contourPolygon") && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("pivotEdges") || item.Contains ("eavesOverhang") ||
+                                                     item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'holes', 'pivotEdges', 'eavesOverhang', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour from the pivot polygon."));
                 continue;
             }
             if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes"))) {
@@ -15860,9 +16052,10 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
             // A multi-plane roof's edge surfaces belong to the edges of its contour, which
-            // eavesOverhang and pivotEdges make again from the pivot polygon (#2582).
-            if (!isPlaneRoof && item.Contains ("edgeSideMaterials") && (item.Contains ("eavesOverhang") || item.Contains ("pivotEdges"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeSideMaterials' cannot be combined with 'eavesOverhang' or 'pivotEdges', which make the contour again; send them in separate calls."));
+            // eavesOverhang, pivotEdges and the segmentation make again from the pivot polygon (#2582).
+            if (!isPlaneRoof && item.Contains ("edgeSideMaterials") && (item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") ||
+                                                                        item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeSideMaterials' cannot be combined with 'eavesOverhang', 'pivotEdges', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour again; send them in separate calls."));
                 continue;
             }
             if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("contourPolygon"))) {
@@ -15875,8 +16068,10 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
             // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
             // trims would be written onto a contour Archicad replaces in the same change (#2435).
-            if (item.Contains ("edgeTrims") && (item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'pivotEdges' or 'eavesOverhang', which move the roof's contour: send them in two calls."));
+            // The segmentation of curved pivot edges re-cuts the contour as well (#2582).
+            if (item.Contains ("edgeTrims") && (item.Contains ("pivotEdges") || item.Contains ("eavesOverhang") ||
+                                                item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'pivotEdges', 'eavesOverhang', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which move the roof's contour: send them in two calls."));
                 continue;
             }
 
@@ -15900,6 +16095,26 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, floorPlanError.Get ()));
                 continue;
             }
+            bool segmentationGiven = false;
+            if (!isPlaneRoof) {
+                auto segmentationError = ApplyRoofSegmentation (element, mask, item, segmentationGiven);
+                if (segmentationError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentationError.Get ()));
+                    continue;
+                }
+                changed = changed || segmentationGiven;
+            }
+            // A successful result of a multi-plane roof whose segmentation was given becomes a
+            // failure when the roof read back does not have it.
+            const API_Guid roofGuid = element.header.guid;
+            const auto checkSegmentation = [&] (const GS::ObjectState& result) -> GS::ObjectState {
+                bool success = false;
+                if (!segmentationGiven || !result.Get ("success", success) || !success) {
+                    return result;
+                }
+                const auto checkError = CheckRoofSegmentation (roofGuid, item);
+                return checkError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()) : result;
+            };
             {
                 bool cutBodyGiven = false;
                 auto cutBodyError = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_ContoursDown, APIShellBaseCutBody_PivotLinesDown }, element.roof.shellBase.cutBodyType, cutBodyGiven);
@@ -15997,8 +16212,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
+            // The segmentation is also written to every pivot edge (CopyRoofSegmentationToPivotEdges),
+            // through the pivot polygon memo as pivotEdges is; with polygonOutline or holes, which
+            // make a new pivot polygon, it is copied to its edges in the geometry change below.
             GS::Array<GS::ObjectState> pivotEdges;
-            if (item.Get ("pivotEdges", pivotEdges)) {
+            const bool hasPivotEdges = item.Get ("pivotEdges", pivotEdges);
+            if (hasPivotEdges || (segmentationGiven && !item.Contains ("polygonOutline") && !item.Contains ("holes"))) {
                 if (item.Contains ("polygonOutline") || item.Contains ("holes")) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'pivotEdges' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
                     continue;
@@ -16013,18 +16232,23 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the edges of the roof's pivot polygon."));
                     continue;
                 }
-                auto edgeError = ApplyRoofPivotEdges (memo, edgeIndices, pivotEdges);
-                if (edgeError.HasValue ()) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
-                    continue;
+                if (hasPivotEdges) {
+                    auto edgeError = ApplyRoofPivotEdges (memo, edgeIndices, pivotEdges);
+                    if (edgeError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
+                        continue;
+                    }
+                }
+                if (segmentationGiven) {
+                    CopyRoofSegmentationToPivotEdges (element.roof.u.polyRoof, memo);
                 }
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
                 if (err != NoError) {
-                    results.Push (CreateFailedExecutionResult (err, "Failed to modify the roof planes of the edges."));
+                    results.Push (CreateFailedExecutionResult (err, hasPivotEdges ? "Failed to modify the roof planes of the edges." : "Failed to modify the segmentation of the roof."));
                     continue;
                 }
-                auto appliedError = CheckRoofPivotEdgeAttributesApplied (element.header.guid, pivotEdges);
-                results.Push (appliedError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, appliedError.Get ()) : CreateSuccessfulExecutionResult ());
+                auto appliedError = hasPivotEdges ? CheckRoofPivotEdgeAttributesApplied (element.header.guid, pivotEdges) : GS::Optional<GS::UniString> ();
+                results.Push (checkSegmentation (appliedError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, appliedError.Get ()) : CreateSuccessfulExecutionResult ()));
                 continue;
             }
 
@@ -16246,6 +16470,10 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 if (oldCoordCount != pivotPolygon.nCoords + 1 || oldPendCount != pivotPolygon.nSubPolys + 1) {
                     ResizeRoofPivotPolygonData (memo, oldCoordCount, keepUpTo, pivotPolygon.nCoords, pivotPolygon.nSubPolys);
                 }
+                if (segmentationGiven) {
+                    // The kept and the new pivot edges get the segmentation given for the roof (#2582).
+                    CopyRoofSegmentationToPivotEdges (element.roof.u.polyRoof, memo);
+                }
 
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
                 if (err != NoError) {
@@ -16253,7 +16481,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
                 err = RestoreRoofSurfaces (element.header.guid, oldShellBase);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Modified the roof geometry, but failed to restore the roof's surface overrides."));
+                results.Push (checkSegmentation (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Modified the roof geometry, but failed to restore the roof's surface overrides.")));
                 continue;
             }
 
@@ -16263,7 +16491,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof."));
+            results.Push (checkSegmentation (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof.")));
         }
     });
 }
@@ -16965,7 +17193,14 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
-                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
+                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },
+                        "segments": {
+                            "type": "array",
+                            "description": "Writes the surfaces and the veneer of single segments of the column. Each item writes the segment given by its segmentIndex, else the segment at its position in this list (the order GetDetailsOfElements returns them); segments not listed stay as they are. Only the surface and veneer keys of a read segment are accepted: its cross section, taper and length are not written here. Applied after the fields above, so a segment's own veneer wins over veneer.",
+                            "items": {
+                                "$ref": "#/ColumnSegmentSurfacesModification"
+                            }
+                        },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -17024,6 +17259,11 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                     continue;
                 }
             }
+            const GS::Optional<GS::UniString> segmentsError = CheckColumnSegments (element.header.guid, item);
+            if (segmentsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentsError.Get ()));
+                continue;
+            }
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
@@ -17047,7 +17287,7 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 check.item = &item;
                 displayChecks.Push (check);
             }
-            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer");
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer") || item.Contains ("segments");
             if (!changed && !hasSectionFields) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No column fields to modify."));
                 continue;
@@ -17066,7 +17306,7 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item, sectionError);
                 if (!sectionOk) {
                     results.Push (sectionError.IsEmpty ()
-                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section.")
+                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments.")
                         : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
                     continue;
                 }
