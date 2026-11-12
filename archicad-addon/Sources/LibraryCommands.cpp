@@ -335,20 +335,50 @@ static const LibraryPartBoolMetadata libraryPartBoolMetadata[] = {
     { "hierarchicalPagesUsed", [] (GSMObject::Modifier& modifier, bool value) { return modifier.SetHierarchicalPagesUsed (value); } }
 };
 
+static bool HasGsmExtension (const GS::UniString& name)
+{
+    GS::UniString lowerName = name;
+    lowerName.SetToLowerCase ();
+    return lowerName.EndsWith (".gsm");
+}
+
+// The loaded library part with the file name name. GetLibPartByName needs the file extension; a name
+// without it (the library part name GetGDLParametersOfLibraryParts takes) is also found as name + ".gsm",
+// and name is then set to that file name.
+template <typename LibraryManagerResult>
+static auto GetLibPartByFileName (LibraryManagerResult& libraryManager, GS::UniString& name)
+{
+    auto libPart = libraryManager->GetLibPartByName (name);
+    if (libPart.IsErr () && !HasGsmExtension (name)) {
+        const GS::UniString fileName = name + ".gsm";
+        auto libPartWithExtension = libraryManager->GetLibPartByName (fileName);
+        if (!libPartWithExtension.IsErr ()) {
+            name = fileName;
+            return libPartWithExtension;
+        }
+    }
+    return libPart;
+}
+
+// The DevKit (GSMObject::IsEditable) only says a part is editable when it is loaded from a writable
+// file on the file system, so the reasons below are the ones that rule that out.
+static const char* NotEditableLibraryPartHint = " Archicad only lets a library part loaded from a writable file be modified, e.g. one created or copied into the embedded library or a local library folder by Tapir. A part of a library package (.lcf), a BIMcloud or read-only library or a file that is not writable is not editable: copy it with CopyLibraryParts under a new name and modify the copy.";
+
 // Runs modify on the GSM object of the loaded library part called name, and returns the execution result.
 // A part that is not editable is refused. When modify fails, it sets failedWhat (e.g. "setting the '3d' script")
 // and failedText (the error text of the failed call), which go into the error message.
 template <typename LibraryManagerResult>
 static GS::ObjectState ModifyLibraryPart (
     LibraryManagerResult& libraryManager,
-    const GS::UniString& name,
+    const GS::UniString& givenName,
     const std::function<GSErrCode (GSMObject::Modifier&)>& modify,
     const GS::UniString& failedWhat,
     const GS::UniString& failedText)
 {
-    auto libPart = libraryManager->GetLibPartByName (name);
+    GS::UniString name = givenName;
+    auto libPart = GetLibPartByFileName (libraryManager, name);
     if (libPart.IsErr ()) {
-        return CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
+        return CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName returned by GetAvailableLibraryParts.");
     }
 
     auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
@@ -357,7 +387,7 @@ static GS::ObjectState ModifyLibraryPart (
     }
 
     if (!gsmObject->IsEditable ()) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library.");
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed." + NotEditableLibraryPartHint);
     }
 
     ACAPI::Result<void> modifyResult = gsmObject->Modify (modify);
@@ -4765,7 +4795,7 @@ GS::Optional<GS::UniString> SetLibraryPartParametersCommand::GetInputParametersS
                     "properties": {
                         "name": {
                             "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file (e.g. created or copied into the embedded library or a local library folder), not from a library package, a BIMcloud or read-only library."
                         },
                         "parameters": )") + SetGDLParameterValuesSchema + R"(,
                         "descriptions": {
@@ -4849,9 +4879,9 @@ GS::ObjectState SetLibraryPartParametersCommand::Execute (const GS::ObjectState&
                 continue;
             }
 
-            auto libPart = libraryManager->GetLibPartByName (name);
+            auto libPart = GetLibPartByFileName (libraryManager, name);
             if (libPart.IsErr ()) {
-                executionResults (CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts."));
+                executionResults (CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName returned by GetAvailableLibraryParts."));
                 continue;
             }
 
@@ -4862,7 +4892,7 @@ GS::ObjectState SetLibraryPartParametersCommand::Execute (const GS::ObjectState&
             }
 
             if (!gsmObject->IsEditable ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library."));
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed." + NotEditableLibraryPartHint));
                 continue;
             }
 
@@ -6024,7 +6054,7 @@ GS::ObjectState SetLibraryPartPictureImagesCommand::Execute (const GS::ObjectSta
     }
 
     if (!gsmObject->IsEditable ()) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library.");
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed." + NotEditableLibraryPartHint);
     }
 
     GS::ObjectState result = CreateSuccessfulExecutionResult ();
