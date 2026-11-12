@@ -54,6 +54,17 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Creates perspective cameras (API_CameraType) at the end of the path of a Camera Set.
+class CreateCamerasCommand : public CommandBase
+{
+public:
+    CreateCamerasCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class Get3DStylesCommand : public CommandBase
 {
 public:
