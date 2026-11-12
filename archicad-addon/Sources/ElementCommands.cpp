@@ -4668,6 +4668,25 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     case API_SplineID: {
                         // Geometry (coordinates/closed) cannot be modified via ACAPI_Element_Change
                         // for Spline (documented ACAPI limitation) - only these settings fields.
+                        // Any other field (e.g. the coordinates of PolylineSettings, which the oneOf of
+                        // TypeSpecificSettings lets through) used to be dropped with success (#2662), so
+                        // it fails the item instead and nothing of it is changed.
+                        GS::UniString unsupportedFields;
+                        for (const GS::String& fieldName : typeSpecificDetails->GetFieldNames ()) {
+                            const bool isSplineSetting = fieldName == "linePenIndex" || fieldName == "lineTypeId" || fieldName == "roomSeparator";
+                            if (!isSplineSetting) {
+                                if (!unsupportedFields.IsEmpty ()) {
+                                    unsupportedFields += ", ";
+                                }
+                                unsupportedFields += GS::UniString (fieldName.ToCStr ());
+                            }
+                        }
+                        if (!unsupportedFields.IsEmpty ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                                GS::UniString ("A Spline takes only linePenIndex, lineTypeId and roomSeparator; its geometry cannot be changed by Archicad's API (delete it and create it again with CreateSplines). Not supported: ") + unsupportedFields));
+                            continue;
+                        }
                         bool penChanged = false, ltypeChanged = false, roomSepChanged = false;
                         SetLineFamilySettingsFields (*typeSpecificDetails, elem.spline.linePen, elem.spline.ltypeInd, elem.spline.roomSeparator, penChanged, ltypeChanged, roomSepChanged);
                         if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_SplineType, linePen);
