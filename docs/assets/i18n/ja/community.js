@@ -99,6 +99,9 @@
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': '1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月',
     '{month} {year}': '{year}年{month}',
     'Growth': '成長',
+    'Total': '合計',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        '成長グラフ。左右の矢印キーで月ごとの数値を読み、Home と End で最初と最後の月に移動し、Esc で数値を隠します。',
     'Growth since <em>2022.</em>': '<em>2022 年</em>からの成長。',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Enzyme での最初のコミットから今日まで、Tapir の周りで毎月起きていることのすべてです。集めるのは数値だけで、メッセージの本文は決して集めません。',
@@ -132,5 +135,20 @@
         '私たちは Archicad の自動化を軸に、意欲的で多様なコミュニティを築いています。',
     'Say hello on Discord, and tell us what you automate in Archicad.':
         'Discord であいさつして、Archicad で何を自動化しているか教えてください。',
-    'Join the Discord': 'Discord に参加'
+    'Join the Discord': 'Discord に参加',
+
+    // On the map (user-map.js)
+    "On the map": "マップ",
+    "Where Tapir is <em>used.</em>": "Tapir が<em>使われている場所。</em>",
+    "The towns people named on Discord, counted per town: never a name or a message. Type <code>/where</code> and your town in any Discord channel to put it on the map.": "Discord で皆さんが書いてくれた都市を、都市ごとに数えています。名前やメッセージは一切記録しません。Discord の任意のチャンネルで <code>/where</code> と都市名を入力すると、マップに載ります。",
+    "People on the map": "マップ上の人数",
+    "Countries": "国",
+    "Towns": "都市",
+    "A dot per town, larger where more people are. Land: Natural Earth.": "都市ごとに1つの点。人が多いほど大きくなります。陸地：Natural Earth。",
+    "Add your town on Discord": "Discord であなたの都市を追加",
+    "{place}, {country}: {count} person": "{place}、{country}：{count} 人",
+    "{place}, {country}: {count} people": "{place}、{country}：{count} 人",
+    "{count} person": "{count} 人",
+    "{count} people": "{count} 人",
+    "World map of where people use Tapir: {people} people in {countries} countries. The list below names every country.": "Tapir が使われている場所の世界地図：{countries} か国に {people} 人。下のリストにすべての国があります。"
 });

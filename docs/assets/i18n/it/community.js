@@ -98,6 +98,9 @@
         'Commit, issue e pull request, e messaggi su Discord al mese, impilati, con il numero di membri di Discord come linea, da {first} a {last}. La tabella sotto riporta tutti i numeri.',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'gen feb mar apr mag giu lug ago set ott nov dic',
     'Growth': 'Crescita',
+    'Total': 'Totale',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        'Grafico della crescita. Le frecce sinistra e destra leggono i numeri mese per mese, Home e Fine saltano al primo e all’ultimo mese, Esc li nasconde.',
     'Growth since <em>2022.</em>': 'La crescita dal <em>2022.</em>',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Tutto quello che succede intorno a Tapir ogni mese, dal primo commit in Enzyme a oggi. Si raccolgono solo numeri, mai il testo di un messaggio.',
@@ -131,5 +134,20 @@
         'Stiamo costruendo una community motivata e varia intorno all\'automazione di Archicad.',
     'Say hello on Discord, and tell us what you automate in Archicad.':
         'Passa a salutare su Discord e raccontaci cosa automatizzi in Archicad.',
-    'Join the Discord': 'Entra nel Discord'
+    'Join the Discord': 'Entra nel Discord',
+
+    // On the map (user-map.js)
+    "On the map": "Sulla mappa",
+    "Where Tapir is <em>used.</em>": "Dove si usa <em>Tapir.</em>",
+    "The towns people named on Discord, counted per town: never a name or a message. Type <code>/where</code> and your town in any Discord channel to put it on the map.": "Le città indicate dalle persone su Discord, contate per città: mai un nome o un messaggio. Scrivi <code>/where</code> e la tua città in un qualsiasi canale Discord per metterla sulla mappa.",
+    "People on the map": "Persone sulla mappa",
+    "Countries": "Paesi",
+    "Towns": "Città",
+    "A dot per town, larger where more people are. Land: Natural Earth.": "Un punto per città, più grande dove ci sono più persone. Terre: Natural Earth.",
+    "Add your town on Discord": "Aggiungi la tua città su Discord",
+    "{place}, {country}: {count} person": "{place}, {country}: {count} persona",
+    "{place}, {country}: {count} people": "{place}, {country}: {count} persone",
+    "{count} person": "{count} persona",
+    "{count} people": "{count} persone",
+    "World map of where people use Tapir: {people} people in {countries} countries. The list below names every country.": "Mappa del mondo di dove si usa Tapir: {people} persone in {countries} paesi. L'elenco sotto nomina ogni paese."
 });

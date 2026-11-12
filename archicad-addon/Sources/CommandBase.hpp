@@ -61,6 +61,12 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 // the path; empty otherwise.
 GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location);
 
+// The navigator item of a guid given by the caller. A guid that belongs to another kind of object (an
+// element, a database, an attribute, ...) makes ACAPI_Navigator_GetNavigatorItem fail an ODB
+// assertion, and Archicad quits (#2342, Archicad 29 and 30). So the guid is looked for in the navigator
+// trees first, and one that is in none of them gets APIERR_BADID.
+GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item);
+
 // The optional boolean "dryRun" input of the commands that delete or change (#2195), the #/DryRun
 // schema definition. A dry run makes every check of a real run and resolves the same targets, with
 // the same errors, but changes nothing in the project. A command reads the flag once with
@@ -168,6 +174,7 @@ void AddPolygonWithHolesFromMemoCoords (const API_Guid& elemGuid, GS::ObjectStat
 void AddPolygonWithHolesFromMemoCoords (const API_ElementMemo& memo, GS::ObjectState& os, const GS::String& coordsFieldName, const GS::Optional<GS::String>& arcsFieldName, const GS::String& holesArrayFieldName, const GS::String& holeCoordsFieldName, const GS::Optional<GS::String>& holeArcsFieldName, bool includeZCoords = false);
 bool GetHoleGeometry (const GS::ObjectState& holeOs, GS::Array<GS::ObjectState>& outCoords, GS::Array<GS::ObjectState>& outArcs);
 GS::Optional<GS::UniString> ValidateHoles (const GS::Array<GS::ObjectState>& holes);
+GS::Array<GS::ObjectState> GetOpenHatchOutline (const GS::Array<GS::ObjectState>& coordinates);
 bool BuildHatchPolygonMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, const GS::Array<GS::ObjectState>& holes, API_Polygon& poly, API_ElementMemo& memo);
 void AddBeamHolesFromMemo (const API_Guid& elemGuid, GS::ObjectState& os, const GS::String& holesFieldName);
 void AddColumnSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os);
@@ -232,11 +239,59 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 // (ApplySkylightDetails) - defined next to them in ExtendedElementCommands.cpp.
 void AddSkylightDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
 
+// The GetDetailsOfElements keys of a Window or Door for its anchor, sub-floor, reveal anchor,
+// surface and plane settings (#2575), the ones ApplyWindowOrDoorDetails writes, plus the values
+// Archicad computes - defined next to them in ExtendedElementCommands.cpp.
+void AddWindowOrDoorPositioningDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
 // Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
 GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
 bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptionsID& out);
 GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation);
 bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthLimitationsID& out);
+
+// API_PolyLineType::drawSegmentMode (0: the line type's dashes restart on every segment,
+// 1: they run continuously over the whole polyline) <-> "SegmentBySegment" / "Continuous".
+// Shared by CreatePolylines and Get/SetDetailsOfElements.
+GS::UniString PolylineDrawSegmentModeToString (short drawSegmentMode);
+bool PolylineDrawSegmentModeFromString (const GS::UniString& str, short& out);
+
+// The arrowheads of a Line, PolyLine, Arc or Spline (the "startArrow"/"endArrow" JSON keys,
+// definition LineArrowhead). Archicad 29 stores one API_ArrowData per end (startArrowData,
+// endArrowData, plus linkedArrowAttributes); Archicad 25-28 store one arrowData whose type, size
+// and pen both ends share, with a begArrow/endArrow flag per end. LineArrows refers to those
+// members of one element (or of a mask), whichever layout the DevKit has.
+struct LineArrows {
+#ifdef ServerMainVers_2900
+    API_ArrowData& start;
+    API_ArrowData& end;
+    bool&          linked;
+#else
+    API_ArrowData& data;
+#endif
+};
+
+// T is API_LineType, API_PolyLineType, API_ArcType or API_SplineType (same member names).
+template <typename T>
+LineArrows GetLineArrows (T& lineElem)
+{
+#ifdef ServerMainVers_2900
+    return LineArrows { lineElem.startArrowData, lineElem.endArrowData, lineElem.linkedArrowAttributes };
+#else
+    return LineArrows { lineElem.arrowData };
+#endif
+}
+
+// Adds "startArrow" and "endArrow" (visible, type, size, pen) to the details.
+void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows);
+
+// Applies the optional "startArrow"/"endArrow" objects of the parameters. Sets changed when either
+// was given. Returns an error text for an unknown type, or, before Archicad 29, for two ends given
+// different types, sizes or pens.
+GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, const LineArrows& arrows, bool& changed);
+
+// Marks every arrowhead member in the mask (pass GetLineArrows of the mask's union member).
+void SetLineArrowsMask (const LineArrows& maskArrows);
 
 struct Story {
     Story (short _index, double _level)
@@ -348,7 +403,7 @@ GS::ObjectState ExecuteForEachIdInList (
     const std::function<GS::ObjectState (const API_Guid&)>& perItem,
     bool dryRun = false);
 
-// The Project Map item of an independent worksheet or detail database, found by its database;
+// The Project Map item of an independent worksheet, detail or 3D Document database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.
 GS::Optional<API_Guid> FindProjectMapItemOfWorksheetOrDetail (const API_DatabaseInfo& database);
 
@@ -448,3 +503,10 @@ GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id);
 // APIERR_REFUSEDPAR when Archicad did not keep it. Must be called inside an undoable
 // command. Defined in CommandBase.cpp.
 GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);
+
+// Deletes a new element that a create command could not finish (its id or a later setting could
+// not be written) and returns the end of the item's error message: "so it was not created", or,
+// when Archicad refuses the delete too, that the element was left in the project, with its guid,
+// so the caller is never told that an existing element does not exist (#2632). Must be called
+// inside an undoable command. Defined in CommandBase.cpp.
+GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid);
