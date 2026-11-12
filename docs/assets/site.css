@@ -137,7 +137,7 @@ main { display: block }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--cream); text-decoration: none; font: 900 24px/1 var(--display) }
 .brand:hover { color: var(--cream) }
 .brand img { width: 30px; height: 30px; display: block }
-.brand img.brand-tile { display: none } /* favicon.svg, shown only by the Standard look's light header */
+.brand img.brand-tile { display: none } /* tapir_mark_moss.svg, shown only by the Standard look's light header */
 .site-nav ul { display: flex; gap: 4px 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap }
 .site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: .9375rem; opacity: .88 }
 .site-nav a:hover { opacity: 1; color: var(--ochre-light) }
@@ -148,7 +148,8 @@ main { display: block }
 /* The language menu (site.js adds it), drawn like the toggle; the open list in the brand's colours. */
 .lang-select { max-width: 9.5em }
 .lang-select option { background: var(--moss); color: var(--cream) }
-/* The menu (site.js adds it, .has-menu on the header): below 640 px a button opens a panel under the
+/* The menu (site.js adds it, .has-menu on the header): below 640 px, and on a phone in landscape, a
+   button opens a panel under the
    header with the nav, the language menu and the toggle. On wide screens .site-menu adds no box, so
    the nav sits in the header row as before, and the language menu and the toggle stay in .right. */
 .site-menu { display: contents }
@@ -231,7 +232,8 @@ div.teaser.dark .ctas { margin-top: 8px }
 :root[data-theme="dark"] .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) } }
 .term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 .71875rem var(--mono); color: var(--slate-light); border-bottom: 1px solid var(--cream-10) }
-.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 .8125rem/1.65 var(--mono); color: var(--cream) }
+/* Long lines wrap inside the box instead of scrolling sideways (#2723). */
+.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 400 .8125rem/1.65 var(--mono); color: var(--cream) }
 .term .k { color: var(--ochre-light) } .term .s { color: var(--sage) } .term .c { color: var(--slate-light) } .term .o { color: var(--cream); font-weight: 700 }
 /* The copy button site.js adds to every code block. */
 .code-block { position: relative }
@@ -413,7 +415,10 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .timeline h2, .timeline h3 { font-size: 1.5625rem }
     .site-header .right { margin-left: auto }
 }
-@media (max-width: 640px) {
+/* The header's phone layout: below 640 px, and on short wide screens (a phone in landscape, #2717),
+   where a second row of links would take a large part of the little height there is. The query is
+   MENU_QUERY in site.js; keep the two the same. */
+@media (max-width: 640px), (max-width: 1024px) and (max-height: 500px) {
     .site-header .nav { gap: 10px 16px }
     /* Without site.js the nav is a row of links under the logo, and the taller header scrolls away. */
     .site-header:not(.has-menu) { position: static }
@@ -440,6 +445,14 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .has-menu .menu-tools { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid var(--cream-12) }
     .has-menu .menu-tools .toggle { min-height: 44px; padding: 10px 14px; font-size: .875rem }
     .has-menu .menu-tools .lang-select { max-width: 100% }
+}
+/* A phone in landscape: the sticky header and its panel take less of the height. */
+@media (max-width: 1024px) and (max-height: 500px) {
+    .site-header .nav { padding-block: 8px }
+    .has-menu .site-menu { max-height: calc(100vh - 56px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 56px - env(safe-area-inset-top, 0px)) }
+    .has-menu .site-nav a { padding-block: 10px }
+}
+@media (max-width: 640px) {
     .page-head .wrap { padding-block: 40px 36px }
     .page-head p { font-size: 1.0625rem }
     .page-body { padding-top: 36px }
@@ -506,8 +519,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
    Contrast (WCAG 2), every text pair at least 4.5:1: light, #111827 on #FFFFFF about 17.7:1, #4B5563 on
    #FFFFFF about 7.5:1 (a little less on #F7F8FA), accent #1F6B4E on #FFFFFF and #FFFFFF on it about
    6.4:1; dark, #9AA4B2 on #0B0F14 about 7.6:1, accent #4CB88A on #11161D about 7.4:1 and #0B0F14 on it
-   about 7.8:1. The code colours are the issue's, all light on #0F172A. A badge is the accent at 10 %,
-   so its text keeps nearly the contrast it has on the page.
+   about 7.8:1. The code colours are #2509's, with their contrast at the code block rules below. A
+   badge is the accent at 10 %, so its text keeps nearly the contrast it has on the page.
    ====================================================================================================== */
 :root:not([data-style="legacy"]) {
     --standard-bg: #FFFFFF; --standard-surface: #FFFFFF; --subtle: #F7F8FA;
@@ -516,14 +529,17 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --link: #1F6B4E; --link-hover: #164D38; --focus: var(--link); --accent: var(--link); --eyebrow: var(--link);
     --accent-fill: #1F6B4E; --accent-fill-hover: #164D38; --on-accent: #FFFFFF; --button-bg: var(--accent-fill); --button-text: var(--on-accent);
     --badge: rgba(31, 107, 78, .1); --badge-bg: var(--badge); --card-hover: var(--subtle); --warning: #B45309;
-    --code-bg: #F3F4F6; --code-fg: #111827; --pre-bg: #0F172A; --pre-text: #E2E8F0; --pre-border: transparent;
-    --pre-comment: #94A3B8; --pre-keyword: #7DD3FC; --pre-string: #86EFAC; --pre-line: rgba(226, 232, 240, .12); --pre-focus: #4CB88A;
+    --code-bg: #F3F4F6; --code-fg: #111827;
+    --pre-bg: #F7F8FA; --pre-text: #111827; --pre-border: #E5E7EB; --pre-line: #E5E7EB; --pre-bar: #4B5563;
+    --pre-keyword: #0550AE; --pre-string: #116329; --pre-builtin: #6F42C1; --pre-number: #953800;
+    --pre-comment: #57606A; --pre-line-number: #6B7280; --pre-focus: var(--link); --pre-scrollbar: #D1D5DB transparent;
+    --copy-bg: #FFFFFF; --copy-border: #D1D5DB; --copy-text: #111827; --copy-hover: #9CA3AF;
     --display: var(--body); --font-heading: var(--body);
     --radius: 12px; --radius-small: 8px; --radius-card: 12px; --radius-control: 8px;
     --texture: none; --texture-head: none; --texture-frame: none; --hatch: none;
     --shadow-soft: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06);
     --shadow-lift: var(--shadow-soft); --shadow-lift-small: var(--shadow-soft); --shadow-press: var(--shadow-soft);
-    --shadow-term: var(--shadow-soft); --shadow-term-small: var(--shadow-soft); --shadow-term-dark: none;
+    --shadow-term: none; --shadow-term-small: none; --shadow-term-dark: none;
     --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft); --shadow-sheet: var(--shadow-soft);
     color-scheme: light;
 }
@@ -531,14 +547,22 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
     --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
     --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
-    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --warning: #F59E0B;
+    --pre-bg: #11161D; --pre-text: #E6EAF0; --pre-border: #232B36; --pre-line: #232B36; --pre-bar: #9AA4B2;
+    --pre-keyword: #79C0FF; --pre-string: #7EE787; --pre-builtin: #D2A8FF; --pre-number: #FFA657;
+    --pre-comment: #8B949E; --pre-line-number: #8B949E; --pre-scrollbar: #3A4553 transparent;
+    --copy-bg: #0B0F14; --copy-border: #3A4553; --copy-text: #E6EAF0; --copy-hover: #9AA4B2;
     --shadow-soft: none; color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) {
     --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
     --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
     --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
-    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --warning: #F59E0B;
+    --pre-bg: #11161D; --pre-text: #E6EAF0; --pre-border: #232B36; --pre-line: #232B36; --pre-bar: #9AA4B2;
+    --pre-keyword: #79C0FF; --pre-string: #7EE787; --pre-builtin: #D2A8FF; --pre-number: #FFA657;
+    --pre-comment: #8B949E; --pre-line-number: #8B949E; --pre-scrollbar: #3A4553 transparent;
+    --copy-bg: #0B0F14; --copy-border: #3A4553; --copy-text: #E6EAF0; --copy-hover: #9AA4B2;
     --shadow-soft: none; color-scheme: dark } }
 
 /* ------------------------------------------------------------------------------------------------------
@@ -605,7 +629,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"])[data-accent] {
     --link: var(--choice-light); --link-hover: var(--choice-light-hover);
     --accent-fill: var(--choice-light); --accent-fill-hover: var(--choice-light-hover);
-    --badge: var(--choice-light-10); --pre-focus: var(--choice-dark); --ochre-light-28: var(--choice-light-28);
+    --badge: var(--choice-light-10); --ochre-light-28: var(--choice-light-28);
 }
 :root:not([data-style="legacy"])[data-accent][data-theme="dark"] {
     --link: var(--choice-dark); --link-hover: var(--choice-dark-hover);
@@ -621,8 +645,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
    same whichever Look and Accent are chosen (they stay stored, and apply again in the other modes).
    The system's dark mode does not apply to it (the :not([data-theme="light"], [data-theme="contrast"])
    of the dark blocks). Every text at least 7:1 (WCAG AAA) on #FFFFFF: #000000 21:1, #333333 12.6:1,
-   #0B4FA8 7.8:1, #14532D 9.1:1, #7C2D12 9.4:1, #8B0000 10.0:1, #5B21B6 9.0:1 (the last two are the
-   command reference's); #0B4FA8 on a hovered card (#F7F7F7) 7.3:1. Inline code and badges hold black
+   #0B4FA8 7.8:1, #7C2D12 9.4:1; #0B4FA8 on a hovered card (#F7F7F7) 7.3:1. In code blocks keywords are
+   #00449E (9.1:1) and strings #0B5A1E (8.4:1), the rest black (#2509). Inline code and badges hold black
    text only.
    ------------------------------------------------------------------------------------------------------ */
 :root:not([data-style="legacy"])[data-theme="contrast"] {
@@ -631,8 +655,11 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --link: #0B4FA8; --link-hover: #000000; --focus: #000000;
     --accent-fill: #000000; --accent-fill-hover: #333333; --on-accent: #FFFFFF;
     --badge: #E6E6E6; --card-hover: #F7F7F7; --warning: #7C2D12;
-    --code-bg: #F2F2F2; --code-fg: #000000; --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000;
-    --pre-comment: #333333; --pre-keyword: #0B4FA8; --pre-string: #14532D; --pre-line: #000000; --pre-focus: #000000;
+    --code-bg: #F2F2F2; --code-fg: #000000;
+    --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000; --pre-line: #000000; --pre-bar: #000000;
+    --pre-keyword: #00449E; --pre-string: #0B5A1E; --pre-builtin: #000000; --pre-number: #000000;
+    --pre-comment: #000000; --pre-line-number: #000000; --pre-focus: #000000; --pre-scrollbar: auto;
+    --copy-bg: #FFFFFF; --copy-border: #000000; --copy-text: #000000; --copy-hover: #000000;
     --shadow-soft: none; --shadow-lift: none; --shadow-lift-small: none; --shadow-press: none;
     --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none; --shadow-sheet: none;
     color-scheme: light;
@@ -659,26 +686,40 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .page-head code, :root:not([data-style="legacy"]) .term code, :root:not([data-style="legacy"]) .stack .box code,
 :root:not([data-style="legacy"]) pre code { color: inherit }
 
-/* Code blocks and the terminal: slate panels, the same in both modes (with a border in dark mode). */
-:root:not([data-style="legacy"]) pre { border: 1px solid var(--pre-border); border-radius: var(--radius-control) }
+/* Code blocks and the terminal (#2509): light panels like the rest of the page in Light (#F7F8FA, a
+   #E5E7EB line, no shadow), the surface colour in Dark, black on white in High contrast. Every colour is
+   one of the --pre-* and --copy-* properties of the mode blocks above; the command reference's
+   highlight.js tokens use them too (archicad-addon/style.css). The hand-written code marks keywords .k,
+   strings .s, comments .c, output .o, built-ins and function names .b and numbers .num.
+   No block shows line numbers; --pre-line-number is their colour if one ever does.
+   Contrast (WCAG 2) on #F7F8FA: text #111827 16.7:1, title bar #4B5563 7.1:1, keywords #0550AE 7.1:1,
+   strings #116329 7.2:1, built-ins #6F42C1 6.1:1, numbers #953800 7.1:1, comments #57606A 6.0:1, line
+   numbers #6B7280 4.55:1; the Copy button's #111827 on #FFFFFF 17.7:1. On #11161D: text #E6EAF0 15.0:1,
+   title bar #9AA4B2 7.2:1, keywords #79C0FF 9.3:1, strings #7EE787 11.8:1, built-ins #D2A8FF 9.3:1,
+   numbers #FFA657 9.4:1, comments and line numbers #8B949E 5.8:1; the Copy button's #E6EAF0 on #0B0F14
+   16.0:1. High contrast on #FFFFFF: #000000 21:1, keywords #00449E 9.1:1, strings #0B5A1E 8.4:1. */
+:root:not([data-style="legacy"]) pre { border: 1px solid var(--pre-border); border-radius: var(--radius-control); scrollbar-color: var(--pre-scrollbar) }
 :root:not([data-style="legacy"]) .term pre { border: 0; border-radius: 0 }
 :root:not([data-style="legacy"]) .term, :root:not([data-style="legacy"])[data-theme="dark"] .term {
     background: var(--pre-bg); color: var(--pre-text); border: 1px solid var(--pre-border); border-radius: var(--radius-card); box-shadow: var(--shadow-term); --focus: var(--pre-focus) }
 @media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .term { border-color: var(--pre-border); box-shadow: var(--shadow-term) } }
-:root:not([data-style="legacy"]) .term .bar { color: var(--pre-comment); border-bottom-color: var(--pre-line) }
+:root:not([data-style="legacy"]) .term .bar { color: var(--pre-bar); border-bottom-color: var(--pre-line) }
 :root:not([data-style="legacy"]) .term pre, :root:not([data-style="legacy"]) .term .o { color: var(--pre-text) }
 :root:not([data-style="legacy"]) .term .k { color: var(--pre-keyword) } :root:not([data-style="legacy"]) .term .s { color: var(--pre-string) }
-:root:not([data-style="legacy"]) .term .c { color: var(--pre-comment) }
-:root:not([data-style="legacy"]) .copy-button { background: var(--pre-bg); color: var(--pre-text); border-color: var(--pre-line); border-radius: var(--radius-control); --focus: var(--pre-focus) }
-:root:not([data-style="legacy"]) .copy-button:hover, :root:not([data-style="legacy"]) .copy-button:focus-visible { border-color: var(--pre-focus); outline-color: var(--pre-focus) }
+:root:not([data-style="legacy"]) .term .c { color: var(--pre-comment) } :root:not([data-style="legacy"]) .term .b { color: var(--pre-builtin) }
+:root:not([data-style="legacy"]) .term .num { color: var(--pre-number) }
+:root:not([data-style="legacy"]) .copy-button { background: var(--copy-bg); color: var(--copy-text); border-color: var(--copy-border); border-radius: var(--radius-control); --focus: var(--pre-focus) }
+:root:not([data-style="legacy"]) .copy-button:hover, :root:not([data-style="legacy"]) .copy-button:focus-visible { border-color: var(--copy-hover) }
+:root:not([data-style="legacy"]) .copy-button:focus-visible { outline-color: var(--pre-focus) }
 
 /* Header: the surface with a line under it. */
 :root:not([data-style="legacy"]) .site-header { background: var(--surface); color: var(--fg); border-bottom-color: var(--line); --focus: var(--link) }
 :root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .brand:hover, :root:not([data-style="legacy"]) .site-nav a { color: var(--fg) }
 :root:not([data-style="legacy"]) .site-nav a:hover { color: var(--link) }
 :root:not([data-style="legacy"]) .site-nav a[aria-current] { color: var(--link); box-shadow: inset 0 -2px 0 var(--link) }
-/* The mark is never recoloured (#2476, 3a). On the light header it is favicon.svg, the cream mark on
-   its moss tile; in Dark (chosen, or the system's) it stays tapir_mark_cream.svg, as in Legacy. */
+/* The mark is never recoloured with a filter (#2476, 3a). On the light header it is
+   tapir_mark_moss.svg, the same mark at the same size in the inverted colour (moss instead of cream,
+   #2515); in Dark (chosen, or the system's) it stays tapir_mark_cream.svg, as in Legacy. */
 :root:not([data-style="legacy"]) .site-header .brand img { display: none }
 :root:not([data-style="legacy"]) .site-header .brand img.brand-tile { display: block }
 :root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img { display: block }
@@ -689,7 +730,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .toggle, :root:not([data-style="legacy"]) .menu-button { color: var(--fg); border-color: var(--border-strong); border-radius: var(--radius-control) }
 :root:not([data-style="legacy"]) .toggle:hover, :root:not([data-style="legacy"]) .menu-button:hover { color: var(--link); border-color: var(--link) }
 :root:not([data-style="legacy"]) .lang-select option { background: var(--surface); color: var(--fg) }
-@media (max-width: 640px) {
+@media (max-width: 640px), (max-width: 1024px) and (max-height: 500px) {
     :root:not([data-style="legacy"]) .has-menu .site-menu { background: var(--surface); border-bottom-color: var(--line) }
     :root:not([data-style="legacy"]) .has-menu .site-nav li + li, :root:not([data-style="legacy"]) .has-menu .menu-tools { border-top-color: var(--line) }
     :root:not([data-style="legacy"]) .has-menu .site-nav a[aria-current] { box-shadow: none; text-decoration-color: var(--link) }
@@ -746,7 +787,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .tblock { border-left: 1px solid var(--line); border-right: 1px solid var(--line) }
 
 /* The Display menu (site.js): its button sits where the Dark/Light toggle was; the panel is a popover
-   under it on wide screens and a sheet from the bottom below 640 px. Both looks draw it. */
+   under it on wide screens and a sheet from the bottom where the header has its menu (below 640 px, and
+   on a phone in landscape). Both looks draw it. */
 .display-button { display: inline-flex; align-items: center; justify-content: center; min-height: 31px }
 .display-button svg { width: 16px; height: 16px; display: block }
 .display-panel { position: fixed; z-index: 70; width: min(320px, calc(100vw - 32px)); max-height: calc(100vh - 96px); overflow-y: auto;
@@ -769,7 +811,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 .display-reset { width: 100%; margin-top: 4px }
 .display-reset:hover, .display-done:hover { border-color: var(--link); color: var(--link) }
 .display-done { display: none }
-@media (max-width: 640px) {
+@media (max-width: 640px), (max-width: 1024px) and (max-height: 500px) {
     .display-panel { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0; width: auto; max-height: 85vh; max-height: 85dvh;
         border-radius: 16px 16px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) }
     :root[data-style="legacy"] .display-panel { border-radius: 4px 4px 0 0 }
@@ -822,4 +864,47 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root[data-spacing="compact"] section[aria-labelledby="written"] .teaser { padding-top: 20px; padding-bottom: 20px }
 @media (max-width: 640px) {
     :root[data-spacing="compact"] section[aria-labelledby="written"] .teaser { padding-top: 15px; padding-bottom: 15px }
+}
+
+/* ------------------------------------------------------------------------------------------------------
+   Phones (#2714): below 640 px every page stacks its grids into one column, so the desktop's vertical
+   spacing made the pages much longer than their content. This tightens it in every look and mode: the
+   space between sections (the dimension line, the section padding and heading), the page heads, the
+   cards and grids, the timeline and the footer, and the largest headings. It comes after both looks'
+   rules, so it wins by order; the Display menu's Spacing Compact (above, more specific) still takes the
+   written tutorials' rows tighter. Text sizes are in rem, so the Display menu's Text size still scales them.
+   ------------------------------------------------------------------------------------------------------ */
+@media (max-width: 640px) {
+    .dim { padding-top: 24px }
+    .wrap > section, .page-body > section { padding-block: 28px 16px }
+    .page-body > section:first-child, .page-body > .dim + section { padding-top: 20px }
+    .page-body { padding-block: 24px 16px }
+    .sec-head { gap: 8px; margin-bottom: 20px }
+    .sec-head h2 { font-size: 1.75rem }
+    .sec-head p { font-size: 1rem }
+    .sec-head.ref { margin: 28px 0 16px }
+    .ref-sub { font-size: 1.375rem; margin: 28px 0 10px }
+    .page-head .wrap { padding-block: 28px 24px; gap: 12px }
+    .page-head h1, .page-head .h1 { font-size: 2.25rem }
+    .page-head p { font-size: 1rem }
+    .ways, .comm, .teasers, .doc-grid, .two, .share-steps ol, .uses, .videos { gap: 14px }
+    .detail { gap: 24px }
+    .detail > div { gap: 16px }
+    .way, .teaser { padding: 18px; gap: 10px }
+    .teaser h3, .comm .way h3 { font-size: 1.375rem }
+    .share-steps li { padding: 18px }
+    .share-steps li b { font-size: 2.25rem }
+    .video .text { padding: 14px 16px 16px }
+    .figures > div { padding: 16px }
+    .figures strong { font-size: 2.25rem }
+    .uses-grid li, .flow > div { padding: 16px }
+    .timeline > li { padding-block: 20px }
+    .timeline .n { font-size: 2.25rem }
+    .timeline h2, .timeline h3 { font-size: 1.375rem }
+    .prose > h3 { margin-top: 20px }
+    .lead-out { margin-top: 20px }
+    .site-footer { margin-top: 40px }
+    .tblock { margin-top: 20px }
+    .tblock > div { padding: 10px 12px }
+    .fine { padding-block: 10px 20px }
 }

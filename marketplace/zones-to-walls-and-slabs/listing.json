@@ -9,6 +9,18 @@
     "entry": "ZonesToWallsAndSlabs.py",
     "versions": [
         {
+            "version": "0.4.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Wall favorites for the internal partitions and the external walls: the walls are made with the favorite, and its thickness, read from the favorite, places the external walls outside the zones. The settings are remembered between runs. The window opens smaller (760 x 620, at most 85 % of the screen), can be made as small as 640 x 520, and its settings scroll when the window is short."
+        },
+        {
+            "version": "0.3.1",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "When the Tapir helpers utilities and aclib are not found, it says so and how to fix it, instead of failing with \"No module named 'utilities'\"."
+        },
+        {
             "version": "0.3.0",
             "archicadVersions": [25, 26, 27, 28, 29, 30],
             "minTapirVersion": "1.8.0",
