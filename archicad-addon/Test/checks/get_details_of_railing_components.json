@@ -1,0 +1,68 @@
+{
+  "title": "GetDetailsOfElements reads a post, the top rail and the pattern of a railing, with their owners (#2572)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a one-segment railing on story 0",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "coordinates": [
+              { "x": 780.0, "y": 780.0 },
+              { "x": 784.0, "y": 780.0 }
+            ],
+            "floorIndex": 0,
+            "bottomOffset": 0.0,
+            "height": 1.0
+          }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" }
+      ]
+    },
+    {
+      "id": "components of the railing",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "save": {
+        "post": "subelements[0].railingPosts[0].elementId.guid",
+        "toprail": "subelements[0].railingToprails[0].elementId.guid",
+        "pattern": "subelements[0].railingPatterns[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "subelements[0].railingSegments", "len": 1, "name": "one segment" },
+        { "path": "subelements[0].railingToprails", "len": 1, "name": "one top rail for the segment" },
+        { "path": "subelements[0].railingPatterns", "len": 1, "name": "one pattern for the segment" },
+        { "path": "subelements[0].railingPosts[0].elementId.guid", "exists": true, "name": "the railing has a post" }
+      ]
+    },
+    {
+      "id": "details of a post, the top rail and the pattern",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${post}" } },
+          { "elementId": { "guid": "${toprail}" } },
+          { "elementId": { "guid": "${pattern}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "RailingPost", "name": "first is a post" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "RailingNode", "name": "a post belongs to a node" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "exists": true, "name": "the post names its node" },
+        { "path": "detailsOfElements[0].details.verticalPosition.topRailIndex", "exists": true, "name": "the post tells between which rails it stands" },
+        { "path": "detailsOfElements[1].type", "eq": "RailingToprail", "name": "second is the top rail" },
+        { "path": "detailsOfElements[1].details.ownerElementType", "eq": "RailingSegment", "name": "the top rail belongs to the segment" },
+        { "path": "detailsOfElements[1].details.visible", "exists": true, "name": "the top rail tells whether it is shown" },
+        { "path": "detailsOfElements[2].type", "eq": "RailingPattern", "name": "third is the pattern" },
+        { "path": "detailsOfElements[2].details.distribution.type", "exists": true, "name": "the pattern tells how it is distributed" },
+        { "path": "detailsOfElements[2].details.panelCount", "exists": true, "name": "the pattern counts its panels" }
+      ]
+    }
+  ]
+}

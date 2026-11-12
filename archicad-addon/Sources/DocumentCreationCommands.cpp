@@ -34,7 +34,7 @@ GS::ObjectState CreateNavigatorItemsResponse (const GS::Array<GS::ObjectState>& 
     return response;
 }
 
-// The id of a new worksheet or detail database, with the navigatorItemId of its Project Map item,
+// The id of a new worksheet, detail or 3D Document database, with the navigatorItemId of its Project Map item,
 // so that the new item can be opened with ChangeWindow or placed with CreateDrawings without
 // reading the whole Project Map (#1602). Without the item only the databaseId is returned.
 GS::ObjectState CreateNewWorksheetOrDetailObjectState (const API_DatabaseInfo& dbInfo)
@@ -164,7 +164,7 @@ bool ResolveRequestedMasterLayout (const GS::ObjectState& item, GS::Optional<API
     if (masterNavItemOS != nullptr) {
         API_Guid masterNavGuid = GetGuidFromObjectState (*masterNavItemOS);
         API_NavigatorItem masterNavItem = {};
-        const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&masterNavGuid, &masterNavItem);
+        const GSErrCode navErr = GetNavigatorItemOfGuid (masterNavGuid, masterNavItem);
         if (navErr != NoError) {
             failedResult = CreateFailedExecutionResult (navErr, "Failed to get navigator item from masterNavigatorItemId.");
             return false;
@@ -227,10 +227,16 @@ void CollectLayoutSubsetGuids (API_NavigatorItem item, GS::Array<API_Guid>& subs
         return;
     }
     for (const API_NavigatorItem& child : children) {
+        // The Layout Map's root is an undefined item whose child is the Layout Book
+        // item (API_BookNavItem); the subsets are under that, so every item except
+        // layouts and master layouts, which hold no subsets, is searched
+        if (child.itemType == API_LayoutNavItem || child.itemType == API_MasterLayoutNavItem) {
+            continue;
+        }
         if (child.itemType == API_SubSetNavItem) {
             subsetGuids.Push (child.guid);
-            CollectLayoutSubsetGuids (child, subsetGuids);
         }
+        CollectLayoutSubsetGuids (child, subsetGuids);
     }
 }
 
@@ -298,7 +304,7 @@ GS::Optional<API_Guid> FindLayoutNavigatorItemGuid (const API_Guid& layoutDataba
 GS::Optional<API_Guid> FindLastLayoutBookChild (const API_Guid& parentGuid, const API_Guid& itemToPlace)
 {
     API_NavigatorItem parentItem = {};
-    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+    if (GetNavigatorItemOfGuid (parentGuid, parentItem) != NoError) {
         return {};
     }
     parentItem.mapId = API_LayoutMap;
@@ -530,6 +536,71 @@ GS::ObjectState CreateWorksheetsCommand::Execute (const GS::ObjectState& paramet
     return CreateDatabasesResponse (databases);
 }
 
+Create3DDocumentsCommand::Create3DDocumentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String Create3DDocumentsCommand::GetName () const
+{
+    return "Create3DDocuments";
+}
+
+GS::Optional<GS::UniString> Create3DDocumentsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "documentsData": {
+                "type": "array",
+                "description": "One item per new 3D Document.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string", "minLength": 1, "description": "The name of the new 3D Document." },
+                        "referenceId": { "type": "string", "minLength": 1, "description": "The reference ID of the new 3D Document." }
+                    },
+                    "additionalProperties": false,
+                    "required": ["name", "referenceId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["documentsData"]
+    })";
+}
+
+GS::Optional<GS::UniString> Create3DDocumentsCommand::GetRawResponseSchema () const
+{
+    return CreateDetailsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState Create3DDocumentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "documentsData", items, errorResponse)) {
+        return errorResponse;
+    }
+
+    GS::Array<GS::ObjectState> databases;
+    for (const auto& item : items) {
+        API_DatabaseInfo dbInfo = {};
+        dbInfo.typeID = APIWind_DocumentFrom3DID;
+        SetUCharProperty (&item, "name", dbInfo.name);
+        SetUCharProperty (&item, "referenceId", dbInfo.ref);
+
+        const GSErrCode err = ACAPI_Database_NewDatabase (&dbInfo);
+        if (err != NoError) {
+            databases.Push (CreateErrorResponse (err, "Failed to create 3D Document database."));
+            continue;
+        }
+
+        databases.Push (CreateNewWorksheetOrDetailObjectState (dbInfo));
+    }
+    return CreateDatabasesResponse (databases);
+}
+
 CreateLayoutCommand::CreateLayoutCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -637,7 +708,7 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
         if (masterNavItemOS != nullptr) {
             API_Guid masterNavGuid = GetGuidFromObjectState (*masterNavItemOS);
             API_NavigatorItem masterNavItem = {};
-            const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&masterNavGuid, &masterNavItem);
+            const GSErrCode navErr = GetNavigatorItemOfGuid (masterNavGuid, masterNavItem);
             if (navErr != NoError) {
                 databases.Push (CreateErrorResponse (navErr, "Failed to get master layout from masterNavigatorItemId."));
                 continue;
@@ -1018,7 +1089,7 @@ GS::ObjectState GetLayoutSubsetSettingsCommand::Execute (const GS::ObjectState& 
         // Checked first so that any other navigator item gets a clear error
         // instead of whatever ACAPI_Navigator_GetSubSet returns for it
         API_NavigatorItem navItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+        GSErrCode err = GetNavigatorItemOfGuid (guid, navItem);
         if (err != NoError) {
             subsetSettings (CreateErrorResponse (err, "Failed to get navigator item."));
             continue;
@@ -1104,6 +1175,14 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                             "$ref": "#/Coordinate2D",
                             "description": "Offset of the model origin within the drawing, in model meters. Archicad uses it only with clipPolygon and then adds modelOffset * drawing scale (times scale, rotated by angle) to the new Drawing's pos; without clipPolygon it is ignored. Defaults to the Drawing tool's current default."
                         },
+                        "anchorPoint": {
+                            "$ref": "#/DrawingAnchorPoint",
+                            "description": "The node of the drawing's bounding box the drawing is placed by. Used only when useOwnOriginAsAnchor is false; giving anchorPoint makes useOwnOriginAsAnchor default to false. Defaults to Center."
+                        },
+                        "useOwnOriginAsAnchor": {
+                            "type": "boolean",
+                            "description": "Whether the drawing is placed by its own origin instead of anchorPoint. Defaults to false when anchorPoint is given, otherwise to the Drawing tool's current default."
+                        },
                         "clipPolygon": {
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
@@ -1166,7 +1245,7 @@ static API_Coord DrawingVectorOnLayout (const API_DrawingType& drawing, const AP
 // name/nameType/scale/angle/drawingScale/modelOffset/clipPolygon). Shared by CreateDrawingsCommand
 // and ChangeDrawingLinkCommand, which synthesizes the same item shape from an existing Drawing's
 // own current appearance.
-static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
+static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item, API_Coord* createdPos = nullptr)
 {
     // The source has to be resolved and checked here, before anything is handed to
     // ACAPI_Element_Create: a drawingGuid that is not a placeable viewpoint - one that resolves
@@ -1183,7 +1262,7 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     }
 
     API_NavigatorItem sourceItem = {};
-    const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&sourceGuid, &sourceItem);
+    const GSErrCode navErr = GetNavigatorItemOfGuid (sourceGuid, sourceItem);
     if (navErr != NoError) {
         return CreateErrorResponse (navErr, "Failed to get navigator item from navigatorItemId.");
     }
@@ -1212,7 +1291,18 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     } else if (hasName) {
         element.drawing.nameType = APIName_CustomName;
     }
+    // Drawing Settings > Size and Display. ACAPI_Element_Create does not keep an anchorPoint
+    // (it comes back BottomLeft, like the ACAPI_Element_Change bug Graphisoft support confirmed,
+    // see SetDetailsOfElements in ElementCommands.cpp), and creating with useOwnOrigoAsAnchor
+    // forced true to keep it made Archicad store pos as -(position * drawingScale * ratio)
+    // (seen live on AC27). So a requested anchorPoint is not set here: CreateDrawingsCommand::Execute
+    // applies it after the creation with ApplyDrawingAnchor, the same calls SetDetailsOfElements
+    // makes. useOwnOriginAsAnchor alone is set here. ChangeDrawingLink never passes an anchor.
     element.drawing.anchorPoint = APIAnc_MM;
+    GS::UniString anchorPointStr;
+    if (!item.Get ("anchorPoint", anchorPointStr)) {
+        item.Get ("useOwnOriginAsAnchor", element.drawing.useOwnOrigoAsAnchor);
+    }
     element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
     if (!item.Get ("scale", element.drawing.ratio)) {
         element.drawing.ratio = 1.0;
@@ -1282,7 +1372,52 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to create drawing.");
     }
+    if (createdPos != nullptr) {
+        *createdPos = element.drawing.pos;
+    }
     return CreateElementIdObjectState (element.header.guid);
+}
+
+// Places a freshly created Drawing by anchorPoint, with the calls SetDetailsOfElements makes
+// (checked live on AC27: pos and offset come out right every time): first anchorPoint together
+// with useOwnOrigoAsAnchor true, then, unless the Drawing is to be placed by its own origin,
+// useOwnOrigoAsAnchor false alone, then pos written back to the position the Drawing was created
+// at. Called in a SEPARATE undo step from the creation, never right after it in the same one
+// (see ChangeDrawingLink's comment on that crash), with the Drawing's layout database current.
+static GSErrCode ApplyDrawingAnchor (const API_Guid& guid, API_AnchorID anchorPoint, bool useOwnOrigoAsAnchor, const API_Coord& pos)
+{
+    API_Element element = {};
+    element.header.guid = guid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.drawing.anchorPoint = anchorPoint;
+    element.drawing.useOwnOrigoAsAnchor = true;
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, anchorPoint);
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    if (err != NoError) {
+        return err;
+    }
+
+    if (!useOwnOrigoAsAnchor) {
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        element.drawing.useOwnOrigoAsAnchor = false;
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+        err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+        if (err != NoError) {
+            return err;
+        }
+    }
+
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.drawing.pos = pos;
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
 // Switches to the layout database identified by layoutDatabaseId (the same database-activation
@@ -1365,6 +1500,18 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
     const GSErrCode startingDatabaseErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
 
     GS::Array<GS::ObjectState> elementResults;
+    // Drawings created with an anchorPoint, which is applied below (see CreateOneDrawing), in a
+    // separate undo step, in their own layout database.
+    struct AnchorFixup {
+        UIndex       resultIndex;
+        API_Guid     drawingGuid;
+        bool         hasLayoutDatabase;
+        API_Guid     layoutDatabaseGuid;
+        API_AnchorID anchorPoint;
+        bool         useOwnOrigoAsAnchor;
+        API_Coord    createdPos;
+    };
+    GS::Array<AnchorFixup> anchorFixups;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("CreateDrawingsCommand", [&]() -> GSErrCode {
         for (const auto& item : items) {
             if (startingDatabaseErr == NoError) {
@@ -1378,12 +1525,49 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
                 }
             }
 
-            elementResults.Push (CreateOneDrawing (item));
+            API_Coord createdPos = {};
+            const GS::ObjectState result = CreateOneDrawing (item, &createdPos);
+            elementResults.Push (result);
+
+            GS::UniString anchorPointStr;
+            bool useOwnOriginAsAnchor = false;
+            item.Get ("useOwnOriginAsAnchor", useOwnOriginAsAnchor);
+            const GS::ObjectState* elementIdState = result.Get ("elementId");
+            if (elementIdState != nullptr && item.Get ("anchorPoint", anchorPointStr)) {
+                const GS::ObjectState* layoutDatabaseId = item.Get ("layoutDatabaseId");
+                anchorFixups.Push ({ elementResults.GetSize () - 1,
+                                     GetGuidFromObjectState (*elementIdState),
+                                     layoutDatabaseId != nullptr,
+                                     layoutDatabaseId != nullptr ? GetGuidFromObjectState (*layoutDatabaseId) : APINULLGuid,
+                                     AnchorIdFromString (anchorPointStr, APIAnc_MM),
+                                     useOwnOriginAsAnchor,
+                                     createdPos });
+            }
         }
 
         return NoError;
     });
 
+    if (undoErr == NoError && !anchorFixups.IsEmpty ()) {
+        // Each Drawing lives in its layout's database, so that database must be current again
+        // before it can be read and changed.
+        ACAPI_CallUndoableCommand ("CreateDrawingsCommand - anchor", [&]() -> GSErrCode {
+            for (const AnchorFixup& fixup : anchorFixups) {
+                GSErrCode err = NoError;
+                if (fixup.hasLayoutDatabase && startingDatabaseErr == NoError) {
+                    err = ActivateLayoutDatabase (fixup.layoutDatabaseGuid);
+                }
+                if (err == NoError) {
+                    err = ApplyDrawingAnchor (fixup.drawingGuid, fixup.anchorPoint, fixup.useOwnOrigoAsAnchor, fixup.createdPos);
+                }
+                if (err != NoError) {
+                    elementResults[fixup.resultIndex] = CreateErrorResponse (err,
+                        "The Drawing was created, but its anchorPoint could not be applied.");
+                }
+            }
+            return NoError;
+        });
+    }
     if (startingDatabaseErr == NoError) {
         ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
     }
@@ -1578,6 +1762,14 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
             newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);
             newDrawingItem.Add ("modelOffset", Create2DCoordinateObjectState (oldElement.drawing.modelOffset));
+            // anchorPoint/useOwnOriginAsAnchor are deliberately NOT carried over here.
+            // oldElement.drawing.anchorPoint cannot tell a deliberately set anchor from Archicad's
+            // own default: a Drawing whose anchor was never touched already reads back BottomLeft
+            // (ACAPI_Element_Create does not keep the anchor), so carrying it over would apply an
+            // anchor on every relink - confirmed live to move a relinked Drawing's content
+            // (right scale and rotation, wrong X/Y), which broke a real sales plan generator run.
+            // A caller that set an anchor on the old Drawing reapplies it afterward with
+            // SetDetailsOfElements.
             if (!oldClipCoords.IsEmpty ()) {
                 const auto& clipList = newDrawingItem.AddList<GS::ObjectState> ("clipPolygon");
                 for (const auto& coord : oldClipCoords) {
@@ -1746,7 +1938,7 @@ GS::ObjectState GetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
         if (navIdOS != nullptr) {
             API_Guid navGuid = GetGuidFromObjectState (*navIdOS);
             API_NavigatorItem navItem = {};
-            const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navItem);
+            const GSErrCode navErr = GetNavigatorItemOfGuid (navGuid, navItem);
             if (navErr != NoError) {
                 layoutSettingsList (CreateErrorResponse (navErr, "Failed to get navigator item from navigatorItemId."));
                 continue;
@@ -1913,7 +2105,7 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
         if (navIdOS != nullptr) {
             API_Guid navGuid = GetGuidFromObjectState (*navIdOS);
             API_NavigatorItem navItem = {};
-            const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navItem);
+            const GSErrCode navErr = GetNavigatorItemOfGuid (navGuid, navItem);
             if (navErr != NoError) {
                 executionResults.Push (CreateFailedExecutionResult (navErr, "Failed to get navigator item from layoutNavigatorItemId."));
                 continue;

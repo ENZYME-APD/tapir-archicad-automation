@@ -1448,6 +1448,20 @@ inline GSErrCode TAPIR_Element_GetCategoryValueDefault (API_ElemTypeID typeID, c
 #endif
 }
 
+// Sets the value of one element category in the tool defaults of an element type.
+inline GSErrCode TAPIR_Element_SetCategoryValueDefault (API_ElemTypeID typeID, const API_ElemCategory& category, const API_ElemCategoryValue& categoryValue)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Category_SetCategoryValueDefault (typeID, category, categoryValue);
+#else
+#if defined ServerMainVers_2600
+    return ACAPI_Element_SetCategoryValueDefault (typeID, category, categoryValue);
+#else
+    return ACAPI_Element_SetCategoryValueDefault (typeID, APIVarId_Generic, category, categoryValue);
+#endif
+#endif
+}
+
 inline GSErrCode TAPIR_Element_SetCategoryValue (const API_Guid& elemGuid, const API_ElemCategoryValue& categoryValue)
 {
 #ifdef ServerMainVers_2700
