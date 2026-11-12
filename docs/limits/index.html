@@ -147,6 +147,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set a label&rsquo;s optimised position, &ldquo;use text pen as uniform pen&rdquo; of a symbol label, or a perpendicular text direction</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Set the text direction (parallel, horizontal, vertical or a custom angle) with textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> and <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. When the symbol label&rsquo;s library part has a parameter for the other two, set it with <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; otherwise set them in the Label tool settings or a favorite, and create the labels with favoriteName.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_LabelType</code> has no field for an optimised position or a uniform pen (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). Its <code>textWay</code> is documented for labels with only <code>APIDir_Parallel</code>, <code>APIDir_Horizontal</code>, <code>APIDir_Vertical</code> and <code>APIDir_General</code>, not <code>APIDir_Perpendicular</code>.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2666">#2666</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>

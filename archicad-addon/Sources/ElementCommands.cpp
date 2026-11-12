@@ -3417,6 +3417,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 GS::ObjectState leaderLineOS;
                 TextLabelDetails::AddLabelLeaderLineDetails (leaderLineOS, elem.label);
                 typeSpecificDetails.Add ("leaderLine", leaderLineOS);
+                TextLabelDetails::AddLabelTextWay (typeSpecificDetails, elem.label);
 
                 if (elem.label.labelClass == APILblClass_Text) {
                     GS::ObjectState styleOS;

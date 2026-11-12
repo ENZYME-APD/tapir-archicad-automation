@@ -5886,7 +5886,7 @@
         ],
         "description": "How the leader line connects to the label text."
     },
-    "SymbolLabelTextDirection": {
+    "LabelTextDirection": {
         "type": "string",
         "enum": [
             "Parallel",
@@ -5894,7 +5894,7 @@
             "Vertical",
             "General"
         ],
-        "description": "Direction of the symbol label's text."
+        "description": "Direction of a label's text (API_LabelType textWay), the same for Text and Symbol labels: 'Parallel' follows the labelled element, 'Horizontal' and 'Vertical' are fixed, 'General' is a custom angle (for a Text label style.angle, with style.fixedAngle keeping it when the element is rotated). The Archicad API offers no other direction for labels (it documents only these four), so there is no 'Perpendicular'."
     },
     "LengthType": {
         "type": "string",
@@ -14443,6 +14443,10 @@
           "leaderLine": {
             "$ref": "#/LabelLeaderLineDetails"
           },
+          "textWay": {
+            "$ref": "#/LabelTextDirection",
+            "description": "The label's text direction, for a Text or a Symbol label (a Symbol label also reports it in symbolStyle.textWay)."
+          },
           "style": {
             "$ref": "#/TextStyleDetails",
             "description": "Present only when labelClass is 'Text'."
@@ -19124,7 +19128,7 @@
         "type": "object",
         "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
         "properties": {
-            "textWay": { "$ref": "#/SymbolLabelTextDirection" },
+            "textWay": { "$ref": "#/LabelTextDirection", "description": "The same setting as the label's own textWay, kept here for a Symbol label. Give it in one of the two places only." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
             "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it. On input resolved to the font's index like a Text style's fontName, taking precedence over fontIndex, and failing when no loaded font has the name; on read-back the name of the font fontIndex refers to, absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
