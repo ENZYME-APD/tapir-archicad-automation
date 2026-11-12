@@ -22189,7 +22189,7 @@
             },
             "parentId": {
                 "type": "string",
-                "description": "The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required."
+                "description": "The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required. The General GDL Object (the root subtype) cannot be the parent: use the Model Element or one of its subtypes."
             },
             "parentName": {
                 "type": "string",
