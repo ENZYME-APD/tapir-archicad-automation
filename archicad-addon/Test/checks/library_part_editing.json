@@ -12,7 +12,7 @@
         "libraryParts": [
           {
             "name": "TapirCheckEdit",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibEdit/TapirCheckEdit.gsm",
             "a": 0.6,
             "b": 0.4,
@@ -26,13 +26,13 @@
           },
           {
             "name": "TapirCheckSub",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibEdit/TapirCheckSub.gsm",
             "script3D": "BLOCK A, B, 1"
           },
           {
             "name": "TapirCheckLocked",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibEdit/TapirCheckLocked.gsm",
             "masterScript": "tapirLocked = 1"
           }
