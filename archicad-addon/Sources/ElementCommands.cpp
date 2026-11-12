@@ -975,6 +975,73 @@ static void AddStairBaseLineSegmentsFromMemo (const API_StairPolylineData& baseL
 // On a placed stair the coords are relative to the stair's basePlane.basePoint (a stair
 // created at (110, 0) reads its baseline from (0, 0), #1561), so they are moved by origin
 // to report them in the same coordinates as CreateStairs takes them.
+// The going of a Stair (#823). API_StairType::treadDepth is not kept in step with the modeled
+// treads (Archicad 29 reads 0 on every placed stair, whatever its going, and 1 on some), so it
+// is not used: the stair is laid out from its rules and its baseline. The going is
+// measured along the walking line, so on a stair without landings it is the walking line's
+// length divided by the number of treads (checked on straight and winder stairs, with and without
+// the extra top tread). A landing is on the walking line too, so a stair with one gets no value.
+static GS::Optional<double> GetStairGoing (const API_Guid& guid, const API_StairType& stair)
+{
+    if (stair.treadNum == 0) {
+        return GS::NoValue;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError || memo.stairWalkingLine.coords == nullptr) {
+        return GS::NoValue;
+    }
+
+    const API_StairPolylineData& baseLine = memo.stairBaseLine;
+    if (baseLine.coords != nullptr) {
+        const GSSize nBaseCoords = BMhGetSize (reinterpret_cast<GSHandle> (baseLine.coords)) / sizeof (API_Coord);
+        if (baseLine.edgeData != nullptr) {
+            const GSSize nEdgeData = BMGetPtrSize (reinterpret_cast<GSPtr> (baseLine.edgeData)) / sizeof (API_StairPolylineEdgeData);
+            for (GSIndex i = 1; i < nBaseCoords - 1 && i < nEdgeData; ++i) {
+                if (baseLine.edgeData[i].segmentType != APIST_StepsSegment) {
+                    return GS::NoValue;
+                }
+            }
+        }
+        if (baseLine.vertexData != nullptr) {
+            // The end points report a landing turn on every stair; only the inner ones count.
+            const GSSize nVertexData = BMGetPtrSize (reinterpret_cast<GSPtr> (baseLine.vertexData)) / sizeof (API_StairPolylineVertexData);
+            for (GSIndex i = 2; i < nBaseCoords - 1 && i < nVertexData; ++i) {
+                const API_StairTurnTypeID turnType = baseLine.vertexData[i].turnType;
+                if (turnType == APIST_LandingTurn || turnType == APIST_DividedLandingTurn) {
+                    return GS::NoValue;
+                }
+            }
+        }
+    }
+
+    const API_StairPolylineData& line = memo.stairWalkingLine;
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (line.coords)) / sizeof (API_Coord);
+    GSIndex last = nCoords - 1;
+    if (line.pends != nullptr && BMhGetSize (reinterpret_cast<GSHandle> (line.pends)) / sizeof (Int32) > 1) {
+        last = (*line.pends)[1];
+    }
+    const GSSize nArcs = line.parcs != nullptr ? BMhGetSize (reinterpret_cast<GSHandle> (line.parcs)) / sizeof (API_PolyArc) : 0;
+    double length = 0.0;
+    for (GSIndex i = 2; i <= last && i < nCoords; ++i) {
+        const API_Coord& from = (*line.coords)[i - 1];
+        const API_Coord& to = (*line.coords)[i];
+        double segment = std::sqrt ((to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y));
+        for (GSIndex k = 0; k < nArcs; ++k) {
+            const API_PolyArc& arc = (*line.parcs)[k];
+            if (arc.begIndex == i - 1 && arc.endIndex == i && std::abs (arc.arcAngle) > 1e-9) {
+                const double halfAngle = std::abs (arc.arcAngle) / 2.0;
+                segment *= halfAngle / std::sin (halfAngle);
+            }
+        }
+        length += segment;
+    }
+    if (length <= 0.0) {
+        return GS::NoValue;
+    }
+    return length / stair.treadNum;
+}
+
 static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
 {
     const auto& coords = os.AddList<GS::ObjectState> ("baseLinePoints");
@@ -3922,7 +3989,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 const API_Coord3D& basePoint = elem.stair.basePlane.basePoint;
                 typeSpecificDetails.Add ("stepNum", static_cast<Int32> (elem.stair.stepNum));
                 typeSpecificDetails.Add ("riserHeight", elem.stair.riserHeight);
-                typeSpecificDetails.Add ("treadDepth", elem.stair.treadDepth);
+                const GS::Optional<double> going = GetStairGoing (elem.header.guid, elem.stair);
+                if (going.HasValue ()) {
+                    typeSpecificDetails.Add ("treadDepth", going.Get ());
+                }
                 typeSpecificDetails.Add ("flightWidth", elem.stair.flightWidth);
                 typeSpecificDetails.Add ("totalHeight", elem.stair.totalHeight);
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
