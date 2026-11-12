@@ -11,6 +11,7 @@
   "plainKeys": [
     "elementId",
     "favoriteName",
+    "layerIndex",
     "meshData"
   ],
   "sources": {
@@ -102,7 +103,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "buildingMaterialId",
       "set": "buildingMaterialId",
       "apiMember": "API_MeshType::buildingMaterial",
       "apiDescription": "Building Material index of mesh's hatch.",
@@ -156,6 +157,106 @@
       "set": "lineTypeIndex",
       "apiMember": "API_MeshType::ltypeInd",
       "apiDescription": "Line type attribute index of mesh's contour.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "topMaterial",
+      "set": "topMaterial",
+      "apiMember": "API_MeshType::topMat",
+      "apiDescription": "Top material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "sideMaterial",
+      "set": "sideMaterial",
+      "apiMember": "API_MeshType::sideMat",
+      "apiDescription": "Side material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "bottomMaterial",
+      "set": "bottomMaterial",
+      "apiMember": "API_MeshType::botMat",
+      "apiDescription": "Bottom material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "materialsChained",
+      "set": "materialsChained",
+      "apiMember": "API_MeshType::materialsChained",
+      "apiDescription": "Are surface materials chained?",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "visibility",
+      "set": "visibility",
+      "apiMember": "API_MeshType::visibilityCont",
+      "apiDescription": "Visibility of mesh's contour line. On the element's own story the contour should allways be visible.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "fillVisibility",
+      "set": "fillVisibility",
+      "apiMember": "API_MeshType::visibilityFill",
+      "apiDescription": "Visibility of mesh's cover fill.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "cutFillPen",
+      "set": "cutFillPen",
+      "apiMember": "API_MeshType::cutFillPen",
+      "apiDescription": "Cut fill pens set in the building material can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "cutFillBackgroundPen",
+      "set": "cutFillBackgroundPen",
+      "apiMember": "API_MeshType::cutFillBackgroundPen",
+      "apiDescription": "Cut fill pens set in the building material can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "sectionContourPen",
+      "set": "sectionContourPen",
+      "apiMember": "API_MeshType::sectContPen",
+      "apiDescription": "Contour pen attribute index of the mesh 's fill in sections.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "floorFill",
+      "set": "floorFill",
+      "apiMember": "API_MeshType::floorFillInd",
+      "apiDescription": "Fill attribute index of the mesh's cover fill.",
       "label": null,
       "labelSource": null,
       "group": "Floor Plan and Section",

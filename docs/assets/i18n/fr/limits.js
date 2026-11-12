@@ -38,6 +38,8 @@
         'Lire à quel bord de dalle ou d\'escalier un garde-corps est lié, ou lier un garde-corps à l\'un d\'eux',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         'Désactiver la visibilité automatique par niveau d\'un garde-corps, pour pouvoir choisir les niveaux où il est affiché',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'Définir le Floor Plan Display, le Show Projection, les lignes non coupées et au-dessus ou le type de ligne de la coupe d\'un maillage',
     'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
         'Lire ou régler le symbole en plan d\'un garde-corps : sa ligne de coupure, les composants du symbole qu\'il affiche, leurs attributs 2D et les remplacements du symbole',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
@@ -81,6 +83,11 @@
     'Get the outcome of an Action Center check': 'Obtenir le résultat d’une vérification de l’Action Center',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Lancez la vérification avec <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a> ; Archicad affiche l’Action Center s’il a trouvé un problème. Pour la vérification des hotlinks, lisez l’état de chaque source avec <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (à partir d’Archicad 27).',
+
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Définir les valeurs des modificateurs de profil, ou la largeur et la hauteur étirées, d\'un mur, d\'une poutre ou d\'un poteau qui utilise un profil',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'Lisez-les avec <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. Pour les changer, modifiez le profil avec <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (une copie pour ces éléments, ou le profil lui-même), ou réglez-les dans les paramètres de l\'élément dans Archicad.',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Vous avez trouvé autre chose que l’API Archicad ne sait pas faire ? Signalez-le dans une issue, avec les en-têtes du DevKit que vous avez vérifiés, et ce sera ajouté ici. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Ouvrir une issue</a>'
