@@ -2,6 +2,7 @@
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 #include "GSUnID.hpp"
+#include "BuiltInLibrary.hpp"
 
 #ifdef ServerMainVers_2800
 #include "GDLParamInterface.hpp"
@@ -2903,11 +2904,52 @@ struct LibraryPartGuidTable {
     GS::HashTable<API_Guid, Int32> indexOfGuid;
 };
 
+// The library part a search looks for: a descendant of the subtype parentUnID when that is not
+// empty, else a part of libTypeId.
+static void SetLibraryPartSearchAncestor (API_LibPart& libPart, LibPartTypeId libTypeId, const GS::UniString& parentUnID)
+{
+    if (parentUnID.IsEmpty ()) {
+        libPart.typeID = libTypeId;
+    } else {
+        CHTruncate (parentUnID.ToCStr ().Get (), libPart.parentUnID, sizeof (libPart.parentUnID));
+    }
+}
+
+// The unique ID of the Wall End subtype. Wall ends are windows (variation Wall End) whose library
+// parts are not of the Window subtype, so a search with the window typeID does not find them (#2634).
+static GS::UniString GetWallEndSubtypeUnID ()
+{
+    return BL::BuiltInLibraryMainGuidContainer::GetInstance ().GetUnIDWithNullRevGuid (BL::BuiltInLibPartID::WallEndLibPartID).ToUniString ();
+}
+
+// Whether the library part libInd is of the Wall End subtype: a search for its name among the
+// descendants of that subtype finds it.
+static bool IsWallEndLibraryPart (Int32 libInd)
+{
+    if (libInd <= 0) {
+        return false;
+    }
+    API_LibPart libPart = {};
+    libPart.index = libInd;
+    if (ACAPI_LibraryPart_Get (&libPart) != NoError) {
+        return false;
+    }
+    delete libPart.location;
+
+    API_LibPart searched = {};
+    SetLibraryPartSearchAncestor (searched, APILib_WindowID, GetWallEndSubtypeUnID ());
+    GS::ucscpy (searched.docu_UName, libPart.docu_UName);
+    const GSErrCode err = ACAPI_LibraryPart_Search (&searched, false, false);
+    delete searched.location;
+    return err == NoError;
+}
+
 // Resolves the library part given by name, index or main guid. The part has to be of libTypeId,
-// which a search with that typeID checks (see FindWindowOrDoorLibraryPart: the typeID
+// or a descendant of the subtype parentUnID when that is given (wall ends), which a search with
+// that typeID or parentUnID checks (see FindWindowOrDoorLibraryPart: the typeID
 // ACAPI_LibraryPart_Get returns does not tell a window from an object); a part given by index or
 // guid is checked by searching for its name.
-static GSErrCode ResolveLibraryPart (const GS::ObjectState& libraryPart, LibPartTypeId libTypeId, LibraryPartGuidTable& guidTable, Int32& libInd, GS::UniString& errMessage)
+static GSErrCode ResolveLibraryPart (const GS::ObjectState& libraryPart, LibPartTypeId libTypeId, const GS::UniString& parentUnID, LibraryPartGuidTable& guidTable, Int32& libInd, GS::UniString& errMessage)
 {
     GS::UniString name;
     GS::UniString guid;
@@ -2971,13 +3013,13 @@ static GSErrCode ResolveLibraryPart (const GS::ObjectState& libraryPart, LibPart
     }
 
     API_LibPart libPart = {};
-    libPart.typeID = libTypeId;
+    SetLibraryPartSearchAncestor (libPart, libTypeId, parentUnID);
     const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
     GS::ucscpy (libPart.docu_UName, name.ToUStr (0, GS::Min (name.GetLength (), maxNameLength)).Get ());
     const GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
     delete libPart.location;
     if (err != NoError) {
-        errMessage = GS::UniString::Printf ("Not found a placeable library part named '%T' of the element's type in the loaded libraries", name.ToPrintf ());
+        errMessage = GS::UniString::Printf ("Not found a placeable library part named '%T' of the element's type%s in the loaded libraries", name.ToPrintf (), parentUnID.IsEmpty () ? "" : " (Wall End)");
         return err;
     }
 
@@ -3159,8 +3201,14 @@ static GSErrCode ChangeLibraryPartOfElement (const GS::ObjectState& elementWithL
         return APIERR_BADELEMENTTYPE;
     }
 
+    // A wall end (a window whose part is of the Wall End subtype) can only get another wall end part.
+    GS::UniString parentUnID;
+    if (GetElemTypeId (element.header) == API_WindowID && IsWallEndLibraryPart (oldLibInd)) {
+        parentUnID = GetWallEndSubtypeUnID ();
+    }
+
     Int32 newLibInd = 0;
-    err = ResolveLibraryPart (*libraryPart, libTypeId, guidTable, newLibInd, errMessage);
+    err = ResolveLibraryPart (*libraryPart, libTypeId, parentUnID, guidTable, newLibInd, errMessage);
     if (err != NoError) {
         return err;
     }
@@ -3388,7 +3436,7 @@ GS::Optional<GS::UniString> ChangeLibraryPartOfElementsCommand::GetInputParamete
                     },
                     "libraryPart": {
                         "type": "object",
-                        "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries.",
+                        "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries; a wall end (a Window whose library part is a Wall End part) only takes another Wall End part.",
                         "oneOf": [
                             {
                                 "type": "object",
