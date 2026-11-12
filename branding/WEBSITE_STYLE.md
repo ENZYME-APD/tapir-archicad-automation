@@ -130,9 +130,9 @@ rule; always use these three properties (the Display menu's Font replaces them).
 Sizes are in `rem` (1 rem = 16 px at 100 %), never `px`, `em` for a whole element, or `vw` alone. The
 only `px` text is inside drawings (the floor plan, the growth chart) and the header's brand.
 
-The scale. A new text size **must** be one of these; the sizes in between (`.65625`, `.71875`,
-`.78125`, `.84375`, `.90625`, `1.125`, `1.25`, `1.3125rem`) are the drift listed in section 15 and are
-not used again:
+The scale. Every text size **must** be one of these; the sizes in between (`.65625`, `.6875`,
+`.71875`, `.78125`, `.84375`, `.90625`, `1.125`, `1.25`, `1.3125rem`) were the drift that part 5 of
+#2765 removed and are not used again:
 
 | Step | Size | Use |
 | --- | --- | --- |
@@ -395,17 +395,6 @@ of #2765 that fixes it; strike it from this list in that part.
 - `home.css`: the floor plan's Run button sets `color: #FFFFFF` in Standard, a literal instead of a
   property.
 
-**Spacing and type off the scale** (part 5):
-
-- Card padding is 26 px (`.way`), 28 px (`.teaser`), 22 px (`.share-steps li`) and 26/24 px
-  (`.figures > div`) for the same kind of card; 18–22 px in `.video .text`.
-- Off the 4 px scale in layout: the 14 px gap between cards on phones, `.detail > div`'s 22 px gap, and
-  `.timeline`'s and `.prose`'s 22 px list indent (20 px in `.way` and `.bullets`).
-- Text sizes between the steps of the scale: `.65625rem` (footer labels, phone table labels),
-  `.71875rem` (`.way .who`, table heads, `.spec dt`, `.pill`, the terminal bar), `.78125rem` (crumbs,
-  figure labels, `.stack .wire`, the copy button), `.84375rem` (`.schedule .ds`, the ticker),
-  `.90625rem` (`.uses-grid p`, `.video p`, the schedule, phone nav), `1.125rem` (`.flow strong`),
-  `1.25rem` (`.spec .install > strong`), `1.3125rem` (`.uses .way h3`), and their copies in the page
-  stylesheets.
-- The command reference (`archicad-addon/style.css`) sizes its text in `em` (`.75em` to `.95em`), so
-  its sizes depend on the parent's and are off the scale.
+**Spacing and type off the scale** (part 5): fixed. Card and cell paddings, the phone gaps, the list
+indents and every text size in `site.css`, `motion.css`, `coverage.css` and the page stylesheets are on
+the scales of sections 4 and 5, and the command reference sizes its text in `rem`.
