@@ -1,0 +1,140 @@
+{
+  "title": "SetLibraryPartScripts and SetLibraryPartParameters change a part of the embedded library (through a temporary copy when Archicad does not report it editable, as in a saved project), and the object placed from it keeps the part",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "part in the embedded library, under the Model Element (by main GUID)",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckEmbeddedEdit",
+            "parentId": "103E8D2C-8230-42E1-9597-46F84CCE28C0",
+            "path": "TapirCheckLibEmbeddedEdit/TapirCheckEmbeddedEdit.gsm",
+            "a": 0.6,
+            "b": 0.4,
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 1"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": false, "name": "part created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "object placed from it",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          { "libraryPartName": "TapirCheckEmbeddedEdit", "coordinates": { "x": 710, "y": 700, "z": 0 }, "angle": 0.0 }
+        ]
+      },
+      "save": { "o1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object placed" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "part of the object before the changes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [{ "elementId": { "guid": "${o1}" } }] },
+      "save": { "mainGuid": "detailsOfElements[0].details.libPart.ownUnID.guid" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "TapirCheckEmbeddedEdit", "name": "placed from the new part" }
+      ]
+    },
+    {
+      "id": "[2D script, 3D script] of the same part in one call",
+      "command": "SetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEmbeddedEdit.gsm", "scripts": { "2d": "RECT2 0, 0, A, B\nLINE2 0, 0, A, B ! tapirCheck2D" } },
+          { "name": "TapirCheckEmbeddedEdit.gsm", "scripts": { "3d": "BLOCK A, B, 2 ! tapirCheck3D" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "2D script set" },
+        { "path": "executionResults[1].success", "eq": true, "name": "3D script set" }
+      ]
+    },
+    {
+      "id": "scripts of the part after the changes",
+      "command": "GetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [{ "libraryPartName": "TapirCheckEmbeddedEdit.gsm" }],
+        "scripts": ["2d", "3d"]
+      },
+      "expect": [
+        { "path": "libraryParts[0].scripts.2d.script", "contains": "tapirCheck2D", "name": "the new 2D script" },
+        { "path": "libraryParts[0].scripts.3d.script", "contains": "tapirCheck3D", "name": "the new 3D script, the second change of the call" }
+      ]
+    },
+    {
+      "id": "scripts of the part of the object",
+      "command": "GetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [{ "elementId": { "guid": "${o1}" } }],
+        "scripts": ["2d"]
+      },
+      "expect": [
+        { "path": "libraryParts[0].scripts.2d.script", "contains": "tapirCheck2D", "name": "the object uses the changed part" }
+      ]
+    },
+    {
+      "id": "set A",
+      "command": "SetLibraryPartParameters",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEmbeddedEdit.gsm", "parameters": [{ "name": "A", "value": 0.9 }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "A set" }
+      ]
+    },
+    {
+      "id": "A after the set",
+      "command": "GetLibraryPartParameterValues",
+      "creates": false,
+      "params": { "libraryParts": [{ "name": "TapirCheckEmbeddedEdit.gsm" }] },
+      "expect": [
+        { "path": "libraryParts[0].parameters[0].name", "eq": "A" },
+        { "path": "libraryParts[0].parameters[0].value", "approx": 0.9, "name": "A is the new value" }
+      ]
+    },
+    {
+      "id": "part of the object after the changes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [{ "elementId": { "guid": "${o1}" } }] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "TapirCheckEmbeddedEdit", "name": "still placed from the part" },
+        { "path": "detailsOfElements[0].details.libPart.ownUnID.guid", "eq": "${mainGuid}", "name": "the part kept its main GUID" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLibEmbeddedEdit/TapirCheckEmbeddedEdit.gsm" },
+          { "path": "TapirCheckLibEmbeddedEdit" }
+        ]
+      }
+    }
+  ]
+}
