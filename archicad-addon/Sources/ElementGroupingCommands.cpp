@@ -466,33 +466,46 @@ GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& param
         });
 }
 
+// The top level group of a group is the root group of any of its members, as in
+// UngroupElements. ACAPI_Grouping_GetMainGroupGuid is not used: on Archicad 29 it
+// answers APIERR_BADID for the guids of existing groups (#2643).
 static GSErrCode GetMainGroupGuid(const API_Guid& groupGuid, API_Guid& mainGroupGuid)
 {
-#ifdef ServerMainVers_2700
-    return ACAPI_Grouping_GetMainGroupGuid(&groupGuid, &mainGroupGuid);
-#else
-    // The given guid must be a group, as ACAPI_Grouping_GetMainGroupGuid requires on 27+.
-    GS::Array<API_Guid> elemGuids;
-    GSErrCode err = ACAPI_Grouping_GetGroupedElems(groupGuid, &elemGuids);
-    if (err != NoError) {
-        return err;
-    }
-
-    // Walk up the parent groups until the top level one.
-    mainGroupGuid = groupGuid;
+    API_Guid currentGroupGuid = groupGuid;
     for (UInt32 depth = 0; depth < 1000; ++depth) {
-        API_Guid parentGroupGuid = APINULLGuid;
-        err = ACAPI_Grouping_GetGroup(mainGroupGuid, &parentGroupGuid);
+        GS::Array<API_Guid> elemGuids;
+        const GSErrCode err = ACAPI_Grouping_GetGroupedElems(currentGroupGuid, &elemGuids);
         if (err != NoError) {
             return err;
         }
-        if (parentGroupGuid == APINULLGuid) {
-            return NoError;
+        if (elemGuids.IsEmpty()) {
+            return APIERR_BADID;
         }
-        mainGroupGuid = parentGroupGuid;
+
+        for (const API_Guid& elemGuid : elemGuids) {
+            API_Guid rootGroupGuid = APINULLGuid;
+            if (ACAPI_Grouping_GetRootGroup(elemGuid, &rootGroupGuid) == NoError && rootGroupGuid != APINULLGuid) {
+                mainGroupGuid = rootGroupGuid;
+                return NoError;
+            }
+        }
+
+        // No member answered, so they may all be nested groups: go down into the
+        // first one that has members of its own and ask its members.
+        API_Guid subGroupGuid = APINULLGuid;
+        for (const API_Guid& elemGuid : elemGuids) {
+            GS::Array<API_Guid> subElemGuids;
+            if (ACAPI_Grouping_GetGroupedElems(elemGuid, &subElemGuids) == NoError && !subElemGuids.IsEmpty()) {
+                subGroupGuid = elemGuid;
+                break;
+            }
+        }
+        if (subGroupGuid == APINULLGuid) {
+            return APIERR_GENERAL;
+        }
+        currentGroupGuid = subGroupGuid;
     }
     return APIERR_GENERAL;
-#endif
 }
 
 GetMainGroupsCommand::GetMainGroupsCommand() :

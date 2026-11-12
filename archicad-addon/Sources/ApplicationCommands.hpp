@@ -5,6 +5,10 @@
 // The name of a window type, as in the #/WindowType schema ("FloorPlan", "Section", ...).
 GS::UniString ConvertWindowTypeToString (API_WindowTypeID type);
 
+// Turns 3D Cutaway on or off (the 3D window's View > 3D Cutaway). APIERR_NOTSUPPORTED on Archicad 28
+// builds without the cutting plane API.
+GSErrCode Set3DCutawayEnabled (bool enabled);
+
 class GetAddOnVersionCommand : public CommandBase
 {
 public:

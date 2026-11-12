@@ -778,6 +778,72 @@ def story_summary(zones: list[dict]) -> list[dict]:
 
 # ---- window ----
 
+# ---- the window's size ----
+
+# its smallest size, and the size it opens at, never more than SCREEN_SHARE of the screen
+MIN_WIDTH, MIN_HEIGHT = 640, 520
+OPEN_WIDTH, OPEN_HEIGHT = 760, 700
+SCREEN_SHARE = 0.85
+
+
+def window_size(screen_width: int, screen_height: int) -> tuple[int, int]:
+    """ The size the window opens at: OPEN_WIDTH x OPEN_HEIGHT, but never more than SCREEN_SHARE of the
+    screen, nor less than the smallest size. """
+    width = max(MIN_WIDTH, min(OPEN_WIDTH, int(screen_width * SCREEN_SHARE)))
+    height = max(MIN_HEIGHT, min(OPEN_HEIGHT, int(screen_height * SCREEN_SHARE)))
+    return width, height
+
+
+def scrolling_body(window: ScriptWindow) -> ttk.Frame:
+    """ The frame to build the window's content in, inside the window's body. When the window is shorter
+    than the content, the content scrolls and the buttons stay on the screen; when it is taller, the
+    content gets the extra height, as the body would give it. """
+    body = window.body
+    body.rowconfigure(0, weight=1)
+    background = window.style.lookup("TFrame", "background") or None
+    canvas = tk.Canvas(body, highlightthickness=0, borderwidth=0, width=1, height=1,
+                       **({"background": background} if background else {}))
+    scrollbar = ttk.Scrollbar(body, orient="vertical", command=canvas.yview)
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.grid(row=0, column=0, sticky="nsew")
+    inner = ttk.Frame(canvas)
+    inner.columnconfigure(0, weight=1)
+    item = canvas.create_window((0, 0), window=inner, anchor="nw")
+
+    def fit(_event=None) -> None:
+        width, height = canvas.winfo_width(), canvas.winfo_height()
+        needed = inner.winfo_reqheight()
+        canvas.itemconfigure(item, width=width, height=max(needed, height))
+        canvas.configure(scrollregion=(0, 0, width, max(needed, height)))
+        if needed > height + 1:
+            scrollbar.grid(row=0, column=1, sticky="ns")
+        else:
+            scrollbar.grid_remove()
+            canvas.yview_moveto(0)
+
+    def wheel(event) -> None:
+        """ The mouse wheel scrolls the content while the pointer is over it, but not over a list or a
+        chart, which scroll or zoom themselves. """
+        if not scrollbar.winfo_ismapped():
+            return
+        pointed = canvas.winfo_containing(event.x_root, event.y_root)
+        if pointed is None or not str(pointed).startswith(str(canvas)) \
+                or pointed.winfo_class() in ("Treeview", "Canvas", "Text", "Listbox"):
+            return
+        step = -1 if (getattr(event, "num", 0) == 4 or getattr(event, "delta", 0) > 0) else 1
+        canvas.yview_scroll(step, "units")
+
+    canvas.bind("<Configure>", fit)
+    inner.bind("<Configure>", fit)
+    for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
+        canvas.bind_all(sequence, wheel, add="+")
+    root = window.root
+    root.minsize(MIN_WIDTH, MIN_HEIGHT)
+    width, height = window_size(root.winfo_screenwidth(), root.winfo_screenheight())
+    root.geometry(f"{width}x{height}")
+    return inner
+
+
 class RoomFinishesFromZones:
     def __init__(self):
         self.window = ScriptWindow(
@@ -786,7 +852,7 @@ class RoomFinishesFromZones:
             "(the floor finish's top at the zone's base, the ceiling's bottom at the room height), and a wall finish "
             "along every edge with a wall behind it, growing into the room, with an opening for each door, window and "
             "opening behind it, and optionally a cove at the ceiling. Press Preview to check them, then Create.",
-            min_width=1320, min_height=800)
+            min_width=MIN_WIDTH, min_height=MIN_HEIGHT)
         self.favorites: dict[str, list[str]] = {}
         self.layers: dict[str, int] = {}
         self.structures: dict[str, dict[str, dict]] = {}
@@ -800,15 +866,19 @@ class RoomFinishesFromZones:
         self.window.add_button("Preview", self.make_preview, primary=True)
 
     def _build_body(self) -> None:
-        body = self.window.body
+        body = scrolling_body(self.window)
         body.rowconfigure(3, weight=1)
 
+        # the floor finish, the ceiling, the wall finish and the cove, two by two
         kinds = ttk.Frame(body)
         kinds.grid(row=0, column=0, sticky="ew")
-        for column, (kind, label) in enumerate(KINDS):
-            kinds.columnconfigure(column, weight=1)
+        kinds.columnconfigure(0, weight=1, uniform="kinds")
+        kinds.columnconfigure(1, weight=1, uniform="kinds")
+        for index, (kind, label) in enumerate(KINDS):
+            row, column = divmod(index, 2)
             frame = ttk.LabelFrame(kinds, text=label, padding=(10, 6))
-            frame.grid(row=0, column=column, sticky="nsew", padx=(0 if column == 0 else 8, 0))
+            frame.grid(row=row, column=column, sticky="nsew", padx=(0 if column == 0 else 8, 0),
+                       pady=(0 if row == 0 else 8, 0))
             frame.columnconfigure(1, weight=1)
             vars_ = {
                 "enabled": tk.BooleanVar(value=True),
@@ -824,20 +894,20 @@ class RoomFinishesFromZones:
             for row, (key, text) in enumerate([("favorite", f"{TOOLS[kind]} favorite:"), ("layer", "Layer:"),
                                                ("structure", "Structure:")], start=1):
                 ttk.Label(frame, text=text).grid(row=row, column=0, sticky="w", pady=(4, 0))
-                box = ttk.Combobox(frame, textvariable=vars_[key], state="readonly", width=26)
+                box = ttk.Combobox(frame, textvariable=vars_[key], state="readonly", width=20)
                 box.grid(row=row, column=1, sticky="ew", padx=(6, 0), pady=(4, 0))
                 widgets[key] = box
             ttk.Label(frame, text="Thickness (m):").grid(row=4, column=0, sticky="w", pady=(4, 0))
             widgets["thickness"] = ttk.Entry(frame, textvariable=vars_["thickness"], width=8)
             widgets["thickness"].grid(row=4, column=1, sticky="w", padx=(6, 0), pady=(4, 0))
             gives_own = "a composite or a complex profile" if kind == "wall" else "a composite"
-            ttk.Label(frame, text=f"Structure and thickness are used without a favorite;\n"
-                                  f"{gives_own} gives its own thickness.",
+            ttk.Label(frame, text=f"Structure and thickness are used\nwithout a favorite; "
+                                  f"{gives_own}\ngives its own thickness.",
                       style="Muted.TLabel").grid(row=5, column=0, columnspan=2, sticky="w", pady=(4, 0))
             self.kind_widgets[kind] = widgets
             vars_["favorite"].trace_add("write", lambda *_a, k=kind: self._update_kind_state(k))
             vars_["structure"].trace_add("write", lambda *_a, k=kind: self._update_kind_state(k))
-        self._build_cove(kinds, len(KINDS))
+        self._build_cove(kinds, *divmod(len(KINDS), 2))
 
         options = ttk.LabelFrame(body, text="Room height and options", padding=(10, 6))
         options.grid(row=1, column=0, sticky="ew", pady=(8, 0))
@@ -849,14 +919,14 @@ class RoomFinishesFromZones:
         self.typed_height = tk.StringVar(value="2.60")
         ttk.Entry(options, textvariable=self.typed_height, width=8).grid(row=0, column=2, sticky="w", padx=(6, 0))
         self.replace = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options, text="Replace the finishes an earlier run made for these zones (found by their Element ID)",
+        ttk.Checkbutton(options, text="Replace the finishes an earlier run made for these zones\n(found by their Element ID)",
                         variable=self.replace).grid(row=1, column=0, columnspan=3, sticky="w", pady=(6, 0))
         self.check_clashes = tk.BooleanVar(value=True)
         ttk.Checkbutton(options, text="Warn about structural slabs that overlap a finish (nothing is moved)",
                         variable=self.check_clashes).grid(row=2, column=0, columnspan=3, sticky="w", pady=(2, 0))
         self.keep_clear = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options, text="Cut an opening in the wall finishes for every door, window and opening behind "
-                                      "them (Archicad 29 and later)",
+        ttk.Checkbutton(options, text="Cut an opening in the wall finishes for every door, window and opening\n"
+                                      "behind them (Archicad 29 and later)",
                         variable=self.keep_clear).grid(row=3, column=0, columnspan=3, sticky="w", pady=(2, 0))
         ttk.Label(options, text="Margin around them, for frames and linings (m):").grid(
             row=4, column=0, columnspan=2, sticky="w", padx=(20, 0), pady=(2, 0))
@@ -871,12 +941,17 @@ class RoomFinishesFromZones:
                                              ("keptClear", "Kept clear", 80, "e"),
                                              ("coveLength", "Cove length (m)", 110, "e"),
                                              ("area", "Area (m²)", 90, "e"), ("clashes", "Clashes", 70, "e")], height=4)
+        # the columns are wider than a small window: they scroll sideways
+        sideways = ttk.Scrollbar(self.summary_tree.container, orient="horizontal", command=self.summary_tree.xview)
+        self.summary_tree.configure(xscrollcommand=sideways.set)
+        sideways.grid(row=1, column=0, sticky="ew")
         self.summary_tree.container.grid(row=2, column=0, sticky="ew", pady=(8, 0))
 
         preview = ttk.Frame(body, padding=(0, 8, 0, 0))
         preview.grid(row=3, column=0, sticky="nsew")
-        preview.columnconfigure(0, weight=3)
-        preview.columnconfigure(1, weight=2)
+        # the list and the drawing share the width 3 to 2, whatever the list's columns ask for
+        preview.columnconfigure(0, weight=3, uniform="preview")
+        preview.columnconfigure(1, weight=2, uniform="preview")
         preview.rowconfigure(1, weight=1)
         self.summary_label = ttk.Label(preview, text="Select zones in Archicad and press Preview.")
         self.summary_label.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 4))
@@ -886,6 +961,9 @@ class RoomFinishesFromZones:
                                              ("wall", "Wall finishes", 90, "e"), ("note", "Note", 260, "w")],
                                    height=8)
         self.zone_tree.configure(selectmode="browse")
+        zone_sideways = ttk.Scrollbar(self.zone_tree.container, orient="horizontal", command=self.zone_tree.xview)
+        self.zone_tree.configure(xscrollcommand=zone_sideways.set)
+        zone_sideways.grid(row=1, column=0, sticky="ew")
         self.zone_tree.container.grid(row=1, column=0, sticky="nsew")
         self.zone_tree.bind("<<TreeviewSelect>>", lambda _e: self._draw())
         self.zone_tree.bind("<Double-1>", lambda _e: self.window.guarded(self._select_zone)())
@@ -894,10 +972,10 @@ class RoomFinishesFromZones:
         self.canvas.grid(row=1, column=1, sticky="nsew", padx=(8, 0))
         self.canvas.bind("<Configure>", lambda _e: self._draw())
 
-    def _build_cove(self, parent: ttk.Frame, column: int) -> None:
-        parent.columnconfigure(column, weight=1)
+    def _build_cove(self, parent: ttk.Frame, row: int, column: int) -> None:
         frame = ttk.LabelFrame(parent, text="Cove", padding=(10, 6))
-        frame.grid(row=0, column=column, sticky="nsew", padx=(8, 0))
+        frame.grid(row=row, column=column, sticky="nsew", padx=(0 if column == 0 else 8, 0),
+                   pady=(0 if row == 0 else 8, 0))
         frame.columnconfigure(1, weight=1)
         self.cove_vars = {
             "enabled": tk.BooleanVar(value=False),
@@ -912,7 +990,7 @@ class RoomFinishesFromZones:
         for row, (key, text, values) in enumerate([("tool", "Tool:", list(COVE_TOOLS)), ("favorite", "Favorite:", []),
                                                    ("layer", "Layer:", [])], start=1):
             ttk.Label(frame, text=text).grid(row=row, column=0, sticky="w", pady=(4, 0))
-            box = ttk.Combobox(frame, textvariable=self.cove_vars[key], state="readonly", width=26, values=values)
+            box = ttk.Combobox(frame, textvariable=self.cove_vars[key], state="readonly", width=20, values=values)
             box.grid(row=row, column=1, sticky="ew", padx=(6, 0), pady=(4, 0))
             self.cove_widgets[key] = box
         ttk.Label(frame, text="Ceiling offset (m):").grid(row=4, column=0, sticky="w", pady=(4, 0))

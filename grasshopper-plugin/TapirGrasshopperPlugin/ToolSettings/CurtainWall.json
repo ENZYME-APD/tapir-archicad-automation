@@ -145,7 +145,7 @@
     },
     {
       "get": "visibility",
-      "set": null,
+      "set": "visibility",
       "apiMember": "API_CurtainWallType::visibility",
       "apiDescription": "Story visibility.",
       "label": null,
@@ -155,7 +155,7 @@
     },
     {
       "get": "isAutoOnStoryVisibility",
-      "set": null,
+      "set": "isAutoOnStoryVisibility",
       "apiMember": "API_CurtainWallType::isAutoOnStoryVisibility",
       "apiDescription": "Story visibility will be automatically recalculated when needed.",
       "label": null,
@@ -165,7 +165,7 @@
     },
     {
       "get": "displayOption",
-      "set": null,
+      "set": "displayOption",
       "apiMember": "API_CurtainWallType::displayOption",
       "apiDescription": "Floor plan display option.",
       "label": null,
@@ -175,7 +175,7 @@
     },
     {
       "get": "viewDepthLimitation",
-      "set": null,
+      "set": "viewDepthLimitation",
       "apiMember": "API_CurtainWallType::viewDepthLimitation",
       "apiDescription": "Floor plan view depth limitation.",
       "label": null,
@@ -185,7 +185,7 @@
     },
     {
       "get": "cutProjectionMode",
-      "set": null,
+      "set": "cutProjectionMode",
       "apiMember": "API_CurtainWallType::cutProjectionMode",
       "apiDescription": "Cut projection mode.",
       "label": null,
@@ -195,7 +195,7 @@
     },
     {
       "get": "uncutProjectionMode",
-      "set": null,
+      "set": "uncutProjectionMode",
       "apiMember": "API_CurtainWallType::uncutProjectionMode",
       "apiDescription": "Uncut projection mode.",
       "label": null,
@@ -205,7 +205,7 @@
     },
     {
       "get": "overheadProjectionMode",
-      "set": null,
+      "set": "overheadProjectionMode",
       "apiMember": "API_CurtainWallType::overheadProjectionMode",
       "apiDescription": "Overhead projection mode.",
       "label": null,
@@ -235,7 +235,7 @@
     },
     {
       "get": "frameCutLinePen",
-      "set": null,
+      "set": "frameCutLinePen",
       "apiMember": "API_CurtainWallType::frameCutLinePen",
       "apiDescription": "Pen index of the cut part of frames on the floorplan.",
       "label": null,
@@ -245,7 +245,7 @@
     },
     {
       "get": "frameCutLineTypeId",
-      "set": null,
+      "set": "frameCutLineTypeId",
       "apiMember": "API_CurtainWallType::frameCutLineType",
       "apiDescription": "Line index of the cut part of frames on the floorplan.",
       "label": null,
@@ -255,7 +255,7 @@
     },
     {
       "get": "useFrameTypesAttributes",
-      "set": null,
+      "set": "useFrameTypesAttributes",
       "apiMember": "API_CurtainWallType::useFrameTypesAttributes",
       "apiDescription": "Use Frame type's attributes.",
       "label": null,
@@ -265,7 +265,7 @@
     },
     {
       "get": "panelCutLinePen",
-      "set": null,
+      "set": "panelCutLinePen",
       "apiMember": "API_CurtainWallType::panelCutLinePen",
       "apiDescription": "Pen index of the cut part of panels on the floorplan.",
       "label": null,
@@ -275,7 +275,7 @@
     },
     {
       "get": "panelCutLineTypeId",
-      "set": null,
+      "set": "panelCutLineTypeId",
       "apiMember": "API_CurtainWallType::panelCutLineType",
       "apiDescription": "Line index of the cut part of panels on the floorplan.",
       "label": null,
@@ -285,7 +285,7 @@
     },
     {
       "get": "usePanelTypesAttributes",
-      "set": null,
+      "set": "usePanelTypesAttributes",
       "apiMember": "API_CurtainWallType::usePanelTypesAttributes",
       "apiDescription": "Use Panel type's attributes.",
       "label": null,
@@ -295,7 +295,7 @@
     },
     {
       "get": "pen",
-      "set": null,
+      "set": "pen",
       "apiMember": "API_CurtainWallType::pen",
       "apiDescription": "The pen index.",
       "label": null,
@@ -305,7 +305,7 @@
     },
     {
       "get": "belowViewLinePen",
-      "set": null,
+      "set": "belowViewLinePen",
       "apiMember": "API_CurtainWallType::uncutLinePen",
       "apiDescription": "Pen index of view below cutplane on the floorplan.",
       "label": null,
@@ -315,7 +315,7 @@
     },
     {
       "get": "belowViewLineTypeId",
-      "set": null,
+      "set": "belowViewLineTypeId",
       "apiMember": "API_CurtainWallType::uncutLineType",
       "apiDescription": "Linetype of view below cutplane on the floorplan.",
       "label": null,
@@ -325,7 +325,7 @@
     },
     {
       "get": "aboveViewLinePen",
-      "set": null,
+      "set": "aboveViewLinePen",
       "apiMember": "API_CurtainWallType::overheadLinePen",
       "apiDescription": "Pen index of view above cutplane on the floorplan.",
       "label": null,
@@ -335,7 +335,7 @@
     },
     {
       "get": "aboveViewLineTypeId",
-      "set": null,
+      "set": "aboveViewLineTypeId",
       "apiMember": "API_CurtainWallType::overheadLineType",
       "apiDescription": "Linetype of view above cutplane on the floorplan.",
       "label": null,

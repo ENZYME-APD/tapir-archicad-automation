@@ -49,7 +49,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="wrap nav">
-        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/favicon.svg" alt="" width="30" height="30">Tapir</a>
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/tapir_mark_moss.svg" alt="" width="30" height="30">Tapir</a>
         <nav class="site-nav" aria-label="Site"><ul>
             <li><a href="../start/">Get started</a></li>
             <li><a href="../docs/">Docs</a></li>
@@ -142,6 +142,13 @@
                 <form class="filters" role="search" id="script-filters">
                     <label class="visually-hidden" for="script-search" data-i18n>Search scripts</label>
                     <input class="chip script-search" type="search" id="script-search" placeholder="Search: name, task or author" data-i18n-attrs="placeholder" autocomplete="off">
+                    <!-- The schedule's order; scripts.js keeps it in the address as sort=name or sort=author. -->
+                    <label class="visually-hidden" for="script-sort" data-i18n>Sort scripts</label>
+                    <select class="chip script-sort" id="script-sort">
+                        <option value="category" data-i18n>Sort: by category</option>
+                        <option value="name" data-i18n>Sort: by name, A–Z</option>
+                        <option value="author" data-i18n>Sort: by author</option>
+                    </select>
                     <!-- Below 720 px wide the chip groups are behind this button (scripts.css). -->
                     <button class="chip filters-toggle" type="button" id="filters-toggle" aria-expanded="false" aria-controls="filters-panel"><span data-i18n>Filters</span><span id="filters-count"></span></button>
                 </form>
@@ -155,7 +162,9 @@
                    data-i18n-attrs="data-one data-many data-none"></p>
                 <div class="schedule-wrap">
                     <table class="schedule">
-                        <caption data-i18n>Marketplace · sorted by category</caption>
+                        <caption id="script-caption" data-i18n
+                                 data-category="Marketplace · sorted by category" data-name="Marketplace · sorted by name"
+                                 data-author="Marketplace · sorted by author" data-i18n-attrs="data-category data-name data-author">Marketplace · sorted by category</caption>
                         <thead><tr><th scope="col">ID</th><th scope="col" data-i18n>Script</th><th scope="col" data-i18n>Category</th><th scope="col" data-i18n>Effect</th><th scope="col">Archicad</th><th scope="col" data-i18n>Author</th></tr></thead>
                         <tbody id="script-rows"></tbody>
                     </table>

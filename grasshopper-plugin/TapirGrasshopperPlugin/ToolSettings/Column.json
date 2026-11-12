@@ -236,6 +236,156 @@
       "subgroup": null
     },
     {
+      "get": "visibility",
+      "set": "visibility",
+      "apiMember": "API_ColumnType::visibility",
+      "apiDescription": "Defines on which floor the given element is visible (see API_StoryVisibility)",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "isAutoOnStoryVisibility",
+      "set": "isAutoOnStoryVisibility",
+      "apiMember": "API_ColumnType::isAutoOnStoryVisibility",
+      "apiDescription": "If set to true, the application will automatically provide the story dependent visibility of the element (if the element is physically on a story, it will be shown on that story)",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "displayOption",
+      "set": "displayOption",
+      "apiMember": "API_ColumnType::displayOption",
+      "apiDescription": "Display options of the element on the floor plan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "viewDepthLimitation",
+      "set": "viewDepthLimitation",
+      "apiMember": "API_ColumnType::viewDepthLimitation",
+      "apiDescription": "Defines the range within the element is shown on the floor plan.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Floor Plan Display"
+    },
+    {
+      "get": "contourPen",
+      "set": "contourPen",
+      "apiMember": "API_ColumnType::corePen",
+      "apiDescription": "The pen color index of the core",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "contourLineTypeId",
+      "set": "contourLineTypeId",
+      "apiMember": "API_ColumnType::contLtype",
+      "apiDescription": "The line type of the core.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "veneerLinePen",
+      "set": "veneerLinePen",
+      "apiMember": "API_ColumnType::venLinePen",
+      "apiDescription": "The color index of veneer line",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "veneerLineTypeId",
+      "set": "veneerLineTypeId",
+      "apiMember": "API_ColumnType::venLineType",
+      "apiDescription": "The line type index of veneer line",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "coreSymbolPen",
+      "set": "coreSymbolPen",
+      "apiMember": "API_ColumnType::coreSymbolPen",
+      "apiDescription": "The color index of column cross line",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "belowViewLinePen",
+      "set": "belowViewLinePen",
+      "apiMember": "API_ColumnType::belowViewLinePen",
+      "apiDescription": "Pen index of the uncut lines.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "belowViewLineTypeId",
+      "set": "belowViewLineTypeId",
+      "apiMember": "API_ColumnType::belowViewLineType",
+      "apiDescription": "The line type of the uncut lines.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "aboveViewLinePen",
+      "set": "aboveViewLinePen",
+      "apiMember": "API_ColumnType::aboveViewLinePen",
+      "apiDescription": "Pen index of the overhead lines",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "aboveViewLineTypeId",
+      "set": "aboveViewLineTypeId",
+      "apiMember": "API_ColumnType::aboveViewLineType",
+      "apiDescription": "Linetype of the overhead lines",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "hiddenLinePen",
+      "set": "hiddenLinePen",
+      "apiMember": "API_ColumnType::hiddenLinePen",
+      "apiDescription": "Hidden line pen.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
+      "get": "hiddenLineTypeId",
+      "set": "hiddenLineTypeId",
+      "apiMember": "API_ColumnType::hiddenLineType",
+      "apiDescription": "Hidden line type.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Outlines"
+    },
+    {
       "get": "cutFillPen",
       "set": "cutFillPen",
       "apiMember": "API_ColumnType::cutFillPen",
