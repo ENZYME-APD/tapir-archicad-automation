@@ -1,6 +1,7 @@
 #include "AboutDialog.hpp"
 
 #include "AddOnVersion.hpp"
+#include "AddOnBuildCommit.hpp"
 #include "ResourceIds.hpp"
 #include "MigrationHelper.hpp"
 
@@ -17,10 +18,17 @@ AboutDialog::AboutDialog () :
     GS::UShort portNumber = 0;
     ACAPI_Command_GetHttpConnectionPort (&portNumber);
 
+    // The commit tells a pull request's or a local build from the release of the same version.
+    GS::UniString addOnVersion (ADDON_VERSION);
+    const GS::UniString buildCommit (ADDON_BUILD_COMMIT);
+    if (!buildCommit.IsEmpty ()) {
+        addOnVersion += GS::UniString (" (") + buildCommit + ")";
+    }
+
     GS::UniString versionTextContent = versionText.GetText ();
     GS::UniString versionTextNewContent = GS::UniString::SPrintf (
         versionTextContent,
-        GS::UniString (ADDON_VERSION).ToPrintf (),
+        addOnVersion.ToPrintf (),
         GS::ValueToUniString (portNumber).ToPrintf ()
     );
     versionText.SetText (versionTextNewContent);
