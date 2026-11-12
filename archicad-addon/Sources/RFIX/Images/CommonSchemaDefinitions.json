@@ -13631,7 +13631,7 @@
     },
     "StairDetails": {
         "type": "object",
-        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), which no command writes yet. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
         "properties": {
             "stepNum": {
                 "type": "integer",
@@ -13976,6 +13976,38 @@
         "type": "string",
         "description": "Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).",
         "enum": ["Visible", "Hidden", "Unknown"]
+    },
+    "StairLayoutSettings": {
+        "type": "object",
+        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (part of API_StairLayoutData). Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout.",
+        "properties": {
+            "storyVisibility": {
+                "type": "string",
+                "description": "The stories the stair is shown on. The AllRelevant... values let Archicad work out the relevant stories from the stair's height (isAutoOnStoryVisibility true); the others set the shown stories (visibility) to match and isAutoOnStoryVisibility false.",
+                "enum": ["HomeStoryOnly", "HomeAndOneStoryUp", "HomeAndOneStoryDown", "HomeAndOneStoryUpAndDown", "OneStoryUp", "OneStoryDown", "AllStories", "AllRelevantStories", "AllRelevantAndOneStoryUp", "AllRelevantAndOneStoryDown"]
+            },
+            "showWalkingLine": {
+                "type": "boolean",
+                "description": "Whether the walking line is shown."
+            },
+            "showNumbering": {
+                "type": "boolean",
+                "description": "Whether the step numbering is shown."
+            },
+            "showUpDownText": {
+                "type": "boolean",
+                "description": "Whether the up/down text (walking direction label) is shown."
+            },
+            "showDescription": {
+                "type": "boolean",
+                "description": "Whether the stair description is shown."
+            },
+            "showStructure": {
+                "type": "boolean",
+                "description": "Whether the stair structures are shown."
+            }
+        },
+        "additionalProperties": false
     },
     "StairLayout": {
         "type": "object",
