@@ -60,12 +60,12 @@
     'Describe it, <em>run it.</em>': '説明して、<em>実行する。</em>',
     'Without an MCP server, describe the task, give the AI the command list, and run the script it writes.':
         'MCP サーバーがなければ、作業を説明し、AI にコマンド一覧を渡して、AI が書いたスクリプトを実行します。',
-    '<b>01</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span>':
-        '<b>01</b><strong>したいことを説明する</strong><span>例：「2 階の複合構造の外壁をすべて抽出し、その正味体積を計算して。」</span>',
-    '<b>02</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python\'s standard library only, on port 19723.</span>':
-        '<b>02</b><strong>コマンド一覧を渡す</strong><span>AI に<a href="../archicad-addon/">コマンドリファレンス</a>と下の動作する例を渡します。Python の標準ライブラリだけを使い、ポート 19723 を使うよう頼みます。</span>',
-    '<b>03</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span>':
-        '<b>03</b><strong>読んでから実行する</strong><span>Tapir パレットやターミナルで実行する前に、スクリプトを読みます。モデルを変更するスクリプトは、まずプロジェクトのコピーで試してください。</span>',
+    '<b aria-hidden="true">1</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span>':
+        '<b aria-hidden="true">1</b><strong>したいことを説明する</strong><span>例：「2 階の複合構造の外壁をすべて抽出し、その正味体積を計算して。」</span>',
+    '<b aria-hidden="true">2</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python\'s standard library only, on port 19723.</span>':
+        '<b aria-hidden="true">2</b><strong>コマンド一覧を渡す</strong><span>AI に<a href="../archicad-addon/">コマンドリファレンス</a>と下の動作する例を渡します。Python の標準ライブラリだけを使い、ポート 19723 を使うよう頼みます。</span>',
+    '<b aria-hidden="true">3</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span>':
+        '<b aria-hidden="true">3</b><strong>読んでから実行する</strong><span>Tapir パレットやターミナルで実行する前に、スクリプトを読みます。モデルを変更するスクリプトは、まずプロジェクトのコピーで試してください。</span>',
     'for Claude or any AI tool': 'Claude などの AI ツール向け',
     'Write a Python script that uses only the standard library and sends Tapir commands to Archicad on http://127.0.0.1:19723, like the example I attach. Use the Tapir command reference I attach. Extract all composite exterior walls on level 2 and calculate their net volume. Only read the model; change nothing.':
         '標準ライブラリだけを使う Python スクリプトを書いてください。\n添付の例のように、http://127.0.0.1:19723 の\nArchicad に Tapir コマンドを送るものです。\n添付の Tapir コマンドリファレンスを使ってください。\n\n2 階の複合構造の外壁をすべて抽出し、\nその正味体積を計算してください。\n\nモデルは読み取るだけで、何も変更しないでください。',

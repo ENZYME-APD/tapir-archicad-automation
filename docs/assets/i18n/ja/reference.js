@@ -22,9 +22,9 @@
     'All <em>commands.</em>': 'すべての<em>コマンド。</em>',
 
     // The two coverage pages
-    'Overview': '概要',
+    'Coverage at a <em>glance.</em>': 'カバレッジの<em>概要。</em>',
     'By group': 'グループ別',
-    'Checklist': 'チェックリスト',
+    'The whole <em>checklist.</em>': 'チェックリストの<em>全体。</em>',
 
     // The Archicad API coverage (api-coverage/)
     'Archicad API coverage checklist | Tapir': 'Archicad API カバレッジチェックリスト | Tapir',

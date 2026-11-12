@@ -366,23 +366,6 @@ of #2765 that fixes it; strike it from this list in that part.
 - `api-coverage/index.html` and `gh-coverage/index.html`: `<main>`'s children start at column 0,
   unlike every other page (indentation only, nothing a reader sees).
 
-**Numbering and labels** (part 3):
-
-- Step numbers are `1, 2, 3` in every `.timeline` and in `.share-steps`, but `01, 02, 03` in the `.flow`
-  blocks of `ai/index.html` (twice) and `community/index.html`.
-- Step numbers have `aria-hidden="true"` in `.timeline` and `.share-steps`, but not in `.flow`.
-- `.flow` labels typed in capitals: `READ`, `CHANGE`, `CREATE`, `PROJECT` and `REFRESH`, `EXECUTE`,
-  `CREATE` (`grasshopper/index.html`), `FREE`, `OPEN`, `SIGNED`, `WEEKLY` (`about/index.html`); in the
-  Standard look, which shows labels as written, they are the only capitals on the site.
-
-**Wording** (part 3):
-
-- Page titles: most end with ` | Tapir`, but `roadmap/` ("Tapir roadmap – Archicad automation"),
-  `community/` ("Community – Archicad automation with Tapir"), `about/` ("About Tapir – open-source
-  Archicad add-on") and `404.html` ("Page not found - Tapir", with a hyphen) do not.
-- The section heads of `api-coverage/` and `gh-coverage/` ("Overview", "Checklist") lack the
-  `<em>…</em>.` ending every other section head has, including the command reference's ("All <em>commands.</em>").
-
 **Page stylesheets that still draw the Legacy look in Standard** (part 4):
 
 - `community/community.css`, the map ("On the map", added after the Standard look): `.map-card` keeps

@@ -60,12 +60,12 @@
     'Describe it, <em>run it.</em>': 'Descríbelo, <em>ejecútalo.</em>',
     'Without an MCP server, describe the task, give the AI the command list, and run the script it writes.':
         'Sin servidor MCP, describe la tarea, dale a la IA la lista de comandos y ejecuta el script que escriba.',
-    '<b>01</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span>':
-        '<b>01</b><strong>Describe lo que quieres</strong><span>Por ejemplo: «Extrae todos los muros exteriores compuestos de la planta 2 y calcula su volumen neto».</span>',
-    '<b>02</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python\'s standard library only, on port 19723.</span>':
-        '<b>02</b><strong>Comparte la lista de comandos</strong><span>Dale a la IA la <a href="../archicad-addon/">referencia de comandos</a> y el ejemplo funcional de abajo. Pide que use solo la biblioteca estándar de Python, en el puerto 19723.</span>',
-    '<b>03</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span>':
-        '<b>03</b><strong>Léelo y luego ejecútalo</strong><span>Lee el script antes de ejecutarlo desde la paleta de Tapir o un terminal. Prueba primero en una copia de tu proyecto un script que cambie el modelo.</span>',
+    '<b aria-hidden="true">1</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span>':
+        '<b aria-hidden="true">1</b><strong>Describe lo que quieres</strong><span>Por ejemplo: «Extrae todos los muros exteriores compuestos de la planta 2 y calcula su volumen neto».</span>',
+    '<b aria-hidden="true">2</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python\'s standard library only, on port 19723.</span>':
+        '<b aria-hidden="true">2</b><strong>Comparte la lista de comandos</strong><span>Dale a la IA la <a href="../archicad-addon/">referencia de comandos</a> y el ejemplo funcional de abajo. Pide que use solo la biblioteca estándar de Python, en el puerto 19723.</span>',
+    '<b aria-hidden="true">3</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span>':
+        '<b aria-hidden="true">3</b><strong>Léelo y luego ejecútalo</strong><span>Lee el script antes de ejecutarlo desde la paleta de Tapir o un terminal. Prueba primero en una copia de tu proyecto un script que cambie el modelo.</span>',
     'for Claude or any AI tool': 'para Claude o cualquier herramienta de IA',
     'Write a Python script that uses only the standard library and sends Tapir commands to Archicad on http://127.0.0.1:19723, like the example I attach. Use the Tapir command reference I attach. Extract all composite exterior walls on level 2 and calculate their net volume. Only read the model; change nothing.':
         'Escribe un script de Python que use solo la\nbiblioteca estándar y envíe comandos de Tapir a\nArchicad en http://127.0.0.1:19723, como el\nejemplo que adjunto.\nUsa la referencia de comandos de Tapir que adjunto.\n\nExtrae todos los muros exteriores compuestos de la\nplanta 2 y calcula su volumen neto.\n\nSolo lee el modelo; no cambies nada.',

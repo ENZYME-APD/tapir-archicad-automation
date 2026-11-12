@@ -22,9 +22,9 @@
     'All <em>commands.</em>': '全部<em>命令。</em>',
 
     // The two coverage pages
-    'Overview': '概览',
+    'Coverage at a <em>glance.</em>': '覆盖情况<em>一览。</em>',
     'By group': '按分组',
-    'Checklist': '清单',
+    'The whole <em>checklist.</em>': '完整<em>清单。</em>',
 
     // The Archicad API coverage (api-coverage/)
     'Archicad API coverage checklist | Tapir': 'Archicad API 覆盖率清单 | Tapir',

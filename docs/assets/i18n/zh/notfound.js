@@ -1,6 +1,6 @@
 /* 中文 (简体): the 404 page (404.html). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Page not found - Tapir': '页面未找到 - Tapir',
+    'Page not found | Tapir': '页面未找到 | Tapir',
     '<a href="./">Tapir</a> / 404': '<a href="./">Tapir</a> / 404',
     'This page of Tapir\'s site is not here. Install Tapir, read the reference of every command, browse the scripts or ask the community.':
         'Tapir 网站上没有这个页面。安装 Tapir、阅读每个命令的参考文档、浏览脚本，或向社区提问。',
