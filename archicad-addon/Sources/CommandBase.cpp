@@ -1222,6 +1222,24 @@ GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& param
     return GetFloorIndexAndOffset (zPos, stories);
 }
 
+GS::UniString PolylineDrawSegmentModeToString (short drawSegmentMode)
+{
+    return drawSegmentMode == 1 ? "Continuous" : "SegmentBySegment";
+}
+
+bool PolylineDrawSegmentModeFromString (const GS::UniString& str, short& out)
+{
+    if (str == "SegmentBySegment") {
+        out = 0;
+        return true;
+    }
+    if (str == "Continuous") {
+        out = 1;
+        return true;
+    }
+    return false;
+}
+
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID)
 {
     switch (typeID) {

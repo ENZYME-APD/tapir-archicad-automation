@@ -243,6 +243,12 @@ bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptio
 GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation);
 bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthLimitationsID& out);
 
+// API_PolyLineType::drawSegmentMode (0: the line type's dashes restart on every segment,
+// 1: they run continuously over the whole polyline) <-> "SegmentBySegment" / "Continuous".
+// Shared by CreatePolylines and Get/SetDetailsOfElements.
+GS::UniString PolylineDrawSegmentModeToString (short drawSegmentMode);
+bool PolylineDrawSegmentModeFromString (const GS::UniString& str, short& out);
+
 struct Story {
     Story (short _index, double _level)
         : index (_index)

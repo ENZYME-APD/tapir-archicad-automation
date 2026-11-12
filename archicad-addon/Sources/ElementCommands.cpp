@@ -3507,6 +3507,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_PolyLineID: {
                 AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "coordinates", "arcs");
                 AddLineFamilySettingsDetails (typeSpecificDetails, elem.polyLine.linePen, elem.polyLine.ltypeInd, elem.polyLine.roomSeparator);
+                typeSpecificDetails.Add ("drawSegmentMode", PolylineDrawSegmentModeToString (elem.polyLine.drawSegmentMode));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -5021,6 +5022,16 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, roomSeparator);
                         hasElementChanges = true;
                     }
+                }
+                GS::UniString drawSegmentMode;
+                if (typeSpecificDetails->Get ("drawSegmentMode", drawSegmentMode)) {
+                    if (!PolylineDrawSegmentModeFromString (drawSegmentMode, elem.polyLine.drawSegmentMode)) {
+                        ACAPI_DisposeElemMemoHdls (&clipMemo);
+                        executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous."));
+                        continue;
+                    }
+                    ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, drawSegmentMode);
+                    hasElementChanges = true;
                 }
             } else if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_HatchID) {
                 // The memo layout of a Hatch (closing vertices, per-contour vertex IDs) is

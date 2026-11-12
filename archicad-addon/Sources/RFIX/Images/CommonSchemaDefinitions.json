@@ -12107,6 +12107,9 @@
             "lineTypeId": {
                 "$ref": "#/AttributeId"
             },
+            "drawSegmentMode": {
+                "$ref": "#/PolylineDrawSegmentMode"
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12115,6 +12118,14 @@
         "required": [
             "coordinates",
             "zCoordinate"
+        ]
+    },
+    "PolylineDrawSegmentMode": {
+        "type": "string",
+        "description": "How the dashes of the polyline's line type are drawn: SegmentBySegment restarts the pattern on every segment, Continuous runs it over the whole polyline.",
+        "enum": [
+            "SegmentBySegment",
+            "Continuous"
         ]
     },
     "LineDetails": {
@@ -16811,6 +16822,9 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "drawSegmentMode": {
+                "$ref": "#/PolylineDrawSegmentMode"
             }
         },
         "additionalProperties": false,
