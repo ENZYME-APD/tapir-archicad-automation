@@ -1,6 +1,6 @@
 {
   "title": "ModifyRoofs adds and removes holes, with or without polygonOutline, on multi-plane and single-plane roofs (#2398)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Roof" ],
   "steps": [
     {
