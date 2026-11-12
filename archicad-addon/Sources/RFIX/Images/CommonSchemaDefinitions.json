@@ -14550,6 +14550,14 @@
             "defaultWitnessVal": {
                 "type": "number",
                 "description": "The value that goes with defaultWitnessForm, in meters. Each witness point has its own witnessVal."
+            },
+            "staticDimension": {
+                "type": "boolean",
+                "description": "The Static dimension checkbox of the Dimension Settings (API defStaticDim)."
+            },
+            "onlyDimensionText": {
+                "type": "boolean",
+                "description": "Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText)."
             }
         },
         "additionalProperties": false,
@@ -14565,7 +14573,9 @@
             "textPen",
             "textFrame",
             "defaultWitnessForm",
-            "defaultWitnessVal"
+            "defaultWitnessVal",
+            "staticDimension",
+            "onlyDimensionText"
         ]
     },
     "ChangeMarkerComponent": {
@@ -17931,6 +17941,14 @@
             "defaultWitnessVal": {
                 "type": "number",
                 "description": "The value that goes with defaultWitnessForm, in meters. For Fix it is the length of the witness lines (the custom witness line length of the Dimension Settings). Each witness point has its own witnessVal."
+            },
+            "staticDimension": {
+                "type": "boolean",
+                "description": "The Static dimension checkbox of the Dimension Settings (API defStaticDim)."
+            },
+            "onlyDimensionText": {
+                "type": "boolean",
+                "description": "Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText)."
             }
         }
     },
