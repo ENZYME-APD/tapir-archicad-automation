@@ -128,12 +128,12 @@
                 </article>
             </div>
 
-            <div class="flow flow-3" style="margin-top: 32px">
+            <div class="flow flow-3 gap-top">
                 <div data-i18n><b>REFRESH</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span></div>
                 <div data-i18n><b>EXECUTE</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span></div>
                 <div data-i18n><b>CREATE</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool's defaults or from a <code>FavoriteName</code>.</span></div>
             </div>
-            <div class="prose" style="margin-top: 24px">
+            <div class="prose gap-top-sm">
                 <p data-i18n>
                     Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed
                     straight back into the same input. Archicad has no command to change railings or level dimensions after
@@ -182,7 +182,7 @@
         <div class="dim" aria-hidden="true"><i></i><span data-i18n>A first definition</span><i></i></div>
         <section class="two" aria-labelledby="sample">
             <div class="prose">
-                <h2 id="sample" style="font-size: clamp(1.875rem, 4vw, 3rem)" data-i18n>One <em>wall.</em></h2>
+                <h2 id="sample" class="col-head" data-i18n>One <em>wall.</em></h2>
                 <p data-i18n>Build this in an empty Grasshopper canvas, with a project open in Archicad:</p>
                 <ol>
                     <li data-i18n>Place two <strong>Point</strong> parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.</li>

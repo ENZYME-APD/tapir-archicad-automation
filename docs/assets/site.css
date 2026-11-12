@@ -121,6 +121,9 @@ pre code { background: none; padding: 0; font-size: inherit; color: inherit; bor
 .mono { font-family: var(--mono); font-size: .9em }
 .muted { color: var(--muted) }
 .nowrap { white-space: nowrap }
+/* The space above a block that follows another inside a section (branding/WEBSITE_STYLE.md, section 5):
+   .gap-top between two blocks, .gap-top-sm after a grid or a .flow, .gap-top-xs under the first block of a page body. */
+.gap-top { margin-top: 32px } .gap-top-sm { margin-top: 24px } .gap-top-xs { margin-top: 12px }
 .tagline { display: block; font: 700 .75rem/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--link) }
 [hidden] { display: none !important }
 .visually-hidden {
@@ -184,10 +187,12 @@ main { display: block }
 .dim span { position: relative; padding-inline: 4px; text-align: center }
 .dim i { width: 1px; height: 14px; background: var(--muted); opacity: .6; flex: none }
 .wrap > section, .page-body > section { padding-block: 56px 32px }
-.page-body > section:first-child, .page-body > .dim + section { padding-top: 32px }
+.page-body > section:first-child, .page-body > .dim + section, .wrap > .dim + section.after-dim { padding-top: 32px }
 .sec-head { display: grid; grid-template-columns: auto 1fr; gap: 12px 40px; align-items: end; margin-bottom: 40px }
 .sec-head p { color: var(--muted); max-width: 34em; font-size: 1.0625rem }
 .sec-head h2 { font-size: clamp(2rem, 4.6vw, 3.5rem) }
+/* A section's h2 that sits in one column of a .two, next to a code block, instead of in a .sec-head. */
+.col-head { font-size: clamp(1.875rem, 4vw, 3rem) }
 /* Clear of the sticky header (one row, also on phones) when a link jumps to it. */
 [id] { scroll-margin-top: calc(88px + env(safe-area-inset-top, 0px)) }
 
@@ -877,7 +882,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 @media (max-width: 640px) {
     .dim { padding-top: 24px }
     .wrap > section, .page-body > section { padding-block: 28px 16px }
-    .page-body > section:first-child, .page-body > .dim + section { padding-top: 20px }
+    .page-body > section:first-child, .page-body > .dim + section, .wrap > .dim + section.after-dim { padding-top: 20px }
     .page-body { padding-block: 24px 16px }
     .sec-head { gap: 8px; margin-bottom: 20px }
     .sec-head h2 { font-size: 1.75rem }
