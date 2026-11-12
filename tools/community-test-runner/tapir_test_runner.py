@@ -192,6 +192,23 @@ def compare(actual: Any, rule: dict) -> tuple[bool, str]:
     raise ValueError(f"unknown expectation: {rule}")
 
 
+def created_guids(answer: dict) -> list[str]:
+    """The guid of every element item in the answer's 'elements'. Error items are skipped, not the
+    whole list: a create step that refuses one item still made the others, and they must be deleted."""
+    items = answer.get("elements")
+    if not isinstance(items, list):
+        return []
+    guids = []
+    for item in items:
+        try:
+            guid = resolve(item, "elementId.guid")
+        except KeyError:
+            continue
+        if isinstance(guid, str):
+            guids.append(guid)
+    return guids
+
+
 class CheckRun:
     """Runs one check file. Every element a step creates is deleted at the end, whatever happens."""
 
@@ -222,11 +239,8 @@ class CheckRun:
         if "__envelopeError__" in answer and not step.get("allowEnvelopeError"):
             self._row(label, step["command"], False, f"rejected: {json.dumps(answer['__envelopeError__'])[:200]}")
             return False
-        try:
-            guids = resolve(answer, "elements[*].elementId.guid") if step.get("creates", True) else []
-        except KeyError:
-            guids = []
-        self.created.extend(g for g in guids if isinstance(g, str))
+        if step.get("creates", True):
+            self.created.extend(created_guids(answer))
         for name, path in step.get("save", {}).items():
             try:
                 self.variables[name] = resolve(answer, path)
