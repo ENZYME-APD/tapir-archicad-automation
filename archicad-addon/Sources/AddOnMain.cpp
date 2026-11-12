@@ -1064,6 +1064,14 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.0",
             "Changes the library part of the given Object, Lamp, Window, Door, Skylight, Zone and symbol Label elements to another library part of the same type (Wall End parts for wall ends), given by name, index or guid, e.g. to replace missing library parts with ones from the loaded libraries. The elements themselves (guid, properties, classifications) are kept. Components of stairs and railings are not supported, even when they are reported as Objects. Optionally keeps the values of the GDL parameters with the same name and type, and the size (A and B)."
         );
+        err |= RegisterCommand<GetZoneStampOfDefaultsCommand> (
+            elementCommands, "2.0.1",
+            "Returns the zone stamp of the Zone tool defaults, which every new Zone starts from: its library part index, name and main guid, and whether it is missing from the loaded libraries, together with the Zone Category of the defaults and that category's own zone stamp. A project from a template of an older Archicad can carry a default zone stamp that is not loaded; Archicad then refuses every CreateZones call, which SetZoneStampOfDefaults fixes."
+        );
+        err |= RegisterCommand<SetZoneStampOfDefaultsCommand> (
+            elementCommands, "2.0.1",
+            "Changes the zone stamp and/or the Zone Category of the Zone tool defaults. The zone stamp is given by name, index or guid (libraryPart), or taken from the Zone Category (useStampOfCategory); the defaults get the new stamp's own parameters. Returns the zone stamp read back. Use it when CreateZones fails because the default zone stamp is missing (see GetZoneStampOfDefaults); like a change in the Zone Settings dialog, it is saved with the project."
+        );
         err |= RegisterCommand<GetCalculatedParametersOfCurtainWallSubElementsCommand> (
             elementCommands, "2.0.0",
             "Gets the GDL parameters (name, type, value) of the given Curtain Wall Frame, Panel, Junction and Accessory elements as Archicad calculated them for their place in the curtain wall. GetGDLParametersOfElements returns the parameters the sub-element was set up with instead."

@@ -18137,6 +18137,78 @@
             { "required": [ "unId" ] }
         ]
     },
+    "LibraryPartNameIndexOrGuid": {
+        "type": "object",
+        "description": "A loaded library part, given by one of name, index or guid.",
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name"
+                ]
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "index": {
+                        "type": "integer",
+                        "description": "The index of the library part, as GetAvailableLibraryParts returns it."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "index"
+                ]
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "guid": {
+                        "type": "string",
+                        "description": "The main guid of the library part, as GetAvailableLibraryParts returns it in guid."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            }
+        ]
+    },
+    "ZoneStampOfDefaults": {
+        "type": "object",
+        "description": "The zone stamp (library part) of the Zone tool defaults, which every new Zone starts from.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The library part index of the zone stamp."
+            },
+            "isMissing": {
+                "type": "boolean",
+                "description": "True when the zone stamp is not in the loaded libraries (it cannot be read, or its definition is missing). Archicad then refuses to create Zones, so CreateZones fails until SetZoneStampOfDefaults gives the defaults a loaded zone stamp."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the zone stamp. Absent when the library part cannot be read."
+            },
+            "guid": {
+                "type": "string",
+                "description": "The main guid of the zone stamp. Absent when the library part cannot be read."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "isMissing"
+        ]
+    },
     "ElementsWithExecutionResults": {
         "type": "object",
         "description": "The response of the GetElementsByType command.",

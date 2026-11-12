@@ -3435,49 +3435,8 @@ GS::Optional<GS::UniString> ChangeLibraryPartOfElementsCommand::GetInputParamete
                         "$ref": "#/ElementId"
                     },
                     "libraryPart": {
-                        "type": "object",
-                        "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries; a wall end (a Window whose library part is a Wall End part) only takes another Wall End part.",
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "name"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "index": {
-                                        "type": "integer",
-                                        "description": "The index of the library part, as GetAvailableLibraryParts returns it."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "index"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "guid": {
-                                        "type": "string",
-                                        "description": "The main guid of the library part, as GetAvailableLibraryParts returns it in guid."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "guid"
-                                ]
-                            }
-                        ]
+                        "$ref": "#/LibraryPartNameIndexOrGuid",
+                        "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries; a wall end (a Window whose library part is a Wall End part) only takes another Wall End part."
                     },
                     "keepParameters": {
                         "type": "boolean",
@@ -3553,6 +3512,314 @@ GS::ObjectState ChangeLibraryPartOfElementsCommand::Execute (const GS::ObjectSta
 
     changeReporter.Report ();
 
+    return response;
+}
+
+// --- Zone stamp of the Zone tool defaults (#2780) ---
+//
+// Every new Zone starts from the Zone tool defaults, including their zone stamp (zone.libInd).
+// A project from a template of an older Archicad can carry a default stamp that is not in the
+// loaded libraries, and then Archicad refuses to create any Zone ("Failed to create new Zone"),
+// whatever category or favorite CreateZones is given.
+
+static GSErrCode GetZoneDefaults (API_Element& element, API_ElementMemo* memo)
+{
+    element = {};
+#ifdef ServerMainVers_2600
+    element.header.type   = API_ZoneID;
+#else
+    element.header.typeID = API_ZoneID;
+#endif
+    return ACAPI_Element_GetDefaults (&element, memo);
+}
+
+// The stamp with index libInd: its index, whether it is missing, and its name and main guid when
+// Archicad can read the library part.
+static GS::ObjectState GetZoneStampDetails (Int32 libInd)
+{
+    GS::ObjectState stamp;
+    stamp.Add ("index", libInd);
+
+    API_LibPart libPart = {};
+    libPart.index = libInd;
+    const bool isRead = libInd > 0 && ACAPI_LibraryPart_Get (&libPart) == NoError;
+    delete libPart.location;
+    libPart.location = nullptr;
+
+    stamp.Add ("isMissing", !isRead || libPart.missingDef);
+    if (isRead) {
+        stamp.Add ("name", GS::UniString (libPart.docu_UName));
+        stamp.Add ("guid", APIGuidToString (GSGuid2APIGuid (GS::UnID (libPart.ownUnID).GetMainGuid ())));
+    }
+    return stamp;
+}
+
+// Reads the Zone Category with the given index.
+static GSErrCode GetZoneCategory (API_AttributeIndex catInd, API_Attribute& category, GS::UniString& name)
+{
+    category = {};
+    category.header.typeID = API_ZoneCatID;
+    category.header.index = catInd;
+    category.header.uniStringNamePtr = &name;
+    const GSErrCode err = ACAPI_Attribute_Get (&category);
+    category.header.uniStringNamePtr = nullptr;
+    return err;
+}
+
+// The index of the category's own stamp in the loaded libraries, found by its main guid.
+static GSErrCode ResolveStampOfZoneCategory (const API_Attribute& category, const GS::UniString& categoryName, LibraryPartGuidTable& guidTable, Int32& libInd, GS::UniString& errMessage)
+{
+    if (category.zoneCat.stampMainGuid == APINULLGuid) {
+        errMessage = GS::UniString::Printf ("The Zone Category '%T' has no zone stamp.", categoryName.ToPrintf ());
+        return APIERR_BADPARS;
+    }
+    GS::UniString ignoredMessage;
+    const GSErrCode err = ResolveLibraryPart (GS::ObjectState ("guid", APIGuidToString (category.zoneCat.stampMainGuid)), APILib_RoomID, GS::UniString (), guidTable, libInd, ignoredMessage);
+    if (err != NoError) {
+        errMessage = GS::UniString::Printf ("The zone stamp '%T' of the Zone Category '%T' is not in the loaded libraries.",
+            GS::UniString (category.zoneCat.stampName).ToPrintf (), categoryName.ToPrintf ());
+    }
+    return err;
+}
+
+GetZoneStampOfDefaultsCommand::GetZoneStampOfDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetZoneStampOfDefaultsCommand::GetName () const
+{
+    return "GetZoneStampOfDefaults";
+}
+
+GS::Optional<GS::UniString> GetZoneStampOfDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "stamp": {
+            "$ref": "#/ZoneStampOfDefaults",
+            "description": "The zone stamp of the Zone tool defaults."
+        },
+        "category": {
+            "type": "object",
+            "description": "The Zone Category of the Zone tool defaults. Absent when the defaults refer to no existing Zone Category.",
+            "properties": {
+                "categoryAttributeId": {
+                    "$ref": "#/AttributeId"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The name of the Zone Category."
+                },
+                "categoryCode": {
+                    "type": "string",
+                    "description": "The code of the Zone Category."
+                },
+                "stampName": {
+                    "type": "string",
+                    "description": "The name of the zone stamp of the Zone Category."
+                },
+                "stampMainGuid": {
+                    "type": "string",
+                    "description": "The main guid of the zone stamp of the Zone Category."
+                },
+                "stampIndex": {
+                    "type": "integer",
+                    "description": "The index of the Zone Category's zone stamp in the loaded libraries. Absent when it is not loaded; then useStampOfCategory of SetZoneStampOfDefaults cannot be used with this category."
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "categoryAttributeId",
+                "name",
+                "categoryCode",
+                "stampName",
+                "stampMainGuid"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "stamp"
+    ]
+})";
+}
+
+GS::ObjectState GetZoneStampOfDefaultsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_Element element = {};
+    const GSErrCode err = GetZoneDefaults (element, nullptr);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the Zone tool defaults.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("stamp", GetZoneStampDetails (element.zone.libInd));
+
+    API_Attribute category = {};
+    GS::UniString categoryName;
+    if (GetZoneCategory (element.zone.catInd, category, categoryName) == NoError) {
+        GS::ObjectState categoryDetails;
+        categoryDetails.Add ("categoryAttributeId", CreateGuidObjectState (category.header.guid));
+        categoryDetails.Add ("name", categoryName);
+        categoryDetails.Add ("categoryCode", GS::UniString (category.zoneCat.catCode));
+        categoryDetails.Add ("stampName", GS::UniString (category.zoneCat.stampName));
+        categoryDetails.Add ("stampMainGuid", APIGuidToString (category.zoneCat.stampMainGuid));
+
+        LibraryPartGuidTable guidTable;
+        Int32 stampIndex = 0;
+        GS::UniString ignoredMessage;
+        if (ResolveStampOfZoneCategory (category, categoryName, guidTable, stampIndex, ignoredMessage) == NoError) {
+            categoryDetails.Add ("stampIndex", stampIndex);
+        }
+        response.Add ("category", categoryDetails);
+    }
+
+    return response;
+}
+
+SetZoneStampOfDefaultsCommand::SetZoneStampOfDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetZoneStampOfDefaultsCommand::GetName () const
+{
+    return "SetZoneStampOfDefaults";
+}
+
+GS::Optional<GS::UniString> SetZoneStampOfDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "libraryPart": {
+            "$ref": "#/LibraryPartNameIndexOrGuid",
+            "description": "The new zone stamp of the Zone tool defaults, given by one of name, index or guid. It has to be a zone stamp library part in the loaded libraries. Do not combine with useStampOfCategory."
+        },
+        "useStampOfCategory": {
+            "type": "boolean",
+            "description": "When true, the Zone tool defaults get the zone stamp of their Zone Category (the one given in categoryAttributeId, else the current one), as Archicad does when a category is picked in the Zone Settings. Fails when that stamp is not in the loaded libraries. Do not combine with libraryPart."
+        },
+        "categoryAttributeId": {
+            "$ref": "#/AttributeId",
+            "description": "The new Zone Category of the Zone tool defaults. Without libraryPart or useStampOfCategory the zone stamp is kept."
+        }
+    },
+    "additionalProperties": false
+})";
+}
+
+GS::Optional<GS::UniString> SetZoneStampOfDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "executionResult": {
+            "$ref": "#/ExecutionResult"
+        },
+        "stamp": {
+            "$ref": "#/ZoneStampOfDefaults",
+            "description": "The zone stamp of the Zone tool defaults, read back after the change. Present when the change succeeded."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "executionResult"
+    ]
+})";
+}
+
+GS::ObjectState SetZoneStampOfDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const GS::ObjectState* libraryPart = parameters.Get ("libraryPart");
+    const GS::ObjectState* categoryAttributeId = parameters.Get ("categoryAttributeId");
+    bool useStampOfCategory = false;
+    parameters.Get ("useStampOfCategory", useStampOfCategory);
+
+    if (libraryPart != nullptr && useStampOfCategory) {
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (APIERR_BADPARS, "Give either libraryPart or useStampOfCategory, not both."));
+    }
+    if (libraryPart == nullptr && !useStampOfCategory && categoryAttributeId == nullptr) {
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (APIERR_BADPARS, "Give libraryPart, useStampOfCategory or categoryAttributeId."));
+    }
+
+    // The memo carries the parameters of the stamp; ACAPI_Element_ChangeDefaults refuses a new
+    // stamp without them, and they have to be the new stamp's own.
+    API_Element element = {};
+    API_ElementMemo memo = {};
+    const GS::OnExit disposeMemo ([&]() { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = GetZoneDefaults (element, &memo);
+    if (err != NoError) {
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, "Failed to read the Zone tool defaults."));
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+    if (categoryAttributeId != nullptr) {
+        API_Attribute category = {};
+        category.header.typeID = API_ZoneCatID;
+        category.header.guid = GetGuidFromObjectState (*categoryAttributeId);
+        if (category.header.guid == APINULLGuid || ACAPI_Attribute_Get (&category) != NoError) {
+            return GS::ObjectState ("executionResult", CreateFailedExecutionResult (APIERR_BADPARS, "No Zone Category attribute was found for categoryAttributeId."));
+        }
+        element.zone.catInd = category.header.index;
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, catInd);
+    }
+
+    LibraryPartGuidTable guidTable;
+    Int32 newLibInd = 0;
+    GS::UniString errMessage;
+    if (libraryPart != nullptr) {
+        err = ResolveLibraryPart (*libraryPart, APILib_RoomID, GS::UniString (), guidTable, newLibInd, errMessage);
+        if (err != NoError) {
+            errMessage.ReplaceAll ("of the element's type", "of the zone stamp type");
+            return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, errMessage));
+        }
+    } else if (useStampOfCategory) {
+        API_Attribute category = {};
+        GS::UniString categoryName;
+        if (GetZoneCategory (element.zone.catInd, category, categoryName) != NoError) {
+            return GS::ObjectState ("executionResult", CreateFailedExecutionResult (APIERR_BADPARS, "The Zone tool defaults have no existing Zone Category to take the zone stamp from; give categoryAttributeId."));
+        }
+        err = ResolveStampOfZoneCategory (category, categoryName, guidTable, newLibInd, errMessage);
+        if (err != NoError) {
+            return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, errMessage));
+        }
+    }
+
+    if (newLibInd != 0) {
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** addPars = nullptr;
+        err = ACAPI_LibraryPart_GetParams (newLibInd, &a, &b, &addParNum, &addPars);
+        if (err != NoError || addPars == nullptr) {
+            if (addPars != nullptr) {
+                ACAPI_DisposeAddParHdl (&addPars);
+            }
+            return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL,
+                GS::UniString::Printf ("Failed to get the parameters of the library part with index %d.", newLibInd)));
+        }
+        ACAPI_DisposeAddParHdl (&memo.params);
+        memo.params = addPars;
+        element.zone.libInd = newLibInd;
+        ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, libInd);
+    }
+
+    // A change of the category alone needs no memo, as SetLayerOfElementDefaults changes its field.
+    err = ACAPI_Element_ChangeDefaults (&element, newLibInd != 0 ? &memo : nullptr, &mask);
+    if (err != NoError) {
+        return GS::ObjectState ("executionResult", CreateFailedExecutionResult (err, "Failed to change the Zone tool defaults."));
+    }
+
+    GS::ObjectState response ("executionResult", CreateSuccessfulExecutionResult ());
+    API_Element changed = {};
+    if (GetZoneDefaults (changed, nullptr) == NoError) {
+        response.Add ("stamp", GetZoneStampDetails (changed.zone.libInd));
+    }
     return response;
 }
 

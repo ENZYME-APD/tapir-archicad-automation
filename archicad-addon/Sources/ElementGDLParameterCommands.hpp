@@ -118,6 +118,29 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// The zone stamp (library part) and the zone category of the Zone tool defaults, which every new
+// Zone starts from: whether the stamp is in the loaded libraries, and the category's own stamp.
+class GetZoneStampOfDefaultsCommand : public CommandBase
+{
+public:
+    GetZoneStampOfDefaultsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Changes the zone stamp and/or the zone category of the Zone tool defaults, e.g. when the
+// template's default stamp is missing from the loaded libraries and CreateZones fails (#2780).
+class SetZoneStampOfDefaultsCommand : public CommandBase
+{
+public:
+    SetZoneStampOfDefaultsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 // The parameters of a curtain wall frame, panel, junction or accessory as Archicad calculated
 // them for its place in the curtain wall (ACAPI_CurtainWall_GetCWSubElemParams), which
 // GetGDLParametersOfElements, reading the parameters the sub-element was set up with, does not give.
