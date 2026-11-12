@@ -432,7 +432,7 @@ GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::Obje
         }
 
         API_NavigatorItem navigatorItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
 
         if (err != NoError) {
             databases (CreateErrorResponse (err, "Failed to get navigator item from guid"));
@@ -1296,6 +1296,60 @@ GS::ObjectState GetModelViewOptionDetailsCommand::Execute (const GS::ObjectState
 // Defined at CreateViewsInViewMap below; frees what ACAPI_Navigator_GetNavigatorView allocates.
 static void FreeNavigatorView (API_NavigatorView& navigatorView);
 
+struct RenovationFilter {
+    API_Guid      guid;
+    GS::UniString name;
+};
+
+// Every renovation filter of the project with its name. A filter whose name cannot be
+// read is still listed, with an empty name, so its guid stays usable.
+static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
+{
+    GS::Array<API_Guid> renovationFilterGuids;
+    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& guid : renovationFilterGuids) {
+        GS::UniString name;
+        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
+            name.Clear ();
+        }
+        renovationFilters.Push ({ guid, name });
+    }
+
+    return NoError;
+}
+
+// The guid of the renovation filter with this name: an exact match first, else the first
+// case-insensitive one. APINULLGuid when there is none; availableNames then lists the
+// names of the project's filters for the error message.
+static API_Guid FindRenovationFilterByName (const GS::Array<RenovationFilter>& renovationFilters, const GS::UniString& name, GS::UniString& availableNames)
+{
+    API_Guid caseInsensitiveMatch = APINULLGuid;
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        if (renovationFilter.name == name) {
+            return renovationFilter.guid;
+        }
+        if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
+            caseInsensitiveMatch = renovationFilter.guid;
+        }
+    }
+    if (caseInsensitiveMatch != APINULLGuid) {
+        return caseInsensitiveMatch;
+    }
+
+    availableNames.Clear ();
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        if (!availableNames.IsEmpty ()) {
+            availableNames += ", ";
+        }
+        availableNames += "\"" + renovationFilter.name + "\"";
+    }
+    return APINULLGuid;
+}
+
 GetViewOptionsCommand::GetViewOptionsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -1670,6 +1724,11 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Read once, when the first renovationFilterName is given.
+    GS::Array<RenovationFilter> renovationFilters;
+    bool renovationFiltersRead = false;
+    GSErrCode renovationFiltersErr = NoError;
+
     for (const GS::ObjectState& navigatorItemIdWithViewSetting : navigatorItemIdsWithViewSettings) {
         const GS::ObjectState* viewSettingsOS = navigatorItemIdWithViewSetting.Get ("viewSettings");
         if (viewSettingsOS == nullptr) {
@@ -1685,7 +1744,7 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
 
         API_NavigatorItem navigatorItem = {};
         navigatorItem.mapId = API_PublicViewMap;
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (guid, navigatorItem);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator item from guid"));
             continue;
@@ -1753,9 +1812,44 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             navigatorView.saveStructureDisplay = true;
         }
 
+        API_Guid renovationFilterGuid = APINULLGuid;
         const GS::ObjectState* renovFilterOS = viewSettingsOS->Get ("renovationFilterGuid");
         if (renovFilterOS != nullptr) {
-            navigatorView.renovationFilterGuid = GetGuidFromObjectState (*renovFilterOS);
+            renovationFilterGuid = GetGuidFromObjectState (*renovFilterOS);
+        }
+
+        // A renovation filter given by name is looked up among the project's filters. An
+        // unknown name fails the item before anything is written: Archicad has no name field
+        // for the filter in the view, so the name alone would otherwise be ignored silently.
+        GS::UniString renovationFilterName;
+        const bool renovationFilterNameGiven = viewSettingsOS->Get ("renovationFilterName", renovationFilterName);
+        if (renovationFilterNameGiven) {
+            if (!renovationFiltersRead) {
+                renovationFiltersErr = GetRenovationFilters (renovationFilters);
+                renovationFiltersRead = true;
+            }
+            if (renovationFiltersErr != NoError) {
+                executionResults (CreateFailedExecutionResult (renovationFiltersErr, "Failed to get the renovation filters of the project to look up the renovationFilterName. Nothing was written."));
+                continue;
+            }
+            GS::UniString availableNames;
+            const API_Guid guidOfName = FindRenovationFilterByName (renovationFilters, renovationFilterName, availableNames);
+            if (guidOfName == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME,
+                    "The project has no renovation filter named \"" + renovationFilterName + "\". Its renovation filters: " + availableNames +
+                    ". Nothing was written."));
+                continue;
+            }
+            if (renovFilterOS != nullptr && renovationFilterGuid != guidOfName) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    "renovationFilterGuid and renovationFilterName name different renovation filters. Give only one of them. Nothing was written."));
+                continue;
+            }
+            renovationFilterGuid = guidOfName;
+        }
+
+        if (renovFilterOS != nullptr || renovationFilterNameGiven) {
+            navigatorView.renovationFilterGuid = renovationFilterGuid;
         }
 
         SetUCharProperty (viewSettingsOS, "d3styleName", navigatorView.d3styleName);
@@ -1982,32 +2076,6 @@ GS::ObjectState SetActiveGraphicalOverrideCombinationCommand::Execute (const GS:
 #endif
 }
 
-struct RenovationFilter {
-    API_Guid      guid;
-    GS::UniString name;
-};
-
-// Every renovation filter of the project with its name. A filter whose name cannot be
-// read is still listed, with an empty name, so its guid stays usable.
-static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
-{
-    GS::Array<API_Guid> renovationFilterGuids;
-    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
-    if (err != NoError) {
-        return err;
-    }
-
-    for (const API_Guid& guid : renovationFilterGuids) {
-        GS::UniString name;
-        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
-            name.Clear ();
-        }
-        renovationFilters.Push ({ guid, name });
-    }
-
-    return NoError;
-}
-
 GetRenovationFiltersCommand::GetRenovationFiltersCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -2136,23 +2204,7 @@ GS::ObjectState SetActiveRenovationFilterCommand::Execute (const GS::ObjectState
         }
 
         GS::UniString availableNames;
-        API_Guid caseInsensitiveMatch = APINULLGuid;
-        for (const RenovationFilter& renovationFilter : renovationFilters) {
-            if (renovationFilter.name == name) {
-                renovationFilterGuid = renovationFilter.guid;
-                break;
-            }
-            if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
-                caseInsensitiveMatch = renovationFilter.guid;
-            }
-            if (!availableNames.IsEmpty ()) {
-                availableNames += ", ";
-            }
-            availableNames += "\"" + renovationFilter.name + "\"";
-        }
-        if (renovationFilterGuid == APINULLGuid) {
-            renovationFilterGuid = caseInsensitiveMatch;
-        }
+        renovationFilterGuid = FindRenovationFilterByName (renovationFilters, name, availableNames);
         if (renovationFilterGuid == APINULLGuid) {
             return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no renovation filter named \"" + name + "\". Its renovation filters: " + availableNames);
         }
@@ -2727,7 +2779,7 @@ GS::ObjectState GetView2DTransformationsCommand::Execute (const GS::ObjectState&
                 continue;
             }
             API_NavigatorItem navigatorItem = {};
-            if (ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem) != NoError) {
+            if (GetNavigatorItemOfGuid (navGuid, navigatorItem) != NoError) {
                 transformations (CreateErrorResponse (APIERR_BADPARS, "Failed to get navigator item"));
                 continue;
             }
@@ -2836,7 +2888,7 @@ GS::ObjectState SetViewRotationCommand::Execute (const GS::ObjectState& paramete
         }
 
         API_NavigatorItem navigatorItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator item"));
             continue;
@@ -3445,7 +3497,7 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
         // onto the new view afterwards. Project Map items have no source.
         API_NavigatorItem sourceView = {};
         bool sourceIsView = false;
-        if (ACAPI_Navigator_GetNavigatorItem (&sourceGuid, &sourceView) == NoError &&
+        if (GetNavigatorItemOfGuid (sourceGuid, sourceView) == NoError &&
             sourceView.sourceGuid != APINULLGuid) {
             sourceIsView = true;
             sourceGuid   = sourceView.sourceGuid;
@@ -3600,7 +3652,7 @@ GS::ObjectState CreateViewMapFolderCommand::Execute (const GS::ObjectState& para
 static bool GetChildrenContaining (const API_Guid& parentGuid, const API_Guid& childGuid, API_NavigatorMapID& mapId, GS::Array<API_Guid>& childGuids)
 {
     API_NavigatorItem parentItem = {};
-    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+    if (GetNavigatorItemOfGuid (parentGuid, parentItem) != NoError) {
         return false;
     }
 
@@ -4187,7 +4239,7 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     const API_Guid guid = GetGuidFromObjectState (*navIdOS);
 
     API_NavigatorItem navItem = {};
-    GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+    GSErrCode err = GetNavigatorItemOfGuid (guid, navItem);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get navigator item.");
     }
@@ -4264,7 +4316,8 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
                     failureMessage = "Failed to read back the navigator item after the change.";
                     return err;
                 }
-                if (GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+                if (GS::UniString (changedItem.uName) != GS::UniString (navItem.uName) &&
+                    GS::UniString (changedItem.uAutoTextedName) != GS::UniString (navItem.uName)) {
                     failureMessage = "Archicad did not apply the new name. The Project Map item kept its old name after the element behind it was renamed, so the change was undone.";
                     err = APIERR_REFUSEDPAR;
                     return err;
@@ -4303,7 +4356,12 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to read back the navigator item after the change.");
         }
-        if (hasNewName && GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+        // A name with autotext tokens (<PROJECTNUMBER>, <SourceID>, ...) is stored as it was given in
+        // uAutoTextedName, while uName holds it with the tokens resolved (#2499), so it is applied
+        // when either of the two reads back as the requested name.
+        if (hasNewName &&
+            GS::UniString (changedItem.uName) != GS::UniString (navItem.uName) &&
+            GS::UniString (changedItem.uAutoTextedName) != GS::UniString (navItem.uName)) {
             return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
                 "Archicad did not apply the new name. The name of this navigator item cannot be changed by this command (e.g. Project Map schedule items are named by their scheme).");
         }
@@ -4466,7 +4524,7 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         }
 
         API_NavigatorItem navItem = {};
-        const GSErrCode getErr = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+        const GSErrCode getErr = GetNavigatorItemOfGuid (guid, navItem);
         if (getErr != NoError) {
             executionResults (CreateFailedExecutionResult (getErr, "Failed to get navigator item."));
             continue;
@@ -4570,7 +4628,7 @@ static bool GetNavigatorChildren (const API_Guid& parentGuid, GS::Array<API_Navi
 {
     API_NavigatorItem parentItem = {};
     parentItem.guid = parentGuid;
-    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+    if (GetNavigatorItemOfGuid (parentGuid, parentItem) != NoError) {
         return false;
     }
     for (API_NavigatorMapID mapId : { API_PublicViewMap, API_LayoutMap, API_ProjectMap }) {
@@ -4854,6 +4912,14 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     itemOS.Add ("type",            NavigatorItemTypeToString (item.itemType));
     itemOS.Add ("name",            GS::UniString (item.uName));
     itemOS.Add ("navigatorItemId", CreateGuidObjectState (item.guid));
+
+    // The name as it was typed, with its autotext tokens (<PROJECTNUMBER>, <SourceID>, ...),
+    // which name only shows resolved (#2499). Only added when the two differ, so items
+    // without autotext look as they did.
+    const GS::UniString autoTextedName (item.uAutoTextedName);
+    if (!autoTextedName.IsEmpty () && autoTextedName != GS::UniString (item.uName)) {
+        itemOS.Add ("autoTextedName", autoTextedName);
+    }
 
     GS::UniString prefix;
     if (item.itemType == API_StoryNavItem) {
