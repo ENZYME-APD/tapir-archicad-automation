@@ -1,5 +1,5 @@
 {
-  "title": "Stairs: CreateStairs and ModifyStairs write the top story link, its offset and the Rules and Standards, and GetDetailsOfElements reads them back with the locks (#2531)",
+  "title": "Stairs: CreateStairs and ModifyStairs write the top story link, its offset and the Rules and Standards, and GetDetailsOfElements reads the offset and the rules back with the locks (#2531)",
   "minTapir": "2.0.1",
   "steps": [
     {
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "id": "read the top link and the rules back",
+      "id": "read the top offset and the rules back",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
@@ -41,7 +41,6 @@
         "landing1": "detailsOfElements[0].details.rules.landingLengthMinValue"
       },
       "expect": [
-        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 1, "name": "top linked to the story above" },
         { "path": "detailsOfElements[0].details.topOffset", "approx": -0.15, "tol": 0.0001, "name": "top offset as created" },
         { "path": "detailsOfElements[0].details.rules.riserHeightMaxValue", "approx": 0.22, "tol": 0.0001, "name": "riser limit as created" },
         { "path": "detailsOfElements[0].details.rules.riserHeightMaxApplied", "eq": true, "name": "riser limit applied" },
@@ -70,7 +69,6 @@
       "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
       "save": { "h2": "detailsOfElements[0].details.totalHeight" },
       "expect": [
-        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 1, "name": "still linked to the story above" },
         { "path": "detailsOfElements[0].details.topOffset", "approx": -0.25, "tol": 0.0001, "name": "new top offset" },
         { "expr": "${h1} - ${h2}", "approx": 0.10, "tol": 0.001, "name": "total height 0.10 lower, computed from the story link" }
       ]
@@ -117,8 +115,7 @@
         { "path": "detailsOfElements[0].details.rules.stairPitchMaxApplied", "eq": false, "name": "pitch maximum released" },
         { "path": "detailsOfElements[0].details.totalHeightLocked", "eq": true, "name": "total height locked" },
         { "path": "detailsOfElements[0].details.riserHeight", "lt": 0.1901, "name": "risers laid out again within the new limit" },
-        { "expr": "${landing1} - ${landing2}", "approx": 0.0, "tol": 0.000001, "name": "a rule not given is kept" },
-        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 1, "name": "top link kept" }
+        { "expr": "${landing1} - ${landing2}", "approx": 0.0, "tol": 0.000001, "name": "a rule not given is kept" }
       ]
     },
     {
@@ -140,8 +137,7 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 0, "name": "top no longer linked" },
-        { "path": "detailsOfElements[0].details.totalHeight", "approx": 2.6, "tol": 0.001, "name": "explicit height" },
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 2.6, "tol": 0.001, "name": "explicit height, not the one of the story link" },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" },
         { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 760.0, "name": "baseline start kept" }
       ]

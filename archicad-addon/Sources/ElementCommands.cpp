@@ -4197,8 +4197,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("flightWidth", elem.stair.flightWidth);
                 typeSpecificDetails.Add ("totalHeight", elem.stair.totalHeight);
-                // The top link, the locks and the rules (#2531).
-                typeSpecificDetails.Add ("relativeTopStory", static_cast<Int32> (elem.stair.relativeTopStory));
+                // The top offset, the locks and the rules (#2531). relativeTopStory is not reported:
+                // ACAPI_Element_Get returns 0 in it even for a top-linked stair (tested on AC26 and AC28).
                 typeSpecificDetails.Add ("topOffset", elem.stair.topOffset);
                 typeSpecificDetails.Add ("treadDepthLocked", elem.stair.treadDepthLocked);
                 typeSpecificDetails.Add ("totalHeightLocked", elem.stair.totalHeightLocked);

@@ -15197,15 +15197,11 @@
             },
             "totalHeight": {
                 "type": "number",
-                "description": "Total height of the stair. With a top link (relativeTopStory not 0) Archicad computes it from the story levels and topOffset."
-            },
-            "relativeTopStory": {
-                "type": "integer",
-                "description": "The story the top of the stair is linked to, relative to its home story (1 is the story above); 0 when the top is not linked and totalHeight is the height."
+                "description": "Total height of the stair. With a top link (set by relativeTopStory in CreateStairs and ModifyStairs) Archicad computes it from the story levels and topOffset. Archicad does not return the top link itself when the stair is read, so it is not reported here."
             },
             "topOffset": {
                 "type": "number",
-                "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15); only used when relativeTopStory is not 0."
+                "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15); only used when the top is linked."
             },
             "treadDepthLocked": {
                 "type": "boolean",
@@ -15526,7 +15522,6 @@
             "riserHeight",
             "flightWidth",
             "totalHeight",
-            "relativeTopStory",
             "topOffset",
             "treadDepthLocked",
             "totalHeightLocked",
