@@ -90,6 +90,7 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          site copies for AI assistants (generate_llm_files.py),
                          release notes summary (release_notes.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
+    triage-command/      The Discord /triage slash command (Cloudflare Worker that starts that workflow)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
 ```
@@ -551,6 +552,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   no workflow on their own; see
   [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)). It is
   scheduled at :13 and :43, off the full and half hour that GitHub drops most.
+  `/triage` in Discord starts it on demand through the Worker in
+  [tools/discord-issue-bot/triage-command/](tools/discord-issue-bot/triage-command/README.md).
 - `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
   to `main`, a release, issue events, hourly (which picks up pull request changes)
   and by hand, it runs

@@ -85,6 +85,16 @@ jobs:
         run: python -m unittest test_discord_issue_bot
         working-directory: tools/discord-issue-bot
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run the /triage command's unit tests
+        run: |
+          node --test worker.test.js
+          python -m unittest test_register_command
+        working-directory: tools/discord-issue-bot/triage-command
+
       - name: Install the Claude Code CLI
         env:
           # Only the fact that the token exists - npm install scripts must
