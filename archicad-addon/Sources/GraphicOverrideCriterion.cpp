@@ -998,6 +998,9 @@ static const char* kIdCategoryGroupGuid1     = "21AFD5A3-5024-457F-BC50-1AC8B973
 static const char* kIdCategoryGroupGuid2     = "7480DAA4-9E45-49BF-AE44-8AD0F57F95B2";
 static const char* kIdCategoryGroupGuid3     = "953BBE44-8DD0-4527-85D8-DC6FF12E57D3";
 static const char* kIdCategoryGroupGuid4     = "C77496B3-B63A-4272-ABC3-0A8C530E2B45";
+// "Zone Category" of the ID and Categories conditions: the zone category attribute index, "is" / "is not".
+// Read from rules made in the criteria editor of Archicad 29 (zones coloured by DIN 277 category).
+static const char* kZoneCategoryPropertyGuid = "D5A90FB3-0FF7-4012-9408-B2BF256F5F42"; // group3
 
 static const char* kRenovationFilterPropertyGuid = "3FC77583-1284-478B-BA80-9C81F0A091B1"; // group1
 static const char* kStructuralFunctionPropertyGuid = "9B2F38A8-198B-4125-9E73-5646F072C10E"; // group1
@@ -1911,6 +1914,18 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     bool roofConnected = false;
     GS::UniString structureType;
 
+    GS::UniString zoneCategory, zoneCategoryNot;
+    if (node.Get ("zoneCategory", zoneCategory) || node.Get ("zoneCategoryNot", zoneCategoryNot)) {
+        const bool isNot = !zoneCategoryNot.IsEmpty ();
+        const GS::UniString& name = isNot ? zoneCategoryNot : zoneCategory;
+        Int32 idx = 0;
+        if (!FindAttributeIndexByName (API_ZoneCatID, name, idx)) {
+            outError = "Unknown zone category '" + name + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (AttrIndexEqualsModelViewCriterionXML (kZoneCategoryPropertyGuid, idx, isNot, kIdCategoryGroupGuid3));
+        return true;
+    }
     if (node.Get ("compositeStructure", compositeStructure) || node.Get ("compositeStructureNot", compositeStructureNot)) {
         const bool isNot = !compositeStructureNot.IsEmpty ();
         const GS::UniString& name = isNot ? compositeStructureNot : compositeStructure;
@@ -3236,7 +3251,7 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
                "variantSetNameContains, variantNameContains, mepOpenConnection, profileParameterList, "
                "all3DTypes, all2DTypes, missingAttributes, missingLibraryPart, layer, layerNot, layerLocked, layerVisible, layerCombination, "
                "layerCombinationNot, layerNameIs, layerNameIsNot, layerNameContains, layerNameNotContains, layerNameStartsWith, layerNameEndsWith, "
-               "compositeStructure, compositeStructureNot, complexProfile, complexProfileNot, compositeStructureNameIs, compositeStructureNameIsNot, "
+               "compositeStructure, compositeStructureNot, zoneCategory, zoneCategoryNot, complexProfile, complexProfileNot, compositeStructureNameIs, compositeStructureNameIsNot, "
                "compositeStructureNameContains, compositeStructureNameNotContains, compositeStructureNameStartsWith, compositeStructureNameEndsWith, "
                "complexProfileNameIs, complexProfileNameIsNot, complexProfileNameContains, complexProfileNameNotContains, complexProfileNameStartsWith, "
                "complexProfileNameEndsWith, roofConnected, structureType, seaLevelAltitude(Not/LessThan/GreaterThan/LessOrEqual/GreaterOrEqual), "
@@ -3654,6 +3669,7 @@ static const BuiltInPropertyField kBuiltInPropertyFields[] = {
     { "layerCombination",       BuiltInFieldKind::AttributeHas, kLayerCombinationPropertyGuid,       kModelViewPropertyGroupGuid,    API_LayerCombID,   nullptr,         0, true  },
     { "layerName",              BuiltInFieldKind::String,       kLayerNamePropertyGuid,              kModelViewPropertyGroupGuid,    API_ZombieAttrID,  nullptr,         0, false },
     { "compositeStructure",     BuiltInFieldKind::AttributeIs,  kCompositeStructurePropertyGuid,     kConstructionPropertyGroupGuid, API_CompWallID,    nullptr,         0, true  },
+    { "zoneCategory",           BuiltInFieldKind::AttributeIs,  kZoneCategoryPropertyGuid,           kIdCategoryGroupGuid3,          API_ZoneCatID,     nullptr,         0, true  },
     { "complexProfile",         BuiltInFieldKind::AttributeIs,  kComplexProfilePropertyGuid,         kConstructionPropertyGroupGuid, API_ProfileID,     nullptr,         0, true  },
     { "compositeStructureName", BuiltInFieldKind::String,       kCompositeStructureNamePropertyGuid, kConstructionPropertyGroupGuid, API_ZombieAttrID,  nullptr,         0, false },
     { "complexProfileName",     BuiltInFieldKind::String,       kComplexProfileNamePropertyGuid,     kConstructionPropertyGroupGuid, API_ZombieAttrID,  nullptr,         0, false },

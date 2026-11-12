@@ -23060,6 +23060,14 @@
                 "type": "string",
                 "description": "Matches elements NOT built with this Composite Structure attribute (by name)."
             },
+            "zoneCategory": {
+                "type": "string",
+                "description": "Matches zones of this Zone Category attribute (by name), the criteria editor's \"Zone Category\" condition (ID and Categories)."
+            },
+            "zoneCategoryNot": {
+                "type": "string",
+                "description": "Matches elements whose Zone Category is NOT this attribute (by name)."
+            },
             "complexProfile": {
                 "type": "string",
                 "description": "Matches elements built with this Complex Profile attribute (by name)."
