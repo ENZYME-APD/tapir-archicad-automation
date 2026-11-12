@@ -12177,7 +12177,7 @@ GS::Optional<GS::UniString> GetElementAtCoordinateCommand::GetInputParametersSch
             },
             "z": {
                 "type": "number",
-                "description": "Optional. The elevation of the search point, handed to Archicad together with the coordinate. Default is 0; without z a point 1 mm higher is also tried, so an element whose top is at 0 (for example a slab at the story level) is found."
+                "description": "Optional. The elevation of the search point, handed to Archicad together with the coordinate. Archicad finds the highest element whose top is below z. Default is 0; without z a point 1 mm higher is also tried, so an element whose top is at 0 (for example a slab at the story level) is found, and then the topmost element on the active story, so an element whose top is above the story level is found too, like a click on the floor plan."
             },
             "filters": {
                 "type": "array",
@@ -12283,6 +12283,16 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
         // Archicad 27 and later miss an element whose top is exactly at the default elevation
         // (a slab with its top at the story level), so the search is repeated slightly above it.
         searchPars.z = 0.001;
+        elemGuid = APINULLGuid;
+        err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
+    }
+    if (err == APIERR_BADPARS && !zGiven) {
+        // Archicad only finds an element below z, so a slab whose top is above the story level
+        // (the default slab of some templates) is still missed. Search down from high above,
+        // as Archicad's own examples emulate a click on the floor plan, limited to the active
+        // story so an element of an upper story is not found instead.
+        searchPars.z = 1.0E6;
+        searchPars.filterBits = static_cast<decltype (searchPars.filterBits)> (searchPars.filterBits | APIFilt_OnActFloor);
         elemGuid = APINULLGuid;
         err = ACAPI_Element_SearchElementByCoord (&searchPars, &elemGuid);
     }
