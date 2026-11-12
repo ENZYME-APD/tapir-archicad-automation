@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 03:24 UTC",
+ "generatedAt": "2026-11-12 04:27 UTC",
  "versions": [
   25,
   26,
@@ -7300,10 +7300,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2745,
-     "title": "GetDetailsOfElements: radial dimension details; limits row for creating them"
     },
     {
      "number": 2620,
@@ -31076,10 +31072,6 @@
      "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
     },
     {
-     "number": 2745,
-     "title": "GetDetailsOfElements: radial dimension details; limits row for creating them"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -44320,10 +44312,6 @@
      "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
     },
     {
-     "number": 2745,
-     "title": "GetDetailsOfElements: radial dimension details; limits row for creating them"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47486,10 +47474,6 @@
     {
      "number": 2749,
      "title": "SolveStairBaseline: return the Rules and Standards CreateStairs lays the steps out by"
-    },
-    {
-     "number": 2745,
-     "title": "GetDetailsOfElements: radial dimension details; limits row for creating them"
     },
     {
      "number": 2712,
