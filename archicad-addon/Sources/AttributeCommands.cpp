@@ -25,7 +25,9 @@
 #include <optional>
 #endif
 #include <cstdlib>
+#include <initializer_list>
 #include <limits>
+#include <utility>
 
 // Before AC27, API_AttributeIndex is a plain integer typedef with no IsPositive() method; AC27+ replaced it with
 // a class. Kept local (rather than in the shared MigrationHelper shim) since it is only used in this file.
@@ -85,8 +87,12 @@ static GS::Optional<GS::ObjectState> GetAttributeIdFromIndex (API_AttrTypeID att
 
 static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId, API_AttrTypeID attributeType, API_AttributeIndex& attributeIndex)
 {
+    const API_Guid requestedGuid = GetGuidFromAttributesArrayItem (attributeId);
+    if (requestedGuid == APINULLGuid) {
+        return false;
+    }
     API_Attribute attribute = {};
-    attribute.header.guid = GetGuidFromAttributesArrayItem (attributeId);
+    attribute.header.guid = requestedGuid;
     attribute.header.typeID = attributeType;
     if (ACAPI_Attribute_Get (&attribute) != NoError) {
         return false;
@@ -95,10 +101,12 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
 
     // Archicad finds an attribute by its guid whatever type is asked for, so a layer's guid given as a
     // Fill would give the layer's index, which is some other fill. Read the attribute of the asked type
-    // at that index back and accept it only when it is the same attribute.
+    // at that index back and accept it only when it is the same attribute. A guid the Get came back with
+    // that is not the one asked for is another attribute too (a Surface's guid given as a Building
+    // Material was accepted in AC28, #2585).
     const API_Guid guid = attribute.header.guid;
     const API_AttributeIndex index = attribute.header.index;
-    if (attribute.header.typeID != attributeType) {
+    if (guid != requestedGuid || attribute.header.typeID != attributeType) {
         return false;
     }
     API_Attribute check = {};
@@ -2953,6 +2961,197 @@ static bool HatchHasProfileInfo (const HatchObject& hatch) { return hatch.GetPro
 static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { return *hatch.GetProfileItemPtr (); }
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.GetProfileItemPtr (); }
 #endif
+
+// Archicad's own input validation refuses unknown keys at the top level of a CreateProfiles item, but not inside
+// the shared definitions its arrays refer to (newSkins' ProfileSkinData, ProfileEdgeOverride, ...), and the code
+// applying them skips an attribute id it cannot resolve. So a typo or a wrongly shaped id gave a profile without
+// that setting and still reported success (#2585). These check the nested items of one profileDataArray item
+// before anything is written, and name the path of the first problem, as Archicad's validation does.
+static GS::UniString ProfileItemPath (const GS::UniString& parentPath, const char* fieldName, UIndex index)
+{
+    return GS::UniString (parentPath + "/" + fieldName + "/" + GS::UniString::Printf ("%d", (int) index));
+}
+
+static GS::Optional<GS::UniString> CheckProfileItemKeys (const GS::ObjectState& os, const GS::UniString& path, std::initializer_list<const char*> allowedKeys)
+{
+    GS::Optional<GS::UniString> error;
+    os.EnumerateFields ([&] (const GS::String& key) {
+        if (error.HasValue ()) {
+            return;
+        }
+        for (const char* allowedKey : allowedKeys) {
+            if (key == allowedKey) {
+                return;
+            }
+        }
+        error = GS::UniString (GS::UniString ("Unknown key '") + GS::UniString (key.ToCStr ()) + "' at " + path + ".");
+    });
+    return error;
+}
+
+static GS::Optional<GS::UniString> CheckProfileAttributeIds (const GS::ObjectState& os, const GS::UniString& path, std::initializer_list<std::pair<const char*, API_AttrTypeID>> idFields)
+{
+    for (const auto& idField : idFields) {
+        if (!os.Contains (idField.first)) {
+            continue;
+        }
+        const GS::UniString idPath = path + "/" + idField.first;
+        GS::ObjectState idOs;
+        GS::ObjectState innerIdOs;
+        GS::UniString guidStr;
+        if (!os.Get (idField.first, idOs) || CheckProfileItemKeys (idOs, idPath, { "attributeId" }).HasValue () ||
+            !idOs.Get ("attributeId", innerIdOs) || CheckProfileItemKeys (innerIdOs, idPath, { "guid" }).HasValue () ||
+            !innerIdOs.Get ("guid", guidStr)) {
+            return GS::UniString (idPath + " must be an attribute id: {\"attributeId\": {\"guid\": \"...\"}}.");
+        }
+        API_AttributeIndex idx;
+        if (GetGuidFromAttributesArrayItem (idOs) == APINULLGuid || !GetAttributeIndexFromAttributeId (idOs, idField.second, idx)) {
+            return GS::UniString (idPath + ": no attribute of the expected type has the guid " + guidStr + ".");
+        }
+    }
+    return {};
+}
+
+static GS::Optional<GS::UniString> CheckProfileCoordinates (const GS::ObjectState& os, const char* fieldName, const GS::UniString& path)
+{
+    GS::Array<GS::ObjectState> coordinates;
+    if (os.Get (fieldName, coordinates)) {
+        for (UIndex i = 0; i < coordinates.GetSize (); ++i) {
+            auto error = CheckProfileItemKeys (coordinates[i], ProfileItemPath (path, fieldName, i), { "x", "y" });
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+    return {};
+}
+
+static GS::Optional<GS::UniString> CheckProfileEdgeOverrides (const GS::ObjectState& skinOs, const GS::UniString& skinPath)
+{
+    GS::Array<GS::ObjectState> edgeOverrides;
+    if (!skinOs.Get ("edgeOverrides", edgeOverrides)) {
+        return {};
+    }
+    for (UIndex i = 0; i < edgeOverrides.GetSize (); ++i) {
+        const GS::UniString path = ProfileItemPath (skinPath, "edgeOverrides", i);
+        auto error = CheckProfileItemKeys (edgeOverrides[i], path,
+            { "edgeIndex", "pen", "isVisibleLine", "isInnerLine", "isCutEndLine", "lineTypeId", "buildingMaterialId", "surfaceId", "surfaceFromBuildingMaterial" });
+        if (!error.HasValue ()) {
+            error = CheckProfileAttributeIds (edgeOverrides[i], path,
+                { { "lineTypeId", API_LinetypeID }, { "buildingMaterialId", API_BuildingMaterialID }, { "surfaceId", API_MaterialID } });
+        }
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    return {};
+}
+
+static GS::Optional<GS::UniString> CheckProfileSkinSettings (const GS::ObjectState& skinOs, const GS::UniString& path)
+{
+    auto error = CheckProfileAttributeIds (skinOs, path, {
+        { "buildingMaterialId", API_BuildingMaterialID },
+        { "surfaceId", API_MaterialID },
+        { "fillId", API_FilltypeID },
+        { "contourLineTypeId", API_LinetypeID },
+        { "cutEndLineTypeId", API_LinetypeID } });
+    if (error.HasValue ()) {
+        return error;
+    }
+    GS::ObjectState areaMethodOs;
+    if (skinOs.Get ("areaMethod", areaMethodOs)) {
+        const GS::UniString areaMethodPath = path + "/areaMethod";
+        error = CheckProfileItemKeys (areaMethodOs, areaMethodPath, { "type", "lineBegin", "lineEnd", "center", "radius" });
+        for (const char* pointField : { "lineBegin", "lineEnd", "center" }) {
+            GS::ObjectState pointOs;
+            if (!error.HasValue () && areaMethodOs.Get (pointField, pointOs)) {
+                error = CheckProfileItemKeys (pointOs, areaMethodPath + "/" + pointField, { "x", "y" });
+            }
+        }
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    return CheckProfileEdgeOverrides (skinOs, path);
+}
+
+static GS::Optional<GS::UniString> CheckProfileNestedItems (const GS::ObjectState& profileData, UIndex profileIndex)
+{
+    const GS::UniString profilePath = GS::UniString::Printf ("#/profileDataArray/%d", (int) profileIndex);
+
+    GS::Array<GS::ObjectState> skinOverrides;
+    if (profileData.Get ("skinOverrides", skinOverrides)) {
+        for (UIndex i = 0; i < skinOverrides.GetSize (); ++i) {
+            const GS::UniString path = ProfileItemPath (profilePath, "skinOverrides", i);
+            auto error = CheckProfileItemKeys (skinOverrides[i], path,
+                { "skinId", "buildingMaterialId", "surfaceId", "fillId", "contourPen", "contourLineTypeId",
+                  "isCore", "isFinish", "visibleCutEndLines", "cutEndLinePen", "cutEndLineTypeId", "edgeOverrides", "areaMethod" });
+            if (!error.HasValue ()) {
+                error = CheckProfileSkinSettings (skinOverrides[i], path);
+            }
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+
+    GS::Array<GS::ObjectState> moveVerticesArray;
+    if (profileData.Get ("moveVertices", moveVerticesArray)) {
+        for (UIndex i = 0; i < moveVerticesArray.GetSize (); ++i) {
+            const GS::UniString path = ProfileItemPath (profilePath, "moveVertices", i);
+            auto error = CheckProfileItemKeys (moveVerticesArray[i], path, { "region", "vector", "skinIds" });
+            GS::ObjectState regionOs;
+            if (!error.HasValue () && moveVerticesArray[i].Get ("region", regionOs)) {
+                error = CheckProfileItemKeys (regionOs, path + "/region", { "xMin", "xMax", "yMin", "yMax" });
+            }
+            GS::ObjectState vectorOs;
+            if (!error.HasValue () && moveVerticesArray[i].Get ("vector", vectorOs)) {
+                error = CheckProfileItemKeys (vectorOs, path + "/vector", { "x", "y" });
+            }
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+
+    GS::Array<GS::ObjectState> newSkins;
+    if (profileData.Get ("newSkins", newSkins)) {
+        for (UIndex i = 0; i < newSkins.GetSize (); ++i) {
+            const GS::UniString path = ProfileItemPath (profilePath, "newSkins", i);
+            auto error = CheckProfileItemKeys (newSkins[i], path,
+                { "contours", "buildingMaterialId", "surfaceId", "fillId", "contourPen", "contourLineTypeId",
+                  "isCore", "isFinish", "visibleCutEndLines", "cutEndLinePen", "cutEndLineTypeId", "edgeOverrides", "areaMethod" });
+            if (error.HasValue ()) {
+                return error;
+            }
+            GS::Array<GS::ObjectState> contours;
+            if (newSkins[i].Get ("contours", contours)) {
+                for (UIndex c = 0; c < contours.GetSize (); ++c) {
+                    const GS::UniString contourPath = ProfileItemPath (path, "contours", c);
+                    error = CheckProfileItemKeys (contours[c], contourPath, { "polygonCoordinates", "polygonArcs" });
+                    if (!error.HasValue ()) {
+                        error = CheckProfileCoordinates (contours[c], "polygonCoordinates", contourPath);
+                    }
+                    GS::Array<GS::ObjectState> polygonArcs;
+                    if (!error.HasValue () && contours[c].Get ("polygonArcs", polygonArcs)) {
+                        for (UIndex a = 0; a < polygonArcs.GetSize () && !error.HasValue (); ++a) {
+                            error = CheckProfileItemKeys (polygonArcs[a], ProfileItemPath (contourPath, "polygonArcs", a), { "begIndex", "endIndex", "arcAngle" });
+                        }
+                    }
+                    if (error.HasValue ()) {
+                        return error;
+                    }
+                }
+            }
+            error = CheckProfileSkinSettings (newSkins[i], path);
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+
+    return {};
+}
 
 // Applies one ProfileEdgeOverride (CreateProfiles' skinOverrides[].edgeOverrides and newSkins[].edgeOverrides)
 // to an edge of a profile skin. An edge's surface is either the surface of the skin's building material
@@ -8000,7 +8199,16 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
     GS::ObjectState response;
     const auto& attributeIds = response.AddList<GS::ObjectState> ("attributeIds");
 
-    for (const GS::ObjectState& profileData : profileDataArray) {
+    for (UIndex profileIndex = 0; profileIndex < profileDataArray.GetSize (); ++profileIndex) {
+        const GS::ObjectState& profileData = profileDataArray[profileIndex];
+
+        // Checked before anything is looked up or written, so a rejected item changes nothing.
+        auto nestedError = CheckProfileNestedItems (profileData, profileIndex);
+        if (nestedError.HasValue ()) {
+            attributeIds (CreateErrorResponse (APIERR_BADPARS, nestedError.Get ()));
+            continue;
+        }
+
         API_Attribute profile = {};
         profile.header.typeID = API_ProfileID;
 

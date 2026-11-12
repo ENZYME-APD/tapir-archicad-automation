@@ -454,7 +454,7 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
     }
 }
 
-// The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
+// The length of a beam or column segment, from the element's assemblySegmentSchemes (#2551, #2552).
 static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
 {
     GS::ObjectState length;
