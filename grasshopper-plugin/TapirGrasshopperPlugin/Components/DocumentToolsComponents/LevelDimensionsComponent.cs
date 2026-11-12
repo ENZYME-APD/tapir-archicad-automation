@@ -33,15 +33,19 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         // (ElementCreationCommands.cpp).
         private static readonly ISet<string> CreateLevelDimensionsKeys = new HashSet<string>
         {
-            "angle", "dimForm", "favoriteName", "floorIndex", "id", "layerIndex", "level", "markerSize",
-            "needPlus", "origin", "parentElementId", "pen", "position", "textHeight", "textPen"
+            "angle", "bold", "customText", "dimForm", "favoriteName", "floorIndex", "fontIndex", "fontName",
+            "hideWithBaseElem", "id", "italic", "layerIndex", "level", "markerSize", "needPlus", "origin",
+            "parentElementId", "pen", "position", "secondCustomText", "secondTextContent", "textContent",
+            "textHeight", "textPen", "underline"
         };
 
         // The settings of the ModifyLevelDimensions input schema; its
         // position is a geometry input, which only Create uses.
         private static readonly ISet<string> ModifyLevelDimensionsKeys = new HashSet<string>
         {
-            "angle", "dimForm", "markerSize", "needPlus", "origin", "pen", "textHeight", "textPen"
+            "angle", "bold", "customText", "dimForm", "fontIndex", "fontName", "hideWithBaseElem", "italic",
+            "markerSize", "needPlus", "origin", "pen", "secondCustomText", "secondTextContent", "textContent",
+            "textHeight", "textPen", "underline"
         };
 
         protected override ISet<string> CreateKeys => CreateLevelDimensionsKeys;

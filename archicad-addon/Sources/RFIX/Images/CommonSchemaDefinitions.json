@@ -2393,8 +2393,12 @@
     },
     "ProfileModifier": {
         "type": "object",
-        "description": "A stretchable edge-offset parameter of the profile, as named by the profile's author in the Profile Editor. Its value is a live geometric measurement matching what the Profile Editor's dimension shows.",
+        "description": "An offset modifier of the profile (Profile Manager, Modifiers): it moves edges of the profile's skins by the distance its dimension measures between two anchors. Its value is a live geometric measurement matching what the Profile Editor's dimension shows.",
         "properties": {
+            "modifierId": {
+                "type": "string",
+                "description": "Identifier of the modifier, stable for the lifetime of the profile. Pass it to CreateProfiles' renameProfileModifiers to rename the modifier."
+            },
             "name": {
                 "type": "string",
                 "description": "User-authored label, e.g. 'Largeur support'. Present only if the profile's author assigned one."
@@ -2402,9 +2406,102 @@
             "value": {
                 "type": "number",
                 "description": "Present only when the parameter's dimension anchors could be resolved to concrete positions."
+            },
+            "edges": {
+                "type": "array",
+                "description": "The edges the modifier moves.",
+                "items": {
+                    "$ref": "#/ProfileModifierEdge"
+                }
+            },
+            "begin": {
+                "$ref": "#/ProfileModifierAnchor",
+                "description": "The anchor the modifier's dimension starts at."
+            },
+            "end": {
+                "$ref": "#/ProfileModifierAnchor",
+                "description": "The anchor the modifier's dimension ends at."
+            },
+            "projectionAngle": {
+                "type": "number",
+                "description": "The direction, in radians from the x axis, the dimension is measured along. Present only when the dimension has one; otherwise it is measured along its nominal direction."
             }
         },
         "additionalProperties": false
+    },
+    "ProfileModifierEdge": {
+        "type": "object",
+        "description": "An edge of a profile skin that an offset modifier moves. Edge i of a skin runs from its outlineCoords[i] to outlineCoords[i + 1] (GetProfiles' skins[].outlineCoords, field skinOutlines); 0 and the last index are not edges of the drawn shape.",
+        "properties": {
+            "skinId": {
+                "type": "string",
+                "description": "The skin, from GetProfiles' skins[].skinId."
+            },
+            "edgeIndex": {
+                "type": "integer",
+                "description": "The edge of the skin, the same position as in GetProfiles' skins[].edges."
+            },
+            "direction": {
+                "type": "string",
+                "enum": [
+                    "Left",
+                    "Right"
+                ],
+                "description": "Which way Archicad moves the edge for a growing value, as it stores it. CreateProfiles works it out from the shape when it is omitted."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "skinId",
+            "edgeIndex"
+        ]
+    },
+    "ProfileModifierAnchor": {
+        "type": "object",
+        "description": "One end of an offset modifier's dimension. Fixed: a point (position). Vertex: a vertex of a skin (skinId, vertexIndex: a position in GetProfiles' skins[].outlineCoords, 1 or more). Edge: an edge of a skin (skinId, edgeIndex, as in ProfileModifierEdge), measured perpendicular to it. The other types follow the profile's bounding box corners or stretch zone limits and need nothing else.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Fixed",
+                    "Vertex",
+                    "Edge",
+                    "BoundingBoxUpperLeft",
+                    "BoundingBoxUpperRight",
+                    "BoundingBoxLowerLeft",
+                    "BoundingBoxLowerRight",
+                    "StretchZoneLeft",
+                    "StretchZoneRight",
+                    "StretchZoneBottom",
+                    "StretchZoneTop",
+                    "Undefined"
+                ]
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point of a Fixed anchor, in the coordinates of skins[].outlineCoords."
+            },
+            "skinId": {
+                "type": "string",
+                "description": "The skin of a Vertex or Edge anchor, from GetProfiles' skins[].skinId."
+            },
+            "vertexIndex": {
+                "type": "integer",
+                "description": "The vertex of a Vertex anchor: its position in the skin's outlineCoords."
+            },
+            "edgeIndex": {
+                "type": "integer",
+                "description": "The edge of an Edge anchor: edge i runs from outlineCoords[i] to outlineCoords[i + 1]."
+            },
+            "positiveSideOnRight": {
+                "type": "boolean",
+                "description": "Edge anchor: whether the dimension grows to the right of the edge, seen from its start to its end. CreateProfiles sets it so the value grows as the edge moves away from the other anchor when it is omitted."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
+        ]
     },
     "ElementProfileValues": {
         "type": "object",
@@ -4952,6 +5049,15 @@
             "Hybrid"
         ]
     },
+    "BeamVisibleLines": {
+        "type": "string",
+        "description": "When a line of a beam is shown on the floor plan (API_BeamVisibleLinesID): always, never, or as the Model View Options set it.",
+        "enum": [
+            "ShowAlways",
+            "HideAlways",
+            "ByMVO"
+        ]
+    },
     "TextureProjectionType": {
         "type": "string",
         "description": "Projection type of the 3D texture.",
@@ -5877,7 +5983,7 @@
         ],
         "description": "How the leader line connects to the label text."
     },
-    "SymbolLabelTextDirection": {
+    "LabelTextDirection": {
         "type": "string",
         "enum": [
             "Parallel",
@@ -5885,7 +5991,7 @@
             "Vertical",
             "General"
         ],
-        "description": "Direction of the symbol label's text."
+        "description": "Direction of a label's text (API_LabelType textWay), the same for Text and Symbol labels: 'Parallel' follows the labelled element, 'Horizontal' and 'Vertical' are fixed, 'General' is a custom angle (for a Text label style.angle, with style.fixedAngle keeping it when the element is rotated). The Archicad API offers no other direction for labels (it documents only these four), so there is no 'Perpendicular'."
     },
     "LengthType": {
         "type": "string",
@@ -10409,6 +10515,76 @@
             "anchorPoint": {
                 "$ref": "#/BeamAnchorPoint"
             },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the beam is shown on (Show On Stories). While isAutoOnStoryVisibility is true, Archicad computes it from the beam's elevation."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "True when Archicad recomputes visibility automatically from the actual elevation of the beam."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "uncutProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the uncut part of the beam on the floor plan."
+            },
+            "overheadProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the overhead part of the beam on the floor plan."
+            },
+            "showContourLines": {
+                "$ref": "#/BeamVisibleLines",
+                "description": "Whether the contour lines of the beam are shown on the floor plan."
+            },
+            "showReferenceAxis": {
+                "$ref": "#/BeamVisibleLines",
+                "description": "Whether the reference axis of the beam is shown on the floor plan."
+            },
+            "cutContourLinePen": {
+                "type": "integer",
+                "description": "Pen of the cut contour lines of the beam."
+            },
+            "cutContourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut contour lines of the beam."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines of the beam."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the uncut lines of the beam."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the overhead lines of the beam."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the overhead lines of the beam."
+            },
+            "hiddenLinePen": {
+                "type": "integer",
+                "description": "Pen of the hidden lines of the beam (the beam below a slab, usually dashed)."
+            },
+            "hiddenLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the hidden lines of the beam, for example a dashed line."
+            },
+            "referenceLinePen": {
+                "type": "integer",
+                "description": "Pen of the reference axis of the beam."
+            },
+            "referenceLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the reference axis of the beam."
+            },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
             },
@@ -10646,7 +10822,10 @@
                                 "properties": {
                                     "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
                                     "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
-                                    "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                                    "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." },
+                                    "topMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own top surface (Custom Plane Settings). Omitted when it names no surface." },
+                                    "bottomMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own bottom surface (Custom Plane Settings). Omitted when it names no surface." },
+                                    "coverFillId": { "$ref": "#/AttributeId", "description": "The plane's own cover fill (Custom Plane Settings). Omitted when it names no fill." }
                                 },
                                 "additionalProperties": false,
                                 "required": [ "angle", "eavesOverhang", "angleType" ]
@@ -12371,13 +12550,19 @@
                 "$ref": "#/Holes2D"
             },
             "contourPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Pen of the contour; 0 means the contour is switched off."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the contour."
             },
             "fillPenIndex": {
                 "type": "integer"
             },
             "fillBackgroundPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Pen of the fill background; 0 means a transparent background and -1 the window background color."
             },
             "foregroundColor": {
                 "$ref": "#/ColorRGB",
@@ -12397,7 +12582,7 @@
             },
             "roomSpecial": {
                 "type": "integer",
-                "description": "Special area percent in a room (negative means OFF)."
+                "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); negative means off."
             },
             "showArea": {
                 "type": "boolean",
@@ -12406,6 +12591,9 @@
             "fillOrientation": {
                 "$ref": "#/HatchOrientation",
                 "description": "Orientation, origin and distortion of the fill pattern."
+            },
+            "fillCategory": {
+                "$ref": "#/HatchFillCategory"
             },
             "zCoordinate": {
                 "type": "number"
@@ -12499,6 +12687,15 @@
             },
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
+            },
+            "polygonDisplay": {
+                "$ref": "#/ZonePolygonDisplay"
+            },
+            "stampPen": {
+                "$ref": "#/ZoneStampPen"
+            },
+            "reducePercent": {
+                "$ref": "#/ZoneReducePercent"
             }
         },
         "additionalProperties": false,
@@ -12516,7 +12713,10 @@
             "relativeTopStory",
             "floorThickness",
             "contourLine",
-            "coverFill"
+            "coverFill",
+            "polygonDisplay",
+            "stampPen",
+            "reducePercent"
         ]
     },
     "RailingDetails": {
@@ -13346,7 +13546,16 @@
                 }
             },
             "flipped": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "The side of the reference line the curtain wall is on (API_CurtainWallType::flipped), as ModifyCurtainWalls takes it."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the panels from the reference line (API_CurtainWallType::offset), as ModifyCurtainWalls takes it."
+            },
+            "nominalWidth": {
+                "type": "number",
+                "description": "The nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth), as ModifyCurtainWalls takes it."
             },
             "angle": {
                 "type": "number",
@@ -14352,6 +14561,10 @@
           "leaderLine": {
             "$ref": "#/LabelLeaderLineDetails"
           },
+          "textWay": {
+            "$ref": "#/LabelTextDirection",
+            "description": "The label's text direction, for a Text or a Symbol label (a Symbol label also reports it in symbolStyle.textWay)."
+          },
           "style": {
             "$ref": "#/TextStyleDetails",
             "description": "Present only when labelClass is 'Text'."
@@ -14785,6 +14998,119 @@
             "position",
             "angle",
             "horizontalMarker"
+        ]
+    },
+    "RadialDimensionDetails": {
+        "type": "object",
+        "description": "A radial dimension, as Archicad stores it. The Archicad API does not document how the measured arc is stored (the meaning of basePoint and ownerElementInIndex), so these are the raw values; ownerArcCenter is read from the measured arc or circle.",
+        "properties": {
+            "basePoint": {
+                "$ref": "#/Coordinate2D",
+                "description": "The base point of the dimension as Archicad stores it (API_RadialDimensionType base.loc)."
+            },
+            "dimensionLineEnd": {
+                "$ref": "#/Coordinate2D",
+                "description": "The end of the radial dimension line."
+            },
+            "radius": {
+                "type": "number",
+                "description": "The radius the dimension measures, in meters."
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId",
+                "description": "Present only when the dimension is linked to an element: the element it measures."
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType",
+                "description": "Present only when the dimension is linked to an element."
+            },
+            "ownerElementInIndex": {
+                "type": "integer",
+                "description": "Present only when the dimension is linked to an element: the index of the measured part of that element, as Archicad stores it."
+            },
+            "ownerElementLine": {
+                "type": "boolean",
+                "description": "Present only when the dimension is linked to an element: whether the dimension is linked to a line or arc of that element rather than to a node, as Archicad stores it."
+            },
+            "ownerArcCenter": {
+                "$ref": "#/Coordinate2D",
+                "description": "Present only when the measured element is an arc or a circle: its centre."
+            },
+            "ownerArcRadius": {
+                "type": "number",
+                "description": "Present only when the measured element is an arc or a circle: its radius in meters."
+            },
+            "linePen": {
+                "type": "integer",
+                "description": "The pen of the dimension line."
+            },
+            "marker": {
+                "type": "object",
+                "description": "The marker at the end of the dimension line.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "The marker type, named after API_MarkerID.",
+                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "The pen of the marker."
+                    },
+                    "size": {
+                        "type": "number",
+                        "description": "The size of the marker as Archicad stores it, in millimeters."
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["type", "pen", "size"]
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "The height of the dimension text in millimeters."
+            },
+            "textPen": {
+                "type": "integer",
+                "description": "The pen of the dimension text."
+            },
+            "textPosition": {
+                "type": "string",
+                "enum": ["Above", "In", "Below", "Unknown"],
+                "description": "Where the text is, relative to the dimension line."
+            },
+            "textDirection": {
+                "type": "string",
+                "enum": ["Horizontal", "Vertical", "Radial", "Unknown"],
+                "description": "The direction of the text."
+            },
+            "textContent": {
+                "type": "string",
+                "enum": ["Measured", "Custom"],
+                "description": "Whether the text shows the measured radius or a custom text."
+            },
+            "showOrigin": {
+                "type": "boolean",
+                "description": "Whether the centre of the arc is marked."
+            },
+            "onlyDimensionText": {
+                "type": "boolean",
+                "description": "Whether only the dimension text is shown, without the dimension line."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "basePoint",
+            "dimensionLineEnd",
+            "radius",
+            "linePen",
+            "marker",
+            "textHeight",
+            "textPen",
+            "textPosition",
+            "textDirection",
+            "textContent",
+            "showOrigin",
+            "onlyDimensionText"
         ]
     },
     "TextDetails": {
@@ -15223,7 +15549,7 @@
     },
     "StairRules": {
         "type": "object",
-        "description": "The Rules and Standards of a Stair (API_StairRulesData): each limit as a value and whether it is applied (the check box of the rule). Archicad lays the steps out within the applied limits, so a stair can get another riser count and going than the ones given. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
+        "description": "The Rules and Standards of a Stair (API_StairRulesData): each limit as a value and whether it is applied (the check box of the rule). Archicad lays the steps out within the applied limits, so a stair can get another riser count and going than the ones given. GetDetailsOfElements and SolveStairBaseline return every field; CreateStairs and ModifyStairs write only the given ones.",
         "properties": {
             "riserHeightMinValue": { "type": "number", "description": "Minimum riser height." },
             "riserHeightMinApplied": { "type": "boolean", "description": "Whether the minimum riser height is applied." },
@@ -15706,6 +16032,9 @@
                 "$ref": "#/DimensionDetails"
             },
             {
+                "$ref": "#/RadialDimensionDetails"
+            },
+            {
                 "$ref": "#/ChangeMarkerDetails"
             },
             {
@@ -15985,7 +16314,10 @@
                     "properties": {
                         "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
                         "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
-                        "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                        "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." },
+                        "topMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own top surface (Custom Plane Settings). The roof is read back after the change, and the item fails if Archicad did not apply it (CreateRoofs then does not create the roof)." },
+                        "bottomMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own bottom surface (Custom Plane Settings). Read back like topMaterialId." },
+                        "coverFillId": { "$ref": "#/AttributeId", "description": "The plane's own cover fill (Custom Plane Settings). Read back like topMaterialId." }
                     },
                     "additionalProperties": false
                 }
@@ -16860,6 +17192,15 @@
             },
             "coverFill": {
                 "$ref": "#/ZoneCoverFill"
+            },
+            "polygonDisplay": {
+                "$ref": "#/ZonePolygonDisplay"
+            },
+            "stampPen": {
+                "$ref": "#/ZoneStampPen"
+            },
+            "reducePercent": {
+                "$ref": "#/ZoneReducePercent"
             }
         },
         "additionalProperties": false,
@@ -16930,6 +17271,38 @@
         },
         "additionalProperties": false,
         "required": []
+    },
+    "ZonePolygonDisplay": {
+        "type": "string",
+        "description": "The zone polygon display of the Zone settings: Gross uses the reference line of the bounding walls, Net their inner edges. Archicad only uses it for a zone whose boundary is the reference line of the walls; for other zones it is stored but has no effect.",
+        "enum": [
+            "Gross",
+            "Net"
+        ]
+    },
+    "ZoneStampPen": {
+        "type": "object",
+        "description": "The pen of the zone stamp. GetDetailsOfElements returns every field; when setting, only the given fields are changed.",
+        "properties": {
+            "uniform": {
+                "type": "boolean",
+                "description": "Uniform stamp pen: true draws the whole stamp with pen, false uses the pens defined in the zone stamp (category) library part."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the zone stamp. Only used when uniform is true.",
+                "minimum": 1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneReducePercent": {
+        "type": "number",
+        "description": "Reduces the calculated area of the zone by this percentage (\"reduce area by %\" of the Zone settings). 0 means no reduction.",
+        "minimum": 0.0,
+        "maximum": 100.0
     },
     "LineSettings": {
         "type": "object",
@@ -17112,7 +17485,12 @@
                 "$ref": "#/Holes2D"
             },
             "contourPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Pen of the contour; 0 switches the contour off, a pen switches it on."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the contour."
             },
             "fillPenIndex": {
                 "type": "integer",
@@ -17120,7 +17498,7 @@
             },
             "fillBackgroundPenIndex": {
                 "type": "integer",
-                "description": "Setting a pen removes the backgroundColor override, so the pen shows."
+                "description": "Pen of the fill background; 0 makes the background transparent and -1 gives it the window background color. Setting a pen removes the backgroundColor override, so the pen shows."
             },
             "foregroundColor": {
                 "$ref": "#/ColorRGB",
@@ -17137,7 +17515,8 @@
                 "$ref": "#/AttributeId"
             },
             "roomSpecial": {
-                "type": "integer"
+                "type": "integer",
+                "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
             },
             "showArea": {
                 "type": "boolean"
@@ -17145,6 +17524,9 @@
             "fillOrientation": {
                 "$ref": "#/HatchOrientation",
                 "description": "Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills (there is no pattern to orient)."
+            },
+            "fillCategory": {
+                "$ref": "#/HatchFillCategory"
             }
         },
         "additionalProperties": false,
@@ -18703,6 +19085,15 @@
         },
         "additionalProperties": false
     },
+    "HatchFillCategory": {
+        "type": "string",
+        "description": "The fill category of a hatch (Fill Category of the Hatch Settings), which decides which Display Options settings the fill follows: Drafting fills, Cut fills or Cover fills.",
+        "enum": [
+            "Drafting",
+            "Cut",
+            "Cover"
+        ]
+    },
     "HatchOrientationType": {
         "type": "string",
         "enum": [
@@ -18939,7 +19330,7 @@
         "type": "object",
         "description": "Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.",
         "properties": {
-            "textWay": { "$ref": "#/SymbolLabelTextDirection" },
+            "textWay": { "$ref": "#/LabelTextDirection", "description": "The same setting as the label's own textWay, kept here for a Symbol label. Give it in one of the two places only." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
             "fontName": { "type": "string", "description": "Name of the font, as the Font attributes carry it. On input resolved to the font's index like a Text style's fontName, taking precedence over fontIndex, and failing when no loaded font has the name; on read-back the name of the font fontIndex refers to, absent when no loaded font has that index." },
             "bold": { "type": "boolean" },
@@ -28932,15 +29323,19 @@
             },
             "stepNum": {
                 "type": "integer",
-                "description": "Number of risers after the solver ran."
+                "description": "The number of risers as given, else the Stair tool default's. Not laid out: the solver checks the baseline only, and CreateStairs picks the riser count for totalHeight within rules (#2526)."
             },
             "riserHeight": {
                 "type": "number",
-                "description": "Height of each riser after the solver ran."
+                "description": "The riser height as given, else the Stair tool default's. Not laid out, like stepNum: CreateStairs picks it within rules."
             },
             "treadDepth": {
                 "type": "number",
-                "description": "Depth (going) of each tread after the solver ran."
+                "description": "The going as given, else the Stair tool default's stored going (which can read 0 or 1, #2525). Not laid out: the solver does not lay out the steps."
+            },
+            "rules": {
+                "$ref": "#/StairRules",
+                "description": "The Rules and Standards CreateStairs would create this stair with: the Stair tool defaults' rules, with the going pinned (treadDepthMinValue = treadDepthMaxValue = treadDepth, both applied, and the 2R+G, R+G and R/G rules released) when treadDepth is given, as CreateStairs pins it. Archicad lays the steps out within the applied limits when it creates the stair, so the riser count and riser height it picks for totalHeight must be within riserHeightMinValue..riserHeightMaxValue and the going within treadDepthMinValue..treadDepthMaxValue (each when applied); the stepNum, riserHeight and treadDepth above are only the given values or the tool defaults (#2526)."
             }
         },
         "additionalProperties": false,
@@ -28951,7 +29346,8 @@
             "flightWidth",
             "stepNum",
             "riserHeight",
-            "treadDepth"
+            "treadDepth",
+            "rules"
         ]
     },
     "ElementTriangulation": {
@@ -29416,7 +29812,7 @@
             "Solved",
             "NotSolved"
         ],
-        "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input."
+        "description": "Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input. It is about the baseline only: Correct does not mean that the riser count, riser height and going given fit totalHeight and the rules (#2526)."
     },
     "FavoriteSubelementType": {
         "type": "string",
