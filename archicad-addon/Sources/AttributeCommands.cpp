@@ -2955,11 +2955,18 @@ static bool HatchHasCoreProfileItem (const HatchObject& hatch) { return hatch.Ha
 static bool HatchHasProfileInfo (const HatchObject& hatch) { return hatch.HasProfileInfo (); }
 static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { return hatch.GetProfileItem (); }
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.HasProfileInfo () ? &hatch.GetProfileItemNonConst () : nullptr; }
+// The number of edges GetProfileEdgeData (UIndex) may be called with: the size of the hatch's own edge vector,
+// not its coordinate count, which can be larger (seen in profiles migrated from older Archicad versions), and
+// an index past the vector's end makes Archicad stop with EXC_BREAKPOINT (#2772). 0 without profile info,
+// where GetProfileEdgeData would dereference an empty GS::Optional.
+static UIndex GetHatchProfileEdgeCount (const HatchObject& hatch) { return hatch.HasProfileInfo () ? (UIndex) hatch.GetProfileEdgeData ().size () : 0; }
 #else
 static bool HatchHasCoreProfileItem (const HatchObject& hatch) { const ProfileItem* item = hatch.GetProfileItemPtr (); return item != nullptr && item->IsCore (); }
 static bool HatchHasProfileInfo (const HatchObject& hatch) { return hatch.GetProfileItemPtr () != nullptr; }
 static const ProfileItem& GetHatchProfileItem (const HatchObject& hatch) { return *hatch.GetProfileItemPtr (); }
 static ProfileItem* GetHatchProfileItemNonConst (HatchObject& hatch) { return hatch.GetProfileItemPtr (); }
+// Before AC27 the edge data is a raw array without a size of its own, one slot per coordinate.
+static UIndex GetHatchProfileEdgeCount (const HatchObject& hatch) { return hatch.GetProfileEdgeDataPtr () != nullptr ? hatch.GetCoords ().GetSize () : 0; }
 #endif
 
 // Archicad's own input validation refuses unknown keys at the top level of a CreateProfiles item, but not inside
@@ -3409,7 +3416,7 @@ static void ApplyProfileSkinOverrides (ProfileVectorImage& pvi, const GS::Object
         if (override.Get ("edgeOverrides", edgeOverrides)) {
             for (const GS::ObjectState& edgeOverride : edgeOverrides) {
                 Int32 edgeIndex = -1;
-                if (!edgeOverride.Get ("edgeIndex", edgeIndex) || edgeIndex < 0) {
+                if (!edgeOverride.Get ("edgeIndex", edgeIndex) || edgeIndex < 0 || (UIndex) edgeIndex >= GetHatchProfileEdgeCount (hatch)) {
                     continue;
                 }
                 ProfileEdgeData* edgeData = hatch.GetProfileEdgeData ((UIndex) edgeIndex);
@@ -3842,7 +3849,7 @@ static void ForEachProfileEdge (const HatchObject& hatch, Func&& func)
         func (edgeData);
     }
 #else
-    UIndex edgeCount = hatch.GetCoords ().GetSize ();
+    UIndex edgeCount = GetHatchProfileEdgeCount (hatch);
     for (UIndex i = 0; i < edgeCount; ++i) {
         const ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (i);
         if (edgeData != nullptr) {
@@ -11679,7 +11686,7 @@ void ScanAttributes (const ReindexJob& job, bool apply, ReferenceScan& scan)
                         changed = true;
                     }
                     if (profileItem != nullptr && (job.type == API_LinetypeID || job.type == API_MaterialID)) {
-                        const UIndex edgeCount = hatch.GetCoords ().GetSize ();
+                        const UIndex edgeCount = GetHatchProfileEdgeCount (hatch);
                         for (UIndex e = 0; e < edgeCount; ++e) {
                             ProfileEdgeData* edgeData = hatch.GetProfileEdgeData (e);
                             if (edgeData == nullptr) {
