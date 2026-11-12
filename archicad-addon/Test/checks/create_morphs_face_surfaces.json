@@ -1,0 +1,204 @@
+{
+  "title": "CreateMorphs keeps the surfaces given to the faces of a body, with and without a whole-morph surfaceId (#2626)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "sA": "attributes[0].attributeId.guid",
+        "sB": "attributes[1].attributeId.guid",
+        "iA": "attributes[0].index",
+        "iB": "attributes[1].index"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" },
+        { "expr": "${iB} - ${iA}", "ne": 0, "name": "the two surfaces differ" }
+      ]
+    },
+    {
+      "id": "box morphs: faces with surface B only, faces with B and the whole morph A, the whole morph A only",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 900.0, "y": 760.0, "z": 0.0 },
+            "body": {
+              "bodyType": "Solid",
+              "edgeDefault": "HardVisible",
+              "vertices": [
+                { "x": 0.0, "y": 0.0, "z": 0.0 }, { "x": 1.0, "y": 0.0, "z": 0.0 }, { "x": 1.0, "y": 1.0, "z": 0.0 }, { "x": 0.0, "y": 1.0, "z": 0.0 },
+                { "x": 0.0, "y": 0.0, "z": 1.0 }, { "x": 1.0, "y": 0.0, "z": 1.0 }, { "x": 1.0, "y": 1.0, "z": 1.0 }, { "x": 0.0, "y": 1.0, "z": 1.0 }
+              ],
+              "polygons": [
+                { "vertexIds": [ 0, 3, 2, 1 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 4, 5, 6, 7 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 0, 1, 5, 4 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 1, 2, 6, 5 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 2, 3, 7, 6 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 3, 0, 4, 7 ], "surfaceId": { "guid": "${sB}" } }
+              ]
+            }
+          },
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 905.0, "y": 760.0, "z": 0.0 },
+            "surfaceId": { "guid": "${sA}" },
+            "castShadow": false,
+            "body": {
+              "bodyType": "Solid",
+              "edgeDefault": "HardVisible",
+              "vertices": [
+                { "x": 0.0, "y": 0.0, "z": 0.0 }, { "x": 1.0, "y": 0.0, "z": 0.0 }, { "x": 1.0, "y": 1.0, "z": 0.0 }, { "x": 0.0, "y": 1.0, "z": 0.0 },
+                { "x": 0.0, "y": 0.0, "z": 1.0 }, { "x": 1.0, "y": 0.0, "z": 1.0 }, { "x": 1.0, "y": 1.0, "z": 1.0 }, { "x": 0.0, "y": 1.0, "z": 1.0 }
+              ],
+              "polygons": [
+                { "vertexIds": [ 0, 3, 2, 1 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 4, 5, 6, 7 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 0, 1, 5, 4 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 1, 2, 6, 5 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 2, 3, 7, 6 ], "surfaceId": { "guid": "${sB}" } },
+                { "vertexIds": [ 3, 0, 4, 7 ], "surfaceId": { "guid": "${sB}" } }
+              ]
+            }
+          },
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 910.0, "y": 760.0, "z": 0.0 },
+            "surfaceId": { "guid": "${sA}" },
+            "body": {
+              "bodyType": "Solid",
+              "edgeDefault": "HardVisible",
+              "vertices": [
+                { "x": 0.0, "y": 0.0, "z": 0.0 }, { "x": 1.0, "y": 0.0, "z": 0.0 }, { "x": 1.0, "y": 1.0, "z": 0.0 }, { "x": 0.0, "y": 1.0, "z": 0.0 },
+                { "x": 0.0, "y": 0.0, "z": 1.0 }, { "x": 1.0, "y": 0.0, "z": 1.0 }, { "x": 1.0, "y": 1.0, "z": 1.0 }, { "x": 0.0, "y": 1.0, "z": 1.0 }
+              ],
+              "polygons": [
+                { "vertexIds": [ 0, 3, 2, 1 ] },
+                { "vertexIds": [ 4, 5, 6, 7 ] },
+                { "vertexIds": [ 0, 1, 5, 4 ] },
+                { "vertexIds": [ 1, 2, 6, 5 ] },
+                { "vertexIds": [ 2, 3, 7, 6 ] },
+                { "vertexIds": [ 3, 0, 4, 7 ] }
+              ]
+            }
+          }
+        ]
+      },
+      "save": {
+        "m1": "elements[0].elementId.guid",
+        "m2": "elements[1].elementId.guid",
+        "m3": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "morph with face surfaces created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "morph with face surfaces and a whole-morph surface created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "morph with a whole-morph surface created" }
+      ]
+    },
+    {
+      "id": "every face given a surface has one",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${m1}" } },
+          { "elementId": { "guid": "${m2}" } },
+          { "elementId": { "guid": "${m3}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.body.polygons", "len": 6, "name": "morph 1 has 6 faces" },
+        { "path": "detailsOfElements[0].details.body.polygons[0].surfaceId.guid", "exists": true, "name": "morph 1 face 0 has a surface (#2626: none was kept)" },
+        { "path": "detailsOfElements[0].details.body.polygons[1].surfaceId.guid", "exists": true, "name": "morph 1 face 1 has a surface" },
+        { "path": "detailsOfElements[0].details.body.polygons[2].surfaceId.guid", "exists": true, "name": "morph 1 face 2 has a surface" },
+        { "path": "detailsOfElements[0].details.body.polygons[3].surfaceId.guid", "exists": true, "name": "morph 1 face 3 has a surface" },
+        { "path": "detailsOfElements[0].details.body.polygons[4].surfaceId.guid", "exists": true, "name": "morph 1 face 4 has a surface" },
+        { "path": "detailsOfElements[0].details.body.polygons[5].surfaceId.guid", "exists": true, "name": "morph 1 face 5 has a surface" },
+        { "path": "detailsOfElements[1].details.body.polygons", "len": 6, "name": "morph 2 has 6 faces" },
+        { "path": "detailsOfElements[1].details.body.polygons[0].surfaceId.guid", "exists": true, "name": "morph 2 face 0 has a surface" },
+        { "path": "detailsOfElements[1].details.body.polygons[5].surfaceId.guid", "exists": true, "name": "morph 2 face 5 has a surface" },
+        { "path": "detailsOfElements[1].details.surfaceId.guid", "exists": true, "name": "morph 2 has its whole-morph surface" },
+        { "path": "detailsOfElements[2].details.surfaceId.guid", "exists": true, "name": "morph 3 has its whole-morph surface" },
+        { "path": "detailsOfElements[1].details.castShadow", "eq": false, "name": "morph 2 still casts no shadow after its faces got their surfaces" }      ]
+    },
+    {
+      "id": "the surfaces read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${m1}" } },
+          { "elementId": { "guid": "${m2}" } },
+          { "elementId": { "guid": "${m3}" } }
+        ]
+      },
+      "save": {
+        "m1f0": "detailsOfElements[0].details.body.polygons[0].surfaceId.guid",
+        "m1f1": "detailsOfElements[0].details.body.polygons[1].surfaceId.guid",
+        "m1f2": "detailsOfElements[0].details.body.polygons[2].surfaceId.guid",
+        "m1f3": "detailsOfElements[0].details.body.polygons[3].surfaceId.guid",
+        "m1f4": "detailsOfElements[0].details.body.polygons[4].surfaceId.guid",
+        "m1f5": "detailsOfElements[0].details.body.polygons[5].surfaceId.guid",
+        "m2f0": "detailsOfElements[1].details.body.polygons[0].surfaceId.guid",
+        "m2f1": "detailsOfElements[1].details.body.polygons[1].surfaceId.guid",
+        "m2f2": "detailsOfElements[1].details.body.polygons[2].surfaceId.guid",
+        "m2f3": "detailsOfElements[1].details.body.polygons[3].surfaceId.guid",
+        "m2f4": "detailsOfElements[1].details.body.polygons[4].surfaceId.guid",
+        "m2f5": "detailsOfElements[1].details.body.polygons[5].surfaceId.guid",
+        "m2s": "detailsOfElements[1].details.surfaceId.guid",
+        "m3s": "detailsOfElements[2].details.surfaceId.guid"
+      }
+    },
+    {
+      "id": "the faces have surface B, the whole morphs surface A",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${m1f0}" } },
+          { "attributeId": { "guid": "${m1f1}" } },
+          { "attributeId": { "guid": "${m1f2}" } },
+          { "attributeId": { "guid": "${m1f3}" } },
+          { "attributeId": { "guid": "${m1f4}" } },
+          { "attributeId": { "guid": "${m1f5}" } },
+          { "attributeId": { "guid": "${m2f0}" } },
+          { "attributeId": { "guid": "${m2f1}" } },
+          { "attributeId": { "guid": "${m2f2}" } },
+          { "attributeId": { "guid": "${m2f3}" } },
+          { "attributeId": { "guid": "${m2f4}" } },
+          { "attributeId": { "guid": "${m2f5}" } },
+          { "attributeId": { "guid": "${m2s}" } },
+          { "attributeId": { "guid": "${m3s}" } }
+        ]
+      },
+      "save": {
+        "x1f0": "surfaces[0].index", "x1f1": "surfaces[1].index", "x1f2": "surfaces[2].index",
+        "x1f3": "surfaces[3].index", "x1f4": "surfaces[4].index", "x1f5": "surfaces[5].index",
+        "x2f0": "surfaces[6].index", "x2f1": "surfaces[7].index", "x2f2": "surfaces[8].index",
+        "x2f3": "surfaces[9].index", "x2f4": "surfaces[10].index", "x2f5": "surfaces[11].index",
+        "x2s": "surfaces[12].index", "x3s": "surfaces[13].index"
+      },
+      "expect": [
+        { "expr": "${x1f0} - ${iB}", "approx": 0, "name": "morph 1 face 0 has surface B" },
+        { "expr": "${x1f1} - ${iB}", "approx": 0, "name": "morph 1 face 1 has surface B" },
+        { "expr": "${x1f2} - ${iB}", "approx": 0, "name": "morph 1 face 2 has surface B" },
+        { "expr": "${x1f3} - ${iB}", "approx": 0, "name": "morph 1 face 3 has surface B" },
+        { "expr": "${x1f4} - ${iB}", "approx": 0, "name": "morph 1 face 4 has surface B" },
+        { "expr": "${x1f5} - ${iB}", "approx": 0, "name": "morph 1 face 5 has surface B" },
+        { "expr": "${x2f0} - ${iB}", "approx": 0, "name": "morph 2 face 0 keeps surface B, not the whole-morph A (#2626)" },
+        { "expr": "${x2f1} - ${iB}", "approx": 0, "name": "morph 2 face 1 keeps surface B" },
+        { "expr": "${x2f2} - ${iB}", "approx": 0, "name": "morph 2 face 2 keeps surface B" },
+        { "expr": "${x2f3} - ${iB}", "approx": 0, "name": "morph 2 face 3 keeps surface B" },
+        { "expr": "${x2f4} - ${iB}", "approx": 0, "name": "morph 2 face 4 keeps surface B" },
+        { "expr": "${x2f5} - ${iB}", "approx": 0, "name": "morph 2 face 5 keeps surface B" },
+        { "expr": "${x2s} - ${iA}", "approx": 0, "name": "morph 2 keeps its whole-morph surface A" },
+        { "expr": "${x3s} - ${iA}", "approx": 0, "name": "morph 3 has its whole-morph surface A" }
+      ]
+    }
+  ]
+}

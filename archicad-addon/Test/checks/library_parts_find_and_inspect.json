@@ -1,18 +1,18 @@
 {
   "title": "Finding and inspecting library parts: a parent and a child part of the embedded library through the library part commands of the classic API",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "minArchicad": "27",
   "requiresEmpty": [],
   "steps": [
     {
-      "id": "parent part under the General GDL Object (by main GUID)",
+      "id": "parent part under the Model Element (by name)",
       "command": "CreateLibraryParts",
       "creates": false,
       "params": {
         "libraryParts": [
           {
             "name": "TapirCheckLibInspect Parent",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibInspect/TapirCheckLibInspect Parent.gsm",
             "a": 1.0,
             "b": 1.0,
@@ -26,6 +26,41 @@
       },
       "expect": [
         { "path": "libraryParts[0].error", "exists": false, "name": "parent created" }
+      ]
+    },
+    {
+      "id": "[by GUID, by unique ID, by name] the General GDL Object cannot be the parent (#2622)",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckLibInspect Root 1",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibInspect/TapirCheckLibInspect Root 1.gsm",
+            "script3D": "BLOCK A, B, 1"
+          },
+          {
+            "name": "TapirCheckLibInspect Root 2",
+            "parentId": "{F938E33A-329D-4A36-BE3E-85E126820996}-{00000000-0000-0000-0000-000000000000}",
+            "path": "TapirCheckLibInspect/TapirCheckLibInspect Root 2.gsm",
+            "script3D": "BLOCK A, B, 1"
+          },
+          {
+            "name": "TapirCheckLibInspect Root 3",
+            "parentName": "General GDL Object",
+            "path": "TapirCheckLibInspect/TapirCheckLibInspect Root 3.gsm",
+            "script3D": "BLOCK A, B, 1"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 3, "name": "one item per input" },
+        { "path": "libraryParts[0].error.message", "contains": "Model Element", "name": "by GUID: refused, naming the parent to use" },
+        { "path": "libraryParts[0].unId", "exists": false, "name": "by GUID: nothing created" },
+        { "path": "libraryParts[1].error.message", "contains": "Model Element", "name": "by unique ID: refused" },
+        { "path": "libraryParts[2].error.message", "contains": "Model Element", "name": "by name: refused" }
       ]
     },
     {
@@ -109,7 +144,7 @@
         "detailsChildIndex": "libraryParts[0].index",
         "detailsChildUnId": "libraryParts[0].unId",
         "detailsChildParentUnId": "libraryParts[0].parentUnId",
-        "gdlObjectUnId": "libraryParts[1].parentUnId"
+        "modelElementUnId": "libraryParts[1].parentUnId"
       },
       "expect": [
         { "path": "libraryParts", "len": 3, "name": "one item per input" },
@@ -120,7 +155,7 @@
         { "path": "libraryParts[0].isPlaceable", "eq": true, "name": "child: placeable" },
         { "path": "libraryParts[0].objectDetails", "exists": true, "name": "child: object details" },
         { "path": "libraryParts[1].name", "eq": "TapirCheckLibInspect Parent", "name": "parent found by name" },
-        { "path": "libraryParts[1].parentUnId", "contains": "F938E33A-329D-4A36-BE3E-85E126820996", "name": "parent: under the General GDL Object" },
+        { "path": "libraryParts[1].parentUnId", "contains": "}-{", "name": "parent: under the Model Element (its unique ID)" },
         { "path": "libraryParts[2].error", "exists": true, "name": "index 0: an error item" }
       ]
     },
@@ -145,7 +180,7 @@
       ]
     },
     {
-      "id": "[child, parent] subtype of any revision of the General GDL Object",
+      "id": "[child, parent] subtype of any revision of the Model Element",
       "command": "IsLibraryPartSubtypeOf",
       "creates": false,
       "params": {
@@ -153,7 +188,7 @@
           { "index": "${childIndex}" },
           { "name": "TapirCheckLibInspect Parent" }
         ],
-        "ancestor": { "unId": "${gdlObjectUnId}" },
+        "ancestor": { "unId": "${modelElementUnId}" },
         "matchAncestorByMainId": true
       },
       "expect": [
@@ -210,11 +245,11 @@
       ]
     },
     {
-      "id": "search below the General GDL Object",
+      "id": "search below the Model Element",
       "command": "SearchLibraryParts",
       "creates": false,
       "params": {
-        "ancestorUnId": "${gdlObjectUnId}",
+        "ancestorUnId": "${modelElementUnId}",
         "pattern": "TapirCheckLibInspect*"
       },
       "expect": [

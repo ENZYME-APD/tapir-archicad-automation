@@ -141,12 +141,29 @@
     }
 
     // 7. Terminal: wrap each code line and reveal them one by one, with a caret at the end.
+    //    A long block types faster (about a second and a half in all), and the rest shows at once
+    //    when the reader scrolls to the end of the box (or scrolls inside it) before it is done, so
+    //    a reader who scrolls faster than it types never looks at an empty box (#2723).
     function typeOut (term) {
         var pre = term.querySelector ('pre'); if (!pre || pre.dataset.mTyped) return; pre.dataset.mTyped = '1';
         var lines = pre.innerHTML.split ('\n'); if (lines.length < 2) return;
         pre.innerHTML = lines.map (function (l) { return '<span class="ln">' + (l || ' ') + '</span>'; }).join ('');
-        var spans = pre.querySelectorAll ('.ln'), i = 0, caret = document.createElement ('span'); caret.className = 'caret';
-        (function next () { if (i >= spans.length) return; spans[i].classList.add ('on'); spans[i].appendChild (caret); i++; setTimeout (next, 70 + Math.random () * 60); }) ();
+        var spans = pre.querySelectorAll ('.ln'), i = 0, timer = 0, caret = document.createElement ('span'); caret.className = 'caret';
+        var pace = Math.max (12, Math.min (100, 1500 / spans.length));
+        function finish () {
+            removeEventListener ('scroll', onScroll, true); clearTimeout (timer);
+            for (; i < spans.length; i++) spans[i].classList.add ('on');
+            spans[spans.length - 1].appendChild (caret);
+        }
+        function onScroll (e) {
+            if (e.target === pre || pre.getBoundingClientRect ().bottom <= innerHeight) finish ();
+        }
+        addEventListener ('scroll', onScroll, { capture: true, passive: true });
+        (function next () {
+            if (i >= spans.length) { removeEventListener ('scroll', onScroll, true); return; }
+            spans[i].classList.add ('on'); spans[i].appendChild (caret); i++;
+            timer = setTimeout (next, pace * (0.7 + Math.random () * 0.6));
+        }) ();
     }
 
     // 6. Timeline, Legacy look only: each step's segment runs from 12px below its number to 12px

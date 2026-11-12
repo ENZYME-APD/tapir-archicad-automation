@@ -1,0 +1,48 @@
+# Registers the Tapir Discord app's slash commands (today: /where, see tools/discord-where/).
+# Run it by hand once, and again whenever a command's name or options change. It uses the same bot
+# token as the Site Data job (DISCORD_STATS_TOKEN, else DISCORD_BOT_TOKEN), so the commands belong to
+# the app that job reads Discord with; that app's Interactions Endpoint URL must point to the
+# deployed tools/discord-where/ function. The run's log names the app.
+
+name: Discord Commands
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Register the slash commands
+        env:
+          DISCORD_STATS_TOKEN: ${{ secrets.DISCORD_STATS_TOKEN }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, sys, urllib.request
+          token = (os.environ.get ('DISCORD_STATS_TOKEN') or os.environ.get ('DISCORD_BOT_TOKEN') or '').strip ()
+          if not token:
+              sys.exit ('No Discord bot token.')
+          def call (method, path, body=None):
+              request = urllib.request.Request ('https://discord.com/api/v10' + path, method=method,
+                  data=json.dumps (body).encode () if body is not None else None,
+                  headers={'Authorization': 'Bot ' + token, 'Content-Type': 'application/json',
+                           'User-Agent': 'TapirCommands (https://github.com/ENZYME-APD/tapir-archicad-automation, 1.0)'})
+              with urllib.request.urlopen (request, timeout=30) as response:
+                  return json.load (response)
+          app = call ('GET', '/applications/@me')
+          commands = [{
+              'name': 'where',
+              'type': 1,
+              'description': 'Put your town on the Tapir community map (archicad-api.com/community)',
+              'contexts': [0],
+              'options': [{'name': 'place', 'type': 3, 'required': True, 'max_length': 100,
+                           'description': 'Your town and country, e.g. "Maribor, Slovenia". "remove" takes you off the map.'}],
+          }]
+          done = call ('PUT', f"/applications/{app['id']}/commands", commands)
+          print (f"Registered {', '.join ('/' + c['name'] for c in done)} for the app {app['name']} ({app['id']}).")
+          EOF
