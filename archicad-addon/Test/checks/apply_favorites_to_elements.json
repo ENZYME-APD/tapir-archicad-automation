@@ -238,13 +238,109 @@
         { "path": "detailsOfElements[3].details.width", "approx": 0.24, "name": "beam took the favorite's width" },
         { "path": "detailsOfElements[3].details.height", "approx": 0.38, "name": "beam took the favorite's height" }
       ]
+    },
+    {
+      "id": "stair A 1.10 m wide and stair B 1.25 m wide",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 1530.0, "y": 1500.0 }, { "x": 1534.64, "y": 1500.0 } ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.1,
+            "stepNum": 16,
+            "riserHeight": 0.175,
+            "treadDepth": 0.29
+          },
+          {
+            "baseLinePoints": [ { "x": 1530.0, "y": 1510.0 }, { "x": 1534.64, "y": 1510.0 } ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.25,
+            "stepNum": 16,
+            "riserHeight": 0.175,
+            "treadDepth": 0.29
+          }
+        ]
+      },
+      "save": {
+        "stairA": "elements[0].elementId.guid",
+        "stairB": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair A created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "stair B created" }
+      ]
+    },
+    {
+      "id": "stair widths as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${stairA}" } }, { "elementId": { "guid": "${stairB}" } } ]
+      },
+      "save": { "stepNumB": "detailsOfElements[1].details.stepNum" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.1, "name": "stair A is 1.10 m wide" },
+        { "path": "detailsOfElements[1].details.flightWidth", "approx": 1.25, "name": "stair B is 1.25 m wide" }
+      ]
+    },
+    {
+      "id": "favorite from stair A",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${stairA}" }, "favorite": "Tapir check stair favorite 2528" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "stair favorite created" }
+      ]
+    },
+    {
+      "id": "apply the stair favorite to stair B (#2528)",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favorite": "Tapir check stair favorite 2528",
+        "elements": [ { "elementId": { "guid": "${stairB}" } } ],
+        "applyClassifications": false,
+        "applyCategories": false,
+        "applyProperties": false,
+        "keepFields": [ "id", "layerIndex" ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "applied" }
+      ]
+    },
+    {
+      "id": "stair B kept its width and its baseline",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${stairB}" } } ]
+      },
+      "save": { "stepNumB2": "detailsOfElements[0].details.stepNum" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.25, "name": "flight width kept, not the favorite's 1.10 m" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 1530.0, "name": "baseline start x kept" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].y", "approx": 1510.0, "name": "baseline start y kept" },
+        { "expr": "${stepNumB2} - ${stepNumB}", "approx": 0, "tol": 0, "name": "riser count unchanged" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" }
+      ]
     }
   ],
   "teardown": [
     {
       "command": "DeleteFavorites",
       "params": {
-        "favorites": [ "Tapir check 2553 column favorite", "Tapir check 2553 beam favorite" ]
+        "favorites": [ "Tapir check 2553 column favorite", "Tapir check 2553 beam favorite", "Tapir check stair favorite 2528" ]
       }
     }
   ]
