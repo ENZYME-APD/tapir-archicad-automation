@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-11 23:10 UTC",
+ "generatedAt": "2026-11-12 00:18 UTC",
  "versions": [
   25,
   26,
@@ -10,9 +10,9 @@
  ],
  "counts": {
   "not applicable": 569,
-  "done": 2279,
+  "done": 2278,
   "skipped": 30,
-  "open": 1
+  "open": 2
  },
  "items": [
   {
@@ -3613,10 +3613,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
      "number": 2681,
      "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     }
@@ -3690,10 +3686,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
     {
      "number": 2681,
      "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
@@ -3788,12 +3780,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2707,
-     "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4051,32 +4038,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2691,
-     "title": "[3/3] Add ModifyCameras"
-    },
-    {
-     "number": 2682,
-     "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
-    },
-    {
-     "number": 2670,
-     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2313,
@@ -4227,12 +4189,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2699,
-     "title": "Add SetCategoryValuesOfDefaults: set the Renovation Status and other categories new elements get"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4814,12 +4771,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4934,12 +4886,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5299,12 +5246,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2705,
-     "title": "Add Create3DDocuments; document that existing Layout Book subsets cannot be changed"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5765,10 +5707,6 @@
     {
      "number": 2603,
      "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    },
-    {
-     "number": 2591,
-     "title": "[1/5] Profiles: read and write stretch zones"
     }
    ],
    "issues": []
@@ -5843,60 +5781,12 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2707,
-     "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2686,
-     "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
-    },
-    {
-     "number": 2674,
-     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
-    },
-    {
-     "number": 2673,
-     "title": "[2/5] ModifyZones: change the polygon and holes of a manual zone in place"
-    },
-    {
-     "number": 2672,
-     "title": "SetDetailsOfElements: fail a Spline item that sets coordinates instead of answering success"
-    },
-    {
-     "number": 2639,
-     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
-    },
-    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
-     "number": 2601,
-     "title": "GetDetailsOfElements: report a stair's going from its walking line"
-    },
-    {
-     "number": 2600,
-     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
-    },
-    {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2589,
-     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
     },
     {
      "number": 2588,
@@ -5913,10 +5803,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     }
    ],
    "issues": [
@@ -6686,12 +6572,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6885,48 +6766,8 @@
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
     {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2691,
-     "title": "[3/3] Add ModifyCameras"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2686,
-     "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
-    },
-    {
-     "number": 2682,
-     "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
-    },
-    {
      "number": 2681,
      "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
-    },
-    {
-     "number": 2673,
-     "title": "[2/5] ModifyZones: change the polygon and holes of a manual zone in place"
-    },
-    {
-     "number": 2672,
-     "title": "SetDetailsOfElements: fail a Spline item that sets coordinates instead of answering success"
-    },
-    {
-     "number": 2670,
-     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
-    },
-    {
-     "number": 2654,
-     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
-    },
-    {
-     "number": 2644,
-     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
     },
     {
      "number": 2620,
@@ -6937,28 +6778,8 @@
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
-     "number": 2600,
-     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
-    },
-    {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2589,
-     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2542,
-     "title": "[1/3] ModifyCurtainWalls: write story visibility and floor plan display"
     },
     {
      "number": 2537,
@@ -6969,20 +6790,11 @@
      "title": "ModifyRoofs: keep the side surface when the edge surfaces are written"
     },
     {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
      "number": 2400,
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
-   "issues": [
-    {
-     "number": 2638,
-     "title": "ModifyCurtainWallFrames changes nothing on Archicad 29 (\"accepted the change but did not apply it\")"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeContent",
@@ -7079,18 +6891,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2639,
-     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2762,
-     "title": "Archicad 29: lines, arcs, circles, polylines, splines and hotspots refuse an Element ID since #2473, so two 2D checks stop at their first step"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeExt",
@@ -7140,10 +6942,6 @@
     {
      "number": 2746,
      "title": "ModifySlabs: shrink an outline on a circle, never on the old points"
-    },
-    {
-     "number": 2639,
-     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
     },
     {
      "number": 2607,
@@ -7244,56 +7042,12 @@
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
     {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2691,
-     "title": "[3/3] Add ModifyCameras"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2682,
-     "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
-    },
-    {
      "number": 2681,
      "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     },
     {
-     "number": 2670,
-     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
-    },
-    {
-     "number": 2669,
-     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2645,
-     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2644,
-     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
-    },
-    {
-     "number": 2617,
-     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
-    },
-    {
      "number": 2545,
      "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2506,
-     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
     }
    ],
    "issues": [
@@ -7372,26 +7126,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2647,
-     "title": "Create commands: refuse an item with an id on a hidden layer instead of leaving the element behind"
-    },
-    {
-     "number": 2589,
-     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
-    },
-    {
-     "number": 2578,
-     "title": "CreateWindows/CreateDoors: accept id and layerIndex"
     }
    ],
    "issues": []
@@ -7599,48 +7333,12 @@
      "title": "GetDetailsOfElements: radial dimension details; limits row for creating them"
     },
     {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2691,
-     "title": "[3/3] Add ModifyCameras"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2682,
-     "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
-    },
-    {
      "number": 2681,
      "title": "[2/3] Level dimensions: measured or custom text content (with Autotext) of both texts"
     },
     {
-     "number": 2670,
-     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
-    },
-    {
-     "number": 2654,
-     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
-    },
-    {
-     "number": 2644,
-     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
-    },
-    {
      "number": 2620,
      "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
-    },
-    {
-     "number": 2617,
-     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
     },
     {
      "number": 2607,
@@ -7651,18 +7349,6 @@
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
     },
     {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2589,
-     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
-    },
-    {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
     },
@@ -7671,28 +7357,12 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2549,
-     "title": "[3/3] Read and write the floor plan display settings of columns"
-    },
-    {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
     },
     {
-     "number": 2541,
-     "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
-    },
-    {
      "number": 2537,
      "title": "ApplyFavoritesToElements: keep a stair's flight width"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2506,
-     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
     }
    ],
    "issues": [
@@ -7783,12 +7453,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7920,18 +7585,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2691,
-     "title": "[3/3] Add ModifyCameras"
-    },
-    {
-     "number": 2682,
-     "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
-    },
-    {
-     "number": 2670,
-     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
     }
    ],
    "issues": [
@@ -8033,18 +7686,6 @@
     {
      "number": 2747,
      "title": "SetElementNotificationClient: observe an explicit list of elements (elementsToObserve)"
-    },
-    {
-     "number": 2691,
-     "title": "[3/3] Add ModifyCameras"
-    },
-    {
-     "number": 2682,
-     "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
-    },
-    {
-     "number": 2670,
-     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
     }
    ],
    "issues": []
@@ -8231,22 +7872,6 @@
     {
      "number": 2744,
      "title": "GetElementsInDrawOrder: leave out items whose element cannot be read"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2577,
-     "title": "[1/5] GetDetailsOfElements: read the components of railings"
     }
    ],
    "issues": [
@@ -8301,36 +7926,12 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
      "number": 2607,
      "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
-     "number": 2601,
-     "title": "GetDetailsOfElements: report a stair's going from its walking line"
-    },
-    {
-     "number": 2600,
-     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
-    },
-    {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2589,
-     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
     },
     {
      "number": 2588,
@@ -8441,12 +8042,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8551,12 +8147,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9228,18 +8819,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2648,
-     "title": "GetElementAtCoordinate without z: find a slab whose top is above the story level"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2635,
-     "title": "GetElementAtCoordinate without z misses a slab whose top is above the story level"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Element_SetElementURLRef",
@@ -9305,12 +8886,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9816,18 +9392,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2650,
-     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2641,
-     "title": "GetFavoriteSettings always answers \"folder\": [] on Archicad 29"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Favorite_GetNum",
@@ -10425,12 +9991,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2491,
-     "title": "Graphic override rules: a rule Archicad refuses gets an error, the rest of the call is kept"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10500,12 +10061,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2491,
-     "title": "Graphic override rules: a rule Archicad refuses gets an error, the rest of the call is kept"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11024,18 +10580,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2653,
-     "title": "Fix GetMainGroups answering APIERR_BADID on Archicad 29"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2643,
-     "title": "GetMainGroups answers APIERR_BADID for every group on Archicad 29"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_GetMainGroupGuid",
@@ -11055,20 +10601,10 @@
    "olderNames": [
     "APIAny_GetMainGroupGuidID"
    ],
-   "status": "done",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2653,
-     "title": "Fix GetMainGroups answering APIERR_BADID on Archicad 29"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2643,
-     "title": "GetMainGroups answers APIERR_BADID for every group on Archicad 29"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_GetRootGroup",
@@ -11090,18 +10626,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2653,
-     "title": "Fix GetMainGroups answering APIERR_BADID on Archicad 29"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2643,
-     "title": "GetMainGroups answers APIERR_BADID for every group on Archicad 29"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Grouping_GetUserData",
@@ -12566,20 +12092,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2577,
-     "title": "[1/5] GetDetailsOfElements: read the components of railings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12690,12 +12203,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2651,
-     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12858,18 +12366,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2640,
-     "title": "CreateLibraryParts, CreateLibraryPartFromElements: refuse the General GDL Object as parent, use the Model Element"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2622,
-     "title": "CreateLibraryParts and CreateLibraryPartFromElements fail with General GDL Object as the parent (Archicad 29)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetSection",
@@ -13002,12 +12500,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2600,
-     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13160,22 +12653,6 @@
     {
      "number": 2652,
      "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
-    },
-    {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2577,
-     "title": "[1/5] GetDetailsOfElements: read the components of railings"
-    },
-    {
-     "number": 2538,
-     "title": "Library part parameters: find a part with and without .gsm in the getter and the setter"
     }
    ],
    "issues": []
@@ -14328,12 +13805,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2499,
-     "title": "Publisher set items: read and set custom names with autotext tokens"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorVPItem",
@@ -14739,12 +14211,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2498,
-     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14767,22 +14234,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2498,
-     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2499,
-     "title": "Publisher set items: read and set custom names with autotext tokens"
-    },
-    {
-     "number": 2342,
-     "title": "ChangeWindow crashes Archicad (ODB type compatibility violation)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorParentItem",
@@ -14832,12 +14285,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2498,
-     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14860,12 +14308,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2498,
-     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16670,12 +16113,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2711,
-     "title": "SaveProject: name the error of a failed save"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16903,12 +16341,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2720,
-     "title": "Add-On: ExecuteModifyObjectOrLamp reads all story settings for every item; read them once"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectSetting_SetLast3DDefLevels",
@@ -17649,12 +17082,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2704,
-     "title": "SetViewSettings: set the renovation filter by renovationFilterName, fail an unknown name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17677,12 +17105,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2704,
-     "title": "SetViewSettings: set the renovation filter by renovationFilterName, fail an unknown name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19613,12 +19036,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2618,
-     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19641,18 +19059,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2616,
-     "title": "Set3DFilterAndCutSettings: keep MEP routes visible in 3D"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2614,
-     "title": "Set3DFilterAndCutSettings hides all MEP routes in 3D, even when nothing changes"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DProjectionSets",
@@ -19950,12 +19358,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2618,
-     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19979,12 +19382,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2614,
-     "title": "Set3DFilterAndCutSettings hides all MEP routes in 3D, even when nothing changes"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DProjectionSets",
@@ -20681,16 +20079,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2694,
-     "title": "PhotoRender: refuse a missing output folder before rendering"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20782,16 +20171,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
-     "number": 2694,
-     "title": "PhotoRender: refuse a missing output folder before rendering"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21297,12 +20677,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2618,
-     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21336,12 +20711,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2762,
-     "title": "Archicad 29: lines, arcs, circles, polylines, splines and hotspots refuse an Element ID since #2473, so two 2D checks stop at their first step"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElemComponent_GetPropertyDefinitions",
@@ -23828,12 +23198,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2618,
-     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23869,12 +23234,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2618,
-     "title": "Set3DCutPlanes: Archicad's plane equation, planes in force, cut face pen and surface"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23906,12 +23266,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23927,12 +23282,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24097,12 +23447,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24206,12 +23551,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24263,12 +23603,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24674,12 +24009,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24696,12 +24026,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24905,12 +24230,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2625,
-     "title": "Refuse to delete design options and sets that still hold elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26135,20 +25455,8 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2708,
-     "title": "[5/5] Dimensions: opening heights in the chain and layered element options"
-    },
-    {
-     "number": 2707,
-     "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
-    },
-    {
      "number": 2696,
      "title": "[3/5] Linear dimensions: text placement method and marker size"
-    },
-    {
-     "number": 2686,
-     "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
     },
     {
      "number": 2684,
@@ -26157,34 +25465,6 @@
     {
      "number": 2676,
      "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
-    },
-    {
-     "number": 2675,
-     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
-    },
-    {
-     "number": 2669,
-     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2654,
-     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
-    },
-    {
-     "number": 2647,
-     "title": "Create commands: refuse an item with an id on a hidden layer instead of leaving the element behind"
-    },
-    {
-     "number": 2645,
-     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2644,
-     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
-    },
-    {
-     "number": 2642,
-     "title": "CreateMorphs/ModifyMorphs: place the morph at `level` above its home story"
     },
     {
      "number": 2607,
@@ -26203,44 +25483,16 @@
      "title": "[3/5] Profiles: read and set opening reference lines"
     },
     {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2594,
-     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2591,
-     "title": "[1/5] Profiles: read and write stretch zones"
     },
     {
      "number": 2590,
      "title": "CreateProfiles: refuse unknown keys and unresolved attribute ids inside newSkins / skinOverrides / edgeOverrides"
     },
     {
-     "number": 2589,
-     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
-    },
-    {
      "number": 2588,
      "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
-     "number": 2580,
-     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
-    },
-    {
-     "number": 2578,
-     "title": "CreateWindows/CreateDoors: accept id and layerIndex"
     },
     {
      "number": 2571,
@@ -26259,10 +25511,6 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2549,
-     "title": "[3/3] Read and write the floor plan display settings of columns"
-    },
-    {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
     },
@@ -26279,32 +25527,8 @@
      "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
     },
     {
-     "number": 2542,
-     "title": "[1/3] ModifyCurtainWalls: write story visibility and floor plan display"
-    },
-    {
-     "number": 2541,
-     "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
-    },
-    {
      "number": 2520,
      "title": "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated"
-    },
-    {
-     "number": 2506,
-     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
-    },
-    {
-     "number": 2489,
-     "title": "Graphic override criterion: custom text properties with the text operators, multiple choice option sets"
-    },
-    {
-     "number": 2488,
-     "title": "Graphic override criterion: the Zone Category condition (zoneCategory, zoneCategoryNot)"
-    },
-    {
-     "number": 2459,
-     "title": "Columns and beams: a width given alone also works on a linked cross section"
     },
     {
      "number": 2400,
@@ -27766,12 +26990,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2650,
-     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27890,12 +27109,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2650,
-     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28116,12 +27330,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2650,
-     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28291,12 +27500,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2650,
-     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31052,12 +30256,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2538,
-     "title": "Library part parameters: find a part with and without .gsm in the getter and the setter"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31665,14 +30864,6 @@
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -31731,12 +30922,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31755,12 +30941,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31779,12 +30960,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31871,12 +31047,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31958,36 +31129,8 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2708,
-     "title": "[5/5] Dimensions: opening heights in the chain and layered element options"
-    },
-    {
-     "number": 2707,
-     "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
      "number": 2696,
      "title": "[3/5] Linear dimensions: text placement method and marker size"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2686,
-     "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
-    },
-    {
-     "number": 2685,
-     "title": "[2/3] CreatePictures: place PNG/JPEG/GIF/TIFF/BMP images at an exact size"
     },
     {
      "number": 2684,
@@ -32002,80 +31145,16 @@
      "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
     },
     {
-     "number": 2675,
-     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
-    },
-    {
-     "number": 2674,
-     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
-    },
-    {
-     "number": 2669,
-     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2668,
-     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
-    },
-    {
-     "number": 2667,
-     "title": "[1/3] GetDetailsOfElements: details of Picture elements"
-    },
-    {
-     "number": 2651,
-     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
-    },
-    {
-     "number": 2645,
-     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2639,
-     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
-    },
-    {
-     "number": 2617,
-     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
-    },
-    {
      "number": 2603,
      "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    },
-    {
-     "number": 2601,
-     "title": "GetDetailsOfElements: report a stair's going from its walking line"
     },
     {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
     },
     {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2594,
-     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2591,
-     "title": "[1/5] Profiles: read and write stretch zones"
-    },
-    {
      "number": 2588,
      "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
-     "number": 2580,
-     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
-    },
-    {
-     "number": 2577,
-     "title": "[1/5] GetDetailsOfElements: read the components of railings"
     },
     {
      "number": 2571,
@@ -32084,10 +31163,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2549,
-     "title": "[3/3] Read and write the floor plan display settings of columns"
     },
     {
      "number": 2547,
@@ -32100,10 +31175,6 @@
     {
      "number": 2543,
      "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     }
    ],
    "issues": []
@@ -32156,12 +31227,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32193,12 +31259,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32253,14 +31314,6 @@
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -32448,12 +31501,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32472,12 +31520,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32532,16 +31575,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32577,12 +31611,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32600,12 +31629,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32641,16 +31665,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32720,12 +31735,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32938,12 +31948,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33851,16 +32856,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34237,12 +33233,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34740,12 +33731,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34781,16 +33767,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34944,12 +33921,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35020,12 +33992,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35350,12 +34317,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35406,12 +34368,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35447,16 +34404,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35593,12 +34541,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36026,12 +34969,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36067,16 +35005,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36146,12 +35075,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36364,12 +35288,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36403,16 +35322,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36599,12 +35509,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36898,12 +35803,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36924,16 +35824,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37142,12 +36033,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37255,12 +36141,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37310,16 +36191,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37767,12 +36639,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37788,16 +36655,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37973,12 +36831,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37994,12 +36847,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38063,12 +36911,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38084,16 +36927,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38429,12 +37263,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38450,12 +37279,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38535,12 +37359,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38556,16 +37375,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38789,12 +37599,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38839,36 +37644,8 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    },
-    {
-     "number": 2708,
-     "title": "[5/5] Dimensions: opening heights in the chain and layered element options"
-    },
-    {
-     "number": 2707,
-     "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
-    },
-    {
-     "number": 2704,
-     "title": "SetViewSettings: set the renovation filter by renovationFilterName, fail an unknown name"
-    },
-    {
      "number": 2703,
      "title": "[5/5] Zones: gross/net polygon display, uniform stamp pen and reduce area by %"
-    },
-    {
-     "number": 2699,
-     "title": "Add SetCategoryValuesOfDefaults: set the Renovation Status and other categories new elements get"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
     },
     {
      "number": 2696,
@@ -38879,36 +37656,12 @@
      "title": "[3/3] Labels: text direction (textWay) for Text labels; API limits for the rest"
     },
     {
-     "number": 2691,
-     "title": "[3/3] Add ModifyCameras"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2689,
-     "title": "[4/5] Zones: cover fill \"use the surface's fill\" and fill orientation"
-    },
-    {
-     "number": 2686,
-     "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
-    },
-    {
-     "number": 2685,
-     "title": "[2/3] CreatePictures: place PNG/JPEG/GIF/TIFF/BMP images at an exact size"
-    },
-    {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
      "number": 2683,
      "title": "[2/3] CreateLabels: libraryPartName for Symbol labels"
-    },
-    {
-     "number": 2682,
-     "title": "[2/3] Add CreateCameras (cameras in a Camera Set's path)"
     },
     {
      "number": 2681,
@@ -38919,64 +37672,12 @@
      "title": "[3/5] Zones: read and write the 3D surface (Model panel)"
     },
     {
-     "number": 2677,
-     "title": "[1/3] Labels: layerIndex in CreateLabels, move and re-point a label with ModifyLabels"
-    },
-    {
      "number": 2676,
      "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
     },
     {
-     "number": 2675,
-     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
-    },
-    {
-     "number": 2674,
-     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
-    },
-    {
-     "number": 2673,
-     "title": "[2/5] ModifyZones: change the polygon and holes of a manual zone in place"
-    },
-    {
-     "number": 2670,
-     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
-    },
-    {
-     "number": 2669,
-     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2668,
-     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
-    },
-    {
-     "number": 2654,
-     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
-    },
-    {
      "number": 2652,
      "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
-    },
-    {
-     "number": 2647,
-     "title": "Create commands: refuse an item with an id on a hidden layer instead of leaving the element behind"
-    },
-    {
-     "number": 2645,
-     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2644,
-     "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
-    },
-    {
-     "number": 2642,
-     "title": "CreateMorphs/ModifyMorphs: place the morph at `level` above its home story"
-    },
-    {
-     "number": 2617,
-     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
     },
     {
      "number": 2607,
@@ -38987,14 +37688,6 @@
      "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
     },
     {
-     "number": 2601,
-     "title": "GetDetailsOfElements: report a stair's going from its walking line"
-    },
-    {
-     "number": 2600,
-     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
-    },
-    {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
     },
@@ -39003,44 +37696,16 @@
      "title": "[3/5] Profiles: read and set opening reference lines"
     },
     {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2594,
-     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2591,
-     "title": "[1/5] Profiles: read and write stretch zones"
     },
     {
      "number": 2590,
      "title": "CreateProfiles: refuse unknown keys and unresolved attribute ids inside newSkins / skinOverrides / edgeOverrides"
     },
     {
-     "number": 2589,
-     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
-    },
-    {
      "number": 2588,
      "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
-     "number": 2580,
-     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
-    },
-    {
-     "number": 2578,
-     "title": "CreateWindows/CreateDoors: accept id and layerIndex"
     },
     {
      "number": 2571,
@@ -39059,10 +37724,6 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
     {
-     "number": 2549,
-     "title": "[3/3] Read and write the floor plan display settings of columns"
-    },
-    {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
     },
@@ -39077,30 +37738,6 @@
     {
      "number": 2543,
      "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
-    },
-    {
-     "number": 2542,
-     "title": "[1/3] ModifyCurtainWalls: write story visibility and floor plan display"
-    },
-    {
-     "number": 2541,
-     "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
-    },
-    {
-     "number": 2538,
-     "title": "Library part parameters: find a part with and without .gsm in the getter and the setter"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2506,
-     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
-    },
-    {
-     "number": 2459,
-     "title": "Columns and beams: a width given alone also works on a linked cross section"
     },
     {
      "number": 2400,
@@ -39179,12 +37816,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39219,12 +37851,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39240,12 +37867,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39456,12 +38078,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39477,12 +38094,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39706,12 +38318,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39727,12 +38334,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39767,12 +38369,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39831,22 +38428,6 @@
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    },
-    {
-     "number": 2489,
-     "title": "Graphic override criterion: custom text properties with the text operators, multiple choice option sets"
-    },
-    {
-     "number": 2488,
-     "title": "Graphic override criterion: the Zone Category condition (zoneCategory, zoneCategoryNot)"
     }
    ],
    "issues": []
@@ -39886,12 +38467,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39910,12 +38486,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39934,12 +38505,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39998,14 +38564,6 @@
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -40064,12 +38622,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40088,12 +38641,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40112,12 +38660,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40172,16 +38715,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40332,12 +38866,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40374,12 +38903,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40398,12 +38922,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40422,12 +38941,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40503,12 +39017,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41430,16 +39939,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41509,12 +40009,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41530,12 +40025,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41589,12 +40079,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41645,16 +40130,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41671,12 +40147,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41795,12 +40266,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41836,16 +40302,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42222,12 +40679,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42725,12 +41177,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42766,16 +41213,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42912,12 +41350,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43345,12 +41778,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43386,16 +41814,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43549,12 +41968,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43625,12 +42039,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43955,12 +42364,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44011,12 +42415,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44050,16 +42449,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44246,12 +42636,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44540,12 +42925,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44564,16 +42944,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44589,12 +42960,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44666,12 +43032,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44687,12 +43048,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44764,12 +43120,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44788,12 +43139,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44827,12 +43173,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44868,12 +43209,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44907,12 +43243,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44948,12 +43279,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44971,12 +43297,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44999,14 +43320,6 @@
     {
      "number": 2747,
      "title": "SetElementNotificationClient: observe an explicit list of elements (elementsToObserve)"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -45081,12 +43394,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45159,12 +43467,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45202,12 +43505,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45245,12 +43543,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45372,12 +43665,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45396,12 +43684,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45458,12 +43741,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45482,12 +43760,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45503,12 +43776,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45562,12 +43830,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45619,12 +43882,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45678,12 +43936,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -45701,12 +43954,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46029,12 +44277,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46138,36 +44381,8 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2708,
-     "title": "[5/5] Dimensions: opening heights in the chain and layered element options"
-    },
-    {
-     "number": 2707,
-     "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
      "number": 2696,
      "title": "[3/5] Linear dimensions: text placement method and marker size"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2686,
-     "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
-    },
-    {
-     "number": 2685,
-     "title": "[2/3] CreatePictures: place PNG/JPEG/GIF/TIFF/BMP images at an exact size"
     },
     {
      "number": 2684,
@@ -46182,80 +44397,16 @@
      "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
     },
     {
-     "number": 2675,
-     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
-    },
-    {
-     "number": 2674,
-     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
-    },
-    {
-     "number": 2669,
-     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2668,
-     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
-    },
-    {
-     "number": 2667,
-     "title": "[1/3] GetDetailsOfElements: details of Picture elements"
-    },
-    {
-     "number": 2651,
-     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
-    },
-    {
-     "number": 2645,
-     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2639,
-     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
-    },
-    {
-     "number": 2617,
-     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
-    },
-    {
      "number": 2603,
      "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    },
-    {
-     "number": 2601,
-     "title": "GetDetailsOfElements: report a stair's going from its walking line"
     },
     {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
     },
     {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2594,
-     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2591,
-     "title": "[1/5] Profiles: read and write stretch zones"
-    },
-    {
      "number": 2588,
      "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
-     "number": 2580,
-     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
-    },
-    {
-     "number": 2577,
-     "title": "[1/5] GetDetailsOfElements: read the components of railings"
     },
     {
      "number": 2571,
@@ -46264,10 +44415,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2549,
-     "title": "[3/3] Read and write the floor plan display settings of columns"
     },
     {
      "number": 2547,
@@ -46280,10 +44427,6 @@
     {
      "number": 2543,
      "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     }
    ],
    "issues": []
@@ -46339,12 +44482,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46380,16 +44518,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46522,12 +44651,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46637,14 +44761,6 @@
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -46735,12 +44851,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46758,12 +44869,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46837,12 +44943,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46865,10 +44966,6 @@
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
     }
    ],
    "issues": []
@@ -46889,12 +44986,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46913,12 +45005,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46937,12 +45024,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46993,12 +45075,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47179,12 +45256,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47203,12 +45275,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47477,12 +45544,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47501,12 +45563,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47542,12 +45599,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47566,12 +45618,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47630,14 +45677,6 @@
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -47656,12 +45695,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47678,12 +45712,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47719,12 +45748,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47741,12 +45765,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47803,12 +45822,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47827,12 +45841,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47870,12 +45879,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47894,12 +45898,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47935,12 +45934,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47957,12 +45951,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48000,12 +45989,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48024,12 +46008,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48048,12 +46027,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48072,12 +46046,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48149,12 +46118,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48231,12 +46195,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48274,12 +46233,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48338,14 +46292,6 @@
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -48365,12 +46311,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48389,12 +46330,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48412,12 +46348,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48436,12 +46367,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48459,12 +46385,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48483,12 +46404,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48507,12 +46423,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48550,12 +46461,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48573,12 +46479,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48597,12 +46498,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48620,12 +46516,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48643,12 +46534,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48667,12 +46553,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48691,12 +46572,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48733,12 +46609,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48775,12 +46646,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48798,12 +46664,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48822,12 +46683,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48845,12 +46701,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48869,12 +46720,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48893,12 +46739,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48916,12 +46757,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48940,12 +46776,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48963,12 +46794,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48986,12 +46812,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49010,12 +46831,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49033,12 +46849,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49057,12 +46868,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49081,12 +46887,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49104,12 +46905,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49127,12 +46923,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49151,12 +46942,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49174,12 +46960,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49198,12 +46979,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49222,12 +46998,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49264,12 +47035,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49288,12 +47054,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49311,12 +47072,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49334,12 +47090,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49376,12 +47127,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49399,12 +47145,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49422,12 +47163,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49446,12 +47182,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49469,12 +47200,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49493,12 +47219,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49517,12 +47238,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49540,12 +47256,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49564,12 +47275,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49587,12 +47293,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49610,12 +47311,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49652,12 +47348,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49676,12 +47367,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49785,16 +47471,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49811,12 +47488,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -49881,36 +47553,8 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2708,
-     "title": "[5/5] Dimensions: opening heights in the chain and layered element options"
-    },
-    {
-     "number": 2707,
-     "title": "[4/5] Dimensions: custom text, superscript and text position per witness point"
-    },
-    {
-     "number": 2697,
-     "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
-    },
-    {
      "number": 2696,
      "title": "[3/5] Linear dimensions: text placement method and marker size"
-    },
-    {
-     "number": 2690,
-     "title": "[3/3] Level dimensions: static level, Static checkbox and owner element in ModifyLevelDimensions"
-    },
-    {
-     "number": 2686,
-     "title": "[2/2] Arrowheads of lines, polylines, arcs and splines"
-    },
-    {
-     "number": 2685,
-     "title": "[2/3] CreatePictures: place PNG/JPEG/GIF/TIFF/BMP images at an exact size"
     },
     {
      "number": 2684,
@@ -49925,80 +47569,16 @@
      "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
     },
     {
-     "number": 2675,
-     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
-    },
-    {
-     "number": 2674,
-     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
-    },
-    {
-     "number": 2669,
-     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2668,
-     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
-    },
-    {
-     "number": 2667,
-     "title": "[1/3] GetDetailsOfElements: details of Picture elements"
-    },
-    {
-     "number": 2651,
-     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
-    },
-    {
-     "number": 2645,
-     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
-    },
-    {
-     "number": 2639,
-     "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
-    },
-    {
-     "number": 2617,
-     "title": "Add CreateAngleDimensions and angle dimension details in GetDetailsOfElements"
-    },
-    {
      "number": 2603,
      "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
-    },
-    {
-     "number": 2601,
-     "title": "GetDetailsOfElements: report a stair's going from its walking line"
     },
     {
      "number": 2599,
      "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
     },
     {
-     "number": 2596,
-     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
-    },
-    {
-     "number": 2594,
-     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
-    },
-    {
-     "number": 2592,
-     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
-    },
-    {
-     "number": 2591,
-     "title": "[1/5] Profiles: read and write stretch zones"
-    },
-    {
      "number": 2588,
      "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
-    },
-    {
-     "number": 2580,
-     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
-    },
-    {
-     "number": 2577,
-     "title": "[1/5] GetDetailsOfElements: read the components of railings"
     },
     {
      "number": 2571,
@@ -50007,10 +47587,6 @@
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
-    },
-    {
-     "number": 2549,
-     "title": "[3/3] Read and write the floor plan display settings of columns"
     },
     {
      "number": 2547,
@@ -50023,10 +47599,6 @@
     {
      "number": 2543,
      "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
-    },
-    {
-     "number": 2511,
-     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     }
    ],
    "issues": []
@@ -50079,12 +47651,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50102,16 +47669,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50201,12 +47759,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50224,12 +47777,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50247,12 +47795,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50311,14 +47854,6 @@
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
-    },
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
     }
    ],
    "issues": []
@@ -50377,12 +47912,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50401,12 +47931,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50425,12 +47950,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50485,16 +48005,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50736,12 +48247,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50760,12 +48266,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50909,12 +48410,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50969,16 +48465,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    },
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -50994,12 +48481,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51036,12 +48518,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51057,12 +48534,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51099,12 +48571,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51123,12 +48590,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51144,12 +48606,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51203,12 +48660,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51224,12 +48676,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51265,12 +48712,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2709,
-     "title": "MEP: set port width/height and element size (AC30)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51288,12 +48730,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -51311,12 +48748,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2710,
-     "title": "Add RebuildMEPRoutingElements: add or remove route nodes, purge, reset custom segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

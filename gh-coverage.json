@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-11 23:10 UTC",
+ "generatedAt": "2026-11-12 00:18 UTC",
  "counts": {
   "done": 788,
-  "open": 4,
+  "open": 14,
   "not applicable": 1
  },
  "parameters": {
-  "all": 741,
-  "json": 43,
-  "partial": 4
+  "all": 733,
+  "json": 50,
+  "partial": 5
  },
  "items": [
   {
@@ -1821,7 +1821,7 @@
    "id": "PhotoRender",
    "group": "Project Commands",
    "version": "1.8.0",
-   "brief": "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed. With overwrite false it refuses to replace an existing file.",
+   "brief": "Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed. With overwrite false it refuses to replace an existing file; a folder that does not exist is refused before rendering.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2865,7 +2865,7 @@
    "id": "GetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
+   "brief": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3257,6 +3257,21 @@
     "categories",
     "elementTypes"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetCategoryValuesOfDefaults",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Sets the category values (Structural Function, Position, Renovation Status ...) of the tool defaults of the given element types: the values new elements of the type get, as the Renovation palette does for the Renovation Status. Every given category value is set for every given element type, in a single undoable step, and read back. The value must belong to the given category, as GetElementCategories lists them. The executionResults have one item per element type and category value: for each element type, in the order of the input, one per item of categoryValues, in their order. An element type without that category, or a value Archicad did not keep, gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the default's value in the category now (oldValue) and the value a real run would set (newValue).",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -4778,7 +4793,7 @@
    "id": "SetGDLParametersOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label, or one the object's Parameter Script sets back) gives a failed execution result naming it: each given value (a whole array too, but not A, B or a single array item) is compared with the value read back. With dryRun true no element is changed and no undo step is created: the parameters are written to the element's parameter list and its Parameter Script runs as in a real run, the response has dryRun set to true, and each element that passes the checks made before changing it gets wouldChange, listing the parameters a real run would change (the given ones and the ones the Parameter Script changes with them) with their old and new values.",
+   "brief": "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label, or one the object's Parameter Script sets back) gives a failed execution result naming it: each given value (a whole array too, but not A, B or a single array item) is compared with the value read back. With dryRun true no element is changed and no undo step is created: the parameters are written to the element's parameter list and its Parameter Script runs as in a real run, the response has dryRun set to true, and each element that passes the checks made before changing it gets wouldChange, listing the parameters a real run would change (the given ones and the ones the Parameter Script changes with them) with their old and new values. The railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...) have no parameter session in the Archicad API: their parameters are written to the component itself, no Parameter Script runs (a dry run lists only the given parameters), array parameters are not supported, and a value Archicad does not keep (one the railing's settings set) gives a failed execution result naming it.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5203,7 +5218,7 @@
    "id": "CreateStairs",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings; settings not given come from the Stair tool defaults or the favorite.",
+   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5213,7 +5228,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 45,
+   "parameterCount": 48,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLinePoints",
@@ -5239,11 +5254,14 @@
     "stairsData.baselinePosition",
     "stairsData.extraBottomTread",
     "stairsData.extraTopTread",
+    "stairsData.floorPlanLayout",
     "stairsData.id",
     "stairsData.inputDirection",
     "stairsData.numberingType",
+    "stairsData.reflectedCeilingPlanLayout",
     "stairsData.risers",
     "stairsData.risers.crossSection",
+    "stairsData.stairDisplayType",
     "stairsData.structureVisibility",
     "stairsData.structures",
     "stairsData.structures.bottomType",
@@ -5350,8 +5368,8 @@
      "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 28,
+   "parameters": "json",
+   "parameterCount": 38,
    "coveredParameters": [
     "windowsData",
     "windowsData.aboveViewLinePen",
@@ -5363,6 +5381,8 @@
     "windowsData.displayOption",
     "windowsData.favoriteName",
     "windowsData.height",
+    "windowsData.id",
+    "windowsData.layerIndex",
     "windowsData.libraryPartName",
     "windowsData.lineTypeId",
     "windowsData.oSide",
@@ -5382,7 +5402,16 @@
     "windowsData.useObjectSectionAttributes",
     "windowsData.width"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "windowsData.directionType",
+    "windowsData.fixPoint",
+    "windowsData.revealDepthLocation",
+    "windowsData.subFloorThickness",
+    "windowsData.surfaceId",
+    "windowsData.useObjectMaterials",
+    "windowsData.verticalLink",
+    "windowsData.verticalLinkStoryIndex"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -5408,8 +5437,8 @@
      "path": "Components/DesignToolsComponents/DoorsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 28,
+   "parameters": "json",
+   "parameterCount": 38,
    "coveredParameters": [
     "doorsData",
     "doorsData.aboveViewLinePen",
@@ -5421,6 +5450,8 @@
     "doorsData.displayOption",
     "doorsData.favoriteName",
     "doorsData.height",
+    "doorsData.id",
+    "doorsData.layerIndex",
     "doorsData.libraryPartName",
     "doorsData.lineTypeId",
     "doorsData.oSide",
@@ -5440,7 +5471,16 @@
     "doorsData.useObjectSectionAttributes",
     "doorsData.width"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "doorsData.directionType",
+    "doorsData.fixPoint",
+    "doorsData.revealDepthLocation",
+    "doorsData.subFloorThickness",
+    "doorsData.surfaceId",
+    "doorsData.useObjectMaterials",
+    "doorsData.verticalLink",
+    "doorsData.verticalLinkStoryIndex"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -5885,7 +5925,7 @@
    "id": "CreateRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead.",
+   "brief": "Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead. Each item may give a layer (layerIndex) and an Element ID (id), and a multi-plane roof the planes of its edges (pivotEdges, e.g. gables), as ModifyRoofs takes them.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5899,7 +5939,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 14,
+   "parameterCount": 17,
    "coveredParameters": [
     "roofsData",
     "roofsData.angle",
@@ -5908,8 +5948,11 @@
     "roofsData.eavesOverhang",
     "roofsData.floorIndex",
     "roofsData.holes",
+    "roofsData.id",
+    "roofsData.layerIndex",
     "roofsData.level",
     "roofsData.levels",
+    "roofsData.pivotEdges",
     "roofsData.pivotLine",
     "roofsData.polygonArcs",
     "roofsData.polygonCoordinates",
@@ -6184,7 +6227,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 17,
+   "parameterCount": 23,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -6200,8 +6243,14 @@
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.floorIndex",
+    "dimensionsData.layerIndex",
+    "dimensionsData.layeredElementDimensions",
     "dimensionsData.linePen",
     "dimensionsData.marker",
+    "dimensionsData.onlyDimensionText",
+    "dimensionsData.openingHeightsInChain",
+    "dimensionsData.openingHeightsNominal",
+    "dimensionsData.staticDimension",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
     "dimensionsData.textPen"
@@ -6223,7 +6272,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 22,
+   "parameterCount": 28,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -6240,11 +6289,17 @@
     "dimensionsData.defaultWitnessVal",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
+    "dimensionsData.layerIndex",
+    "dimensionsData.layeredElementDimensions",
     "dimensionsData.linePen",
     "dimensionsData.marker",
+    "dimensionsData.onlyDimensionText",
+    "dimensionsData.openingHeightsInChain",
+    "dimensionsData.openingHeightsNominal",
     "dimensionsData.placeOnTop",
     "dimensionsData.sectionElementIds",
     "dimensionsData.skinBorderIndices",
+    "dimensionsData.staticDimension",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
     "dimensionsData.textPen",
@@ -6267,7 +6322,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 16,
+   "parameterCount": 22,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -6282,8 +6337,14 @@
     "dimensionsData.defaultWitnessVal",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
+    "dimensionsData.layerIndex",
+    "dimensionsData.layeredElementDimensions",
     "dimensionsData.linePen",
     "dimensionsData.marker",
+    "dimensionsData.onlyDimensionText",
+    "dimensionsData.openingHeightsInChain",
+    "dimensionsData.openingHeightsNominal",
+    "dimensionsData.staticDimension",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
     "dimensionsData.textPen"
@@ -6295,7 +6356,7 @@
    "id": "ModifyAssociativeDimensions",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type and pen, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. Not written: the witness points, the dimension line position and direction (use MoveElements), the marker size, the text content and position, the witness extension line, the layout and the hole and composite wall dimensioning settings.",
+   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type and pen, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the marker size, the witness extension line, the layout and the hole and composite wall dimensioning settings.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6305,7 +6366,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 24,
    "coveredParameters": [
     "dimensionsWithDetails",
     "dimensionsWithDetails.appearance",
@@ -6321,7 +6382,18 @@
     "dimensionsWithDetails.textPen"
    ],
    "missingParameters": [
-    "dimensionsWithDetails.elevationOrigin"
+    "dimensionsWithDetails.elevationOrigin",
+    "dimensionsWithDetails.layeredElementDimensions",
+    "dimensionsWithDetails.onlyDimensionText",
+    "dimensionsWithDetails.openingHeightsInChain",
+    "dimensionsWithDetails.openingHeightsNominal",
+    "dimensionsWithDetails.staticDimension",
+    "dimensionsWithDetails.witnessPointTexts",
+    "dimensionsWithDetails.witnessPointTexts.content",
+    "dimensionsWithDetails.witnessPointTexts.customText",
+    "dimensionsWithDetails.witnessPointTexts.index",
+    "dimensionsWithDetails.witnessPointTexts.resetTextPosition",
+    "dimensionsWithDetails.witnessPointTexts.superscript"
    ],
    "pullRequests": [],
    "issues": []
@@ -6330,7 +6402,7 @@
    "id": "GetDimensionData",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Gets the data of existing dimension chains: the line pen, the marker type and pen and the default witness line, and per witness point the coordinates, measured value, witness line and the text height, pen and frame.",
+   "brief": "Gets the data of existing dimension chains: the line pen, the marker type and pen and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen and frame, and the text content (measured value or custom text), superscript and whether the text was moved by hand.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6375,7 +6447,7 @@
    "id": "CreateZones",
    "group": "Element Commands",
    "version": "1.1.8",
-   "brief": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, levels, contour line and cover fill), applied by the same helpers; the polygon or reference point is only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
+   "brief": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, levels, contour line and cover fill), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6389,7 +6461,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 19,
+   "parameterCount": 20,
    "coveredParameters": [
     "zonesData",
     "zonesData.allowOverlap",
@@ -6404,6 +6476,7 @@
     "zonesData.geometry",
     "zonesData.height",
     "zonesData.id",
+    "zonesData.layerIndex",
     "zonesData.name",
     "zonesData.numberStr",
     "zonesData.relativeTopStory",
@@ -6433,7 +6506,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 12,
+   "parameterCount": 16,
    "coveredParameters": [
     "polylinesData",
     "polylinesData.arcs",
@@ -6448,7 +6521,11 @@
     "polylinesData.roomSeparator"
    ],
    "missingParameters": [
-    "databaseId"
+    "databaseId",
+    "polylinesData.drawSegmentMode",
+    "polylinesData.endArrow",
+    "polylinesData.lineTypeId",
+    "polylinesData.startArrow"
    ],
    "pullRequests": [],
    "issues": []
@@ -6471,7 +6548,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 11,
+   "parameterCount": 13,
    "coveredParameters": [
     "linesData",
     "linesData.begCoordinate",
@@ -6485,7 +6562,9 @@
     "linesData.roomSeparator"
    ],
    "missingParameters": [
-    "databaseId"
+    "databaseId",
+    "linesData.endArrow",
+    "linesData.startArrow"
    ],
    "pullRequests": [],
    "issues": []
@@ -6508,9 +6587,10 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 18,
    "coveredParameters": [
     "arcsData",
+    "arcsData.angle",
     "arcsData.begAngle",
     "arcsData.endAngle",
     "arcsData.favoriteName",
@@ -6524,6 +6604,10 @@
     "arcsData.roomSeparator"
    ],
    "missingParameters": [
+    "arcsData.endArrow",
+    "arcsData.ratio",
+    "arcsData.reflected",
+    "arcsData.startArrow",
     "databaseId"
    ],
    "pullRequests": [],
@@ -6602,6 +6686,21 @@
    "issues": []
   },
   {
+   "id": "CreatePictures",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Creates Picture elements from PNG, JPEG, GIF, TIFF or BMP images, given as a file path or as base64 text, at an exact size in model units: give the width, the height or both (one of them keeps the image's proportions). The image is placed by its anchor point at position, and can be rotated, mirrored and drawn with transparent white pixels. With databaseId the pictures are placed in that database, e.g. a worksheet, a detail or a layout, instead of the current one. GetDetailsOfElements reads the settings of a placed picture.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 14,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateHatches",
    "group": "Element Commands",
    "version": "1.5.6",
@@ -6663,7 +6762,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 11,
+   "parameterCount": 13,
    "coveredParameters": [
     "splinesData",
     "splinesData.closed",
@@ -6677,7 +6776,9 @@
     "splinesData.roomSeparator"
    ],
    "missingParameters": [
-    "databaseId"
+    "databaseId",
+    "splinesData.endArrow",
+    "splinesData.startArrow"
    ],
    "pullRequests": [],
    "issues": []
@@ -6889,25 +6990,36 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 17,
+   "parameterCount": 28,
    "coveredParameters": [
     "meshesData",
+    "meshesData.bottomMaterial",
     "meshesData.buildingMaterialId",
     "meshesData.contourPen",
+    "meshesData.cutFillBackgroundPen",
+    "meshesData.cutFillPen",
     "meshesData.favoriteName",
+    "meshesData.fillVisibility",
+    "meshesData.floorFill",
     "meshesData.floorIndex",
     "meshesData.holes",
     "meshesData.id",
+    "meshesData.layerIndex",
     "meshesData.level",
     "meshesData.levelPen",
     "meshesData.lineTypeIndex",
+    "meshesData.materialsChained",
     "meshesData.polygonArcs",
     "meshesData.polygonCoordinates",
     "meshesData.ridges",
+    "meshesData.sectionContourPen",
     "meshesData.showLines",
+    "meshesData.sideMaterial",
     "meshesData.skirtLevel",
     "meshesData.skirtType",
-    "meshesData.sublines"
+    "meshesData.sublines",
+    "meshesData.topMaterial",
+    "meshesData.visibility"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -6917,7 +7029,7 @@
    "id": "CreateLabels",
    "group": "Element Commands",
    "version": "1.2.5",
-   "brief": "Creates Label elements based on the given parameters.",
+   "brief": "Creates Label elements based on the given parameters, optionally on a given layer.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6931,7 +7043,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 15,
+   "parameterCount": 16,
    "coveredParameters": [
     "labelsData",
     "labelsData.begCoordinate",
@@ -6940,6 +7052,7 @@
     "labelsData.floorInd",
     "labelsData.id",
     "labelsData.labelClass",
+    "labelsData.layerIndex",
     "labelsData.leaderLine",
     "labelsData.midCoordinate",
     "labelsData.parentElementId",
@@ -7008,14 +7121,15 @@
      "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 16,
+   "parameters": "json",
+   "parameterCount": 26,
    "coveredParameters": [
     "levelDimensionsData",
     "levelDimensionsData.angle",
     "levelDimensionsData.dimForm",
     "levelDimensionsData.favoriteName",
     "levelDimensionsData.floorIndex",
+    "levelDimensionsData.fontName",
     "levelDimensionsData.id",
     "levelDimensionsData.layerIndex",
     "levelDimensionsData.level",
@@ -7028,6 +7142,31 @@
     "levelDimensionsData.textHeight",
     "levelDimensionsData.textPen"
    ],
+   "missingParameters": [
+    "levelDimensionsData.bold",
+    "levelDimensionsData.customText",
+    "levelDimensionsData.fontIndex",
+    "levelDimensionsData.hideWithBaseElem",
+    "levelDimensionsData.italic",
+    "levelDimensionsData.secondCustomText",
+    "levelDimensionsData.secondTextContent",
+    "levelDimensionsData.textContent",
+    "levelDimensionsData.underline"
+   ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateAngleDimensions",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Creates Angle Dimension elements (the Angle Dimension tool) measuring the angle between two lines, each given by two points, with the dimension arc through the given arcPosition, optionally based on an Angle Dimension favorite. The dimensions are static (not associated with elements) and are created in the current database - the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active - or in the one given by databaseId. GetDetailsOfElements returns their lines, arc and measured angle.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 13,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -7036,7 +7175,7 @@
    "id": "ModifyLevelDimensions",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height and pen, marker type and size, plus sign, angle, origin), with the same keys. Not written: the parent element and the static level (delete and recreate the dimension to change them), the text content and the hide-with-base-element setting.",
+   "brief": "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId).",
    "status": "done",
    "reason": "",
    "components": [
@@ -7045,22 +7184,36 @@
      "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 11,
+   "parameters": "json",
+   "parameterCount": 24,
    "coveredParameters": [
     "levelDimensionsWithDetails",
     "levelDimensionsWithDetails.angle",
     "levelDimensionsWithDetails.dimForm",
     "levelDimensionsWithDetails.elementId",
+    "levelDimensionsWithDetails.fontName",
+    "levelDimensionsWithDetails.level",
     "levelDimensionsWithDetails.markerSize",
     "levelDimensionsWithDetails.needPlus",
     "levelDimensionsWithDetails.origin",
+    "levelDimensionsWithDetails.parentElementId",
     "levelDimensionsWithDetails.pen",
     "levelDimensionsWithDetails.position",
     "levelDimensionsWithDetails.textHeight",
     "levelDimensionsWithDetails.textPen"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "levelDimensionsWithDetails.bold",
+    "levelDimensionsWithDetails.customText",
+    "levelDimensionsWithDetails.fontIndex",
+    "levelDimensionsWithDetails.hideWithBaseElem",
+    "levelDimensionsWithDetails.italic",
+    "levelDimensionsWithDetails.secondCustomText",
+    "levelDimensionsWithDetails.secondTextContent",
+    "levelDimensionsWithDetails.staticLevel",
+    "levelDimensionsWithDetails.textContent",
+    "levelDimensionsWithDetails.underline"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -7245,7 +7398,7 @@
    "id": "ModifyColumns",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Not written: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
+   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. Not written: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7259,21 +7412,32 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 26,
+   "parameterCount": 41,
    "coveredParameters": [
     "columnsWithDetails",
+    "columnsWithDetails.aboveViewLinePen",
+    "columnsWithDetails.aboveViewLineTypeId",
     "columnsWithDetails.axisRotationAngle",
+    "columnsWithDetails.belowViewLinePen",
+    "columnsWithDetails.belowViewLineTypeId",
     "columnsWithDetails.bottomOffset",
     "columnsWithDetails.buildingMaterialId",
     "columnsWithDetails.circleBased",
+    "columnsWithDetails.contourLineTypeId",
+    "columnsWithDetails.contourPen",
     "columnsWithDetails.coreAnchor",
+    "columnsWithDetails.coreSymbolPen",
     "columnsWithDetails.coverFill",
     "columnsWithDetails.cutFillBackgroundPen",
     "columnsWithDetails.cutFillPen",
     "columnsWithDetails.depth",
+    "columnsWithDetails.displayOption",
     "columnsWithDetails.elementId",
     "columnsWithDetails.floorIndex",
     "columnsWithDetails.height",
+    "columnsWithDetails.hiddenLinePen",
+    "columnsWithDetails.hiddenLineTypeId",
+    "columnsWithDetails.isAutoOnStoryVisibility",
     "columnsWithDetails.isFlipped",
     "columnsWithDetails.isSlanted",
     "columnsWithDetails.isWidthAndHeightLinked",
@@ -7284,6 +7448,10 @@
     "columnsWithDetails.slantDirectionAngle",
     "columnsWithDetails.topOffset",
     "columnsWithDetails.veneer",
+    "columnsWithDetails.veneerLinePen",
+    "columnsWithDetails.veneerLineTypeId",
+    "columnsWithDetails.viewDepthLimitation",
+    "columnsWithDetails.visibility",
     "columnsWithDetails.width",
     "columnsWithDetails.wrapping",
     "columnsWithDetails.zCoordinate"
@@ -7296,7 +7464,7 @@
    "id": "ModifyWindows",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Window elements based on the given parameters.",
+   "brief": "Modifies Window elements based on the given parameters: size, position, sill anchor (verticalLink), sub-floor thickness, reveal and its anchor, surface, plane in slanted walls, fix point and floor plan and section settings. The display option and these settings are read back, and an item fails when Archicad did not apply one.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7309,8 +7477,8 @@
      "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 26,
+   "parameters": "json",
+   "parameterCount": 34,
    "coveredParameters": [
     "windowsWithDetails",
     "windowsWithDetails.aboveViewLinePen",
@@ -7339,7 +7507,16 @@
     "windowsWithDetails.useObjectSectionAttributes",
     "windowsWithDetails.width"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "windowsWithDetails.directionType",
+    "windowsWithDetails.fixPoint",
+    "windowsWithDetails.revealDepthLocation",
+    "windowsWithDetails.subFloorThickness",
+    "windowsWithDetails.surfaceId",
+    "windowsWithDetails.useObjectMaterials",
+    "windowsWithDetails.verticalLink",
+    "windowsWithDetails.verticalLinkStoryIndex"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -7352,7 +7529,7 @@
    "id": "ModifyDoors",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Door elements based on the given parameters.",
+   "brief": "Modifies Door elements based on the given parameters: size, position, sill anchor (verticalLink), sub-floor thickness, reveal and its anchor, surface, plane in slanted walls, fix point and floor plan and section settings. The display option and these settings are read back, and an item fails when Archicad did not apply one.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7365,8 +7542,8 @@
      "path": "Components/ElementsComponents/ModifyDoorsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 26,
+   "parameters": "json",
+   "parameterCount": 34,
    "coveredParameters": [
     "doorsWithDetails",
     "doorsWithDetails.aboveViewLinePen",
@@ -7395,7 +7572,16 @@
     "doorsWithDetails.useObjectSectionAttributes",
     "doorsWithDetails.width"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "doorsWithDetails.directionType",
+    "doorsWithDetails.fixPoint",
+    "doorsWithDetails.revealDepthLocation",
+    "doorsWithDetails.subFloorThickness",
+    "doorsWithDetails.surfaceId",
+    "doorsWithDetails.useObjectMaterials",
+    "doorsWithDetails.verticalLink",
+    "doorsWithDetails.verticalLinkStoryIndex"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -7510,7 +7696,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 45,
+   "parameterCount": 44,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7552,7 +7738,6 @@
     "roofsWithDetails.floorFill",
     "roofsWithDetails.isAutoOnStoryVisibility",
     "roofsWithDetails.materialsChained",
-    "roofsWithDetails.pivotEdges.levels.angleType",
     "roofsWithDetails.sectionContourLineTypeId",
     "roofsWithDetails.sectionContourPen",
     "roofsWithDetails.sideMaterial",
@@ -7650,7 +7835,7 @@
    "id": "ModifyRailings",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns. The reference line, the other segments and nodes, the posts, rails and panels and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
+   "brief": "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the inner posts (double post offset, post count, vertical and horizontal position), panels (visible, frame) and baluster sets (frame, distribution) of a segment by their index among that segment's components of the kind, and the posts of a node (vertical position) by their index among that node's posts. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7660,7 +7845,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 17,
+   "parameterCount": 34,
    "coveredParameters": [
     "railingsWithDetails",
     "railingsWithDetails.bottomOffset",
@@ -7677,10 +7862,27 @@
    "missingParameters": [
     "railingsWithDetails.nodes",
     "railingsWithDetails.nodes.postOffset",
+    "railingsWithDetails.nodes.posts",
     "railingsWithDetails.nodes.unifyPatterns",
     "railingsWithDetails.segments",
+    "railingsWithDetails.segments.balusterSets",
+    "railingsWithDetails.segments.balusterSets.distribution",
+    "railingsWithDetails.segments.handrails",
+    "railingsWithDetails.segments.handrails.doubleHandrail",
     "railingsWithDetails.segments.index",
-    "railingsWithDetails.segments.lateralOffset"
+    "railingsWithDetails.segments.innerPosts",
+    "railingsWithDetails.segments.innerPosts.doublePostOffset",
+    "railingsWithDetails.segments.innerPosts.horizontalPosition",
+    "railingsWithDetails.segments.innerPosts.postCount",
+    "railingsWithDetails.segments.innerPosts.verticalPosition",
+    "railingsWithDetails.segments.lateralOffset",
+    "railingsWithDetails.segments.panels",
+    "railingsWithDetails.segments.panels.frame",
+    "railingsWithDetails.segments.rails",
+    "railingsWithDetails.segments.rails.horizontalOffset",
+    "railingsWithDetails.segments.rails.relative",
+    "railingsWithDetails.segments.toprail",
+    "railingsWithDetails.segments.toprail.visible"
    ],
    "pullRequests": [],
    "issues": []
@@ -7819,10 +8021,25 @@
    "issues": []
   },
   {
+   "id": "ModifyPictures",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Modifies Picture elements: moves them to a new position, resizes them to a width and height in model units (one of them keeps the picture's proportions), changes the anchor point, the angle, mirrored, transparent and the name. Only the given settings are changed and the image stays as it is. Archicad cannot change a picture in place, so a changed picture is replaced by a new one with the same image, layer, story and ID, and the new elementId is returned; labels, dimensions, properties and classifications of the original are not carried over. With databaseId the pictures are looked for in that database, e.g. a worksheet, a detail or a layout. GetDetailsOfElements reads the settings back.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 11,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ModifyLabels",
    "group": "Element Commands",
    "version": "1.5.9",
-   "brief": "Modifies Label elements based on the given parameters.",
+   "brief": "Modifies Label elements based on the given parameters: the text and its style, the symbol label's style, the leader line, and the leader line's coordinates, which move or re-point the label.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7836,11 +8053,14 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 7,
+   "parameterCount": 10,
    "coveredParameters": [
     "labelsWithDetails",
+    "labelsWithDetails.begCoordinate",
     "labelsWithDetails.elementId",
+    "labelsWithDetails.endCoordinate",
     "labelsWithDetails.leaderLine",
+    "labelsWithDetails.midCoordinate",
     "labelsWithDetails.runs",
     "labelsWithDetails.style",
     "labelsWithDetails.symbolStyle",
@@ -7854,7 +8074,7 @@
    "id": "ModifyCurtainWalls",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls.",
+   "brief": "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls; and the floor plan display settings GetDetailsOfElements reads: story visibility, display option, view depth, cut, uncut and overhead projection modes, and the pens and line types of the frame and panel cut lines and of the uncut and overhead lines.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7868,16 +8088,34 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 9,
+   "parameterCount": 27,
    "coveredParameters": [
     "curtainWallsWithDetails",
+    "curtainWallsWithDetails.aboveViewLinePen",
+    "curtainWallsWithDetails.aboveViewLineTypeId",
+    "curtainWallsWithDetails.belowViewLinePen",
+    "curtainWallsWithDetails.belowViewLineTypeId",
     "curtainWallsWithDetails.cells",
     "curtainWallsWithDetails.coordinates",
+    "curtainWallsWithDetails.cutProjectionMode",
+    "curtainWallsWithDetails.displayOption",
     "curtainWallsWithDetails.elementId",
     "curtainWallsWithDetails.floorIndex",
+    "curtainWallsWithDetails.frameCutLinePen",
+    "curtainWallsWithDetails.frameCutLineTypeId",
     "curtainWallsWithDetails.height",
+    "curtainWallsWithDetails.isAutoOnStoryVisibility",
+    "curtainWallsWithDetails.overheadProjectionMode",
+    "curtainWallsWithDetails.panelCutLinePen",
+    "curtainWallsWithDetails.panelCutLineTypeId",
+    "curtainWallsWithDetails.pen",
     "curtainWallsWithDetails.primaryPattern",
     "curtainWallsWithDetails.secondaryPattern",
+    "curtainWallsWithDetails.uncutProjectionMode",
+    "curtainWallsWithDetails.useFrameTypesAttributes",
+    "curtainWallsWithDetails.usePanelTypesAttributes",
+    "curtainWallsWithDetails.viewDepthLimitation",
+    "curtainWallsWithDetails.visibility",
     "curtainWallsWithDetails.zCoordinate"
    ],
    "missingParameters": [],
@@ -7888,7 +8126,7 @@
    "id": "ModifyCurtainWallFrames",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.",
+   "brief": "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. The frame element itself is changed, and read back to check that Archicad applied the change. A frame given its own contour or type without a classIndex is made a customized frame (GetDetailsOfElements reports its type as Custom) when Archicad does not keep the change on a frame of a class.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7933,7 +8171,7 @@
    "id": "ModifyStairs",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. Not written by this command: the baseline with its landings and winders, the top link, the floor plan display (symbol and marker layout), the headroom and the stair rules; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
+   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. Not written by this command: the baseline with its landings and winders, the top link, the break marks, lines and fills of the floor plan symbol, the headroom and the stair rules; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7943,7 +8181,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 37,
+   "parameterCount": 40,
    "coveredParameters": [
     "stairsWithDetails",
     "stairsWithDetails.elementId",
@@ -7964,10 +8202,13 @@
    "missingParameters": [
     "stairsWithDetails.extraBottomTread",
     "stairsWithDetails.extraTopTread",
+    "stairsWithDetails.floorPlanLayout",
     "stairsWithDetails.inputDirection",
     "stairsWithDetails.numberingType",
+    "stairsWithDetails.reflectedCeilingPlanLayout",
     "stairsWithDetails.risers",
     "stairsWithDetails.risers.crossSection",
+    "stairsWithDetails.stairDisplayType",
     "stairsWithDetails.structureVisibility",
     "stairsWithDetails.structures",
     "stairsWithDetails.structures.bottomType",
@@ -8029,7 +8270,7 @@
    "id": "ModifyZones",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link, floor thickness, contour line and cover fill - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. The polygon of a manual zone cannot be changed here (the change takes no polygon memo), nor the reference point of an automatic one (SetDetailsOfElements moves it).",
+   "brief": "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link, floor thickness, contour line and cover fill - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).",
    "status": "done",
    "reason": "",
    "components": [
@@ -8043,9 +8284,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 15,
+   "parameterCount": 17,
    "coveredParameters": [
     "zonesWithDetails",
+    "zonesWithDetails.allowOverlap",
     "zonesWithDetails.bottomOffset",
     "zonesWithDetails.categoryAttributeId",
     "zonesWithDetails.contourLine",
@@ -8053,6 +8295,7 @@
     "zonesWithDetails.elementId",
     "zonesWithDetails.fixedStampAngle",
     "zonesWithDetails.floorThickness",
+    "zonesWithDetails.geometry",
     "zonesWithDetails.height",
     "zonesWithDetails.name",
     "zonesWithDetails.numberStr",
@@ -11252,7 +11495,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 37,
+   "parameterCount": 42,
    "coveredParameters": [
     "overwriteExisting",
     "profileDataArray",
@@ -11292,6 +11535,11 @@
     "profileDataArray.skinOverrides.surfaceId",
     "profileDataArray.skinOverrides.visibleCutEndLines",
     "profileDataArray.sourceAttributeId",
+    "profileDataArray.stretchZones",
+    "profileDataArray.stretchZones.horizontal",
+    "profileDataArray.stretchZones.removeHorizontal",
+    "profileDataArray.stretchZones.removeVertical",
+    "profileDataArray.stretchZones.vertical",
     "profileDataArray.wallType"
    ],
    "pullRequests": [],
@@ -14425,6 +14673,21 @@
    "issues": []
   },
   {
+   "id": "Create3DDocuments",
+   "group": "Navigator Commands",
+   "version": "2.0.1",
+   "brief": "Creates 3D Documents with the given names and reference IDs, in the Project Map's 3D Documents folder. Archicad gives each its starting settings; Get3DDocumentSettings reads them and Set3DDocumentSettings changes its view, cut and filter. Returns the databaseId and the Project Map navigatorItemId of each new 3D Document.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateDetailMarkers",
    "group": "Navigator Commands",
    "version": "2.0.0",
@@ -14628,10 +14891,11 @@
      "path": "Components/DocumentToolsComponents/DrawingsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 11,
+   "parameters": "json",
+   "parameterCount": 13,
    "coveredParameters": [
     "drawingsData",
+    "drawingsData.anchorPoint",
     "drawingsData.angle",
     "drawingsData.clipPolygon",
     "drawingsData.drawingScale",
@@ -14643,7 +14907,9 @@
     "drawingsData.position",
     "drawingsData.scale"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "drawingsData.useOwnOriginAsAnchor"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -15233,7 +15499,7 @@
    "id": "Set3DCutPlanes",
    "group": "Navigator Commands",
    "version": "1.3.1",
-   "brief": "Sets the 3D cut planes. An empty cutPlanes array switches the 3D cut off.",
+   "brief": "Sets the 3D cut planes (pa*x + pb*y + pc*z = pd, cutting away the side the normal points to), with the pen and surface of their cut faces, and turns 3D Cutaway on. An empty cutPlanes array switches the 3D cut off.",
    "status": "done",
    "reason": "",
    "components": [
@@ -15242,12 +15508,16 @@
      "path": "Components/NavigatorComponents/Set3DCutPlanesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 4,
    "coveredParameters": [
     "cutPlanes"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "customPen",
+    "customSurfaceId",
+    "useCustom"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -15255,7 +15525,7 @@
    "id": "Get3DCutPlanes",
    "group": "Navigator Commands",
    "version": "1.7.3",
-   "brief": "Gets whether the 3D cut planes are on and the cut planes (pa, pb, pc, pd) of the 3D window, in the form accepted by Set3DCutPlanes.",
+   "brief": "Gets whether the 3D cut planes are on, the cut planes (pa, pb, pc, pd) of the 3D window with the pen and surface of their cut faces, and the custom cut pen and surface, in the form accepted by Set3DCutPlanes.",
    "status": "done",
    "reason": "",
    "components": [
@@ -15388,7 +15658,7 @@
    "id": "GetCameras",
    "group": "Navigator Commands",
    "version": "2.0.0",
-   "brief": "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own.",
+   "brief": "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, its pen, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own.",
    "status": "done",
    "reason": "",
    "components": [
@@ -15399,6 +15669,66 @@
    ],
    "parameters": "all",
    "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateCameraSets",
+   "group": "Navigator Commands",
+   "version": "2.0.1",
+   "brief": "Creates empty Camera Sets (camera paths) with the given names, and makes one the active Camera Set when isActive is true. Returns their element ids, which GetCameras lists as cameraSetElementId. Delete them with DeleteElements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyCameraSets",
+   "group": "Navigator Commands",
+   "version": "2.0.1",
+   "brief": "Renames Camera Sets (camera paths) and makes one of them the active Camera Set (isActive true); the set active before is then no longer active. Values not given are kept.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateCameras",
+   "group": "Navigator Commands",
+   "version": "2.0.1",
+   "brief": "Creates perspective cameras, each added at the end of the path of the given Camera Set, from the camera and target positions (with their heights) and optionally the view cone, roll angle, two-point perspective, sun (by angles or by date and time) and pen; the rest comes from the Camera tool defaults. Returns their element ids, which GetCameras lists. Delete them with DeleteElements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 9,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyCameras",
+   "group": "Navigator Commands",
+   "version": "2.0.1",
+   "brief": "Changes perspective cameras: the camera and target positions (with their heights), view cone, roll angle, two-point perspective, sun (by angles or by date and time) and pen. Values not given are kept; each camera keeps its element id, its Camera Set and its place in the path. View cone and roll angle are in the units GetCameras returns them.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 9,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -17302,7 +17632,7 @@
    "id": "DeleteDesignOptions",
    "group": "Design Options Commands",
    "version": "1.7.2",
-   "brief": "Deletes the given design options. Available from Archicad 29.",
+   "brief": "Deletes the given design options. An option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29.",
    "status": "done",
    "reason": "",
    "components": [
@@ -17324,7 +17654,7 @@
    "id": "DeleteDesignOptionSets",
    "group": "Design Options Commands",
    "version": "1.7.2",
-   "brief": "Deletes the given design option sets. Available from Archicad 29.",
+   "brief": "Deletes the given design option sets. A set with an option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29.",
    "status": "done",
    "reason": "",
    "components": [
@@ -18105,12 +18435,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2624,
-     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetMEPPorts",
@@ -18154,12 +18479,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2624,
-     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateMEPRoutingElements",
@@ -18181,12 +18501,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2624,
-     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateMEPElements",
@@ -18230,18 +18545,28 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2624,
-     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
-    }
-   ]
+   "issues": []
+  },
+  {
+   "id": "RebuildMEPRoutingElements",
+   "group": "MEP Commands",
+   "version": "2.0.1",
+   "brief": "Rebuilds the given MEP routing elements along new node coordinates or along their current polyline: this adds or removes nodes (bend points), leaves out with removeCollinearNodes the nodes where the route goes straight on (as Purge Unused MEP Nodes does), and with resetCustomSegments resets customized segments and nodes (as Reset Custom Segments does). Each route is deleted and placed again from its own settings, under its own guid when Archicad allows it and else under a new one, which the response gives. Every segment, node and fitting gets a new guid (see guidMap); labels, dimensions and other things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node count stays the same: it keeps every guid. Kept: each new segment gets the size (shape, width, height, reference id) and the preference table, anchor, reference line offsets, wall thickness, connection style, flange size and rigid segment settings (insulation) of the old segment it lies along most, and each new node the transition placement and elbow and transition settings of the old node at its position (a new segment along old segments of different sizes gets those of the one it overlaps most, with a warning; a segment along no old segment, such as a new end, those of its nearest neighbour along the route); the route's layer, home story, renovation status (given to every part), element ID, classifications and the property values set on it; and its connections at both ends. Not kept: the guids of the segments, rigid segments, nodes, elbows and transitions; the element IDs, classifications, property values and own renovation status of single parts; and the route's design option, which is not set. Refused, with nothing changed: a route that ends at a tee (Branch) or has a take-off on a segment, which Archicad deletes with the route. What could not be carried over is listed in the item's warnings. Nothing is changed when the nodes make a segment without length or the route cannot be deleted. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyMEPPorts",
    "group": "MEP Commands",
    "version": "1.8.0",
-   "brief": "Modifies the given MEP ports (as returned by GetMEPPorts): shape, connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28.",
+   "brief": "Modifies the given MEP ports (as returned by GetMEPPorts): shape, width, height (not of piping ports), connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -18373,12 +18698,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2624,
-     "title": "MEP reads return mepSystemId as {\"attributeId\": {\"guid\"}}, which their schema doesn't allow and Modify refuses"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateMEPSystemGroups",
@@ -18605,7 +18925,7 @@
    "id": "ModifyMEPElements",
    "group": "MEP Commands",
    "version": "2.0.0",
-   "brief": "Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find only after the item's other changes were made, so that item's error says which changes stayed. Available from Archicad 27.",
+   "brief": "Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, their size along the local x and y axes (from Archicad 30), the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find, or a library part that keeps its own size, only after the item's other changes were made, so that item's error says which changes stayed. The size of the connections is set with ModifyMEPPorts. Available from Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
