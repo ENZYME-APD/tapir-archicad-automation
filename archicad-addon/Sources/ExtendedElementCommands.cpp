@@ -8678,6 +8678,22 @@ GS::String CreateWindowsCommand::GetName () const
     return "CreateWindows";
 }
 
+// The "id" and "layerIndex" keys of CreateWindows and CreateDoors, the same as those of the other
+// Create commands (#2576). ModifyWindows/ModifyDoors do not take them: SetDetailsOfElements does.
+static GS::UniString WindowOrDoorIdAndLayerSchemaFields ()
+{
+    return R"(
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                        },)";
+}
+
 GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () const
 {
     return GS::UniString (R"({
@@ -8687,8 +8703,8 @@ GS::Optional<GS::UniString> CreateWindowsCommand::GetInputParametersSchema () co
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "properties": {
-                        "ownerWallId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(,
+                    "properties": {)") + WindowOrDoorIdAndLayerSchemaFields () + R"(
+                        "ownerWallId": { "$ref": "#/ElementId" },)" + WindowOrDoorDetailSchemaFields () + R"(,
                         "libraryPartName": {
                             "type": "string",
                             "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Set on the created window only, with its A and B from `width` and `height` (or the tool default's width and height); the Window tool defaults are not changed."
@@ -8916,6 +8932,13 @@ static GS::ObjectState CreateWindowsOrDoors (const GS::ObjectState& parameters,
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
                 continue;
             }
+            // After PrepareWindowOrDoorDefaults, whose defaults (and the favorite's) carry the
+            // layer it replaces.
+            const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
+            if (layerError.HasValue ()) {
+                elements.Push (*layerError);
+                continue;
+            }
             if (libInd > 0) {
                 err = ApplyWindowOrDoorLibraryPart (libInd, element, memo);
                 if (err != NoError) {
@@ -8938,6 +8961,19 @@ static GS::ObjectState CreateWindowsOrDoors (const GS::ObjectState& parameters,
                 elements.Push (CreateErrorResponse (err, errorMessage));
                 continue;
             }
+
+            // Per-item "id", as in CreateElementsCommandBase::Execute: an id that cannot be
+            // written leaves no half-done window or door behind, the new one is deleted again.
+            GS::UniString id;
+            if (data.Get ("id", id)) {
+                err = ChangeElementId (element.header.guid, id);
+                if (err != NoError) {
+                    ACAPI_Element_Delete ({ element.header.guid });
+                    elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to set the id of the new ") + noun + ", so it was not created."));
+                    continue;
+                }
+            }
+
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
@@ -8967,8 +9003,8 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetInputParametersSchema () cons
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "properties": {
-                        "ownerWallId": { "$ref": "#/ElementId" },)") + WindowOrDoorDetailSchemaFields () + R"(,
+                    "properties": {)") + WindowOrDoorIdAndLayerSchemaFields () + R"(
+                        "ownerWallId": { "$ref": "#/ElementId" },)" + WindowOrDoorDetailSchemaFields () + R"(,
                         "libraryPartName": {
                             "type": "string",
                             "description": "Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Set on the created door only, with its A and B from `width` and `height` (or the tool default's width and height); the Door tool defaults are not changed."
