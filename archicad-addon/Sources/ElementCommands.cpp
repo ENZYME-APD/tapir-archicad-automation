@@ -3434,6 +3434,17 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("markerSize", elem.levelDimension.markerSize);
                 typeSpecificDetails.Add ("angle", elem.levelDimension.angle);
                 typeSpecificDetails.Add ("origin", DimensionOriginToString (elem.levelDimension.origin));
+                typeSpecificDetails.Add ("fontIndex", (Int32) elem.levelDimension.note1.noteFont);
+                const GS::Optional<GS::UniString> fontName = GetFontNameFromIndex (elem.levelDimension.note1.noteFont);
+                if (fontName.HasValue ()) {
+                    typeSpecificDetails.Add ("fontName", *fontName);
+                }
+                typeSpecificDetails.Add ("bold", (elem.levelDimension.note1.faceBits & APIFace_Bold) != 0);
+                typeSpecificDetails.Add ("italic", (elem.levelDimension.note1.faceBits & APIFace_Italic) != 0);
+                typeSpecificDetails.Add ("underline", (elem.levelDimension.note1.faceBits & APIFace_Underline) != 0);
+#ifdef ServerMainVers_2900
+                typeSpecificDetails.Add ("hideWithBaseElem", elem.levelDimension.hideWithBaseElem);
+#endif
                 break;
             }
 

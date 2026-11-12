@@ -6488,6 +6488,30 @@ static const char* LevelDimensionSettingsSchemaProperties = R"(
                     "origin": {
                         "$ref": "#/DimensionOrigin",
                         "description": "The origin the level is measured from. Optional parameter."
+                    },
+                    "fontName": {
+                        "type": "string",
+                        "description": "Font of the dimension text (Text Style of the Level Dimension settings), applied to both texts of the marker: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given. Optional parameter."
+                    },
+                    "fontIndex": {
+                        "type": "integer",
+                        "description": "Font of the dimension text given by its Font attribute index, applied to both texts of the marker. Optional parameter."
+                    },
+                    "bold": {
+                        "type": "boolean",
+                        "description": "Bold dimension text. Optional parameter, the other styles are kept."
+                    },
+                    "italic": {
+                        "type": "boolean",
+                        "description": "Italic dimension text. Optional parameter, the other styles are kept."
+                    },
+                    "underline": {
+                        "type": "boolean",
+                        "description": "Underlined dimension text. Optional parameter, the other styles are kept."
+                    },
+                    "hideWithBaseElem": {
+                        "type": "boolean",
+                        "description": "Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter."
                     })";
 
 GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
@@ -6571,6 +6595,54 @@ GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, origin);
         }
+    }
+
+    // The Text Style of the settings dialog: one font and style for both texts of the marker,
+    // as textHeight and textPen (#2656).
+    GS::Optional<short> fontIndex;
+    const auto fontErr = TextLabelDetails::GetFontIndexFromDetails (parameters, fontIndex);
+    if (fontErr.HasValue ()) {
+        return fontErr;
+    }
+    if (fontIndex.HasValue ()) {
+        element.levelDimension.note1.noteFont = *fontIndex;
+        element.levelDimension.note2.noteFont = *fontIndex;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.noteFont);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.noteFont);
+        }
+    }
+
+    const unsigned short faceBits = element.levelDimension.note1.faceBits;
+    bool bold = (faceBits & APIFace_Bold) != 0;
+    bool italic = (faceBits & APIFace_Italic) != 0;
+    bool underline = (faceBits & APIFace_Underline) != 0;
+    bool faceChanged = false;
+    faceChanged |= parameters.Get ("bold", bold);
+    faceChanged |= parameters.Get ("italic", italic);
+    faceChanged |= parameters.Get ("underline", underline);
+    if (faceChanged) {
+        // Only the three styles of the dialog are set; any other bit Archicad keeps there stays.
+        const unsigned short styleBits = static_cast<unsigned short> (APIFace_Bold | APIFace_Italic | APIFace_Underline);
+        const unsigned short newBits = static_cast<unsigned short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0));
+        element.levelDimension.note1.faceBits = static_cast<unsigned short> ((element.levelDimension.note1.faceBits & ~styleBits) | newBits);
+        element.levelDimension.note2.faceBits = static_cast<unsigned short> ((element.levelDimension.note2.faceBits & ~styleBits) | newBits);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.faceBits);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.faceBits);
+        }
+    }
+
+    if (parameters.Contains ("hideWithBaseElem")) {
+#ifdef ServerMainVers_2900
+        parameters.Get ("hideWithBaseElem", element.levelDimension.hideWithBaseElem);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, hideWithBaseElem);
+        }
+#else
+        // The Level Dimension of the Archicad 25-28 API has no hideWithBaseElem field.
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, "'hideWithBaseElem' of a level dimension is available from Archicad 29.");
+#endif
     }
 
     return {};
@@ -6942,8 +7014,8 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
 
 // The settings go through ApplyLevelDimensionSettings, as in CreateLevelDimensions; the position
 // through loc, which ACAPI_Element_Change accepts for level dimensions (as the DevKit's Element_Test
-// does in Do_LevelDimension_Edit). The parent element, the static level and the texts' content are
-// not changed. The element is read back, so a value Archicad did not take is reported as a failure.
+// does in Do_LevelDimension_Edit). The font and style go to both texts, like the text height and pen.
+// The parent element, the static level and the texts' content are not changed. The element is read back, so a value Archicad did not take is reported as a failure.
 GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> itemsWithDetails;
@@ -7033,6 +7105,19 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
             if (item.Contains ("origin") && changed.levelDimension.origin != element.levelDimension.origin) {
                 notApplied += " origin";
             }
+            if ((item.Contains ("fontName") || item.Contains ("fontIndex")) && changed.levelDimension.note1.noteFont != element.levelDimension.note1.noteFont) {
+                notApplied += " font";
+            }
+            const unsigned short styleBits = static_cast<unsigned short> (APIFace_Bold | APIFace_Italic | APIFace_Underline);
+            if ((item.Contains ("bold") || item.Contains ("italic") || item.Contains ("underline")) &&
+                (changed.levelDimension.note1.faceBits & styleBits) != (element.levelDimension.note1.faceBits & styleBits)) {
+                notApplied += " text style";
+            }
+#ifdef ServerMainVers_2900
+            if (item.Contains ("hideWithBaseElem") && changed.levelDimension.hideWithBaseElem != element.levelDimension.hideWithBaseElem) {
+                notApplied += " hideWithBaseElem";
+            }
+#endif
             if (!notApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));
                 continue;
