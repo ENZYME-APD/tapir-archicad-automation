@@ -3766,6 +3766,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddCurtainWallReferenceLine (elem, typeSpecificDetails);
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
+                typeSpecificDetails.Add ("offset", elem.curtainWall.offset);
+                typeSpecificDetails.Add ("nominalWidth", elem.curtainWall.nominalWidth);
                 typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.curtainWall.displayOption));
                 typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.curtainWall.viewDepthLimitation));
                 typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.curtainWall.visibility));

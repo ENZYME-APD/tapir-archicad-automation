@@ -13346,7 +13346,16 @@
                 }
             },
             "flipped": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "The side of the reference line the curtain wall is on (API_CurtainWallType::flipped), as ModifyCurtainWalls takes it."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the panels from the reference line (API_CurtainWallType::offset), as ModifyCurtainWalls takes it."
+            },
+            "nominalWidth": {
+                "type": "number",
+                "description": "The nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth), as ModifyCurtainWalls takes it."
             },
             "angle": {
                 "type": "number",

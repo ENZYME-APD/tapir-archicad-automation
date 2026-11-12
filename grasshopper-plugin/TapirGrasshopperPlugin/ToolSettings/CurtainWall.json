@@ -85,9 +85,29 @@
     },
     {
       "get": "flipped",
-      "set": null,
+      "set": "flipped",
       "apiMember": "API_CurtainWallType::flipped",
       "apiDescription": "The curtain wall is flipped.",
+      "label": null,
+      "labelSource": null,
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "offset",
+      "set": "offset",
+      "apiMember": "API_CurtainWallType::offset",
+      "apiDescription": "Panel offset to the reference plane.",
+      "label": null,
+      "labelSource": null,
+      "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "nominalWidth",
+      "set": "nominalWidth",
+      "apiMember": "API_CurtainWallType::nominalWidth",
+      "apiDescription": "Nominal width of the Curtain Wall.",
       "label": null,
       "labelSource": null,
       "group": "Geometry and Positioning",
