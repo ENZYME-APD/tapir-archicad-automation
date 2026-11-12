@@ -2279,6 +2279,13 @@
                     "$ref": "#/ProfileSkin"
                 }
             },
+            "openingReferenceLines": {
+                "type": "array",
+                "description": "The profile's opening reference lines (Profile Editor, \"Opening Reference\"): doors and windows in a wall with this profile are placed by them instead of by the profile's bounding box. Empty when the profile has none.",
+                "items": {
+                    "$ref": "#/ProfileOpeningReferenceLine"
+                }
+            },
             "nominalSize": {
                 "$ref": "#/ProfileNominalSize",
                 "description": "The positions of the profile's nominal width and height lines (Profile Editor), in the coordinates of skins[].outlineCoords. A profile without nominal size lines reports the bounds Archicad uses instead."
@@ -2296,6 +2303,25 @@
             "attributeId",
             "index",
             "name"
+        ]
+    },
+    "ProfileOpeningReferenceLine": {
+        "type": "object",
+        "description": "An opening reference line of a profile, in the coordinates GetProfiles reports in skins[].outlineCoords (x across the wall, y up). Openings are placed between the lines, at the heights where they cross the opening.",
+        "properties": {
+            "begin": {
+                "$ref": "#/Coordinate2D",
+                "description": "The start point of the line."
+            },
+            "end": {
+                "$ref": "#/Coordinate2D",
+                "description": "The end point of the line."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begin",
+            "end"
         ]
     },
     "ProfileStretchZones": {
@@ -4889,6 +4915,7 @@
             "profileModifiers",
             "skins",
             "skinOutlines",
+            "openingReferenceLines",
             "nominalSize",
             "hotspots"
         ]
