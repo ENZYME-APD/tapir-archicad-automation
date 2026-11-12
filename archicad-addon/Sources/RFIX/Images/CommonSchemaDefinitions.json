@@ -12453,13 +12453,19 @@
                 "$ref": "#/Holes2D"
             },
             "contourPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Pen of the contour; 0 means the contour is switched off."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the contour."
             },
             "fillPenIndex": {
                 "type": "integer"
             },
             "fillBackgroundPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Pen of the fill background; 0 means a transparent background and -1 the window background color."
             },
             "foregroundColor": {
                 "$ref": "#/ColorRGB",
@@ -12479,7 +12485,7 @@
             },
             "roomSpecial": {
                 "type": "integer",
-                "description": "Special area percent in a room (negative means OFF)."
+                "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); negative means off."
             },
             "showArea": {
                 "type": "boolean",
@@ -12488,6 +12494,9 @@
             "fillOrientation": {
                 "$ref": "#/HatchOrientation",
                 "description": "Orientation, origin and distortion of the fill pattern."
+            },
+            "fillCategory": {
+                "$ref": "#/HatchFillCategory"
             },
             "zCoordinate": {
                 "type": "number"
@@ -17354,7 +17363,12 @@
                 "$ref": "#/Holes2D"
             },
             "contourPenIndex": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Pen of the contour; 0 switches the contour off, a pen switches it on."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the contour."
             },
             "fillPenIndex": {
                 "type": "integer",
@@ -17362,7 +17376,7 @@
             },
             "fillBackgroundPenIndex": {
                 "type": "integer",
-                "description": "Setting a pen removes the backgroundColor override, so the pen shows."
+                "description": "Pen of the fill background; 0 makes the background transparent and -1 gives it the window background color. Setting a pen removes the backgroundColor override, so the pen shows."
             },
             "foregroundColor": {
                 "$ref": "#/ColorRGB",
@@ -17379,7 +17393,8 @@
                 "$ref": "#/AttributeId"
             },
             "roomSpecial": {
-                "type": "integer"
+                "type": "integer",
+                "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
             },
             "showArea": {
                 "type": "boolean"
@@ -17387,6 +17402,9 @@
             "fillOrientation": {
                 "$ref": "#/HatchOrientation",
                 "description": "Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills (there is no pattern to orient)."
+            },
+            "fillCategory": {
+                "$ref": "#/HatchFillCategory"
             }
         },
         "additionalProperties": false,
@@ -18944,6 +18962,15 @@
             }
         },
         "additionalProperties": false
+    },
+    "HatchFillCategory": {
+        "type": "string",
+        "description": "The fill category of a hatch (Fill Category of the Hatch Settings), which decides which Display Options settings the fill follows: Drafting fills, Cut fills or Cover fills.",
+        "enum": [
+            "Drafting",
+            "Cut",
+            "Cover"
+        ]
     },
     "HatchOrientationType": {
         "type": "string",

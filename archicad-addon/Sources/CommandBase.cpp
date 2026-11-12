@@ -740,6 +740,39 @@ API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& 
     return orientation;
 }
 
+void ApplyHatchFillOrientation (const GS::ObjectState& os, API_HatchOrientation& orientation)
+{
+    orientation = GetHatchOrientationFromObjectState (os, orientation);
+    if (os.Get ("origin") != nullptr) {
+        // Archicad ignores the origin while the fill is snapped to the project origin (the
+        // GlobalOrigo flag, set on every Global fill), so a given origin unsnaps it and turns
+        // a Global fill into a Rotated one unless a type was sent as well.
+        GS::UniString typeStr;
+        if (!os.Get ("type", typeStr) && orientation.type == API_HatchGlobal) {
+            orientation.type = API_HatchRotated;
+        }
+        orientation.flags &= ~APIHatchOrinFlag_GlobalOrigo;
+    }
+}
+
+GS::UniString HatchFillCategoryToString (short determination)
+{
+    switch (determination) {
+        case APIHatch_CutFills:      return "Cut";
+        case APIHatch_CoverFills:    return "Cover";
+        case APIHatch_DraftingFills:
+        default:                     return "Drafting";
+    }
+}
+
+bool HatchFillCategoryFromString (const GS::UniString& str, short& determination)
+{
+    if (str == "Drafting") { determination = APIHatch_DraftingFills; return true; }
+    if (str == "Cut")      { determination = APIHatch_CutFills;      return true; }
+    if (str == "Cover")    { determination = APIHatch_CoverFills;    return true; }
+    return false;
+}
+
 GS::UniString DrawingNameTypeToString (API_NameTypeValues nameType)
 {
     switch (nameType) {

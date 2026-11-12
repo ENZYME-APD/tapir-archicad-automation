@@ -3617,6 +3617,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("roomSpecial", (Int32) elem.hatch.roomSpecial);
                 typeSpecificDetails.Add ("showArea", elem.hatch.showArea);
                 typeSpecificDetails.Add ("fillOrientation", CreateHatchOrientationObjectState (elem.hatch.hatchOrientation));
+                typeSpecificDetails.Add ("fillCategory", HatchFillCategoryToString (elem.hatch.determination));
+                typeSpecificDetails.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.hatch.ltypeInd)));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -5253,19 +5255,19 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 GS::ObjectState fillOrientationOs;
                 if (typeSpecificDetails->Get ("fillOrientation", fillOrientationOs)) {
-                    API_HatchOrientation& orientation = elem.hatch.hatchOrientation;
-                    orientation = GetHatchOrientationFromObjectState (fillOrientationOs, orientation);
-                    GS::UniString typeStr;
-                    if (fillOrientationOs.Get ("origin") != nullptr) {
-                        // Archicad ignores the origin while the fill is snapped to the project origin (the
-                        // GlobalOrigo flag, set on every Global fill), so a given origin unsnaps it and turns
-                        // a Global fill into a Rotated one unless a type was sent as well.
-                        if (!fillOrientationOs.Get ("type", typeStr) && orientation.type == API_HatchGlobal) {
-                            orientation.type = API_HatchRotated;
-                        }
-                        orientation.flags &= ~APIHatchOrinFlag_GlobalOrigo;
-                    }
+                    ApplyHatchFillOrientation (fillOrientationOs, elem.hatch.hatchOrientation);
                     TAPIR_MASK_SET_HATCH_ORIENTATION (mask, API_HatchType, hatchOrientation);
+                    hasElementChanges = true;
+                }
+                GS::UniString fillCategory;
+                if (typeSpecificDetails->Get ("fillCategory", fillCategory) && HatchFillCategoryFromString (fillCategory, elem.hatch.determination)) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, determination);
+                    hasElementChanges = true;
+                }
+                const GS::ObjectState* contourLineTypeId = typeSpecificDetails->Get ("contourLineTypeId");
+                if (contourLineTypeId != nullptr) {
+                    elem.hatch.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+                    ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, ltypeInd);
                     hasElementChanges = true;
                 }
             }
