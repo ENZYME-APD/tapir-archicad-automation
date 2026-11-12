@@ -10793,10 +10793,30 @@
             },
             "pivotPolygonOutline": {
                 "type": "array",
-                "description": "Multi-plane: the pivot polygon the planes rise from. This is the polygon ModifyRoofs' polygonOutline writes for a multi-plane roof. Arcs are not carried; a curved pivot edge comes back as its end points.",
+                "description": "Multi-plane: the pivot polygon the planes rise from. This is the polygon ModifyRoofs' polygonOutline writes for a multi-plane roof. Its curved edges are in pivotPolygonArcs.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
+            },
+            "pivotPolygonArcs": {
+                "type": "array",
+                "description": "Multi-plane: the arcs of pivotPolygonOutline, indexed into it from 0 as polygonArcs are; missing when every pivot edge is straight. This is the list ModifyRoofs' polygonArcs writes with the pivot polygon of a multi-plane roof.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "segmentType": {
+                "type": "string",
+                "enum": [ "SegmentsByCircle", "SegmentsByArc" ],
+                "description": "Multi-plane: how the curved edges of the pivot polygon are resolved into planes. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments."
+            },
+            "segmentsByArc": {
+                "type": "integer",
+                "description": "Multi-plane: the number of segments of each arc when segmentType is SegmentsByArc."
+            },
+            "segmentsByCircle": {
+                "type": "integer",
+                "description": "Multi-plane: the number of segments of a whole circle when segmentType is SegmentsByCircle."
             },
             "polygonOutline": {
                 "type": "array",
