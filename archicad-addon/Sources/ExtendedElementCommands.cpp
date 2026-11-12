@@ -1320,6 +1320,78 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
 }
 
+static GS::UniString RadialDimensionTextPositionName (API_TextPosID textPos)
+{
+    switch (textPos) {
+        case APIPos_Above:  return "Above";
+        case APIPos_In:     return "In";
+        case APIPos_Below:  return "Below";
+        default:            return "Unknown";
+    }
+}
+
+static GS::UniString RadialDimensionTextDirectionName (API_DirID textWay)
+{
+    switch (textWay) {
+        case APIDir_Horizontal: return "Horizontal";
+        case APIDir_Vertical:   return "Vertical";
+        case APIDir_Radial:     return "Radial";
+        default:                return "Unknown";
+    }
+}
+
+// Defined OUTSIDE the anonymous namespace, like AddDimensionDetails (#2660).
+// The DevKit does not document how a radial dimension stores what it measures: API_RadialDimensionType
+// has no centre field, and the meaning of base.loc and base.base.inIndex is only shown in an image
+// (neig_rdim.gif). So the stored data is returned as it is, plus the centre of the measured arc or
+// circle, read from that element, so that dimensions placed by hand show how Archicad stores them.
+void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& element)
+{
+    const API_RadialDimensionType& radial = element.radialDimension;
+
+    details.Add ("basePoint", Create2DCoordinateObjectState (radial.base.loc));
+    details.Add ("dimensionLineEnd", Create2DCoordinateObjectState (radial.endC));
+    details.Add ("radius", radial.dimVal);
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID baseTypeId = GetElemTypeId (radial.base.base.type);
+#else
+    const API_ElemTypeID baseTypeId = GetElemTypeId (radial.base.base.typeID);
+#endif
+    const API_Guid& baseGuid = radial.base.base.guid;
+    if (baseTypeId != API_ZombieElemID && baseGuid != APINULLGuid) {
+        details.Add ("ownerElementId", CreateGuidObjectState (baseGuid));
+        details.Add ("ownerElementType", GetElementTypeNonLocalizedName (baseTypeId));
+        details.Add ("ownerElementInIndex", static_cast<Int32> (radial.base.base.inIndex));
+        details.Add ("ownerElementLine", radial.base.base.line);
+
+        if (baseTypeId == API_ArcID || baseTypeId == API_CircleID) {
+            API_Element baseElement = {};
+            baseElement.header.guid = baseGuid;
+            if (ACAPI_Element_Get (&baseElement) == NoError) {
+                const API_ElemTypeID readTypeId = GetElemTypeId (baseElement.header);
+                if (readTypeId == API_ArcID || readTypeId == API_CircleID) {
+                    details.Add ("ownerArcCenter", Create2DCoordinateObjectState (baseElement.arc.origC));
+                    details.Add ("ownerArcRadius", baseElement.arc.r);
+                }
+            }
+        }
+    }
+
+    details.Add ("linePen", static_cast<Int32> (radial.linPen));
+    details.Add ("marker", GS::ObjectState (
+        "type", DimensionMarkerName (radial.markerData.markerType),
+        "pen", static_cast<Int32> (radial.markerData.markerPen),
+        "size", radial.markerData.markerSize));
+    details.Add ("textHeight", radial.note.noteSize);
+    details.Add ("textPen", static_cast<Int32> (radial.note.notePen));
+    details.Add ("textPosition", RadialDimensionTextPositionName (radial.textPos));
+    details.Add ("textDirection", RadialDimensionTextDirectionName (radial.textWay));
+    details.Add ("textContent", radial.note.contentType == API_NoteContent_Custom ? "Custom" : "Measured");
+    details.Add ("showOrigin", radial.showOrigo);
+    details.Add ("onlyDimensionText", radial.onlyDimensionText);
+}
+
 namespace {
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
@@ -2135,6 +2207,66 @@ static GSErrCode TAPIR_Polygon_DeleteSubPoly (API_ElementMemo* memo, Int32* subP
 }
 #endif
 
+// The number of API_Coord entries the memo's coords handle holds (index 0 is the unused dummy).
+static Int32 GetMemoCoordsHandleCount (const API_ElementMemo& memo)
+{
+    return memo.coords == nullptr ? 0 : (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord));
+}
+
+// Moves the points of the outline (subpoly 1, the only one left: the holes are deleted first) onto a circle and
+// drops the arcs, before ApplySlabPolygonChange deletes node 1 until the outline has desiredOutlineCount points
+// (#2504). Each DeletePolyNode leaves the old outline without its first point, so on the element's own points an
+// intermediate polygon could cross itself or lose its area, depending only on where the old outline starts. Archicad
+// then answered APIERR_BADPOLY, refused the deletion, or crashed later in ACAPI_Element_ChangeMemo (heap
+// corruption, reproduced on Archicad 29 and 30 with a 20 -> 8 and an 11 -> 4 point outline). Points on a circle in
+// their order always form a convex polygon, and so does every polygon left after deleting some of them. The points
+// that stay are put on a regular polygon and the deleted ones in the gap between its last and first point, so every
+// intermediate polygon keeps a real area. An arc on such a temporary edge could cross another edge, so the arcs are
+// dropped; the final coordinates and arcs are written after the resize, as before. This is what the client-side
+// workaround in #2504 does (the same point count on a circle first), which works on both reproductions.
+static void MoveOutlineOntoCircle (API_ElementMemo& memo, Int32 outlineCount, Int32 desiredOutlineCount)
+{
+    API_Coord minCoord = (*memo.coords)[1];
+    API_Coord maxCoord = (*memo.coords)[1];
+    double doubleSignedArea = 0.0;
+    for (Int32 i = 1; i <= outlineCount; ++i) {
+        const API_Coord& p = (*memo.coords)[i];
+        const API_Coord& q = (*memo.coords)[i == outlineCount ? 1 : i + 1];
+        minCoord.x = std::min (minCoord.x, p.x);
+        minCoord.y = std::min (minCoord.y, p.y);
+        maxCoord.x = std::max (maxCoord.x, p.x);
+        maxCoord.y = std::max (maxCoord.y, p.y);
+        doubleSignedArea += p.x * q.y - q.x * p.y;
+    }
+    // The same direction as the outline had, around the middle of its bounding box
+    const double direction = doubleSignedArea < 0.0 ? -1.0 : 1.0;
+    const double centerX = (minCoord.x + maxCoord.x) / 2.0;
+    const double centerY = (minCoord.y + maxCoord.y) / 2.0;
+    const double radius = std::max (1.0, std::max (maxCoord.x - minCoord.x, maxCoord.y - minCoord.y) / 2.0);
+
+    const double twoPi = 2.0 * std::acos (-1.0);
+    const Int32 deletedCount = outlineCount - desiredOutlineCount;
+    const double step = twoPi / desiredOutlineCount;
+    for (Int32 i = 1; i <= outlineCount; ++i) {
+        double angle = 0.0;
+        if (i > deletedCount) {
+            // the points that stay: a regular polygon
+            angle = (i - deletedCount - 1) * step;
+        } else {
+            // the points that are deleted: between the last point that stays and the first one
+            angle = (desiredOutlineCount - 1) * step + step * i / (deletedCount + 1);
+        }
+        (*memo.coords)[i].x = centerX + radius * std::cos (direction * angle);
+        (*memo.coords)[i].y = centerY + radius * std::sin (direction * angle);
+    }
+    (*memo.coords)[outlineCount + 1] = (*memo.coords)[1];
+
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+}
+
 // Applies a new outline/arcs/holes shape to an EXISTING slab's memo (already populated via
 // ACAPI_Element_GetMemo), for use with ACAPI_Element_ChangeMemo. Uses Graphisoft's own
 // polygon-editing primitives - TAPIR_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/
@@ -2215,8 +2347,19 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     // Step 2: resize the main outline (subpoly 1) to the requested point count by repeatedly
     // inserting/deleting node 1 - the coordinate value used for an inserted placeholder node does
     // not matter, every point is overwritten with the real final coordinates right after.
+    // The memo is checked before it is written: a mismatch fails the item instead of writing past a
+    // handle (#2504).
+    if (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32) < 2) {
+        return "The outline of the element has unexpected polygon data.";
+    }
     Int32 outlineCount = (*memo.pends)[1] - 1; // real points, excluding the closing duplicate
     const Int32 desiredOutlineCount = (Int32) polygonOutline.GetSize ();
+    if (outlineCount < 3 || GetMemoCoordsHandleCount (memo) < outlineCount + 2) {
+        return "The outline of the element has unexpected polygon data.";
+    }
+    if (outlineCount > desiredOutlineCount) {
+        MoveOutlineOntoCircle (memo, outlineCount, desiredOutlineCount);
+    }
     while (outlineCount > desiredOutlineCount) {
         Int32 idx = 1;
         GSErrCode err = TAPIR_Polygon_DeletePolyNode (&memo, &idx);
@@ -2242,6 +2385,10 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
         ++outlineCount;
     }
 
+    if ((*memo.pends)[1] != desiredOutlineCount + 1 ||
+        GetMemoCoordsHandleCount (memo) < desiredOutlineCount + 2) {
+        return "Failed to adjust the outline's point count.";
+    }
     for (Int32 i = 0; i < desiredOutlineCount; ++i) {
         (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (polygonOutline[i]);
     }
@@ -8411,7 +8558,7 @@ GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () con
                         "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
                         "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
                         "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
-                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going." },)") + StairSettingsSchemaProperties + R"(
+                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -8916,6 +9063,37 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
+            auto treadDepth = GetOptionalDouble (item, "treadDepth");
+            if (treadDepth.HasValue ()) {
+                // Archicad lays the steps out from the stair rules, not from the plain treadDepth field
+                // ApplyStairSettings writes, so writing only that field changed nothing (#2525). The going
+                // is pinned in the rules as CreateStairs pins it (#425): a min == max bound with both
+                // *Applied flags set, and the standard's combined rules (2R+G, R+G, R/G) released, which
+                // otherwise override the pinned going whenever the two conflict. Pinned before
+                // ApplyStairSettings, as CreateStairs pins it before the settings that follow it.
+                API_StairRulesData& rules = element.stair.rules;
+                rules.treadDepthMinValue = treadDepth.Get ();
+                rules.treadDepthMaxValue = treadDepth.Get ();
+                rules.treadDepthMinApplied = true;
+                rules.treadDepthMaxApplied = true;
+                rules.ruleMinApplied = false;
+                rules.ruleMaxApplied = false;
+                rules.riserPlusGoingMinApplied = false;
+                rules.riserPlusGoingMaxApplied = false;
+                rules.riserGoingRatioMinApplied = false;
+                rules.riserGoingRatioMaxApplied = false;
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMinValue);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMaxValue);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.ruleMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.ruleMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserPlusGoingMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserPlusGoingMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserGoingRatioMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserGoingRatioMaxApplied);
+            }
+
             const GS::Optional<GS::UniString> settingsError = ApplyStairSettings (item, element, mask);
             if (settingsError.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *settingsError));

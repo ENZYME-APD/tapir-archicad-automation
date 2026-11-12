@@ -320,6 +320,9 @@
 /* [ 19] */ "Tapir::Config: Failed to load config file: %T"
 /* [ 20] */ "Tapir::Config: Failed to save config file: %T"
 /* [ 21] */ "Tapir: the %s command could not be registered (error %d)."
+/* [ 22] */ "Tapir: Failed to list %T/%T on GitHub: HTTP status %d"
+/* [ 23] */ "Tapir: Using the scripts of %T/%T downloaded before."
+/* [ 24] */ "Tapir: Failed to download %T: HTTP status %d"
 }
 
 'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
