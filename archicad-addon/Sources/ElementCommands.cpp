@@ -3854,6 +3854,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("contourPen",   (Int32)elem.mesh.contPen);
                 typeSpecificDetails.Add ("levelPen",     (Int32)elem.mesh.levelPen);
                 typeSpecificDetails.Add ("lineTypeIndex", GetAttributeIndex (elem.mesh.ltypeInd));
+                typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, elem.mesh.buildingMaterial)));
+                typeSpecificDetails.Add ("topMaterial", CreateOverriddenMaterialObjectState (elem.mesh.topMat));
+                typeSpecificDetails.Add ("sideMaterial", CreateOverriddenMaterialObjectState (elem.mesh.sideMat));
+                typeSpecificDetails.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (elem.mesh.botMat));
+                typeSpecificDetails.Add ("materialsChained", elem.mesh.materialsChained);
                 constexpr bool includeZCoords = true;
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonCoordinates", "polygonArcs", "holes", "polygonCoordinates", "polygonArcs", includeZCoords);
                 if (elem.mesh.levelLines.nSubLines > 0) {

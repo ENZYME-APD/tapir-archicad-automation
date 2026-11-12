@@ -2676,6 +2676,57 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
     return {};
 }
 
+GS::Optional<GS::UniString> ApplyMeshStructureAndSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool isNewElement, bool& changed)
+{
+    const GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (details, { "topMaterial", "sideMaterial", "bottomMaterial" }, "floorFill");
+    if (idError.HasValue ()) {
+        return idError;
+    }
+
+    const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
+    if (buildingMaterialIdOs != nullptr) {
+        API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
+        if (!ResolveAttributeIndex (*buildingMaterialIdOs, API_BuildingMaterialID, buildingMaterialIndex)) {
+            return GS::UniString ("Invalid mesh building material.");
+        }
+        element.mesh.buildingMaterial = buildingMaterialIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, buildingMaterial);
+        if (isNewElement) {
+            // A new mesh shows the building material's own surface and follows later changes of
+            // it; an override left in the Mesh tool defaults would otherwise keep showing the old
+            // color. The surfaces given in the same item are written below.
+            element.mesh.topMat = API_OverriddenAttribute ();
+            element.mesh.sideMat = API_OverriddenAttribute ();
+            element.mesh.botMat = API_OverriddenAttribute ();
+        }
+        changed = true;
+    }
+
+    GS::ObjectState materialOs;
+    if (details.Get ("topMaterial", materialOs)) {
+        element.mesh.topMat = GetOverriddenMaterialFromObjectState (materialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, topMat);
+        changed = true;
+    }
+    if (details.Get ("sideMaterial", materialOs)) {
+        element.mesh.sideMat = GetOverriddenMaterialFromObjectState (materialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, sideMat);
+        changed = true;
+    }
+    if (details.Get ("bottomMaterial", materialOs)) {
+        element.mesh.botMat = GetOverriddenMaterialFromObjectState (materialOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, botMat);
+        changed = true;
+    }
+    bool materialsChained = false;
+    if (details.Get ("materialsChained", materialsChained)) {
+        element.mesh.materialsChained = materialsChained;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, materialsChained);
+        changed = true;
+    }
+    return {};
+}
+
 namespace {
 
 // The floor plan and section settings of a Roof or Shell (API_ShellBaseType) that ModifyRoofs and
@@ -17937,6 +17988,12 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
             if (meshData->Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
                 elem.mesh.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, ltypeInd);
+            }
+            bool surfacesChanged = false;
+            const GS::Optional<GS::UniString> surfacesError = ApplyMeshStructureAndSurfaces (elem, mask, *meshData, false, surfacesChanged);
+            if (surfacesError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, surfacesError.Get ()));
+                continue;
             }
 
             UInt64 memoChangeMask = 0;

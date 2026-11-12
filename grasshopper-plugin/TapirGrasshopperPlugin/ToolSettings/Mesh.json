@@ -11,6 +11,7 @@
   "plainKeys": [
     "elementId",
     "favoriteName",
+    "layerIndex",
     "meshData"
   ],
   "sources": {
@@ -102,7 +103,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "buildingMaterialId",
       "set": "buildingMaterialId",
       "apiMember": "API_MeshType::buildingMaterial",
       "apiDescription": "Building Material index of mesh's hatch.",
@@ -159,6 +160,46 @@
       "label": null,
       "labelSource": null,
       "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "topMaterial",
+      "set": "topMaterial",
+      "apiMember": "API_MeshType::topMat",
+      "apiDescription": "Top material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "sideMaterial",
+      "set": "sideMaterial",
+      "apiMember": "API_MeshType::sideMat",
+      "apiDescription": "Side material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "bottomMaterial",
+      "set": "bottomMaterial",
+      "apiMember": "API_MeshType::botMat",
+      "apiDescription": "Bottom material attribute override structure.",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
+      "subgroup": null
+    },
+    {
+      "get": "materialsChained",
+      "set": "materialsChained",
+      "apiMember": "API_MeshType::materialsChained",
+      "apiDescription": "Are surface materials chained?",
+      "label": null,
+      "labelSource": null,
+      "group": "Model",
       "subgroup": null
     }
   ]
