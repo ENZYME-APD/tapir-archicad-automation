@@ -7408,7 +7408,7 @@ GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, 
 static const char* StairSettingsSchemaProperties = R"(
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. GetDetailsOfElements reads it back." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
-                        "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that." },
+                        "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -8867,18 +8867,78 @@ static bool StairWalkingLinePositionFromString (const GS::UniString& str, API_Li
     return false;
 }
 
-// One limit of the stair's Rules and Standards (#2531): its value and its applied flag, each
-// written, with its mask byte (as ACAPI_ELEMENT_MASK_SET sets it), only when given.
-static void ApplyStairRule (const GS::ObjectState& rules, const char* valueName, const char* appliedName, double& value, bool& applied, double& valueMask, bool& appliedMask)
+// The limits of the stair's Rules and Standards (#2531), with the keys of the StairRules
+// definition: each limit's value and its applied flag (API_StairRulesData, the same members in
+// AC25 to AC30).
+struct StairRuleField {
+    const char*                 valueName;
+    const char*                 appliedName;
+    double API_StairRulesData::* value;
+    bool API_StairRulesData::*   applied;
+};
+
+static const StairRuleField StairRuleFields[] = {
+    { "riserHeightMinValue",       "riserHeightMinApplied",       &API_StairRulesData::riserHeightMinValue,       &API_StairRulesData::riserHeightMinApplied },
+    { "riserHeightMaxValue",       "riserHeightMaxApplied",       &API_StairRulesData::riserHeightMaxValue,       &API_StairRulesData::riserHeightMaxApplied },
+    { "treadDepthMinValue",        "treadDepthMinApplied",        &API_StairRulesData::treadDepthMinValue,        &API_StairRulesData::treadDepthMinApplied },
+    { "treadDepthMaxValue",        "treadDepthMaxApplied",        &API_StairRulesData::treadDepthMaxValue,        &API_StairRulesData::treadDepthMaxApplied },
+    { "ruleMinValue",              "ruleMinApplied",              &API_StairRulesData::ruleMinValue,              &API_StairRulesData::ruleMinApplied },
+    { "ruleMaxValue",              "ruleMaxApplied",              &API_StairRulesData::ruleMaxValue,              &API_StairRulesData::ruleMaxApplied },
+    { "riserPlusGoingMinValue",    "riserPlusGoingMinApplied",    &API_StairRulesData::riserPlusGoingMinValue,    &API_StairRulesData::riserPlusGoingMinApplied },
+    { "riserPlusGoingMaxValue",    "riserPlusGoingMaxApplied",    &API_StairRulesData::riserPlusGoingMaxValue,    &API_StairRulesData::riserPlusGoingMaxApplied },
+    { "riserGoingRatioMinValue",   "riserGoingRatioMinApplied",   &API_StairRulesData::riserGoingRatioMinValue,   &API_StairRulesData::riserGoingRatioMinApplied },
+    { "riserGoingRatioMaxValue",   "riserGoingRatioMaxApplied",   &API_StairRulesData::riserGoingRatioMaxValue,   &API_StairRulesData::riserGoingRatioMaxApplied },
+    { "stairPitchMinValue",        "stairPitchMinApplied",        &API_StairRulesData::stairPitchMinValue,        &API_StairRulesData::stairPitchMinApplied },
+    { "stairPitchMaxValue",        "stairPitchMaxApplied",        &API_StairRulesData::stairPitchMaxValue,        &API_StairRulesData::stairPitchMaxApplied },
+    { "landingLengthMinValue",     "landingLengthMinApplied",     &API_StairRulesData::landingLengthMinValue,     &API_StairRulesData::landingLengthMinApplied },
+    { "walkingLineOffsetMinValue", "walkingLineOffsetMinApplied", &API_StairRulesData::walkingLineOffsetMinValue, &API_StairRulesData::walkingLineOffsetMinApplied },
+    { "winderTurnOffsetMinValue",  "winderTurnOffsetMinApplied",  &API_StairRulesData::winderTurnOffsetMinValue,  &API_StairRulesData::winderTurnOffsetMinApplied }
+};
+
+// The given rules object into the stair's rules: each given value and applied flag is written, with
+// its mask byte (as ACAPI_ELEMENT_MASK_SET sets it). Archicad's input validation does not refuse
+// an unknown key inside a definition the schema refers to (the same as for CreateProfiles, #2585,
+// and the floorPlanLayout check of #2530), so a misspelt rule was ignored and the change reported
+// as a success; an unknown key or a value of the wrong type is refused here, before anything is
+// written.
+static GS::Optional<GS::UniString> ApplyStairRules (const GS::ObjectState& rulesOs, API_StairRulesData& rules, API_StairRulesData& rulesMask)
 {
-    auto givenValue = GetOptionalDouble (rules, valueName);
-    if (givenValue.HasValue ()) {
-        value = givenValue.Get ();
-        *reinterpret_cast<char*> (&valueMask) = -1;
+    GS::Optional<GS::UniString> error;
+    rulesOs.EnumerateFields ([&] (const GS::String& key) {
+        if (error.HasValue ()) {
+            return;
+        }
+        for (const StairRuleField& field : StairRuleFields) {
+            if (key == field.valueName || key == field.appliedName) {
+                return;
+            }
+        }
+        error = GS::UniString ("Unknown key '") + GS::UniString (key.ToCStr ()) + "' in rules.";
+    });
+    if (error.HasValue ()) {
+        return error;
     }
-    if (rules.Get (appliedName, applied)) {
-        *reinterpret_cast<char*> (&appliedMask) = -1;
+
+    API_StairRulesData given = rules;
+    for (const StairRuleField& field : StairRuleFields) {
+        if (rulesOs.Contains (field.valueName) && !rulesOs.Get (field.valueName, given.*field.value)) {
+            return GS::UniString ("rules.") + field.valueName + " must be a number.";
+        }
+        if (rulesOs.Contains (field.appliedName) && !rulesOs.Get (field.appliedName, given.*field.applied)) {
+            return GS::UniString ("rules.") + field.appliedName + " must be a boolean.";
+        }
     }
+    for (const StairRuleField& field : StairRuleFields) {
+        if (rulesOs.Contains (field.valueName)) {
+            rules.*field.value = given.*field.value;
+            *reinterpret_cast<char*> (&(rulesMask.*field.value)) = -1;
+        }
+        if (rulesOs.Contains (field.appliedName)) {
+            rules.*field.applied = given.*field.applied;
+            *reinterpret_cast<char*> (&(rulesMask.*field.applied)) = -1;
+        }
+    }
+    return {};
 }
 
 static bool StairStoryVisibilityFromString (const GS::UniString& str, API_StairStoryVisibilityID& visibility)
@@ -9014,23 +9074,10 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     // The Rules and Standards (#2531): only the given limits and applied flags.
     const GS::ObjectState* rulesOs = details.Get ("rules");
     if (rulesOs != nullptr) {
-        API_StairRulesData& rules = stair.rules;
-        API_StairRulesData& rulesMask = mask.stair.rules;
-        ApplyStairRule (*rulesOs, "riserHeightMinValue", "riserHeightMinApplied", rules.riserHeightMinValue, rules.riserHeightMinApplied, rulesMask.riserHeightMinValue, rulesMask.riserHeightMinApplied);
-        ApplyStairRule (*rulesOs, "riserHeightMaxValue", "riserHeightMaxApplied", rules.riserHeightMaxValue, rules.riserHeightMaxApplied, rulesMask.riserHeightMaxValue, rulesMask.riserHeightMaxApplied);
-        ApplyStairRule (*rulesOs, "treadDepthMinValue", "treadDepthMinApplied", rules.treadDepthMinValue, rules.treadDepthMinApplied, rulesMask.treadDepthMinValue, rulesMask.treadDepthMinApplied);
-        ApplyStairRule (*rulesOs, "treadDepthMaxValue", "treadDepthMaxApplied", rules.treadDepthMaxValue, rules.treadDepthMaxApplied, rulesMask.treadDepthMaxValue, rulesMask.treadDepthMaxApplied);
-        ApplyStairRule (*rulesOs, "ruleMinValue", "ruleMinApplied", rules.ruleMinValue, rules.ruleMinApplied, rulesMask.ruleMinValue, rulesMask.ruleMinApplied);
-        ApplyStairRule (*rulesOs, "ruleMaxValue", "ruleMaxApplied", rules.ruleMaxValue, rules.ruleMaxApplied, rulesMask.ruleMaxValue, rulesMask.ruleMaxApplied);
-        ApplyStairRule (*rulesOs, "riserPlusGoingMinValue", "riserPlusGoingMinApplied", rules.riserPlusGoingMinValue, rules.riserPlusGoingMinApplied, rulesMask.riserPlusGoingMinValue, rulesMask.riserPlusGoingMinApplied);
-        ApplyStairRule (*rulesOs, "riserPlusGoingMaxValue", "riserPlusGoingMaxApplied", rules.riserPlusGoingMaxValue, rules.riserPlusGoingMaxApplied, rulesMask.riserPlusGoingMaxValue, rulesMask.riserPlusGoingMaxApplied);
-        ApplyStairRule (*rulesOs, "riserGoingRatioMinValue", "riserGoingRatioMinApplied", rules.riserGoingRatioMinValue, rules.riserGoingRatioMinApplied, rulesMask.riserGoingRatioMinValue, rulesMask.riserGoingRatioMinApplied);
-        ApplyStairRule (*rulesOs, "riserGoingRatioMaxValue", "riserGoingRatioMaxApplied", rules.riserGoingRatioMaxValue, rules.riserGoingRatioMaxApplied, rulesMask.riserGoingRatioMaxValue, rulesMask.riserGoingRatioMaxApplied);
-        ApplyStairRule (*rulesOs, "stairPitchMinValue", "stairPitchMinApplied", rules.stairPitchMinValue, rules.stairPitchMinApplied, rulesMask.stairPitchMinValue, rulesMask.stairPitchMinApplied);
-        ApplyStairRule (*rulesOs, "stairPitchMaxValue", "stairPitchMaxApplied", rules.stairPitchMaxValue, rules.stairPitchMaxApplied, rulesMask.stairPitchMaxValue, rulesMask.stairPitchMaxApplied);
-        ApplyStairRule (*rulesOs, "landingLengthMinValue", "landingLengthMinApplied", rules.landingLengthMinValue, rules.landingLengthMinApplied, rulesMask.landingLengthMinValue, rulesMask.landingLengthMinApplied);
-        ApplyStairRule (*rulesOs, "walkingLineOffsetMinValue", "walkingLineOffsetMinApplied", rules.walkingLineOffsetMinValue, rules.walkingLineOffsetMinApplied, rulesMask.walkingLineOffsetMinValue, rulesMask.walkingLineOffsetMinApplied);
-        ApplyStairRule (*rulesOs, "winderTurnOffsetMinValue", "winderTurnOffsetMinApplied", rules.winderTurnOffsetMinValue, rules.winderTurnOffsetMinApplied, rulesMask.winderTurnOffsetMinValue, rulesMask.winderTurnOffsetMinApplied);
+        const GS::Optional<GS::UniString> rulesError = ApplyStairRules (*rulesOs, stair.rules, mask.stair.rules);
+        if (rulesError.HasValue ()) {
+            return rulesError;
+        }
     }
     if (details.Get ("finishVisible", stair.finishVisible)) {
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, finishVisible);
@@ -9341,6 +9388,46 @@ static GS::UniString CheckStairDisplayApplied (const API_Element& wanted, const 
     return notApplied;
 }
 
+// Whether the mask marks any value or applied flag of the stair's rules (#2531).
+static bool IsAnyStairRuleMasked (const API_StairRulesData& rulesMask)
+{
+    for (const StairRuleField& field : StairRuleFields) {
+        if (*reinterpret_cast<const char*> (&(rulesMask.*field.value)) != 0 || *reinterpret_cast<const char*> (&(rulesMask.*field.applied)) != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the rule values and applied flags
+// marked in givenRulesMask (the ones given, and the going pinned for a treadDepth) that differ now.
+// Empty when none were given or all were applied.
+static GS::UniString CheckStairRulesApplied (const API_Element& wanted, const API_StairRulesData& givenRulesMask)
+{
+    if (!IsAnyStairRuleMasked (givenRulesMask)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    const API_StairRulesData& want = wanted.stair.rules;
+    const API_StairRulesData& got = changed.stair.rules;
+    GS::UniString notApplied;
+    for (const StairRuleField& field : StairRuleFields) {
+        if (*reinterpret_cast<const char*> (&(givenRulesMask.*field.value)) != 0 && std::fabs (got.*field.value - want.*field.value) > 1e-6) {
+            notApplied += GS::UniString (" rules.") + field.valueName + GS::UniString::Printf (" is %g.", got.*field.value);
+        }
+        if (*reinterpret_cast<const char*> (&(givenRulesMask.*field.applied)) != 0 && got.*field.applied != want.*field.applied) {
+            notApplied += GS::UniString (" rules.") + field.appliedName + (got.*field.applied ? " is true." : " is false.");
+        }
+    }
+    return notApplied;
+}
+
 GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stairsWithDetails;
@@ -9411,6 +9498,22 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
+            // The rules given (and the pinned going) are marked by their own mask bytes. Archicad
+            // ignored a change of the rules marked only that way (#2531: the riser limit and the 2R+G
+            // flag stayed as they were, and the change reported success), which is what happens when
+            // the rules are taken by the mask byte of the whole member, ACAPI_ELEMENT_MASK_CHECK (mask,
+            // API_StairType, rules), i.e. the first byte of riserHeightMinValue, unless that rule is
+            // given. So the whole rules member is marked: element holds the stair's own rules from
+            // ACAPI_Element_Get, so the rules not given are written back as they are. The given ones
+            // are read back after the change.
+            const API_StairRulesData givenRulesMask = mask.stair.rules;
+            if (IsAnyStairRuleMasked (givenRulesMask)) {
+                char* rulesMaskBytes = reinterpret_cast<char*> (&mask.stair.rules);
+                for (size_t i = 0; i < sizeof (API_StairRulesData); ++i) {
+                    rulesMaskBytes[i] = -1;
+                }
+            }
+
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             if (err != NoError) {
@@ -9424,6 +9527,12 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString notApplied = CheckStairDisplayApplied (element, mask);
             if (!notApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every floor plan display setting:" + notApplied));
+                continue;
+            }
+            // The same for the rules (#2531), which Archicad ignored without an error.
+            const GS::UniString rulesNotApplied = CheckStairRulesApplied (element, givenRulesMask);
+            if (!rulesNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
                 continue;
             }
 

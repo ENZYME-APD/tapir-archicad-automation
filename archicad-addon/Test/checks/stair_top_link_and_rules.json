@@ -147,7 +147,7 @@
       ]
     },
     {
-      "id": "ModifyStairs: an unknown rule is refused by the schema",
+      "id": "ModifyStairs: an unknown rule is refused",
       "command": "ModifyStairs",
       "creates": false,
       "params": {
@@ -156,7 +156,8 @@
         ]
       },
       "expect": [
-        { "path": "error.code", "exists": true, "name": "refused" }
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" },
+        { "path": "executionResults[0].error.message", "contains": "riserHeightMax", "name": "the error names the key" }
       ]
     }
   ]
