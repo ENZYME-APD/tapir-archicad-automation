@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 10:38 UTC",
+ "generatedAt": "2026-11-12 11:42 UTC",
  "versions": [
   25,
   26,
@@ -5770,10 +5770,6 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2607,
-     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
-    },
-    {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
@@ -6742,10 +6738,6 @@
      "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
     },
     {
-     "number": 2607,
-     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
@@ -6906,12 +6898,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2607,
-     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7287,10 +7274,6 @@
     {
      "number": 2620,
      "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
-    },
-    {
-     "number": 2607,
-     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
      "number": 2571,
@@ -7862,10 +7845,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2607,
-     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
      "number": 2595,
@@ -9867,7 +9846,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -11354,7 +11338,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -16013,6 +16002,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
@@ -25378,10 +25371,6 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2607,
-     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
-    },
-    {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
@@ -26653,7 +26642,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure (undo scopes, results)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -28014,7 +28008,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -28713,6 +28712,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
@@ -29597,6 +29600,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
@@ -29689,6 +29696,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
@@ -29880,6 +29891,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
@@ -29903,6 +29918,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
@@ -29925,6 +29944,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
@@ -29966,6 +29989,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
@@ -29988,6 +30015,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
@@ -30102,6 +30133,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
@@ -30215,6 +30250,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
@@ -30273,6 +30312,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2777,
      "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
@@ -31047,6 +31090,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2786,
+     "title": "GetDetailsOfElements: return the source view of a Drawing"
+    },
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -37545,10 +37596,6 @@
     {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
-    },
-    {
-     "number": 2607,
-     "title": "[4/4] ModifyColumns: write the cross section, taper and length of a single column segment"
     },
     {
      "number": 2595,
@@ -44196,6 +44243,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2786,
+     "title": "GetDetailsOfElements: return the source view of a Drawing"
+    },
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47331,6 +47386,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2786,
+     "title": "GetDetailsOfElements: return the source view of a Drawing"
+    },
+    {
+     "number": 2784,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"

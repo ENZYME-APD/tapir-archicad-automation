@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 10:38 UTC",
+ "generatedAt": "2026-11-12 11:42 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -5033,7 +5033,7 @@
    "id": "CreateColumns",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, top link (relativeTopStory, topOffset), slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. ModifyColumns writes the surfaces of single column segments (its segments list). Not written by either command: the cut fill pens before Archicad 27.",
+   "brief": "Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, top link (relativeTopStory, topOffset), slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. ModifyColumns writes single column segments (its segments list). Not written by either command: the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7425,7 +7425,7 @@
    "id": "ModifyColumns",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list overrides the extrusion and ends surfaces and the veneer of a given column segment, with the same keys GetDetailsOfElements returns for them. Not written: the cut fill pens before Archicad 27.",
+   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list writes a given column segment in the shape GetDetailsOfElements returns it: its extrusion and ends surfaces, veneer, cross section, taper and length. Not written: the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
