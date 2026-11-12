@@ -741,7 +741,33 @@ static const char* DimensionSettingsSchemaProperties = R"(
                         "onlyDimensionText": {
                             "type": "boolean",
                             "description": "Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsInChain": {
+                            "type": "boolean",
+                            "description": "Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsNominal": {
+                            "type": "boolean",
+                            "description": "Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "layeredElementDimensions": {
+                            "$ref": "#/LayeredElementDimensions",
+                            "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
                         })";
+
+// The bits of API_DimensionType::compAutoThick (APIdefs_Elements.h: totalBit = 1, coreBit = 2,
+// refLineBit = 4, manualBit = 16). The DevKit names no constants for them.
+static const char LayeredDimensionTotalBit = 1;
+static const char LayeredDimensionCoreBit = 2;
+static const char LayeredDimensionReferenceLineBit = 4;
+
+static GS::ObjectState LayeredElementDimensionsToObjectState (char compAutoThick)
+{
+    return GS::ObjectState (
+        "total", (compAutoThick & LayeredDimensionTotalBit) != 0,
+        "core", (compAutoThick & LayeredDimensionCoreBit) != 0,
+        "referenceLine", (compAutoThick & LayeredDimensionReferenceLineBit) != 0);
+}
 
 // Writes the settings of DimensionSettingsSchemaProperties given in data to element.dimension,
 // and sets their bits in mask when it is not nullptr. The text settings go to defNote and the
@@ -882,6 +908,39 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         element.dimension.onlyDimensionText = onlyDimensionText;
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, onlyDimensionText);
+        }
+    }
+
+    bool openingHeightsInChain = false;
+    if (data.Get ("openingHeightsInChain", openingHeightsInChain)) {
+        element.dimension.detailedHoleDim = openingHeightsInChain;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, detailedHoleDim);
+        }
+    }
+
+    bool openingHeightsNominal = false;
+    if (data.Get ("openingHeightsNominal", openingHeightsNominal)) {
+        element.dimension.nominalHoleDim = openingHeightsNominal ? 1 : 0;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, nominalHoleDim);
+        }
+    }
+
+    // Only the bits given change; the others, the manual bit included, stay as they are (#2663).
+    const GS::ObjectState* layered = data.Get ("layeredElementDimensions");
+    if (layered != nullptr) {
+        const auto setBit = [&] (const char* name, char bit) {
+            bool value = false;
+            if (layered->Get (name, value)) {
+                element.dimension.compAutoThick = static_cast<char> (value ? (element.dimension.compAutoThick | bit) : (element.dimension.compAutoThick & ~bit));
+            }
+        };
+        setBit ("total", LayeredDimensionTotalBit);
+        setBit ("core", LayeredDimensionCoreBit);
+        setBit ("referenceLine", LayeredDimensionReferenceLineBit);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, compAutoThick);
         }
     }
 
@@ -1137,6 +1196,9 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
     details.Add ("staticDimension", element.dimension.defStaticDim);
     details.Add ("onlyDimensionText", element.dimension.onlyDimensionText);
+    details.Add ("openingHeightsInChain", element.dimension.detailedHoleDim);
+    details.Add ("openingHeightsNominal", element.dimension.nominalHoleDim != 0);
+    details.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
 }
 
 namespace {
@@ -12207,6 +12269,18 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             if (item.Contains ("onlyDimensionText") && changed.dimension.onlyDimensionText != element.dimension.onlyDimensionText) {
                 notApplied += " onlyDimensionText";
             }
+            if (item.Contains ("openingHeightsInChain") && changed.dimension.detailedHoleDim != element.dimension.detailedHoleDim) {
+                notApplied += " openingHeightsInChain";
+            }
+            if (item.Contains ("openingHeightsNominal") && (changed.dimension.nominalHoleDim != 0) != (element.dimension.nominalHoleDim != 0)) {
+                notApplied += " openingHeightsNominal";
+            }
+            if (item.Contains ("layeredElementDimensions")) {
+                const char layeredBits = LayeredDimensionTotalBit | LayeredDimensionCoreBit | LayeredDimensionReferenceLineBit;
+                if ((changed.dimension.compAutoThick & layeredBits) != (element.dimension.compAutoThick & layeredBits)) {
+                    notApplied += " layeredElementDimensions";
+                }
+            }
             if (witnessPointsChanged) {
                 API_ElementMemo changedMemo = {};
                 const GS::OnExit changedMemoGuard ([&changedMemo] () { ACAPI_DisposeElemMemoHdls (&changedMemo); });
@@ -15708,6 +15782,9 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         dimensionData.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
         dimensionData.Add ("staticDimension", element.dimension.defStaticDim);
         dimensionData.Add ("onlyDimensionText", element.dimension.onlyDimensionText);
+        dimensionData.Add ("openingHeightsInChain", element.dimension.detailedHoleDim);
+        dimensionData.Add ("openingHeightsNominal", element.dimension.nominalHoleDim != 0);
+        dimensionData.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
 
         dimensionsData (dimensionData);
     }

@@ -14423,6 +14423,25 @@
             "Altitude"
         ]
     },
+    "LayeredElementDimensions": {
+        "type": "object",
+        "description": "The automatic dimensioning of layered (composite) elements, from the Dimension Details panel of the Dimension Settings (API compAutoThick).",
+        "properties": {
+            "total": {
+                "type": "boolean",
+                "description": "Dimension the total thickness."
+            },
+            "core": {
+                "type": "boolean",
+                "description": "Dimension the core."
+            },
+            "referenceLine": {
+                "type": "boolean",
+                "description": "Dimension the reference line."
+            }
+        },
+        "additionalProperties": false
+    },
     "LevelDimensionDetails": {
         "type": "object",
         "properties": {
@@ -14687,6 +14706,17 @@
             "onlyDimensionText": {
                 "type": "boolean",
                 "description": "Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText)."
+            },
+            "openingHeightsInChain": {
+                "type": "boolean",
+                "description": "Whether the opening heights are shown in the dimension chain (Dimension Details panel, API detailedHoleDim)."
+            },
+            "openingHeightsNominal": {
+                "type": "boolean",
+                "description": "Whether the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize)."
+            },
+            "layeredElementDimensions": {
+                "$ref": "#/LayeredElementDimensions"
             }
         },
         "additionalProperties": false,
@@ -14704,7 +14734,10 @@
             "defaultWitnessForm",
             "defaultWitnessVal",
             "staticDimension",
-            "onlyDimensionText"
+            "onlyDimensionText",
+            "openingHeightsInChain",
+            "openingHeightsNominal",
+            "layeredElementDimensions"
         ]
     },
     "ChangeMarkerComponent": {
@@ -18129,6 +18162,17 @@
             "onlyDimensionText": {
                 "type": "boolean",
                 "description": "Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText)."
+            },
+            "openingHeightsInChain": {
+                "type": "boolean",
+                "description": "Whether the opening heights are shown in the dimension chain (Dimension Details panel, API detailedHoleDim)."
+            },
+            "openingHeightsNominal": {
+                "type": "boolean",
+                "description": "Whether the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize)."
+            },
+            "layeredElementDimensions": {
+                "$ref": "#/LayeredElementDimensions"
             }
         }
     },
