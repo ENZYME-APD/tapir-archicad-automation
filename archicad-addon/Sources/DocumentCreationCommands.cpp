@@ -164,7 +164,7 @@ bool ResolveRequestedMasterLayout (const GS::ObjectState& item, GS::Optional<API
     if (masterNavItemOS != nullptr) {
         API_Guid masterNavGuid = GetGuidFromObjectState (*masterNavItemOS);
         API_NavigatorItem masterNavItem = {};
-        const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&masterNavGuid, &masterNavItem);
+        const GSErrCode navErr = GetNavigatorItemOfGuid (masterNavGuid, masterNavItem);
         if (navErr != NoError) {
             failedResult = CreateFailedExecutionResult (navErr, "Failed to get navigator item from masterNavigatorItemId.");
             return false;
@@ -298,7 +298,7 @@ GS::Optional<API_Guid> FindLayoutNavigatorItemGuid (const API_Guid& layoutDataba
 GS::Optional<API_Guid> FindLastLayoutBookChild (const API_Guid& parentGuid, const API_Guid& itemToPlace)
 {
     API_NavigatorItem parentItem = {};
-    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+    if (GetNavigatorItemOfGuid (parentGuid, parentItem) != NoError) {
         return {};
     }
     parentItem.mapId = API_LayoutMap;
@@ -637,7 +637,7 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
         if (masterNavItemOS != nullptr) {
             API_Guid masterNavGuid = GetGuidFromObjectState (*masterNavItemOS);
             API_NavigatorItem masterNavItem = {};
-            const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&masterNavGuid, &masterNavItem);
+            const GSErrCode navErr = GetNavigatorItemOfGuid (masterNavGuid, masterNavItem);
             if (navErr != NoError) {
                 databases.Push (CreateErrorResponse (navErr, "Failed to get master layout from masterNavigatorItemId."));
                 continue;
@@ -1018,7 +1018,7 @@ GS::ObjectState GetLayoutSubsetSettingsCommand::Execute (const GS::ObjectState& 
         // Checked first so that any other navigator item gets a clear error
         // instead of whatever ACAPI_Navigator_GetSubSet returns for it
         API_NavigatorItem navItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+        GSErrCode err = GetNavigatorItemOfGuid (guid, navItem);
         if (err != NoError) {
             subsetSettings (CreateErrorResponse (err, "Failed to get navigator item."));
             continue;
@@ -1183,7 +1183,7 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     }
 
     API_NavigatorItem sourceItem = {};
-    const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&sourceGuid, &sourceItem);
+    const GSErrCode navErr = GetNavigatorItemOfGuid (sourceGuid, sourceItem);
     if (navErr != NoError) {
         return CreateErrorResponse (navErr, "Failed to get navigator item from navigatorItemId.");
     }
@@ -1746,7 +1746,7 @@ GS::ObjectState GetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
         if (navIdOS != nullptr) {
             API_Guid navGuid = GetGuidFromObjectState (*navIdOS);
             API_NavigatorItem navItem = {};
-            const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navItem);
+            const GSErrCode navErr = GetNavigatorItemOfGuid (navGuid, navItem);
             if (navErr != NoError) {
                 layoutSettingsList (CreateErrorResponse (navErr, "Failed to get navigator item from navigatorItemId."));
                 continue;
@@ -1913,7 +1913,7 @@ GS::ObjectState SetLayoutSettingsCommand::Execute (const GS::ObjectState& parame
         if (navIdOS != nullptr) {
             API_Guid navGuid = GetGuidFromObjectState (*navIdOS);
             API_NavigatorItem navItem = {};
-            const GSErrCode navErr = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navItem);
+            const GSErrCode navErr = GetNavigatorItemOfGuid (navGuid, navItem);
             if (navErr != NoError) {
                 executionResults.Push (CreateFailedExecutionResult (navErr, "Failed to get navigator item from layoutNavigatorItemId."));
                 continue;

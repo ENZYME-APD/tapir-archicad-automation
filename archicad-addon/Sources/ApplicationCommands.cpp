@@ -862,7 +862,10 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         }
 
         API_NavigatorItem navigatorItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
+        if (err == APIERR_BADID) {
+            return CreateFailedExecutionResult (err, "navigatorItemId is not an item of the Navigator. The databaseId of a window (e.g. as CreateLayout returns it) goes in databaseId.");
+        }
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to get navigator item from guid");
         }
