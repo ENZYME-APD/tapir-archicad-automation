@@ -5952,14 +5952,14 @@
     },
     "AssociativeWitnessPoint": {
         "type": "object",
-        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element.",
+        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element. Points on wall faces (line true) only work on a dimension whose direction is perpendicular to the faces: Archicad rejects or removes a dimension that is even slightly oblique to them (#2505).",
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
             },
             "coordinate": {
                 "$ref": "#/Coordinate2D",
-                "description": "Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Whether Archicad keeps this location for every kind of base (edges with line true, or only hotspots) is not verified."
+                "description": "Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Archicad does not keep it on wall faces (line true): it moves the point to the middle of the face (reported in Archicad 30, #2505). Whether it is kept on other kinds of base is not verified."
             },
             "line": {
                 "type": "boolean"
