@@ -64,7 +64,7 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
                          ToolSettings/ (API field -> Archicad GUI label tables per tool)
 builtin-scripts/         Bundled automation scripts
 marketplace/             Shared scripts, one <slug>/ folder each (format in its README.md)
-branding/                Logos, diagrams
+branding/                Logos, diagrams, WEBSITE_STYLE.md (the website's style rules)
 docs/                    Generated docs (archicad-addon command reference),
                          api-coverage/ page of the Archicad API coverage checklist,
                          gh-coverage/ page of the Grasshopper coverage checklist,
@@ -634,6 +634,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   checks as done elsewhere.
 - Cross-platform: code must compile on both Windows and macOS; resources are compiled
   via `Tools/CompileResources.py`.
+- A change to a website page or stylesheet under `docs/` follows
+  [branding/WEBSITE_STYLE.md](branding/WEBSITE_STYLE.md): the looks and modes every page must keep
+  working, the colour, type and spacing scales, the page structure, the components, numbering,
+  wording and its checklist. A change that removes an item of its "Known inconsistencies" list
+  strikes it from that list.
 - When a bot or a person finds that the DevKit has no function for something people ask
   for, add a row to [docs/limits/index.html](docs/limits/index.html) ("What the Archicad API
   can't do") in the same pull request: what people want, the status, what to do instead, the
