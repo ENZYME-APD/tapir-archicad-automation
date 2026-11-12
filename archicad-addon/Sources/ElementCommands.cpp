@@ -3415,6 +3415,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddDimensionDetails (typeSpecificDetails, elem);
                 break;
 
+            case API_RadialDimensionID:
+                // The stored data as it is; the DevKit does not document how the base is stored.
+                AddRadialDimensionDetails (typeSpecificDetails, elem);
+                break;
+
             case API_ChangeMarkerID: {
                 // The marker of a revision Change (#2658): the Change it is linked to, which parts it
                 // shows, and its geometry. The cloud polygon is read from the memo.

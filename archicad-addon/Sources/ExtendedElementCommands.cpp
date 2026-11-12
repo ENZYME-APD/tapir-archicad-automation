@@ -1201,6 +1201,78 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
 }
 
+static GS::UniString RadialDimensionTextPositionName (API_TextPosID textPos)
+{
+    switch (textPos) {
+        case APIPos_Above:  return "Above";
+        case APIPos_In:     return "In";
+        case APIPos_Below:  return "Below";
+        default:            return "Unknown";
+    }
+}
+
+static GS::UniString RadialDimensionTextDirectionName (API_DirID textWay)
+{
+    switch (textWay) {
+        case APIDir_Horizontal: return "Horizontal";
+        case APIDir_Vertical:   return "Vertical";
+        case APIDir_Radial:     return "Radial";
+        default:                return "Unknown";
+    }
+}
+
+// Defined OUTSIDE the anonymous namespace, like AddDimensionDetails (#2660).
+// The DevKit does not document how a radial dimension stores what it measures: API_RadialDimensionType
+// has no centre field, and the meaning of base.loc and base.base.inIndex is only shown in an image
+// (neig_rdim.gif). So the stored data is returned as it is, plus the centre of the measured arc or
+// circle, read from that element, so that dimensions placed by hand show how Archicad stores them.
+void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& element)
+{
+    const API_RadialDimensionType& radial = element.radialDimension;
+
+    details.Add ("basePoint", Create2DCoordinateObjectState (radial.base.loc));
+    details.Add ("dimensionLineEnd", Create2DCoordinateObjectState (radial.endC));
+    details.Add ("radius", radial.dimVal);
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID baseTypeId = GetElemTypeId (radial.base.base.type);
+#else
+    const API_ElemTypeID baseTypeId = GetElemTypeId (radial.base.base.typeID);
+#endif
+    const API_Guid& baseGuid = radial.base.base.guid;
+    if (baseTypeId != API_ZombieElemID && baseGuid != APINULLGuid) {
+        details.Add ("ownerElementId", CreateGuidObjectState (baseGuid));
+        details.Add ("ownerElementType", GetElementTypeNonLocalizedName (baseTypeId));
+        details.Add ("ownerElementInIndex", static_cast<Int32> (radial.base.base.inIndex));
+        details.Add ("ownerElementLine", radial.base.base.line);
+
+        if (baseTypeId == API_ArcID || baseTypeId == API_CircleID) {
+            API_Element baseElement = {};
+            baseElement.header.guid = baseGuid;
+            if (ACAPI_Element_Get (&baseElement) == NoError) {
+                const API_ElemTypeID readTypeId = GetElemTypeId (baseElement.header);
+                if (readTypeId == API_ArcID || readTypeId == API_CircleID) {
+                    details.Add ("ownerArcCenter", Create2DCoordinateObjectState (baseElement.arc.origC));
+                    details.Add ("ownerArcRadius", baseElement.arc.r);
+                }
+            }
+        }
+    }
+
+    details.Add ("linePen", static_cast<Int32> (radial.linPen));
+    details.Add ("marker", GS::ObjectState (
+        "type", DimensionMarkerName (radial.markerData.markerType),
+        "pen", static_cast<Int32> (radial.markerData.markerPen),
+        "size", radial.markerData.markerSize));
+    details.Add ("textHeight", radial.note.noteSize);
+    details.Add ("textPen", static_cast<Int32> (radial.note.notePen));
+    details.Add ("textPosition", RadialDimensionTextPositionName (radial.textPos));
+    details.Add ("textDirection", RadialDimensionTextDirectionName (radial.textWay));
+    details.Add ("textContent", radial.note.contentType == API_NoteContent_Custom ? "Custom" : "Measured");
+    details.Add ("showOrigin", radial.showOrigo);
+    details.Add ("onlyDimensionText", radial.onlyDimensionText);
+}
+
 namespace {
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional

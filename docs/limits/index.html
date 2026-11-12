@@ -161,6 +161,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2573">#2573</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Create a radial dimension of an arc, a circle, a curved wall or a curved slab edge</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not documented</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Place the radial dimension in Archicad and read it with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a>, which returns how Archicad stored it. Those readings are what a create command needs.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RadialDimensionType</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30) has <code>base</code> (<code>API_DimBase</code>), <code>endC</code> and <code>dimVal</code> but no centre field, and which point <code>base.loc</code> is and which <code>inIndex</code> an arc needs are only shown in an image (<code>neig_rdim.gif</code>). <code>ACAPI_Element_Create</code> (<code>ACAPinc.h</code>) lists <code>API_RadialDimensionID</code> without notes, and the DevKit&rsquo;s <code>Element_Test</code> example only edits a radial dimension placed by hand (<code>Do_RadialDimension_Edit</code>).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2660">#2660</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.</td>
