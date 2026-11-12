@@ -3079,11 +3079,15 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
         GS::UniString flowDirectionStr;
         GS::UniString nominalSize;
         double outerDiameter = 0.0;
+        double width = 0.0;
+        double height = 0.0;
         const bool hasShape = portData.Get ("shape", shapeStr);
         const bool hasConnectionStyle = portData.Get ("connectionStyle", connectionStyleStr);
         const bool hasFlowDirection = portData.Get ("flowDirection", flowDirectionStr);
         const bool hasNominalSize = portData.Get ("nominalSize", nominalSize);
         const bool hasOuterDiameter = portData.Get ("outerDiameter", outerDiameter);
+        const bool hasWidth = portData.Get ("width", width);
+        const bool hasHeight = portData.Get ("height", height);
         const std::optional<ConnectorShape> shape = ConnectorShapeFromString (shapeStr);
         const std::optional<ConnectionStyle> connectionStyle = MEPEnumFromString (ConnectionStyleNames, connectionStyleStr);
         const std::optional<FlowDirection> flowDirection = MEPEnumFromString (FlowDirectionNames, flowDirectionStr);
@@ -3107,17 +3111,28 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'flowDirection' needs a piping or ventilation port, 'outerDiameter' and 'nominalSize' need a piping port."));
             continue;
         }
+        // A piping port is round: its size is its outer diameter, as in CreateMEPElements' port settings.
+        if (hasHeight && domain == Domain::Piping) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'height' needs a ventilation or cable carrier port; give the size of a piping port as 'outerDiameter'."));
+            continue;
+        }
 
         const API_Guid ownerElementGuid = MEPUniqueIDToAPIGuid (port->GetMEPElementId ());
         changeReporter.Add (ownerElementGuid);
 
         bool success = true;
 
-        if (hasShape || hasConnectionStyle) {
+        if (hasShape || hasConnectionStyle || hasWidth || hasHeight) {
             bool settersSucceeded = true;
             ACAPI::Result<void> result = port->Modify ([&](PortBase::Modifier& modifier) {
                 if (shape.has_value ()) {
                     settersSucceeded &= modifier.SetShape (shape.value ()).IsOk ();
+                }
+                if (hasWidth) {
+                    settersSucceeded &= modifier.SetWidth (width).IsOk ();
+                }
+                if (hasHeight) {
+                    settersSucceeded &= modifier.SetHeight (height).IsOk ();
                 }
 #ifdef ServerMainVers_3000
                 if (connectionStyle.has_value ()) {
@@ -8249,8 +8264,13 @@ struct MEPElementChanges {
 #endif
     std::optional<double>       width;
     std::optional<double>       height;
+    std::optional<double>       xSize;
+    std::optional<double>       ySize;
 
-    bool ChangesPlacement () const          { return anchorPoint != nullptr || orientation != nullptr || libraryPartId != nullptr; }
+    bool ChangesPlacement () const
+    {
+        return anchorPoint != nullptr || orientation != nullptr || libraryPartId != nullptr || xSize.has_value () || ySize.has_value ();
+    }
     bool ChangesFlexibleSegment () const
     {
 #ifdef ServerMainVers_2800
@@ -8303,6 +8323,17 @@ static std::optional<GS::ObjectState> GetMEPElementChanges (const GS::ObjectStat
     if (elementData.Get ("height", value)) {
         changes.height = value;
     }
+    if (elementData.Get ("xSize", value)) {
+        changes.xSize = value;
+    }
+    if (elementData.Get ("ySize", value)) {
+        changes.ySize = value;
+    }
+#ifndef ServerMainVers_3000
+    if (changes.xSize.has_value () || changes.ySize.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "'xSize' and 'ySize' require Archicad 30 or newer.");
+    }
+#endif
     return std::nullopt;
 }
 
@@ -8344,15 +8375,31 @@ static std::optional<GS::ObjectState> ModifyMEPFlexibleSegment (FlexibleSegment&
     return std::nullopt;
 }
 
-// Changes the anchor point, orientation and library part of a modifiable MEP element (a terminal,
-// accessory, equipment, fitting or flexible segment).
+// Changes the anchor point, orientation, library part and (from Archicad 30) the library part's size of
+// a modifiable MEP element (a terminal, accessory, equipment, fitting or flexible segment).
 static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableElement& element, const ACAPI::MEP::UniqueID& elemId, const MEPElementChanges& changes)
 {
+    std::optional<GS::UniString> setterError;
+#ifdef ServerMainVers_3000
+    const auto checkSetter = [&] (const ACAPI::Result<void>& result, const char* what) {
+        if (result.IsErr () && !setterError.has_value ()) {
+            setterError = MEPErrorText (GS::UniString ("Failed to set the '") + what + "' of the MEP element.", result.UnwrapErr ());
+        }
+    };
+#endif
     ACAPI::Result<void> modifyResult = element.Modify ([&](ModifiableElementBase::Modifier& modifier) {
-        // The library part first, the placement is meant for the new library part.
+        // The library part first, the placement and the size are meant for the new library part.
         if (changes.libraryPartId != nullptr) {
             modifier.SetObjectId (GetGuidFromObjectState (*changes.libraryPartId));
         }
+#ifdef ServerMainVers_3000
+        if (changes.xSize.has_value ()) {
+            checkSetter (modifier.SetObjectXSize (changes.xSize.value ()), "xSize");
+        }
+        if (changes.ySize.has_value ()) {
+            checkSetter (modifier.SetObjectYSize (changes.ySize.value ()), "ySize");
+        }
+#endif
         if (changes.anchorPoint != nullptr) {
             modifier.SetAnchorPoint (Get3DCoordinateFromObjectState (*changes.anchorPoint));
         }
@@ -8360,6 +8407,9 @@ static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableEleme
             modifier.SetOrientation (GetMEPOrientationOfInput (*changes.orientation));
         }
     }, "Modify MEP Element Placement");
+    if (setterError.has_value ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, setterError.value ());
+    }
     if (modifyResult.IsErr ()) {
         return CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, MEPErrorText ("Failed to modify the placement of the MEP element.", modifyResult.UnwrapErr ()));
     }
@@ -8370,13 +8420,26 @@ static std::optional<GS::ObjectState> ModifyMEPElementPlacement (ModifiableEleme
             return CreateFailedExecutionResult (APIERR_BADPARS, "The library part given in 'libraryPartId' was not found, the element keeps its library part. The other changes were made.");
         }
     }
+#ifdef ServerMainVers_3000
+    if (changes.xSize.has_value () || changes.ySize.has_value ()) {
+        // Some library parts calculate their own size and ignore the given one without an error.
+        ACAPI::Result<ModifiableElement> modified = ModifiableElement::Get (elemId);
+        const double tolerance = 1e-4;
+        if (modified.IsOk () &&
+            ((changes.xSize.has_value () && std::fabs (modified->GetObjectXSize () - changes.xSize.value ()) > tolerance) ||
+             (changes.ySize.has_value () && std::fabs (modified->GetObjectYSize () - changes.ySize.value ()) > tolerance))) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString (SizeNotApplied) + " The other changes were made.");
+        }
+    }
+#endif
     return std::nullopt;
 }
 
 // Makes the changes of one item of ModifyMEPElements. Every element the changes need is looked up
 // before anything is changed, so an item with a field that does not fit its element changes nothing.
-// The one exception: Archicad only shows that it did not find a 'libraryPartId' after the placement
-// was changed, so that error comes after the item's other changes were made.
+// The exceptions: Archicad only shows that it did not find a 'libraryPartId', or that the library part
+// keeps its own size instead of 'xSize' or 'ySize', after the placement was changed, so those errors
+// come after the item's other changes were made.
 static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
 {
     const GS::ObjectState* elementId = elementData.Get ("elementId");
@@ -8401,7 +8464,7 @@ static GS::ObjectState ModifyMEPElement (const GS::ObjectState& elementData)
     }
     ACAPI::Result<ModifiableElement> modifiableElement = ModifiableElement::Get (elemId);
     if (changes.ChangesPlacement () && modifiableElement.IsErr ()) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "'anchorPoint', 'orientation' and 'libraryPartId' belong to terminals, accessories, equipment, fittings and flexible segments, and the element is not one of them.");
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'anchorPoint', 'orientation', 'libraryPartId', 'xSize' and 'ySize' belong to terminals, accessories, equipment, fittings and flexible segments, and the element is not one of them.");
     }
     if (changes.ChangesFlexibleSegment ()) {
         const std::optional<GS::ObjectState> failure = ModifyMEPFlexibleSegment (*flexibleSegment.operator-> (), changes);

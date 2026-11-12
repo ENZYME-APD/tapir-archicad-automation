@@ -3246,7 +3246,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyMEPPortsCommand> (
             mepCommands, "1.8.0",
-            "Modifies the given MEP ports (as returned by GetMEPPorts): shape, connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28."
+            "Modifies the given MEP ports (as returned by GetMEPPorts): shape, width, height (not of piping ports), connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28."
         );
         err |= RegisterCommand<ConnectMEPElementsCommand> (
             mepCommands, "1.5.6",
@@ -3310,7 +3310,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyMEPElementsCommand> (
             mepCommands, "2.0.0",
-            "Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find only after the item's other changes were made, so that item's error says which changes stayed. Available from Archicad 27."
+            "Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, their size along the local x and y axes (from Archicad 30), the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find, or a library part that keeps its own size, only after the item's other changes were made, so that item's error says which changes stayed. The size of the connections is set with ModifyMEPPorts. Available from Archicad 27."
         );
         err |= RegisterCommand<GetMEPRoutingParametersCommand> (
             mepCommands, "1.8.0",

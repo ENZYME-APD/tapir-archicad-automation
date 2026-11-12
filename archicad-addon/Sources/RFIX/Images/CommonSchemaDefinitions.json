@@ -20824,6 +20824,14 @@
                 "$ref": "#/MEPCrossSectionShape",
                 "description": "New shape of the port."
             },
+            "width": {
+                "type": "number",
+                "description": "New width of the port (the connection size of a terminal, accessory, equipment or fitting), in meters. The ports of routes and branches take their size from the route instead."
+            },
+            "height": {
+                "type": "number",
+                "description": "New height of a ventilation or cable carrier port, in meters. A piping port's size is its 'outerDiameter'."
+            },
             "connectionStyle": {
                 "$ref": "#/MEPConnectionStyle",
                 "description": "New connection style of the port. Available from Archicad 30."
@@ -21476,6 +21484,14 @@
             "height": {
                 "type": "number",
                 "description": "The new height of a flexible segment."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The new size of a terminal, accessory, equipment or fitting along its local x axis, in meters. Some library parts calculate their own size and keep it, then the item fails after its other changes were made. The size of its connections is set with ModifyMEPPorts. Available from Archicad 30."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The new size of a terminal, accessory, equipment or fitting along its local y axis, in meters. Some library parts calculate their own size and keep it, then the item fails after its other changes were made. Available from Archicad 30."
             }
         },
         "additionalProperties": false,
