@@ -2260,6 +2260,9 @@
             "heightStretchable": {
                 "type": "boolean"
             },
+            "stretchZones": {
+                "$ref": "#/ProfileStretchZones"
+            },
             "hasCoreSkin": {
                 "type": "boolean"
             },
@@ -2293,6 +2296,40 @@
             "attributeId",
             "index",
             "name"
+        ]
+    },
+    "ProfileStretchZones": {
+        "type": "object",
+        "description": "The stretch zones of a profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), in the coordinates of skins[].outlineCoords. A zone the profile does not have is omitted.",
+        "properties": {
+            "horizontal": {
+                "$ref": "#/ProfileStretchZone",
+                "description": "The horizontal stretch zone (width), an x range. Present only when the profile is widthStretchable."
+            },
+            "vertical": {
+                "$ref": "#/ProfileStretchZone",
+                "description": "The vertical stretch zone (height), a y range. Present only when the profile is heightStretchable."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ProfileStretchZone": {
+        "type": "object",
+        "description": "One stretch zone of a profile: the range between min and max is the part of the profile that stretches.",
+        "properties": {
+            "min": {
+                "type": "number",
+                "description": "The lower limit of the zone (the left one for a horizontal zone, the bottom one for a vertical zone)."
+            },
+            "max": {
+                "type": "number",
+                "description": "The upper limit of the zone (the right one for a horizontal zone, the top one for a vertical zone). Must be greater than min."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "min",
+            "max"
         ]
     },
     "ProfileNominalSize": {
@@ -2368,6 +2405,70 @@
             }
         },
         "additionalProperties": false
+    },
+    "ElementProfileValues": {
+        "type": "object",
+        "description": "The profile values of one wall, beam or column, measured on the stretched profile the element uses: the profile after the element's own stretch and modifier values.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "profiles": {
+                "type": "array",
+                "description": "One item per custom profile of the element: one for a Profile wall, one per Profile segment of a beam or column. Empty when the element uses no custom profile.",
+                "items": {
+                    "$ref": "#/ElementProfileValue"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "profiles"
+        ]
+    },
+    "ElementProfileValue": {
+        "type": "object",
+        "description": "A custom profile as one element, or one segment of a beam or column, uses it.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "description": "The segment of the beam or column, 0-based in the order GetDetailsOfElements lists the segments. Absent for a wall."
+            },
+            "profileId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The profile attribute. Absent when it could not be resolved."
+            },
+            "width": {
+                "type": "number",
+                "description": "Width of the stretched profile (its bounding box): the element's own width where the profile stretches horizontally."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the stretched profile (its bounding box): the element's own height where the profile stretches vertically."
+            },
+            "profileModifiers": {
+                "type": "array",
+                "description": "The offset modifiers of the profile with the values this element has, measured on its stretched profile the way GetProfiles measures them on the profile attribute. Empty when the stretched profile Archicad returns carries no modifiers. A modifier whose dimension crosses a stretch zone includes the stretch.",
+                "items": {
+                    "$ref": "#/ProfileModifier"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "width",
+            "height",
+            "profileModifiers"
+        ]
+    },
+    "ElementProfileValuesOrError": {
+        "type": "object",
+        "description": "The profile values of one element, or an error.",
+        "oneOf": [
+            { "$ref": "#/ElementProfileValues" },
+            { "$ref": "#/ErrorItem" }
+        ]
     },
     "ProfileSkin": {
         "type": "object",
@@ -2451,8 +2552,13 @@
         "type": "object",
         "description": "One edge of a profile skin's outline.",
         "properties": {
-            "buildingMaterialId": {
-                "$ref": "#/AttributeIdArrayItem"
+            "surfaceFromBuildingMaterial": {
+                "type": "boolean",
+                "description": "Whether the edge takes the surface of the skin's building material. False when the edge has a custom surface (surfaceId)."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The custom surface of the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Only when surfaceFromBuildingMaterial is false and a surface is set."
             },
             "pen": {
                 "type": "integer"
@@ -3219,7 +3325,7 @@
             },
             "surfaceId": {
                 "$ref": "#/AttributeId",
-                "description": "Optional per-face surface (render material) override. Uses the Morph's default surface when omitted. Ignored during creation in Archicad 25."
+                "description": "Optional per-face surface (render material) override. Uses the Morph's default surface (the morph's own surfaceId) when omitted, and takes precedence over it when given. Ignored in Archicad 25 and 26."
             }
         },
         "additionalProperties": false,
@@ -3465,7 +3571,16 @@
                 "$ref": "#/AttributeIdArrayItem"
             },
             "buildingMaterialId": {
-                "$ref": "#/AttributeIdArrayItem"
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "Kept for compatibility: makes the edge take the surface of the skin's building material, like surfaceFromBuildingMaterial true. The building material itself is not stored on the edge."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "A custom surface for the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Sets surfaceFromBuildingMaterial to false."
+            },
+            "surfaceFromBuildingMaterial": {
+                "type": "boolean",
+                "description": "True: the edge takes the surface of the skin's building material, its custom surface is no longer used. False: the edge uses its custom surface (give surfaceId if it has none yet). Applied after buildingMaterialId and surfaceId."
             }
         },
         "additionalProperties": false,
@@ -3859,6 +3974,22 @@
             "angle": {
                 "type": "number",
                 "description": "The angle of the edge cut in radians, as Archicad stores it. Only CustomAngle uses it."
+            }
+        },
+        "additionalProperties": false
+    },
+    "SlabEdgeTrim": {
+        "type": "object",
+        "description": "The Edge Angle of a slab edge (Geometry and Positioning panel of Slab Settings): vertical, or at a custom angle.",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut"],
+                "description": "Vertical (the default, perpendicular to the slab), or at 'angle' (CustomAngle). ModifySlabs writes only these two; the others are only reported, should Archicad store one on a slab."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The angle of the edge in radians, as Archicad stores it (the dialog shows it in degrees). Only CustomAngle uses it."
             }
         },
         "additionalProperties": false
@@ -4656,6 +4787,7 @@
             "minimumHeight",
             "widthStretchable",
             "heightStretchable",
+            "stretchZones",
             "hasCoreSkin",
             "profileModifiers",
             "skins",
@@ -5881,14 +6013,14 @@
     },
     "AssociativeWitnessPoint": {
         "type": "object",
-        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element.",
+        "description": "A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element. Points on wall faces (line true) only work on a dimension whose direction is perpendicular to the faces: Archicad rejects or removes a dimension that is even slightly oblique to them (#2505).",
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
             },
             "coordinate": {
                 "$ref": "#/Coordinate2D",
-                "description": "Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Whether Archicad keeps this location for every kind of base (edges with line true, or only hotspots) is not verified."
+                "description": "Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Archicad does not keep it on wall faces (line true): it moves the point to the middle of the face (reported in Archicad 30, #2505). Whether it is kept on other kinds of base is not verified."
             },
             "line": {
                 "type": "boolean"
@@ -5996,6 +6128,23 @@
             "textFrame": {
                 "type": "boolean",
                 "description": "Whether the dimension text has a frame."
+            },
+            "content": {
+                "type": "string",
+                "enum": ["MeasuredValue", "CustomText"],
+                "description": "Whether the witness point shows the measured value or its custom text (API note contentType), as ModifyAssociativeDimensions' witnessPointTexts takes it."
+            },
+            "customText": {
+                "type": "string",
+                "description": "The custom text of the witness point (API note contentUStr), with {MeasuredValue} where the measured value autotext is (Archicad 26 and later). Kept, but not shown, while content is MeasuredValue."
+            },
+            "superscript": {
+                "type": "boolean",
+                "description": "Whether the text is superscript (API note effectBits, APIEffect_SuperScript)."
+            },
+            "textPositionFixed": {
+                "type": "boolean",
+                "description": "Whether the text was moved by hand from its automatic position (API note fixPos); ModifyAssociativeDimensions' resetTextPosition sets it back to false."
             }
         }
     },
@@ -9623,6 +9772,10 @@
                 "type": "string",
                 "description": "The name of the navigator item."
             },
+            "autoTextedName": {
+                "type": "string",
+                "description": "The name of the navigator item as it was given, with its autotext tokens (e.g. <PROJECTNUMBER>_<SourceID>_<SourceItemName>), while name holds it with the tokens resolved. Only present when the two differ, that is when the name contains autotext."
+            },
             "prefix": {
                 "type": "string",
                 "description": "The floor number for story items, an empty string for every other item type."
@@ -9825,7 +9978,7 @@
             },
             "renovationFilterName": {
                 "type": "string",
-                "description": "Name of the renovation filter applied to the view. Read-only (GetViewSettings): present together with renovationFilterGuid when the name could be resolved; set the filter via renovationFilterGuid."
+                "description": "Name of the renovation filter applied to the view (GetRenovationFilters lists them). GetViewSettings returns it together with renovationFilterGuid when the name could be resolved. SetViewSettings sets the filter by this name (an exact match first, else a case-insensitive one); a name the project has no filter for, or one that names another filter than a renovationFilterGuid given with it, fails the item and nothing of it is written."
             },
             "d3styleName": {
                 "type": "string",
@@ -10502,6 +10655,11 @@
                 "type": "number",
                 "description": "Multi-plane: the eaves overhang beyond the pivot polygon."
             },
+            "overhangType": {
+                "type": "string",
+                "enum": [ "Offset", "Manual" ],
+                "description": "Multi-plane: how the roof's contour is made (API_PolyRoofData::overHangType, the Overhang of Roof Settings). Offset: from the pivot polygon and the eaves overhangs, which ModifyRoofs' eavesOverhang sets. Manual: the contour was edited on its own (Edit Roof Contour in Archicad, or ModifyRoofs' contourPolygon), and polygonOutline is that contour."
+            },
             "levels": {
                 "type": "array",
                 "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
@@ -10518,7 +10676,7 @@
             },
             "polygonOutline": {
                 "type": "array",
-                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged.",
+                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
@@ -10801,6 +10959,20 @@
             "holes": {
                 "$ref": "#/Holes2D"
             },
+            "edgeSideMaterials": {
+                "type": "array",
+                "description": "The custom side surface of each edge of the slab's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. ModifySlabs takes the same list.",
+                "items": {
+                    "$ref": "#/OverriddenMaterial"
+                }
+            },
+            "edgeTrims": {
+                "type": "array",
+                "description": "The Edge Angle of each edge of the slab's polygon, in the order of edgeSideMaterials. Missing when the slab stores no edge trims, in which case every edge is Vertical. ModifySlabs takes the same list, or one edgeTrim for every edge.",
+                "items": {
+                    "$ref": "#/SlabEdgeTrim"
+                }
+            },
             "structureType": {
                 "$ref": "#/SlabStructureType"
             },
@@ -10887,6 +11059,64 @@
             "relativeTopStory": {
                 "type": "number",
                 "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' via ModifyColumns in the same call."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the column is shown on (Show On Stories). While isAutoOnStoryVisibility is true, Archicad computes it from the column's elevation."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "True when Archicad recomputes visibility automatically from the actual elevation of the column."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen of the cut contour lines of the column core."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut contour lines of the column core."
+            },
+            "veneerLinePen": {
+                "type": "integer",
+                "description": "Pen of the veneer lines of the column."
+            },
+            "veneerLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the veneer lines of the column."
+            },
+            "coreSymbolPen": {
+                "type": "integer",
+                "description": "Pen of the core symbol lines (slash, X or crosshair) of the column."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines of the column."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the uncut lines of the column."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the overhead lines of the column."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the overhead lines of the column."
+            },
+            "hiddenLinePen": {
+                "type": "integer",
+                "description": "Pen of the hidden lines of the column."
+            },
+            "hiddenLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the hidden lines of the column, for example a dashed line."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -11578,7 +11808,7 @@
             },
             "offset": {
                 "$ref": "#/Coordinate2D",
-                "description": "Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level."
+                "description": "Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType."
             },
             "useFixedAngle": {
                 "type": "boolean",
@@ -11714,6 +11944,66 @@
             "useObjectSectionAttributes": {
                 "type": "boolean",
                 "description": "Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'."
+            },
+            "verticalLink": {
+                "$ref": "#/WindowDoorVerticalLink"
+            },
+            "verticalLinkStoryIndex": {
+                "type": "integer",
+                "description": "The index of the story the opening is anchored to (API_VerticalLink::linkValue); only returned when verticalLink is 'SillToStory' or 'HeaderToStory'."
+            },
+            "subFloorThickness": {
+                "type": "number",
+                "description": "Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness)."
+            },
+            "revealDepthLocation": {
+                "$ref": "#/WindowDoorRevealDepthLocation"
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true."
+            },
+            "useObjectMaterials": {
+                "type": "boolean",
+                "description": "Use the surfaces defined in the library part instead of 'surfaceId'."
+            },
+            "directionType": {
+                "$ref": "#/WindowDoorDirectionType"
+            },
+            "fixPoint": {
+                "$ref": "#/WindowDoorFixPoint"
+            },
+            "revealDepthFromSide": {
+                "type": "number",
+                "description": "Read only. The reveal depth measured from the clicked side of the wall, computed by Archicad from revealDepthLocation and revealDepthOffset (API_WindowType::revealDepthFromSide)."
+            },
+            "jambDepthHead": {
+                "type": "number",
+                "description": "Read only. Inset on top (API_WindowType::jambDepthHead)."
+            },
+            "jambDepthSill": {
+                "type": "number",
+                "description": "Read only. Inset on bottom (API_WindowType::jambDepthSill)."
+            },
+            "jambDepthLeft": {
+                "type": "number",
+                "description": "Read only. Inset on the left (API_WindowType::jambDepth)."
+            },
+            "jambDepthRight": {
+                "type": "number",
+                "description": "Read only. Inset on the right (API_WindowType::jambDepth2)."
+            },
+            "wallCutUsing": {
+                "type": "boolean",
+                "description": "Read only. Whether the opening inherits the gables of its owner wall (API_OpeningBaseType::wallCutUsing)."
+            },
+            "startPoint": {
+                "$ref": "#/Coordinate2D",
+                "description": "Read only. The center point of the opening, measured from the beginning corner of the wall and rotated into the direction of the wall reference edge (API_WindowType::startPoint)."
+            },
+            "dirVector": {
+                "$ref": "#/Coordinate2D",
+                "description": "Read only. The direction vector of the opening in a polygonal wall, relative to the wall reference edge (API_WindowType::dirVector)."
             }
         },
         "additionalProperties": false,
@@ -11729,6 +12019,43 @@
             "reveal",
             "revealDepthOffset"
         ]
+    },
+    "WindowDoorVerticalLink": {
+        "type": "string",
+        "enum": [
+            "SillToWallBottom",
+            "SillToStory",
+            "HeaderToWallBottom",
+            "HeaderToStory",
+            "SillToWallTop",
+            "HeaderToWallTop"
+        ],
+        "description": "What the vertical position of a window or door is anchored to, as the anchor in \"Preview and Positioning\" (API_OpeningBaseType::verticalLink): its sill or its header, to the bottom or the top of the owner wall, or to a story (verticalLinkStoryIndex). The DevKit has no anchor to the project zero or to a reference level."
+    },
+    "WindowDoorRevealDepthLocation": {
+        "type": "string",
+        "enum": [
+            "Side",
+            "Core"
+        ],
+        "description": "What revealDepthOffset of a window or door is measured from (API_WindowType::revealDepthLocation): 'Side' the clicked face of the wall, 'Core' the core skin (clicked side) of a composite wall."
+    },
+    "WindowDoorDirectionType": {
+        "type": "string",
+        "enum": [
+            "AssociativeToWall",
+            "Vertical"
+        ],
+        "description": "The plane of a window or door in a slanted wall (API_WindowType::directionType): 'AssociativeToWall' follows the plane of the wall, 'Vertical' stays vertical."
+    },
+    "WindowDoorFixPoint": {
+        "type": "string",
+        "enum": [
+            "Beginning",
+            "Center",
+            "End"
+        ],
+        "description": "The fixed (placement) point of a window or door, relative to the owner wall's reference line (API_WindowType::fixPoint)."
     },
     "SkylightDetails": {
         "type": "object",
@@ -11876,6 +12203,17 @@
             "lineTypeId": {
                 "$ref": "#/AttributeId"
             },
+            "drawSegmentMode": {
+                "$ref": "#/PolylineDrawSegmentMode"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -11885,6 +12223,74 @@
             "coordinates",
             "zCoordinate"
         ]
+    },
+    "PolylineDrawSegmentMode": {
+        "type": "string",
+        "description": "How the dashes of the polyline's line type are drawn: SegmentBySegment restarts the pattern on every segment, Continuous runs it over the whole polyline.",
+        "enum": [
+            "SegmentBySegment",
+            "Continuous"
+        ]
+    },
+    "LineArrowhead": {
+        "type": "object",
+        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
+        "properties": {
+            "visible": {
+                "type": "boolean",
+                "description": "Is the arrowhead shown? When the object is given without it, the arrowhead is shown."
+            },
+            "type": {
+                "type": "string",
+                "description": "The arrowhead type: circles, slash lines, open, closed (outline) and full (filled) arrows of 15, 30, 45, 60 or 90 degrees, the pepita circle, BandArrow (the double line) and the half arrows (harpoons; Ccw: barb up, Cw: barb down).",
+                "enum": [
+                    "EmptyCircle",
+                    "CrossCircle",
+                    "FullCircle",
+                    "SlashLine15",
+                    "OpenArrow15",
+                    "ClosedArrow15",
+                    "FullArrow15",
+                    "SlashLine30",
+                    "OpenArrow30",
+                    "ClosedArrow30",
+                    "FullArrow30",
+                    "SlashLine45",
+                    "OpenArrow45",
+                    "ClosedArrow45",
+                    "FullArrow45",
+                    "SlashLine60",
+                    "OpenArrow60",
+                    "ClosedArrow60",
+                    "FullArrow60",
+                    "SlashLine90",
+                    "PepitaCircle",
+                    "BandArrow",
+                    "HalfArrowCcw15",
+                    "HalfArrowCw15",
+                    "HalfArrowCcw30",
+                    "HalfArrowCw30",
+                    "HalfArrowCcw45",
+                    "HalfArrowCw45",
+                    "HalfArrowCcw60",
+                    "HalfArrowCw60",
+                    "SlashLine75"
+                ]
+            },
+            "size": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "The arrowhead size in mm."
+            },
+            "pen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen index of the arrowhead."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
     },
     "LineDetails": {
         "type": "object",
@@ -11905,6 +12311,14 @@
             "lineTypeId": {
                 "$ref": "#/AttributeId"
             },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -11918,7 +12332,7 @@
     },
     "ArcDetails": {
         "type": "object",
-        "description": "Geometry of an Arc or Circle element. begAngle/endAngle are only present for Arc (a Circle spans the full 0-2*PI range implicitly).",
+        "description": "Geometry of an Arc or Circle element. begAngle/endAngle and startArrow/endArrow are only present for Arc (a Circle spans the full 0-2*PI range implicitly and has no ends).",
         "properties": {
             "origin": {
                 "$ref": "#/Coordinate2D"
@@ -11954,6 +12368,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start. Only present for Arc, not Circle."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end. Only present for Arc, not Circle."
             },
             "zCoordinate": {
                 "type": "number"
@@ -11991,7 +12413,7 @@
     },
     "SplineDetails": {
         "type": "object",
-        "description": "Geometry of a Spline element. Geometry is read-only: Archicad's own API does not support modifying Spline geometry via ACAPI_Element_Change. The settings fields (roomSeparator/linePenIndex/lineTypeId) ARE modifiable via SET.",
+        "description": "Geometry of a Spline element. Geometry is read-only: Archicad's own API does not support modifying Spline geometry via ACAPI_Element_Change. The settings fields (roomSeparator/linePenIndex/lineTypeId/startArrow/endArrow) ARE modifiable via SET.",
         "properties": {
             "coordinates": {
                 "type": "array",
@@ -12012,6 +12434,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end."
             },
             "zCoordinate": {
                 "type": "number"
@@ -12332,6 +12762,669 @@
             "elevation",
             "unifyPatterns"
         ]
+    },
+    "RailingComponentOwnerElementId": {
+        "$ref": "#/ElementId",
+        "description": "The element that owns this railing component (the owner field of its API_Railing*Type struct), for example the RailingNode of a post, the RailingSegment of a top rail or the RailingBalusterSet of a baluster; ownerElementType gives its type. Left out when the component has no owner."
+    },
+    "RailingComponentSymbolId": {
+        "$ref": "#/Guid",
+        "description": "Archicad's identifier of the symbol the component is drawn with (symbID of its API_Railing*Type struct), as Archicad stores it. Left out when it is empty."
+    },
+    "RailingComponentLibPart": {
+        "$ref": "#/LibPartDetails",
+        "description": "The library part the component is placed from: its name and unique IDs. Left out when Archicad reports no library part for the component or the library part is not in the loaded libraries."
+    },
+    "RailingVerticalPosition": {
+        "type": "object",
+        "description": "Between which rails of the segment a railing component stands (API_RailingVerticalPosData).",
+        "properties": {
+            "bottomRailIndex": {
+                "type": "integer",
+                "description": "The index of the rail at the bottom of the component (API_RailingVerticalPosData::bottomRailIndex)."
+            },
+            "topRailIndex": {
+                "type": "integer",
+                "description": "The index of the rail at the top of the component (API_RailingVerticalPosData::topRailIndex)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bottomRailIndex",
+            "topRailIndex"
+        ]
+    },
+    "RailingHorizontalPosition": {
+        "type": "object",
+        "description": "Where along its pattern a railing component stands (API_RailingHorizontalPosData).",
+        "properties": {
+            "position": {
+                "type": "number",
+                "description": "The position of the component along the pattern (API_RailingHorizontalPosData::position)."
+            },
+            "isStretchable": {
+                "type": "boolean",
+                "description": "True when the position stretches with the length of the pattern (API_RailingHorizontalPosData::isStretchable)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "isStretchable"
+        ]
+    },
+    "RailingFrame": {
+        "type": "object",
+        "description": "The boundaries of a railing panel or baluster set within its pattern (API_RailingFrameData).",
+        "properties": {
+            "lateralOffset": {
+                "type": "number",
+                "description": "The sideways offset of the frame from the segment (API_RailingFrameData::yOffset)."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "The offset of the top of the frame (API_RailingFrameData::zTopOffset)."
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "The offset of the bottom of the frame (API_RailingFrameData::zBottomOffset)."
+            },
+            "beginOffset": {
+                "type": "number",
+                "description": "The offset of the beginning of the frame (API_RailingFrameData::xBeginOffset)."
+            },
+            "endOffset": {
+                "type": "number",
+                "description": "The offset of the end of the frame (API_RailingFrameData::xEndOffset)."
+            },
+            "placeIndex": {
+                "type": "integer",
+                "description": "The index of the place of the frame in its pattern (API_RailingFrameData::placeIndex)."
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lateralOffset",
+            "topOffset",
+            "bottomOffset",
+            "beginOffset",
+            "endOffset",
+            "placeIndex",
+            "verticalPosition"
+        ]
+    },
+    "RailingDistribution": {
+        "type": "object",
+        "description": "How a railing pattern or baluster set is repeated along its segment (API_RailingDistributionData).",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The distribution method (API_DistribTypeID): a number of Divisions, a fixed PatternLength, or the BestDivisionByLength (equal divisions no longer than length).",
+                "enum": [
+                    "Divisions",
+                    "PatternLength",
+                    "BestDivisionByLength"
+                ]
+            },
+            "alignment": {
+                "type": "string",
+                "description": "How the repetitions are aligned (API_PatternAlignID).",
+                "enum": [
+                    "StartWithPattern",
+                    "StartFromCenter",
+                    "CenterAligned",
+                    "EndWithPattern"
+                ]
+            },
+            "length": {
+                "type": "number",
+                "description": "The length of one repetition (API_RailingDistributionData::length)."
+            },
+            "patternAmount": {
+                "type": "integer",
+                "description": "The number of repetitions (API_RailingDistributionData::patternAmount)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "alignment",
+            "length",
+            "patternAmount"
+        ]
+    },
+    "RailingVerticalPositionChange": {
+        "type": "object",
+        "description": "Changes to the rails a railing component stands between (API_RailingVerticalPosData), with the fields GetDetailsOfElements returns in verticalPosition. Only the given fields change.",
+        "properties": {
+            "bottomRailIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the rail at the bottom of the component (API_RailingVerticalPosData::bottomRailIndex)."
+            },
+            "topRailIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the rail at the top of the component (API_RailingVerticalPosData::topRailIndex)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "RailingHorizontalPositionChange": {
+        "type": "object",
+        "description": "Changes to where along its pattern a railing component stands (API_RailingHorizontalPosData), with the fields GetDetailsOfElements returns in horizontalPosition. Only the given fields change.",
+        "properties": {
+            "position": {
+                "type": "number",
+                "description": "The position of the component along the pattern (API_RailingHorizontalPosData::position)."
+            },
+            "isStretchable": {
+                "type": "boolean",
+                "description": "True when the position stretches with the length of the pattern (API_RailingHorizontalPosData::isStretchable)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "RailingFrameChange": {
+        "type": "object",
+        "description": "Changes to the boundaries of a railing panel or baluster set within its pattern (API_RailingFrameData), with the fields GetDetailsOfElements returns in frame. Only the given fields change; placeIndex cannot be changed.",
+        "properties": {
+            "lateralOffset": {
+                "type": "number",
+                "description": "The sideways offset of the frame from the segment (API_RailingFrameData::yOffset)."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "The offset of the top of the frame (API_RailingFrameData::zTopOffset)."
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "The offset of the bottom of the frame (API_RailingFrameData::zBottomOffset)."
+            },
+            "beginOffset": {
+                "type": "number",
+                "description": "The offset of the beginning of the frame (API_RailingFrameData::xBeginOffset)."
+            },
+            "endOffset": {
+                "type": "number",
+                "description": "The offset of the end of the frame (API_RailingFrameData::xEndOffset)."
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPositionChange"
+            }
+        },
+        "additionalProperties": false
+    },
+    "RailingDistributionChange": {
+        "type": "object",
+        "description": "Changes to how a baluster set is repeated (API_RailingDistributionData), with the fields GetDetailsOfElements returns in distribution. Only the given fields change.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The distribution method (API_DistribTypeID): a number of Divisions, a fixed PatternLength, or the BestDivisionByLength (equal divisions no longer than length).",
+                "enum": [
+                    "Divisions",
+                    "PatternLength",
+                    "BestDivisionByLength"
+                ]
+            },
+            "alignment": {
+                "type": "string",
+                "description": "How the repetitions are aligned (API_PatternAlignID).",
+                "enum": [
+                    "StartWithPattern",
+                    "StartFromCenter",
+                    "CenterAligned",
+                    "EndWithPattern"
+                ]
+            },
+            "length": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "The length of one repetition (API_RailingDistributionData::length)."
+            },
+            "patternAmount": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "The number of repetitions (API_RailingDistributionData::patternAmount)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "RailingPostDetails": {
+        "type": "object",
+        "description": "The details of a railing post (RailingPost, API_RailingPostType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "verticalPosition"
+        ]
+    },
+    "RailingInnerPostDetails": {
+        "type": "object",
+        "description": "The details of an inner post of a railing pattern (RailingInnerPost, API_RailingInnerPostType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "doublePostOffset": {
+                "type": "number",
+                "description": "The offset between the two posts of a double inner post (API_RailingInnerPostType::doublePostOffset)."
+            },
+            "postCount": {
+                "type": "integer",
+                "description": "The number of posts in this inner post, 1 or 2 (API_RailingInnerPostType::postNum)."
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPosition"
+            },
+            "horizontalPosition": {
+                "$ref": "#/RailingHorizontalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "doublePostOffset",
+            "postCount",
+            "verticalPosition",
+            "horizontalPosition"
+        ]
+    },
+    "RailingRailDetails": {
+        "type": "object",
+        "description": "The details of a rail, top rail or handrail of a railing segment (RailingRail, RailingToprail, RailingHandrail: API_RailingRailType, API_RailingToprailType, API_RailingHandrailType). A top rail has only visible; relative is only given for rails and doubleHandrail only for handrails.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "True when the rail is shown (visible of its struct)."
+            },
+            "relative": {
+                "type": "boolean",
+                "description": "Rails only: true when the height of the rail is relative (API_RailingRailType::relative)."
+            },
+            "doubleHandrail": {
+                "type": "boolean",
+                "description": "Handrails only: true for a double handrail (API_RailingHandrailType::doubleHandrail)."
+            },
+            "horizontalOffset": {
+                "type": "number",
+                "description": "Rails and handrails only: the horizontal offset of the rail from the segment (horizontalOffset of its struct)."
+            },
+            "height": {
+                "type": "number",
+                "description": "Rails and handrails only: the height of the rail (height of its struct)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visible"
+        ]
+    },
+    "RailingBalusterDetails": {
+        "type": "object",
+        "description": "The details of a baluster of a baluster set (RailingBaluster, API_RailingBalusterType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "horizontalPosition": {
+                "$ref": "#/RailingHorizontalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "horizontalPosition"
+        ]
+    },
+    "RailingBalusterSetDetails": {
+        "type": "object",
+        "description": "The details of a baluster set of a railing pattern (RailingBalusterSet, API_RailingBalusterSetType). Its balusters are separate subelements (RailingBaluster).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "frame": {
+                "$ref": "#/RailingFrame"
+            },
+            "distribution": {
+                "$ref": "#/RailingDistribution"
+            },
+            "balusterCount": {
+                "type": "integer",
+                "description": "The number of balusters in the set (API_RailingBalusterSetType::nBalusters)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "frame",
+            "distribution",
+            "balusterCount"
+        ]
+    },
+    "RailingPanelDetails": {
+        "type": "object",
+        "description": "The details of a railing panel (RailingPanel, API_RailingPanelType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "True when the panel is shown (API_RailingPanelType::visible)."
+            },
+            "frame": {
+                "$ref": "#/RailingFrame"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visible",
+            "frame"
+        ]
+    },
+    "RailingPatternDetails": {
+        "type": "object",
+        "description": "The details of the pattern of a railing segment (RailingPattern, API_RailingPatternType). Its panels, baluster sets and inner posts are separate subelements.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "distribution": {
+                "$ref": "#/RailingDistribution"
+            },
+            "panelCount": {
+                "type": "integer",
+                "description": "The number of panels in the pattern (API_RailingPatternType::nPanels)."
+            },
+            "balusterSetCount": {
+                "type": "integer",
+                "description": "The number of baluster sets in the pattern (API_RailingPatternType::nBalusterSets)."
+            },
+            "innerPostCount": {
+                "type": "integer",
+                "description": "The number of inner posts in the pattern (API_RailingPatternType::nInnerPosts)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "distribution",
+            "panelCount",
+            "balusterSetCount",
+            "innerPostCount"
+        ]
+    },
+    "RailingRailEndDetails": {
+        "type": "object",
+        "description": "The details of the end of a rail, top rail or handrail (RailingRailEnd, RailingToprailEnd, RailingHandrailEnd: API_RailingRailEndType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "endType": {
+                "type": "string",
+                "description": "The shape of the end (API_RailEndTypeID).",
+                "enum": [
+                    "Extension",
+                    "Curve",
+                    "FullReturn",
+                    "ConnectWithDuplicate"
+                ]
+            },
+            "baseConnection": {
+                "type": "string",
+                "description": "How the end connects to the rail (API_RailEndBaseConnectionID).",
+                "enum": [
+                    "Horizontal",
+                    "Tangential"
+                ]
+            },
+            "firstExtrusionOffset": {
+                "type": "number",
+                "description": "API_RailingRailEndType::firstExtrusionOffset."
+            },
+            "firstExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailEndType::firstExtrusionLength."
+            },
+            "filletRadius": {
+                "type": "number",
+                "description": "API_RailingRailEndType::filletRadius."
+            },
+            "fixtureConnection": {
+                "type": "string",
+                "description": "The direction the end curves in (API_RailEndFixtureConnectionID).",
+                "enum": [
+                    "SegmentPlane",
+                    "HorizontalRight",
+                    "HorizontalLeft"
+                ]
+            },
+            "arcAngleMode": {
+                "type": "string",
+                "description": "Whether the arc of the end is set to vertical or has a custom angle (API_RailEndArcAngleModeID).",
+                "enum": [
+                    "SetToVertical",
+                    "CustomAngle"
+                ]
+            },
+            "arcAngle": {
+                "type": "number",
+                "description": "API_RailingRailEndType::arcAngle."
+            },
+            "arcRadius": {
+                "type": "number",
+                "description": "API_RailingRailEndType::arcRadius."
+            },
+            "secondExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailEndType::secondExtrusionLength."
+            },
+            "thirdExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailEndType::thirdExtrusionLength."
+            },
+            "secondExtrusionMode": {
+                "type": "string",
+                "description": "How the length of the second extrusion is set (API_RailEndExtrusionModeID).",
+                "enum": [
+                    "CustomLength",
+                    "ToReferenceLine",
+                    "ToHandrailSibling"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "endType",
+            "baseConnection",
+            "firstExtrusionOffset",
+            "firstExtrusionLength",
+            "filletRadius",
+            "fixtureConnection",
+            "arcAngleMode",
+            "arcAngle",
+            "arcRadius",
+            "secondExtrusionLength",
+            "thirdExtrusionLength",
+            "secondExtrusionMode"
+        ]
+    },
+    "RailingRailConnectionDetails": {
+        "type": "object",
+        "description": "The details of the connection of a rail, top rail or handrail at a node (RailingRailConnection, RailingToprailConnection, RailingHandrailConnection: API_RailingRailConnectionType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "connectionType": {
+                "type": "string",
+                "description": "The kind of connection (API_RailConnectionTypeID).",
+                "enum": [
+                    "NoRailConnection",
+                    "GooseneckRailConnection",
+                    "DirectRailConnection"
+                ]
+            },
+            "baseConnection": {
+                "type": "string",
+                "description": "How the connection meets the rail (API_RailBaseBaseConnectionID).",
+                "enum": [
+                    "Horizontal",
+                    "Tangential"
+                ]
+            },
+            "railEndOffset": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::railEndOffset."
+            },
+            "railEndFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::railEndFillet."
+            },
+            "firstExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::firstExtrusionLength."
+            },
+            "secondExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::secondExtrusionLength."
+            },
+            "horizontalFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::horizontalFillet."
+            },
+            "gooseneckFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::gooseneckFillet."
+            },
+            "gooseneckOffset": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::gooseneckOffset."
+            },
+            "verticalBottomFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::verticalBottomFillet."
+            },
+            "directFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::directFillet."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectionType",
+            "baseConnection",
+            "railEndOffset",
+            "railEndFillet",
+            "firstExtrusionLength",
+            "secondExtrusionLength",
+            "horizontalFillet",
+            "gooseneckFillet",
+            "gooseneckOffset",
+            "verticalBottomFillet",
+            "directFillet"
+        ]
+    },
+    "RailingEndFinishDetails": {
+        "type": "object",
+        "description": "The details of the finish at the end of a rail (RailingEndFinish, API_RailingFinishType): its owner and library part only.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            }
+        },
+        "additionalProperties": false
     },
     "CurtainWallDetails": {
         "type": "object",
@@ -12706,6 +13799,50 @@
                 "type": "integer",
                 "description": "Line type attribute index for the mesh contour."
             },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the mesh. The surface overrides are kept; send topMaterial, sideMaterial and bottomMaterial with overridden false to show the building material's own surfaces."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the top of the mesh; overridden false clears the override."
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the sides (skirt) of the mesh; overridden false clears the override."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the bottom of the mesh; overridden false clears the override."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface overrides are chained (the chain button of the Model panel)."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the contour of the mesh is shown on. Only the given fields change."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the cover fill of the mesh is shown on. Only the given fields change."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Overrides the pen of the cut fill (shown on solid meshes); overridden false clears the override."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Overrides the background pen of the cut fill (shown on solid meshes); overridden false clears the override."
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the contour of the mesh where it is cut in sections."
+            },
+            "floorFill": {
+                "$ref": "#/MeshFloorFill",
+                "description": "The cover fill of the mesh in the floor plan. Only the given fields change."
+            },
             "polygonCoordinates": {
                 "type": "array",
                 "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.",
@@ -12774,6 +13911,50 @@
             "lineTypeIndex": {
                 "type": "integer",
                 "description": "Line type attribute index for the mesh contour."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the mesh."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the top of the mesh."
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the sides (skirt) of the mesh."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the bottom of the mesh."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface overrides are chained (the chain button of the Model panel)."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the contour of the mesh is shown on."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the cover fill of the mesh is shown on."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The override of the pen of the cut fill."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The override of the background pen of the cut fill."
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the contour of the mesh where it is cut in sections."
+            },
+            "floorFill": {
+                "$ref": "#/MeshFloorFill",
+                "description": "The cover fill of the mesh in the floor plan."
             },
             "polygonCoordinates": {
                 "type": "array",
@@ -12974,7 +14155,7 @@
             },
             "showContour": {
                 "$ref": "#/StoryVisibility",
-                "description": "Which stories display this Morph's contour. Reported accurately on Get, but confirmed live that Create/Modify do not reliably apply it (showAllBelow/showRelAbove/showRelBelow silently come back reset even when explicitly set and isAutoOnStoryVisibility is false) - the same class of confirmed Archicad SDK write bug as bodyType/edgeType/level (see MorphBody's notes). Set on the element regardless since doing so is harmless and forward-compatible."
+                "description": "Which stories display this Morph's contour. Reported accurately on Get, but confirmed live that Create/Modify do not reliably apply it (showAllBelow/showRelAbove/showRelBelow silently come back reset even when explicitly set and isAutoOnStoryVisibility is false) - the same class of confirmed Archicad SDK write bug as bodyType/edgeType (see MorphBody's notes). Set on the element regardless since doing so is harmless and forward-compatible."
             },
             "showFill": {
                 "$ref": "#/StoryVisibility",
@@ -13066,7 +14247,7 @@
             },
             "level": {
                 "type": "number",
-                "description": "Z position of the free shape relative to the floor level. Reported accurately on Get, but a confirmed Archicad SDK bug means it may not take effect on Create/Modify (same class of bug as bodyType/edgeType - see MorphBody's notes)."
+                "description": "Height of the Morph's origin (the z of its placement transform) above its home story. Archicad works it out from the placement; CreateMorphs and ModifyMorphs take it and place the Morph's origin at this height."
             }
         },
         "additionalProperties": false,
@@ -13081,6 +14262,10 @@
             "pos": {
                 "$ref": "#/Coordinate2D",
                 "description": "Position of the drawing on the layout, in meters. Without a clip polygon it is the lower left corner of the drawing (before rotation); with one it is where the origin of the source view lands (a modelOffset can move it by modelOffset * drawingScale)."
+            },
+            "offset": {
+                "$ref": "#/Coordinate2D",
+                "description": "Output only (API_DrawingType::offset). Equal to pos when isCutWithFrame is true; otherwise the subvector of pos and the anchorPoint's coordinate on the drawing's bounding box. Unlike pos, this is always where the source view's model origin lands on the layout, regardless of anchorPoint/useOwnOriginAsAnchor."
             },
             "angle": {
                 "type": "number",
@@ -13317,6 +14502,25 @@
             "Altitude"
         ]
     },
+    "LayeredElementDimensions": {
+        "type": "object",
+        "description": "The automatic dimensioning of layered (composite) elements, from the Dimension Details panel of the Dimension Settings (API compAutoThick).",
+        "properties": {
+            "total": {
+                "type": "boolean",
+                "description": "Dimension the total thickness."
+            },
+            "core": {
+                "type": "boolean",
+                "description": "Dimension the core."
+            },
+            "referenceLine": {
+                "type": "boolean",
+                "description": "Dimension the reference line."
+            }
+        },
+        "additionalProperties": false
+    },
     "LevelDimensionDetails": {
         "type": "object",
         "properties": {
@@ -13330,7 +14534,7 @@
             },
             "staticLevel": {
                 "type": "boolean",
-                "description": "The static flag as Archicad reports it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad reads this flag as false."
+                "description": "The Static checkbox as Archicad reports it; ModifyLevelDimensions switches it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad has been seen to read this flag as false for it."
             },
             "ownerElementId": {
                 "$ref": "#/ElementId",
@@ -13367,6 +14571,48 @@
             },
             "origin": {
                 "$ref": "#/DimensionOrigin"
+            },
+            "fontIndex": {
+                "type": "integer",
+                "description": "Font attribute index of the dimension text."
+            },
+            "fontName": {
+                "type": "string",
+                "description": "The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index."
+            },
+            "bold": {
+                "type": "boolean",
+                "description": "Bold dimension text."
+            },
+            "italic": {
+                "type": "boolean",
+                "description": "Italic dimension text."
+            },
+            "underline": {
+                "type": "boolean",
+                "description": "Underlined dimension text."
+            },
+            "hideWithBaseElem": {
+                "type": "boolean",
+                "description": "Hide the dimension together with its associated element. Read from Archicad 29; absent on earlier versions."
+            },
+            "textContent": {
+                "type": "string",
+                "enum": ["Measured", "Custom"],
+                "description": "Content of the dimension text: 'Measured' (the level value) or 'Custom' (customText)."
+            },
+            "customText": {
+                "type": "string",
+                "description": "The custom content of the dimension text, with its Autotext keys as keys (read with the autotext flag off), in the form CreateLevelDimensions and ModifyLevelDimensions take. Present when textContent is 'Custom'."
+            },
+            "secondTextContent": {
+                "type": "string",
+                "enum": ["Measured", "Custom"],
+                "description": "Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText)."
+            },
+            "secondCustomText": {
+                "type": "string",
+                "description": "The custom content of the second text, as customText. Present when secondTextContent is 'Custom'."
             }
         },
         "additionalProperties": false,
@@ -13381,7 +14627,88 @@
             "textPen",
             "markerSize",
             "angle",
-            "origin"
+            "origin",
+            "fontIndex",
+            "bold",
+            "italic",
+            "underline",
+            "textContent",
+            "secondTextContent"
+        ]
+    },
+    "AngleDimensionLine": {
+        "type": "object",
+        "description": "A line measured by an angle dimension, given by two of its points. The angle is measured between the two lines (they are extended to their intersection, the center of the dimension arc).",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begCoordinate",
+            "endCoordinate"
+        ]
+    },
+    "AngleDimensionDetails": {
+        "type": "object",
+        "properties": {
+            "firstLine": {
+                "$ref": "#/AngleDimensionLine",
+                "description": "The first measured line: its first two reference points."
+            },
+            "secondLine": {
+                "$ref": "#/AngleDimensionLine",
+                "description": "The second measured line: its last two reference points."
+            },
+            "arcPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point the dimension arc was fitted to."
+            },
+            "arcCenter": {
+                "$ref": "#/Coordinate2D",
+                "description": "The center of the dimension arc, the intersection of the two lines."
+            },
+            "radius": {
+                "type": "number",
+                "description": "The radius of the dimension arc."
+            },
+            "measuredAngle": {
+                "type": "number",
+                "description": "The angle the dimension measures, in radians."
+            },
+            "smallArc": {
+                "type": "boolean",
+                "description": "Whether the smaller angle between the lines is measured (inner dimension) rather than the larger one."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Pen index of the dimension and witness lines."
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "Height of the dimension text in millimeters."
+            },
+            "textPen": {
+                "type": "integer",
+                "description": "Pen index of the dimension text."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "firstLine",
+            "secondLine",
+            "arcPosition",
+            "arcCenter",
+            "radius",
+            "measuredAngle",
+            "smallArc",
+            "pen",
+            "textHeight",
+            "textPen"
         ]
     },
     "DimensionDetails": {
@@ -13450,6 +14777,25 @@
             "defaultWitnessVal": {
                 "type": "number",
                 "description": "The value that goes with defaultWitnessForm, in meters. Each witness point has its own witnessVal."
+            },
+            "staticDimension": {
+                "type": "boolean",
+                "description": "The Static dimension checkbox of the Dimension Settings (API defStaticDim)."
+            },
+            "onlyDimensionText": {
+                "type": "boolean",
+                "description": "Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText)."
+            },
+            "openingHeightsInChain": {
+                "type": "boolean",
+                "description": "Whether the opening heights are shown in the dimension chain (Dimension Details panel, API detailedHoleDim)."
+            },
+            "openingHeightsNominal": {
+                "type": "boolean",
+                "description": "Whether the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize)."
+            },
+            "layeredElementDimensions": {
+                "$ref": "#/LayeredElementDimensions"
             }
         },
         "additionalProperties": false,
@@ -13465,7 +14811,83 @@
             "textPen",
             "textFrame",
             "defaultWitnessForm",
-            "defaultWitnessVal"
+            "defaultWitnessVal",
+            "staticDimension",
+            "onlyDimensionText",
+            "openingHeightsInChain",
+            "openingHeightsNominal",
+            "layeredElementDimensions"
+        ]
+    },
+    "ChangeMarkerComponent": {
+        "type": "string",
+        "description": "Which parts a Change Marker shows: only the marker head, only the cloud, or both.",
+        "enum": [
+            "HeadOnly",
+            "CloudOnly",
+            "HeadAndCloud"
+        ]
+    },
+    "ChangeMarkerDetails": {
+        "type": "object",
+        "description": "A Change Marker: the revision Change it is linked to, the parts it shows and its geometry.",
+        "properties": {
+            "linkType": {
+                "type": "string",
+                "enum": ["Linked", "Unlinked", "NewChange", "Unknown"],
+                "description": "Whether the marker is linked to a Change. NewChange is the value a marker is created with to make a new Change."
+            },
+            "markerComponent": {
+                "$ref": "#/ChangeMarkerComponent"
+            },
+            "changeId": {
+                "type": "string",
+                "description": "The ID of the linked Change (empty when not linked)."
+            },
+            "changeDescription": {
+                "type": "string",
+                "description": "The description (short name) of the linked Change."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "The point the Change Marker points to."
+            },
+            "polygon": {
+                "type": "array",
+                "description": "The outline of the cloud, with the closing point. Present only when the marker has a polygon.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "The curved edges of polygon. Present only when it has any.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "markerId": {
+                "$ref": "#/ElementId",
+                "description": "The GUID of the marker head's library part element. Present only when the marker has one."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle of the marker head in radians."
+            },
+            "horizontalMarker": {
+                "type": "boolean",
+                "description": "Whether the marker head is always horizontal."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linkType",
+            "markerComponent",
+            "changeId",
+            "changeDescription",
+            "position",
+            "angle",
+            "horizontalMarker"
         ]
     },
     "TextDetails": {
@@ -13532,7 +14954,7 @@
     },
     "StairDetails": {
         "type": "object",
-        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), which no command writes yet. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
         "properties": {
             "stepNum": {
                 "type": "integer",
@@ -13544,7 +14966,7 @@
             },
             "treadDepth": {
                 "type": "number",
-                "description": "The tread depth (going) stored in the Stair's settings. Archicad does not keep it in step with the modeled treads: a placed stair can read 0 or 1 here, so take the modeled going from the geometry of its treads or risers (Get3DGeometryOfElements) instead."
+                "description": "The going (the length of each tread), measured along the walking line: its length divided by the number of treads. The going stored in the Stair's settings (API_StairType::treadDepth) is not used, since Archicad does not keep it in step with the modeled treads (a placed stair reads 0 or 1 there). Not given for a stair with a landing, whose walking line runs across the landing too; take its going from the geometry of its treads or risers (Get3DGeometryOfElements)."
             },
             "flightWidth": {
                 "type": "number",
@@ -13859,7 +15281,6 @@
         "required": [
             "stepNum",
             "riserHeight",
-            "treadDepth",
             "flightWidth",
             "totalHeight",
             "level",
@@ -13877,6 +15298,38 @@
         "type": "string",
         "description": "Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).",
         "enum": ["Visible", "Hidden", "Unknown"]
+    },
+    "StairLayoutSettings": {
+        "type": "object",
+        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (part of API_StairLayoutData). Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout.",
+        "properties": {
+            "storyVisibility": {
+                "type": "string",
+                "description": "The stories the stair is shown on. The AllRelevant... values let Archicad work out the relevant stories from the stair's height (isAutoOnStoryVisibility true); the others set the shown stories (visibility) to match and isAutoOnStoryVisibility false.",
+                "enum": ["HomeStoryOnly", "HomeAndOneStoryUp", "HomeAndOneStoryDown", "HomeAndOneStoryUpAndDown", "OneStoryUp", "OneStoryDown", "AllStories", "AllRelevantStories", "AllRelevantAndOneStoryUp", "AllRelevantAndOneStoryDown"]
+            },
+            "showWalkingLine": {
+                "type": "boolean",
+                "description": "Whether the walking line is shown."
+            },
+            "showNumbering": {
+                "type": "boolean",
+                "description": "Whether the step numbering is shown."
+            },
+            "showUpDownText": {
+                "type": "boolean",
+                "description": "Whether the up/down text (walking direction label) is shown."
+            },
+            "showDescription": {
+                "type": "boolean",
+                "description": "Whether the stair description is shown."
+            },
+            "showStructure": {
+                "type": "boolean",
+                "description": "Whether the stair structures are shown."
+            }
+        },
+        "additionalProperties": false
     },
     "StairLayout": {
         "type": "object",
@@ -14082,6 +15535,84 @@
             "depthCoordinates"
         ]
     },
+    "PictureAnchorPoint": {
+        "type": "string",
+        "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
+    "PictureDetails": {
+        "type": "object",
+        "description": "The settings of a Picture element (an image placed with the Picture tool on a floor plan, worksheet, detail or layout).",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the picture (API_PictureType::pictName), usually the name of the image file it was placed from."
+            },
+            "mimeType": {
+                "type": "string",
+                "description": "The MIME type of the image, e.g. image/png or image/jpeg. Empty when Archicad does not report it."
+            },
+            "box": {
+                "$ref": "#/BoundingBox2D",
+                "description": "The box the picture is drawn in, in model units, before its rotation by angle. For an unmirrored picture this is API_PictureType::destBox; a mirrored picture is drawn one width away from its stored destBox (along the rotated x axis), and this box is the drawn one, so a mirrored and an unmirrored picture drawn at the same place report the same box."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the picture in model units: box.xMax - box.xMin."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the picture in model units: box.yMax - box.yMin."
+            },
+            "pixelWidth": {
+                "type": "integer",
+                "description": "The width of the image in pixels."
+            },
+            "pixelHeight": {
+                "type": "integer",
+                "description": "The height of the image in pixels."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle of the picture in radians."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Whether the picture is mirrored to its local vertical axis."
+            },
+            "transparent": {
+                "type": "boolean",
+                "description": "Whether the white pixels of the picture are drawn transparent."
+            },
+            "anchorPoint": {
+                "$ref": "#/PictureAnchorPoint"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "mimeType",
+            "box",
+            "width",
+            "height",
+            "pixelWidth",
+            "pixelHeight",
+            "angle",
+            "mirrored",
+            "transparent",
+            "anchorPoint"
+        ]
+    },
     "NotYetSupportedElementTypeDetails": {
         "type": "object",
         "properties": {
@@ -14150,6 +15681,36 @@
                 "$ref": "#/RailingDetails"
             },
             {
+                "$ref": "#/RailingPostDetails"
+            },
+            {
+                "$ref": "#/RailingInnerPostDetails"
+            },
+            {
+                "$ref": "#/RailingRailDetails"
+            },
+            {
+                "$ref": "#/RailingBalusterDetails"
+            },
+            {
+                "$ref": "#/RailingBalusterSetDetails"
+            },
+            {
+                "$ref": "#/RailingPanelDetails"
+            },
+            {
+                "$ref": "#/RailingPatternDetails"
+            },
+            {
+                "$ref": "#/RailingRailEndDetails"
+            },
+            {
+                "$ref": "#/RailingRailConnectionDetails"
+            },
+            {
+                "$ref": "#/RailingEndFinishDetails"
+            },
+            {
                 "$ref": "#/CurtainWallDetails"
             },
             {
@@ -14180,13 +15741,22 @@
                 "$ref": "#/LevelDimensionDetails"
             },
             {
+                "$ref": "#/AngleDimensionDetails"
+            },
+            {
                 "$ref": "#/DimensionDetails"
+            },
+            {
+                "$ref": "#/ChangeMarkerDetails"
             },
             {
                 "$ref": "#/StairDetails"
             },
             {
                 "$ref": "#/SectionDetails"
+            },
+            {
+                "$ref": "#/PictureDetails"
             },
             {
                 "$ref": "#/NotYetSupportedElementTypeDetails"
@@ -14444,6 +16014,25 @@
             "begCoordinate",
             "endCoordinate"
         ]
+    },
+    "RoofPivotEdgeChange": {
+        "type": "object",
+        "properties": {
+            "levels": {
+                "type": "array",
+                "description": "The roof plane of the edge on each level, from the pivot polygon upwards; at most as many as the roof has levels.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
+                        "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
+                        "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false
     },
     "DesignOptionData": {
         "type": "object",
@@ -15362,6 +16951,22 @@
                 "description": "The pen index of the fill background. 0 is a transparent background; -1 also occurs in projects and is accepted, so a value read with GetDetailsOfElements can always be written back.",
                 "minimum": -1,
                 "maximum": 255
+            },
+            "use3DHatching": {
+                "type": "boolean",
+                "description": "\"Use the fill of the surface\": true draws the cover fill with the vectorial 3D hatch of the zone's top surface instead of fillId."
+            },
+            "useLocalOrigo": {
+                "type": "boolean",
+                "description": "The orientation of the cover fill. true: the fill is linked to the zone (rotated), starting at locOrigo in the direction of fillAngle. false: the fill is linked to the project origin and is not rotated."
+            },
+            "locOrigo": {
+                "$ref": "#/Coordinate2D",
+                "description": "The origin of the cover fill when useLocalOrigo is true."
+            },
+            "fillAngle": {
+                "type": "number",
+                "description": "The angle of the cover fill when useLocalOrigo is true, in radians."
             }
         },
         "additionalProperties": false,
@@ -15385,6 +16990,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
@@ -15392,7 +17005,7 @@
     },
     "ArcSettings": {
         "type": "object",
-        "description": "Settings for modifying an Arc or Circle. begAngle/endAngle are only applied to Arc, ignored for Circle.",
+        "description": "Settings for modifying an Arc or Circle. begAngle/endAngle are only applied to Arc, ignored for Circle. startArrow/endArrow are only for Arc: a Circle has no ends and refuses them.",
         "properties": {
             "origin": {
                 "$ref": "#/Coordinate2D"
@@ -15423,6 +17036,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
@@ -15447,7 +17068,7 @@
     },
     "SplineSettings": {
         "type": "object",
-        "description": "Settings for modifying a Spline. Only these settings fields are modifiable - Archicad's own API does not support changing Spline geometry (coordinates/closed) via ACAPI_Element_Change.",
+        "description": "Settings for modifying a Spline. Only these settings fields are modifiable - Archicad's own API does not support changing Spline geometry (coordinates/closed) via ACAPI_Element_Change. Any other field (such as coordinates) fails the item with an error and changes nothing of it; delete the spline and create it again with CreateSplines to change its geometry.",
         "properties": {
             "roomSeparator": {
                 "type": "boolean"
@@ -15457,6 +17078,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
@@ -15487,6 +17116,17 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "drawSegmentMode": {
+                "$ref": "#/PolylineDrawSegmentMode"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
@@ -16593,6 +18233,25 @@
             "defaultWitnessVal": {
                 "type": "number",
                 "description": "The value that goes with defaultWitnessForm, in meters. For Fix it is the length of the witness lines (the custom witness line length of the Dimension Settings). Each witness point has its own witnessVal."
+            },
+            "staticDimension": {
+                "type": "boolean",
+                "description": "The Static dimension checkbox of the Dimension Settings (API defStaticDim)."
+            },
+            "onlyDimensionText": {
+                "type": "boolean",
+                "description": "Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText)."
+            },
+            "openingHeightsInChain": {
+                "type": "boolean",
+                "description": "Whether the opening heights are shown in the dimension chain (Dimension Details panel, API detailedHoleDim)."
+            },
+            "openingHeightsNominal": {
+                "type": "boolean",
+                "description": "Whether the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize)."
+            },
+            "layeredElementDimensions": {
+                "$ref": "#/LayeredElementDimensions"
             }
         }
     },
@@ -17049,6 +18708,38 @@
             },
             "orientation": {
                 "$ref": "#/HatchOrientation"
+            }
+        },
+        "additionalProperties": false
+    },
+    "MeshFloorFill": {
+        "type": "object",
+        "description": "Floor plan cover fill settings of a Mesh (API_MeshType). When modifying a mesh, omitted properties keep their current values.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is shown on the floor plan."
+            },
+            "foregroundPen": {
+                "type": "integer"
+            },
+            "backgroundPen": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeId"
+            },
+            "useLocalOrigin": {
+                "type": "boolean",
+                "description": "Whether the cover fill is drawn from the mesh's own reference vector (localOrigin and angle) instead of the project origin."
+            },
+            "localOrigin": {
+                "$ref": "#/Coordinate2D",
+                "description": "Base point of the cover fill's reference vector, used when useLocalOrigin is true."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Angle of the cover fill's reference vector in radians, used when useLocalOrigin is true."
             }
         },
         "additionalProperties": false
@@ -19273,6 +20964,14 @@
                 "$ref": "#/MEPCrossSectionShape",
                 "description": "New shape of the port."
             },
+            "width": {
+                "type": "number",
+                "description": "New width of the port (the connection size of a terminal, accessory, equipment or fitting), in meters. The ports of routes and branches take their size from the route instead."
+            },
+            "height": {
+                "type": "number",
+                "description": "New height of a ventilation or cable carrier port, in meters. A piping port's size is its 'outerDiameter'."
+            },
             "connectionStyle": {
                 "$ref": "#/MEPConnectionStyle",
                 "description": "New connection style of the port. Available from Archicad 30."
@@ -19925,6 +21624,14 @@
             "height": {
                 "type": "number",
                 "description": "The new height of a flexible segment."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The new size of a terminal, accessory, equipment or fitting along its local x axis, in meters. Some library parts calculate their own size and keep it, then the item fails after its other changes were made. The size of its connections is set with ModifyMEPPorts. Available from Archicad 30."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The new size of a terminal, accessory, equipment or fitting along its local y axis, in meters. Some library parts calculate their own size and keep it, then the item fails after its other changes were made. Available from Archicad 30."
             }
         },
         "additionalProperties": false,
@@ -21059,7 +22766,7 @@
             },
             "parentId": {
                 "type": "string",
-                "description": "The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required."
+                "description": "The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required. The General GDL Object (the root subtype) cannot be the parent: use the Model Element or one of its subtypes."
             },
             "parentName": {
                 "type": "string",
@@ -21223,7 +22930,8 @@
                 "type": "string"
             },
             "typeId": {
-                "$ref": "#/LibraryPartType"
+                "$ref": "#/LibraryPartType",
+                "description": "The type of the library part. For GDL objects it is the type of the tool that places it: 'Window', 'Door', 'Skylight', 'Lamp', 'Room', 'Label' or 'Object' (wall ends are placed by the Window or Door tool, so they are 'Window' or 'Door')."
             },
             "type": {
                 "type": "string",
@@ -21234,7 +22942,7 @@
                     "BinaryListCrit",
                     "Other"
                 ],
-                "description": "The kind of the library part file: a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when it cannot be read."
+                "description": "The kind of the library part file, not its type (see typeId): a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when Archicad cannot find the file by its fileName."
             }
         }
     },
@@ -22947,6 +24655,14 @@
                 "type": "string",
                 "description": "Matches elements NOT built with this Composite Structure attribute (by name)."
             },
+            "zoneCategory": {
+                "type": "string",
+                "description": "Matches zones of this Zone Category attribute (by name), the criteria editor's \"Zone Category\" condition (ID and Categories)."
+            },
+            "zoneCategoryNot": {
+                "type": "string",
+                "description": "Matches elements whose Zone Category is NOT this attribute (by name)."
+            },
             "complexProfile": {
                 "type": "string",
                 "description": "Matches elements built with this Complex Profile attribute (by name)."
@@ -23735,12 +25451,28 @@
             },
             "customPropertyString": {
                 "type": "object",
-                "description": "Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+                "description": "Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator. The value is written in the form the criteria editor uses for the property: wrapped for a free text property, bare for a single choice option set, as a list of one option for a multiple choice option set, which takes equals only. contains, notContains, startsWith and endsWith are available for a free text property only.",
                 "properties": {
                     "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
                     "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
                     "equals": { "type": "string", "description": "Matches if the property's value equals this string exactly." },
                     "notEquals": { "type": "string", "description": "Matches if the property's value does not equal this string." },
+                    "contains": {
+                        "type": "string",
+                        "description": "Matches if the property's value contains this text (free text properties only)."
+                    },
+                    "notContains": {
+                        "type": "string",
+                        "description": "Matches if the property's value does not contain this text (free text properties only)."
+                    },
+                    "startsWith": {
+                        "type": "string",
+                        "description": "Matches if the property's value starts with this text (free text properties only)."
+                    },
+                    "endsWith": {
+                        "type": "string",
+                        "description": "Matches if the property's value ends with this text (free text properties only)."
+                    },
                     "hasDefaultValue": { "type": "boolean" },
                     "hasCustomValue": { "type": "boolean" },
                     "isAvailable": { "type": "boolean" },
@@ -25621,7 +27353,7 @@
     },
     "CutPlane": {
         "type": "object",
-        "description": "Defines a 3D cut plane using the plane equation: pa*x + pb*y + pc*z + pd = 0",
+        "description": "A 3D cut plane: the points where pa*x + pb*y + pc*z = pd. The side its normal vector (pa, pb, pc) points to is cut away.",
         "properties": {
             "pa": {
                 "type": "number",
@@ -25637,7 +27369,15 @@
             },
             "pd": {
                 "type": "number",
-                "description": "Constant term in the plane equation, in meters. The distance of the plane from the origin along the normal vector."
+                "description": "The right-hand side of the plane equation, in meters: with a unit normal vector, the distance of the plane from the origin along the normal vector. A plane at y = 2 cutting away y > 2 is pa 0, pb 1, pc 0, pd 2."
+            },
+            "cutPen": {
+                "type": "integer",
+                "description": "The pen of the edges cut by this plane, from 1 to 255. Get3DCutPlanes leaves it out when the plane has no valid pen (pen 0, set by earlier versions of Set3DCutPlanes)."
+            },
+            "cutSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface the 3D window draws the faces cut by this plane with. Get3DCutPlanes leaves it out when the plane has no surface attribute (surface 0 draws them black)."
             }
         },
         "required": [
@@ -28745,6 +30485,51 @@
         "oneOf": [
             { "$ref": "#/SectionElevationDetails" },
             { "$ref": "#/ErrorItem" }
+        ]
+    },
+    "StairBaseLineEdge": {
+        "type": "object",
+        "properties": {
+            "segmentType": {
+                "type": "string",
+                "enum": [
+                    "Flight",
+                    "Landing",
+                    "DividedLanding"
+                ],
+                "description": "Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentType"
+        ]
+    },
+    "StairBaseLineVertex": {
+        "type": "object",
+        "properties": {
+            "turnType": {
+                "type": "string",
+                "enum": [
+                    "None",
+                    "Landing",
+                    "Winder",
+                    "DividedLanding"
+                ],
+                "description": "The turn at this point. The first and last points take None."
+            },
+            "minLandingStartEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset)."
+            },
+            "minLandingEndEdgeOffset": {
+                "type": "number",
+                "description": "Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "turnType"
         ]
     }
 }

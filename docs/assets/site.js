@@ -430,7 +430,8 @@
     }
 
     // The Display button opens a dialog with one fieldset of radio buttons per setting; a change applies
-    // at once. A popover under the button on wide screens, a sheet from the bottom below 640 px (CSS).
+    // at once. A popover under the button on wide screens, a sheet from the bottom where the header has its
+    // menu (CSS).
     function setUpDisplayMenu () {
         var button = document.getElementById ('display-button');
         // The head's inline script already applied the stored choice; this repeats it in case it could not run.
@@ -633,10 +634,11 @@
 
     // ---- The header's menu on phones ----
 
-    // Below 640 px (as in site.css) the nav, the language menu and the Display button move into a
-    // panel under the header, opened by a menu button next to Download; on wider screens they stay
-    // where they are. Without this script the nav stays a row of links under the logo.
-    var NARROW_QUERY = '(max-width: 640px)';
+    // Below 640 px, and on short wide screens such as a phone in landscape (#2717), the nav, the
+    // language menu and the Display button move into a panel under the header, opened by a menu button
+    // next to Download; on other screens they stay where they are. Without this script the nav stays
+    // a row of links under the logo. The query is the one of site.css's header blocks; keep them the same.
+    var MENU_QUERY = '(max-width: 640px), (max-width: 1024px) and (max-height: 500px)';
 
     function setUpMenu () {
         var header = document.querySelector ('.site-header');
@@ -645,7 +647,7 @@
         if (!nav || !right || !window.matchMedia || header.querySelector ('.menu-button')) {
             return;
         }
-        var narrow = window.matchMedia (NARROW_QUERY);
+        var narrow = window.matchMedia (MENU_QUERY);
 
         var menu = document.createElement ('div');
         menu.className = 'site-menu';

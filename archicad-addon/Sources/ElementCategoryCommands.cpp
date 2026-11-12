@@ -432,6 +432,231 @@ GS::ObjectState GetCategoryValuesOfDefaultsCommand::Execute (const GS::ObjectSta
     return response;
 }
 
+SetCategoryValuesOfDefaultsCommand::SetCategoryValuesOfDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetCategoryValuesOfDefaultsCommand::GetName () const
+{
+    return "SetCategoryValuesOfDefaults";
+}
+
+GS::Optional<GS::UniString> SetCategoryValuesOfDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults (the settings new elements get) are set.",
+                "items": {
+                    "$ref": "#/ElementType"
+                },
+                "minItems": 1
+            },
+            "categoryValues": {
+                "type": "array",
+                "description": "The category values to set for every element type: one category per item.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "$ref": "#/ElementCategoryType"
+                        },
+                        "categoryValueId": {
+                            "$ref": "#/ElementCategoryValueId",
+                            "description": "A value of the category given by type, as GetElementCategories lists them."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "type",
+                        "categoryValueId"
+                    ]
+                },
+                "minItems": 1
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes",
+            "categoryValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetCategoryValuesOfDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "executionResults": {
+                "$ref": "#/ChangeExecutionResults",
+                "description": "One result per element type and category value: for each element type, in the order of the input, one result per item of categoryValues, in their order. A real run reads each value back after setting it, and a value Archicad did not keep gets a failed execution result. On a dry run an item that passes every check made before writing (the element type is valid, the category and the value exist, and the tool defaults of the type have the category) gets wouldChange: oldValue is the default's value in the category now and newValue the value a real run would set, both as GetCategoryValuesOfDefaults gives them (type, categoryId, categoryValueId and name; oldValue has only type and categoryId when the default has no value in the category). Archicad can still refuse an item that passes them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetCategoryValuesOfDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+    GS::Array<GS::ObjectState> categoryValueItems;
+    parameters.Get ("categoryValues", categoryValueItems);
+    const bool dryRun = IsDryRun (parameters);
+
+    GS::Array<API_ElemCategory> categories;
+    const GSErrCode err = TAPIR_GetElementCategories (categories);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the element categories.");
+    }
+
+    // Each item of categoryValues is checked once: the category it names and the value, which is
+    // accepted only when it belongs to that category. An item that fails gets the same failed
+    // result for every element type.
+    struct RequestedValue {
+        API_ElemCategory      category = {};
+        API_ElemCategoryValue value = {};
+        GS::UniString         categoryType;
+        GSErrCode             errCode = NoError;
+        GS::UniString         errorMessage;
+    };
+    std::map<API_ElemCategoryID, GS::Array<API_ElemCategoryValue>> valuesOfCategories;
+    GS::Array<RequestedValue> requestedValues;
+    for (const GS::ObjectState& item : categoryValueItems) {
+        RequestedValue requested;
+        API_ElemCategoryID categoryID = API_ElemCategory_Undefined;
+        const GS::ObjectState* categoryValueId = item.Get ("categoryValueId");
+        if (categoryValueId == nullptr) {
+            requested.errCode = APIERR_BADPARS;
+            requested.errorMessage = "categoryValueId is missing";
+        } else if (!item.Get ("type", requested.categoryType) || !CategoryTypeFromString (requested.categoryType, categoryID)) {
+            requested.errCode = APIERR_BADPARS;
+            requested.errorMessage = GS::UniString::Printf ("Unknown category type '%T'.", requested.categoryType.ToPrintf ());
+        } else {
+            const API_ElemCategory* category = FindCategory (categories, categoryID);
+            if (category == nullptr) {
+                requested.errCode = APIERR_BADPARS;
+                requested.errorMessage = GS::UniString::Printf ("The %T category is not available in this project.", requested.categoryType.ToPrintf ());
+            } else {
+                requested.category = *category;
+                if (valuesOfCategories.find (categoryID) == valuesOfCategories.end ()) {
+                    GS::Array<API_ElemCategoryValue> values;
+                    const GSErrCode valuesErr = TAPIR_GetElementCategoryValues (*category, values);
+                    if (valuesErr != NoError) {
+                        requested.errCode = valuesErr;
+                        requested.errorMessage = GS::UniString::Printf ("Failed to get the values of the %T category.", requested.categoryType.ToPrintf ());
+                    } else {
+                        valuesOfCategories[categoryID] = values;
+                    }
+                }
+                if (requested.errCode == NoError) {
+                    const API_Guid valueGuid = GetGuidFromObjectState (*categoryValueId);
+                    const API_ElemCategoryValue* value = nullptr;
+                    for (const API_ElemCategoryValue& candidate : valuesOfCategories[categoryID]) {
+                        if (candidate.guid == valueGuid) {
+                            value = &candidate;
+                            break;
+                        }
+                    }
+                    if (value == nullptr) {
+                        requested.errCode = APIERR_BADPARS;
+                        requested.errorMessage = GS::UniString::Printf ("categoryValueId %T is not a value of the %T category. GetElementCategories lists the values of each category.",
+                            APIGuidToString (valueGuid).ToPrintf (), requested.categoryType.ToPrintf ());
+                    } else {
+                        requested.value = *value;
+                        requested.value.category = *category;
+                    }
+                }
+            }
+        }
+        requestedValues.Push (requested);
+    }
+
+    GS::ObjectState response;
+    AddDryRunField (response, dryRun);
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // On a dry run the same checks are made, outside an undo scope, and each value that would be
+    // set is reported with the default's value in the category now.
+    CallUndoableCommandOrDryRun (dryRun, "SetCategoryValuesOfDefaults", [&] () -> GSErrCode {
+        for (const GS::UniString& elementTypeStr : elementTypes) {
+            const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+            for (const RequestedValue& requested : requestedValues) {
+                if (typeID == API_ZombieElemID) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                        GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ())));
+                    continue;
+                }
+                if (requested.errCode != NoError) {
+                    executionResults (CreateFailedExecutionResult (requested.errCode, requested.errorMessage));
+                    continue;
+                }
+
+                // Reading the default's value fails on an element type without this category,
+                // the same way setting it does.
+                API_ElemCategoryValue oldValue = {};
+                const GSErrCode getErr = TAPIR_Element_GetCategoryValueDefault (typeID, requested.category, oldValue);
+                if (getErr != NoError) {
+                    executionResults (CreateFailedExecutionResult (getErr, GS::UniString::Printf ("Failed to set the %T category of the defaults of elementType '%T'. Elements of this type may not have this category.",
+                        requested.categoryType.ToPrintf (), elementTypeStr.ToPrintf ())));
+                    continue;
+                }
+
+                if (dryRun) {
+                    const GS::ObjectState oldValueObject = oldValue.guid == APINULLGuid
+                        ? GS::ObjectState ("type", GS::UniString (CategoryTypeToString (requested.category.categoryID)), "categoryId", CreateGuidObjectState (requested.category.guid))
+                        : CreateCategoryValueObjectState (requested.category, oldValue);
+                    executionResults (CreateWouldChangeExecutionResult (GS::ObjectState (
+                        "oldValue", oldValueObject,
+                        "newValue", CreateCategoryValueObjectState (requested.category, requested.value))));
+                    continue;
+                }
+
+                const GSErrCode setErr = TAPIR_Element_SetCategoryValueDefault (typeID, requested.category, requested.value);
+                if (setErr != NoError) {
+                    executionResults (CreateFailedExecutionResult (setErr, GS::UniString::Printf ("Failed to set the %T category of the defaults of elementType '%T'. Elements of this type may not have this category.",
+                        requested.categoryType.ToPrintf (), elementTypeStr.ToPrintf ())));
+                    continue;
+                }
+
+                // The value is read back, so a value Archicad did not keep is reported.
+                API_ElemCategoryValue newValue = {};
+                const GSErrCode readBackErr = TAPIR_Element_GetCategoryValueDefault (typeID, requested.category, newValue);
+                if (readBackErr != NoError) {
+                    executionResults (CreateFailedExecutionResult (readBackErr, GS::UniString::Printf ("Failed to read back the %T category of the defaults of elementType '%T'.",
+                        requested.categoryType.ToPrintf (), elementTypeStr.ToPrintf ())));
+                    continue;
+                }
+                if (newValue.guid != requested.value.guid) {
+                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("Archicad did not keep the value: the %T category of the defaults of elementType '%T' reads back as %T.",
+                        requested.categoryType.ToPrintf (), elementTypeStr.ToPrintf (),
+                        (newValue.guid == APINULLGuid ? GS::UniString ("no value") : APIGuidToString (newValue.guid)).ToPrintf ())));
+                    continue;
+                }
+
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    return response;
+}
+
 SetCategoryValuesOfElementsCommand::SetCategoryValuesOfElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
