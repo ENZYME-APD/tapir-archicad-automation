@@ -3038,11 +3038,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteDesignOptionsCommand> (
             designOptionsCommands, "1.7.2",
-            "Deletes the given design options. Available from Archicad 29."
+            "Deletes the given design options. An option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29."
         );
         err |= RegisterCommand<DeleteDesignOptionSetsCommand> (
             designOptionsCommands, "1.7.2",
-            "Deletes the given design option sets. Available from Archicad 29."
+            "Deletes the given design option sets. A set with an option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29."
         );
         err |= RegisterCommand<DeleteDesignOptionCombinationsCommand> (
             designOptionsCommands, "1.7.2",
