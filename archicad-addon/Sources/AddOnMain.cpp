@@ -2550,6 +2550,11 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.4.0",
             "Creates independent Worksheet databases. Returns the databaseId and the Project Map navigatorItemId of each new worksheet."
         );
+        err |= RegisterCommand<Create3DDocumentsCommand> (
+            navigatorCommands, "2.0.1",
+            "Creates 3D Documents with the given names and reference IDs, in the Project Map's 3D Documents folder. Archicad gives each its starting settings; "
+            "Get3DDocumentSettings reads them and Set3DDocumentSettings changes its view, cut and filter. Returns the databaseId and the Project Map navigatorItemId of each new 3D Document."
+        );
         err |= RegisterCommand<CreateDetailMarkersCommand> (
             navigatorCommands, "2.0.0",
             "Places Detail markers with their clip polygon in the current floor plan, section or elevation, each with a new Detail viewpoint, like the Detail tool. GetDetailsOfElements reads them back."

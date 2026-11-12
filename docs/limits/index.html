@@ -213,6 +213,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPinc.h</code> has only <code>ACAPI_Navigator_ModelViewOptions_Get</code>, <code>_GetNum</code> and <code>_Search</code> (AC27&ndash;AC30). In AC25&ndash;AC26 the combinations are attributes (<code>API_ModelViewOptionsID</code>); not checked there.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781">#781</a></td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change the settings of an existing Layout Book subset (prefix, numbering style, start at, ...)</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Database.h</code> has only <code>ACAPI_Navigator_GetSubSetDefault</code>, <code>ACAPI_Navigator_CreateSubSet</code> and <code>ACAPI_Navigator_GetSubSet</code> for <code>API_SubSet</code> (AC27&ndash;AC30; <code>APIDb_GetSubSetDefaultID</code>, <code>APIDb_CreateSubSetID</code> and <code>APIDb_GetSubSetID</code> in AC25&ndash;AC26). No function changes the settings of an existing subset.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2702">#2702</a></td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Project and files</th></tr>
                         <tr>
