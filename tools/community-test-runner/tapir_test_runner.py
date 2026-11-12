@@ -160,6 +160,15 @@ def evaluate(expression: str, variables: dict) -> float:
     return ev(tree)
 
 
+EXPECTED_VALUE_KEYS = ("eq", "ne", "approx", "lt", "gt", "len", "contains")
+
+
+def substitute_expectation(rule: dict, variables: dict) -> dict:
+    """The expectation with ${name} in its expected value replaced, like params (#2220's checks
+    compare a read-back guid with "eq": "${surface}"). Raises KeyError for an unknown name."""
+    return {k: substitute(v, variables) if k in EXPECTED_VALUE_KEYS else v for k, v in rule.items()}
+
+
 def compare(actual: Any, rule: dict) -> tuple[bool, str]:
     """One expectation; returns (ok, readable expectation)."""
     if "eq" in rule:
@@ -238,7 +247,11 @@ class CheckRun:
                 except KeyError:
                     actual = None
                 what = rule["path"]
-            ok, expectation = compare(actual, rule)
+            try:
+                ok, expectation = compare(actual, substitute_expectation(rule, self.variables))
+            except KeyError as exc:
+                self._row(label, rule.get("name", what), False, f"unknown variable {exc} in the expectation")
+                continue
             self._row(label, rule.get("name", what), ok, f"{json.dumps(actual)[:120]} (want {expectation})")
             if not ok and step.get("stopOnFail"):
                 return False
