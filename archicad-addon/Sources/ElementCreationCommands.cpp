@@ -1910,6 +1910,27 @@ static const char* LineFamilySettingsSchemaProperties = R"(
                         "description": "Optional line type attribute. By default the current line type is used."
                     })";
 
+// The arrowheads of Line/PolyLine/Arc/Spline creation (not Circle, which has no ends).
+static const char* LineArrowsSchemaProperties = R"(
+                    "startArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "endArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },)";
+
+static GS::Optional<GS::ObjectState> SetLineArrowsParameters (const GS::ObjectState& parameters, const LineArrows& arrows)
+{
+    bool changed = false;
+    const GS::Optional<GS::UniString> error = ApplyLineArrows (parameters, arrows, changed);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+    return {};
+}
+
 static void SetLineFamilySettingsParameters (const GS::ObjectState& parameters, API_ExtendedPenType& linePen, API_AttributeIndex& ltypeInd, bool& roomSeparator)
 {
     short penIndex = 0;
@@ -1931,7 +1952,7 @@ CreatePolylinesCommand::CreatePolylinesCommand () :
 
 GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "polylinesData": {
@@ -1979,7 +2000,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                     },
                     "drawSegmentMode": {
                         "$ref": "#/PolylineDrawSegmentMode"
-                    },
+                    },)") + LineArrowsSchemaProperties + R"(
                     "coordinates": {
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
@@ -2076,6 +2097,11 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
         return CreateErrorResponse (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous.");
     }
 
+    GS::Optional<GS::ObjectState> arrowsError = SetLineArrowsParameters (parameters, GetLineArrows (element.polyLine));
+    if (arrowsError.HasValue ()) {
+        return arrowsError;
+    }
+
     GS::Array<GS::ObjectState> coordinates;
     GS::Array<GS::ObjectState> arcs;
     parameters.Get ("coordinates", coordinates);
@@ -2127,7 +2153,7 @@ GS::Optional<GS::UniString> CreateLineElementsCommand::GetInputParametersSchema 
                     },
                     "endCoordinate": {
                         "$ref": "#/Coordinate2D"
-                    },)") + LineFamilySettingsSchemaProperties + R"(
+                    },)") + LineArrowsSchemaProperties + LineFamilySettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -2167,7 +2193,7 @@ GS::Optional<GS::ObjectState> CreateLineElementsCommand::SetTypeSpecificParamete
 
     SetLineFamilySettingsParameters (parameters, element.line.linePen, element.line.ltypeInd, element.line.roomSeparator);
 
-    return {};
+    return SetLineArrowsParameters (parameters, GetLineArrows (element.line));
 }
 
 CreateArcsCommand::CreateArcsCommand () :
@@ -2229,7 +2255,7 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     "reflected": {
                         "type": "boolean",
                         "description": "Optional: is the ellipse reflected onto its smaller axis? By default the tool's (or the favorite's) setting is kept."
-                    },)") + LineFamilySettingsSchemaProperties + R"(
+                    },)") + LineArrowsSchemaProperties + LineFamilySettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -2276,7 +2302,7 @@ GS::Optional<GS::ObjectState> CreateArcsCommand::SetTypeSpecificParameters (API_
 
     SetLineFamilySettingsParameters (parameters, element.arc.linePen, element.arc.ltypeInd, element.arc.roomSeparator);
 
-    return {};
+    return SetLineArrowsParameters (parameters, GetLineArrows (element.arc));
 }
 
 CreateCirclesCommand::CreateCirclesCommand () :
@@ -3033,7 +3059,7 @@ GS::Optional<GS::UniString> CreateSplinesCommand::GetInputParametersSchema () co
                     "closed": {
                         "type": "boolean",
                         "description": "Is this a closed curve? Optional, defaults to false."
-                    },)") + LineFamilySettingsSchemaProperties + R"(
+                    },)") + LineArrowsSchemaProperties + LineFamilySettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -3077,7 +3103,7 @@ GS::Optional<GS::ObjectState> CreateSplinesCommand::SetTypeSpecificParameters (A
 
     SetLineFamilySettingsParameters (parameters, element.spline.linePen, element.spline.ltypeInd, element.spline.roomSeparator);
 
-    return {};
+    return SetLineArrowsParameters (parameters, GetLineArrows (element.spline));
 }
 
 // Shared schema builder for CreateObjects and CreateLamps.

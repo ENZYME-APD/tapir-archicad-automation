@@ -249,6 +249,43 @@ bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthL
 GS::UniString PolylineDrawSegmentModeToString (short drawSegmentMode);
 bool PolylineDrawSegmentModeFromString (const GS::UniString& str, short& out);
 
+// The arrowheads of a Line, PolyLine, Arc or Spline (the "startArrow"/"endArrow" JSON keys,
+// definition LineArrowhead). Archicad 29 stores one API_ArrowData per end (startArrowData,
+// endArrowData, plus linkedArrowAttributes); Archicad 25-28 store one arrowData whose type, size
+// and pen both ends share, with a begArrow/endArrow flag per end. LineArrows refers to those
+// members of one element (or of a mask), whichever layout the DevKit has.
+struct LineArrows {
+#ifdef ServerMainVers_2900
+    API_ArrowData& start;
+    API_ArrowData& end;
+    bool&          linked;
+#else
+    API_ArrowData& data;
+#endif
+};
+
+// T is API_LineType, API_PolyLineType, API_ArcType or API_SplineType (same member names).
+template <typename T>
+LineArrows GetLineArrows (T& lineElem)
+{
+#ifdef ServerMainVers_2900
+    return LineArrows { lineElem.startArrowData, lineElem.endArrowData, lineElem.linkedArrowAttributes };
+#else
+    return LineArrows { lineElem.arrowData };
+#endif
+}
+
+// Adds "startArrow" and "endArrow" (visible, type, size, pen) to the details.
+void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows);
+
+// Applies the optional "startArrow"/"endArrow" objects of the parameters. Sets changed when either
+// was given. Returns an error text for an unknown type, or, before Archicad 29, for two ends given
+// different types, sizes or pens.
+GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, const LineArrows& arrows, bool& changed);
+
+// Marks every arrowhead member in the mask (pass GetLineArrows of the mask's union member).
+void SetLineArrowsMask (const LineArrows& maskArrows);
+
 struct Story {
     Story (short _index, double _level)
         : index (_index)
