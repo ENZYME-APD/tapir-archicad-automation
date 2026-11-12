@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-11T16:39:59Z",
+ "generatedAt": "2026-11-12T11:01:55Z",
  "months": [
   {
    "month": "2022-07",
@@ -420,14 +420,14 @@
   }
  ],
  "totals": {
-  "commits": 1315,
-  "discordMessages": 11951,
-  "discordMembers": 656,
+  "commits": 1355,
+  "discordMessages": 11990,
+  "discordMembers": 660,
   "discordMembersChange": {
-   "diff": 16,
-   "days": 5
+   "diff": 20,
+   "days": 6
   },
-  "participants": 485
+  "participants": 494
  },
  "topContributors": [
   {
@@ -438,10 +438,17 @@
    "tests": 0
   },
   {
-   "name": "Parikshit Wadhwa",
+   "name": "archispatialist",
+   "login": "archispatialist",
+   "commits": 100,
+   "reports": 173,
+   "tests": 0
+  },
+  {
+   "name": "parikshit99",
    "login": "parikshit99",
-   "commits": 69,
-   "reports": 164,
+   "commits": 79,
+   "reports": 172,
    "tests": 0
   },
   {
@@ -449,13 +456,13 @@
    "login": "weltmaister",
    "commits": 54,
    "reports": 21,
-   "tests": 114
+   "tests": 119
   },
   {
-   "name": "archispatialist",
-   "login": "archispatialist",
-   "commits": 35,
-   "reports": 144,
+   "name": "Cri5chan",
+   "login": "Cri5chan",
+   "commits": 135,
+   "reports": 2,
    "tests": 0
   },
   {
@@ -466,16 +473,9 @@
    "tests": 0
   },
   {
-   "name": "Cri5chan",
-   "login": "Cri5chan",
-   "commits": 123,
-   "reports": 2,
-   "tests": 0
-  },
-  {
    "name": "MathiasJon",
    "login": "MathiasJon",
-   "commits": 93,
+   "commits": 95,
    "reports": 21,
    "tests": 0
   },
@@ -484,6 +484,13 @@
    "login": "SzamosiMate",
    "commits": 87,
    "reports": 6,
+   "tests": 0
+  },
+  {
+   "name": "Ben Tristem",
+   "login": "BenTristem",
+   "commits": 48,
+   "reports": 18,
    "tests": 0
   },
   {
@@ -518,7 +525,14 @@
    "name": "JBENEITEZ",
    "login": "JBENEITEZ",
    "commits": 15,
-   "reports": 14,
+   "reports": 15,
+   "tests": 0
+  },
+  {
+   "name": "cmartif",
+   "login": "cmartif",
+   "commits": 10,
+   "reports": 17,
    "tests": 0
   },
   {
@@ -543,24 +557,10 @@
    "tests": 0
   },
   {
-   "name": "cmartif",
-   "login": "cmartif",
-   "commits": 9,
-   "reports": 15,
-   "tests": 0
-  },
-  {
    "name": "Aleš Dolenec",
    "login": "alesdev88",
    "commits": 20,
    "reports": 2,
-   "tests": 0
-  },
-  {
-   "name": "Ben Tristem",
-   "login": "BenTristem",
-   "commits": 14,
-   "reports": 7,
    "tests": 0
   },
   {
@@ -732,6 +732,10 @@
   {
    "date": "2026-11-11",
    "members": 656
+  },
+  {
+   "date": "2026-11-12",
+   "members": 660
   }
  ]
 }

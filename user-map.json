@@ -1,10 +1,10 @@
 {
  "version": 1,
- "generatedAt": "2026-11-11T16:55:11Z",
+ "generatedAt": "2026-11-12T11:18:06Z",
  "totals": {
-  "people": 43,
-  "places": 42,
-  "countries": 27
+  "people": 44,
+  "places": 43,
+  "countries": 29
  },
  "places": [
   {
@@ -80,6 +80,14 @@
    "people": 1
   },
   {
+   "name": "Hamilton City",
+   "country": "New Zealand",
+   "countryCode": "NZ",
+   "lat": -37.79,
+   "lon": 175.28,
+   "people": 1
+  },
+  {
    "name": "Helsinki",
    "country": "Finland",
    "countryCode": "FI",
@@ -89,11 +97,12 @@
   },
   {
    "name": "Italy",
-   "country": "United States",
-   "countryCode": "US",
-   "lat": 32.18,
-   "lon": -96.88,
-   "people": 1
+   "country": "Italy",
+   "countryCode": "IT",
+   "lat": 42.64,
+   "lon": 12.67,
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "Klagenfurt am Wörthersee",
@@ -132,9 +141,10 @@
    "name": "Luxembourg",
    "country": "Luxembourg",
    "countryCode": "LU",
-   "lat": 49.61,
+   "lat": 49.82,
    "lon": 6.13,
-   "people": 1
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "Maribor",
@@ -153,12 +163,13 @@
    "people": 1
   },
   {
-   "name": "Mexico City",
+   "name": "Mexico",
    "country": "Mexico",
    "countryCode": "MX",
-   "lat": 19.32,
-   "lon": -99.15,
-   "people": 1
+   "lat": 23.66,
+   "lon": -102.01,
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "Netherlands",
@@ -166,6 +177,15 @@
    "countryCode": "NL",
    "lat": 52.24,
    "lon": 5.63,
+   "people": 1,
+   "countryOnly": true
+  },
+  {
+   "name": "New Zealand",
+   "country": "New Zealand",
+   "countryCode": "NZ",
+   "lat": -41.5,
+   "lon": 172.83,
    "people": 1,
    "countryOnly": true
   },
@@ -189,8 +209,8 @@
    "name": "Paris",
    "country": "France",
    "countryCode": "FR",
-   "lat": 48.85,
-   "lon": 2.35,
+   "lat": 48.86,
+   "lon": 2.32,
    "people": 1
   },
   {
@@ -270,9 +290,10 @@
    "name": "Singapore",
    "country": "Singapore",
    "countryCode": "SG",
-   "lat": 1.29,
-   "lon": 103.85,
-   "people": 1
+   "lat": 1.36,
+   "lon": 103.82,
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "South Korea",
@@ -317,11 +338,12 @@
   },
   {
    "name": "Turkey",
-   "country": "United States",
-   "countryCode": "US",
-   "lat": 34.39,
-   "lon": -100.89,
-   "people": 1
+   "country": "Turkey",
+   "countryCode": "TR",
+   "lat": 39.29,
+   "lon": 35.23,
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "Warszawa",
@@ -338,26 +360,18 @@
    "lat": 48.16,
    "lon": 14.02,
    "people": 1
-  },
-  {
-   "name": "Zealand",
-   "country": "Canada",
-   "countryCode": "CA",
-   "lat": 46.06,
-   "lon": -66.94,
-   "people": 1
   }
  ],
  "countries": [
   {
-   "name": "United States",
-   "code": "US",
-   "people": 6
-  },
-  {
    "name": "Germany",
    "code": "DE",
    "people": 5
+  },
+  {
+   "name": "United States",
+   "code": "US",
+   "people": 4
   },
   {
    "name": "Australia",
@@ -380,6 +394,11 @@
    "people": 2
   },
   {
+   "name": "New Zealand",
+   "code": "NZ",
+   "people": 2
+  },
+  {
    "name": "Poland",
    "code": "PL",
    "people": 2
@@ -387,11 +406,6 @@
   {
    "name": "Argentina",
    "code": "AR",
-   "people": 1
-  },
-  {
-   "name": "Canada",
-   "code": "CA",
    "people": 1
   },
   {
@@ -422,6 +436,11 @@
   {
    "name": "Indonesia",
    "code": "ID",
+   "people": 1
+  },
+  {
+   "name": "Italy",
+   "code": "IT",
    "people": 1
   },
   {
@@ -480,11 +499,17 @@
    "people": 1
   },
   {
+   "name": "Turkey",
+   "code": "TR",
+   "people": 1
+  },
+  {
    "name": "Ukraine",
    "code": "UA",
    "people": 1
   }
  ],
+ "geocodeVersion": 2,
  "geocode": {
   "a spanish fella in hong kong": null,
   "austria, klagenfurt": {
@@ -578,6 +603,14 @@
    "lon": 10.52,
    "kind": "settlement"
   },
+  "hamilton, new zealand": {
+   "name": "Hamilton City",
+   "country": "New Zealand",
+   "countryCode": "NZ",
+   "lat": -37.79,
+   "lon": 175.28,
+   "kind": "settlement"
+  },
   "helsinki, finland": {
    "name": "Helsinki",
    "country": "Finland",
@@ -586,13 +619,14 @@
    "lon": 24.94,
    "kind": "settlement"
   },
+  "hi. argentina - la plata capital": null,
   "italy": {
    "name": "Italy",
-   "country": "United States",
-   "countryCode": "US",
-   "lat": 32.18,
-   "lon": -96.88,
-   "kind": "settlement"
+   "country": "Italy",
+   "countryCode": "IT",
+   "lat": 42.64,
+   "lon": 12.67,
+   "kind": "country"
   },
   "jakarta, indonesia": {
    "name": "Daerah Khusus Ibukota Jakarta",
@@ -630,10 +664,11 @@
    "name": "Luxembourg",
    "country": "Luxembourg",
    "countryCode": "LU",
-   "lat": 49.61,
+   "lat": 49.82,
    "lon": 6.13,
-   "kind": "settlement"
+   "kind": "country"
   },
+  "mallorca, spain": null,
   "melbourne": {
    "name": "Melbourne",
    "country": "Australia",
@@ -643,20 +678,20 @@
    "kind": "settlement"
   },
   "mexico": {
-   "name": "Mexico City",
+   "name": "Mexico",
    "country": "Mexico",
    "countryCode": "MX",
-   "lat": 19.32,
-   "lon": -99.15,
-   "kind": "settlement"
+   "lat": 23.66,
+   "lon": -102.01,
+   "kind": "country"
   },
   "new zealand": {
-   "name": "Zealand",
-   "country": "Canada",
-   "countryCode": "CA",
-   "lat": 46.06,
-   "lon": -66.94,
-   "kind": "settlement"
+   "name": "New Zealand",
+   "country": "New Zealand",
+   "countryCode": "NZ",
+   "lat": -41.5,
+   "lon": 172.83,
+   "kind": "country"
   },
   "ohio, usa": {
    "name": "Ohio",
@@ -678,8 +713,8 @@
    "name": "Paris",
    "country": "France",
    "countryCode": "FR",
-   "lat": 48.85,
-   "lon": 2.35,
+   "lat": 48.86,
+   "lon": 2.32,
    "kind": "settlement"
   },
   "philly, us": {
@@ -758,9 +793,9 @@
    "name": "Singapore",
    "country": "Singapore",
    "countryCode": "SG",
-   "lat": 1.29,
-   "lon": 103.85,
-   "kind": "settlement"
+   "lat": 1.36,
+   "lon": 103.82,
+   "kind": "country"
   },
   "slovenia, maribor": {
    "name": "Maribor",
@@ -822,11 +857,11 @@
   },
   "turkey": {
    "name": "Turkey",
-   "country": "United States",
-   "countryCode": "US",
-   "lat": 34.39,
-   "lon": -100.89,
-   "kind": "settlement"
+   "country": "Turkey",
+   "countryCode": "TR",
+   "lat": 39.29,
+   "lon": 35.23,
+   "kind": "country"
   },
   "warsaw, poland": {
    "name": "Warszawa",
