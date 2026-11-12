@@ -1,0 +1,270 @@
+{
+  "title": "Columns and beams: a width given alone also works on a linked cross section; width and depth together unlink it",
+  "minTapir": "2.0.1",
+  "minArchicad": "25",
+  "steps": [
+    {
+      "id": "columns: width alone, width and depth, a round one, an explicit unlinked one",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": {
+              "x": 700.0,
+              "y": 700.0,
+              "z": 0.0
+            },
+            "height": 3.0,
+            "width": 1.0
+          },
+          {
+            "coordinates": {
+              "x": 703.0,
+              "y": 700.0,
+              "z": 0.0
+            },
+            "height": 3.0,
+            "width": 1.0,
+            "depth": 0.2
+          },
+          {
+            "coordinates": {
+              "x": 706.0,
+              "y": 700.0,
+              "z": 0.0
+            },
+            "height": 3.0,
+            "circleBased": true,
+            "width": 0.8
+          },
+          {
+            "coordinates": {
+              "x": 709.0,
+              "y": 700.0,
+              "z": 0.0
+            },
+            "height": 3.0,
+            "width": 0.6,
+            "depth": 0.2,
+            "isWidthAndHeightLinked": true
+          }
+        ]
+      },
+      "save": {
+        "c1": "elements[0].elementId.guid",
+        "c2": "elements[1].elementId.guid",
+        "c3": "elements[2].elementId.guid",
+        "c4": "elements[3].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "column 1 created"
+        },
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "column 2 created"
+        },
+        {
+          "path": "elements[2].elementId.guid",
+          "exists": true,
+          "name": "column 3 created"
+        },
+        {
+          "path": "elements[3].elementId.guid",
+          "exists": true,
+          "name": "column 4 created"
+        }
+      ]
+    },
+    {
+      "id": "read the columns back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${c1}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${c2}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${c3}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${c4}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.width",
+          "approx": 1.0,
+          "tol": 0.001,
+          "name": "width alone: width 1.0"
+        },
+        {
+          "path": "detailsOfElements[0].details.depth",
+          "approx": 1.0,
+          "tol": 0.001,
+          "name": "width alone: depth follows (linked)"
+        },
+        {
+          "path": "detailsOfElements[1].details.width",
+          "approx": 1.0,
+          "tol": 0.001,
+          "name": "width and depth: width 1.0"
+        },
+        {
+          "path": "detailsOfElements[1].details.depth",
+          "approx": 0.2,
+          "tol": 0.001,
+          "name": "width and depth: depth 0.2"
+        },
+        {
+          "path": "detailsOfElements[1].details.isWidthAndHeightLinked",
+          "eq": false,
+          "name": "width and depth: unlinked"
+        },
+        {
+          "path": "detailsOfElements[2].details.width",
+          "approx": 0.8,
+          "tol": 0.001,
+          "name": "round column: diameter 0.8"
+        },
+        {
+          "path": "detailsOfElements[3].details.width",
+          "approx": 0.6,
+          "tol": 0.001,
+          "name": "explicitly linked: width wins"
+        },
+        {
+          "path": "detailsOfElements[3].details.depth",
+          "approx": 0.6,
+          "tol": 0.001,
+          "name": "explicitly linked: square"
+        }
+      ]
+    },
+    {
+      "id": "ModifyColumns: width alone on a linked column",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${c1}"
+            },
+            "width": 0.7
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "modified"
+        }
+      ]
+    },
+    {
+      "id": "read the modified column back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${c1}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.width",
+          "approx": 0.7,
+          "tol": 0.001,
+          "name": "width 0.7"
+        },
+        {
+          "path": "detailsOfElements[0].details.depth",
+          "approx": 0.7,
+          "tol": 0.001,
+          "name": "depth follows"
+        }
+      ]
+    },
+    {
+      "id": "a linked beam with a width alone",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": {
+              "x": 700.0,
+              "y": 710.0
+            },
+            "endCoordinate": {
+              "x": 704.0,
+              "y": 710.0
+            },
+            "zCoordinate": 3.0,
+            "isWidthAndHeightLinked": true,
+            "width": 0.5
+          }
+        ]
+      },
+      "save": {
+        "b1": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "beam created"
+        }
+      ]
+    },
+    {
+      "id": "read the beam back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${b1}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.width",
+          "approx": 0.5,
+          "tol": 0.001,
+          "name": "beam width 0.5"
+        },
+        {
+          "path": "detailsOfElements[0].details.height",
+          "approx": 0.5,
+          "tol": 0.001,
+          "name": "beam height follows (linked)"
+        }
+      ]
+    }
+  ]
+}

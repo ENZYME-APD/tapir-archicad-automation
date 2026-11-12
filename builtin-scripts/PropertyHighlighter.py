@@ -16,7 +16,9 @@ legend of the values and their element counts. Text values get one color each;
 number values can also be grouped into ranges with a color gradient. Select
 values in the legend to highlight only those, double-click one to select its
 elements in Archicad. Classification properties are listed by the ID and name of
-their classification items, not by their GUIDs.
+their classification items, not by their GUIDs. The sub-elements of curtain walls,
+stairs, railings, columns and beams can be listed on their own ("Sub-elements" type)
+or left out of "All types" ("Exclude sub-elements").
 """
 
 import colorsys
@@ -34,9 +36,21 @@ EMPTY = "(empty)"
 NOT_A_NUMBER = "(not a number)"
 SPECIAL_COLOR = (150, 150, 150)
 ALL_TYPES = "All types"
+SUB_ELEMENTS = "Sub-elements"
 ELEMENT_TYPES = [
     ALL_TYPES, "Wall", "Column", "Beam", "Slab", "Roof", "Shell", "Morph", "Mesh", "Window", "Door", "Skylight",
-    "Opening", "Object", "Lamp", "Zone", "CurtainWall", "Stair", "Railing",
+    "Opening", "Object", "Lamp", "Zone", "CurtainWall", "Stair", "Railing", SUB_ELEMENTS,
+]
+# The parts of curtain walls, stairs, railings, columns and beams. "All types" lists them too;
+# the "Sub-elements" choice lists only them, and "Exclude sub-elements" leaves them out.
+SUB_ELEMENT_TYPES = [
+    "CurtainWallSegment", "CurtainWallFrame", "CurtainWallPanel", "CurtainWallJunction", "CurtainWallAccessory",
+    "Riser", "Tread", "StairStructure",
+    "RailingToprail", "RailingHandrail", "RailingRail", "RailingPost", "RailingInnerPost", "RailingBaluster",
+    "RailingPanel", "RailingSegment", "RailingNode", "RailingBalusterSet", "RailingPattern", "RailingToprailEnd",
+    "RailingHandrailEnd", "RailingRailEnd", "RailingToprailConnection", "RailingHandrailConnection",
+    "RailingRailConnection", "RailingEndFinish",
+    "ColumnSegment", "BeamSegment",
 ]
 # Easy to tell apart colors for the first values; more values get generated hues.
 DISTINCT_COLORS = [
@@ -150,7 +164,13 @@ class PropertyHighlighter:
             row=0, column=4, sticky="w", padx=(6, 0))
         self.visible_only = tk.BooleanVar(value=True)
         ttk.Checkbutton(elements, text="Only elements on visible layers", variable=self.visible_only).grid(
-            row=1, column=0, columnspan=5, sticky="w", pady=(6, 0))
+            row=1, column=0, columnspan=3, sticky="w", pady=(6, 0))
+        self.exclude_sub_elements = tk.BooleanVar(value=False)
+        exclude = ttk.Checkbutton(elements, text="Exclude sub-elements", variable=self.exclude_sub_elements)
+        exclude.grid(row=1, column=3, columnspan=2, sticky="w", padx=(18, 0), pady=(6, 0))
+        # Only "All types" lists sub-elements together with other elements, so only there can they be left out.
+        self.element_type.trace_add("write", lambda *_: exclude.state(
+            ["!disabled"] if self.element_type.get() == ALL_TYPES else ["disabled"]))
 
         properties = ttk.LabelFrame(body, text="Property", padding=(10, 6))
         properties.grid(row=1, column=0, sticky="nsew", pady=(8, 0))
@@ -233,10 +253,8 @@ class PropertyHighlighter:
         if prop is None:
             self.window.set_status("Pick a property in the list first.", "warning")
             return
-        element_types = None if self.element_type.get() == ALL_TYPES else [self.element_type.get()]
-        filters = ["IsVisibleByLayer"] if self.visible_only.get() else []
         with self.window.busy("Reading the elements..."):
-            elements = get_elements(self.scope.get(), element_types, filters)
+            elements = self._chosen_elements()
             values: list[str] = []
             for chunk in batched(elements):
                 self.window.set_status(f"Reading the values... {len(values)} / {len(elements)}")
@@ -254,6 +272,20 @@ class PropertyHighlighter:
         self.values = list(zip(elements, values))
         self.legend.selection_set(())
         self._regroup()
+
+    def _chosen_elements(self) -> list[dict]:
+        """ The elements of the chosen scope and type, without the sub-elements when they are excluded. """
+        scope, choice = self.scope.get(), self.element_type.get()
+        filters = ["IsVisibleByLayer"] if self.visible_only.get() else []
+        if choice == SUB_ELEMENTS:
+            return get_elements(scope, SUB_ELEMENT_TYPES, filters)
+        if choice != ALL_TYPES:
+            return get_elements(scope, [choice], filters)
+        elements = get_elements(scope, None, filters)
+        if self.exclude_sub_elements.get():
+            sub_elements = {e["elementId"]["guid"].upper() for e in get_elements(scope, SUB_ELEMENT_TYPES, filters)}
+            elements = [e for e in elements if e["elementId"]["guid"].upper() not in sub_elements]
+        return elements
 
     def _read_classification_labels(self) -> dict[str, str]:
         """ The label of every classification item of the project, by its GUID (guid_key). """
