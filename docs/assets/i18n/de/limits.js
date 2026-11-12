@@ -38,15 +38,40 @@
         'Auslesen, mit welcher Decken- oder Treppenkante ein Geländer verknüpft ist, oder ein Geländer mit einer verknüpfen',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         'Die automatische Geschosssichtbarkeit eines Geländers ausschalten, damit sich die Geschosse festlegen lassen, auf denen es gezeigt wird',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'Floor Plan Display, Show Projection, die ungeschnittenen und darüberliegenden Linien oder den Linientyp des Schnitts eines Netzes festlegen',
+    'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
+        'Das Grundrisssymbol eines Geländers lesen oder einstellen: seine Bruchlinie, welche Symbolkomponenten es zeigt, deren 2D-Attribute und die Symbolüberschreibungen',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lesen Sie den Umriss der Decke mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus und erstellen Sie mit <a href="../archicad-addon/#CreateRailings">CreateRailings</a> ein statisches Geländer entlang der Kante. Wenn sich die Decke ändert, löschen Sie das Geländer und erstellen Sie es neu.',
+
+    // Design options
+    'Design options': 'Varianten',
+    'Read which design option, or the Main Model, is the default that new elements go to':
+        'Auslesen, welche Variante oder ob das Hauptmodell die Vorgabe ist, in die neue Elemente kommen',
+    'Create a temporary element, read its design option with <a href="../archicad-addon/#GetDesignOptionForElements">GetDesignOptionForElements</a>, then move it to the Main Model with <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a> (a null GUID as <code>designOptionId</code>) and delete it with <a href="../archicad-addon/#DeleteElements">DeleteElements</a>; an element in an option that is not shown cannot be deleted. Set the default with <a href="../archicad-addon/#SetDefaultDesignOption">SetDefaultDesignOption</a>.':
+        'Erstellen Sie ein temporäres Element, lesen Sie seine Variante mit <a href="../archicad-addon/#GetDesignOptionForElements">GetDesignOptionForElements</a> aus, verschieben Sie es mit <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a> (eine Null-GUID als <code>designOptionId</code>) ins Hauptmodell und löschen Sie es dann mit <a href="../archicad-addon/#DeleteElements">DeleteElements</a>; ein Element in einer nicht angezeigten Variante lässt sich nicht löschen. Die Vorgabe setzen Sie mit <a href="../archicad-addon/#SetDefaultDesignOption">SetDefaultDesignOption</a>.',
+    'Read or change which design options the current window shows, as the eye icons of the Design Options palette do':
+        'Auslesen oder ändern, welche Varianten das aktuelle Fenster zeigt, wie es die Augen-Symbole der Varianten-Palette tun',
+    'Work with saved views: read and set the combination a View Map view shows with <a href="../archicad-addon/#GetDesignOptionCombinationOfViews">GetDesignOptionCombinationOfViews</a> and <a href="../archicad-addon/#SetDesignOptionCombinationOfViews">SetDesignOptionCombinationOfViews</a>, and the options of a combination with <a href="../archicad-addon/#SetActiveDesignOptionsInCombinations">SetActiveDesignOptionsInCombinations</a>.':
+        'Arbeiten Sie mit gespeicherten Ausschnitten: Lesen und setzen Sie die Kombination, die ein Ausschnitt der Ausschnittmappe zeigt, mit <a href="../archicad-addon/#GetDesignOptionCombinationOfViews">GetDesignOptionCombinationOfViews</a> und <a href="../archicad-addon/#SetDesignOptionCombinationOfViews">SetDesignOptionCombinationOfViews</a>, und die Varianten einer Kombination mit <a href="../archicad-addon/#SetActiveDesignOptionsInCombinations">SetActiveDesignOptionsInCombinations</a>.',
+    'Duplicate a design option or a design option set, as the duplicate button of the Design Options palette does':
+        'Eine Variante oder ein Variantenset duplizieren, wie es die Schaltfläche Duplizieren der Varianten-Palette tut',
+    'Create the set and its options with <a href="../archicad-addon/#CreateDesignOptionSets">CreateDesignOptionSets</a> and <a href="../archicad-addon/#CreateDesignOptions">CreateDesignOptions</a>. For the elements, list them with <a href="../archicad-addon/#GetElementsOfDesignOptions">GetElementsOfDesignOptions</a>, copy them with <a href="../archicad-addon/#CopyElements">CopyElements</a> and move the copies to the new option with <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a>.':
+        'Erstellen Sie das Set und seine Varianten mit <a href="../archicad-addon/#CreateDesignOptionSets">CreateDesignOptionSets</a> und <a href="../archicad-addon/#CreateDesignOptions">CreateDesignOptions</a>. Für die Elemente listen Sie sie mit <a href="../archicad-addon/#GetElementsOfDesignOptions">GetElementsOfDesignOptions</a> auf, kopieren sie mit <a href="../archicad-addon/#CopyElements">CopyElements</a> und verschieben die Kopien mit <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a> in die neue Variante.',
+    'Lock or colour the passive elements of design options, as the Design Options palette does':
+        'Die passiven Elemente von Varianten sperren oder einfärben, wie es die Varianten-Palette tut',
 
     // Navigator and views
     'Navigator and views': 'Navigator und Ansichten',
     'Add an item to a publisher set': 'Einem Publisher Set ein Element hinzufügen',
     'Add the items in Archicad\'s Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Fügen Sie die Elemente im Organizer von Archicad hinzu und veröffentlichen Sie das Set dann mit <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.',
-    'Change, rename or create a stored Model View Options combination': 'Eine gespeicherte Kombination der Model View Options ändern, umbenennen oder anlegen',
+    'Change the settings of an existing Layout Book subset (prefix, numbering style, start at, ...)':
+        'Die Einstellungen eines bestehenden Teilsets im Planbuch ändern (Präfix, Nummerierungsstil, Beginnen mit, ...)',
+    'Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.':
+        'Lesen Sie das Teilset mit <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a> aus, legen Sie mit <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> ein Teilset mit den neuen Einstellungen an und verschieben Sie die Layouts mit <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a> hinein. Das alte, leere Teilset löschen Sie in Archicad.',
+    'Change, rename or create a stored Model View Options combination':'Eine gespeicherte Kombination der Model View Options ändern, umbenennen oder anlegen',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Lesen Sie die Kombinationen mit <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; ändern Sie die Optionen des aktuellen Fensters mit <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.',
 
@@ -79,6 +104,11 @@
     'Get the outcome of an Action Center check': 'Das Ergebnis einer Prüfung im Action Center erhalten',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Starten Sie die Prüfung mit <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad zeigt das Action Center, wenn es ein Problem gefunden hat. Für die Hotlink-Prüfung lesen Sie den Zustand jeder Quelle mit <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (ab Archicad 27).',
+
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Die Werte der Profil-Modifikatoren oder die gestreckte Breite und Höhe einer Wand, eines Unterzugs oder einer Stütze mit Profil einstellen',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'Lesen Sie sie mit <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> aus. Um sie zu ändern, ändern Sie das Profil mit <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (eine Kopie für diese Elemente oder das Profil selbst) oder stellen Sie sie in den Einstellungen des Elements in Archicad ein.',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Etwas anderes gefunden, das die Archicad-API nicht kann? Schreiben Sie es in ein Issue, mit den DevKit-Headern, die Sie geprüft haben, und es kommt auf diese Seite. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Ein Issue öffnen</a>'

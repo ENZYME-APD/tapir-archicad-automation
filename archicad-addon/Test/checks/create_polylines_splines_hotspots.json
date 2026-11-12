@@ -1,5 +1,5 @@
 {
-  "title": "RegularizePolylines feeds CreatePolylines; CreatePolylines, CreateSplines and CreateHotspots keep the geometry, pen, story, layer and id, and refuse bad items",
+  "title": "RegularizePolylines feeds CreatePolylines; CreatePolylines, CreateSplines and CreateHotspots keep the geometry, pen, story and layer, and refuse bad items (the Element ID is in element_id_on_2d_drafting_elements.json)",
   "minTapir": "1.8.1",
   "requiresEmpty": [ "PolyLine", "Spline", "Hotspot" ],
   "steps": [
@@ -54,8 +54,7 @@
             "floorInd": 0,
             "layerIndex": 1,
             "linePenIndex": 5,
-            "roomSeparator": false,
-            "id": "CHK-POLYLINE-1"
+            "roomSeparator": false
           },
           {
             "coordinates": [ { "x": 700.0, "y": 710.0 }, { "x": 703.0, "y": 710.0 } ],
@@ -92,7 +91,6 @@
         { "path": "detailsOfElements[0].details.roomSeparator", "eq": false },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
         { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
-        { "path": "detailsOfElements[0].id", "eq": "CHK-POLYLINE-1", "name": "id applied" },
         { "path": "detailsOfElements[1].details.coordinates", "len": 2, "name": "straight polyline has two points" },
         { "path": "detailsOfElements[1].details.coordinates[1].x", "approx": 703.0, "name": "straight polyline's end kept" },
         { "path": "detailsOfElements[1].details.linePenIndex", "eq": 7, "name": "pen 7 applied" },
@@ -116,8 +114,7 @@
             "floorInd": 0,
             "layerIndex": 1,
             "linePenIndex": 4,
-            "roomSeparator": false,
-            "id": "CHK-SPLINE-1"
+            "roomSeparator": false
           },
           {
             "coordinates": [
@@ -158,7 +155,6 @@
         { "path": "detailsOfElements[0].details.roomSeparator", "eq": false },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
         { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
-        { "path": "detailsOfElements[0].id", "eq": "CHK-SPLINE-1", "name": "id applied" },
         { "path": "detailsOfElements[1].details.coordinates", "len": 3, "name": "closed spline stores no closing point" },
         { "path": "detailsOfElements[1].details.coordinates[2].y", "approx": 713.0, "name": "closed spline's last point kept" },
         { "path": "detailsOfElements[1].details.closed", "eq": true, "name": "closed applied" },

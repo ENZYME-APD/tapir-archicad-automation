@@ -12,7 +12,7 @@
         "libraryParts": [
           {
             "name": "TapirCheckSections",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibSections/TapirCheckSections.gsm",
             "a": 0.6,
             "b": 0.4,
@@ -49,7 +49,7 @@
         "libraryParts": [
           {
             "name": "TapirCheckSections",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibSections/TapirCheckSections.gsm",
             "masterScript": "tapirMaster = 99"
           }
@@ -200,7 +200,7 @@
         "libraryParts": [
           {
             "name": "TapirCheckSections",
-            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "parentName": "Model Element",
             "path": "TapirCheckLibSections/TapirCheckSections.gsm",
             "masterScript": "tapirMaster = 3"
           }

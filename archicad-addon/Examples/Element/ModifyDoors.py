@@ -19,6 +19,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyDoors', {'doorsWithDetails': [{
     'elementId': door['elementId'],
     'centerOffset': 4.0,
     'width': 0.9,
-    'reflected': True
+    'reflected': True,
+    'subFloorThickness': 0.05
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [door], 'fields': ['details']})

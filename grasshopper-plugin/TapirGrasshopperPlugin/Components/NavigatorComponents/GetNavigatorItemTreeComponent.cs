@@ -90,6 +90,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             OutGeneric(
                 "RootNavigatorItemId",
                 "The identifier of the root item of the map.");
+
+            OutTextTree(
+                "AutoTextedNames",
+                "The name of each navigator item as it was given, with its autotext tokens (e.g. " +
+                "<PROJECTNUMBER>_<SourceID>_<SourceItemName>); null when the name has no autotext.");
         }
 
         protected override void Solve(
@@ -144,6 +149,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             da.SetDataTree(8, trees.SourceIds);
             da.SetDataTree(9, trees.ChildCounts);
             da.SetData(10, ToWrapper(root?["navigatorItemId"]));
+            da.SetDataTree(11, trees.AutoTextedNames);
         }
 
         private class Trees
@@ -158,6 +164,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             public readonly DataTree<object> IsIndependent = new DataTree<object>();
             public readonly DataTree<NavigatorGuidWrapper> SourceIds = new DataTree<NavigatorGuidWrapper>();
             public readonly DataTree<object> ChildCounts = new DataTree<object>();
+            public readonly DataTree<string> AutoTextedNames = new DataTree<string>();
         }
 
         private static NavigatorGuidWrapper ToWrapper(
@@ -197,6 +204,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 trees.IsIndependent.Add(JsonOutputHelp.Scalar(child, "isIndependent"), path);
                 trees.SourceIds.Add(ToWrapper(child["sourceNavigatorItemId"]), path);
                 trees.ChildCounts.Add(JsonOutputHelp.Scalar(child, "childCount"), path);
+                trees.AutoTextedNames.Add(child["autoTextedName"]?.ToString(), path);
 
                 AddChildren(
                     child,

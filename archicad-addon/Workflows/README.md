@@ -3,7 +3,7 @@
 Scripts that combine several Tapir commands into a task or a tool, e.g. auditing the library
 parts or building materials of a project, syncing attributes between two Archicads
 (`sync_attributes_gui.py`), copying elements from one open project to another or merging a
-module file (`copy_elements_between_projects.py`), clipping drawings to the zones (`zone_clip.py`), creating one of every
+module file (`copy_elements_between_projects.py`), clipping drawings to the zones (`zone_clip.py`), merging beams that continue each other into one beam whose segments keep their cross sections (`merge_beams.py`), creating one of every
 element type (`create_elements.py`) or exporting the 3D model to an OBJ file with its materials or to a binary glTF file with its materials and the 3D window's camera (`export_obj.py`). For one command at a time, see the
 [examples](../Examples/).
 
