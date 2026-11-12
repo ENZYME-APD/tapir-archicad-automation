@@ -1,7 +1,0 @@
-Command: QuitArchicad
-Parameters:
-{}
-Response:
-{
-    "success": true
-}

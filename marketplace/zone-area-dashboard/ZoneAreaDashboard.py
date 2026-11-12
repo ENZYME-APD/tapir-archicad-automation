@@ -395,6 +395,112 @@ def scrolling_body(window: ScriptWindow) -> ttk.Frame:
 
 # ---- the window ----
 
+class SearchCombobox(ttk.Combobox):
+    """Dropdown with a built-in search: type to filter the list, Down arrow
+    opens it, Return picks the first match, Escape reverts.
+
+    A drop-in replacement for ttk.Combobox: values set later with
+    configure(values=...) are searchable too, state="readonly" keeps the
+    box typeable, and <<ComboboxSelected>> handlers are added alongside the
+    search ones. strict=True only accepts listed values (anything else
+    reverts to the last valid pick); strict=False also accepts new text.
+    """
+
+    NAV_KEYS = {"Return", "KP_Enter", "Escape", "Up", "Down", "Left", "Right",
+                "Tab", "Home", "End", "Prior", "Next"}
+
+    def __init__(self, master=None, strict=True, **kw):
+        self.all_values = list(kw.get("values") or ())
+        self.strict = strict
+        self._last = ""
+        if kw.get("state") == "readonly":
+            kw["state"] = "normal"
+        super().__init__(master, **kw)
+        self.bind("<KeyRelease>", self._filter, add="+")
+        self.bind("<Return>", self.commit, add="+")
+        self.bind("<KP_Enter>", self.commit, add="+")
+        self.bind("<FocusOut>", self.commit, add="+")
+        self.bind("<Escape>", self._revert, add="+")
+        self.bind("<FocusIn>", self._focus_in, add="+")
+        self.bind("<<ComboboxSelected>>", self._picked, add="+")
+
+    # -- keep ttk.Combobox behaviour for the code that uses it
+    def configure(self, cnf=None, **kw):
+        if isinstance(cnf, dict):
+            kw = {**cnf, **kw}
+            cnf = None
+        if kw.get("state") == "readonly":
+            kw["state"] = "normal"
+        if "values" in kw:
+            self.all_values = list(kw["values"] or ())
+        return super().configure(cnf, **kw)
+
+    config = configure
+
+    def state(self, statespec=None):
+        if statespec:
+            statespec = [s for s in statespec if s != "readonly"]
+        return super().state(statespec)
+
+    def bind(self, sequence=None, func=None, add=None):
+        if sequence == "<<ComboboxSelected>>" and func is not None:
+            add = "+"
+        return super().bind(sequence, func, add)
+
+    def set(self, value):
+        super().set(value)
+        self._last = value
+
+    def value(self):
+        """The current pick (strict: always one of the listed values)."""
+        text = self.get()
+        if not self.strict:
+            return text.strip()
+        return text if text in self.all_values else self._last
+
+    # -- search
+    def _show(self, values):
+        ttk.Combobox.configure(self, values=values)
+
+    def _focus_in(self, event=None):
+        if self.get() in self.all_values:
+            self._last = self.get()
+        self.select_range(0, "end")
+
+    def _filter(self, event):
+        if event.keysym in self.NAV_KEYS or event.keysym.startswith(
+                ("Shift", "Control", "Meta", "Alt", "Super", "Command", "Caps")):
+            return
+        q = self.get().strip().lower()
+        self._show([v for v in self.all_values if q in str(v).lower()] if q else self.all_values)
+
+    def commit(self, event=None):
+        """Turn the typed text into a valid pick and fire <<ComboboxSelected>> if it changed."""
+        try:
+            text = self.get().strip()
+            if self.strict:
+                q = text.lower()
+                hits = [v for v in self.all_values if str(v).lower() == q] or \
+                       [v for v in self.all_values if q and q in str(v).lower()]
+                text = str(hits[0]) if hits else self._last
+                super().set(text)
+            self._show(self.all_values)
+            if text != self._last:
+                self._last = text
+                self.event_generate("<<ComboboxSelected>>")
+        except tk.TclError:  # window closing
+            pass
+
+    def _revert(self, event=None):
+        super().set(self._last)
+        self._show(self.all_values)
+        self.select_range(0, "end")
+
+    def _picked(self, event=None):
+        self._last = self.get()
+        self._show(self.all_values)
+
+
 class ZoneAreaDashboard:
     def __init__(self):
         self.window = ScriptWindow(
@@ -451,13 +557,13 @@ class ZoneAreaDashboard:
                         command=self.window.guarded(self.refresh)).grid(row=0, column=1, sticky="w", padx=(10, 0))
         ttk.Label(zones, text="Area:").grid(row=0, column=2, sticky="w", padx=(24, 0))
         self.area_kind = tk.StringVar(value=AREAS[0][0])
-        area = ttk.Combobox(zones, textvariable=self.area_kind, values=[label for label, _ in AREAS], width=22,
+        area = SearchCombobox(zones, textvariable=self.area_kind, values=[label for label, _ in AREAS], width=22,
                             state="readonly")
         area.grid(row=0, column=3, sticky="w", padx=(6, 0))
         area.bind("<<ComboboxSelected>>", lambda _e: self.window.guarded(self.update_view)())
         ttk.Label(zones, text="Unit:").grid(row=0, column=4, sticky="w", padx=(18, 0))
         self.unit = tk.StringVar(value=UNITS[0][0])
-        unit = ttk.Combobox(zones, textvariable=self.unit, values=[u for u, _ in UNITS], width=5, state="readonly")
+        unit = SearchCombobox(zones, textvariable=self.unit, values=[u for u, _ in UNITS], width=5, state="readonly")
         unit.grid(row=0, column=5, sticky="w", padx=(6, 0))
         unit.bind("<<ComboboxSelected>>", lambda _e: self.window.guarded(self.update_view)())
 
@@ -465,12 +571,12 @@ class ZoneAreaDashboard:
         grouping.grid(row=1, column=0, sticky="ew", pady=(8, 0))
         ttk.Label(grouping, text="Group by:").grid(row=0, column=0, sticky="w")
         self.group_by = tk.StringVar(value="Zone category")
-        self.group_box = ttk.Combobox(grouping, textvariable=self.group_by, width=22, state="readonly")
+        self.group_box = SearchCombobox(grouping, textvariable=self.group_by, width=22, state="readonly")
         self.group_box.grid(row=0, column=1, sticky="w", padx=(6, 0))
         self.group_box.bind("<<ComboboxSelected>>", lambda _e: self.window.guarded(self.metrics_changed)())
         ttk.Label(grouping, text="Colour by:").grid(row=0, column=2, sticky="w", padx=(18, 0))
         self.colour_by = tk.StringVar(value="Zone category")
-        self.colour_box = ttk.Combobox(grouping, textvariable=self.colour_by, width=22, state="readonly")
+        self.colour_box = SearchCombobox(grouping, textvariable=self.colour_by, width=22, state="readonly")
         self.colour_box.grid(row=0, column=3, sticky="w", padx=(6, 0))
         self.colour_box.bind("<<ComboboxSelected>>", lambda _e: self.window.guarded(self.metrics_changed)())
 
@@ -478,7 +584,7 @@ class ZoneAreaDashboard:
         for index in range(2):
             ttk.Label(grouping, text=f"Filter {index + 1}:").grid(row=1 + index, column=0, sticky="w", pady=(6, 0))
             metric = tk.StringVar(value=NO_FILTER)
-            box = ttk.Combobox(grouping, textvariable=metric, width=22, state="readonly")
+            box = SearchCombobox(grouping, textvariable=metric, width=22, state="readonly")
             box.grid(row=1 + index, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
             button = ttk.Menubutton(grouping, text="All values", width=20)
             button.grid(row=1 + index, column=2, columnspan=2, sticky="w", padx=(18, 0), pady=(6, 0))

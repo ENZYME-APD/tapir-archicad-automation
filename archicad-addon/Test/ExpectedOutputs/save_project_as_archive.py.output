@@ -1,9 +1,0 @@
-Command: SaveProjectAsArchive
-Parameters:
-{
-    "archiveFilePath": "<PATH>tapir_example.pla"
-}
-Response:
-{
-    "success": true
-}

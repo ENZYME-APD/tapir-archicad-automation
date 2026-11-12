@@ -1,8 +1,0 @@
-Command: GetHotlinks
-Parameters:
-{}
-Response:
-{
-    "hotlinks": []
-}
-No hotlink nodes in this project.

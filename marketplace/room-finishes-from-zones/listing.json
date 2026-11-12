@@ -9,6 +9,12 @@
     "entry": "RoomFinishesFromZones.py",
     "versions": [
         {
+            "version": "1.4.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Every dropdown can be searched: type in it to filter the list, the Down arrow opens it, Return picks the first match and Escape goes back to the previous choice."
+        },
+        {
             "version": "1.3.1",
             "archicadVersions": [25, 26, 27, 28, 29, 30],
             "minTapirVersion": "1.8.0",

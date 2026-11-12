@@ -845,6 +845,112 @@ def main() -> None:
                  "(https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts) next to this "
                  "script.")
 
+    class SearchCombobox(ttk.Combobox):
+        """Dropdown with a built-in search: type to filter the list, Down arrow
+        opens it, Return picks the first match, Escape reverts.
+
+        A drop-in replacement for ttk.Combobox: values set later with
+        configure(values=...) are searchable too, state="readonly" keeps the
+        box typeable, and <<ComboboxSelected>> handlers are added alongside the
+        search ones. strict=True only accepts listed values (anything else
+        reverts to the last valid pick); strict=False also accepts new text.
+        """
+
+        NAV_KEYS = {"Return", "KP_Enter", "Escape", "Up", "Down", "Left", "Right",
+                    "Tab", "Home", "End", "Prior", "Next"}
+
+        def __init__(self, master=None, strict=True, **kw):
+            self.all_values = list(kw.get("values") or ())
+            self.strict = strict
+            self._last = ""
+            if kw.get("state") == "readonly":
+                kw["state"] = "normal"
+            super().__init__(master, **kw)
+            self.bind("<KeyRelease>", self._filter, add="+")
+            self.bind("<Return>", self.commit, add="+")
+            self.bind("<KP_Enter>", self.commit, add="+")
+            self.bind("<FocusOut>", self.commit, add="+")
+            self.bind("<Escape>", self._revert, add="+")
+            self.bind("<FocusIn>", self._focus_in, add="+")
+            self.bind("<<ComboboxSelected>>", self._picked, add="+")
+
+        # -- keep ttk.Combobox behaviour for the code that uses it
+        def configure(self, cnf=None, **kw):
+            if isinstance(cnf, dict):
+                kw = {**cnf, **kw}
+                cnf = None
+            if kw.get("state") == "readonly":
+                kw["state"] = "normal"
+            if "values" in kw:
+                self.all_values = list(kw["values"] or ())
+            return super().configure(cnf, **kw)
+
+        config = configure
+
+        def state(self, statespec=None):
+            if statespec:
+                statespec = [s for s in statespec if s != "readonly"]
+            return super().state(statespec)
+
+        def bind(self, sequence=None, func=None, add=None):
+            if sequence == "<<ComboboxSelected>>" and func is not None:
+                add = "+"
+            return super().bind(sequence, func, add)
+
+        def set(self, value):
+            super().set(value)
+            self._last = value
+
+        def value(self):
+            """The current pick (strict: always one of the listed values)."""
+            text = self.get()
+            if not self.strict:
+                return text.strip()
+            return text if text in self.all_values else self._last
+
+        # -- search
+        def _show(self, values):
+            ttk.Combobox.configure(self, values=values)
+
+        def _focus_in(self, event=None):
+            if self.get() in self.all_values:
+                self._last = self.get()
+            self.select_range(0, "end")
+
+        def _filter(self, event):
+            if event.keysym in self.NAV_KEYS or event.keysym.startswith(
+                    ("Shift", "Control", "Meta", "Alt", "Super", "Command", "Caps")):
+                return
+            q = self.get().strip().lower()
+            self._show([v for v in self.all_values if q in str(v).lower()] if q else self.all_values)
+
+        def commit(self, event=None):
+            """Turn the typed text into a valid pick and fire <<ComboboxSelected>> if it changed."""
+            try:
+                text = self.get().strip()
+                if self.strict:
+                    q = text.lower()
+                    hits = [v for v in self.all_values if str(v).lower() == q] or \
+                           [v for v in self.all_values if q and q in str(v).lower()]
+                    text = str(hits[0]) if hits else self._last
+                    super().set(text)
+                self._show(self.all_values)
+                if text != self._last:
+                    self._last = text
+                    self.event_generate("<<ComboboxSelected>>")
+            except tk.TclError:  # window closing
+                pass
+
+        def _revert(self, event=None):
+            super().set(self._last)
+            self._show(self.all_values)
+            self.select_range(0, "end")
+
+        def _picked(self, event=None):
+            self._last = self.get()
+            self._show(self.all_values)
+
+
     class ZonesToWalls:
         def __init__(self):
             self.window = ScriptWindow(
@@ -941,7 +1047,7 @@ def main() -> None:
                 row = 1 + 2 * row
                 ttk.Label(settings, text=label).grid(row=row, column=0, sticky="w", pady=(3, 0))
                 self.layer_vars[kind] = tk.StringVar(value=NO_LAYER)
-                box = ttk.Combobox(settings, textvariable=self.layer_vars[kind], values=[NO_LAYER], state="readonly",
+                box = SearchCombobox(settings, textvariable=self.layer_vars[kind], values=[NO_LAYER], state="readonly",
                                    width=28)
                 box.grid(row=row, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
                 self.layer_boxes.append(box)
@@ -952,7 +1058,7 @@ def main() -> None:
                 self.wall_thickness_entries[kind] = entry
                 ttk.Label(settings, text=favorite_label).grid(row=row + 1, column=0, sticky="w", pady=(3, 0))
                 self.wall_favorites[kind] = tk.StringVar(value=NO_FAVORITE)
-                favorite_box = ttk.Combobox(settings, textvariable=self.wall_favorites[kind], values=[NO_FAVORITE],
+                favorite_box = SearchCombobox(settings, textvariable=self.wall_favorites[kind], values=[NO_FAVORITE],
                                             state="readonly", width=28)
                 favorite_box.grid(row=row + 1, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
                 favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_wall_fields())
@@ -962,7 +1068,7 @@ def main() -> None:
             ttk.Checkbutton(settings, text="Slabs:", variable=self.make_slabs,
                             command=self._update_slab_fields).grid(row=5, column=0, sticky="w", pady=(6, 0))
             self.layer_vars[SLAB] = tk.StringVar(value=NO_SLAB_LAYER)
-            self.slab_layer_box = ttk.Combobox(settings, textvariable=self.layer_vars[SLAB], values=[NO_SLAB_LAYER],
+            self.slab_layer_box = SearchCombobox(settings, textvariable=self.layer_vars[SLAB], values=[NO_SLAB_LAYER],
                                                state="readonly", width=28)
             self.slab_layer_box.grid(row=5, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
             self.thickness_vars[SLAB] = tk.StringVar(value=DEFAULT_SLAB_THICKNESS)
@@ -970,7 +1076,7 @@ def main() -> None:
             self.slab_thickness_entry.grid(row=5, column=2, sticky="w", padx=(6, 0), pady=(6, 0))
             ttk.Label(settings, text="Slab favorite:").grid(row=6, column=0, sticky="w", pady=(3, 0))
             self.slab_favorite = tk.StringVar(value=NO_FAVORITE)
-            self.slab_favorite_box = ttk.Combobox(settings, textvariable=self.slab_favorite, values=[NO_FAVORITE],
+            self.slab_favorite_box = SearchCombobox(settings, textvariable=self.slab_favorite, values=[NO_FAVORITE],
                                                   state="readonly", width=28)
             self.slab_favorite_box.grid(row=6, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
             self.slab_favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_slab_fields())
@@ -979,7 +1085,7 @@ def main() -> None:
             ttk.Checkbutton(settings, text="Balustrades:", variable=self.make_balustrades,
                             command=self._update_balustrade_fields).grid(row=7, column=0, sticky="w", pady=(6, 0))
             self.layer_vars[BALUSTRADE] = tk.StringVar(value=NO_LAYER)
-            self.balustrade_layer_box = ttk.Combobox(settings, textvariable=self.layer_vars[BALUSTRADE],
+            self.balustrade_layer_box = SearchCombobox(settings, textvariable=self.layer_vars[BALUSTRADE],
                                                      values=[NO_LAYER], state="readonly", width=28)
             self.balustrade_layer_box.grid(row=7, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
             self.thickness_vars[BALUSTRADE] = tk.StringVar(value=DEFAULT_BALUSTRADE_THICKNESS)
@@ -988,7 +1094,7 @@ def main() -> None:
             self.balustrade_thickness_entry.grid(row=7, column=2, sticky="w", padx=(6, 0), pady=(6, 0))
             ttk.Label(settings, text="Balustrade tool, height (m):").grid(row=8, column=0, sticky="w", pady=(3, 0))
             self.balustrade_tool = tk.StringVar(value=RAILING_TOOL)
-            self.balustrade_tool_box = ttk.Combobox(settings, textvariable=self.balustrade_tool,
+            self.balustrade_tool_box = SearchCombobox(settings, textvariable=self.balustrade_tool,
                                                     values=[RAILING_TOOL, WALL_TOOL], state="readonly", width=12)
             self.balustrade_tool_box.grid(row=8, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
             self.balustrade_tool_box.bind("<<ComboboxSelected>>", lambda _e: self._balustrade_tool_changed())
@@ -997,7 +1103,7 @@ def main() -> None:
             self.balustrade_height_entry.grid(row=8, column=2, sticky="w", padx=(6, 0), pady=(3, 0))
             ttk.Label(settings, text="Balustrade favorite:").grid(row=9, column=0, sticky="w", pady=(3, 0))
             self.balustrade_favorite = tk.StringVar(value=NO_BALUSTRADE_FAVORITE)
-            self.balustrade_favorite_box = ttk.Combobox(settings, textvariable=self.balustrade_favorite,
+            self.balustrade_favorite_box = SearchCombobox(settings, textvariable=self.balustrade_favorite,
                                                         values=[NO_BALUSTRADE_FAVORITE], state="readonly", width=28)
             self.balustrade_favorite_box.grid(row=9, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
             self.balustrade_favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_balustrade_fields())

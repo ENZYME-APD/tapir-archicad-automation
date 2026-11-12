@@ -1,6 +1,0 @@
-{
-  "name": "tapir-discord-where",
-  "private": true,
-  "type": "module",
-  "engines": { "node": "22.x" }
-}

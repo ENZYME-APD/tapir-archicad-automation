@@ -1,3 +1,0 @@
-﻿namespace TapirGrasshopperPlugin.Types.Element
-{
-}
