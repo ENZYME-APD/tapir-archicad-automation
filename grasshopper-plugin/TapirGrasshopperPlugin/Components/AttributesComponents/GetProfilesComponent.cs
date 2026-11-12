@@ -142,8 +142,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Cut end line type identifier of each skin (one branch per attribute).");
 
             OutGenericTree(
-                "EdgeBuildingMaterialGuids",
-                "Building material identifier of each skin edge (one branch per attribute and skin).");
+                "EdgeSurfaceGuids",
+                "Custom surface identifier of each skin edge; empty when the edge takes the surface of the skin's building material (one branch per attribute and skin).");
 
             OutIntegerTree(
                 "EdgePens",
@@ -223,7 +223,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             var skinVisibleCutEndLines = new DataTree<object>();
             var skinCutEndLinePens = new DataTree<object>();
             var skinCutEndLineTypeGuids = new DataTree<object>();
-            var edgeBuildingMaterialGuids = new DataTree<object>();
+            var edgeSurfaceGuids = new DataTree<object>();
             var edgePens = new DataTree<object>();
             var edgeLineTypeGuids = new DataTree<object>();
             var edgeIsVisibleLine = new DataTree<object>();
@@ -355,7 +355,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                             path);
 
                         var skinPath = new GH_Path(i, j);
-                        edgeBuildingMaterialGuids.EnsurePath(skinPath);
+                        edgeSurfaceGuids.EnsurePath(skinPath);
                         edgePens.EnsurePath(skinPath);
                         edgeLineTypeGuids.EnsurePath(skinPath);
                         edgeIsVisibleLine.EnsurePath(skinPath);
@@ -371,8 +371,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                         {
                             foreach (var edge in edges)
                             {
-                                edgeBuildingMaterialGuids.Add(
-                                    WrappedAttributeIdOf(edge["buildingMaterialId"]),
+                                edgeSurfaceGuids.Add(
+                                    WrappedAttributeIdOf(edge["surfaceId"]),
                                     skinPath);
                                 edgePens.Add(
                                     JsonOutputHelp.Scalar(edge, "pen"),
@@ -460,7 +460,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataTree(26, skinVisibleCutEndLines);
             da.SetDataTree(27, skinCutEndLinePens);
             da.SetDataTree(28, skinCutEndLineTypeGuids);
-            da.SetDataTree(29, edgeBuildingMaterialGuids);
+            da.SetDataTree(29, edgeSurfaceGuids);
             da.SetDataTree(30, edgePens);
             da.SetDataTree(31, edgeLineTypeGuids);
             da.SetDataTree(32, edgeIsVisibleLine);
