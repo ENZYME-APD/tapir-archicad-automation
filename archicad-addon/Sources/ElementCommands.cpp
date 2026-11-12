@@ -3458,6 +3458,18 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
 #ifdef ServerMainVers_2900
                 typeSpecificDetails.Add ("hideWithBaseElem", elem.levelDimension.hideWithBaseElem);
 #endif
+                // The text content of both texts (#2656); the custom texts are read with Autotext keys.
+                typeSpecificDetails.Add ("textContent", LevelDimensionContentTypeToString (elem.levelDimension.note1.contentType));
+                typeSpecificDetails.Add ("secondTextContent", LevelDimensionContentTypeToString (elem.levelDimension.note2.contentType));
+                if (elem.levelDimension.note1.contentType == API_NoteContent_Custom || elem.levelDimension.note2.contentType == API_NoteContent_Custom) {
+                    const LevelDimensionTexts texts = GetLevelDimensionTexts (elem);
+                    if (elem.levelDimension.note1.contentType == API_NoteContent_Custom) {
+                        typeSpecificDetails.Add ("customText", texts.text1);
+                    }
+                    if (elem.levelDimension.note2.contentType == API_NoteContent_Custom) {
+                        typeSpecificDetails.Add ("secondCustomText", texts.text2);
+                    }
+                }
                 break;
             }
 

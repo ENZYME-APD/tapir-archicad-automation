@@ -14419,7 +14419,7 @@
             },
             "staticLevel": {
                 "type": "boolean",
-                "description": "The static flag as Archicad reports it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad reads this flag as false."
+                "description": "The Static checkbox as Archicad reports it; ModifyLevelDimensions switches it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad has been seen to read this flag as false for it."
             },
             "ownerElementId": {
                 "$ref": "#/ElementId",
@@ -14480,6 +14480,24 @@
             "hideWithBaseElem": {
                 "type": "boolean",
                 "description": "Hide the dimension together with its associated element. Read from Archicad 29; absent on earlier versions."
+            },
+            "textContent": {
+                "type": "string",
+                "enum": ["Measured", "Custom"],
+                "description": "Content of the dimension text: 'Measured' (the level value) or 'Custom' (customText)."
+            },
+            "customText": {
+                "type": "string",
+                "description": "The custom content of the dimension text, with its Autotext keys as keys (read with the autotext flag off), in the form CreateLevelDimensions and ModifyLevelDimensions take. Present when textContent is 'Custom'."
+            },
+            "secondTextContent": {
+                "type": "string",
+                "enum": ["Measured", "Custom"],
+                "description": "Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText)."
+            },
+            "secondCustomText": {
+                "type": "string",
+                "description": "The custom content of the second text, as customText. Present when secondTextContent is 'Custom'."
             }
         },
         "additionalProperties": false,
@@ -14498,7 +14516,9 @@
             "fontIndex",
             "bold",
             "italic",
-            "underline"
+            "underline",
+            "textContent",
+            "secondTextContent"
         ]
     },
     "AngleDimensionLine": {
