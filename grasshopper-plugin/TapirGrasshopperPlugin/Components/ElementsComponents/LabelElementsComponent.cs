@@ -38,7 +38,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             new Field("LabelClasses", "labelClass", FieldKind.Text, "Label class: Text or Symbol. When not given, the Label tool default decides, which can be either."),
             new Field("FontNames", "style.fontName", FieldKind.Text, "Font of text labels, by name (e.g. Arial), as the Font attributes carry it. An element whose font name no loaded font has fails. Symbol labels take it in symbolStyle.fontName through AdditionalSettings."),
-            TrailingAdditionalSettingsField
+            TrailingAdditionalSettingsField,
+            new Field("LibraryPartNames", "libraryPartName", FieldKind.Text, "Name of the label library part of a Symbol label, as shown in the library (e.g. Flexi_Zone_Label), instead of the Label tool default's or the favorite's. It makes a Symbol label, so LabelClasses must be empty or Symbol, and the Label tool default or the favorite must be a Symbol label.")
         };
 
         protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
