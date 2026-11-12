@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 04:27 UTC",
+ "generatedAt": "2026-11-12 05:39 UTC",
  "versions": [
   25,
   26,
@@ -16049,7 +16049,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -28792,7 +28797,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29670,7 +29680,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29758,7 +29773,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29938,7 +29958,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29956,7 +29981,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -29974,7 +30004,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30009,7 +30044,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30027,7 +30067,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30135,7 +30180,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30243,7 +30293,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": []
   },
   {
@@ -30297,7 +30352,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2777,
+     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
+    }
+   ],
    "issues": [
     {
      "number": 1265,

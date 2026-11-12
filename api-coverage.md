@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-12 04:27 UTC.
+Archicad 25–30 DevKits; updated 2026-11-12 05:39 UTC.
 
 | | Status |
 |---|---|
@@ -804,7 +804,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_ProjectOperation_Project` – Returns information on the current project file. <sub>(was `APIEnv_ProjectID`)</sub>
 - ✅ `ACAPI_ProjectOperation_Publish` – Publishes a publisher set. <sub>(was `APIDo_PublishID`)</sub>
 - ✅ `ACAPI_ProjectOperation_Quit` – Terminates the server application. <sub>(was `APIDo_QuitID`)</sub>
-- ✅ `ACAPI_ProjectOperation_ReloadLibraries` – Resets and loads the active libraries. <sub>(was `APIDo_ReloadLibrariesID`)</sub>
+- ✅ `ACAPI_ProjectOperation_ReloadLibraries` – Resets and loads the active libraries. <sub>(was `APIDo_ReloadLibrariesID`)</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI_ProjectOperation_Save` <sub>AC27–30</sub> – Saves the content of the current window in different file formats.
 - ✅ `ACAPI_ProjectOperation_SaveAsModuleFile` – Saves the selected elements into a module file. <sub>(was `APIDo_SaveAsModuleFileID`)</sub>
 
@@ -2608,7 +2608,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::GSMObject::HasParameterScript` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::HasPreviewPicture` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::HasPropertiesScript` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::GSMObject::IsEditable` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::GSMObject::IsEditable` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI::Library::GSMObject::IsHierarchicalPagesUsed` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::IsInSubTypeOf` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::IsPasswordProtected` <sub>AC28–30</sub>
@@ -2657,12 +2657,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::GSMObject::Modifier::SetUIDefault` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GetLibraryManager` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibPart::GetLocation` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::LibPart::GetLocation` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI::Library::LibPart::GetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibPart::GetType` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetDisplayName` <sub>AC29–30</sub>
 - ✅ `ACAPI::Library::Library::GetLocalizedName` <sub>AC29–30</sub>
-- ✅ `ACAPI::Library::Library::GetLocation` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::Library::GetLocation` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI::Library::Library::GetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetPackageDependencies` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetPackageID` <sub>AC28–30</sub>
@@ -2672,27 +2672,27 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::Library::GetPackageSubVersion` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetTWServerPath` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetTWServerUrl` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::Library::IsBuiltIn` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::Library::IsEmbedded` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::Library::IsLocal` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::Library::IsBuiltIn` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsEmbedded` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsLocal` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI::Library::Library::IsMissing` <sub>AC29–30</sub>
-- ✅ `ACAPI::Library::Library::IsPackage` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::Library::IsServer` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::Library::IsPackage` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsServer` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI::Library::LibraryManager::FindLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::FindLibParts` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::FindLibraries` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::FindLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetEmbeddedLibrary` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibraryManager::GetGSMObjectOfLibPart` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::LibraryManager::GetGSMObjectOfLibPart` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI::Library::LibraryManager::GetLibIndOfLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibPartByGSMObject` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibPartByLibInd` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibPartByName` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibraryByName` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibraryManager::GetLibraryOfLibPart` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::LibraryManager::GetLibraryOfLibPart` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
 - ✅ `ACAPI::Library::LibraryManager::GetLibraryTreePathOfLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetTWID` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibraryManager::LoadGSMObjectFromFile` <sub>AC28–30</sub> — [#1265](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1265 "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)")
+- ✅ `ACAPI::Library::LibraryManager::LoadGSMObjectFromFile` <sub>AC28–30</sub> — [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"), [#1265](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1265 "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)")
 - ✅ `ACAPI::Library::LibraryManager::Modifier::AddLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::Modifier::RemoveLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::ModifyLibraryList` <sub>AC28–30</sub>
