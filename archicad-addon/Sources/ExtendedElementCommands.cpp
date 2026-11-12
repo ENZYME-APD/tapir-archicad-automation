@@ -4403,6 +4403,243 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     return changed;
 }
 
+namespace {
+
+// The floor plan display settings of a beam that ModifyBeams writes (#2529), under the names
+// GetDetailsOfElements reads them.
+const char* BeamDisplaySchemaProperties = R"(
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the beam is shown on (Show On Stories), for example { \"showOnHome\": true } for the home story only. Setting it without isAutoOnStoryVisibility turns the automatic story visibility off, which Archicad would otherwise recompute it from. The item fails when Archicad does not take the given combination." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true, Archicad recomputes visibility automatically from the actual elevation of the beam and ignores a visibility given together with it." },
+                        "displayOption": { "$ref": "#/DisplayOption" },
+                        "viewDepthLimitation": { "$ref": "#/ViewDepthLimitation" },
+                        "uncutProjectionMode": { "$ref": "#/ElemProjectionMode", "description": "Projection mode of the uncut part of the beam on the floor plan." },
+                        "overheadProjectionMode": { "$ref": "#/ElemProjectionMode", "description": "Projection mode of the overhead part of the beam on the floor plan." },
+                        "showContourLines": { "$ref": "#/BeamVisibleLines", "description": "Whether the contour lines of the beam are shown on the floor plan." },
+                        "showReferenceAxis": { "$ref": "#/BeamVisibleLines", "description": "Whether the reference axis of the beam is shown on the floor plan." },
+                        "cutContourLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the cut contour lines of the beam." },
+                        "cutContourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the cut contour lines of the beam." },
+                        "belowViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the uncut lines of the beam." },
+                        "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines of the beam." },
+                        "aboveViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the overhead lines of the beam." },
+                        "aboveViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the overhead lines of the beam." },
+                        "hiddenLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the hidden lines of the beam (the beam below a slab)." },
+                        "hiddenLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the hidden lines of the beam, for example a dashed line." },
+                        "referenceLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the reference axis of the beam." },
+                        "referenceLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the reference axis of the beam." },)";
+
+const char* BeamDisplayKeys[] = {
+    "visibility", "isAutoOnStoryVisibility", "displayOption", "viewDepthLimitation",
+    "uncutProjectionMode", "overheadProjectionMode", "showContourLines", "showReferenceAxis",
+    "cutContourLinePen", "cutContourLineTypeId", "belowViewLinePen", "belowViewLineTypeId",
+    "aboveViewLinePen", "aboveViewLineTypeId", "hiddenLinePen", "hiddenLineTypeId",
+    "referenceLinePen", "referenceLineTypeId"
+};
+
+bool HasBeamDisplaySettings (const GS::ObjectState& details)
+{
+    for (const char* key : BeamDisplayKeys) {
+        if (details.Contains (key)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BeamProjectionModeFromString (const GS::UniString& str, API_ElemProjectionModesID& out)
+{
+    if (str == "Symbolic")  { out = API_Symbolic;  return true; }
+    if (str == "Projected") { out = API_Projected; return true; }
+    if (str == "Hybrid")    { out = API_Hybrid;    return true; }
+    return false;
+}
+
+bool BeamVisibleLinesFromString (const GS::UniString& str, API_BeamVisibleLinesID& out)
+{
+    if (str == "ShowAlways") { out = APIBeamLineShowAlways; return true; }
+    if (str == "HideAlways") { out = APIBeamLineHideAlways; return true; }
+    if (str == "ByMVO")      { out = APIBeamLineByMVO;      return true; }
+    return false;
+}
+
+GS::Optional<GS::UniString> GetBeamLineType (const GS::ObjectState& details, const char* key, bool& has, API_AttributeIndex& lineType)
+{
+    const GS::ObjectState* lineTypeIdOs = details.Get (key);
+    has = lineTypeIdOs != nullptr;
+    if (!has) {
+        return {};
+    }
+    lineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeIdOs));
+    if (lineType == ACAPI_CreateAttributeIndex (-1)) {
+        return GS::UniString ("No Line Type attribute was found for ") + GS::UniString (key) + ".";
+    }
+    return {};
+}
+
+GS::Optional<GS::UniString> GetBeamPen (const GS::ObjectState& details, const char* key, bool& has, short& pen)
+{
+    Int32 value = 0;
+    has = details.Get (key, value);
+    if (!has) {
+        return {};
+    }
+    if (value < 1 || value > 255) {
+        return GS::UniString ("'") + GS::UniString (key) + "' must be a pen index from 1 to 255.";
+    }
+    pen = static_cast<short> (value);
+    return {};
+}
+
+// Writes the display settings given in details into element and mask. Everything is checked
+// before anything is written, so an invalid value leaves the beam as it was.
+GS::Optional<GS::UniString> ApplyBeamDisplaySettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    API_BeamType beam = element.beam;
+
+    GS::UniString str;
+    const bool hasDisplayOption = details.Get ("displayOption", str);
+    if (hasDisplayOption && !ElemDisplayOptionFromString (str, beam.displayOption)) {
+        return GS::UniString ("Invalid 'displayOption'.");
+    }
+    const bool hasViewDepthLimitation = details.Get ("viewDepthLimitation", str);
+    if (hasViewDepthLimitation && !ViewDepthLimitationFromString (str, beam.viewDepthLimitation)) {
+        return GS::UniString ("Invalid 'viewDepthLimitation'.");
+    }
+    const bool hasUncutProjectionMode = details.Get ("uncutProjectionMode", str);
+    if (hasUncutProjectionMode && !BeamProjectionModeFromString (str, beam.uncutProjectionMode)) {
+        return GS::UniString ("Invalid 'uncutProjectionMode'.");
+    }
+    const bool hasOverheadProjectionMode = details.Get ("overheadProjectionMode", str);
+    if (hasOverheadProjectionMode && !BeamProjectionModeFromString (str, beam.overheadProjectionMode)) {
+        return GS::UniString ("Invalid 'overheadProjectionMode'.");
+    }
+    const bool hasShowContourLines = details.Get ("showContourLines", str);
+    if (hasShowContourLines && !BeamVisibleLinesFromString (str, beam.showContourLines)) {
+        return GS::UniString ("Invalid 'showContourLines'.");
+    }
+    const bool hasShowReferenceAxis = details.Get ("showReferenceAxis", str);
+    if (hasShowReferenceAxis && !BeamVisibleLinesFromString (str, beam.showReferenceAxis)) {
+        return GS::UniString ("Invalid 'showReferenceAxis'.");
+    }
+
+    bool hasCutContourLinePen = false, hasBelowViewLinePen = false, hasAboveViewLinePen = false, hasHiddenLinePen = false, hasRefPen = false;
+    bool hasCutContourLineType = false, hasBelowViewLineType = false, hasAboveViewLineType = false, hasHiddenLineType = false, hasRefLineType = false;
+    const GS::Optional<GS::UniString> errors[] = {
+        GetBeamPen (details, "cutContourLinePen", hasCutContourLinePen, beam.cutContourLinePen),
+        GetBeamPen (details, "belowViewLinePen", hasBelowViewLinePen, beam.belowViewLinePen),
+        GetBeamPen (details, "aboveViewLinePen", hasAboveViewLinePen, beam.aboveViewLinePen),
+        GetBeamPen (details, "hiddenLinePen", hasHiddenLinePen, beam.hiddenLinePen),
+        GetBeamPen (details, "referenceLinePen", hasRefPen, beam.refPen),
+        GetBeamLineType (details, "cutContourLineTypeId", hasCutContourLineType, beam.cutContourLineType),
+        GetBeamLineType (details, "belowViewLineTypeId", hasBelowViewLineType, beam.belowViewLineType),
+        GetBeamLineType (details, "aboveViewLineTypeId", hasAboveViewLineType, beam.aboveViewLineType),
+        GetBeamLineType (details, "hiddenLineTypeId", hasHiddenLineType, beam.hiddenLineType),
+        GetBeamLineType (details, "referenceLineTypeId", hasRefLineType, beam.refLtype)
+    };
+    for (const GS::Optional<GS::UniString>& error : errors) {
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    GS::ObjectState visibilityOs;
+    const bool hasVisibility = details.Get ("visibility", visibilityOs);
+    if (hasVisibility) {
+        beam.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+        if (!details.Contains ("isAutoOnStoryVisibility")) {
+            // As on walls: while the automatic story visibility is on, Archicad recomputes the
+            // visibility from the beam's elevation and drops the one given here.
+            beam.isAutoOnStoryVisibility = false;
+        }
+    }
+    bool isAutoOnStoryVisibility = false;
+    const bool hasIsAutoOnStoryVisibility = details.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility);
+    if (hasIsAutoOnStoryVisibility) {
+        beam.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+    }
+
+    element.beam = beam;
+    if (hasVisibility)                                      ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, visibility);
+    if (hasVisibility || hasIsAutoOnStoryVisibility)        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, isAutoOnStoryVisibility);
+    if (hasDisplayOption)                                   ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, displayOption);
+    if (hasViewDepthLimitation)                             ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, viewDepthLimitation);
+    if (hasUncutProjectionMode)                             ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, uncutProjectionMode);
+    if (hasOverheadProjectionMode)                          ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, overheadProjectionMode);
+    if (hasShowContourLines)                                ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, showContourLines);
+    if (hasShowReferenceAxis)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, showReferenceAxis);
+    if (hasCutContourLinePen)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, cutContourLinePen);
+    if (hasCutContourLineType)                              ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, cutContourLineType);
+    if (hasBelowViewLinePen)                                ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, belowViewLinePen);
+    if (hasBelowViewLineType)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, belowViewLineType);
+    if (hasAboveViewLinePen)                                ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, aboveViewLinePen);
+    if (hasAboveViewLineType)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, aboveViewLineType);
+    if (hasHiddenLinePen)                                   ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, hiddenLinePen);
+    if (hasHiddenLineType)                                  ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, hiddenLineType);
+    if (hasRefPen)                                          ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, refPen);
+    if (hasRefLineType)                                     ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, refLtype);
+    if (HasBeamDisplaySettings (details)) {
+        changed = true;
+    }
+    return {};
+}
+
+// Compares the display settings given in details with the beam as Archicad has it after the
+// change, and names every one it did not take. Empty when all were applied.
+GS::UniString GetBeamDisplaySettingsNotApplied (const API_BeamType& wanted, const API_BeamType& got, const GS::ObjectState& details)
+{
+    GS::UniString notApplied;
+    const auto checkEnum = [&] (const char* key, int wantedValue, int gotValue) {
+        if (details.Contains (key) && wantedValue != gotValue) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", key);
+        }
+    };
+    const auto checkPen = [&] (const char* key, short wantedPen, short gotPen) {
+        if (details.Contains (key) && wantedPen != gotPen) {
+            notApplied += GS::UniString::Printf (" %s is %d.", key, static_cast<int> (gotPen));
+        }
+    };
+    const auto checkLineType = [&] (const char* key, const API_AttributeIndex& wantedLineType, const API_AttributeIndex& gotLineType) {
+        if (details.Contains (key) && !(wantedLineType == gotLineType)) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", key);
+        }
+    };
+
+    const bool visibilityGiven = details.Contains ("visibility");
+    if ((visibilityGiven || details.Contains ("isAutoOnStoryVisibility")) && wanted.isAutoOnStoryVisibility != got.isAutoOnStoryVisibility) {
+        notApplied += got.isAutoOnStoryVisibility ? " isAutoOnStoryVisibility is still true." : " isAutoOnStoryVisibility is false.";
+    }
+    // A visibility given together with isAutoOnStoryVisibility true is recomputed by Archicad, so
+    // it is only compared while the automatic visibility is off.
+    if (visibilityGiven && !wanted.isAutoOnStoryVisibility && !got.isAutoOnStoryVisibility) {
+        const API_StoryVisibility& w = wanted.visibility;
+        const API_StoryVisibility& g = got.visibility;
+        if (g.showOnHome != w.showOnHome || g.showAllAbove != w.showAllAbove || g.showAllBelow != w.showAllBelow ||
+            g.showRelAbove != w.showRelAbove || g.showRelBelow != w.showRelBelow) {
+            notApplied += GS::UniString::Printf (" visibility is showOnHome %s, showAllAbove %s, showAllBelow %s, showRelAbove %d, showRelBelow %d.",
+                g.showOnHome ? "true" : "false", g.showAllAbove ? "true" : "false", g.showAllBelow ? "true" : "false",
+                static_cast<int> (g.showRelAbove), static_cast<int> (g.showRelBelow));
+        }
+    }
+    checkEnum ("displayOption", wanted.displayOption, got.displayOption);
+    checkEnum ("viewDepthLimitation", wanted.viewDepthLimitation, got.viewDepthLimitation);
+    checkEnum ("uncutProjectionMode", wanted.uncutProjectionMode, got.uncutProjectionMode);
+    checkEnum ("overheadProjectionMode", wanted.overheadProjectionMode, got.overheadProjectionMode);
+    checkEnum ("showContourLines", wanted.showContourLines, got.showContourLines);
+    checkEnum ("showReferenceAxis", wanted.showReferenceAxis, got.showReferenceAxis);
+    checkPen ("cutContourLinePen", wanted.cutContourLinePen, got.cutContourLinePen);
+    checkPen ("belowViewLinePen", wanted.belowViewLinePen, got.belowViewLinePen);
+    checkPen ("aboveViewLinePen", wanted.aboveViewLinePen, got.aboveViewLinePen);
+    checkPen ("hiddenLinePen", wanted.hiddenLinePen, got.hiddenLinePen);
+    checkPen ("referenceLinePen", wanted.refPen, got.refPen);
+    checkLineType ("cutContourLineTypeId", wanted.cutContourLineType, got.cutContourLineType);
+    checkLineType ("belowViewLineTypeId", wanted.belowViewLineType, got.belowViewLineType);
+    checkLineType ("aboveViewLineTypeId", wanted.aboveViewLineType, got.aboveViewLineType);
+    checkLineType ("hiddenLineTypeId", wanted.hiddenLineType, got.hiddenLineType);
+    checkLineType ("referenceLineTypeId", wanted.refLtype, got.refLtype);
+    return notApplied;
+}
+
+} // namespace
+
 // errorMessage is set when a given field is invalid; it stays empty when Archicad refused the change.
 static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details, GS::UniString& errorMessage)
 {
@@ -12766,7 +13003,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                             "items": {
                                 "$ref": "#/BeamSegmentModification"
                             }
-                        },)") + BeamSurfaceAndFillSchemaProperties + R"(
+                        },)") + BeamDisplaySchemaProperties + BeamSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -12793,6 +13030,14 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
 
     const Stories stories = GetStories ();
 
+    struct BeamDisplayCheck {
+        UIndex                  resultIndex;
+        API_Guid                guid;
+        API_BeamType            wanted;
+        const GS::ObjectState*  item;
+    };
+    GS::Array<BeamDisplayCheck> displayChecks;
+
     return ExecuteModifyWithResults ("Modify Beams", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
@@ -12814,6 +13059,20 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             if (settingsError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, settingsError.Get ()));
                 continue;
+            }
+            const GS::Optional<GS::UniString> displayError = ApplyBeamDisplaySettings (element, mask, item, changed);
+            if (displayError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, displayError.Get ()));
+                continue;
+            }
+            if (HasBeamDisplaySettings (item)) {
+                // This item's result is the next one pushed; it is checked after the command.
+                BeamDisplayCheck check = {};
+                check.resultIndex = results.GetSize ();
+                check.guid = element.header.guid;
+                check.wanted = element.beam;
+                check.item = &item;
+                displayChecks.Push (check);
             }
             const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
 
@@ -12882,6 +13141,27 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             results.Push (applySegments ());
+        }
+    }, [&](GS::Array<GS::ObjectState>& results) {
+        // Read back after the undoable command has ended, so a display setting Archicad did not
+        // take (a story visibility combination it drops, for example) fails the item instead of
+        // reporting a success (#2529).
+        for (const BeamDisplayCheck& check : displayChecks) {
+            bool success = false;
+            if (check.resultIndex >= results.GetSize () || !results[check.resultIndex].Get ("success", success) || !success) {
+                continue;
+            }
+            API_Element changed = {};
+            changed.header.guid = check.guid;
+            GSErrCode err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                results[check.resultIndex] = CreateFailedExecutionResult (err, "Failed to read the beam back after the change.");
+                continue;
+            }
+            const GS::UniString notApplied = GetBeamDisplaySettingsNotApplied (check.wanted, changed.beam, *check.item);
+            if (!notApplied.IsEmpty ()) {
+                results[check.resultIndex] = CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every given display setting to the beam; the other given fields were changed.") + notApplied);
+            }
         }
     });
 }
