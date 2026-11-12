@@ -15294,6 +15294,21 @@
             "depthCoordinates"
         ]
     },
+    "PictureAnchorPoint": {
+        "type": "string",
+        "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ]
+    },
     "PictureDetails": {
         "type": "object",
         "description": "The settings of a Picture element (an image placed with the Picture tool on a floor plan, worksheet, detail or layout).",
@@ -15339,19 +15354,7 @@
                 "description": "Whether the white pixels of the picture are drawn transparent."
             },
             "anchorPoint": {
-                "type": "string",
-                "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
-                "enum": [
-                    "TopLeft",
-                    "TopCenter",
-                    "TopRight",
-                    "MiddleLeft",
-                    "Center",
-                    "MiddleRight",
-                    "BottomLeft",
-                    "BottomCenter",
-                    "BottomRight"
-                ]
+                "$ref": "#/PictureAnchorPoint"
             }
         },
         "additionalProperties": false,

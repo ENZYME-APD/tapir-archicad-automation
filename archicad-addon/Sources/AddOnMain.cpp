@@ -1238,6 +1238,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.6",
             "Creates Hotspot elements based on the given parameters."
         );
+        err |= RegisterCommand<CreatePicturesCommand> (
+            elementCommands, "2.0.1",
+            "Creates Picture elements from PNG, JPEG, GIF, TIFF or BMP images, given as a file path or as base64 text, at an exact size in model units: give the width, the height or both (one of them keeps the image's proportions). The image is placed by its anchor point at position, and can be rotated, mirrored and drawn with transparent white pixels. With databaseId the pictures are placed in that database, e.g. a worksheet, a detail or a layout, instead of the current one. GetDetailsOfElements reads the settings of a placed picture."
+        );
         err |= RegisterCommand<CreateHatchesCommand> (
             elementCommands, "1.5.6",
             "Creates Hatch elements based on the given parameters. A hatch can have holes, in the same format SetDetailsOfElements accepts for hatches."
