@@ -2895,7 +2895,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ReorderNavigatorItemsCommand> (
             navigatorCommands, "2.0.0",
-            "Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling."
+            "Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling folder, or through the parent's own parent when no sibling can host it (for example a folder with only views and clone folders)."
         );
         AddCommandGroup (navigatorCommands);
     }
