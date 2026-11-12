@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 02:15 UTC",
+ "generatedAt": "2026-11-12 02:28 UTC",
  "versions": [
   25,
   26,
@@ -20313,10 +20313,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2743,
-     "title": "Tapir palette: keep the built-in scripts when GitHub cannot be listed"
-    },
     {
      "number": 2420,
      "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"

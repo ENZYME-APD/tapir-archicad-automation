@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-12 02:15 UTC.
+Archicad 25–30 DevKits; updated 2026-11-12 02:28 UTC.
 
 | | Status |
 |---|---|
@@ -534,7 +534,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_SetPreferences` – Saves custom preferences data into the preferences file.
 - ➖ `ACAPI_UnregisterModelessWindow` – Ends the registration of an add-on's modeless palette with the API. *(user interface)*
 - ➖ `ACAPI_UnregisterTeamworkReserveInterface` – Unregisters a previously registered interface. *(event handlers, not commands)*
-- ✅ `ACAPI_WriteReport` – Writes a report string into the Report Window or into a custom alert window. — [#2743](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2743 "Tapir palette: keep the built-in scripts when GitHub cannot be listed"), [#2420](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2420 "[4/5] Script Manager: the Marketplace section of the Tapir Palette"), [#2418](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2418 "[3/5] Script Manager: the Updates tab, Update and Update all"), [#2417](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2417 "[2/5] Script Manager: Install, Remove and the Installed tab"), [#2414](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2414 "[1/5] Tapir Script Manager: the window, the catalogue and browsing"), [#2411](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2411 "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback")
+- ✅ `ACAPI_WriteReport` – Writes a report string into the Report Window or into a custom alert window. — [#2420](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2420 "[4/5] Script Manager: the Marketplace section of the Tapir Palette"), [#2418](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2418 "[3/5] Script Manager: the Updates tab, Update and Update all"), [#2417](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2417 "[2/5] Script Manager: Install, Remove and the Installed tab"), [#2414](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2414 "[1/5] Tapir Script Manager: the window, the catalogue and browsing"), [#2411](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2411 "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback")
 - ✅ `ACAPI_Automate` <sub>AC25–26</sub>
 - ✅ `ACAPI_Database` <sub>AC25–26</sub>
 - ✅ `ACAPI_Environment` <sub>AC25–26</sub>
