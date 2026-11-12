@@ -297,6 +297,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Window_Check</code> (<code>ACAPinc.h</code>, AC27&ndash;AC30; <code>ACAPI_ActionCenter_Check</code> in AC25&ndash;AC26) returns only an error code; <code>API_ActionCenterItemID</code> (<code>APIdefs_ActionCenter.hpp</code>) has only <code>APIActionCenterItem_Hotlinks</code>.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Load a new add-on (.apx or .bundle) while Archicad runs, from an add-on or a script</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Add it in Archicad's Add-On Manager (Options &gt; Add-On Manager &gt; Edit List of Available Add-Ons &gt; Add). An add-on that is already loaded is replaced only after Archicad quits, as the Tapir Installer does when it updates Tapir.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">Archicad loads an add-on itself and calls its <code>CheckEnvironment</code>, <code>RegisterInterface</code>, <code>Initialize</code> and <code>FreeData</code>; <code>API_AddonType</code> (<code>APIAddon_Normal</code>, <code>APIAddon_Preload</code>, <code>APIAddon_DontRegister</code>; <code>APIdefs_Registration.h</code>) and <code>ACAPI_KeepInMemory</code> (<code>ACAPinc.h</code>) only steer the add-on's own loading. No function loads, registers or reloads another add-on (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2732">#2732</a></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
