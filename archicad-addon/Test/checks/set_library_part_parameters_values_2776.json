@@ -1,0 +1,98 @@
+{
+  "title": "SetLibraryPartParameters changes the default values GetLibraryPartParameterValues reads, after the change that modifies a part of a local folder library in its file (#2776)",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "embedded library part",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheck2776",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLib2776/TapirCheck2776.gsm",
+            "a": 1.0,
+            "b": 0.4,
+            "script3D": "BLOCK A, B, 1"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts[0].name", "eq": "TapirCheck2776", "name": "part created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "A before the set",
+      "command": "GetLibraryPartParameterValues",
+      "creates": false,
+      "params": { "libraryParts": [{ "name": "TapirCheck2776.gsm" }] },
+      "expect": [
+        { "path": "libraryParts[0].parameters[0].name", "eq": "A" },
+        { "path": "libraryParts[0].parameters[0].value", "approx": 1.0, "name": "A is the created value" }
+      ]
+    },
+    {
+      "id": "[set A, missing part]",
+      "command": "SetLibraryPartParameters",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheck2776.gsm", "parameters": [{ "name": "A", "value": 1.123 }] },
+          { "name": "TapirCheckNoSuchPart2776.gsm", "parameters": [{ "name": "A", "value": 1.123 }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per library part" },
+        { "path": "executionResults[0].success", "eq": true, "name": "the part is set" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a missing part fails" }
+      ]
+    },
+    {
+      "id": "A after the set",
+      "command": "GetLibraryPartParameterValues",
+      "creates": false,
+      "params": { "libraryParts": [{ "name": "TapirCheck2776.gsm" }] },
+      "expect": [
+        { "path": "libraryParts[0].parameters[0].name", "eq": "A" },
+        { "path": "libraryParts[0].parameters[0].value", "approx": 1.123, "name": "A is the new value" }
+      ]
+    },
+    {
+      "id": "set A again, merged",
+      "command": "SetLibraryPartParameters",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheck2776.gsm", "parameters": [{ "name": "A", "value": 1.5 }], "merge": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the merge is set" }
+      ]
+    },
+    {
+      "id": "A after the merge",
+      "command": "GetLibraryPartParameterValues",
+      "creates": false,
+      "params": { "libraryParts": [{ "name": "TapirCheck2776.gsm" }] },
+      "expect": [
+        { "path": "libraryParts[0].parameters[0].value", "approx": 1.5, "name": "A is the merged value" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLib2776/TapirCheck2776.gsm" },
+          { "path": "TapirCheckLib2776" }
+        ]
+      }
+    }
+  ]
+}
