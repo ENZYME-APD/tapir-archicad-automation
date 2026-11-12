@@ -13,7 +13,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public Set3DCutPlanesComponent()
             : base(
                 "Set3DCutPlanes",
-                "Set the 3D cut planes. Each plane is defined by the equation pa*x + pb*y + pc*z + pd = 0.",
+                "Set the 3D cut planes. Each plane is pa*x + pb*y + pc*z = pd and cuts away the side its normal points to.",
                 GroupNames.Navigator)
         {
         }
@@ -34,7 +34,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             InNumbers(
                 "PD",
-                "Constant term (distance of the plane from the origin along the normal) for each cut plane.");
+                "Right-hand side of the plane equation (with a unit normal, distance of the plane from the " +
+                "origin along the normal), in meters, for each cut plane.");
         }
 
         protected override void Solve(

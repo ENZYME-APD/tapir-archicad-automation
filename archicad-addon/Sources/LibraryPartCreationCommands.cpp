@@ -74,6 +74,23 @@ GSErrCode SetLibPartDetails (const API_LibPart* libPart, GSHandle paramHdl, cons
 #endif
 }
 
+// The General GDL Object is the root of the subtype hierarchy (the built-in
+// GeneralGDLObjectLibPartID). ACAPI_LibraryPart_GetSect_ParamDef cannot build the parameter
+// section of a part directly below it (#2622, Archicad 26, 28 and 29), so a part made under it
+// was deleted again with an unclear error. The DevKit's examples (LibPart_Test,
+// Communication_Manager, Teamwork_Control) use the Model Element, its direct subtype.
+GS::Optional<GS::ObjectState> CheckParentSubtypeCanBeInherited (const char* parentUnID)
+{
+    static const GS::Guid generalGDLObjectGuid ("F938E33A-329D-4A36-BE3E-85E126820996");
+    if (GS::UnID (parentUnID).GetMainGuid () == generalGDLObjectGuid) {
+        return CreateErrorResponse (APIERR_BADPARS,
+            "The General GDL Object (F938E33A-329D-4A36-BE3E-85E126820996) cannot be the parent of a new library part: "
+            "Archicad cannot build the parameter section of a part directly below it. "
+            "Use the Model Element (parentName \"Model Element\") or one of its subtypes.");
+    }
+    return {};
+}
+
 namespace {
 
 GSErrCode SetLibPartOverwriteMode (bool overwriteOn)
@@ -360,7 +377,7 @@ GS::Optional<GS::UniString> CreateLibraryPartFromElementsCommand::GetInputParame
             },
             "parentId": {
                 "type": "string",
-                "description": "The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required."
+                "description": "The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required. The General GDL Object (the root subtype) cannot be the parent: use the Model Element or one of its subtypes."
             },
             "parentName": {
                 "type": "string",
@@ -494,6 +511,9 @@ GS::ObjectState CreateLibraryPartFromElementsCommand::Execute (const GS::ObjectS
 
     // Everything the input can get wrong is checked before the 2D symbol is drawn.
     GS::Optional<GS::ObjectState> error = ResolveParentSubtype (parameters, libPart);
+    if (!error.HasValue ()) {
+        error = CheckParentSubtypeCanBeInherited (libPart.parentUnID);
+    }
     if (error.HasValue ()) {
         return *error;
     }

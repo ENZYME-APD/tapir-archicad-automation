@@ -1,6 +1,7 @@
-"""Creates a wall with a text label, then changes the label's text, frame and arrow with ModifyLabels.
+"""Creates a wall with a text label, then changes the label's text, frame and arrow with ModifyLabels, and moves it.
 
-Only the given fields change.
+Only the given fields change. begCoordinate re-points the leader line; endCoordinate moves the text
+with the end of the leader line.
 """
 import aclib
 
@@ -19,5 +20,8 @@ label = aclib.RunTapirCommand ('CreateLabels', {'labelsData': [{
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyLabels', {'labelsWithDetails': [{
     'elementId': label['elementId'],
     'text': 'Exterior wall',
-    'leaderLine': {'framed': True, 'arrowType': 'FullCircle', 'arrowVisible': True}
+    'leaderLine': {'framed': True, 'arrowType': 'FullCircle', 'arrowVisible': True},
+    'begCoordinate': {'x': 4.0, 'y': 0.0},
+    'midCoordinate': {'x': 5.0, 'y': 1.5},
+    'endCoordinate': {'x': 7.0, 'y': 1.5}
 }]}))

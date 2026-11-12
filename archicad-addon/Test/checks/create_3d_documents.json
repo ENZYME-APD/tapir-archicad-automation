@@ -1,0 +1,99 @@
+{
+  "title": "Create3DDocuments makes 3D Documents whose Project Map item Get3DDocumentSettings reads",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "two 3D Documents",
+      "command": "Create3DDocuments",
+      "creates": false,
+      "params": {
+        "documentsData": [
+          { "name": "TapirCheck 3D Document A", "referenceId": "TC3D-A" },
+          { "name": "TapirCheck 3D Document B", "referenceId": "TC3D-B" }
+        ]
+      },
+      "save": {
+        "aNav": "databases[0].navigatorItemId.guid",
+        "bNav": "databases[1].navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "databases", "len": 2, "name": "one answer per item" },
+        { "path": "databases[0].databaseId.guid", "exists": true, "name": "first 3D Document created" },
+        { "path": "databases[0].navigatorItemId.guid", "exists": true, "name": "its Project Map item found" },
+        { "path": "databases[1].databaseId.guid", "exists": true, "name": "second 3D Document created" },
+        { "path": "databases[1].navigatorItemId.guid", "exists": true, "name": "its Project Map item found" }
+      ]
+    },
+    {
+      "id": "the first item is a 3D Document with settings",
+      "command": "Get3DDocumentSettings",
+      "creates": false,
+      "params": { "navigatorItemId": { "guid": "${aNav}" } },
+      "expect": [
+        { "path": "settings", "exists": true, "name": "read as a 3D Document (other item types are refused)" }
+      ]
+    },
+    {
+      "id": "the second item is a 3D Document with settings",
+      "command": "Get3DDocumentSettings",
+      "creates": false,
+      "params": { "navigatorItemId": { "guid": "${bNav}" } },
+      "expect": [
+        { "path": "settings", "exists": true, "name": "read as a 3D Document (other item types are refused)" }
+      ]
+    },
+    {
+      "id": "the Project Map items resolve to databases",
+      "command": "GetDatabaseIdFromNavigatorItemId",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${aNav}" } },
+          { "navigatorItemId": { "guid": "${bNav}" } }
+        ]
+      },
+      "expect": [
+        { "path": "databases", "len": 2 },
+        { "path": "databases[0].databaseId.guid", "exists": true },
+        { "path": "databases[1].databaseId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "bad input: empty name",
+      "command": "Create3DDocuments",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "documentsData": [
+          { "name": "", "referenceId": "TC3D-BAD" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${aNav}" } } ] }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${bNav}" } } ] }
+    }
+  ]
+}

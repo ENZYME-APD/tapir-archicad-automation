@@ -1,0 +1,137 @@
+{
+  "title": "GetProfileValuesOfElements reads the stretched profile of a Profile wall and of each Profile segment of a beam (#2587)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bm": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "a 0.2 x 0.25 Profile for walls, beams and columns",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2587",
+            "wallType": true,
+            "beamType": true,
+            "coluType": true,
+            "handrailType": false,
+            "otherGDLObjectType": false,
+            "newSkins": [
+              {
+                "contours": [ { "polygonCoordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.2, "y": 0.0 }, { "x": 0.2, "y": 0.25 }, { "x": 0.0, "y": 0.25 } ] } ],
+                "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+                "contourPen": 4,
+                "isCore": true,
+                "isFinish": false
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "p": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": false, "name": "profile created" }
+      ]
+    },
+    {
+      "id": "a Profile wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 680.0, "y": 640.0 },
+            "endCoordinate": { "x": 684.0, "y": 640.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "structureType": "Profile",
+            "profileId": { "attributeId": { "guid": "${p}" } }
+          }
+        ]
+      },
+      "save": { "pw": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true } ]
+    },
+    {
+      "id": "a Basic wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 680.0, "y": 645.0 },
+            "endCoordinate": { "x": 684.0, "y": 645.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.5,
+            "structureType": "Basic",
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": { "bw": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "a beam with the profile",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 680.0, "y": 650.0 },
+            "endCoordinate": { "x": 685.0, "y": 650.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "profileId": { "attributeId": { "guid": "${p}" } }
+          }
+        ]
+      },
+      "save": { "pb": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true } ]
+    },
+    {
+      "id": "read the profile values",
+      "command": "GetProfileValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${pw}" } },
+          { "elementId": { "guid": "${bw}" } },
+          { "elementId": { "guid": "${pb}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "profileValuesOfElements", "len": 4 },
+        { "path": "profileValuesOfElements[0].elementId.guid", "eq": "${pw}" },
+        { "path": "profileValuesOfElements[0].profiles", "len": 1, "name": "the Profile wall has its profile" },
+        { "path": "profileValuesOfElements[0].profiles[0].profileId.attributeId.guid", "eq": "${p}", "name": "the wall's profile attribute" },
+        { "path": "profileValuesOfElements[0].profiles[0].segmentIndex", "exists": false, "name": "no segment for a wall" },
+        { "path": "profileValuesOfElements[0].profiles[0].width", "approx": 0.2, "tol": 0.001, "name": "stretched width of the wall" },
+        { "path": "profileValuesOfElements[0].profiles[0].height", "approx": 0.25, "tol": 0.001, "name": "stretched height of the wall" },
+        { "path": "profileValuesOfElements[0].profiles[0].profileModifiers", "len": 0, "name": "a profile without modifiers has none" },
+        { "path": "profileValuesOfElements[1].profiles", "len": 0, "name": "a Basic wall has no profile" },
+        { "path": "profileValuesOfElements[2].profiles", "len": 1, "name": "the beam's Profile segment" },
+        { "path": "profileValuesOfElements[2].profiles[0].segmentIndex", "eq": 0 },
+        { "path": "profileValuesOfElements[2].profiles[0].profileId.attributeId.guid", "eq": "${p}" },
+        { "path": "profileValuesOfElements[2].profiles[0].width", "approx": 0.2, "tol": 0.001 },
+        { "path": "profileValuesOfElements[2].profiles[0].height", "approx": 0.25, "tol": 0.001 },
+        { "path": "profileValuesOfElements[3].error", "exists": true, "name": "nonexistent element is an error item" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "Profile", "attributeId": { "attributeId": { "guid": "${p}" } } }
+        ]
+      }
+    }
+  ]
+}
