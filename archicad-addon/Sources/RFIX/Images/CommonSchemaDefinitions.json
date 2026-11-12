@@ -11712,7 +11712,7 @@
             },
             "offset": {
                 "$ref": "#/Coordinate2D",
-                "description": "Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level."
+                "description": "Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType."
             },
             "useFixedAngle": {
                 "type": "boolean",
@@ -13868,7 +13868,7 @@
             },
             "showContour": {
                 "$ref": "#/StoryVisibility",
-                "description": "Which stories display this Morph's contour. Reported accurately on Get, but confirmed live that Create/Modify do not reliably apply it (showAllBelow/showRelAbove/showRelBelow silently come back reset even when explicitly set and isAutoOnStoryVisibility is false) - the same class of confirmed Archicad SDK write bug as bodyType/edgeType/level (see MorphBody's notes). Set on the element regardless since doing so is harmless and forward-compatible."
+                "description": "Which stories display this Morph's contour. Reported accurately on Get, but confirmed live that Create/Modify do not reliably apply it (showAllBelow/showRelAbove/showRelBelow silently come back reset even when explicitly set and isAutoOnStoryVisibility is false) - the same class of confirmed Archicad SDK write bug as bodyType/edgeType (see MorphBody's notes). Set on the element regardless since doing so is harmless and forward-compatible."
             },
             "showFill": {
                 "$ref": "#/StoryVisibility",
@@ -13960,7 +13960,7 @@
             },
             "level": {
                 "type": "number",
-                "description": "Z position of the free shape relative to the floor level. Reported accurately on Get, but a confirmed Archicad SDK bug means it may not take effect on Create/Modify (same class of bug as bodyType/edgeType - see MorphBody's notes)."
+                "description": "Height of the Morph's origin (the z of its placement transform) above its home story. Archicad works it out from the placement; CreateMorphs and ModifyMorphs take it and place the Morph's origin at this height."
             }
         },
         "additionalProperties": false,

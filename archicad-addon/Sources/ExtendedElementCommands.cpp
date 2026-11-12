@@ -4553,7 +4553,7 @@ bool BuildMorphBodyFromGeometry (const GS::ObjectState& bodyOS, API_ElementMemo&
 
 // Applies every API_MorphType field beyond geometry/body itself - placement rotation axes,
 // shadows, per-story visibility, floor plan display/pens/line types/cover fill, texture
-// projection, level - from the same flat MorphDetails JSON shape AddMorphBodyFromMemo reports.
+// projection - from the same flat MorphDetails JSON shape AddMorphBodyFromMemo reports.
 // Shared by CreateMorphs (mask == nullptr, a freshly-defaulted element needs no mask) and
 // ModifyMorphs (mask != nullptr, every touched field also needs its ACAPI_ELEMENT_MASK_SET bit).
 // Returns false only on a genuine validation error (bad attribute reference, partial axis triple,
@@ -4860,14 +4860,9 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
         }
     }
 
-    {
-        double level = 0.0;
-        if (details.Get ("level", level)) {
-            element.morph.level = level;
-            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, level);
-            ++appliedCount;
-        }
-    }
+    // "level" is not handled here: Archicad derives API_MorphType::level from the placement
+    // (tranmat z minus the home story's elevation) and ignores a written value, so CreateMorphs
+    // and ModifyMorphs turn it into the z of the tranmat themselves (#2628).
 
     return true;
 }
@@ -10446,7 +10441,7 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                             "minimum": 1,
                             "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
                         },
-                        "basePoint": { "$ref": "#/Coordinate3D" },
+                        "basePoint": { "$ref": "#/Coordinate3D", "description": "Origin of the morph (the corner of a size box, the (0, 0, 0) of a body). Its z is absolute, measured from the project zero, unless level is given, which then decides the height instead." },
                         "size": {
                             "$ref": "#/Dimensions3D",
                             "description": "Builds a simple axis-aligned box of this size. Mutually exclusive with `body` - give exactly one of the two."
@@ -10502,8 +10497,8 @@ GS::Optional<GS::UniString> CreateMorphsCommand::GetInputParametersSchema () con
                             "minItems": 4,
                             "maxItems": 4
                         },
-                        "level": { "type": "number" },
-                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from the basePoint's z value." }
+                        "level": { "type": "number", "description": "Optional height of the base point above the home story (floorIndex, or the story derived from basePoint's z when floorIndex is omitted), the same value GetDetailsOfElements reports as level. When given, it replaces basePoint's z." },
+                        "floorIndex": { "type": "integer", "description": "Optional home story. If omitted, derived from the basePoint's z value." }
                     },
                     "additionalProperties": false,
                     "required": ["basePoint"]
@@ -10637,9 +10632,16 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             // regardless of basePoint's z - a morph built far above/below that story's own
             // elevation would get correctly placed in absolute 3D space (tmx below stays absolute)
             // but assigned to the wrong story for floor-plan/story-based queries. Only floorInd is
-            // derived here; tmx[11] intentionally stays basePoint.z (absolute), matching how the
-            // rest of this command already places the morph in world space.
+            // derived here; tmx[11] is basePoint.z (absolute), unless "level" is given below.
             element.header.floorInd = ResolveFloorIndexAndOffset (data, "floorIndex", basePoint.z, stories).first;
+
+            // "level" is the height of the base point above the home story, as Get reports it;
+            // when given it replaces basePoint.z (Archicad ignores a written morph.level, #2628).
+            double baseZ = basePoint.z;
+            double level = 0.0;
+            if (data.Get ("level", level)) {
+                baseZ = GetZPos (element.header.floorInd, level, stories);
+            }
 
             const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
             if (layerError.HasValue ()) {
@@ -10664,7 +10666,7 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
             tmx[2] = 0.0;  tmx[6] = 0.0;  tmx[10] = 1.0;
             tmx[3] = basePoint.x;
             tmx[7] = basePoint.y;
-            tmx[11] = basePoint.z;
+            tmx[11] = baseZ;
 
             {
                 int appliedCount = 0;
@@ -15997,7 +15999,7 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetInputParametersSchema () con
                             "minItems": 4,
                             "maxItems": 4
                         },
-                        "level": { "type": "number" }
+                        "level": { "type": "number", "description": "Moves the morph vertically so that its origin is this high above its home story, the same value GetDetailsOfElements reports as level. Applied after translation, so it decides the height when both are given." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -16021,6 +16023,8 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
     if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
+
+    const Stories stories = GetStories ();
 
     return ExecuteModifyWithResults ("Modify Morphs", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
@@ -16070,6 +16074,16 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                     element.morph.tranmat.tmx[column] = cosAngle * originalTransform.tmx[column] - sinAngle * originalTransform.tmx[4 + column];
                     element.morph.tranmat.tmx[4 + column] = sinAngle * originalTransform.tmx[column] + cosAngle * originalTransform.tmx[4 + column];
                 }
+                ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
+                changed = true;
+            }
+
+            // Archicad derives morph.level from the placement and ignores a written value (#2628),
+            // so "level" moves the morph's origin to this height above its home story. It is applied
+            // after "translation", so it decides the height when both are given.
+            double level = 0.0;
+            if (item.Get ("level", level)) {
+                element.morph.tranmat.tmx[11] = GetZPos (element.header.floorInd, level, stories);
                 ACAPI_ELEMENT_MASK_SET (mask, API_MorphType, tranmat);
                 changed = true;
             }
