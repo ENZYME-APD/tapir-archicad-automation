@@ -2178,6 +2178,7 @@ static Int32 GetMemoCoordsHandleCount (const API_ElementMemo& memo)
 // intermediate polygon keeps a real area. An arc on such a temporary edge could cross another edge, so the arcs are
 // dropped; the final coordinates and arcs are written after the resize, as before. This is what the client-side
 // workaround in #2504 does (the same point count on a circle first), which works on both reproductions.
+// Growing calls it with desiredOutlineCount == outlineCount, which puts every point on a regular polygon (#2818).
 static void MoveOutlineOntoCircle (API_ElementMemo& memo, Int32 outlineCount, Int32 desiredOutlineCount)
 {
     API_Coord minCoord = (*memo.coords)[1];
@@ -2322,15 +2323,39 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
         }
         --outlineCount;
     }
+    // Growing (#2818): every placeholder used to be inserted in the middle of the edge between nodes 1
+    // and 2, so that edge was halved by each insert. After about 20-30 inserts (depending on how long
+    // the first edge was) its points coincided within Archicad's tolerance, and Archicad answered
+    // APIERR_BADPOLY or left the memo with fewer points than requested. Now the outline is first put
+    // on a regular polygon on a circle (MoveOutlineOntoCircle with the same point count, which also
+    // drops the arcs, so no placeholder lands on an arc edge), and each placeholder goes in the middle
+    // of the longest edge. The polygon stays convex, and the edges are split evenly, so none gets
+    // much shorter than an edge of a regular polygon with the requested point count.
+    if (outlineCount < desiredOutlineCount) {
+        MoveOutlineOntoCircle (memo, outlineCount, outlineCount);
+    }
     while (outlineCount < desiredOutlineCount) {
+        // The longest edge between node i and node i + 1, i < outlineCount: the closing edge (from
+        // the last node back to node 1) is never split, so the new node never goes after the last one.
+        Int32 longestEdgeBegin = 1;
+        double longestEdgeLength = -1.0;
+        for (Int32 i = 1; i < outlineCount; ++i) {
+            const API_Coord& p = (*memo.coords)[i];
+            const API_Coord& q = (*memo.coords)[i + 1];
+            const double length = std::sqrt ((q.x - p.x) * (q.x - p.x) + (q.y - p.y) * (q.y - p.y));
+            if (length > longestEdgeLength) {
+                longestEdgeLength = length;
+                longestEdgeBegin = i;
+            }
+        }
         // Per Graphisoft's own DevKit reference example (Do_Poly_InsertNode), nodeIndex is set to
         // the clicked edge's begin-node index + 1 - i.e. the position the NEW node will occupy
         // (shifting what was there up by one), not "insert after this existing node" as the header
-        // doc's wording alone suggests. To insert between existing nodes 1 and 2, that means
-        // nodeIndex = 2, not 1.
-        Int32 idx = 2;
-        const API_Coord& p1 = (*memo.coords)[1];
-        const API_Coord& p2 = (*memo.coords)[2];
+        // doc's wording alone suggests. To insert between existing nodes i and i + 1, that means
+        // nodeIndex = i + 1, not i.
+        Int32 idx = longestEdgeBegin + 1;
+        const API_Coord p1 = (*memo.coords)[longestEdgeBegin];
+        const API_Coord p2 = (*memo.coords)[longestEdgeBegin + 1];
         API_Coord placeholder = {(p1.x + p2.x) / 2.0, (p1.y + p2.y) / 2.0};
         GSErrCode err = TAPIR_Polygon_InsertPolyNode (&memo, &idx, &placeholder);
         if (err != NoError) {
