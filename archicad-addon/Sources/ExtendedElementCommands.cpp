@@ -4290,6 +4290,8 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     return changed;
 }
 
+} // namespace
+
 // The floor plan display settings of a column that ModifyColumns and CreateColumns write (#2529),
 // under the names GetDetailsOfElements reads them.
 const char* ColumnDisplaySchemaProperties = R"(
@@ -4489,6 +4491,8 @@ GS::UniString GetColumnDisplaySettingsNotApplied (const API_ColumnType& wanted, 
     checkLineType ("hiddenLineTypeId", wanted.hiddenLineType, got.hiddenLineType);
     return notApplied;
 }
+
+namespace {
 
 bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, const Stories& stories)
 {
