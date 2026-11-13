@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-13 17:22 UTC.
+Archicad 25–30 DevKits; updated 2026-11-13 22:23 UTC.
 
 | | Status |
 |---|---|
@@ -140,7 +140,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_Create` — [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_CreateExt` – Places a new Window, Door, Skylight, Section, Elevation, Interior Elevation, ChangeMarker, Detail, or Worksheet element with the specified marker into the current database. — [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
 - ✅ `ACAPI_Element_Decompose` – Enumerates the planes of a Multi-plane Roof.
-- ✅ `ACAPI_Element_Delete` – Deletes a number of elements. — [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls")
+- ✅ `ACAPI_Element_Delete` – Deletes a number of elements. — [#2815](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2815 "DeleteElements: delete each element in the database that contains it"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls")
 - ✅ `ACAPI_Element_DeleteSelected` – Deletes the selected elements.
 - ✅ `ACAPI_Element_DetachObserver` – Detaches the observer from the given element.
 - ➖ `ACAPI_Element_DrawElement` – Shows/draws an existing element. <sub>(was `APIDb_DrawElementID`)</sub> *(draws into the add-on's drawing-data database or own window, only useful inside one add-on call)*
@@ -525,7 +525,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2421](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2421 "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"), [#2420](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2420 "[4/5] Script Manager: the Marketplace section of the Tapir Palette"), [#2419](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2419 "[4/5] Tapir Palette: Run/Stop and the result in the scripts panel"), [#2418](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2418 "[3/5] Script Manager: the Updates tab, Update and Update all"), [#2417](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2417 "[2/5] Script Manager: Install, Remove and the Installed tab"), [#2416](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2416 "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"), [#2414](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2414 "[1/5] Tapir Script Manager: the window, the catalogue and browsing"), [#2413](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2413 "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"), [#2411](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2411 "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback")
 - ✅ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on.
 - ✅ `ACAPI_GetReleaseNumber`
-- ✅ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
+- ✅ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ➖ `ACAPI_KeepInMemory` *(add-on infrastructure)*
 - ➖ `ACAPI_RefreshTeamworkReserveInterface` – Refreshes the registered teamwork interface. *(event handlers, not commands)*
 - ✅ `ACAPI_RegisterModelessWindow` – Registers a modeless palette in the API. — [#2420](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2420 "[4/5] Script Manager: the Marketplace section of the Tapir Palette"), [#2418](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2418 "[3/5] Script Manager: the Updates tab, Update and Update all"), [#2417](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2417 "[2/5] Script Manager: Install, Remove and the Installed tab"), [#2414](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2414 "[1/5] Tapir Script Manager: the window, the catalogue and browsing")
@@ -582,12 +582,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## Database
 
 - ➖ `ACAPI_Database_BuildWindowValidator` – Registers a new window validator for the given guid. <sub>(was `APIDb_BuildWindowValidatorID`)</sub> *(validators of the add-on's own windows (add-on infrastructure))*
-- ✅ `ACAPI_Database_ChangeCurrentDatabase` – Changes the current (active) database. <sub>(was `APIDb_ChangeCurrentDatabaseID`)</sub>
+- ✅ `ACAPI_Database_ChangeCurrentDatabase` – Changes the current (active) database. <sub>(was `APIDb_ChangeCurrentDatabaseID`)</sub> — [#2815](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2815 "DeleteElements: delete each element in the database that contains it")
 - ➖ `ACAPI_Database_CheckWindowValidator` – Cheks the already added list of elements and checksums form the validator (identified by the guid) against the lists from the parameter if there was any changes. <sub>(was `APIDb_CheckWindowValidatorID`)</sub> *(validators of the add-on's own windows (add-on infrastructure))*
 - ✅ `ACAPI_Database_DeleteDatabase` – Deletes an independent detail, worksheet, layout, or master layout database. <sub>(was `APIDb_DeleteDatabaseID`)</sub>
 - ➖ `ACAPI_Database_DoClip` – Clips the elements created during a clipping session. <sub>(was `APIDb_DoClipID`)</sub> *(clipping session for the add-on's own drawing primitive calls, no effect a JSON caller can see)*
 - ✅ `ACAPI_Database_GetContainingDatabase` – Obtains the unique ID of database contains the given element. <sub>(was `APIDb_GetContainingDatabaseID`)</sub>
-- ✅ `ACAPI_Database_GetCurrentDatabase` – Returns the identifier of the current (active) database. <sub>(was `APIDb_GetCurrentDatabaseID`)</sub>
+- ✅ `ACAPI_Database_GetCurrentDatabase` – Returns the identifier of the current (active) database. <sub>(was `APIDb_GetCurrentDatabaseID`)</sub> — [#2815](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2815 "DeleteElements: delete each element in the database that contains it")
 - ➖ `ACAPI_Database_GetDBUnIdFromGuid` – Returns the old database identifiers from the database GUID. <sub>(was `APIDb_GetDBUnIdFromGuidID`)</sub> *(converts to the old userId/databaseId pair, which no JSON command or official command takes)*
 - ⛔ `ACAPI_Database_GetDatabasesForType` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given type. *(returns what the per-type ACAPI_Database_Get*Databases calls of GetDatabases already return)*
 - ⛔ `ACAPI_Database_GetDatabasesForTypes` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given types. *(returns what the per-type calls of GetDatabases already return, without each database's type, which the response needs)*
@@ -749,7 +749,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_LibraryManagement_AddLibraries` – Registers a new folder into the list of active libraries. <sub>(was `APIEnv_AddLibrariesID`)</sub>
 - ✅ `ACAPI_LibraryManagement_ChangeGDLDate` – Changes GDL environment date (GDL_PROJECT_DATE). <sub>(was `APIEnv_ChangeGDLDateID`)</sub>
 - ✅ `ACAPI_LibraryManagement_CheckLibraries` – Checks the currently loaded libraries. <sub>(was `APIEnv_CheckLibrariesID`)</sub>
-- ✅ `ACAPI_LibraryManagement_CopyFilesIntoLibrary` – Copies files into a folder inside a loaded library. <sub>(was `APIEnv_CopyFilesIntoLibraryID`)</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
+- ✅ `ACAPI_LibraryManagement_CopyFilesIntoLibrary` – Copies files into a folder inside a loaded library. <sub>(was `APIEnv_CopyFilesIntoLibraryID`)</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI_LibraryManagement_CreateCopyOfGdlUserGlobalsHandle` – Returns a copy of the current GDL globals. <sub>(was `APIEnv_CreateCopyOfGdlUserGlobalsHandleID`)</sub>
 - ✅ `ACAPI_LibraryManagement_CreateFolderInLibrary` – Creates a new folder inside a loaded library. <sub>(was `APIEnv_CreateFolderInLibraryID`)</sub>
 - ✅ `ACAPI_LibraryManagement_DeleteEmbeddedLibItem` – Deletes the given embedded library item (folder or library part). <sub>(was `APIEnv_DeleteEmbeddedLibItemID`)</sub>
@@ -804,7 +804,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_ProjectOperation_Project` – Returns information on the current project file. <sub>(was `APIEnv_ProjectID`)</sub> — [#2808](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2808 "CloseProject fails when Archicad leaves the project open")
 - ✅ `ACAPI_ProjectOperation_Publish` – Publishes a publisher set. <sub>(was `APIDo_PublishID`)</sub>
 - ✅ `ACAPI_ProjectOperation_Quit` – Terminates the server application. <sub>(was `APIDo_QuitID`)</sub>
-- ✅ `ACAPI_ProjectOperation_ReloadLibraries` – Resets and loads the active libraries. <sub>(was `APIDo_ReloadLibrariesID`)</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI_ProjectOperation_ReloadLibraries` – Resets and loads the active libraries. <sub>(was `APIDo_ReloadLibrariesID`)</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI_ProjectOperation_Save` <sub>AC27–30</sub> – Saves the content of the current window in different file formats.
 - ✅ `ACAPI_ProjectOperation_SaveAsModuleFile` – Saves the selected elements into a module file. <sub>(was `APIDo_SaveAsModuleFileID`)</sub>
 
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2793](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2793 "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"), [#2786](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2786 "GetDetailsOfElements: return the source view of a Drawing"), [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2684](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2684 "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2815](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2815 "DeleteElements: delete each element in the database that contains it"), [#2793](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2793 "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"), [#2786](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2786 "GetDetailsOfElements: return the source view of a Drawing"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2684](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2684 "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2793](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2793 "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"), [#2786](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2786 "GetDetailsOfElements: return the source view of a Drawing"), [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2684](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2684 "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2815](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2815 "DeleteElements: delete each element in the database that contains it"), [#2793](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2793 "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"), [#2786](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2786 "GetDetailsOfElements: return the source view of a Drawing"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2684](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2684 "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2793](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2793 "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"), [#2786](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2786 "GetDetailsOfElements: return the source view of a Drawing"), [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2684](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2684 "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2815](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2815 "DeleteElements: delete each element in the database that contains it"), [#2793](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2793 "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"), [#2786](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2786 "GetDetailsOfElements: return the source view of a Drawing"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2684](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2684 "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
@@ -2519,7 +2519,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::ElementBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::ElementDefault::GetElemType` <sub>AC29–30</sub>
 - ✅ `ACAPI::ElementDefault::SetAsArchicadDefault` <sub>AC27–30</sub>
-- ➖ `ACAPI::Err` <sub>AC27–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)") *(add-on infrastructure (undo scopes, results))*
+- ➖ `ACAPI::Err` <sub>AC27–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)") *(add-on infrastructure (undo scopes, results))*
 - ➖ `ACAPI::ExecuteNotUndoableScope` <sub>AC27–30</sub> *(add-on infrastructure (undo scopes, results))*
 - ➖ `ACAPI::ExecuteUndoableScope` <sub>AC27–30</sub> *(add-on infrastructure (undo scopes, results))*
 - ✅ `ACAPI::Favorite::Favorite::GetClassifications` <sub>AC29–30</sub>
@@ -2569,7 +2569,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI::InputHandler::GetInputPosition` <sub>AC28–30</sub> *(event handlers, not commands)*
 - ➖ `ACAPI::InputHandler::SetInputPosition` <sub>AC28–30</sub> *(event handlers, not commands)*
 - ✅ `ACAPI::IsDomainAvailable` <sub>AC29–30</sub>
-- ✅ `ACAPI::Library::GSMObject::CopyTo` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
+- ✅ `ACAPI::Library::GSMObject::CopyTo` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::GSMObject::CreateNew` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::Get2DScript` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::Get2DVectorImage` <sub>AC28–30</sub>
@@ -2608,7 +2608,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::GSMObject::HasParameterScript` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::HasPreviewPicture` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::HasPropertiesScript` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::GSMObject::IsEditable` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::GSMObject::IsEditable` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::GSMObject::IsHierarchicalPagesUsed` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::IsInSubTypeOf` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::IsPasswordProtected` <sub>AC28–30</sub>
@@ -2657,12 +2657,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::GSMObject::Modifier::SetUIDefault` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GetLibraryManager` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibPart::GetLocation` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::LibPart::GetLocation` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::LibPart::GetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibPart::GetType` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetDisplayName` <sub>AC29–30</sub>
 - ✅ `ACAPI::Library::Library::GetLocalizedName` <sub>AC29–30</sub>
-- ✅ `ACAPI::Library::Library::GetLocation` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::Library::GetLocation` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::Library::GetName` <sub>AC28–30</sub> — [#2811](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2811 "Add ModifyLayers: change only the given settings of existing layers"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
 - ✅ `ACAPI::Library::Library::GetPackageDependencies` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetPackageID` <sub>AC28–30</sub>
@@ -2672,27 +2672,27 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::Library::GetPackageSubVersion` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetTWServerPath` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetTWServerUrl` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::Library::IsBuiltIn` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
-- ✅ `ACAPI::Library::Library::IsEmbedded` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
-- ✅ `ACAPI::Library::Library::IsLocal` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsBuiltIn` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsEmbedded` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsLocal` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::Library::IsMissing` <sub>AC29–30</sub>
-- ✅ `ACAPI::Library::Library::IsPackage` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
-- ✅ `ACAPI::Library::Library::IsServer` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsPackage` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
+- ✅ `ACAPI::Library::Library::IsServer` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::LibraryManager::FindLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::FindLibParts` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::FindLibraries` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::FindLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetEmbeddedLibrary` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibraryManager::GetGSMObjectOfLibPart` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::LibraryManager::GetGSMObjectOfLibPart` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::LibraryManager::GetLibIndOfLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibPartByGSMObject` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibPartByLibInd` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibPartByName` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibraryByName` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibraryManager::GetLibraryOfLibPart` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)")
+- ✅ `ACAPI::Library::LibraryManager::GetLibraryOfLibPart` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)")
 - ✅ `ACAPI::Library::LibraryManager::GetLibraryTreePathOfLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetTWID` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibraryManager::LoadGSMObjectFromFile` <sub>AC28–30</sub> — [#2784](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2784 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#2777](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2777 "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"), [#1265](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1265 "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)")
+- ✅ `ACAPI::Library::LibraryManager::LoadGSMObjectFromFile` <sub>AC28–30</sub> — [#2817](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2817 "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"), [#1265](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1265 "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)")
 - ✅ `ACAPI::Library::LibraryManager::Modifier::AddLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::Modifier::RemoveLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::ModifyLibraryList` <sub>AC28–30</sub>

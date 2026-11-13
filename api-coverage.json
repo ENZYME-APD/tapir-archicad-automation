@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-13 17:22 UTC",
+ "generatedAt": "2026-11-13 22:23 UTC",
  "versions": [
   25,
   26,
@@ -4775,7 +4775,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2815,
+     "title": "DeleteElements: delete each element in the database that contains it"
+    }
+   ],
    "issues": []
   },
   {
@@ -4890,7 +4895,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2815,
+     "title": "DeleteElements: delete each element in the database that contains it"
+    }
+   ],
    "issues": []
   },
   {
@@ -7090,6 +7100,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2815,
+     "title": "DeleteElements: delete each element in the database that contains it"
+    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -9867,7 +9881,7 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     }
    ],
@@ -11359,7 +11373,7 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     }
    ],
@@ -16047,12 +16061,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -26697,7 +26707,7 @@
    "reason": "add-on infrastructure (undo scopes, results)",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     }
    ],
@@ -28068,7 +28078,7 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     }
    ],
@@ -28771,12 +28781,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -29658,12 +29664,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -29755,12 +29757,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -29953,12 +29951,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -29980,12 +29974,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -30007,12 +29997,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -30051,12 +30037,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -30078,12 +30060,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -30195,12 +30173,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -30312,12 +30286,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": []
@@ -30375,12 +30345,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2784,
+     "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
-    },
-    {
-     "number": 2777,
-     "title": "Modify a part of a local folder library in its own file (SetLibraryPartParameters and the other Set commands)"
     }
    ],
    "issues": [
@@ -31153,16 +31119,20 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2817,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
+     "number": 2815,
+     "title": "DeleteElements: delete each element in the database that contains it"
+    },
+    {
      "number": 2793,
      "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
     {
      "number": 2786,
      "title": "GetDetailsOfElements: return the source view of a Drawing"
-    },
-    {
-     "number": 2784,
-     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     },
     {
      "number": 2712,
@@ -44296,16 +44266,20 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2817,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
+     "number": 2815,
+     "title": "DeleteElements: delete each element in the database that contains it"
+    },
+    {
      "number": 2793,
      "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
     {
      "number": 2786,
      "title": "GetDetailsOfElements: return the source view of a Drawing"
-    },
-    {
-     "number": 2784,
-     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     },
     {
      "number": 2712,
@@ -47432,16 +47406,20 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2817,
+     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
+    },
+    {
+     "number": 2815,
+     "title": "DeleteElements: delete each element in the database that contains it"
+    },
+    {
      "number": 2793,
      "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
     {
      "number": 2786,
      "title": "GetDetailsOfElements: return the source view of a Drawing"
-    },
-    {
-     "number": 2784,
-     "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     },
     {
      "number": 2712,
