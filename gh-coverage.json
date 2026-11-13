@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-11-13 10:33 UTC",
+ "generatedAt": "2026-11-13 15:30 UTC",
  "counts": {
   "done": 788,
   "open": 14,
   "not applicable": 1
  },
  "parameters": {
-  "all": 730,
-  "json": 53,
+  "all": 729,
+  "json": 54,
   "partial": 5
  },
  "items": [
@@ -5313,7 +5313,7 @@
    "id": "CreateSlabs",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. The Edge Angle and the surface of single edges are written afterwards with ModifySlabs (edgeTrim, edgeTrims, edgeSideMaterials). Not written by either command: the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.",
+   "brief": "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens, floor fill and floor plan and section display (contour, section contour and hidden contour pens and line types, the story visibility of the contour and the fill, materialsChained, linkToSettings) as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. The Edge Angle and the surface of single edges are written afterwards with ModifySlabs (edgeTrim, edgeTrims, edgeSideMaterials). Not written by either command: the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5326,8 +5326,8 @@
      "path": "Components/DesignToolsComponents/SlabsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 20,
+   "parameters": "json",
+   "parameterCount": 31,
    "coveredParameters": [
     "slabsData",
     "slabsData.bottomMaterial",
@@ -5350,7 +5350,19 @@
     "slabsData.thickness",
     "slabsData.topMaterial"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "slabsData.contourLineTypeId",
+    "slabsData.contourPen",
+    "slabsData.fillVisibility",
+    "slabsData.hiddenContourLinePen",
+    "slabsData.hiddenContourLineTypeId",
+    "slabsData.isAutoOnStoryVisibility",
+    "slabsData.linkToSettings",
+    "slabsData.materialsChained",
+    "slabsData.sectionContourLineTypeId",
+    "slabsData.sectionContourPen",
+    "slabsData.visibility"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -7381,7 +7393,7 @@
    "id": "ModifySlabs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied.",
+   "brief": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens, floor fill and floor plan and section display, with the keys GetDetailsOfElements reads (contourPen, contourLineTypeId, sectionContourPen, sectionContourLineTypeId, hiddenContourLinePen, hiddenContourLineTypeId, visibility, fillVisibility, isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Each slab is read back after the change: a given display setting Archicad did not apply gets a failed execution result naming it, and so does a given cover fill origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab through the API; the other details are applied.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7395,7 +7407,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 21,
+   "parameterCount": 32,
    "coveredParameters": [
     "slabsWithDetails",
     "slabsWithDetails.bottomMaterial",
@@ -7417,9 +7429,20 @@
     "slabsWithDetails.zCoordinate"
    ],
    "missingParameters": [
+    "slabsWithDetails.contourLineTypeId",
+    "slabsWithDetails.contourPen",
     "slabsWithDetails.edgeSideMaterials",
     "slabsWithDetails.edgeTrim",
-    "slabsWithDetails.edgeTrims"
+    "slabsWithDetails.edgeTrims",
+    "slabsWithDetails.fillVisibility",
+    "slabsWithDetails.hiddenContourLinePen",
+    "slabsWithDetails.hiddenContourLineTypeId",
+    "slabsWithDetails.isAutoOnStoryVisibility",
+    "slabsWithDetails.linkToSettings",
+    "slabsWithDetails.materialsChained",
+    "slabsWithDetails.sectionContourLineTypeId",
+    "slabsWithDetails.sectionContourPen",
+    "slabsWithDetails.visibility"
    ],
    "pullRequests": [],
    "issues": []

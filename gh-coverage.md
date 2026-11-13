@@ -4,14 +4,14 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **788 of 802** applicable Tapir commands have a Grasshopper component (98 %): ✅ 788 done, ⬜ 14 open, ➖ 1 not applicable.
 
-Parameters of the 788 used commands: 🟢 730 every parameter has an input, 🟡 53 the rest through a JSON input, 🟠 5 some parameters missing.
+Parameters of the 788 used commands: 🟢 729 every parameter has an input, 🟡 54 the rest through a JSON input, 🟠 5 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 42 |  |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 66 |  |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 96 % | 181 | 174 |  |  |  | 7 |  |  | 135 | 39 |  |
+| Element Commands | 96 % | 181 | 174 |  |  |  | 7 |  |  | 134 | 40 |  |
 | Element grouping Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 27 | 27 |  |  |  |  |  |  | 27 |  |  |
 | Property Commands | 100 % | 31 | 31 |  |  |  |  |  |  | 31 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 730 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-13 10:33 UTC.
+Updated 2026-11-13 15:30 UTC.
 
 | | Status |
 |---|---|
@@ -272,7 +272,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateBeams` 🟡 25/27 parameters – `BeamsComponent`, `CreateBeamsComponent`<br><sub>no input: `beamsData.segmentCount`, `beamsData.segments`</sub>
 - ✅ `CreateStairs` 🟡 16/51 parameters – `CreateStairsComponent`<br><sub>no input: `stairsData.baseLineEdges`, `stairsData.baseLineVertices`, `stairsData.baselineOffset`, `stairsData.baselinePosition`, `stairsData.extraBottomTread`, `stairsData.extraTopTread`, `stairsData.floorPlanLayout`, `stairsData.id`, `stairsData.inputDirection`, `stairsData.numberingType`, `stairsData.reflectedCeilingPlanLayout`, `stairsData.relativeTopStory`, `stairsData.risers`, `stairsData.risers.crossSection`, `stairsData.rules`, `stairsData.stairDisplayType`, `stairsData.structureVisibility`, `stairsData.structures`, `stairsData.structures.bottomType`, `stairsData.structures.horizontalThickness`, `stairsData.structures.side`, `stairsData.topOffset`, `stairsData.totalHeightLocked`, `stairsData.treadDepthLocked`, `stairsData.treads`, `stairsData.treads.nosingSlant`, `stairsData.treads.nosingType`, `stairsData.treads.nosingValue`, `stairsData.treads.role`, `stairsData.treads.visible`, `stairsData.uniformDrainings`, `stairsData.uniformFinish`, `stairsData.uniformMonolithAttributes`, `stairsData.walkingLineOffset`, `stairsData.walkingLinePosition`</sub>
 - ✅ `SolveStairBaseline` 🟢 1/1 parameters – `SolveStairBaselineComponent`
-- ✅ `CreateSlabs` 🟢 20/20 parameters – `CreateSlabsComponent`, `SlabsComponent`
+- ✅ `CreateSlabs` 🟡 20/31 parameters – `CreateSlabsComponent`, `SlabsComponent`<br><sub>no input: `slabsData.contourLineTypeId`, `slabsData.contourPen`, `slabsData.fillVisibility`, `slabsData.hiddenContourLinePen`, `slabsData.hiddenContourLineTypeId`, `slabsData.isAutoOnStoryVisibility`, `slabsData.linkToSettings`, `slabsData.materialsChained`, `slabsData.sectionContourLineTypeId`, `slabsData.sectionContourPen`, `slabsData.visibility`</sub>
 - ✅ `CreateWindows` 🟡 30/38 parameters – `CreateWindowsComponent`, `WindowsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `windowsData.directionType`, `windowsData.fixPoint`, `windowsData.revealDepthLocation`, `windowsData.subFloorThickness`, `windowsData.surfaceId`, `windowsData.useObjectMaterials`, `windowsData.verticalLink`, `windowsData.verticalLinkStoryIndex`</sub>
 - ✅ `CreateDoors` 🟡 30/38 parameters – `CreateDoorsComponent`, `DoorsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `doorsData.directionType`, `doorsData.fixPoint`, `doorsData.revealDepthLocation`, `doorsData.subFloorThickness`, `doorsData.surfaceId`, `doorsData.useObjectMaterials`, `doorsData.verticalLink`, `doorsData.verticalLinkStoryIndex`</sub>
 - ✅ `CreateOpenings` 🟢 5/5 parameters – `CreateOpeningsComponent`
@@ -321,7 +321,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyLevelDimensions` 🟡 23/24 parameters – `LevelDimensionsComponent`<br><sub>no input: `levelDimensionsWithDetails.staticLevel`</sub>
 - ✅ `ModifyWalls` 🟡 46/47 parameters – `ModifyWallsComponent`, `WallsApiComponent`, `WallsComponent`<br><sub>no input: `wallsWithDetails.endThickness`</sub>
 - ✅ `ModifyBeams` 🟡 26/45 parameters – `BeamsComponent`, `ModifyBeamsComponent`<br><sub>no input: `beamsWithDetails.aboveViewLinePen`, `beamsWithDetails.aboveViewLineTypeId`, `beamsWithDetails.belowViewLinePen`, `beamsWithDetails.belowViewLineTypeId`, `beamsWithDetails.cutContourLinePen`, `beamsWithDetails.cutContourLineTypeId`, `beamsWithDetails.displayOption`, `beamsWithDetails.hiddenLinePen`, `beamsWithDetails.hiddenLineTypeId`, `beamsWithDetails.isAutoOnStoryVisibility`, `beamsWithDetails.overheadProjectionMode`, `beamsWithDetails.referenceLinePen`, `beamsWithDetails.referenceLineTypeId`, `beamsWithDetails.segments`, `beamsWithDetails.showContourLines`, `beamsWithDetails.showReferenceAxis`, `beamsWithDetails.uncutProjectionMode`, `beamsWithDetails.viewDepthLimitation`, `beamsWithDetails.visibility`</sub>
-- ✅ `ModifySlabs` 🟡 18/21 parameters – `ModifySlabsComponent`, `SlabsComponent`<br><sub>no input: `slabsWithDetails.edgeSideMaterials`, `slabsWithDetails.edgeTrim`, `slabsWithDetails.edgeTrims`</sub>
+- ✅ `ModifySlabs` 🟡 18/32 parameters – `ModifySlabsComponent`, `SlabsComponent`<br><sub>no input: `slabsWithDetails.contourLineTypeId`, `slabsWithDetails.contourPen`, `slabsWithDetails.edgeSideMaterials`, `slabsWithDetails.edgeTrim`, `slabsWithDetails.edgeTrims`, `slabsWithDetails.fillVisibility`, `slabsWithDetails.hiddenContourLinePen`, `slabsWithDetails.hiddenContourLineTypeId`, `slabsWithDetails.isAutoOnStoryVisibility`, `slabsWithDetails.linkToSettings`, `slabsWithDetails.materialsChained`, `slabsWithDetails.sectionContourLineTypeId`, `slabsWithDetails.sectionContourPen`, `slabsWithDetails.visibility`</sub>
 - ✅ `ModifyColumns` 🟡 41/42 parameters – `ColumnsComponent`, `ModifyColumnsComponent`<br><sub>no input: `columnsWithDetails.segments`</sub>
 - ✅ `ModifyWindows` 🟡 26/34 parameters – `ModifyWindowsComponent`, `WindowsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `windowsWithDetails.directionType`, `windowsWithDetails.fixPoint`, `windowsWithDetails.revealDepthLocation`, `windowsWithDetails.subFloorThickness`, `windowsWithDetails.surfaceId`, `windowsWithDetails.useObjectMaterials`, `windowsWithDetails.verticalLink`, `windowsWithDetails.verticalLinkStoryIndex`</sub>
 - ✅ `ModifyDoors` 🟡 26/34 parameters – `DoorsComponent`, `ModifyDoorsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `doorsWithDetails.directionType`, `doorsWithDetails.fixPoint`, `doorsWithDetails.revealDepthLocation`, `doorsWithDetails.subFloorThickness`, `doorsWithDetails.surfaceId`, `doorsWithDetails.useObjectMaterials`, `doorsWithDetails.verticalLink`, `doorsWithDetails.verticalLinkStoryIndex`</sub>

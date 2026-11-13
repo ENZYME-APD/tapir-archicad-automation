@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-13 10:33 UTC",
+ "generatedAt": "2026-11-13 15:30 UTC",
  "versions": [
   25,
   26,
@@ -7264,16 +7264,16 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2797,
+     "title": "CreateBeams, CreateColumns: take the floor plan display settings"
+    },
+    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
     {
      "number": 2620,
      "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
-    },
-    {
-     "number": 2571,
-     "title": "Slabs: read and write the floor plan and section display settings"
     },
     {
      "number": 2550,
@@ -15736,7 +15736,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2798,
+     "title": "CloseProject answers success but the project stays open"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectOperation_GetMiscAppInfo",
@@ -17747,7 +17752,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2806,
+     "title": "SetGeoLocation: say when a locked survey point blocks the change"
+    }
+   ],
    "issues": []
   },
   {
@@ -25338,6 +25348,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2797,
+     "title": "CreateBeams, CreateColumns: take the floor plan display settings"
+    },
+    {
      "number": 2793,
      "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
@@ -25364,10 +25378,6 @@
     {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2571,
-     "title": "Slabs: read and write the floor plan and section display settings"
     },
     {
      "number": 2550,
@@ -31100,10 +31110,6 @@
     {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
-    },
-    {
-     "number": 2571,
-     "title": "Slabs: read and write the floor plan and section display settings"
     },
     {
      "number": 2550,
@@ -37553,6 +37559,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2797,
+     "title": "CreateBeams, CreateColumns: take the floor plan display settings"
+    },
+    {
      "number": 2793,
      "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
@@ -37587,10 +37597,6 @@
     {
      "number": 2595,
      "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
-     "number": 2571,
-     "title": "Slabs: read and write the floor plan and section display settings"
     },
     {
      "number": 2550,
@@ -44245,10 +44251,6 @@
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
     {
-     "number": 2571,
-     "title": "Slabs: read and write the floor plan and section display settings"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     }
@@ -47387,10 +47389,6 @@
     {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
-    },
-    {
-     "number": 2571,
-     "title": "Slabs: read and write the floor plan and section display settings"
     },
     {
      "number": 2550,
