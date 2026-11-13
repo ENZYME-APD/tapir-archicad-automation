@@ -1,0 +1,126 @@
+name: Validate and Merge Schema Refinement
+
+# Both commands share the same preparation, comparison, and result reporting.
+# Only /merge-schema publishes a merge. The Python tools come from the default
+# branch. The comparison reads PR source data in a separate job without write access.
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+env:
+  GIT_LFS_SKIP_SMUDGE: '1'
+
+jobs:
+  command:
+    if: >-
+      github.event_name == 'issue_comment' && github.event.issue.pull_request &&
+      (github.event.comment.body == '/merge-schema' || github.event.comment.body == '/check-schema')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
+    outputs:
+      base: ${{ steps.request.outputs.base }}
+      head: ${{ steps.request.outputs.head }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: tools
+      - name: Authorize command and record the candidate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/merge_schema_refinement.py prepare
+      - id: request
+        name: Read the authorized commit IDs
+        run: |
+          python - <<'PY'
+          import json, os, re
+          request = json.load(open('schema-request.json'))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              for key in ('base', 'head'):
+                  value = request[key]
+                  assert re.fullmatch('[0-9a-f]{40}', value)
+                  output.write(f'{key}={value}\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: schema-request
+          path: schema-request.json
+      - name: Report a command that could not start validation
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/merge_schema_refinement.py failure
+
+  validate:
+    needs: command
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: tools
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch the pinned source commits
+        env:
+          BASE: ${{ needs.command.outputs.base }}
+          HEAD: ${{ needs.command.outputs.head }}
+        run: git fetch --no-tags origin "$BASE" "$HEAD"
+      - name: Compare base and synthetic merge schemas
+        env:
+          BASE: ${{ needs.command.outputs.base }}
+          HEAD: ${{ needs.command.outputs.head }}
+        run: python tools/check_schema_refinement.py --base "$BASE" --head "$HEAD" --out schema-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schema-report
+          path: schema-report.json
+          if-no-files-found: warn
+
+  finish:
+    needs: [command, validate]
+    if: always() && needs.command.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: tools
+      - uses: actions/download-artifact@v4
+        with:
+          name: schema-request
+      - uses: actions/download-artifact@v4
+        if: needs.validate.result == 'success'
+        with:
+          name: schema-report
+      - name: Merge exactly the validated candidate or report the check
+        if: needs.validate.result == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/merge_schema_refinement.py finish
+      - name: Report an unsuccessful validation or merge
+        if: failure() || needs.validate.result != 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/merge_schema_refinement.py failure
