@@ -11,6 +11,7 @@
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Favorite.hpp"
 #include "ACAPI/Element/Opening/OpeningDefault.hpp"
+#include <cmath>
 #include <optional>
 #include <vector>
 #endif
@@ -359,6 +360,17 @@ static GS::UniString PropertyValueStatusToString (API_PropertyValueStatus status
 
 #ifdef ServerMainVers_2900
 static GSErrCode GetPathOfFavoriteFolder (const ACAPI::Favorite::FavoriteFolder& folder, GS::Array<GS::UniString>& path, GS::UniString& errorMessage);
+
+// The path of the folder the Favorite is in, the folder names from the root down; empty in the root.
+static GSErrCode GetFolderPathOfFavorite (const ACAPI::Favorite::Favorite& favorite, GS::Array<GS::UniString>& path)
+{
+    const auto parentFolder = favorite.GetParentFolder ();
+    if (parentFolder.IsErr ()) {
+        return parentFolder.UnwrapErr ().kind;
+    }
+    GS::UniString errorMessage;
+    return GetPathOfFavoriteFolder (parentFolder.Unwrap (), path, errorMessage);
+}
 #endif
 
 // ACAPI_Favorite_Get refuses (APIERR_REFUSEDCMD) a Favorite whose settings Archicad cannot hand
@@ -420,17 +432,37 @@ static GSErrCode GetFavoriteWithoutElementSettings (API_Favorite& favorite, GSEr
             favorite.elemCategoryValues->Push (categoryValue);
         }
     }
-    if (favorite.folder.HasValue ()) {
-        const auto parentFolder = source.Unwrap ().GetParentFolder ();
-        GS::UniString errorMessage;
-        if (parentFolder.IsErr () || GetPathOfFavoriteFolder (parentFolder.Unwrap (), *favorite.folder, errorMessage) != NoError) {
-            return refusedErr;
-        }
+    if (favorite.folder.HasValue () && GetFolderPathOfFavorite (source.Unwrap (), *favorite.folder) != NoError) {
+        return refusedErr;
     }
     return NoError;
 #else
     UNUSED_PARAMETER (favorite);
     return refusedErr;
+#endif
+}
+
+// Archicad 29 and later answer an empty API_Favorite::folder from ACAPI_Favorite_Get, whatever
+// folder the Favorite is in (#2641): this replaces it with the path the Favorite manager gives.
+// Keeps what ACAPI_Favorite_Get gave when the Favorite manager cannot read it, and does nothing
+// before Archicad 29.
+static void FillFolderOfFavoriteFromManager (API_Favorite& favorite)
+{
+#ifdef ServerMainVers_2900
+    if (!favorite.folder.HasValue ()) {
+        return;
+    }
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto source = manager.GetFavoriteByName (favorite.name);
+    if (source.IsErr ()) {
+        return;
+    }
+    GS::Array<GS::UniString> path;
+    if (GetFolderPathOfFavorite (source.Unwrap (), path) == NoError) {
+        *favorite.folder = path;
+    }
+#else
+    UNUSED_PARAMETER (favorite);
 #endif
 }
 
@@ -1439,12 +1471,17 @@ static GSErrCode ApplyFavoriteToOpening (const API_Element& targetElement, API_F
 // fields are read off the target before the Favorite is applied and written back afterwards,
 // with the same calls ModifyWindows/ModifyDoors/ModifyWalls/SetDetailsOfElements use for them.
 // A field the target's type does not have is ignored.
+// The cross section of a Column ('width', 'depth') and of a Beam ('width', 'height') is a
+// Favorite setting (#2553): it lives in the segments of the memo, which the Favorite's memo
+// replaces, so it is kept by writing the target's segment sizes back into the new segments.
+// A Column's 'height' is its height, not a cross section size.
 struct KeptFields
 {
     bool id = false;
     bool layerIndex = false;
     bool width = false;
     bool height = false;
+    bool depth = false;
     bool sillHeight = false;
     bool referenceLineLocation = false;
     bool topOffset = false;
@@ -1452,7 +1489,18 @@ struct KeptFields
 
     bool Any () const
     {
-        return id || layerIndex || width || height || sillHeight || referenceLineLocation || topOffset || relativeTopStory;
+        return id || layerIndex || width || height || depth || sillHeight || referenceLineLocation || topOffset || relativeTopStory;
+    }
+
+    // Whether a size of the cross section of a Column or Beam is kept, so that the target's
+    // segments must be read before the Favorite is applied.
+    bool AnySectionSize (const API_Elem_Head& header) const
+    {
+        switch (GetElemTypeId (header)) {
+            case API_ColumnID: return width || depth;
+            case API_BeamID:   return width || height;
+            default:           return false;
+        }
     }
 };
 
@@ -1467,6 +1515,8 @@ static GS::Optional<GS::UniString> ParseKeptFields (const GS::Array<GS::UniStrin
             kept.width = true;
         } else if (name == "height") {
             kept.height = true;
+        } else if (name == "depth") {
+            kept.depth = true;
         } else if (name == "sillHeight") {
             kept.sillHeight = true;
         } else if (name == "referenceLineLocation") {
@@ -1482,14 +1532,79 @@ static GS::Optional<GS::UniString> ParseKeptFields (const GS::Array<GS::UniStrin
     return {};
 }
 
+// Copies the kept sizes of the cross section from the target's segments as they were before the
+// Favorite was applied into its segments now. The Favorite can bring a different number of
+// segments; a segment past the old ones takes the sizes of the last old one. The end sizes of
+// a tapered segment are kept too: an old segment that was not tapered gives its nominal size,
+// so a kept cross section stays the same along the whole element.
+template <typename SegmentType>
+static void CopySectionSizes (const SegmentType* before, GSSize nBefore, SegmentType* after, GSSize nAfter, bool keepWidth, bool keepHeight)
+{
+    if (before == nullptr || after == nullptr || nBefore <= 0) {
+        return;
+    }
+    for (GSSize i = 0; i < nAfter; ++i) {
+        const API_AssemblySegmentData& source = before[i < nBefore ? i : nBefore - 1].assemblySegmentData;
+        API_AssemblySegmentData& target = after[i].assemblySegmentData;
+        if (keepWidth) {
+            target.nominalWidth = source.nominalWidth;
+            target.endWidth = source.isHomogeneous ? source.nominalWidth : source.endWidth;
+        }
+        if (keepHeight) {
+            target.nominalHeight = source.nominalHeight;
+            target.endHeight = source.isHomogeneous ? source.nominalHeight : source.endHeight;
+        }
+    }
+}
+
+// Writes the kept sizes of a Column's or Beam's cross section back from `segmentsBefore`, its
+// segments read with APIMemoMask_ColumnSegment or APIMemoMask_BeamSegment before the Favorite
+// was applied, with the same memo call ModifyColumns/ModifyBeams change the cross section with.
+static GSErrCode RestoreKeptSectionSizes (const API_Element& element, const API_ElementMemo& segmentsBefore, const KeptFields& kept)
+{
+    const API_ElemTypeID typeId = GetElemTypeId (element.header);
+    if (typeId != API_ColumnID && typeId != API_BeamID) {
+        return NoError;
+    }
+    const UInt64 memoMask = typeId == API_ColumnID ? APIMemoMask_ColumnSegment : APIMemoMask_BeamSegment;
+
+    API_ElementMemo memo = {};
+    const GS::OnExit disposeMemo ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (element.header.guid, &memo, memoMask);
+    if (err != NoError) {
+        return err;
+    }
+
+    if (typeId == API_ColumnID) {
+        if (memo.columnSegments == nullptr || segmentsBefore.columnSegments == nullptr) {
+            return NoError;
+        }
+        const GSSize nBefore = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (segmentsBefore.columnSegments)) / sizeof (API_ColumnSegmentType));
+        const GSSize nAfter = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType));
+        CopySectionSizes (segmentsBefore.columnSegments, nBefore, memo.columnSegments, nAfter, kept.width, kept.depth);
+    } else {
+        if (memo.beamSegments == nullptr || segmentsBefore.beamSegments == nullptr) {
+            return NoError;
+        }
+        const GSSize nBefore = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (segmentsBefore.beamSegments)) / sizeof (API_BeamSegmentType));
+        const GSSize nAfter = static_cast<GSSize> (BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType));
+        CopySectionSizes (segmentsBefore.beamSegments, nBefore, memo.beamSegments, nAfter, kept.width, kept.height);
+    }
+
+    API_Guid guid = element.header.guid;
+    return ACAPI_Element_ChangeMemo (guid, memoMask, &memo);
+}
+
 // Writes the kept fields back from `elementBefore`, the target as ACAPI_Element_Get returned it
 // before the Favorite was applied, and from `memoBefore`, its memo read with
 // APIMemoMask_ElemInfoString - the Element ID lives there (see GetDetailsOfElements), not in the
 // API_Element struct. The element is read again after the apply and only the kept fields are
 // copied into it and masked, the way ModifyWindows/ModifyWalls change them, so nothing else of
 // the now stale `elementBefore` is written. The ID is restored last, with the same memo mask it
-// was read with, so the Favorite's own properties cannot overwrite it afterwards.
-static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_ElementMemo& memoBefore, const KeptFields& kept)
+// was read with, so the Favorite's own properties cannot overwrite it afterwards. A kept size of
+// a Column's or Beam's cross section is written back from `segmentsBefore` (see
+// RestoreKeptSectionSizes).
+static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_ElementMemo& memoBefore, const API_ElementMemo& segmentsBefore, const KeptFields& kept)
 {
     API_Element element = {};
     element.header.guid = elementBefore.header.guid;
@@ -1589,6 +1704,13 @@ static GSErrCode RestoreKeptFields (const API_Element& elementBefore, API_Elemen
         }
     }
 
+    if (kept.AnySectionSize (element.header)) {
+        err = RestoreKeptSectionSizes (element, segmentsBefore, kept);
+        if (err != NoError) {
+            return err;
+        }
+    }
+
     if (kept.id) {
         // An element whose ID is empty may come back without the string at all; the memo must
         // carry one for the write, and ACAPI_DisposeElemMemoHdls frees it with the rest.
@@ -1623,6 +1745,36 @@ static GSErrCode RestoreHomeStory (const API_Element& elementBefore)
     API_Element mask = {};
     ACAPI_ELEMENT_MASK_CLEAR (mask);
     ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+// Puts a Stair's flight width back to what it was before the Favorite was applied (#2528). The
+// width is part of the stair's geometry, like its baseline, which the Favorite never moves (see
+// MemoCarriesGeometry), but it lives in API_StairType, so the full mask handed to
+// ACAPI_Element_ChangeParameters applied the Favorite's width: a 1.25 m stair came out 1.10 m
+// wide on its own baseline. The target's width is already passed in with the Favorite; should
+// Archicad still have changed it, it is written back with the call ModifyStairs makes, without a
+// memo, so the baseline stays where it is.
+static GSErrCode RestoreStairFlightWidth (const API_Element& elementBefore)
+{
+    if (GetElemTypeId (elementBefore.header) != API_StairID) {
+        return NoError;
+    }
+
+    API_Element element = {};
+    element.header.guid = elementBefore.header.guid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (std::abs (element.stair.flightWidth - elementBefore.stair.flightWidth) < 1e-6) {
+        return NoError;
+    }
+
+    element.stair.flightWidth = elementBefore.stair.flightWidth;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_StairType, flightWidth);
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
@@ -1662,7 +1814,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. A Stair keeps its own baseline and flight width. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -1678,7 +1830,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "keepFields": {
                 "type": "array",
-                "description": "Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.",
+                "description": "Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall; 'width' and 'depth' (the cross section) to a Column, and 'width' and 'height' (the cross section) to a Beam. The cross section of a Column or Beam is a Favorite setting and is applied unless it is kept. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.",
                 "items": {
                     "$ref": "#/FavoriteKeepField"
                 }
@@ -1766,6 +1918,17 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
         }
     }
 
+    // So are the segments of a Column or Beam whose cross section is kept (#2553).
+    API_ElementMemo targetSegmentsMemo = {};
+    const GS::OnExit disposeTargetSegmentsMemo ([&targetSegmentsMemo] () { ACAPI_DisposeElemMemoHdls (&targetSegmentsMemo); });
+    if (options.keptFields.AnySectionSize (targetElement.header)) {
+        const UInt64 segmentsMask = GetElemTypeId (targetElement.header) == API_ColumnID ? APIMemoMask_ColumnSegment : APIMemoMask_BeamSegment;
+        err = ACAPI_Element_GetMemo (targetGuid, &targetSegmentsMemo, segmentsMask);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read the cross section of the element");
+        }
+    }
+
     // ACAPI_Element_ChangeParameters (unlike ACAPI_Element_Change) only ever touches
     // settings-type parameters of the API_Element itself, never its geometry, and
     // always keeps the target's own guid - exactly the "apply favorite settings"
@@ -1791,9 +1954,18 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
             favorite.element.header.floorInd = targetElement.header.floorInd;
             mask.header.floorInd = 0;
 
+            // A Stair's flight width is its geometry too, kept like its baseline (#2528).
+            if (GetElemTypeId (targetElement.header) == API_StairID) {
+                favorite.element.stair.flightWidth = targetElement.stair.flightWidth;
+                mask.stair.flightWidth = 0;
+            }
+
             err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
             if (err == NoError) {
                 err = RestoreHomeStory (targetElement);
+            }
+            if (err == NoError) {
+                err = RestoreStairFlightWidth (targetElement);
             }
         }
     }
@@ -1818,7 +1990,7 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
     }
 
     if (options.keptFields.Any ()) {
-        err = RestoreKeptFields (targetElement, targetIdMemo, options.keptFields);
+        err = RestoreKeptFields (targetElement, targetIdMemo, targetSegmentsMemo, options.keptFields);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "The favorite was applied, but a field listed in keepFields could not be restored");
         }
@@ -3311,6 +3483,7 @@ GS::ObjectState GetFavoriteSettingsCommand::Execute (const GS::ObjectState& para
             favoriteSettingsAdder (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
             continue;
         }
+        FillFolderOfFavoriteFromManager (favorite);
 
         const API_ElemTypeID elemTypeId = GetElemTypeId (favorite.element.header);
 

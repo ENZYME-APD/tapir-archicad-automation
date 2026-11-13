@@ -19,6 +19,11 @@
 /* [  1] */        "Tapir Palette^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
+'STR#' ID_ADDON_MENU_FOR_SCRIPT_MANAGER "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Script Manager...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
 'STR#' ID_ADDON_MENU_FOR_UPDATE "Add-On Menu" {
 /* [   ] */        "Tapir"
 /* [  1] */        "Check for Updates...^E3^ES^EE^EI^ED^EL^EW^ET^EM^32510"
@@ -27,6 +32,16 @@
 'STR#' ID_ADDON_MENU_FOR_SHORTCUTS "Add-On Menu" {
 /* [   ] */        "Tapir"
 /* [  1] */        "Manage Script Shortcuts...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_FOR_SHARE "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Share a Script...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_FOR_MY_SHARES "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "My Shared Scripts...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
 'STR#' ID_ADDON_MENU_RUNSCRIPT_1 "Add-On Menu" {
@@ -96,6 +111,40 @@
 /* [ 34] */ "Unexpected issue while executing %T"
 }
 
+'STR#' ID_SHARE_STRINGS "Tapir Share Strings" {
+/* [  1] */ "Share a script"
+/* [  2] */ "Select a Python Script to Share"
+/* [  3] */ "Select"
+/* [  4] */ "%T cannot be read."
+/* [  5] */ "%T is larger than 1 MB, too large to share."
+/* [  6] */ "%T is not UTF-8 text, so it cannot be shared."
+/* [  7] */ "OK"
+/* [  8] */ "Sending..."
+/* [  9] */ "Shared, waiting for review."
+/* [ 10] */ "The share service isn't available yet. You can share it on the website instead."
+/* [ 11] */ "Close"
+/* [ 12] */ "checking..."
+/* [ 13] */ "unknown"
+/* [ 14] */ "waiting for review"
+/* [ 15] */ "questions"
+/* [ 16] */ "accepted"
+/* [ 17] */ "declined"
+/* [ 18] */ "You haven't shared a script yet. Use Tapir > Share a Script... to share one."
+/* [ 19] */ "Checking the status..."
+/* [ 20] */ "The share service isn't available, so the status is unknown. The link to the issue still works."
+/* [ 21] */ "Shared, waiting for review."
+/* [ 22] */ "The reviewer has questions. Please answer them below."
+/* [ 23] */ "Accepted. The adapted script is on the issue."
+/* [ 24] */ "Declined. The issue says why."
+/* [ 25] */ "Your answer was sent."
+/* [ 26] */ "Your answer could not be sent. Please try again later."
+/* [ 27] */ "Thank you, your confirmation was sent."
+/* [ 28] */ "Your confirmation could not be sent. Please try again later."
+/* [ 29] */ "File"
+/* [ 30] */ "Shared"
+/* [ 31] */ "Status"
+}
+
 'STR#' ID_PALETTE_SEARCH_STRINGS "Tapir Palette Search Strings" {
 /* [  1] */ "Add to favourites"
 /* [  2] */ "Remove from favourites"
@@ -145,6 +194,79 @@
 /* [ 38] */ "This Tapir Installer does not run on Macs with an Intel processor."
 /* [ 39] */ "Failed to open %T"
 /* [ 40] */ "Cannot create %T"
+/* [ 41] */ "Archicad is restarted without asking to save the project: unsaved changes are lost."
+/* [ 42] */ "Save the project now, or cancel and save it yourself before updating."
+/* [ 43] */ "Save and Update"
+/* [ 44] */ "Cancel"
+/* [ 45] */ "Update Without Saving"
+/* [ 46] */ "Archicad is restarted without asking to send your changes: changes not sent to the Teamwork project are lost."
+/* [ 47] */ "Send your changes now, or cancel and send them yourself before updating."
+/* [ 48] */ "Send and Update"
+/* [ 49] */ "Update Without Sending"
+/* [ 50] */ "Archicad is restarted without asking to save the project: the changes of this untitled project are lost."
+/* [ 51] */ "If it has changes to keep, cancel and save it with File > Save As before updating."
+/* [ 52] */ "Failed to save the project (error %d). Tapir was not updated."
+/* [ 53] */ "Failed to send the changes to the Teamwork project (error %d). Tapir was not updated."
+}
+
+'STR#' ID_SCRIPT_MANAGER_STRINGS "Tapir Script Manager Strings" {
+/* [  1] */ "All categories"
+/* [  2] */ "Documentation / layouts"
+/* [  3] */ "Element data / properties"
+/* [  4] */ "Modeling / geometry"
+/* [  5] */ "Zones / areas"
+/* [  6] */ "Import / export"
+/* [  7] */ "Quality assurance"
+/* [  8] */ "Quantities / scheduling"
+/* [  9] */ "Libraries / objects"
+/* [ 10] */ "Navigator / views"
+/* [ 11] */ "Classification / attributes"
+/* [ 12] */ "Batch automation"
+/* [ 13] */ "Utilities"
+/* [ 14] */ "Available (%d)"
+/* [ 15] */ "Installed (%d)"
+/* [ 16] */ "Updates (%d)"
+/* [ 17] */ "Catalogue checked %T"
+/* [ 18] */ "Catalogue checked %T (offline)"
+/* [ 19] */ "today %T"
+/* [ 20] */ "The catalogue could not be loaded."
+/* [ 21] */ "Tapir: the script catalogue could not be read from %T: %T"
+/* [ 22] */ "It is not a Tapir script catalogue."
+/* [ 23] */ "Name"
+/* [ 24] */ "Summary"
+/* [ 25] */ "Version"
+/* [ 26] */ "by %T - %T available"
+/* [ 27] */ "%T or newer"
+/* [ 28] */ "What is new in %T"
+/* [ 29] */ "by %T - %T installed - %T available"
+/* [ 30] */ "%T installed - no longer in the catalogue"
+/* [ 31] */ "Tapir Script Manager"
+/* [ 32] */ "Scripts by %T run Python code on this computer. Allow scripts by %T?"
+/* [ 33] */ "Allow"
+/* [ 34] */ "Cancel"
+/* [ 35] */ "OK"
+/* [ 36] */ "%T could not be installed."
+/* [ 37] */ "The catalogue has no download for version %T."
+/* [ 38] */ "The catalogue gives it a name that cannot be used for a file or folder: %T"
+/* [ 39] */ "%T could not be downloaded: %T"
+/* [ 40] */ "%T does not match the catalogue: its SHA-256 is %T, the catalogue says %T. Nothing was written."
+/* [ 41] */ "%T could not be written."
+/* [ 42] */ "Remove %T?"
+/* [ 43] */ "Its files are deleted from %T."
+/* [ 44] */ "Remove"
+/* [ 45] */ "%T could not be removed."
+/* [ 46] */ "Tapir: %T %T was installed in %T"
+/* [ 47] */ "Tapir: %T was removed"
+/* [ 48] */ "%T: %T"
+/* [ 49] */ "Installed"
+/* [ 50] */ "New"
+/* [ 51] */ "%T could not be updated."
+/* [ 52] */ "Tapir: %T was updated from %T to %T in %T"
+/* [ 53] */ "Marketplace"
+/* [ 54] */ "%T (update available)"
+/* [ 55] */ "Loading the README..."
+/* [ 56] */ "The README could not be loaded. It is on https://archicad-api.com/scripts/ too."
+/* [ 57] */ "Screenshots"
 }
 
 'STR#' ID_UV_STRINGS "Tapir uv Strings" {
@@ -198,13 +320,16 @@
 /* [ 19] */ "Tapir::Config: Failed to load config file: %T"
 /* [ 20] */ "Tapir::Config: Failed to save config file: %T"
 /* [ 21] */ "Tapir: the %s command could not be registered (error %d)."
+/* [ 22] */ "Tapir: Failed to list %T/%T on GitHub: HTTP status %d"
+/* [ 23] */ "Tapir: Using the scripts of %T/%T downloaded before."
+/* [ 24] */ "Tapir: Failed to download %T: HTTP status %d"
 }
 
-'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
-/* [  1] */ Button                     10  204  180   23    LargePlain "OK"
-/* [  2] */ Icon                       36   10  128  128    ID_TAPIR_LOGO
-/* [  3] */ CenterText                 10  148  180   23    LargeBold vCenter "Tapir Archicad Automation"
-/* [  4] */ CenterText                 10  171  180   23    LargePlain vCenter "Version: %T, Port: %T"
+'GDLG' ID_ABOUT_DIALOG Modal     40   40  280  237  "Tapir" {
+/* [  1] */ Button                     10  204  260   23    LargePlain "OK"
+/* [  2] */ Icon                       76   10  128  128    ID_TAPIR_LOGO
+/* [  3] */ CenterText                 10  148  260   23    LargeBold vCenter "Tapir Archicad Automation"
+/* [  4] */ CenterText                 10  171  260   23    LargePlain vCenter "Version: %T, Port: %T"
 }
 
 'DLGH' ID_ABOUT_DIALOG Tapir_About_Dialog {
@@ -214,7 +339,7 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  592  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  620  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
 /* [  2] */ PopupControl              56   3 320  22    80  3
 /* [  3] */ IconButton               376   0  28  28    ID_RUN_BUTTON_ICON noFrame
@@ -222,11 +347,12 @@
 /* [  5] */ IconButton               432   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
 /* [  6] */ IconButton               460   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
 /* [  7] */ IconButton               488   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
-/* [  8] */ LeftText                 552   6  40  16    SmallPlain  vCenter  ""
-/* [  9] */ IconButton               520   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
+/* [  8] */ LeftText                 580   6  40  16    SmallPlain  vCenter  ""
+/* [  9] */ IconButton               548   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
 /* [ 10] */ TextEdit                  56   3 120  22    SmallPlain  noDelay  255
 /* [ 11] */ IconButton               404   0  28  28    ID_STAR_BUTTON_ICON noFrame
 /* [ 12] */ IconButton                28   0  28  28    ID_SEARCH_BUTTON_ICON noFrame
+/* [ 13] */ IconButton               516   0  28  28    ID_SCRIPTMANAGER_BUTTON_ICON noFrame
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -242,6 +368,75 @@
 10   ""        SearchEdit
 11   ""        FavouriteButton
 12   "Search scripts"      SearchButton
+13   "Script Manager"                  ScriptManagerButton
+}
+
+'GDLG' ID_SCRIPT_MANAGER Palette | topCaption | close | grow   0   0  940  540  "Tapir Script Manager"  {
+/* [  1] */ TextEdit                  10  10 220  22    LargePlain  128
+/* [  2] */ RadioButton              240  12 110  18    LargePlain  1  "Available"
+/* [  3] */ RadioButton              355  12 110  18    LargePlain  1  "Installed"
+/* [  4] */ RadioButton              470  12 110  18    LargePlain  1  "Updates"
+/* [  5] */ LeftText                 590  12 230  18    SmallPlain  vCenter  ""
+/* [  6] */ Button                   830   9 100  24    LargePlain  "Refresh"
+/* [  7] */ SingleSelList             10  44 200 446    LargePlain  PartialItems  18
+/* [  8] */ CheckBox                 220  44 410  18    LargePlain  "Fits this Archicad"
+/* [  9] */ SingleSelList            220  66 410 424    LargePlain  PartialItems  18  HasHeader  20
+/* [ 10] */ LeftText                 640  44 290  20    LargeBold   ""
+/* [ 11] */ LeftText                 640  66 290  32    SmallPlain  ""
+/* [ 12] */ LeftText                 640 100 290  48    SmallPlain  ""
+/* [ 13] */ LeftText                 640 152 100  18    SmallPlain  vCenter  "What it changes"
+/* [ 14] */ LeftText                 745 152 185  18    LargeBold   vCenter  ""
+/* [ 15] */ LeftText                 640 172 100  18    SmallPlain  vCenter  "Archicad"
+/* [ 16] */ LeftText                 745 172 185  18    SmallPlain  vCenter  ""
+/* [ 17] */ LeftText                 640 192 100  18    SmallPlain  vCenter  "Tapir needed"
+/* [ 18] */ LeftText                 745 192 185  18    SmallPlain  vCenter  ""
+/* [ 19] */ LeftText                 640 212 100  18    SmallPlain  vCenter  "Licence"
+/* [ 20] */ LeftText                 745 212 185  18    SmallPlain  vCenter  ""
+/* [ 21] */ LeftText                 640 238 290  18    LargeBold   vCenter  ""
+/* [ 22] */ LeftText                 640 258 290  48    SmallPlain  ""
+/* [ 23] */ Button                    10 500 140  24    LargePlain  "Share a script..."
+/* [ 24] */ Button                   160 500 200  24    LargePlain  "Open the Scripts page"
+/* [ 25] */ Button                   830 500 100  24    LargePlain  "Close"
+/* [ 26] */ CheckBox                 640 444 290  18    LargePlain  "Enabled in the Tapir Palette"
+/* [ 27] */ Button                   830 466 100  24    LargePlain  "Install"
+/* [ 28] */ Button                   830 466 100  24    LargePlain  "Remove"
+/* [ 29] */ Button                   720 466 100  24    LargePlain  "Update"
+/* [ 30] */ Button                   510 500 120  24    LargePlain  "Update all"
+/* [ 31] */ Browser                  640 312 290 126
+}
+
+'DLGH' ID_SCRIPT_MANAGER Tapir_Script_Manager {
+1    "Search name, tag or author"      SearchEdit
+2    ""                                AvailableTab
+3    ""                                InstalledTab
+4    "Updates of the installed scripts" UpdatesTab
+5    ""                                CatalogueTimeText
+6    "Fetch the catalogue again"       RefreshButton
+7    ""                                CategoryList
+8    "Only list the scripts made for this Archicad and Tapir" FitsCheckBox
+9    ""                                ScriptList
+10   ""                                NameText
+11   ""                                BylineText
+12   ""                                SummaryText
+13   ""                                ChangesLabel
+14   ""                                ChangesValue
+15   ""                                ArchicadLabel
+16   ""                                ArchicadValue
+17   ""                                TapirLabel
+18   ""                                TapirValue
+19   ""                                LicenceLabel
+20   ""                                LicenceValue
+21   ""                                WhatIsNewTitle
+22   ""                                ChangelogText
+23   "Share a script on archicad-api.com" ShareButton
+24   "Open https://archicad-api.com/scripts/" ScriptsPageButton
+25   ""                                CloseButton
+26   "Untick to keep the script installed but leave it out of the list of the Tapir Palette" EnabledCheckBox
+27   "Download the newest version, check it and install it" InstallButton
+28   "Delete the installed script" RemoveButton
+29   "Download the newest version made for this Archicad and Tapir, check it and replace the installed one" UpdateButton
+30   "Update every script listed" UpdateAllButton
+31   ""                                ReadmeBrowser
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {
@@ -264,6 +459,72 @@
 2    ""        CancelButton
 3    ""        PickerLabel
 4    ""        PickerPushCheck
+}
+
+/* The script's text is shown above the fields in a read-only MultiLineEdit that ShareDialog.cpp creates
+   (10, 32, 630, 330). */
+'GDLG' ID_SHARE_DIALOG Modal | noGrow    60   60  640  560  "Share a script" {
+/* [  1] */ Button       545  526   85   24    LargePlain  "Share"
+/* [  2] */ Button       450  526   85   24    LargePlain  "Cancel"
+/* [  3] */ LeftText      10   10  620   18    LargePlain  vCenter  "This is exactly what will be sent:"
+/* [  4] */ LeftText      10  344  190   22    LargePlain  vCenter  "What does it do?"
+/* [  5] */ TextEdit     205  344  425   22    LargePlain  160
+/* [  6] */ LeftText      10  374  190   22    LargePlain  vCenter  "Credit me as"
+/* [  7] */ TextEdit     205  374  425   22    LargePlain  100
+/* [  8] */ LeftText      10  404  190   22    LargePlain  vCenter  "Email for updates (optional)"
+/* [  9] */ TextEdit     205  404  425   22    LargePlain  254
+/* [ 10] */ CheckBox      10  438  620   20    LargePlain  "This script becomes public under the MIT licence"
+/* [ 11] */ LeftText      10  466  620   48    LargePlain  ""
+/* [ 12] */ Button        10  526  150   24    LargePlain  "Open the Issue"
+/* [ 13] */ Button       170  526  150   24    LargePlain  "Your Shares"
+}
+
+'DLGH' ID_SHARE_DIALOG Tapir_Share_Dialog {
+1    ""        ShareButton
+2    ""        CancelButton
+3    ""        ContentLabel
+4    ""        SummaryLabel
+5    "One sentence, at most 160 characters"        SummaryEdit
+6    ""        CreditNameLabel
+7    "The name you are credited under"        CreditNameEdit
+8    ""        EmailLabel
+9    ""        EmailEdit
+10   ""        LicenceCheck
+11   ""        StatusText
+12   ""        OpenIssueButton
+13   ""        YourSharesButton
+}
+
+/* The reviewer's questions (10, 228, 630, 318) and the answer box (10, 350, 630, 400) are MultiLineEdits that
+   ShareDialog.cpp creates. */
+'GDLG' ID_YOUR_SHARES_DIALOG Modal | noGrow    60   60  640  500  "Your shares" {
+/* [  1] */ Button        545  466   85   24    LargePlain  "Close"
+/* [  2] */ SingleSelList  10   10  620  158    LargePlain  PartialItems  18  HasHeader  20
+/* [  3] */ LeftText       10  176  620   22    LargePlain  vCenter  ""
+/* [  4] */ Button         10  466  140   24    LargePlain  "Open the Issue"
+/* [  5] */ Button        160  466  140   24    LargePlain  "Open the Listing"
+/* [  6] */ Button        310  466  100   24    LargePlain  "Refresh"
+/* [  7] */ LeftText       10  204  620   20    LargePlain  vCenter  "Questions from the reviewer:"
+/* [  8] */ LeftText       10  326  620   20    LargePlain  vCenter  "Your answer:"
+/* [  9] */ Button        505  408  125   24    LargePlain  "Send Answer"
+/* [ 10] */ LeftText       10  408  485   24    LargePlain  vCenter  ""
+/* [ 11] */ LeftText       10  436  485   24    LargePlain  vCenter  "Confirm that the adapted script still does what you meant."
+/* [ 12] */ Button        505  436  125   24    LargePlain  "Confirm"
+}
+
+'DLGH' ID_YOUR_SHARES_DIALOG Tapir_Your_Shares_Dialog {
+1    ""        CloseButton
+2    ""        SharesList
+3    ""        DetailsText
+4    ""        OpenIssueButton
+5    ""        OpenListingButton
+6    "Read the status of every share again"        RefreshButton
+7    ""        QuestionsLabel
+8    ""        AnswerLabel
+9    ""        SendAnswerButton
+10   ""        MessageText
+11   ""        ConfirmText
+12   "The adapted script still does what I meant"        ConfirmButton
 }
 
 'GDLG' ID_SHORTCUTS_DIALOG Modal | noGrow    80   80  500  270  "Script Shortcuts" {
