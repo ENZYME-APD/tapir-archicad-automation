@@ -121,7 +121,7 @@
                     <a href="https://github.com/SzamosiMate/tapir-archicad-MCP/forks" data-i18n>See the forks</a>
                 </article>
             </div>
-            <p class="callout" style="margin-top: 24px" data-i18n>
+            <p class="callout gap-top-sm" data-i18n>
                 <strong class="callout-label"><span aria-hidden="true">&#9888;</span> Careful</strong>
                 An MCP server can change your model. Try it on a copy of your project first, and read what the AI is about to do before you allow it.
             </p>
@@ -130,7 +130,7 @@
         <div class="dim" aria-hidden="true"><i></i><span data-i18n>A prompt to start with</span><i></i></div>
         <section class="two" aria-labelledby="prompt">
             <div class="prose">
-                <h2 id="prompt" style="font-size: clamp(1.875rem, 4vw, 3rem)" data-i18n>Start by <em>reading.</em></h2>
+                <h2 id="prompt" class="col-head" data-i18n>Start by <em>reading.</em></h2>
                 <p data-i18n>
                     Open a project in Archicad, with the Tapir Add-On loaded, and give your AI tool this prompt.
                     It only reads, so it is safe to try on any project.
@@ -167,7 +167,7 @@ Tell me which Tapir commands you used.</code></pre>
                 <div data-i18n><b>02</b><strong>Use what it returns</strong><span><span class="mono">found</span>: the item named exactly so, with the ids the other commands take (story index, attribute id, elementType, propertyId, classification ids). <span class="mono">closeMatches</span>: only similar names, best first; the AI asks you which one you meant instead of picking one itself.</span></div>
                 <div data-i18n><b>03</b><strong>Say "not in this project"</strong><span><span class="mono">notFound</span>: nothing in the project is close, so the project has no such item. The AI says "this project has no X" instead of guessing a name or reporting an empty result as the answer.</span></div>
             </div>
-            <div class="two" style="margin-top: 32px">
+            <div class="two gap-top">
                 <div class="prose">
                     <p data-i18n>
                         Add these lines to your prompt, or to the instructions of your MCP server, so the AI checks the names
@@ -211,7 +211,7 @@ it would change.</code></pre>
                 <div data-i18n><b>02</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python's standard library only, on port 19723.</span></div>
                 <div data-i18n><b>03</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span></div>
             </div>
-            <div class="two" style="margin-top: 32px">
+            <div class="two gap-top">
                 <div class="term">
                     <div class="bar"><span data-i18n>prompt</span><span data-i18n>for Claude or any AI tool</span></div>
 <pre><code data-i18n>Write a Python script that uses only the standard
