@@ -8397,6 +8397,166 @@ GS::ObjectState ModifyPensCommand::Execute (const GS::ObjectState& parameters, G
     return response;
 }
 
+ModifyLayersCommand::ModifyLayersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyLayersCommand::GetName () const
+{
+    return "ModifyLayers";
+}
+
+GS::Optional<GS::UniString> ModifyLayersCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layers": {
+                "type": "array",
+                "description": "The layers to change. Only the given fields of a layer are changed; every other setting of it is kept.",
+                "items": {
+                    "type": "object",
+                    "description": "An existing layer and the settings to change.",
+                    "properties": {
+                        "attributeId": {
+                            "description": "Identifier of the existing Layer to change.",
+                            "$ref": "#/AttributeId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "New name. It must not be empty, and no other Layer may have it."
+                        },
+                        "isHidden": {
+                            "type": "boolean",
+                            "description": "Hide/Show."
+                        },
+                        "isLocked": {
+                            "type": "boolean",
+                            "description": "Lock/Unlock."
+                        },
+                        "isWireframe": {
+                            "type": "boolean",
+                            "description": "Force the model to wireframe."
+                        },
+                        "intersectionGroupNr": {
+                            "type": "integer",
+                            "description": "Intersection group. Elements on layers having the same group will be intersected."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layers"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyLayersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per layer, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+static void SetLayerFlag (const GS::ObjectState& layerData, const char* fieldName, short flag, API_Attribute& layer)
+{
+    bool value = false;
+    if (layerData.Get (fieldName, value)) {
+        if (value)
+            layer.header.flags |= flag;
+        else
+            layer.header.flags &= ~flag;
+    }
+}
+
+// The layer is read with ACAPI_Attribute_Get and written back with only the given fields changed (the way
+// CreateLayers overwrites an existing layer), so the settings that are not given are kept.
+static GS::ObjectState ModifyLayer (const GS::ObjectState& layerData)
+{
+    const GS::ObjectState* attributeId = layerData.Get ("attributeId");
+    if (attributeId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "attributeId is missing.");
+    }
+    const API_Guid guid = GetGuidFromObjectState (*attributeId);
+
+    GS::UniString newName;
+    const bool hasNewName = layerData.Get ("name", newName);
+    if (hasNewName) {
+        if (newName.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "name must not be empty.");
+        }
+        // Searched by type and Unicode name (ACAPI_Attribute_Search tries the guid first, so it is left null).
+        GS::UniString searchedName = newName;
+        API_Attr_Head sameName = {};
+        sameName.typeID = API_LayerID;
+        sameName.uniStringNamePtr = &searchedName;
+        if (ACAPI_Attribute_Search (&sameName) == NoError && sameName.guid != guid) {
+            return CreateFailedExecutionResult (APIERR_NAMEALREADYUSED, GS::UniString ("Another Layer is already called '") + newName + "'.");
+        }
+    }
+
+    GS::UniString name;
+    API_Attribute layer = {};
+    layer.header.typeID = API_LayerID;
+    layer.header.guid = guid;
+    layer.header.uniStringNamePtr = &name;
+    GSErrCode err = ACAPI_Attribute_Get (&layer);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Layer not found.");
+    }
+
+    // ACAPI_Attribute_Get wrote the current name through uniStringNamePtr; the new one replaces it.
+    if (hasNewName) {
+        name = newName;
+    }
+    SetLayerFlag (layerData, "isHidden", APILay_Hidden, layer);
+    SetLayerFlag (layerData, "isLocked", APILay_Locked, layer);
+    SetLayerFlag (layerData, "isWireframe", APILay_ForceToWire, layer);
+    layerData.Get ("intersectionGroupNr", layer.layer.conClassId);
+
+    API_AttributeDef layerDef = {};
+    err = ACAPI_Attribute_Modify (&layer, &layerDef);
+    ACAPI_DisposeAttrDefsHdls (&layerDef);
+    if (err == APIERR_REFUSEDPAR && hasNewName) {
+        return CreateFailedExecutionResult (err, "Archicad does not allow this change (the built-in Archicad Layer cannot be renamed).");
+    }
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to modify the Layer. In a Teamwork project the LayerSettingsDialog lockable object set must be reserved first (see ReserveLockableObjectSet).");
+}
+
+GS::ObjectState ModifyLayersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> layers;
+    parameters.Get ("layers", layers);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& layerData : layers) {
+        executionResults (ModifyLayer (layerData));
+    }
+
+    return response;
+}
+
 CreateProfilesCommand::CreateProfilesCommand () :
     CommandBase (CommonSchema::Used)
 {

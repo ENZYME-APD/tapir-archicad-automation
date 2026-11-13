@@ -2038,6 +2038,10 @@ GSErrCode Initialize (void)
             attributeCommands, "2.0.0",
             "Renames attributes of any type (layers, layer combinations, composites, surfaces, ...). Each attribute keeps its index, its id and its settings. A new name that another attribute of the same type already has is refused, and so is renaming the attributes Archicad does not allow to change (the built-in Archicad Layer, the Solid and Empty fills)."
         );
+        err |= RegisterCommand<ModifyLayersCommand> (
+            attributeCommands, "2.0.1",
+            "Changes the given settings of existing layers: shown or hidden, locked, wireframe, the intersection group and the name. Only the given fields of a layer are changed; every other setting is kept, so unlike CreateLayers with overwriteExisting the whole layer need not be given. Archicad keeps the shown, locked and wireframe state of a layer per open window; like CreateLayers, this changes it in the current window. A name must not be empty or used by another layer, and the built-in Archicad Layer cannot be renamed. Each layer gets its own execution result. In a Teamwork project the LayerSettingsDialog lockable object set must be reserved first (see ReserveLockableObjectSet)."
+        );
         err |= RegisterCommand<GetLinesCommand> (
             attributeCommands, "1.5.4",
             "Returns the details of the given Line attributes."
