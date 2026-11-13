@@ -611,10 +611,6 @@ GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetInputParametersSchema 
                     "$ref": "#/AutoTextExpression"
                 },
                 "minItems": 1
-            },
-            "elementId": {
-                "$ref": "#/ElementId",
-                "description": "Optional. The element in whose context the autotexts are resolved, e.g. a Text on a layout for layout autotexts. When omitted, they are resolved without an element context."
             }
         },
         "additionalProperties": false,
