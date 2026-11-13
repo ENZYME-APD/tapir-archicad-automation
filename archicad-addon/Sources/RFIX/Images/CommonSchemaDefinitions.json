@@ -12914,6 +12914,13 @@
                     "$ref": "#/Coordinate2D"
                 }
             },
+            "referenceLineArcs": {
+                "type": "array",
+                "description": "The curved segments of the reference line; empty when every segment is straight. begIndex and endIndex are indices into referenceLine (from 0), in the same form CreateRailingsFromPolyline takes as polylineArcs.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
             "bottomOffset": {
                 "type": "number",
                 "description": "The base height of the railing relative to the floor level."
@@ -12967,6 +12974,7 @@
         "additionalProperties": false,
         "required": [
             "referenceLine",
+            "referenceLineArcs",
             "bottomOffset",
             "zCoordinate",
             "height",
