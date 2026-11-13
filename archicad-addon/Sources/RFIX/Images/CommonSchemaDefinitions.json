@@ -11149,6 +11149,49 @@
             },
             "floorFill": {
                 "$ref": "#/FloorFill"
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained (API_SlabType::materialsChained)."
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen of the slab's contour in the floor plan (API_SlabType::pen)."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the slab's contour in the floor plan (API_SlabType::ltypeInd) - pairs with contourPen."
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the slab's contour where it is cut in sections (API_SlabType::sectContPen)."
+            },
+            "sectionContourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the slab's contour where it is cut in sections (API_SlabType::sectContLtype) - pairs with sectionContourPen."
+            },
+            "hiddenContourLinePen": {
+                "type": "integer",
+                "description": "Pen of the slab's hidden contour lines in the floor plan (API_SlabType::hiddenContourLinePen)."
+            },
+            "hiddenContourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the slab's hidden contour lines in the floor plan (API_SlabType::hiddenContourLineType) - pairs with hiddenContourLinePen."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "When true, Archicad recomputes 'visibility' and 'fillVisibility' automatically from the slab's elevation. Only in Archicad 29 and later; older versions have no such setting on a slab and leave it out."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the slab's contour is shown on (API_SlabType::visibilityCont)."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the slab's cover fill is shown on (API_SlabType::visibilityFill)."
+            },
+            "linkToSettings": {
+                "$ref": "#/LinkToSettings"
             }
         },
         "additionalProperties": false,

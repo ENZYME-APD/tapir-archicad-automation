@@ -3279,6 +3279,32 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     floorFillOs.Add ("orientation", CreateHatchOrientationObjectState (elem.slab.hatchOrientation));
                     typeSpecificDetails.Add ("floorFill", floorFillOs);
                 }
+                // The floor plan and section display (#2561), with the Wall's and the Roof's key
+                // names, so CreateSlabs and ModifySlabs take back what is read here.
+                typeSpecificDetails.Add ("materialsChained", elem.slab.materialsChained);
+                typeSpecificDetails.Add ("contourPen", (Int32) elem.slab.pen);
+                if (elem.slab.ltypeInd != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.slab.ltypeInd)));
+                }
+                typeSpecificDetails.Add ("sectionContourPen", (Int32) elem.slab.sectContPen);
+                if (elem.slab.sectContLtype != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("sectionContourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.slab.sectContLtype)));
+                }
+                typeSpecificDetails.Add ("hiddenContourLinePen", (Int32) elem.slab.hiddenContourLinePen);
+                if (elem.slab.hiddenContourLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("hiddenContourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.slab.hiddenContourLineType)));
+                }
+#ifdef ServerMainVers_2900
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.slab.isAutoOnStoryVisibility);
+#endif
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.slab.visibilityCont));
+                typeSpecificDetails.Add ("fillVisibility", CreateStoryVisibilityObjectState (elem.slab.visibilityFill));
+                {
+                    GS::ObjectState linkOS;
+                    linkOS.Add ("homeStoryDifference", (Int32) elem.slab.linkToSettings.homeStoryDifference);
+                    linkOS.Add ("newCreationMode", elem.slab.linkToSettings.newCreationMode);
+                    typeSpecificDetails.Add ("linkToSettings", linkOS);
+                }
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
                 AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);

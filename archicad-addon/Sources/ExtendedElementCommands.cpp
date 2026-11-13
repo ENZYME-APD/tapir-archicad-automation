@@ -2853,7 +2853,18 @@ const char* SlabSurfaceAndFillSchemaProperties = R"(
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the bottom of the slab." },
                         "cutFillPen": { "$ref": "#/OverriddenPen", "description": "Overrides the pen of the cut fill. Written from Archicad 27." },
                         "cutFillBackgroundPen": { "$ref": "#/OverriddenPen", "description": "Overrides the background pen of the cut fill. Written from Archicad 27." },
-                        "floorFill": { "$ref": "#/FloorFill", "description": "The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements." })";
+                        "floorFill": { "$ref": "#/FloorFill", "description": "The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements." },
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained." },
+                        "contourPen": { "type": "integer", "description": "Pen of the slab's contour in the floor plan." },
+                        "contourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the slab's contour in the floor plan." },
+                        "sectionContourPen": { "type": "integer", "description": "Pen of the slab's contour where it is cut in sections." },
+                        "sectionContourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the slab's contour where it is cut in sections." },
+                        "hiddenContourLinePen": { "type": "integer", "description": "Pen of the slab's hidden contour lines in the floor plan." },
+                        "hiddenContourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the slab's hidden contour lines in the floor plan." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "Archicad 29 and later: when true, Archicad recomputes visibility and fillVisibility from the slab's elevation and ignores the values given for them. Giving visibility or fillVisibility without this key turns it off. Before Archicad 29 a slab has no such setting, and the item fails when this key is given." },
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the slab's contour is shown on. Only the given fields change." },
+                        "fillVisibility": { "$ref": "#/StoryVisibility", "description": "The stories the slab's cover fill is shown on. Only the given fields change." },
+                        "linkToSettings": { "$ref": "#/LinkToSettings", "description": "How the slab is linked to its home story." })";
 
 namespace {
 
@@ -2883,6 +2894,24 @@ GS::Optional<GS::UniString> CheckSurfaceAndFillAttributeIds (
     }
     return {};
 }
+
+// The line type keys of a Slab's floor plan and section display (#2561), checked like the
+// surfaces and fills above before anything is written.
+GS::Optional<GS::UniString> CheckLineTypeIds (const GS::ObjectState& details, const std::initializer_list<const char*>& lineTypeKeys)
+{
+    for (const char* lineTypeKey : lineTypeKeys) {
+        const GS::ObjectState* lineTypeIdOs = details.Get (lineTypeKey);
+        if (lineTypeIdOs != nullptr &&
+            GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeIdOs)) == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Line attribute was found for ") + GS::UniString (lineTypeKey) + ".";
+        }
+    }
+    return {};
+}
+
+// Merges the given fields into a story visibility (defined below with the Roof and Shell floor
+// plan settings, which use it too).
+void MergeStoryVisibility (const GS::ObjectState& os, API_StoryVisibility& visibility);
 
 } // namespace
 
@@ -3036,6 +3065,15 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
     if (idError.HasValue ()) {
         return idError;
     }
+    const GS::Optional<GS::UniString> lineTypeError = CheckLineTypeIds (details, { "contourLineTypeId", "sectionContourLineTypeId", "hiddenContourLineTypeId" });
+    if (lineTypeError.HasValue ()) {
+        return lineTypeError;
+    }
+#ifndef ServerMainVers_2900
+    if (details.Contains ("isAutoOnStoryVisibility")) {
+        return GS::UniString ("isAutoOnStoryVisibility is a Slab setting only from Archicad 29.");
+    }
+#endif
     GS::ObjectState topMaterialOs;
     if (details.Get ("topMaterial", topMaterialOs)) {
         element.slab.topMat = GetOverriddenMaterialFromObjectState (topMaterialOs);
@@ -3099,7 +3137,161 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation);
         changed = true;
     }
+
+    // The floor plan and section display (#2561), with the keys GetDetailsOfElements reads.
+    bool materialsChained = false;
+    if (details.Get ("materialsChained", materialsChained)) {
+        element.slab.materialsChained = materialsChained;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, materialsChained);
+        changed = true;
+    }
+    Int32 contourPen = 0;
+    if (details.Get ("contourPen", contourPen)) {
+        element.slab.pen = static_cast<short> (contourPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, pen);
+        changed = true;
+    }
+    const GS::ObjectState* contourLineTypeId = details.Get ("contourLineTypeId");
+    if (contourLineTypeId != nullptr) {
+        element.slab.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, ltypeInd);
+        changed = true;
+    }
+    Int32 sectionContourPen = 0;
+    if (details.Get ("sectionContourPen", sectionContourPen)) {
+        element.slab.sectContPen = static_cast<short> (sectionContourPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sectContPen);
+        changed = true;
+    }
+    const GS::ObjectState* sectionContourLineTypeId = details.Get ("sectionContourLineTypeId");
+    if (sectionContourLineTypeId != nullptr) {
+        element.slab.sectContLtype = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*sectionContourLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sectContLtype);
+        changed = true;
+    }
+    Int32 hiddenContourLinePen = 0;
+    if (details.Get ("hiddenContourLinePen", hiddenContourLinePen)) {
+        element.slab.hiddenContourLinePen = static_cast<short> (hiddenContourLinePen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hiddenContourLinePen);
+        changed = true;
+    }
+    const GS::ObjectState* hiddenContourLineTypeId = details.Get ("hiddenContourLineTypeId");
+    if (hiddenContourLineTypeId != nullptr) {
+        element.slab.hiddenContourLineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*hiddenContourLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hiddenContourLineType);
+        changed = true;
+    }
+    GS::ObjectState visibilityOs;
+    if (details.Get ("visibility", visibilityOs)) {
+        MergeStoryVisibility (visibilityOs, element.slab.visibilityCont);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont);
+        changed = true;
+    }
+    GS::ObjectState fillVisibilityOs;
+    if (details.Get ("fillVisibility", fillVisibilityOs)) {
+        MergeStoryVisibility (fillVisibilityOs, element.slab.visibilityFill);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityFill);
+        changed = true;
+    }
+#ifdef ServerMainVers_2900
+    bool isAutoOnStoryVisibility = false;
+    if (details.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility)) {
+        element.slab.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, isAutoOnStoryVisibility);
+        changed = true;
+    } else if (details.Contains ("visibility") || details.Contains ("fillVisibility")) {
+        // As on a Wall: with the automatic story visibility on, Archicad recomputes both
+        // visibilities from the slab's elevation and drops the ones given, so giving one turns it off.
+        element.slab.isAutoOnStoryVisibility = false;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, isAutoOnStoryVisibility);
+    }
+#endif
+    const GS::ObjectState* linkToSettingsOs = details.Get ("linkToSettings");
+    if (linkToSettingsOs != nullptr) {
+        Int32 homeStoryDifference = 0;
+        if (linkToSettingsOs->Get ("homeStoryDifference", homeStoryDifference)) {
+            element.slab.linkToSettings.homeStoryDifference = static_cast<short> (homeStoryDifference);
+        }
+        bool newCreationMode = false;
+        if (linkToSettingsOs->Get ("newCreationMode", newCreationMode)) {
+            element.slab.linkToSettings.newCreationMode = newCreationMode;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, linkToSettings);
+        changed = true;
+    }
     return {};
+}
+
+// Reads a Slab back after ModifySlabs changed it, and names each floor plan and section display
+// key given in item that Archicad did not apply (#2561). The automatic story visibility, when it
+// is on after the change, recomputes the visibilities, so they are not compared then;
+// linkToSettings is not compared either, because Archicad resolves it to the home story.
+static GS::Array<GS::UniString> GetUnappliedSlabDisplaySettings (const API_Guid& slabGuid, const GS::ObjectState& item)
+{
+    GS::Array<GS::UniString> unapplied;
+    API_Element slab = {};
+    slab.header.guid = slabGuid;
+    if (ACAPI_Element_Get (&slab) != NoError) {
+        return unapplied;
+    }
+
+    bool materialsChained = false;
+    if (item.Get ("materialsChained", materialsChained) && slab.slab.materialsChained != materialsChained) {
+        unapplied.Push ("materialsChained");
+    }
+    const std::pair<const char*, short> pens[] = {
+        { "contourPen", slab.slab.pen },
+        { "sectionContourPen", slab.slab.sectContPen },
+        { "hiddenContourLinePen", slab.slab.hiddenContourLinePen }
+    };
+    for (const auto& pen : pens) {
+        Int32 requested = 0;
+        if (item.Get (pen.first, requested) && requested != pen.second) {
+            unapplied.Push (GS::UniString::Printf ("%s (it is %d)", pen.first, (int) pen.second));
+        }
+    }
+    const std::pair<const char*, API_AttributeIndex> lineTypes[] = {
+        { "contourLineTypeId", slab.slab.ltypeInd },
+        { "sectionContourLineTypeId", slab.slab.sectContLtype },
+        { "hiddenContourLineTypeId", slab.slab.hiddenContourLineType }
+    };
+    for (const auto& lineType : lineTypes) {
+        const GS::ObjectState* lineTypeIdOs = item.Get (lineType.first);
+        if (lineTypeIdOs != nullptr && GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeIdOs)) != lineType.second) {
+            unapplied.Push (lineType.first);
+        }
+    }
+
+    bool autoVisibility = false;
+#ifdef ServerMainVers_2900
+    autoVisibility = slab.slab.isAutoOnStoryVisibility;
+    bool isAutoOnStoryVisibility = false;
+    if (item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility) && slab.slab.isAutoOnStoryVisibility != isAutoOnStoryVisibility) {
+        unapplied.Push ("isAutoOnStoryVisibility");
+    }
+#endif
+    if (!autoVisibility) {
+        const std::pair<const char*, const API_StoryVisibility*> visibilities[] = {
+            { "visibility", &slab.slab.visibilityCont },
+            { "fillVisibility", &slab.slab.visibilityFill }
+        };
+        for (const auto& visibility : visibilities) {
+            GS::ObjectState visibilityOs;
+            if (!item.Get (visibility.first, visibilityOs)) {
+                continue;
+            }
+            API_StoryVisibility requested = *visibility.second;
+            MergeStoryVisibility (visibilityOs, requested);
+            if (requested.showOnHome != visibility.second->showOnHome ||
+                requested.showAllAbove != visibility.second->showAllAbove ||
+                requested.showAllBelow != visibility.second->showAllBelow ||
+                requested.showRelAbove != visibility.second->showRelAbove ||
+                requested.showRelBelow != visibility.second->showRelBelow) {
+                unapplied.Push (visibility.first);
+            }
+        }
+    }
+    return unapplied;
 }
 
 GS::Optional<GS::UniString> ApplyMeshStructureAndSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool isNewElement, bool& changed)
@@ -13808,6 +14000,29 @@ static GS::Optional<GS::UniString> GetIgnoredSlabFillOrientation (const API_Guid
     return GS::UniString::Printf ("Archicad did not apply floorFill.orientation %T: on a Slab it applies only the orientation type through the API. The other details given were applied.", list.ToPrintf ());
 }
 
+// The execution result of a changed Slab: it fails when Archicad did not apply a given fill
+// orientation or floor plan and section display setting (#2561), naming each one.
+static GS::ObjectState CreateModifiedSlabResult (const API_Guid& slabGuid, const GS::ObjectState& item)
+{
+    GS::UniString message;
+    const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (slabGuid, item);
+    if (ignoredOrientation.HasValue ()) {
+        message = *ignoredOrientation;
+    }
+    const GS::Array<GS::UniString> unapplied = GetUnappliedSlabDisplaySettings (slabGuid, item);
+    if (!unapplied.IsEmpty ()) {
+        GS::UniString list;
+        for (UIndex i = 0; i < unapplied.GetSize (); ++i) {
+            list += (i == 0 ? "" : ", ") + unapplied[i];
+        }
+        if (!message.IsEmpty ()) {
+            message += " ";
+        }
+        message += "Archicad did not apply " + list + " to the Slab. The other details given were applied.";
+    }
+    return message.IsEmpty () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, message);
+}
+
 GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -13928,8 +14143,8 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err, hasEdgeSideMaterials ? "Failed to modify the edges of the slab." : "Failed to modify the edge trims of the slab."));
                     continue;
                 }
-                const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (element.header.guid, item);
-                results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
+                // Read back as the other paths are: the orientation and the display settings (#2561).
+                results.Push (CreateModifiedSlabResult (element.header.guid, item));
                 continue;
             }
 
@@ -13989,8 +14204,7 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err, "Failed to modify slab geometry."));
                     continue;
                 }
-                const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (slabGuid, item);
-                results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
+                results.Push (CreateModifiedSlabResult (slabGuid, item));
                 continue;
             }
 
@@ -14004,8 +14218,7 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (err, "Failed to modify slab."));
                 continue;
             }
-            const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (element.header.guid, item);
-            results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
+            results.Push (CreateModifiedSlabResult (element.header.guid, item));
         }
     });
 }
