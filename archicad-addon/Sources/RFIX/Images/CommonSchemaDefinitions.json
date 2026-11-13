@@ -15036,21 +15036,12 @@
                 "description": "The pen of the dimension and witness lines."
             },
             "marker": {
-                "type": "object",
-                "description": "The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The marker type, named after API_MarkerID.",
-                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "The pen of the marker."
-                    }
-                },
-                "additionalProperties": false,
-                "required": ["type", "pen"]
+                "$ref": "#/DimensionMarker",
+                "description": "The marker at the witness points, always with its type, pen and size."
+            },
+            "textPlacement": {
+                "$ref": "#/DimensionTextPlacement",
+                "description": "The text placement method of the dimension texts, always with all of its fields."
             },
             "textHeight": {
                 "type": "number",
@@ -15102,6 +15093,7 @@
             "witnessPointCount",
             "linePen",
             "marker",
+            "textPlacement",
             "textHeight",
             "textPen",
             "textFrame",
@@ -15184,6 +15176,49 @@
             "angle",
             "horizontalMarker"
         ]
+    },
+    "DimensionMarker": {
+        "type": "object",
+        "description": "The marker at the witness points of a linear dimension (API_MarkerData). CreateAssociativeDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The marker type, named after API_MarkerID.",
+                "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
+            },
+            "pen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen of the marker."
+            },
+            "size": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "The marker size, the API's markerData.markerSize, which the DevKit calls the size in millimeters at the drawing scale. Compare it with the marker size of the Dimension Settings before relying on it: on Archicad 29 a linear dimension whose dialog showed 1.0 read 2.5 here."
+            }
+        },
+        "additionalProperties": false
+    },
+    "DimensionTextPlacement": {
+        "type": "object",
+        "description": "The text placement method of a linear dimension's texts, as in the Dimension Settings (API dimLayout, placeUnderEnabled, pushNeighborEnabled). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
+        "properties": {
+            "method": {
+                "type": "string",
+                "enum": ["Classic", "Flexible", "Centered", "Off", "Unknown"],
+                "description": "Classic (the API's API_Legacy, the placement of Archicad 18 and before), Flexible, Centered, or Off (every text in the middle of its segment, without collision detection). Unknown is only returned, for a value this version of Tapir does not know."
+            },
+            "placeBelowLine": {
+                "type": "boolean",
+                "description": "Flexible method: a text that does not fit may be placed below the dimension line (API placeUnderEnabled)."
+            },
+            "pushNeighbors": {
+                "type": "boolean",
+                "description": "Flexible method: a text may push its neighbouring texts aside (API pushNeighborEnabled)."
+            }
+        },
+        "additionalProperties": false
     },
     "RadialDimensionDetails": {
         "type": "object",
@@ -18749,21 +18784,12 @@
                 "description": "The pen of the dimension and witness lines."
             },
             "marker": {
-                "type": "object",
-                "description": "The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The marker type, named after API_MarkerID.",
-                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "The pen of the marker."
-                    }
-                },
-                "additionalProperties": false,
-                "required": ["type", "pen"]
+                "$ref": "#/DimensionMarker",
+                "description": "The marker at the witness points, always with its type, pen and size."
+            },
+            "textPlacement": {
+                "$ref": "#/DimensionTextPlacement",
+                "description": "The text placement method of the dimension texts, always with all of its fields."
             },
             "defaultWitnessForm": {
                 "type": "string",
