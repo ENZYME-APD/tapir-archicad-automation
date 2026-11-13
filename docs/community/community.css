@@ -21,7 +21,7 @@
 .contributor-list a.name { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px }
 .contributor-list a.name:hover { text-decoration-color: currentColor }
 /* The counts wrap between the numbers ("44 commits · 11 reports · 24 tests"), never inside one. */
-.contributor-list .counts { margin-left: auto; color: var(--muted); font: 500 .78125rem var(--mono); text-align: right }
+.contributor-list .counts { margin-left: auto; color: var(--muted); font: 500 .8125rem var(--mono); text-align: right }
 .contributor-list .counts span { white-space: nowrap }
 
 /* The growth chart, drawn by community.js as inline SVG: commits, issues and pull requests, and
@@ -37,7 +37,7 @@
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"], [data-theme="contrast"]) .growth { --layer-commits: var(--moss-mist); --layer-github: var(--ochre); --layer-discord: var(--moss-mid); --members: var(--cream) }
 }
-.growth-legend { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font: 700 .71875rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.growth-legend { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font: 700 .75rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 .growth-legend li { display: inline-flex; align-items: center }
 /* Each entry is a toggle button: pressed, its series is drawn; not pressed, it is faded and its swatch hollow. */
 .growth-legend button {
@@ -109,7 +109,7 @@
 
 .activity-details > summary { cursor: pointer; color: var(--link); font-weight: 600 }
 .activity-table-wrap { overflow-x: auto; margin-top: 10px }
-.activity-table { border-collapse: collapse; font-size: .90625rem; font-variant-numeric: tabular-nums }
+.activity-table { border-collapse: collapse; font-size: .875rem; font-variant-numeric: tabular-nums }
 .activity-table [hidden] { display: none }
 .activity-table th, .activity-table td { padding: 6px 14px; border-bottom: 1px solid var(--line); text-align: right }
 .activity-table th:first-child, .activity-table td:first-child { text-align: left }
@@ -145,7 +145,7 @@
 .country-list { list-style: none; margin: 0 0 20px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px 24px }
 .country-list li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--line) }
 .country-list .name { font-weight: 600 }
-.country-list .count { color: var(--muted); font: 500 .78125rem var(--mono) }
+.country-list .count { color: var(--muted); font: 500 .8125rem var(--mono) }
 .country-list .bar { grid-column: 1 / -1; height: 3px; background: var(--ochre) }
 
 /* The Standard look (see the end of site.css): the chart's layers in the accent's green, a slate and a

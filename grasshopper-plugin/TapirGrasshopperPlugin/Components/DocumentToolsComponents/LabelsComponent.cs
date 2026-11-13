@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         private static readonly ISet<string> CreateLabelsKeys = new HashSet<string>
         {
             "begCoordinate", "endCoordinate", "favoriteName", "floorInd", "id", "labelClass", "leaderLine",
-            "midCoordinate", "parentElementId", "runs", "style", "symbolStyle", "text"
+            "libraryPartName", "midCoordinate", "parentElementId", "runs", "style", "symbolStyle", "text"
         };
 
         // The item properties of the ModifyLabels input schema, without

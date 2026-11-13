@@ -1,0 +1,176 @@
+{
+  "title": "CreateSlabs and ModifySlabs write the floor plan and section display of a slab, GetDetailsOfElements reads it back, and an unknown line type is refused (#2561)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Slab" ],
+  "steps": [
+    {
+      "id": "line types of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": {
+        "lineA": "attributes[1].attributeId.guid",
+        "lineB": "attributes[2].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[2].attributeId.guid", "exists": true, "name": "the project has three line types" }
+      ]
+    },
+    {
+      "id": "slab with its display settings",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "thickness": 0.25,
+            "polygonCoordinates": [
+              { "x": 800.0, "y": 800.0 },
+              { "x": 805.0, "y": 800.0 },
+              { "x": 805.0, "y": 804.0 },
+              { "x": 800.0, "y": 804.0 }
+            ],
+            "materialsChained": false,
+            "contourPen": 3,
+            "contourLineTypeId": { "guid": "${lineA}" },
+            "sectionContourPen": 4,
+            "sectionContourLineTypeId": { "guid": "${lineA}" },
+            "hiddenContourLinePen": 5,
+            "hiddenContourLineTypeId": { "guid": "${lineA}" },
+            "visibility": { "showOnHome": true, "showAllAbove": true, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 },
+            "fillVisibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 }
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "read the new slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.25, "name": "geometry kept" },
+        { "path": "detailsOfElements[0].details.materialsChained", "eq": false, "name": "materials not chained" },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 3, "name": "contour pen" },
+        { "path": "detailsOfElements[0].details.contourLineTypeId.guid", "eq": "${lineA}", "name": "contour line type" },
+        { "path": "detailsOfElements[0].details.sectionContourPen", "eq": 4, "name": "section contour pen" },
+        { "path": "detailsOfElements[0].details.sectionContourLineTypeId.guid", "eq": "${lineA}", "name": "section contour line type" },
+        { "path": "detailsOfElements[0].details.hiddenContourLinePen", "eq": 5, "name": "hidden contour pen" },
+        { "path": "detailsOfElements[0].details.hiddenContourLineTypeId.guid", "eq": "${lineA}", "name": "hidden contour line type" },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "contour on the home story" },
+        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": true, "name": "contour on all stories above" },
+        { "path": "detailsOfElements[0].details.visibility.showAllBelow", "eq": false, "name": "contour not below" },
+        { "path": "detailsOfElements[0].details.fillVisibility.showOnHome", "eq": true, "name": "fill on the home story" },
+        { "path": "detailsOfElements[0].details.fillVisibility.showAllAbove", "eq": false, "name": "fill not above" },
+        { "path": "detailsOfElements[0].details.linkToSettings", "exists": true, "name": "link to the home story read" }
+      ]
+    },
+    {
+      "id": "change the display of the slab",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "materialsChained": true,
+            "contourPen": 6,
+            "contourLineTypeId": { "guid": "${lineB}" },
+            "sectionContourPen": 7,
+            "sectionContourLineTypeId": { "guid": "${lineB}" },
+            "hiddenContourLinePen": 8,
+            "hiddenContourLineTypeId": { "guid": "${lineB}" },
+            "visibility": { "showAllAbove": false, "showAllBelow": true },
+            "fillVisibility": { "showAllAbove": true }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "every display setting applied" }
+      ]
+    },
+    {
+      "id": "read the changed slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.25, "name": "thickness kept" },
+        { "path": "detailsOfElements[0].details.materialsChained", "eq": true, "name": "materials chained" },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 6, "name": "contour pen changed" },
+        { "path": "detailsOfElements[0].details.contourLineTypeId.guid", "eq": "${lineB}", "name": "contour line type changed" },
+        { "path": "detailsOfElements[0].details.sectionContourPen", "eq": 7, "name": "section contour pen changed" },
+        { "path": "detailsOfElements[0].details.sectionContourLineTypeId.guid", "eq": "${lineB}", "name": "section contour line type changed" },
+        { "path": "detailsOfElements[0].details.hiddenContourLinePen", "eq": 8, "name": "hidden contour pen changed" },
+        { "path": "detailsOfElements[0].details.hiddenContourLineTypeId.guid", "eq": "${lineB}", "name": "hidden contour line type changed" },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "contour still on the home story" },
+        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": false, "name": "contour no longer above" },
+        { "path": "detailsOfElements[0].details.visibility.showAllBelow", "eq": true, "name": "contour on all stories below" },
+        { "path": "detailsOfElements[0].details.fillVisibility.showOnHome", "eq": true, "name": "fill still on the home story" },
+        { "path": "detailsOfElements[0].details.fillVisibility.showAllAbove", "eq": true, "name": "fill on all stories above" }
+      ]
+    },
+    {
+      "id": "[a line type that does not exist]",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "contourPen": 9,
+            "contourLineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown line type refused" }
+      ]
+    },
+    {
+      "id": "the refused change wrote nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 6, "name": "contour pen kept" },
+        { "path": "detailsOfElements[0].details.contourLineTypeId.guid", "eq": "${lineB}", "name": "contour line type kept" }
+      ]
+    },
+    {
+      "id": "[slab with a line type that does not exist]",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 810.0, "y": 800.0 },
+              { "x": 814.0, "y": 800.0 },
+              { "x": 814.0, "y": 804.0 }
+            ],
+            "sectionContourLineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "unknown line type refused" }
+      ]
+    },
+    {
+      "id": "only the valid slab was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Slab" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    }
+  ]
+}

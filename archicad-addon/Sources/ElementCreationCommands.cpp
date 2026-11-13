@@ -372,12 +372,12 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "width": {
                             "type": "number",
-                            "description": "Cross section width of the column, the diameter of a round one. Applied to all segments.",
+                            "description": "Cross section width of the column, the diameter of a round one. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "depth": {
                             "type": "number",
-                            "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns.",
+                            "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the depth; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "coreAnchor": {
@@ -870,6 +870,108 @@ GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState&
     return {};
 }
 
+void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details)
+{
+    GS::ObjectState surface;
+    surface.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, zone.material)));
+    surface.Add ("useOnAllSides", zone.oneMat);
+    details.Add ("surface", surface);
+}
+
+GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    GS::ObjectState surface;
+    if (!details.Get ("surface", surface)) {
+        return {};
+    }
+
+    // The attribute id is checked before anything is changed.
+    GS::Optional<API_AttributeIndex> surfaceIndex;
+    GS::ObjectState surfaceId;
+    if (surface.Get ("surfaceId", surfaceId)) {
+        surfaceIndex = GetAttributeIndexFromGuid (API_MaterialID, GetGuidFromObjectState (surfaceId));
+        if (*surfaceIndex == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Surface attribute was found for surface.surfaceId.");
+        }
+    }
+
+    if (surfaceIndex.HasValue ()) {
+        zone.material = *surfaceIndex;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, material);
+    }
+    if (surface.Get ("useOnAllSides", zone.oneMat) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, oneMat);
+    }
+
+    return {};
+}
+
+// The zone polygon display (gross or net, show_found_poly), the uniform stamp pen
+// (useStampPens and pen) and the area reduction (reducePercent) of a zone (#2631).
+// show_found_poly true uses the reference line of the bounding walls (gross), false
+// their inner edges (net); Archicad only uses it for zones whose boundary is the walls'
+// reference line (refLineFlag).
+void AddZoneDisplayStampPenAndReduction (const API_ZoneType& zone, GS::ObjectState& details)
+{
+    details.Add ("polygonDisplay", GS::UniString (zone.show_found_poly ? "Gross" : "Net"));
+
+    GS::ObjectState stampPen;
+    stampPen.Add ("uniform", !zone.useStampPens);
+    stampPen.Add ("pen", static_cast<Int32> (zone.pen));
+    details.Add ("stampPen", stampPen);
+
+    details.Add ("reducePercent", zone.reducePercent);
+}
+
+GS::Optional<GS::UniString> ApplyZoneDisplayStampPenAndReduction (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    // Everything is checked before anything is changed; SetDetailsOfElements does not hold
+    // typeSpecificDetails to the ranges and enums of the schema.
+    GS::UniString polygonDisplay;
+    const bool hasPolygonDisplay = details.Get ("polygonDisplay", polygonDisplay);
+    if (hasPolygonDisplay && polygonDisplay != "Gross" && polygonDisplay != "Net") {
+        return GS::UniString ("polygonDisplay must be \"Gross\" or \"Net\".");
+    }
+
+    GS::ObjectState stampPen;
+    const bool hasStampPen = details.Get ("stampPen", stampPen);
+    Int32 pen = 0;
+    const bool hasPen = hasStampPen && stampPen.Get ("pen", pen);
+    if (hasPen && (pen < 1 || pen > 255)) {
+        return GS::UniString ("stampPen.pen must be between 1 and 255.");
+    }
+
+    double reducePercent = 0.0;
+    const bool hasReducePercent = details.Get ("reducePercent", reducePercent);
+    if (hasReducePercent && (reducePercent < 0.0 || reducePercent > 100.0)) {
+        return GS::UniString ("reducePercent must be between 0 and 100.");
+    }
+
+    if (hasPolygonDisplay) {
+        zone.show_found_poly = (polygonDisplay == "Gross");
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, show_found_poly);
+    }
+
+    if (hasStampPen) {
+        bool uniform = false;
+        if (stampPen.Get ("uniform", uniform)) {
+            zone.useStampPens = !uniform;
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, useStampPens);
+        }
+        if (hasPen) {
+            zone.pen = static_cast<short> (pen);
+            if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, pen);
+        }
+    }
+
+    if (hasReducePercent) {
+        zone.reducePercent = reducePercent;
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ZoneType, reducePercent);
+    }
+
+    return {};
+}
+
 // --- Zone overlap pre-check (#822) -------------------------------------------------
 //
 // Archicad answers ACAPI_Element_Create of a Zone whose area overlaps another Zone on
@@ -1329,6 +1431,15 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
     }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (details, element.zone, &mask);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
+    }
+
+    const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (details, element.zone, &mask);
+    if (displayError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *displayError);
+    }
 
     return ApplyZoneLevels (details, element.zone, &mask);
 }
@@ -1515,6 +1626,22 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "$ref": "#/ZoneCoverFill",
                         "description": "Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
                     },
+                    "surface": {
+                        "$ref": "#/ZoneSurface",
+                        "description": "Optional 3D surface of the zone (the Model panel). Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
+                    "polygonDisplay": {
+                        "$ref": "#/ZonePolygonDisplay",
+                        "description": "Optional zone polygon display: Gross uses the reference line of the bounding walls, Net their inner edges. Only has an effect for a zone whose boundary is the reference line of the walls. When omitted, the value of the favorite or of the Zone tool defaults is kept."
+                    },
+                    "stampPen": {
+                        "$ref": "#/ZoneStampPen",
+                        "description": "Optional pen of the zone stamp. Fields that are left out keep the value of the favorite or of the Zone tool defaults."
+                    },
+                    "reducePercent": {
+                        "$ref": "#/ZoneReducePercent",
+                        "description": "Optional percentage the calculated area of the zone is reduced by; 0 means no reduction. When omitted, the value of the favorite or of the Zone tool defaults is kept."
+                    },
                     "allowOverlap": {
                         "type": "boolean",
                         "description" : "Optional, defaults to false. Archicad answers a new zone whose area overlaps an existing zone on the same story with a modal warning dialog that blocks the API until it is dismissed, so by default such an item fails with an error naming the overlapping zone and no element is created for it. Set it to true to skip this check and create the zone anyway; the dialog may then appear. Zones that only touch (a shared edge or corner) do not overlap; curved edges are checked by their chords, and an automatic zone counts as overlapping when its referencePosition lies inside an existing zone."
@@ -1600,6 +1727,15 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (parameters, element.zone, nullptr);
     if (contourAndFillError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
+    const GS::Optional<GS::UniString> surfaceError = ApplyZoneSurface (parameters, element.zone, nullptr);
+    if (surfaceError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *surfaceError);
+    }
+
+    const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (parameters, element.zone, nullptr);
+    if (displayError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *displayError);
     }
 
     // Filled for a manual zone; the overlap pre-check at the end compares it with the
@@ -1784,6 +1920,10 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
                         "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
+                        "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." },
+                        "polygonDisplay": { "$ref": "#/ZonePolygonDisplay" },
+                        "stampPen": { "$ref": "#/ZoneStampPen", "description": "Pen of the zone stamp. Only the given fields are changed." },
+                        "reducePercent": { "$ref": "#/ZoneReducePercent" },
                         "geometry": { "$ref": "#/ManualZoneGeometry", "description": "Optional new polygon of a manual zone (isManual true in GetDetailsOfElements): its outline, arcs and holes, the same geometry as a manual zone of CreateZones. The whole polygon is replaced and the zone keeps its GUID, properties and other settings; the stamp stays where it is unless stampPosition is given too. Refused for an automatic zone, whose polygon Archicad computes from its boundaries (see UpdateZones)." },
                         "allowOverlap": { "type": "boolean", "description": "Optional, defaults to false, only used with geometry. As in CreateZones: a new polygon that would overlap another zone on the same story fails with an error naming that zone instead of risking Archicad's modal overlap warning, which blocks the API. Set it to true to change the polygon anyway." }
                     },
@@ -2918,14 +3058,19 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     },
                     "contourPenIndex": {
                         "type": "integer",
-                        "description": "Optional pen index for the contour. By default the current pen is used."
+                        "description": "Optional pen index for the contour; 0 switches the contour off. By default the current pen is used."
+                    },
+                    "contourLineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type of the contour. By default the current line type is used."
                     },
                     "fillPenIndex": {
                         "type": "integer",
                         "description": "Optional pen index for the fill. By default the current pen is used."
                     },
                     "fillBackgroundPenIndex": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color."
                     },
                     "foregroundColor": {
                         "$ref": "#/ColorRGB",
@@ -2944,10 +3089,18 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     },
                     "roomSpecial": {
                         "type": "integer",
-                        "description": "Special area percent in a room (negative means OFF)."
+                        "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
                     },
                     "showArea": {
                         "type": "boolean"
+                    },
+                    "fillOrientation": {
+                        "$ref": "#/HatchOrientation",
+                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the default ones. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
+                    },
+                    "fillCategory": {
+                        "$ref": "#/HatchFillCategory",
+                        "description": "Optional fill category: Drafting, Cut or Cover. By default the current one is used."
                     }
                 },
                 "additionalProperties": false,
@@ -3040,6 +3193,18 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         element.hatch.roomSpecial = (char) roomSpecial;
     }
     parameters.Get ("showArea", element.hatch.showArea);
+    GS::ObjectState fillOrientationOs;
+    if (parameters.Get ("fillOrientation", fillOrientationOs)) {
+        ApplyHatchFillOrientation (fillOrientationOs, element.hatch.hatchOrientation);
+    }
+    GS::UniString fillCategory;
+    if (parameters.Get ("fillCategory", fillCategory)) {
+        HatchFillCategoryFromString (fillCategory, element.hatch.determination);
+    }
+    const GS::ObjectState* contourLineTypeId = parameters.Get ("contourLineTypeId");
+    if (contourLineTypeId != nullptr) {
+        element.hatch.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+    }
 
     return {};
 }
@@ -4447,6 +4612,10 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
                         "style": { "$ref": "#/TextStyleSettableDetails" },
                         "symbolStyle": { "$ref": "#/LabelSymbolStyleSettableDetails" },
                         "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" },
+                        "textWay": {
+                            "$ref": "#/LabelTextDirection",
+                            "description": "The new text direction, for a Text or a Symbol label. Refused together with symbolStyle.textWay."
+                        },
                         "begCoordinate": {
                             "$ref": "#/Coordinate2D",
                             "description": "The new begin coordinate of the leader line: the point the label points at (where the arrow is). Only the leader line's begin moves; the label's text or symbol stays where it is."
@@ -4546,6 +4715,12 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                     executionResults (CreateFailedExecutionResult (*leaderLineErr));
                     continue;
                 }
+            }
+
+            auto textWayErr = TextLabelDetails::ApplyLabelTextWay (item, element.label, &mask);
+            if (textWayErr.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (*textWayErr));
+                continue;
             }
 
             // Moving or re-pointing the label (#2666). The text or symbol sits at the end of the
@@ -5854,7 +6029,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
-                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool default or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content."
+                        "description": "Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity), or is 'Symbol' when libraryPartName is given. 'Symbol' starts from the Symbol label settings of the Label tool default or of the favorite given in favoriteName: when those are a Text label, the item fails instead of placing a label without content."
+                    },
+                    "libraryPartName": {
+                        "type": "string",
+                        "description": "Optional name of the label library part of a Symbol label, as shown in the library (e.g. 'Flexi_Zone_Label'); without it the part of the Label tool default or of the favorite is used. The label gets the part's own default GDL parameters. It makes a Symbol label, so labelClass must be omitted or 'Symbol', and the Label tool default or the favorite must be a Symbol label (its other settings are kept). To switch the part of an existing label, use ChangeLibraryPartOfElements."
                     },
                     "text": {
                         "type": "string",
@@ -5876,6 +6055,10 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "leaderLine": {
                         "$ref": "#/LabelLeaderLineSettableDetails"
+                    },
+                    "textWay": {
+                        "$ref": "#/LabelTextDirection",
+                        "description": "Optional text direction, for a Text or a Symbol label; when omitted the Label tool default (or the favorite) is kept. Refused together with symbolStyle.textWay."
                     },
                     "begCoordinate": {
                         "$ref": "#/Coordinate2D",
@@ -6966,6 +7149,32 @@ GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::Ob
     return {};
 }
 
+// API_LabelType::textWay is one field of the label, documented "for textual labels", and the
+// Symbol label settings have the same direction choice, which symbolStyle.textWay has always
+// written. The label-level "textWay" writes it for either class (#2666). Of API_DirID, labels take
+// only Parallel, Horizontal, Vertical and General (APIdefs_Elements.h, AC25 to AC30); General is the
+// custom angle, which a Text label takes from style.angle.
+void AddLabelTextWay (GS::ObjectState& os, const API_LabelType& label)
+{
+    os.Add ("textWay", LabelTextWayToString (label.textWay));
+}
+
+GS::Optional<GS::ObjectState> ApplyLabelTextWay (const GS::ObjectState& item, API_LabelType& label, API_Element* mask)
+{
+    GS::UniString textWay;
+    if (!item.Get ("textWay", textWay)) {
+        return {};
+    }
+    const GS::ObjectState* symbolStyleOS = item.Get ("symbolStyle");
+    GS::UniString symbolTextWay;
+    if (symbolStyleOS != nullptr && symbolStyleOS->Get ("textWay", symbolTextWay)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give textWay either on the label or in symbolStyle, not in both.");
+    }
+    label.textWay = StringToLabelTextWay (textWay);
+    if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_LabelType, textWay);
+    return {};
+}
+
 } // namespace TextLabelDetails
 
 // For a Slab, ACAPI_Element_CalcBounds goes through Archicad's 2D bound calculation, which
@@ -7088,8 +7297,20 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     // default names a symbol library part in u.symbol, see the Symbol branch below.
     const API_LblClassID defaultLabelClass = element.label.labelClass;
     GS::UniString labelClassStr;
-    if (parameters.Get ("labelClass", labelClassStr)) {
+    const bool hasLabelClass = parameters.Get ("labelClass", labelClassStr);
+    if (hasLabelClass) {
         element.label.labelClass = (labelClassStr == "Symbol") ? APILblClass_Symbol : APILblClass_Text;
+    }
+
+    // libraryPartName names the symbol label's library part, so it makes a Symbol label when
+    // labelClass is omitted, and contradicts an explicit 'Text'.
+    GS::UniString libraryPartName;
+    const bool hasLibraryPartName = parameters.Get ("libraryPartName", libraryPartName) && !libraryPartName.IsEmpty ();
+    if (hasLibraryPartName) {
+        if (hasLabelClass && element.label.labelClass != APILblClass_Symbol) {
+            return CreateErrorResponse (APIERR_BADPARS, "libraryPartName names the library part of a Symbol label, but labelClass is 'Text'. Omit labelClass or set it to 'Symbol'.");
+        }
+        element.label.labelClass = APILblClass_Symbol;
     }
 
     const GS::ObjectState* leaderLineOS = parameters.Get ("leaderLine");
@@ -7098,6 +7319,11 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         if (leaderLineErr.HasValue ()) {
             return leaderLineErr;
         }
+    }
+
+    auto textWayErr = TextLabelDetails::ApplyLabelTextWay (parameters, element.label, nullptr);
+    if (textWayErr.HasValue ()) {
+        return textWayErr;
     }
 
     if (element.label.labelClass == APILblClass_Text) {
@@ -7125,14 +7351,45 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
             }
         }
 
-        // u.symbol shares its storage with u.text: when the defaults are a Text label, u.symbol.libInd
-        // holds bytes of the text settings, which may by chance be a valid library part index of
-        // some unrelated library part. There is no input to name a symbol library part, so refuse
-        // instead of placing whatever that index points at (or nothing, as it did before).
+        // u.symbol shares its storage with u.text: when the defaults are a Text label, every u.symbol
+        // field (libInd, but also its pens, line type, surface and fill indices) holds bytes of the
+        // text settings, which may by chance be valid indices of something unrelated. Setting
+        // libInd alone from libraryPartName would leave the rest of them as that garbage, so refuse
+        // instead of placing a label from it (or nothing, as it did before).
         if (defaultLabelClass != APILblClass_Symbol) {
             GS::UniString favoriteName;
             const bool fromFavorite = parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
-            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("labelClass 'Symbol' needs a symbol library part, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("A Symbol label needs Symbol label settings to start from, but the ") + (fromFavorite ? "favorite '" + favoriteName + "'" : GS::UniString ("Label tool default")) + " is a Text label - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first. libraryPartName then chooses the library part.");
+        }
+
+        if (hasLibraryPartName) {
+            // The named part replaces the one of the defaults, with its own parameter list: the
+            // defaults' list belongs to their part. Only label library parts are searched.
+            API_LibPart libPart = {};
+            libPart.typeID = APILib_LabelID;
+            const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+            GS::ucscpy (libPart.docu_UName, libraryPartName.ToUStr (0, GS::Min (libraryPartName.GetLength (), maxNameLength)).Get ());
+            GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
+            delete libPart.location;
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to resolve 'libraryPartName': no label library part with the name '" + libraryPartName + "' in the loaded libraries.");
+            }
+            double a = 0.0;
+            double b = 0.0;
+            Int32 addParNum = 0;
+            API_AddParType** addPars = nullptr;
+            err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &addPars);
+            if (err != NoError || addPars == nullptr) {
+                if (addPars != nullptr) {
+                    ACAPI_DisposeAddParHdl (&addPars);
+                }
+                return CreateErrorResponse (err != NoError ? err : APIERR_BADINDEX, "Failed to read the parameters of the 'libraryPartName' library part.");
+            }
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = addPars;
+            element.label.u.symbol.libInd = libPart.index;
         }
 
         // A Symbol label is a library part instance, so ACAPI_Element_Create needs the library

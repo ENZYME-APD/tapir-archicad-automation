@@ -147,6 +147,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set a label&rsquo;s optimised position, &ldquo;use text pen as uniform pen&rdquo; of a symbol label, or a perpendicular text direction</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Set the text direction (parallel, horizontal, vertical or a custom angle) with textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> and <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. When the symbol label&rsquo;s library part has a parameter for the other two, set it with <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; otherwise set them in the Label tool settings or a favorite, and create the labels with favoriteName.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_LabelType</code> has no field for an optimised position or a uniform pen (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). Its <code>textWay</code> is documented for labels with only <code>APIDir_Parallel</code>, <code>APIDir_Horizontal</code>, <code>APIDir_Vertical</code> and <code>APIDir_General</code>, not <code>APIDir_Perpendicular</code>.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2666">#2666</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
@@ -159,6 +166,13 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> holds only <code>head</code>, <code>linkToSettings</code>, <code>defNode</code>, <code>defSegment</code>, <code>visibility</code>, <code>isAutoOnStoryVisibility</code>, <code>nVertices</code>, <code>referenceLinePen</code>, <code>contourPen</code>, <code>nNodes</code>, <code>nSegments</code> and <code>bottomOffset</code>; neither it nor <code>API_RailingSegmentType</code>, <code>API_RailingNodeType</code> and their post, rail, panel and baluster types has a break mark, symbol component, symbol override or 2D attribute field (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). The break mark fields (<code>breakLinePositionType</code>, <code>breakLineDistance</code>, <code>breakLineAngle</code>) are only in <code>API_StairType</code>, and the <code>ACAPI::</code> modules have no railing API.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2573">#2573</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Create a radial dimension of an arc, a circle, a curved wall or a curved slab edge</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not documented</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Place the radial dimension in Archicad and read it with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a>, which returns how Archicad stored it. Those readings are what a create command needs.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RadialDimensionType</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30) has <code>base</code> (<code>API_DimBase</code>), <code>endC</code> and <code>dimVal</code> but no centre field, and which point <code>base.loc</code> is and which <code>inIndex</code> an arc needs are only shown in an image (<code>neig_rdim.gif</code>). <code>ACAPI_Element_Create</code> (<code>ACAPinc.h</code>) lists <code>API_RadialDimensionID</code> without notes, and the DevKit&rsquo;s <code>Element_Test</code> example only edits a radial dimension placed by hand (<code>Do_RadialDimension_Edit</code>).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2660">#2660</a></td>
                         </tr>
                         <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile</td>
@@ -214,6 +228,20 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781">#781</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the floor plan cut plane or the structural analytical model settings saved in a view</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Set them in the view's View Settings in Archicad. The project's floor plan cut plane can be set with <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_NavigatorView</code> (<code>APIdefs_Navigator.h</code>, AC25&ndash;AC30), which <code>ACAPI_Navigator_GetNavigatorView</code>, <code>_ChangeNavigatorView</code> and <code>_NewNavigatorView</code> read and write, has no cut plane and no structural analytical field. <code>API_FloorPlanCutDefinition</code> (<code>APIdefs_Environment.h</code>) is the project setting (<code>APIPrefs_FloorPlanCutPlaneDef</code>), not one per view.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2701">#2701</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Tell a clone folder of the View Map from a normal folder</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Give the clone folders a name or ID of their own and find them by it in <a href="../archicad-addon/#GetNavigatorItemTree">GetNavigatorItemTree</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_NavigatorItem</code> (<code>APIdefs_Navigator.h</code>, AC25&ndash;AC30) has no clone flag, and <code>API_NavigatorItemTypeID</code> has no clone folder type; Archicad 29 reports a clone folder as <code>API_UndefinedNavItem</code>, like a Project Map folder. <code>ACAPI_Navigator.h</code> has no function that reads one.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2701">#2701</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change the settings of an existing Layout Book subset (prefix, numbering style, start at, ...)</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.</td>
@@ -242,6 +270,13 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Place the file as a hotlink with <a href="../archicad-addon/#CreateHotlinkNodes">CreateHotlinkNodes</a> and <a href="../archicad-addon/#CreateHotlinkInstances">CreateHotlinkInstances</a>, then <a href="../archicad-addon/#BreakHotlinkNodes">BreakHotlinkNodes</a>.</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The project functions (<code>ACAPI_ProjectOperation_*</code>; <code>APIDo_*ID</code> in AC25&ndash;AC26) open, create, save, close, print and publish, but none merges. <code>ACAPI_Element_Merge_Elements</code> is the Merge of construction elements, not of files.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Delete one offset modifier of a profile</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Rebuild the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a>' <code>replaceSkins</code> and <code>newSkins</code>, which drops every modifier, then add the ones to keep again with <code>newProfileModifiers</code> (Archicad 27 and later).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ProfileVectorImage</code> (<code>ProfileVectorImage.hpp</code>), <code>ProfileVectorImageOperations</code> and <code>VI::ProfileVectorImageBuilder</code> only add parameters, anchors and dimension control tools (<code>AddProfileParameter</code>, <code>AddOffsetParameter</code>, <code>AddOffsetParameterSetup</code>, <code>AddAnchor</code>, <code>AddDimControlTool</code>); none removes one, and <code>DisableControlViaParameter</code> only disables its control (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2586">#2586</a></td>
                         </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Documents and publishing</th></tr>
@@ -296,6 +331,13 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Window_Check</code> (<code>ACAPinc.h</code>, AC27&ndash;AC30; <code>ACAPI_ActionCenter_Check</code> in AC25&ndash;AC26) returns only an error code; <code>API_ActionCenterItemID</code> (<code>APIdefs_ActionCenter.hpp</code>) has only <code>APIActionCenterItem_Hotlinks</code>.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Load a new add-on (.apx or .bundle) while Archicad runs, from an add-on or a script</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Add it in Archicad's Add-On Manager (Options &gt; Add-On Manager &gt; Edit List of Available Add-Ons &gt; Add). An add-on that is already loaded is replaced only after Archicad quits, as the Tapir Installer does when it updates Tapir.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">Archicad loads an add-on itself and calls its <code>CheckEnvironment</code>, <code>RegisterInterface</code>, <code>Initialize</code> and <code>FreeData</code>; <code>API_AddonType</code> (<code>APIAddon_Normal</code>, <code>APIAddon_Preload</code>, <code>APIAddon_DontRegister</code>; <code>APIdefs_Registration.h</code>) and <code>ACAPI_KeepInMemory</code> (<code>ACAPinc.h</code>) only steer the add-on's own loading. No function loads, registers or reloads another add-on (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2732">#2732</a></td>
                         </tr>
                     </tbody>
                 </table>
