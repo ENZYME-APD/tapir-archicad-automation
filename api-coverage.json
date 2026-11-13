@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-13 15:30 UTC",
+ "generatedAt": "2026-11-13 17:22 UTC",
  "versions": [
   25,
   26,
@@ -2908,6 +2908,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -3405,7 +3409,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    }
+   ],
    "issues": []
   },
   {
@@ -3546,7 +3555,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    }
+   ],
    "issues": []
   },
   {
@@ -5672,7 +5686,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    }
+   ],
    "issues": []
   },
   {
@@ -6048,7 +6067,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2810,
+     "title": "Return the text content of drawing primitives (zone stamp lines)"
+    }
+   ],
    "issues": []
   },
   {
@@ -6959,6 +6983,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2812,
+     "title": "ApplyFavoritesToElements: settingGroups to apply only chosen panels (e.g. Floor Plan and Section)"
+    },
+    {
      "number": 2620,
      "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
     }
@@ -7829,6 +7857,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2809,
+     "title": "GetDetailsOfElements: return the lines of a text as Archicad breaks them"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -14179,7 +14211,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2813,
+     "title": "PublishPublisherSet: list the written files, document selectedNavigatorItemIds"
+    }
+   ],
    "issues": []
   },
   {
@@ -14202,7 +14239,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2813,
+     "title": "PublishPublisherSet: list the written files, document selectedNavigatorItemIds"
+    }
+   ],
    "issues": []
   },
   {
@@ -15735,7 +15777,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2808,
+     "title": "CloseProject fails when Archicad leaves the project open"
+    }
+   ],
    "issues": [
     {
      "number": 2798,
@@ -15924,7 +15971,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2808,
+     "title": "CloseProject fails when Archicad leaves the project open"
+    }
+   ],
    "issues": []
   },
   {
@@ -25348,6 +25400,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2812,
+     "title": "ApplyFavoritesToElements: settingGroups to apply only chosen panels (e.g. Floor Plan and Section)"
+    },
+    {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    },
+    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -25366,10 +25426,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2696,
-     "title": "[3/5] Linear dimensions: text placement method and marker size"
     },
     {
      "number": 2684,
@@ -26818,7 +26874,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    }
+   ],
    "issues": []
   },
   {
@@ -29721,6 +29782,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     }
@@ -31102,10 +31167,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2696,
-     "title": "[3/5] Linear dimensions: text placement method and marker size"
     },
     {
      "number": 2684,
@@ -37559,6 +37620,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2813,
+     "title": "PublishPublisherSet: list the written files, document selectedNavigatorItemIds"
+    },
+    {
+     "number": 2812,
+     "title": "ApplyFavoritesToElements: settingGroups to apply only chosen panels (e.g. Floor Plan and Section)"
+    },
+    {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    },
+    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -37585,10 +37658,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2696,
-     "title": "[3/5] Linear dimensions: text placement method and marker size"
     },
     {
      "number": 2684,
@@ -44243,10 +44312,6 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2696,
-     "title": "[3/5] Linear dimensions: text placement method and marker size"
-    },
-    {
      "number": 2684,
      "title": "[2/5] Linear dimensions: text style (font, bold, italic, underline, width and spacing factor)"
     },
@@ -47381,10 +47446,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2696,
-     "title": "[3/5] Linear dimensions: text placement method and marker size"
     },
     {
      "number": 2684,
@@ -53901,6 +53962,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2811,
+     "title": "Add ModifyLayers: change only the given settings of existing layers"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-13 15:30 UTC",
+ "generatedAt": "2026-11-13 17:22 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -6242,12 +6242,10 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 23,
+   "parameterCount": 22,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
-    "dimensionsData.marker.pen",
-    "dimensionsData.marker.type",
     "dimensionsData.referencePoint",
     "dimensionsData.witnessPoints"
    ],
@@ -6268,7 +6266,8 @@
     "dimensionsData.staticDimension",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
-    "dimensionsData.textPen"
+    "dimensionsData.textPen",
+    "dimensionsData.textPlacement"
    ],
    "pullRequests": [],
    "issues": []
@@ -6287,12 +6286,10 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 28,
+   "parameterCount": 27,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
-    "dimensionsData.marker.pen",
-    "dimensionsData.marker.type",
     "dimensionsData.preset",
     "dimensionsData.referencePoint",
     "dimensionsData.sectionElementId"
@@ -6318,6 +6315,7 @@
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
     "dimensionsData.textPen",
+    "dimensionsData.textPlacement",
     "dimensionsData.totalSizePlane"
    ],
    "pullRequests": [],
@@ -6337,12 +6335,10 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 22,
+   "parameterCount": 21,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
-    "dimensionsData.marker.pen",
-    "dimensionsData.marker.type",
     "dimensionsData.referencePoint",
     "dimensionsData.wallId"
    ],
@@ -6362,7 +6358,8 @@
     "dimensionsData.staticDimension",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
-    "dimensionsData.textPen"
+    "dimensionsData.textPen",
+    "dimensionsData.textPlacement"
    ],
    "pullRequests": [],
    "issues": []
@@ -6371,7 +6368,7 @@
    "id": "ModifyAssociativeDimensions",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type and pen, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the marker size, the witness extension line, the layout and the hole and composite wall dimensioning settings.",
+   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6381,7 +6378,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 24,
+   "parameterCount": 23,
    "coveredParameters": [
     "dimensionsWithDetails",
     "dimensionsWithDetails.appearance",
@@ -6390,8 +6387,6 @@
     "dimensionsWithDetails.elementId",
     "dimensionsWithDetails.linePen",
     "dimensionsWithDetails.marker",
-    "dimensionsWithDetails.marker.pen",
-    "dimensionsWithDetails.marker.type",
     "dimensionsWithDetails.textFrame",
     "dimensionsWithDetails.textHeight",
     "dimensionsWithDetails.textPen"
@@ -6403,6 +6398,7 @@
     "dimensionsWithDetails.openingHeightsInChain",
     "dimensionsWithDetails.openingHeightsNominal",
     "dimensionsWithDetails.staticDimension",
+    "dimensionsWithDetails.textPlacement",
     "dimensionsWithDetails.witnessPointTexts",
     "dimensionsWithDetails.witnessPointTexts.content",
     "dimensionsWithDetails.witnessPointTexts.customText",
@@ -6417,7 +6413,7 @@
    "id": "GetDimensionData",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Gets the data of existing dimension chains: the line pen, the marker type and pen and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen and frame, and the text content (measured value or custom text), superscript and whether the text was moved by hand.",
+   "brief": "Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen and frame, and the text content (measured value or custom text), superscript and whether the text was moved by hand.",
    "status": "done",
    "reason": "",
    "components": [
