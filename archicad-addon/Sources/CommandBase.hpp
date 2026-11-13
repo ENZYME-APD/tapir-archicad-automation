@@ -77,6 +77,11 @@ private:
     mutable GS::Optional<GS::UniString> mInputParametersSchema;
 };
 
+// Installs the command for Archicad, wrapped in ArchicadSchemaCommand. Not a template, so the
+// wrapping is compiled once, not once per command: RegisterCommand is instantiated for every
+// command in one file, and MSVC refuses that file with C1128 (too many sections) otherwise.
+GSErrCode InstallArchicadSchemaCommand (GS::Owner<CommandBase> command);
+
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
 GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniString& errorMessage);
 // The FailedExecutionResult shape for an error already built with CreateErrorResponse.

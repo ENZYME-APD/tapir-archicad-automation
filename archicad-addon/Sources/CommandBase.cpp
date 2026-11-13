@@ -139,6 +139,11 @@ void ArchicadSchemaCommand::OnResponseValidationFailed (const GS::ObjectState& r
     mCommand->OnResponseValidationFailed (response);
 }
 
+GSErrCode InstallArchicadSchemaCommand (GS::Owner<CommandBase> command)
+{
+    return ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ArchicadSchemaCommand> (std::move (command)));
+}
+
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage)
 {
     GS::ObjectState error;

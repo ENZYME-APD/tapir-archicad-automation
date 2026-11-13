@@ -85,7 +85,7 @@ GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, co
         command->GetRawResponseSchema ())
     );
 
-    GSErrCode err = ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ArchicadSchemaCommand> (command.Pass ()));
+    GSErrCode err = InstallArchicadSchemaCommand (command.Pass ());
     if (err != NoError) {
         // Initialize only ORs the results together, so without this line nothing tells which
         // command failed. A failed registration can make Archicad crash later, at the first
