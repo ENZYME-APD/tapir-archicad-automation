@@ -19,6 +19,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyAssociativeDimensions', {'dimensi
     'elementId': dimension['elementId'],
     'linePen': 3,
     'marker': {'type': 'FullArrow30', 'pen': 3},
+    'textPlacement': {'method': 'Flexible', 'placeBelowLine': True, 'pushNeighbors': False},
     'textHeight': 3.5,
     'textPen': 5,
     'textFrame': True,

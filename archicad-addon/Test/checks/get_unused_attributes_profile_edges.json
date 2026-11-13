@@ -1,0 +1,81 @@
+{
+  "title": "GetUnusedAttributes scans the edges of a profile with a custom edge surface without stopping Archicad, and counts the profile as an attribute (#2772)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "a surface",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "Surface"},
+      "save": {"s1": "attributes[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a surface"}
+      ]
+    },
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "a profile whose bottom edge has surface s1",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2772 unused attributes",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "isCore": true,
+                "edgeOverrides": [
+                  {"edgeIndex": 1, "surfaceId": {"attributeId": {"guid": "${s1}"}}}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"p1": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "unused surfaces, profiles and line types",
+      "command": "GetUnusedAttributes",
+      "creates": false,
+      "params": {"types": ["surface", "profile", "lineType"]},
+      "expect": [
+        {"path": "attributeTypes", "len": 3, "name": "one item per requested type"},
+        {"path": "attributeTypes[0].type", "eq": "surface"},
+        {"path": "attributeTypes[1].type", "eq": "profile"},
+        {"path": "attributeTypes[2].type", "eq": "lineType"},
+        {"path": "attributeTypes[1].attributeCount", "gt": 0, "name": "the new profile is counted"},
+        {"path": "attributeTypes[0].usedCount", "gt": 0, "name": "some surface is used"}
+      ]
+    },
+    {
+      "id": "every attribute type",
+      "command": "GetUnusedAttributes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        {"path": "attributeTypes", "len": 9, "name": "all nine types checked"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${p1}"}}}]}
+    }
+  ]
+}

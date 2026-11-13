@@ -35,7 +35,7 @@ public:
             bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement,
             bool onToolChange, bool onViewEvents, bool onLockableResChanges, bool onToolDefaultChanges,
             bool onAttributeChanges, bool onClassificationChanges, bool onPropertyDefinitionChanges, bool onMarqueeChange, bool on3DSettingsChanges,
-            const std::set<API_ElemTypeID>& typesToObserve)
+            const std::set<API_ElemTypeID>& typesToObserve, const GS::HashSet<API_Guid>& elemsToObserve)
             : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange),
               notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement),
               notifyOnToolChange(onToolChange), notifyOnViewEvents(onViewEvents), notifyOnLockableReservationChanges(onLockableResChanges),
@@ -43,7 +43,7 @@ public:
               notifyOnAttributeChanges(onAttributeChanges), notifyOnClassificationChanges(onClassificationChanges),
               notifyOnPropertyDefinitionChanges(onPropertyDefinitionChanges), notifyOnMarqueeChange(onMarqueeChange),
               notifyOn3DSettingsChanges(on3DSettingsChanges),
-              elementTypesToObserve(typesToObserve) {}
+              elementTypesToObserve(typesToObserve), elementsToObserve(elemsToObserve) {}
 
         IO::URI::URI             url;
         bool                     notifyOnNew;
@@ -63,8 +63,16 @@ public:
         bool                     notifyOnPropertyDefinitionChanges;
         bool                     notifyOnMarqueeChange;
         bool                     notifyOn3DSettingsChanges;
-        // The element types whose modifications this client is notified of; empty means every type.
+        // The element types whose modifications this client is notified of.
         std::set<API_ElemTypeID> elementTypesToObserve;
+        // The elements whose modifications this client is notified of, besides the elements of
+        // elementTypesToObserve (#2493). With both empty the client observes every element.
+        GS::HashSet<API_Guid>    elementsToObserve;
+
+        bool observesEveryElement () const
+        {
+            return elementTypesToObserve.empty () && elementsToObserve.IsEmpty ();
+        }
 
         bool acceptsNotificationsForEventType (ElementEventType eventType, const GS::ObjectState& event) const
         {
@@ -74,14 +82,18 @@ public:
                 if (!notifyOnModification) {
                     return false;
                 }
-                if (elementTypesToObserve.empty ()) {
+                if (observesEveryElement ()) {
                     return true;
                 }
-                // Another client may observe more types; the event of an element of a
-                // type this client did not ask for is not sent to it.
+                // Another client may observe more types or elements; the event of an element
+                // this client did not ask for, by its type or in its list, is not sent to it.
                 GS::UniString elementTypeName;
                 event.Get ("elementType", elementTypeName);
-                return elementTypesToObserve.count (GetElementTypeFromNonLocalizedName (elementTypeName)) > 0;
+                if (elementTypesToObserve.count (GetElementTypeFromNonLocalizedName (elementTypeName)) > 0) {
+                    return true;
+                }
+                const GS::ObjectState* elementId = event.Get ("elementId");
+                return elementId != nullptr && elementsToObserve.Contains (GetGuidFromObjectState (*elementId));
             } else if (eventType == ElementEventType::Reserved || eventType == ElementEventType::Released) {
                 return notifyOnReservationChanges;
             }
@@ -99,7 +111,9 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
     static void UpdateElementObservers ();
-    static bool IsObservedElementType (API_ElemTypeID typeID);
+    // Whether a new element (or one restored by undo or redo) needs an observer: its type is
+    // observed, or it is one of the elements a client listed in elementsToObserve.
+    static bool IsObservedElement (const API_Elem_Head& elemHead);
     static void UninstallSelectionChangeHandlerIfNotNeeded ();
     static void SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os);
     static void SendQueuedEventsToNotificationClient ();
@@ -140,9 +154,12 @@ private:
     static std::map<GS::UniString, Client> clients;
     static bool hasClientToNotifyOnNew;
     static bool hasClientToNotifyOnModification;
-    // The element types whose elements have an observer attached while
-    // hasClientToNotifyOnModification is set; empty means every element.
+    // The elements that have an observer attached while hasClientToNotifyOnModification is
+    // set: every element when observesEveryElement is set, otherwise the elements of
+    // observedElementTypes and the existing ones of observedElements.
+    static bool observesEveryElement;
     static std::set<API_ElemTypeID> observedElementTypes;
+    static GS::HashSet<API_Guid> observedElements;
     static bool hasClientToNotifyOnReservationChanges;
     static bool hasClientToNotifyOnSelectionChange;
     static bool hasClientToNotifyOnAttributeReplacement;

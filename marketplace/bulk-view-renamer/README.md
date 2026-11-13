@@ -6,8 +6,12 @@ renamed.
 
 ## How to use it
 
-1. Run the script. It lists the views of the View Map with their folder, ID and name.
-2. In *Views in* choose the whole View Map or one folder (its subfolders are included).
+1. Run the script. It lists the views of the View Map in the View Map's folders, with their name,
+   ID and type (floor plan, section, elevation, interior elevation, worksheet, detail, schedule,
+   ...). Click the arrow of a folder to close or open it; *Expand all* and *Collapse all* open or
+   close every folder.
+2. In *Views in* choose the whole View Map or one folder (its subfolders are included), and in
+   *Type* all types or one type of view.
 3. Choose how the names change:
    - *Find and replace*: *Find* and *Replace with*, optionally *Match case* and
      *Regular expression*.
@@ -16,14 +20,14 @@ renamed.
      ID and `{n}` the counter, with its *Start*, *Step* and *Digits*. The counter counts in View
      Map order.
 4. The table shows the new names. A *clash* is a view that would get the same name as another
-   view in its folder; an empty new name is skipped. Select rows to rename only those; *Clear
-   selection* renames every listed view again.
+   view in its folder; an empty new name is skipped. Select rows to rename only those (selecting a
+   folder selects every listed view in it); *Clear selection* renames every listed view again.
 5. Press *Rename...*: the script lists the changes and asks first, then renames the views and
    reads the View Map again.
 
 ## Settings
 
-- *Views in*: the whole View Map.
+- *Views in*: the whole View Map; *Type*: all types. Every folder open.
 - *Find and replace*, with *Match case* and *Regular expression* off.
 - Pattern `{name} {n}`, *Start* 1, *Step* 1, *Digits* 2.
 
@@ -43,4 +47,5 @@ window's status line. It writes no files.
 
 ## Credits
 
-Requested by @parikshit99 in #2004, written with the Tapir issue bot.
+Requested by @parikshit99 in #2004, written with the Tapir issue bot. The View Map folders and the
+view types were asked for by the Discord user Bot3d in #2783.

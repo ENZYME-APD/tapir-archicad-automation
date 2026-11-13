@@ -48,9 +48,9 @@
    without container query units ignores the declaration and keeps the size above. */
 .hero .wrap > :first-child { container-type: inline-size }
 .hero h1:lang(fr), .hero h1:lang(es), .hero h1:lang(it) { font-size: min(clamp(3.25rem, 8.4vw, 7rem), 14cqi) }
-.hero .lead { font-size: clamp(1.0625rem, 1.6vw, 1.25rem); color: var(--cream-86); margin-top: 24px; max-width: 30em }
+.hero .lead { font-size: clamp(1.0625rem, 1.6vw, 1.1875rem); color: var(--cream-86); margin-top: 24px; max-width: 30em }
 .hero .ctas { margin-top: 32px }
-.hero .meta { margin-top: 18px; font: 500 .78125rem/1.7 var(--mono); color: var(--cream-72); letter-spacing: .04em; text-transform: uppercase }
+.hero .meta { margin-top: 18px; font: 500 .75rem/1.7 var(--mono); color: var(--cream-72); letter-spacing: .04em; text-transform: uppercase }
 .hero .meta a { color: var(--ochre-light) }
 .hero .meta .sep { padding-inline: 6px }
 
@@ -63,14 +63,14 @@
 .plan-mark img { display: block; width: 18px; height: 18px }
 .plan-bar select {
     -webkit-appearance: none; -moz-appearance: none; appearance: none; flex: 0 1 auto; min-width: 0; height: 40px; margin: 0;
-    padding: 0 28px 0 12px; border: 0; border-radius: 0; color: var(--plan-bar-text); font: 600 .78125rem var(--body); text-overflow: ellipsis; cursor: pointer;
+    padding: 0 28px 0 12px; border: 0; border-radius: 0; color: var(--plan-bar-text); font: 600 .8125rem var(--body); text-overflow: ellipsis; cursor: pointer;
     background: transparent var(--plan-select-arrow) no-repeat right 10px center / 10px 6px
 }
 .plan-bar select:focus-visible { outline-offset: -3px }
 .plan-bar option { color: var(--plan-ink); background: var(--plan-sheet) }
-.plan-run { display: inline-flex; align-items: center; gap: 6px; flex: none; height: 28px; margin-inline: 4px 10px; padding: 0 12px; border: 0; border-radius: 4px; background: var(--plan-mark); color: var(--plan-ink); font: 700 .78125rem var(--body); cursor: pointer }
+.plan-run { display: inline-flex; align-items: center; gap: 6px; flex: none; height: 28px; margin-inline: 4px 10px; padding: 0 12px; border: 0; border-radius: 4px; background: var(--plan-mark); color: var(--plan-ink); font: 700 .8125rem var(--body); cursor: pointer }
 .plan-run[aria-busy="true"] { background: var(--plan-mark-busy) }
-.plan-sheet { margin-left: auto; padding-right: 14px; font: 500 .71875rem var(--mono); color: var(--plan-bar-muted); white-space: nowrap }
+.plan-sheet { margin-left: auto; padding-right: 14px; font: 500 .75rem var(--mono); color: var(--plan-bar-muted); white-space: nowrap }
 .plan-card.heat .plan-rooms { fill: var(--plan-ink) }
 .plan-status { display: flex; align-items: center; gap: 10px; padding: 10px 14px 12px; font: 500 .75rem/1.4 var(--mono); color: var(--plan-muted); border-top: 1px solid var(--plan-line) }
 .plan-status b { color: var(--plan-ink) }
@@ -99,7 +99,7 @@
 
 /* ---------- ticker: decoration only, still under reduced motion ---------- */
 .ticker { background: var(--charcoal); color: var(--cream); overflow: hidden; border-block: 1px solid var(--cream-08) }
-.ticker-track { display: flex; gap: 40px; padding: 14px 16px; width: max-content; font: 500 .84375rem var(--mono); white-space: nowrap }
+.ticker-track { display: flex; gap: 40px; padding: 14px 16px; width: max-content; font: 500 .875rem var(--mono); white-space: nowrap }
 .ticker-track.moving { animation: home-slide 60s linear infinite }
 .ticker-track span::before { content: "TapirCommand."; color: var(--ochre-light) }
 @keyframes home-slide { to { transform: translateX(-50%) } }
@@ -108,7 +108,7 @@
 .try { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; align-items: start }
 .try > * { min-width: 0 }
 .try .prose h2 { font-size: clamp(2rem, 4.6vw, 3.5rem) }
-.try .term pre { font-size: .78125rem }
+.try .term pre { font-size: .8125rem }
 
 @media (max-width: 900px) {
     .hero .wrap, .try { grid-template-columns: 1fr }
