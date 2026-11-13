@@ -2529,7 +2529,7 @@ GSErrCode Initialize (void)
         CommandGroup navigatorCommands ("Navigator Commands");
         err |= RegisterCommand<PublishPublisherSetCommand> (
             navigatorCommands, "0.1.0",
-            "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
+            "Performs a publish operation on the currently opened project. Only the given publisher set will be published. The command answers when Archicad's API reports the publishing done; for a local or LAN output folder the answer names the folder and lists the files created or changed in it (writtenFiles). A large set can take minutes, so give the call a long enough timeout. The output format of each item is the one set in the publisher set: Archicad's API cannot choose it per call."
         );
         err |= RegisterCommand<GetPublisherSetsCommand> (
             navigatorCommands, "2.0.0",

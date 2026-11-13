@@ -294,6 +294,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No schedule export function (AC25&ndash;AC30); <code>ACAPI_ProjectOperation_Publish</code> (<code>APIDo_PublishID</code> in AC25&ndash;AC26) publishes a whole publisher set.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Choose the output format (PDF, DWG, DXF &hellip;) of a publisher set per call</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Make one publisher set per format in Archicad&rsquo;s Organizer once, then publish the one you need with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>; its answer lists the files written (<code>writtenFiles</code>).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_PublishPars</code> (<code>APIdefs_Automate.h</code>, AC25&ndash;AC30) has only the set&rsquo;s <code>guid</code> and an output <code>path</code>. The format of an item is <code>API_NavigatorItem::mimeType</code> (<code>APIdefs_Navigator.h</code>, AC29&ndash;AC30 only), which nothing writes: <code>ACAPI_Navigator_ChangeNavigatorItem</code> changes the name or ID of View Map items only.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2801">#2801</a></td>
+                        </tr>
 
                         <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Create a revision Change without placing a Change Marker, or change the ID or description of an existing Change</td>
