@@ -1,8 +1,8 @@
 {
  "version": 1,
- "generatedAt": "2026-11-12T11:18:06Z",
+ "generatedAt": "2026-11-13T11:10:23Z",
  "totals": {
-  "people": 44,
+  "people": 45,
   "places": 43,
   "countries": 29
  },
@@ -13,6 +13,14 @@
    "countryCode": "DE",
    "lat": 52.52,
    "lon": 13.4,
+   "people": 2
+  },
+  {
+   "name": "Budapest",
+   "country": "Hungary",
+   "countryCode": "HU",
+   "lat": 47.5,
+   "lon": 19.04,
    "people": 2
   },
   {
@@ -37,14 +45,6 @@
    "countryCode": "AU",
    "lat": -27.47,
    "lon": 153.02,
-   "people": 1
-  },
-  {
-   "name": "Budapest",
-   "country": "Hungary",
-   "countryCode": "HU",
-   "lat": 47.5,
-   "lon": 19.04,
    "people": 1
   },
   {
@@ -394,6 +394,11 @@
    "people": 2
   },
   {
+   "name": "Hungary",
+   "code": "HU",
+   "people": 2
+  },
+  {
    "name": "New Zealand",
    "code": "NZ",
    "people": 2
@@ -421,11 +426,6 @@
   {
    "name": "Greece",
    "code": "GR",
-   "people": 1
-  },
-  {
-   "name": "Hungary",
-   "code": "HU",
    "people": 1
   },
   {
@@ -619,6 +619,7 @@
    "lon": 24.94,
    "kind": "settlement"
   },
+  "hi, singapore. / student": null,
   "hi. argentina - la plata capital": null,
   "italy": {
    "name": "Italy",
@@ -685,6 +686,7 @@
    "lon": -102.01,
    "kind": "country"
   },
+  "neighbor with gs?": null,
   "new zealand": {
    "name": "New Zealand",
    "country": "New Zealand",
@@ -870,6 +872,7 @@
    "lat": 52.23,
    "lon": 21.01,
    "kind": "settlement"
-  }
+  },
+  "yeah, same city": null
  }
 }
