@@ -4290,10 +4290,8 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     return changed;
 }
 
-namespace {
-
-// The floor plan display settings of a column that ModifyColumns writes (#2529), under the names
-// GetDetailsOfElements reads them.
+// The floor plan display settings of a column that ModifyColumns and CreateColumns write (#2529),
+// under the names GetDetailsOfElements reads them.
 const char* ColumnDisplaySchemaProperties = R"(
                         "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the column is shown on (Show On Stories), for example { \"showOnHome\": true } for the home story only. Setting it without isAutoOnStoryVisibility turns the automatic story visibility off, which Archicad would otherwise recompute it from. The item fails when Archicad does not take the given combination." },
                         "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true, Archicad recomputes visibility automatically from the actual elevation of the column and ignores a visibility given together with it." },
@@ -4311,12 +4309,16 @@ const char* ColumnDisplaySchemaProperties = R"(
                         "hiddenLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the hidden lines of the column." },
                         "hiddenLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the hidden lines of the column, for example a dashed line." },)";
 
+namespace {
+
 const char* ColumnDisplayKeys[] = {
     "visibility", "isAutoOnStoryVisibility", "displayOption", "viewDepthLimitation",
     "contourPen", "contourLineTypeId", "veneerLinePen", "veneerLineTypeId", "coreSymbolPen",
     "belowViewLinePen", "belowViewLineTypeId", "aboveViewLinePen", "aboveViewLineTypeId",
     "hiddenLinePen", "hiddenLineTypeId"
 };
+
+} // namespace
 
 bool HasColumnDisplaySettings (const GS::ObjectState& details)
 {
@@ -4327,6 +4329,8 @@ bool HasColumnDisplaySettings (const GS::ObjectState& details)
     }
     return false;
 }
+
+namespace {
 
 GS::Optional<GS::UniString> GetColumnDisplayLineType (const GS::ObjectState& details, const char* key, bool& has, API_AttributeIndex& lineType)
 {
@@ -4355,6 +4359,8 @@ GS::Optional<GS::UniString> GetColumnDisplayPen (const GS::ObjectState& details,
     pen = static_cast<short> (value);
     return {};
 }
+
+} // namespace
 
 // Writes the display settings given in details into element and mask. Everything is checked
 // before anything is written, so an invalid value leaves the column as it was.
@@ -4483,8 +4489,6 @@ GS::UniString GetColumnDisplaySettingsNotApplied (const API_ColumnType& wanted, 
     checkLineType ("hiddenLineTypeId", wanted.hiddenLineType, got.hiddenLineType);
     return notApplied;
 }
-
-} // namespace
 
 bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, const Stories& stories)
 {
@@ -7655,7 +7659,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                             "items": {
                                 "$ref": "#/BeamHoleModification"
                             }
-                        },)") + BeamSurfaceAndFillSchemaProperties + R"(
+                        },)") + BeamDisplaySchemaProperties + BeamSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["begCoordinate", "endCoordinate", "zCoordinate"]
@@ -7741,6 +7745,14 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
         return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
+    // The floor plan display settings, written as ModifyBeams writes them (#2529), so a new beam
+    // shows on the right stories with the right lines without a second ModifyBeams call.
+    // AfterCreate checks that Archicad kept them.
+    const GS::Optional<GS::UniString> displayError = ApplyBeamDisplaySettings (element, unusedMask, parameters, settingsChanged);
+    if (displayError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, displayError.Get ());
+    }
+
     // segmentCount first, so the cross section given for all segments and the segments array
     // below reach the added segments too (#2678).
     Int32 segmentCount = 0;
@@ -7798,18 +7810,24 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 // A beam whose segmentCount Archicad did not keep is deleted again and the item fails (#2678).
 // The holes are written as ModifyBeams writes them (#2551), with ACAPI_Element_Change on the new
 // beam rather than with the memo of ACAPI_Element_Create, so the create itself stays as it was.
+// Display settings Archicad did not keep fail the item the same way, as ModifyBeams fails it (#2529).
 // An error here makes CreateElementsCommandBase delete the new beam and fail the item.
 GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
 {
-    if (parameters.Contains ("segmentCount")) {
+    const bool checkSegmentCount = parameters.Contains ("segmentCount");
+    const bool checkDisplay = HasBeamDisplaySettings (parameters);
+    if (checkSegmentCount || checkDisplay) {
         API_Element created = {};
         created.header.guid = newElementGuid;
         const GSErrCode err = ACAPI_Element_Get (&created);
         if (err != NoError) {
             return err;
         }
-        if (created.beam.nSegments != requestedElement.beam.nSegments) {
+        if (checkSegmentCount && created.beam.nSegments != requestedElement.beam.nSegments) {
             return APIERR_GENERAL;
+        }
+        if (checkDisplay && !GetBeamDisplaySettingsNotApplied (requestedElement.beam, created.beam, parameters).IsEmpty ()) {
+            return APIERR_BADPARS;
         }
     }
 

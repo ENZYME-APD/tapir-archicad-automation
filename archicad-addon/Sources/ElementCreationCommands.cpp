@@ -406,7 +406,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
-                        },)") + ColumnSurfaceAndFillSchemaProperties + R"(
+                        },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required" : [
@@ -495,6 +495,14 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
         return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
+    // The floor plan display settings, written as ModifyColumns writes them (#2529), so a new
+    // column shows on the right stories with the right lines without a second ModifyColumns call.
+    // AfterCreate checks that Archicad kept them.
+    const GS::Optional<GS::UniString> displayError = ApplyColumnDisplaySettings (element, unusedMask, parameters, settingsChanged);
+    if (displayError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, displayError.Get ());
+    }
+
     double width = 0.0;
     double depth = 0.0;
     bool hasWidth = parameters.Get ("width", width);
@@ -535,6 +543,25 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     }
 
     return {};
+}
+
+// Display settings Archicad did not keep fail the item, as ModifyColumns fails it (#2529):
+// CreateElementsCommandBase then deletes the new column again.
+GSErrCode CreateColumnsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    if (!HasColumnDisplaySettings (parameters)) {
+        return NoError;
+    }
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    const GSErrCode err = ACAPI_Element_Get (&created);
+    if (err != NoError) {
+        return err;
+    }
+    if (!GetColumnDisplaySettingsNotApplied (requestedElement.column, created.column, parameters).IsEmpty ()) {
+        return APIERR_BADPARS;
+    }
+    return NoError;
 }
 
 CreateSlabsCommand::CreateSlabsCommand () :
