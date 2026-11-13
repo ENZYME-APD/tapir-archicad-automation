@@ -546,7 +546,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   main's schemas with the proposed merge. People with write access can check any
   marked PR or post `/merge-schema` to check and merge. Merging also requires the
   existing build and review checks to pass. If main or the PR changes during
-  validation, post a new command. Results appear as PR comments linking to the
+  validation, post a new command. GitHub's merge API pins the PR head; a main
+  change immediately after the final check can still race with the merge.
+  Results appear as PR comments linking to the
   Actions run; its `schema-report` download contains the JSON comparison.
   `tools/check_schema_refinement.py` compares schemas;
   `tools/merge_schema_refinement.py` handles commands and merging.

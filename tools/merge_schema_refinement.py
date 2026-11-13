@@ -1,12 +1,11 @@
 """Handle both /check-schema and /merge-schema comments on GitHub PRs.
 
 prepare authorizes the command and records the main and PR commits. After the
-workflow runs check_schema_refinement.py, finish reports the result or merges
-the checked files. Merging requires write access and unchanged commits.
+workflow runs check_schema_refinement.py, finish reports the result or asks
+GitHub to merge. The PR head is pinned; main is checked just before merging.
 """
 
 import argparse
-import base64
 import json
 import os
 from pathlib import Path
@@ -177,7 +176,7 @@ def prepare(repo, event, out):
 
 
 def finish(repo, event, request_path, report_path):
-    """Verify the saved comparison, then report it or publish that exact merge."""
+    """Verify the saved comparison, then report it or request a GitHub merge."""
     request = json.loads(request_path.read_text(encoding="utf-8"))
     report = json.loads(report_path.read_text(encoding="utf-8"))
     pr, command = check_request(repo, event)
@@ -209,41 +208,23 @@ def finish(repo, event, request_path, report_path):
     tree = git(Path.cwd(), "merge-tree", "--write-tree", base, head).decode().splitlines()[0]
     if tree != report["tree"]:
         raise ValueError("The merge tree differs from the validated tree.")
-    git(Path.cwd(), "config", "user.name", "github-actions[bot]")
-    git(Path.cwd(), "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com")
-    commit = (
-        git(
-            Path.cwd(),
-            "commit-tree",
-            tree,
-            "-p",
-            base,
-            "-p",
-            head,
-            "-m",
-            f"Merge pull request #{number}: validated schema refinement",
-        )
-        .decode()
-        .strip()
-    )
-    # The new commit is a fast-forward descendant of base. The explicit lease also
-    # rejects a concurrent main update, so no unvalidated recombination is published.
-    env = os.environ.copy()
-    credentials = base64.b64encode(f"x-access-token:{env['GH_TOKEN']}".encode()).decode()
-    env.update(
-        GIT_CONFIG_COUNT="1",
-        GIT_CONFIG_KEY_0="http.https://github.com/.extraheader",
-        GIT_CONFIG_VALUE_0=f"AUTHORIZATION: basic {credentials}",
-    )
-    git(
-        Path.cwd(), "push", f"--force-with-lease=refs/heads/main:{base}", "origin", f"{commit}:refs/heads/main", env=env
-    )
+    # GitHub's merge API pins the PR head, but cannot atomically pin main.
+    # Check main immediately before requesting the merge; a small race remains.
+    if api(repo, "git/ref/heads/main")["object"]["sha"] != base:
+        raise ValueError("Main changed before merging. Post a new command.")
+    result = api(repo, f"pulls/{number}/merge", "PUT", {"sha": head, "merge_method": "merge"})
+    if not result or not result.get("merged"):
+        raise ValueError("GitHub did not merge the pull request.")
+    commit = result["sha"]
     print(f"Merged {commit}", flush=True)
     # Publication has succeeded. A later notification failure must not report
     # that the merge failed or encourage replaying the merge request.
     followups = [(f"issues/{number}/comments", {"body": summary + f"Merged as `{commit}`."})]
-    # GITHUB_TOKEN pushes do not trigger main's normal push workflows.
-    followups.extend((f"actions/workflows/{workflow}/dispatches", {"ref": "main"}) for workflow in WORKFLOWS)
+    # GITHUB_TOKEN merges do not trigger main's normal push workflows.
+    followups.extend(
+        (f"actions/workflows/{workflow}/dispatches", {"ref": "main"})
+        for workflow in (*WORKFLOWS, "api_coverage.yml")
+    )
     for path, body in followups:
         try:
             api(repo, path, "POST", body)
@@ -265,6 +246,14 @@ def main():
         elif args.operation == "finish":
             finish(repo, event, args.request, args.report)
         else:
+            differences = []
+            if args.report.exists():
+                differences = json.loads(args.report.read_text(encoding="utf-8")).get("structural_differences", [])
+            detail = ""
+            if differences:
+                detail = "\n\nSchema differences (first 20):\n" + "\n".join(
+                    f"- `{difference.replace('`', '')}`" for difference in differences[:20]
+                )
             api(
                 repo,
                 f"issues/{event['issue']['number']}/comments",
@@ -273,7 +262,7 @@ def main():
                     "body": "Schema validation or merge stopped. "
                     f"[Action run]({os.environ['GITHUB_SERVER_URL']}/{repo}/actions/runs/{os.environ['GITHUB_RUN_ID']}) "
                     "contains the failure and any generated schema report. "
-                    "If the base or PR head moved, post a new command to validate the new candidate."
+                    "If the base or PR head moved, post a new command to validate the new candidate." + detail
                 },
             )
     except (KeyError, OSError, ValueError, subprocess.TimeoutExpired) as error:
