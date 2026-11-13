@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-12 21:47 UTC",
+ "generatedAt": "2026-11-13 01:28 UTC",
  "versions": [
   25,
   26,
@@ -25338,6 +25338,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2793,
+     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
+    },
+    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     },
@@ -31073,6 +31077,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2793,
+     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
+    },
     {
      "number": 2786,
      "title": "GetDetailsOfElements: return the source view of a Drawing"
@@ -37544,6 +37552,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2793,
+     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
+    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -44209,6 +44221,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2793,
+     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
+    },
+    {
      "number": 2786,
      "title": "GetDetailsOfElements: return the source view of a Drawing"
     },
@@ -47348,6 +47364,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2793,
+     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
+    },
     {
      "number": 2786,
      "title": "GetDetailsOfElements: return the source view of a Drawing"
