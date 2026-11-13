@@ -1,0 +1,223 @@
+{
+  "title": "ModifyRoofs and ModifyShells set the trimming body (cutBodyType), GetDetailsOfElements reads it back and a trim stays",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a wall under the roof",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 900, "y": 900 }, "endCoordinate": { "x": 906, "y": 900 }, "height": 4.0, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "a multi-plane roof over the wall",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 2.7, "floorIndex": 0, "eavesOverhang": 0.45,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.4363323 } ],
+            "polygonCoordinates": [ { "x": 900, "y": 900 }, { "x": 906, "y": 900 }, { "x": 906, "y": 905 }, { "x": 900, "y": 905 } ]
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "trim the wall to the roof",
+      "command": "TrimElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${r1}" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "trimmed" }
+      ]
+    },
+    {
+      "id": "roof: Contours Down",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          { "elementId": { "guid": "${r1}" }, "cutBodyType": "ContoursDown" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "Contours Down set" }
+      ]
+    },
+    {
+      "id": "roof: a shell-only trimming body is refused",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "roofsWithDetails": [
+          { "elementId": { "guid": "${r1}" }, "cutBodyType": "UpwardsExtrusion" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "UpwardsExtrusion on a roof refused by the input schema" }
+      ]
+    },
+    {
+      "id": "roof: an unknown trimming body is refused",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "roofsWithDetails": [
+          { "elementId": { "guid": "${r1}" }, "cutBodyType": "Sideways" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "unknown trimming body refused by the input schema" }
+      ]
+    },
+    {
+      "id": "the roof has Contours Down and keeps its geometry",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.cutBodyType", "eq": "ContoursDown" },
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane", "name": "still multi-plane" },
+        { "path": "detailsOfElements[0].details.eavesOverhang", "approx": 0.45, "name": "eaves overhang kept" },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 2.7, "name": "level kept" }
+      ]
+    },
+    {
+      "id": "roof: Pivot Lines Down",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          { "elementId": { "guid": "${r1}" }, "cutBodyType": "PivotLinesDown" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "Pivot Lines Down set" }
+      ]
+    },
+    {
+      "id": "the roof has Pivot Lines Down",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.cutBodyType", "eq": "PivotLinesDown" }
+      ]
+    },
+    {
+      "id": "the wall is still trimmed by the roof",
+      "command": "GetElementTrims",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "elementTrims[0].trimmedBy", "len": 1, "name": "trim kept" },
+        { "path": "elementTrims[0].trimmedBy[0].elementId.guid", "eq": "${r1}", "name": "trimmed by the roof" }
+      ]
+    },
+    {
+      "id": "an extruded shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "basePlane": { "origin": { "x": 920.0, "y": 900.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 }
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "shell: Upward Extrusion",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "cutBodyType": "UpwardsExtrusion" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "Upward Extrusion set" }
+      ]
+    },
+    {
+      "id": "shell: a roof-only trimming body is refused",
+      "command": "ModifyShells",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "cutBodyType": "ContoursDown" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "ContoursDown on a shell refused by the input schema" }
+      ]
+    },
+    {
+      "id": "shell: the Editable trimming body is refused",
+      "command": "ModifyShells",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "cutBodyType": "Editable" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "Editable refused by the input schema" }
+      ]
+    },
+    {
+      "id": "the shell has Upward Extrusion",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.cutBodyType", "eq": "UpwardsExtrusion" },
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "shell class kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" }
+      ]
+    },
+    {
+      "id": "shell: Downward Extrusion",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "cutBodyType": "DownwardsExtrusion" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "Downward Extrusion set" }
+      ]
+    },
+    {
+      "id": "the shell has Downward Extrusion",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.cutBodyType", "eq": "DownwardsExtrusion" }
+      ]
+    }
+  ]
+}

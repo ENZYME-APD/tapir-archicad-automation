@@ -38,6 +38,10 @@
         'Leer a qué borde de forjado o escalera está vinculada una barandilla, o vincular una barandilla a uno',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         'Desactivar la visibilidad automática por plantas de una barandilla, para poder fijar las plantas en las que se muestra',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'Fijar el Floor Plan Display, el Show Projection, las líneas no cortadas y superiores o el tipo de línea del corte de una malla',
+    'Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides':
+        'Leer o fijar el símbolo en planta de una barandilla: su línea de corte, qué componentes del símbolo muestra, sus atributos 2D y las sustituciones del símbolo',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lea el contorno del forjado con <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> y cree una barandilla estática a lo largo del borde con <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Cuando cambie el forjado, borre la barandilla y vuelva a crearla.',
 
@@ -79,6 +83,11 @@
     'Get the outcome of an Action Center check': 'Obtener el resultado de una comprobación del Action Center',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Ejecute la comprobación con <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad muestra el Action Center cuando encuentra un problema. Para la comprobación de hotlinks, lea el estado de cada origen con <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (desde Archicad 27).',
+
+    'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
+        'Establecer los valores de los modificadores de perfil, o el ancho y la altura estirados, de un muro, una viga o un pilar que usa un perfil',
+    'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
+        'Léalos con <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. Para cambiarlos, cambie el perfil con <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (una copia para estos elementos, o el propio perfil), o ajústelos en la configuración del elemento en Archicad.',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         '¿Ha encontrado algo más que la API de Archicad no puede hacer? Dígalo en un issue, con las cabeceras del DevKit que comprobó, y se añadirá aquí. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Abrir un issue</a>'

@@ -135,6 +135,46 @@
       "subgroup": null
     },
     {
+      "get": "textContent",
+      "set": "textContent",
+      "apiMember": "API_NoteType::contentType",
+      "apiDescription": "Content type of the note (measured or custom), of the main text (note1).",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Content",
+      "subgroup": null
+    },
+    {
+      "get": "customText",
+      "set": "customText",
+      "apiMember": "API_NoteType::contentUStr",
+      "apiDescription": "The custom content of the main text (note1), with its Autotext keys.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Content",
+      "subgroup": null
+    },
+    {
+      "get": "secondTextContent",
+      "set": "secondTextContent",
+      "apiMember": "API_NoteType::contentType",
+      "apiDescription": "Content type of the note (measured or custom), of the second text (note2).",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Content",
+      "subgroup": null
+    },
+    {
+      "get": "secondCustomText",
+      "set": "secondCustomText",
+      "apiMember": "API_NoteType::contentUStr",
+      "apiDescription": "The custom content of the second text (note2), with its Autotext keys.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Content",
+      "subgroup": null
+    },
+    {
       "get": "textHeight",
       "set": "textHeight",
       "apiMember": "API_NoteType::noteSize",
@@ -162,6 +202,66 @@
       "label": null,
       "labelSource": null,
       "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "fontIndex",
+      "set": "fontIndex",
+      "apiMember": "API_NoteType::noteFont",
+      "apiDescription": "Font attribute index, of both texts (note1, note2).",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "fontName",
+      "set": "fontName",
+      "apiMember": "API_NoteType::noteFont",
+      "apiDescription": "The name of the Font attribute noteFont refers to; takes precedence over fontIndex on writing.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "bold",
+      "set": "bold",
+      "apiMember": "API_NoteType::faceBits",
+      "apiDescription": "APIFace_Bold of the style of both texts.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "italic",
+      "set": "italic",
+      "apiMember": "API_NoteType::faceBits",
+      "apiDescription": "APIFace_Italic of the style of both texts.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "underline",
+      "set": "underline",
+      "apiMember": "API_NoteType::faceBits",
+      "apiDescription": "APIFace_Underline of the style of both texts.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "hideWithBaseElem",
+      "set": "hideWithBaseElem",
+      "apiMember": "API_LevelDimensionType::hideWithBaseElem",
+      "apiDescription": "Hide the dimension together with its associated element (Archicad 29 and later).",
+      "label": null,
+      "labelSource": null,
+      "group": "Dimension Type",
       "subgroup": null
     }
   ]

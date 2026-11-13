@@ -84,6 +84,9 @@ public:
     bool AskUpdatingAddOnBeforeEachExecution () const { return askUpdatingAddOnBeforeEachExecution; }
     const GS::UniString& uvLocation() const { return uvLocationStr; }
     const GS::UniString& pythonLocation () const { return pythonLocationStr; }
+    // Optional, for testing: the address the Script Manager reads the marketplace catalogue from instead of the
+    // site-data branch (empty: the default address, see ScriptManager.cpp).
+    const GS::UniString& MarketplaceCatalogueUrl () const { return marketplaceCatalogueUrlStr; }
 
 private:
     Config ();
@@ -102,4 +105,5 @@ private:
     bool askUpdatingAddOnBeforeEachExecution;
     GS::UniString uvLocationStr;
     GS::UniString pythonLocationStr;
+    GS::UniString marketplaceCatalogueUrlStr;
 };

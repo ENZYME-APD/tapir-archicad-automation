@@ -1,0 +1,129 @@
+{
+  "title": "SetElementNotificationClient observes a list of elements with elementsToObserve (#2493)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "wall to observe",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 760, "y": 760 }, "endCoordinate": { "x": 764, "y": 760 },
+            "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "second wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 760, "y": 765 }, "endCoordinate": { "x": 764, "y": 765 },
+            "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w2": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "nonexistent element refused",
+      "command": "SetElementNotificationClient",
+      "creates": false,
+      "params": {
+        "port": 19897,
+        "notifyOnNewElement": false,
+        "notifyOnReservationChanges": false,
+        "elementsToObserve": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" },
+        { "path": "error.message", "contains": "00000000-0000-0000-0000-00000000BEEF", "name": "names the missing element" }
+      ]
+    },
+    {
+      "id": "refused call registered nothing",
+      "command": "RemoveElementNotificationClient",
+      "creates": false,
+      "params": { "port": 19897 },
+      "expect": [
+        { "path": "success", "eq": false, "name": "no client to remove" }
+      ]
+    },
+    {
+      "id": "empty list refused",
+      "command": "SetElementNotificationClient",
+      "creates": false,
+      "params": {
+        "port": 19897,
+        "notifyOnNewElement": false,
+        "notifyOnReservationChanges": false,
+        "elementsToObserve": []
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "observe one wall",
+      "command": "SetElementNotificationClient",
+      "creates": false,
+      "params": {
+        "port": 19897,
+        "notifyOnNewElement": false,
+        "notifyOnReservationChanges": false,
+        "elementsToObserve": [ { "elementId": { "guid": "${w1}" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "registered" }
+      ]
+    },
+    {
+      "id": "register again with types and another list",
+      "command": "SetElementNotificationClient",
+      "creates": false,
+      "params": {
+        "port": 19897,
+        "notifyOnNewElement": false,
+        "notifyOnReservationChanges": false,
+        "elementTypesToObserve": [ "Column" ],
+        "elementsToObserve": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "changed" }
+      ]
+    },
+    {
+      "id": "an observed wall still changes",
+      "command": "MoveElements",
+      "creates": false,
+      "params": {
+        "elementsWithMoveVectors": [
+          { "elementId": { "guid": "${w2}" }, "moveVector": { "x": 1, "y": 0, "z": 0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" }
+      ]
+    },
+    {
+      "id": "an observed wall can be deleted",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "deleted" }
+      ]
+    },
+    {
+      "id": "remove the client after its listed wall was deleted",
+      "command": "RemoveElementNotificationClient",
+      "creates": false,
+      "params": { "port": 19897 },
+      "expect": [
+        { "path": "success", "eq": true, "name": "removed" }
+      ]
+    }
+  ]
+}

@@ -45,7 +45,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="wrap nav">
-        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/favicon.svg" alt="" width="30" height="30">Tapir</a>
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/tapir_mark_moss.svg" alt="" width="30" height="30">Tapir</a>
         <nav class="site-nav" aria-label="Site"><ul>
             <li><a href="../start/">Get started</a></li>
             <li><a href="../docs/" aria-current="true">Docs</a></li>
@@ -128,12 +128,12 @@
                 </article>
             </div>
 
-            <div class="flow flow-3" style="margin-top: 32px">
+            <div class="flow flow-3 gap-top">
                 <div data-i18n><b>REFRESH</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span></div>
                 <div data-i18n><b>EXECUTE</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span></div>
                 <div data-i18n><b>CREATE</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool's defaults or from a <code>FavoriteName</code>.</span></div>
             </div>
-            <div class="prose" style="margin-top: 24px">
+            <div class="prose gap-top-sm">
                 <p data-i18n>
                     Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed
                     straight back into the same input. Archicad has no command to change railings or level dimensions after
@@ -182,7 +182,7 @@
         <div class="dim" aria-hidden="true"><i></i><span data-i18n>A first definition</span><i></i></div>
         <section class="two" aria-labelledby="sample">
             <div class="prose">
-                <h2 id="sample" style="font-size: clamp(1.875rem, 4vw, 3rem)" data-i18n>One <em>wall.</em></h2>
+                <h2 id="sample" class="col-head" data-i18n>One <em>wall.</em></h2>
                 <p data-i18n>Build this in an empty Grasshopper canvas, with a project open in Archicad:</p>
                 <ol>
                     <li data-i18n>Place two <strong>Point</strong> parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.</li>
@@ -196,7 +196,7 @@
             <div>
                 <div class="term">
                     <div class="bar"><span>Panel → GeometryAndPositioning_JSON</span><span>JSON</span></div>
-<pre><code>{<span class="s">"Wall Height"</span>: 3.0, <span class="s">"Wall Thickness"</span>: 0.3}</code></pre>
+<pre><code>{<span class="s">"Wall Height"</span>: <span class="num">3.0</span>, <span class="s">"Wall Thickness"</span>: <span class="num">0.3</span>}</code></pre>
                 </div>
             </div>
         </section>

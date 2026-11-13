@@ -27,7 +27,9 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
-private:
+    // A whole array value given for a parameter. Also holds a simple value given (dim1 = dim2 = 0,
+    // one item), to check after the change that the element kept the given value
+    // (CheckWrittenParametersKept in the .cpp, #2396).
     struct ArrayParameterChange {
         GS::String name;
         API_AddParID typeID = APIParT_Integer;
@@ -37,6 +39,7 @@ private:
         GS::Array<GS::UniString> stringValues;
     };
 
+private:
     static GSErrCode SetOneGDLParameter (
         const GS::ObjectState& parameter,
         const API_Guid& elemGuid,
@@ -47,6 +50,7 @@ private:
         const GS::Optional<double>& xRatioPerA,
         const GS::Optional<double>& yRatioPerB,
         GS::Array<ArrayParameterChange>& pendingArrayChanges,
+        GS::Array<ArrayParameterChange>& givenValues,
         GS::UniString& errMessage);
 
     static bool ParseArrayParameterValue (

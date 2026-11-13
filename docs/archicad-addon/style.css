@@ -13,7 +13,7 @@
     --gray-70: var(--muted);
     /* The highlight.js token colours in the code blocks (GitHub's dark theme, see below). */
     --code-keyword: #ff7b72; --code-title: #d2a8ff; --code-attr: #79c0ff; --code-string: #a5d6ff;
-    --code-builtin: #ffa657; --code-comment: #8b949e; --code-name: #7ee787;
+    --code-builtin: #ffa657; --code-comment: #8b949e; --code-name: #7ee787; --code-number: #79c0ff;
 }
 
 /* The toolbar and the sidebar stick to the top of the window, so the site header scrolls away. */
@@ -64,7 +64,7 @@ div.call_example h3 {
 }
 
 div.call_example h3 code {
-    font-size: 0.9em;
+    font-size: .875rem;
 }
 
 #commands [hidden],
@@ -196,7 +196,7 @@ div.toolbar_row {
 div.toolbar_row input,
 div.toolbar_row button {
     font: inherit;
-    font-size: 0.9em;
+    font-size: .875rem;
     color: var(--fg);
     background: var(--surface);
     border: 1px solid var(--border-strong);
@@ -235,7 +235,7 @@ div.chips {
 }
 
 span.chips_label {
-    font: 700 .6875rem/1.2 var(--mono);
+    font: 700 .75rem/1.2 var(--mono);
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--link);
@@ -244,7 +244,7 @@ span.chips_label {
 
 div.toolbar_status {
     color: var(--muted);
-    font-size: 0.85em;
+    font-size: .875rem;
 }
 
 a.toolbar_clear {
@@ -310,7 +310,7 @@ span.group_name {
 span.group_count {
     flex: none;
     color: var(--muted);
-    font-size: 0.85em;
+    font-size: .875rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
@@ -322,7 +322,7 @@ span.group_preview {
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--muted);
-    font: 400 .78125rem var(--mono);
+    font: 400 .8125rem var(--mono);
 }
 
 section.group_open span.group_preview {
@@ -334,7 +334,7 @@ div.group_body {
 }
 
 h4.group_action_title {
-    font: 700 .6875rem/1.2 var(--mono);
+    font: 700 .75rem/1.2 var(--mono);
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--link);
@@ -379,7 +379,7 @@ summary.command_header::before {
     content: "▸";
     color: var(--muted);
     flex: none;
-    font-size: 0.8em;
+    font-size: .8125rem;
     transition: transform 0.15s;
 }
 
@@ -398,7 +398,7 @@ span.command_name {
     overflow-wrap: anywhere;
     font-family: var(--mono);
     font-weight: 600;
-    font-size: 0.9em;
+    font-size: .875rem;
     color: var(--fg);
 }
 
@@ -430,14 +430,14 @@ span.command_summary {
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--muted);
-    font-size: 0.87em;
+    font-size: .875rem;
 }
 
 span.command_version {
     flex: none;
     margin-left: auto;
     color: var(--link);
-    font-size: 0.75em;
+    font-size: .75rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
@@ -454,7 +454,7 @@ div.command_description {
 }
 
 h4.command_section_title {
-    font: 700 .6875rem/1.2 var(--mono);
+    font: 700 .75rem/1.2 var(--mono);
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--link);
@@ -476,7 +476,7 @@ div.command_example_status {
 }
 
 div.command_example_file {
-    font-size: 0.82em;
+    font-size: .8125rem;
     color: var(--muted);
 }
 
@@ -487,7 +487,7 @@ div.command_example_file a {
 
 div.command_json_title {
     margin-top: 0.9em;
-    font-size: 0.9em;
+    font-size: .875rem;
     font-weight: 600;
 }
 
@@ -505,7 +505,7 @@ div.params_wrapper {
 table.params {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.87em;
+    font-size: .875rem;
 }
 
 table.params th,
@@ -519,7 +519,7 @@ table.params td {
 table.params th {
     color: var(--muted);
     font-weight: 600;
-    font-size: 0.9em;
+    font-size: .8125rem;
     white-space: nowrap;
 }
 
@@ -529,7 +529,7 @@ table.params td.params_name {
 }
 
 table.params td.params_name code {
-    font-size: 0.95em;
+    font-size: .8125rem;
     background: none;
     padding: 0;
 }
@@ -541,7 +541,7 @@ span.params_option {
 
 table.params td.params_type {
     font-family: var(--mono);
-    font-size: 0.9em;
+    font-size: .8125rem;
     color: var(--muted);
     overflow-wrap: anywhere;
     min-width: 7em;
@@ -623,7 +623,7 @@ json-schema-view .description {
 
 div.command_related {
     margin-top: 1em;
-    font-size: 0.9em;
+    font-size: .875rem;
 }
 
 div.command_related a {
@@ -634,8 +634,9 @@ span.command_related_label {
     font-weight: 600;
 }
 
-/* Code highlighted by highlight.js sits in the site's code blocks, which are charcoal with cream text
-   in both themes. github.min.css is a light theme, so the tokens get GitHub's dark colours instead. */
+/* Code highlighted by highlight.js sits in the site's code blocks. In Legacy they are charcoal with
+   cream text in both themes, so the tokens get GitHub's dark colours instead of github.min.css's light
+   ones; the Standard look (below) takes each mode's colours from site.css. */
 pre code.hljs {
     display: block;
     padding: 0;
@@ -647,8 +648,9 @@ pre code.hljs {
 pre .hljs-doctag, pre .hljs-keyword, pre .hljs-meta .hljs-keyword, pre .hljs-template-tag,
 pre .hljs-template-variable, pre .hljs-type, pre .hljs-variable.language_ { color: var(--code-keyword); }
 pre .hljs-title, pre .hljs-title.class_, pre .hljs-title.class_.inherited__, pre .hljs-title.function_ { color: var(--code-title); }
-pre .hljs-attr, pre .hljs-attribute, pre .hljs-literal, pre .hljs-meta, pre .hljs-number, pre .hljs-operator,
+pre .hljs-attr, pre .hljs-attribute, pre .hljs-literal, pre .hljs-meta, pre .hljs-operator,
 pre .hljs-selector-attr, pre .hljs-selector-class, pre .hljs-selector-id, pre .hljs-variable { color: var(--code-attr); }
+pre .hljs-number { color: var(--code-number); }
 pre .hljs-meta .hljs-string, pre .hljs-regexp, pre .hljs-string { color: var(--code-string); }
 pre .hljs-built_in, pre .hljs-symbol { color: var(--code-builtin); }
 pre .hljs-code, pre .hljs-comment, pre .hljs-formula { color: var(--code-comment); }
@@ -778,21 +780,21 @@ pre .hljs-subst { color: var(--pre-text); }
     margin-top: 48px;
 }
 
-/* The Standard look (see the end of site.css): the code colours of the issue's palette for keywords,
-   strings and comments, labels in normal case, 8 px corners on controls and 12 px on the command
+/* The Standard look (see the end of site.css): the code blocks' colours of each mode (site.css's
+   --pre-* properties, #2509: light blocks in Light), JSON keys and literals in the keyword colour,
+   tags in the string colour; labels in normal case, 8 px corners on controls and 12 px on the command
    lists, the accent on an open command and the soft shadow on the Groups sheet. */
 :root:not([data-style="legacy"]) {
-    --code-keyword: #7DD3FC;
-    --code-string: #86EFAC;
-    --code-comment: #94A3B8;
+    --code-keyword: var(--pre-keyword); --code-title: var(--pre-builtin); --code-attr: var(--pre-keyword);
+    --code-string: var(--pre-string); --code-builtin: var(--pre-builtin); --code-comment: var(--pre-comment);
+    --code-name: var(--pre-string); --code-number: var(--pre-number);
     --shadow-sheet: var(--shadow-soft);
 }
 
-/* High contrast (see site.css): the code blocks are black on white, so their tokens are dark, each at
-   least 7:1 on #FFFFFF. */
+/* High contrast (see site.css): black on white, keywords and strings in site.css's colours (at least
+   7:1 on #FFFFFF), the rest black. */
 :root:not([data-style="legacy"])[data-theme="contrast"] {
-    --code-keyword: #8B0000; --code-title: #5B21B6; --code-attr: #0B4FA8; --code-string: #14532D;
-    --code-builtin: #7C2D12; --code-comment: #333333; --code-name: #14532D;
+    --code-attr: #000000; --code-name: #000000;
 }
 
 :root:not([data-style="legacy"]) div.sidebar_title,

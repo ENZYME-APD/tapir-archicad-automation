@@ -86,6 +86,13 @@ public:
 // with a mask, marks them in it; it returns an error message for an unknown attribute id.
 void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& details);
 GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
+void AddZoneDisplayStampPenAndReduction (const API_ZoneType& zone, GS::ObjectState& details);
+GS::Optional<GS::UniString> ApplyZoneDisplayStampPenAndReduction (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
+
+// The 3D surface of a zone (surface: surfaceId and useOnAllSides, the Model panel of the Zone
+// Settings dialog), shared the same way as the contour line and the cover fill.
+void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details);
+GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
 
 class CreatePolylinesCommand : public CreateElementsCommandBase
 {
@@ -123,6 +130,14 @@ class CreateHotspotsCommand : public CreateElementsCommandBase
 {
 public:
     CreateHotspotsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreatePicturesCommand : public CreateElementsCommandBase
+{
+public:
+    CreatePicturesCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
@@ -212,18 +227,47 @@ public:
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
+// The custom texts of the two notes of a level dimension. ApplyLevelDimensionSettings points the
+// notes' contentUStr at these strings, so they must live until ACAPI_Element_Create or
+// ACAPI_Element_Change has been called with the element.
+struct LevelDimensionTexts {
+    GS::UniString text1;
+    GS::UniString text2;
+};
+
 class CreateLevelDimensionsCommand : public CreateElementsCommandBase
 {
 public:
     CreateLevelDimensionsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+
+private:
+    // Kept here because CreateElementsCommandBase calls ACAPI_Element_Create after
+    // SetTypeSpecificParameters has returned.
+    mutable LevelDimensionTexts customTexts;
+};
+
+class CreateAngleDimensionsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateAngleDimensionsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
 // Shared by CreateLevelDimensionsCommand and ModifyLevelDimensionsCommand: applies the pen, texts,
 // marker and origin settings of parameters to element.levelDimension, and sets their bits in mask
-// when it is not nullptr. Returns the error response of an invalid value.
-GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask);
+// when it is not nullptr. Custom texts are stored in texts. Returns the error response of an invalid value.
+GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask, LevelDimensionTexts& texts);
+
+// The content of the two notes of a level dimension read with ACAPI_Element_Get, as Archicad stores
+// it: with the autotext flag off, so an autotext reads as its key, as CreateLevelDimensions takes it.
+LevelDimensionTexts GetLevelDimensionTexts (const API_Element& element);
+
+// "Measured" or "Custom", the content type of a level dimension note.
+GS::UniString LevelDimensionContentTypeToString (API_NoteContentType contentType);
 
 class ModifyLevelDimensionsCommand : public CommandBase
 {
@@ -259,6 +303,16 @@ class ModifyTextsCommand : public CommandBase
 {
 public:
     ModifyTextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyPicturesCommand : public CommandBase
+{
+public:
+    ModifyPicturesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -357,5 +411,11 @@ GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::Obj
 void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label);
 // Returns an error response for a fontName no loaded font has.
 GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+
+// Adds "textWay", the label's text direction (API_LabelType::textWay), for either label class.
+void AddLabelTextWay (GS::ObjectState& os, const API_LabelType& label);
+// Applies the label-level "textWay" of a CreateLabels/ModifyLabels item, for either label class.
+// Returns an error response when symbolStyle carries a textWay too.
+GS::Optional<GS::ObjectState> ApplyLabelTextWay (const GS::ObjectState& item, API_LabelType& label, API_Element* mask);
 
 }

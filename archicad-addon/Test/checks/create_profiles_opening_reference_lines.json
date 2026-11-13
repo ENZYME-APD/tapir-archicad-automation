@@ -1,0 +1,176 @@
+{
+  "title": "CreateProfiles sets, replaces and removes the opening reference lines of a Profile, read back with GetProfiles",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "create a 0.3 x 2.7 wall profile with two opening reference lines",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2586 opening lines",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 2.7}, {"x": 0.0, "y": 2.7}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "isCore": true
+              }
+            ],
+            "openingReferenceLines": [
+              {"begin": {"x": 0.05, "y": 0.0}, "end": {"x": 0.05, "y": 2.7}},
+              {"begin": {"x": 0.25, "y": 0.0}, "end": {"x": 0.25, "y": 2.7}}
+            ]
+          }
+        ]
+      },
+      "save": {"p": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the two lines",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["width", "height", "skins", "openingReferenceLines"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].width", "approx": 0.3, "tol": 0.0001},
+        {"path": "profiles[0].height", "approx": 2.7, "tol": 0.0001},
+        {"path": "profiles[0].skins", "len": 1},
+        {"path": "profiles[0].openingReferenceLines", "len": 2, "name": "two opening reference lines"},
+        {"path": "profiles[0].openingReferenceLines[0].begin.x", "approx": 0.05, "tol": 0.0001},
+        {"path": "profiles[0].openingReferenceLines[0].begin.y", "approx": 0.0, "tol": 0.0001},
+        {"path": "profiles[0].openingReferenceLines[0].end.x", "approx": 0.05, "tol": 0.0001},
+        {"path": "profiles[0].openingReferenceLines[0].end.y", "approx": 2.7, "tol": 0.0001},
+        {"path": "profiles[0].openingReferenceLines[1].begin.x", "approx": 0.25, "tol": 0.0001},
+        {"path": "profiles[0].openingReferenceLines[1].end.x", "approx": 0.25, "tol": 0.0001}
+      ]
+    },
+    {
+      "id": "overwrite: replace them with one sloped line",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 opening lines",
+            "openingReferenceLines": [
+              {"begin": {"x": 0.1, "y": 0.0}, "end": {"x": 0.15, "y": 2.7}}
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the replaced line, geometry kept",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["width", "height", "skins", "openingReferenceLines"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].openingReferenceLines", "len": 1, "name": "the old lines were replaced"},
+        {"path": "profiles[0].openingReferenceLines[0].begin.x", "approx": 0.1, "tol": 0.0001},
+        {"path": "profiles[0].openingReferenceLines[0].end.x", "approx": 0.15, "tol": 0.0001},
+        {"path": "profiles[0].openingReferenceLines[0].end.y", "approx": 2.7, "tol": 0.0001},
+        {"path": "profiles[0].width", "approx": 0.3, "tol": 0.0001, "name": "width kept"},
+        {"path": "profiles[0].height", "approx": 2.7, "tol": 0.0001, "name": "height kept"},
+        {"path": "profiles[0].skins", "len": 1, "name": "skin kept"}
+      ]
+    },
+    {
+      "id": "overwrite without openingReferenceLines keeps the line",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {"attributeId": {"guid": "${p}"}, "name": "TapirCheck Profile 2586 opening lines", "beamType": true}
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back: the line is kept",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["openingReferenceLines"]},
+      "expect": [
+        {"path": "profiles[0].openingReferenceLines", "len": 1, "name": "line kept"},
+        {"path": "profiles[0].openingReferenceLines[0].begin.x", "approx": 0.1, "tol": 0.0001}
+      ]
+    },
+    {
+      "id": "bad input: a line of zero length",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 opening lines",
+            "openingReferenceLines": [
+              {"begin": {"x": 0.1, "y": 1.0}, "end": {"x": 0.1, "y": 1.0}}
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"}
+      ]
+    },
+    {
+      "id": "overwrite: remove every opening reference line",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {"attributeId": {"guid": "${p}"}, "name": "TapirCheck Profile 2586 opening lines", "openingReferenceLines": []}
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back: no opening reference lines, geometry kept",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["width", "skins", "openingReferenceLines"]},
+      "expect": [
+        {"path": "profiles[0].openingReferenceLines", "len": 0, "name": "lines removed"},
+        {"path": "profiles[0].width", "approx": 0.3, "tol": 0.0001, "name": "width kept"},
+        {"path": "profiles[0].skins", "len": 1, "name": "skin kept"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${p}"}}}]}
+    }
+  ]
+}
