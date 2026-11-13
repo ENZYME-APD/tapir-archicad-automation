@@ -1,4 +1,21 @@
 {
+    "AutoTextExpression": {
+        "type": "string",
+        "minLength": 1
+    },
+    "InterpretedAutoText": {
+        "type": "object",
+        "properties": {
+            "value": {
+                "type": "string",
+                "description": "The resolved value of the autotext."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "value"
+        ]
+    },
     "User": {
         "type": "object",
         "properties": {
