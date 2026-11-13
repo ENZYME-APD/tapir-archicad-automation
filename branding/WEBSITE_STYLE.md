@@ -130,9 +130,9 @@ rule; always use these three properties (the Display menu's Font replaces them).
 Sizes are in `rem` (1 rem = 16 px at 100 %), never `px`, `em` for a whole element, or `vw` alone. The
 only `px` text is inside drawings (the floor plan, the growth chart) and the header's brand.
 
-The scale. A new text size **must** be one of these; the sizes in between (`.65625`, `.71875`,
-`.78125`, `.84375`, `.90625`, `1.125`, `1.25`, `1.3125rem`) are the drift listed in section 15 and are
-not used again:
+The scale. Every text size **must** be one of these; the sizes in between (`.65625`, `.6875`,
+`.71875`, `.78125`, `.84375`, `.90625`, `1.125`, `1.25`, `1.3125rem`) were the drift that part 5 of
+#2765 removed and are not used again:
 
 | Step | Size | Use |
 | --- | --- | --- |
@@ -176,10 +176,10 @@ Spacing stays in `px` (so the Display menu's Text size changes text only).
 | Content width | `.wrap`, 1200 px, 16 px side padding | the same |
 | Page head padding | 56 px top, 48 px bottom | 28 / 24 px |
 | Page body (`.page-body`) | 56 px top, 24 px bottom | 24 / 16 px |
-| Section | 56 px top, 32 px bottom; 32 px top after a `.dim` or as the first section | 28 / 16 px; 20 px |
+| Section | 56 px top, 32 px bottom; 32 px top after a `.dim` in a `.page-body` or as the first section (a section in a plain `.wrap`, on the home page, gets it with `.after-dim`) | 28 / 16 px; 20 px |
 | Dimension line (`.dim`) | 40 px above | 24 px |
 | Section head to content | 40 px | 20 px |
-| Space between two blocks inside a section | 32 px (24 px after a `.prose`, 12 px under a page head) | the same |
+| Space between two blocks inside a section | 32 px (24 px after a grid or a `.flow`, 12 px between the first blocks of a page body): `.gap-top`, `.gap-top-sm`, `.gap-top-xs` | the same |
 | Gap between cards in a grid | 20 px | 16 px |
 | Card padding (`.way`, `.teaser`, `.share-steps li`) | 24 px | 18 px |
 | Cell padding (`.flow`, `.uses-grid`, `.figures`, `.spec`) | 20 px | 16 px |
@@ -225,7 +225,8 @@ Sections:
   `<div class="dim" aria-hidden="true"><i></i><span data-i18n>…</span><i></i></div>`.
 - A section opens with a **section head** `<div class="sec-head"><h2 id="…" data-i18n>…</h2><p data-i18n>…</p></div>`
   (on the reference pages `.sec-head.ref`), or, when the dimension line already says what it is, a
-  `<h2 class="visually-hidden">` with the dimension line's text.
+  `<h2 class="visually-hidden">` with the dimension line's text. A section that is a `.two` with its
+  text in one column and a code block in the other puts its `h2` in the text column as `h2.col-head`.
 - A heading inside a section is `h3` (cards, steps under a section head) or, on the reference pages,
   `.ref-sub`. Never skip a level, and never size a heading with anything but these classes.
 - The last section of a page is usually a **next step**: a dimension line "Next step" (on a tutorial,
@@ -351,20 +352,11 @@ Before a pull request that touches `docs/`:
 The audit of the site against these rules (November 2026, #2765). Each item names the pull request part
 of #2765 that fixes it; strike it from this list in that part.
 
-**Inline styles** (part 2: move them to shared classes):
-
-- `ai/index.html`: `style="margin-top: 24px"` on a callout, `style="margin-top: 32px"` on two `.two`
-  blocks, and `style="font-size: clamp(1.875rem, 4vw, 3rem)"` on the `h2` of the "A prompt to start
-  with" section, which sits in a `.two` column instead of a section head.
-- `grasshopper/index.html`: the same `h2` font size on "One wall.", `style="margin-top: 32px"` on a
-  `.flow` and `style="margin-top: 24px"` on a `.prose`.
-- `start/index.html`: `style="margin-top: 12px"` on the callout under the page head.
-- `about/index.html`: `style="white-space: nowrap"` on four table cells, which `.nowrap` already does.
-- `index.html`: `style="padding-top: 28px"` on the figures section, which differs from the 32 px every
-  other section after a dimension line gets.
-- `tutorials/index.html`: `style="margin-top: 32px"` on a `.ctas` row.
-- `api-coverage/index.html` and `gh-coverage/index.html`: `<main>`'s children start at column 0,
-  unlike every other page (indentation only, nothing a reader sees).
+**Inline styles**: fixed in part 2. The `style="…"` attributes of `ai/`, `grasshopper/`, `start/`,
+`about/`, `tutorials/`, `404.html` and the home page are now the shared classes `.gap-top`,
+`.gap-top-sm`, `.gap-top-xs`, `.col-head`, `.nowrap` and `.after-dim` (the home page's figures section
+now gets the 32 px of section 5 instead of 28 px), and `<main>`'s children on `api-coverage/` and
+`gh-coverage/` are indented like every other page's.
 
 **Page stylesheets that still draw the Legacy look in Standard** (part 4):
 
@@ -378,17 +370,6 @@ of #2765 that fixes it; strike it from this list in that part.
 - `home.css`: the floor plan's Run button sets `color: #FFFFFF` in Standard, a literal instead of a
   property.
 
-**Spacing and type off the scale** (part 5):
-
-- Card padding is 26 px (`.way`), 28 px (`.teaser`), 22 px (`.share-steps li`) and 26/24 px
-  (`.figures > div`) for the same kind of card; 18–22 px in `.video .text`.
-- Off the 4 px scale in layout: the 14 px gap between cards on phones, `.detail > div`'s 22 px gap, and
-  `.timeline`'s and `.prose`'s 22 px list indent (20 px in `.way` and `.bullets`).
-- Text sizes between the steps of the scale: `.65625rem` (footer labels, phone table labels),
-  `.71875rem` (`.way .who`, table heads, `.spec dt`, `.pill`, the terminal bar), `.78125rem` (crumbs,
-  figure labels, `.stack .wire`, the copy button), `.84375rem` (`.schedule .ds`, the ticker),
-  `.90625rem` (`.uses-grid p`, `.video p`, the schedule, phone nav), `1.125rem` (`.flow strong`),
-  `1.25rem` (`.spec .install > strong`), `1.3125rem` (`.uses .way h3`), and their copies in the page
-  stylesheets.
-- The command reference (`archicad-addon/style.css`) sizes its text in `em` (`.75em` to `.95em`), so
-  its sizes depend on the parent's and are off the scale.
+**Spacing and type off the scale** (part 5): fixed. Card and cell paddings, the phone gaps, the list
+indents and every text size in `site.css`, `motion.css`, `coverage.css` and the page stylesheets are on
+the scales of sections 4 and 5, and the command reference sizes its text in `rem`.

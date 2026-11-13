@@ -1,0 +1,89 @@
+{
+  "title": "CreateSlabs and ModifySlabs write isAutoOnStoryVisibility of a slab, and a given visibility turns it off (#2561)",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "requiresEmpty": [ "Slab" ],
+  "steps": [
+    {
+      "id": "slab with the automatic story visibility",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "thickness": 0.25,
+            "polygonCoordinates": [
+              { "x": 820.0, "y": 800.0 },
+              { "x": 825.0, "y": 800.0 },
+              { "x": 825.0, "y": 804.0 },
+              { "x": 820.0, "y": 804.0 }
+            ],
+            "isAutoOnStoryVisibility": true
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "read the new slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": true, "name": "automatic story visibility on" }
+      ]
+    },
+    {
+      "id": "a given visibility turns the automatic one off",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "visibility": { "showOnHome": true, "showAllAbove": true, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "visibility applied" }
+      ]
+    },
+    {
+      "id": "read the custom visibility",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "automatic story visibility off" },
+        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": true, "name": "contour on all stories above" }
+      ]
+    },
+    {
+      "id": "turn the automatic story visibility on again",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "isAutoOnStoryVisibility": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "automatic story visibility applied" }
+      ]
+    },
+    {
+      "id": "read it back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": true, "name": "automatic story visibility on again" }
+      ]
+    }
+  ]
+}

@@ -72,56 +72,56 @@
 <div class="layout">
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
 <main id="main">
-<p class="muted" data-i18n>Which JSON commands of the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> a component of the Tapir Grasshopper plugin calls, and whether its components cover the command's parameters, updated within minutes of every issue and push to main, and within the hour of every pull request. This is a static check of the plugin's code: it shows which parameters the components name, not that each one works. See also the <a href="../archicad-addon/">command reference</a> and the <a href="../api-coverage/">Archicad API coverage</a>.</p>
+    <p class="muted" data-i18n>Which JSON commands of the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> a component of the Tapir Grasshopper plugin calls, and whether its components cover the command's parameters, updated within minutes of every issue and push to main, and within the hour of every pull request. This is a static check of the plugin's code: it shows which parameters the components name, not that each one works. See also the <a href="../archicad-addon/">command reference</a> and the <a href="../api-coverage/">Archicad API coverage</a>.</p>
 
-<section aria-labelledby="overview-title" id="overview">
+    <section aria-labelledby="overview-title" id="overview">
+        <div class="sec-head ref">
+            <h2 id="overview-title" data-i18n>Coverage at a <em>glance.</em></h2>
+        </div>
+        <div class="hero">
+            <div>
+                <div class="hero-number" id="hero-percent">…</div>
+                <div class="hero-caption" id="hero-caption">Loading the checklist…</div>
+            </div>
+            <div class="tiles" id="tiles"></div>
+        </div>
+        <div class="bar large" id="overall-bar" role="img"></div>
+        <div class="legend" id="legend"></div>
+
+        <h3 class="ref-sub" id="by-parameters" data-i18n>Parameters of the used commands</h3>
+        <div class="scroll"><table id="parts"></table></div>
+
+        <h3 class="ref-sub" id="by-group" data-i18n>By group</h3>
+        <div class="table-actions">
+            <span class="muted">Sort by</span>
+            <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
+                <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
+                <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
+                <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
+            </div>
+            <span class="muted">Select a group to list its items below.</span>
+        </div>
+        <div class="scroll"><table id="groups"></table></div>
+        <div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
+    </section>
+
     <div class="sec-head ref">
-        <h2 id="overview-title" data-i18n>Coverage at a <em>glance.</em></h2>
+        <h2 id="checklist" data-i18n>The whole <em>checklist.</em></h2>
     </div>
-    <div class="hero">
-        <div>
-            <div class="hero-number" id="hero-percent">…</div>
-            <div class="hero-caption" id="hero-caption">Loading the checklist…</div>
+    <div class="toolbar" id="toolbar">
+        <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
+        <input type="search" id="search" placeholder="Search, e.g. CreateWalls, Walls or floorIndex" aria-label="Search the checklist">
+        <button type="button" class="filters-button" id="filters-button" aria-controls="filter-sheet" aria-expanded="false">Filters</button>
+        <div class="chip-filter" id="filter-sheet">
+            <div class="sheet-head">
+                <span class="chips-title" id="statuses-title">Show items that are:</span>
+                <button type="button" class="sheet-done" id="filters-done">Done</button>
+            </div>
+            <div class="chips" id="statuses" role="group" aria-labelledby="statuses-title"></div>
         </div>
-        <div class="tiles" id="tiles"></div>
+        <span class="filter-status" id="filter-status" aria-live="polite"></span>
     </div>
-    <div class="bar large" id="overall-bar" role="img"></div>
-    <div class="legend" id="legend"></div>
-
-    <h3 class="ref-sub" id="by-parameters" data-i18n>Parameters of the used commands</h3>
-    <div class="scroll"><table id="parts"></table></div>
-
-    <h3 class="ref-sub" id="by-group" data-i18n>By group</h3>
-    <div class="table-actions">
-        <span class="muted">Sort by</span>
-        <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
-            <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
-            <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
-            <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
-        </div>
-        <span class="muted">Select a group to list its items below.</span>
-    </div>
-    <div class="scroll"><table id="groups"></table></div>
-    <div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
-</section>
-
-<div class="sec-head ref">
-    <h2 id="checklist" data-i18n>The whole <em>checklist.</em></h2>
-</div>
-<div class="toolbar" id="toolbar">
-    <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
-    <input type="search" id="search" placeholder="Search, e.g. CreateWalls, Walls or floorIndex" aria-label="Search the checklist">
-    <button type="button" class="filters-button" id="filters-button" aria-controls="filter-sheet" aria-expanded="false">Filters</button>
-    <div class="chip-filter" id="filter-sheet">
-        <div class="sheet-head">
-            <span class="chips-title" id="statuses-title">Show items that are:</span>
-            <button type="button" class="sheet-done" id="filters-done">Done</button>
-        </div>
-        <div class="chips" id="statuses" role="group" aria-labelledby="statuses-title"></div>
-    </div>
-    <span class="filter-status" id="filter-status" aria-live="polite"></span>
-</div>
-<div id="list"></div>
+    <div id="list"></div>
 </main>
 </div>
 <!-- site-footer -->

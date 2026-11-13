@@ -1201,6 +1201,78 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
 }
 
+static GS::UniString RadialDimensionTextPositionName (API_TextPosID textPos)
+{
+    switch (textPos) {
+        case APIPos_Above:  return "Above";
+        case APIPos_In:     return "In";
+        case APIPos_Below:  return "Below";
+        default:            return "Unknown";
+    }
+}
+
+static GS::UniString RadialDimensionTextDirectionName (API_DirID textWay)
+{
+    switch (textWay) {
+        case APIDir_Horizontal: return "Horizontal";
+        case APIDir_Vertical:   return "Vertical";
+        case APIDir_Radial:     return "Radial";
+        default:                return "Unknown";
+    }
+}
+
+// Defined OUTSIDE the anonymous namespace, like AddDimensionDetails (#2660).
+// The DevKit does not document how a radial dimension stores what it measures: API_RadialDimensionType
+// has no centre field, and the meaning of base.loc and base.base.inIndex is only shown in an image
+// (neig_rdim.gif). So the stored data is returned as it is, plus the centre of the measured arc or
+// circle, read from that element, so that dimensions placed by hand show how Archicad stores them.
+void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& element)
+{
+    const API_RadialDimensionType& radial = element.radialDimension;
+
+    details.Add ("basePoint", Create2DCoordinateObjectState (radial.base.loc));
+    details.Add ("dimensionLineEnd", Create2DCoordinateObjectState (radial.endC));
+    details.Add ("radius", radial.dimVal);
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID baseTypeId = GetElemTypeId (radial.base.base.type);
+#else
+    const API_ElemTypeID baseTypeId = GetElemTypeId (radial.base.base.typeID);
+#endif
+    const API_Guid& baseGuid = radial.base.base.guid;
+    if (baseTypeId != API_ZombieElemID && baseGuid != APINULLGuid) {
+        details.Add ("ownerElementId", CreateGuidObjectState (baseGuid));
+        details.Add ("ownerElementType", GetElementTypeNonLocalizedName (baseTypeId));
+        details.Add ("ownerElementInIndex", static_cast<Int32> (radial.base.base.inIndex));
+        details.Add ("ownerElementLine", radial.base.base.line);
+
+        if (baseTypeId == API_ArcID || baseTypeId == API_CircleID) {
+            API_Element baseElement = {};
+            baseElement.header.guid = baseGuid;
+            if (ACAPI_Element_Get (&baseElement) == NoError) {
+                const API_ElemTypeID readTypeId = GetElemTypeId (baseElement.header);
+                if (readTypeId == API_ArcID || readTypeId == API_CircleID) {
+                    details.Add ("ownerArcCenter", Create2DCoordinateObjectState (baseElement.arc.origC));
+                    details.Add ("ownerArcRadius", baseElement.arc.r);
+                }
+            }
+        }
+    }
+
+    details.Add ("linePen", static_cast<Int32> (radial.linPen));
+    details.Add ("marker", GS::ObjectState (
+        "type", DimensionMarkerName (radial.markerData.markerType),
+        "pen", static_cast<Int32> (radial.markerData.markerPen),
+        "size", radial.markerData.markerSize));
+    details.Add ("textHeight", radial.note.noteSize);
+    details.Add ("textPen", static_cast<Int32> (radial.note.notePen));
+    details.Add ("textPosition", RadialDimensionTextPositionName (radial.textPos));
+    details.Add ("textDirection", RadialDimensionTextDirectionName (radial.textWay));
+    details.Add ("textContent", radial.note.contentType == API_NoteContent_Custom ? "Custom" : "Measured");
+    details.Add ("showOrigin", radial.showOrigo);
+    details.Add ("onlyDimensionText", radial.onlyDimensionText);
+}
+
 namespace {
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
@@ -2016,6 +2088,66 @@ static GSErrCode TAPIR_Polygon_DeleteSubPoly (API_ElementMemo* memo, Int32* subP
 }
 #endif
 
+// The number of API_Coord entries the memo's coords handle holds (index 0 is the unused dummy).
+static Int32 GetMemoCoordsHandleCount (const API_ElementMemo& memo)
+{
+    return memo.coords == nullptr ? 0 : (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord));
+}
+
+// Moves the points of the outline (subpoly 1, the only one left: the holes are deleted first) onto a circle and
+// drops the arcs, before ApplySlabPolygonChange deletes node 1 until the outline has desiredOutlineCount points
+// (#2504). Each DeletePolyNode leaves the old outline without its first point, so on the element's own points an
+// intermediate polygon could cross itself or lose its area, depending only on where the old outline starts. Archicad
+// then answered APIERR_BADPOLY, refused the deletion, or crashed later in ACAPI_Element_ChangeMemo (heap
+// corruption, reproduced on Archicad 29 and 30 with a 20 -> 8 and an 11 -> 4 point outline). Points on a circle in
+// their order always form a convex polygon, and so does every polygon left after deleting some of them. The points
+// that stay are put on a regular polygon and the deleted ones in the gap between its last and first point, so every
+// intermediate polygon keeps a real area. An arc on such a temporary edge could cross another edge, so the arcs are
+// dropped; the final coordinates and arcs are written after the resize, as before. This is what the client-side
+// workaround in #2504 does (the same point count on a circle first), which works on both reproductions.
+static void MoveOutlineOntoCircle (API_ElementMemo& memo, Int32 outlineCount, Int32 desiredOutlineCount)
+{
+    API_Coord minCoord = (*memo.coords)[1];
+    API_Coord maxCoord = (*memo.coords)[1];
+    double doubleSignedArea = 0.0;
+    for (Int32 i = 1; i <= outlineCount; ++i) {
+        const API_Coord& p = (*memo.coords)[i];
+        const API_Coord& q = (*memo.coords)[i == outlineCount ? 1 : i + 1];
+        minCoord.x = std::min (minCoord.x, p.x);
+        minCoord.y = std::min (minCoord.y, p.y);
+        maxCoord.x = std::max (maxCoord.x, p.x);
+        maxCoord.y = std::max (maxCoord.y, p.y);
+        doubleSignedArea += p.x * q.y - q.x * p.y;
+    }
+    // The same direction as the outline had, around the middle of its bounding box
+    const double direction = doubleSignedArea < 0.0 ? -1.0 : 1.0;
+    const double centerX = (minCoord.x + maxCoord.x) / 2.0;
+    const double centerY = (minCoord.y + maxCoord.y) / 2.0;
+    const double radius = std::max (1.0, std::max (maxCoord.x - minCoord.x, maxCoord.y - minCoord.y) / 2.0);
+
+    const double twoPi = 2.0 * std::acos (-1.0);
+    const Int32 deletedCount = outlineCount - desiredOutlineCount;
+    const double step = twoPi / desiredOutlineCount;
+    for (Int32 i = 1; i <= outlineCount; ++i) {
+        double angle = 0.0;
+        if (i > deletedCount) {
+            // the points that stay: a regular polygon
+            angle = (i - deletedCount - 1) * step;
+        } else {
+            // the points that are deleted: between the last point that stays and the first one
+            angle = (desiredOutlineCount - 1) * step + step * i / (deletedCount + 1);
+        }
+        (*memo.coords)[i].x = centerX + radius * std::cos (direction * angle);
+        (*memo.coords)[i].y = centerY + radius * std::sin (direction * angle);
+    }
+    (*memo.coords)[outlineCount + 1] = (*memo.coords)[1];
+
+    if (memo.parcs != nullptr) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+    }
+    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+}
+
 // Applies a new outline/arcs/holes shape to an EXISTING slab's memo (already populated via
 // ACAPI_Element_GetMemo), for use with ACAPI_Element_ChangeMemo. Uses Graphisoft's own
 // polygon-editing primitives - TAPIR_Polygon_InsertPolyNode/DeletePolyNode/InsertSubPoly/
@@ -2096,8 +2228,19 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
     // Step 2: resize the main outline (subpoly 1) to the requested point count by repeatedly
     // inserting/deleting node 1 - the coordinate value used for an inserted placeholder node does
     // not matter, every point is overwritten with the real final coordinates right after.
+    // The memo is checked before it is written: a mismatch fails the item instead of writing past a
+    // handle (#2504).
+    if (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32) < 2) {
+        return "The outline of the element has unexpected polygon data.";
+    }
     Int32 outlineCount = (*memo.pends)[1] - 1; // real points, excluding the closing duplicate
     const Int32 desiredOutlineCount = (Int32) polygonOutline.GetSize ();
+    if (outlineCount < 3 || GetMemoCoordsHandleCount (memo) < outlineCount + 2) {
+        return "The outline of the element has unexpected polygon data.";
+    }
+    if (outlineCount > desiredOutlineCount) {
+        MoveOutlineOntoCircle (memo, outlineCount, desiredOutlineCount);
+    }
     while (outlineCount > desiredOutlineCount) {
         Int32 idx = 1;
         GSErrCode err = TAPIR_Polygon_DeletePolyNode (&memo, &idx);
@@ -2123,6 +2266,10 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
         ++outlineCount;
     }
 
+    if ((*memo.pends)[1] != desiredOutlineCount + 1 ||
+        GetMemoCoordsHandleCount (memo) < desiredOutlineCount + 2) {
+        return "Failed to adjust the outline's point count.";
+    }
     for (Int32 i = 0; i < desiredOutlineCount; ++i) {
         (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (polygonOutline[i]);
     }
@@ -2352,6 +2499,9 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         memo.additionalPolyParcs = reinterpret_cast<API_PolyArc**> (memo.additionalPolyParcs == nullptr
             ? BMAllocateHandle (roofNArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0)
             : BMReallocHandle (reinterpret_cast<GSHandle> (memo.additionalPolyParcs), roofNArcs * sizeof (API_PolyArc), REALLOC_CLEAR, 0));
+    } else if (memo.additionalPolyParcs != nullptr) {
+        // ModifyRoofs edits the roof's own memo: the arcs of the old pivot polygon must not stay.
+        BMKillHandle (reinterpret_cast<GSHandle*> (&memo.additionalPolyParcs));
     }
 
     Int32 iCoord = 1;
@@ -2703,7 +2853,18 @@ const char* SlabSurfaceAndFillSchemaProperties = R"(
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the bottom of the slab." },
                         "cutFillPen": { "$ref": "#/OverriddenPen", "description": "Overrides the pen of the cut fill. Written from Archicad 27." },
                         "cutFillBackgroundPen": { "$ref": "#/OverriddenPen", "description": "Overrides the background pen of the cut fill. Written from Archicad 27." },
-                        "floorFill": { "$ref": "#/FloorFill", "description": "The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements." })";
+                        "floorFill": { "$ref": "#/FloorFill", "description": "The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements." },
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained." },
+                        "contourPen": { "type": "integer", "description": "Pen of the slab's contour in the floor plan." },
+                        "contourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the slab's contour in the floor plan." },
+                        "sectionContourPen": { "type": "integer", "description": "Pen of the slab's contour where it is cut in sections." },
+                        "sectionContourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the slab's contour where it is cut in sections." },
+                        "hiddenContourLinePen": { "type": "integer", "description": "Pen of the slab's hidden contour lines in the floor plan." },
+                        "hiddenContourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the slab's hidden contour lines in the floor plan." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "Archicad 29 and later: when true, Archicad recomputes visibility and fillVisibility from the slab's elevation and ignores the values given for them. Giving visibility or fillVisibility without this key turns it off. Before Archicad 29 a slab has no such setting, and the item fails when this key is given." },
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the slab's contour is shown on. Only the given fields change." },
+                        "fillVisibility": { "$ref": "#/StoryVisibility", "description": "The stories the slab's cover fill is shown on. Only the given fields change." },
+                        "linkToSettings": { "$ref": "#/LinkToSettings", "description": "How the slab is linked to its home story." })";
 
 namespace {
 
@@ -2733,6 +2894,24 @@ GS::Optional<GS::UniString> CheckSurfaceAndFillAttributeIds (
     }
     return {};
 }
+
+// The line type keys of a Slab's floor plan and section display (#2561), checked like the
+// surfaces and fills above before anything is written.
+GS::Optional<GS::UniString> CheckLineTypeIds (const GS::ObjectState& details, const std::initializer_list<const char*>& lineTypeKeys)
+{
+    for (const char* lineTypeKey : lineTypeKeys) {
+        const GS::ObjectState* lineTypeIdOs = details.Get (lineTypeKey);
+        if (lineTypeIdOs != nullptr &&
+            GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeIdOs)) == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString ("No Line attribute was found for ") + GS::UniString (lineTypeKey) + ".";
+        }
+    }
+    return {};
+}
+
+// Merges the given fields into a story visibility (defined below with the Roof and Shell floor
+// plan settings, which use it too).
+void MergeStoryVisibility (const GS::ObjectState& os, API_StoryVisibility& visibility);
 
 } // namespace
 
@@ -2886,6 +3065,15 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
     if (idError.HasValue ()) {
         return idError;
     }
+    const GS::Optional<GS::UniString> lineTypeError = CheckLineTypeIds (details, { "contourLineTypeId", "sectionContourLineTypeId", "hiddenContourLineTypeId" });
+    if (lineTypeError.HasValue ()) {
+        return lineTypeError;
+    }
+#ifndef ServerMainVers_2900
+    if (details.Contains ("isAutoOnStoryVisibility")) {
+        return GS::UniString ("isAutoOnStoryVisibility is a Slab setting only from Archicad 29.");
+    }
+#endif
     GS::ObjectState topMaterialOs;
     if (details.Get ("topMaterial", topMaterialOs)) {
         element.slab.topMat = GetOverriddenMaterialFromObjectState (topMaterialOs);
@@ -2949,7 +3137,161 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
         ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation);
         changed = true;
     }
+
+    // The floor plan and section display (#2561), with the keys GetDetailsOfElements reads.
+    bool materialsChained = false;
+    if (details.Get ("materialsChained", materialsChained)) {
+        element.slab.materialsChained = materialsChained;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, materialsChained);
+        changed = true;
+    }
+    Int32 contourPen = 0;
+    if (details.Get ("contourPen", contourPen)) {
+        element.slab.pen = static_cast<short> (contourPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, pen);
+        changed = true;
+    }
+    const GS::ObjectState* contourLineTypeId = details.Get ("contourLineTypeId");
+    if (contourLineTypeId != nullptr) {
+        element.slab.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, ltypeInd);
+        changed = true;
+    }
+    Int32 sectionContourPen = 0;
+    if (details.Get ("sectionContourPen", sectionContourPen)) {
+        element.slab.sectContPen = static_cast<short> (sectionContourPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sectContPen);
+        changed = true;
+    }
+    const GS::ObjectState* sectionContourLineTypeId = details.Get ("sectionContourLineTypeId");
+    if (sectionContourLineTypeId != nullptr) {
+        element.slab.sectContLtype = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*sectionContourLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sectContLtype);
+        changed = true;
+    }
+    Int32 hiddenContourLinePen = 0;
+    if (details.Get ("hiddenContourLinePen", hiddenContourLinePen)) {
+        element.slab.hiddenContourLinePen = static_cast<short> (hiddenContourLinePen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hiddenContourLinePen);
+        changed = true;
+    }
+    const GS::ObjectState* hiddenContourLineTypeId = details.Get ("hiddenContourLineTypeId");
+    if (hiddenContourLineTypeId != nullptr) {
+        element.slab.hiddenContourLineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*hiddenContourLineTypeId));
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hiddenContourLineType);
+        changed = true;
+    }
+    GS::ObjectState visibilityOs;
+    if (details.Get ("visibility", visibilityOs)) {
+        MergeStoryVisibility (visibilityOs, element.slab.visibilityCont);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont);
+        changed = true;
+    }
+    GS::ObjectState fillVisibilityOs;
+    if (details.Get ("fillVisibility", fillVisibilityOs)) {
+        MergeStoryVisibility (fillVisibilityOs, element.slab.visibilityFill);
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityFill);
+        changed = true;
+    }
+#ifdef ServerMainVers_2900
+    bool isAutoOnStoryVisibility = false;
+    if (details.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility)) {
+        element.slab.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, isAutoOnStoryVisibility);
+        changed = true;
+    } else if (details.Contains ("visibility") || details.Contains ("fillVisibility")) {
+        // As on a Wall: with the automatic story visibility on, Archicad recomputes both
+        // visibilities from the slab's elevation and drops the ones given, so giving one turns it off.
+        element.slab.isAutoOnStoryVisibility = false;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, isAutoOnStoryVisibility);
+    }
+#endif
+    const GS::ObjectState* linkToSettingsOs = details.Get ("linkToSettings");
+    if (linkToSettingsOs != nullptr) {
+        Int32 homeStoryDifference = 0;
+        if (linkToSettingsOs->Get ("homeStoryDifference", homeStoryDifference)) {
+            element.slab.linkToSettings.homeStoryDifference = static_cast<short> (homeStoryDifference);
+        }
+        bool newCreationMode = false;
+        if (linkToSettingsOs->Get ("newCreationMode", newCreationMode)) {
+            element.slab.linkToSettings.newCreationMode = newCreationMode;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, linkToSettings);
+        changed = true;
+    }
     return {};
+}
+
+// Reads a Slab back after ModifySlabs changed it, and names each floor plan and section display
+// key given in item that Archicad did not apply (#2561). The automatic story visibility, when it
+// is on after the change, recomputes the visibilities, so they are not compared then;
+// linkToSettings is not compared either, because Archicad resolves it to the home story.
+static GS::Array<GS::UniString> GetUnappliedSlabDisplaySettings (const API_Guid& slabGuid, const GS::ObjectState& item)
+{
+    GS::Array<GS::UniString> unapplied;
+    API_Element slab = {};
+    slab.header.guid = slabGuid;
+    if (ACAPI_Element_Get (&slab) != NoError) {
+        return unapplied;
+    }
+
+    bool materialsChained = false;
+    if (item.Get ("materialsChained", materialsChained) && slab.slab.materialsChained != materialsChained) {
+        unapplied.Push ("materialsChained");
+    }
+    const std::pair<const char*, short> pens[] = {
+        { "contourPen", slab.slab.pen },
+        { "sectionContourPen", slab.slab.sectContPen },
+        { "hiddenContourLinePen", slab.slab.hiddenContourLinePen }
+    };
+    for (const auto& pen : pens) {
+        Int32 requested = 0;
+        if (item.Get (pen.first, requested) && requested != pen.second) {
+            unapplied.Push (GS::UniString::Printf ("%s (it is %d)", pen.first, (int) pen.second));
+        }
+    }
+    const std::pair<const char*, API_AttributeIndex> lineTypes[] = {
+        { "contourLineTypeId", slab.slab.ltypeInd },
+        { "sectionContourLineTypeId", slab.slab.sectContLtype },
+        { "hiddenContourLineTypeId", slab.slab.hiddenContourLineType }
+    };
+    for (const auto& lineType : lineTypes) {
+        const GS::ObjectState* lineTypeIdOs = item.Get (lineType.first);
+        if (lineTypeIdOs != nullptr && GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeIdOs)) != lineType.second) {
+            unapplied.Push (lineType.first);
+        }
+    }
+
+    bool autoVisibility = false;
+#ifdef ServerMainVers_2900
+    autoVisibility = slab.slab.isAutoOnStoryVisibility;
+    bool isAutoOnStoryVisibility = false;
+    if (item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility) && slab.slab.isAutoOnStoryVisibility != isAutoOnStoryVisibility) {
+        unapplied.Push ("isAutoOnStoryVisibility");
+    }
+#endif
+    if (!autoVisibility) {
+        const std::pair<const char*, const API_StoryVisibility*> visibilities[] = {
+            { "visibility", &slab.slab.visibilityCont },
+            { "fillVisibility", &slab.slab.visibilityFill }
+        };
+        for (const auto& visibility : visibilities) {
+            GS::ObjectState visibilityOs;
+            if (!item.Get (visibility.first, visibilityOs)) {
+                continue;
+            }
+            API_StoryVisibility requested = *visibility.second;
+            MergeStoryVisibility (visibilityOs, requested);
+            if (requested.showOnHome != visibility.second->showOnHome ||
+                requested.showAllAbove != visibility.second->showAllAbove ||
+                requested.showAllBelow != visibility.second->showAllBelow ||
+                requested.showRelAbove != visibility.second->showRelAbove ||
+                requested.showRelBelow != visibility.second->showRelBelow) {
+                unapplied.Push (visibility.first);
+            }
+        }
+    }
+    return unapplied;
 }
 
 GS::Optional<GS::UniString> ApplyMeshStructureAndSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool isNewElement, bool& changed)
@@ -4256,6 +4598,478 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     return changed;
 }
 
+// The cross section fields of a column segment, the same keys for the whole column (a ModifyColumns
+// item, applied to every segment) and for one segment (an item of its segments list, #2552).
+static void ApplyColumnSegmentCrossSection (const GS::ObjectState& details, API_AssemblySegmentData& segment)
+{
+    bool isWidthAndHeightLinked = false;
+    const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
+    ApplySectionSize (segment, GetOptionalDouble (details, "width"), GetOptionalDouble (details, "depth"), hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
+    bool circleBased = false;
+    if (details.Get ("circleBased", circleBased)) {
+        segment.circleBased = circleBased;
+    }
+    const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
+    const GS::ObjectState* profileIdOs = details.Get ("profileId");
+    if (profileIdOs != nullptr) {
+        segment.modelElemStructureType = API_ProfileStructure;
+        segment.profileType = APISect_Poly;
+        segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+        segment.circleBased = false;
+    } else if (buildingMaterialIdOs != nullptr) {
+        segment.modelElemStructureType = API_BasicStructure;
+        // A profiled segment keeps APISect_Poly, and with it its profile, unless the cross
+        // section is reset too (#1810, same as walls in #531).
+        if (segment.profileType == APISect_Poly) {
+            segment.profileType = APISect_Normal;
+        }
+        segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+    }
+}
+
+// The taper of one column segment, in the shape GetDetailsOfElements returns it (#2552).
+static void ApplyColumnSegmentTaper (const GS::ObjectState& taperOs, API_AssemblySegmentData& segment)
+{
+    bool value = false;
+    if (taperOs.Get ("isHomogeneous", value)) {
+        segment.isHomogeneous = value;
+    }
+    auto endWidth = GetOptionalDouble (taperOs, "endWidth");
+    if (endWidth.HasValue ()) {
+        segment.endWidth = endWidth.Get ();
+    }
+    auto endDepth = GetOptionalDouble (taperOs, "endDepth");
+    if (endDepth.HasValue ()) {
+        segment.endHeight = endDepth.Get ();
+    }
+    if (taperOs.Get ("isEndWidthAndDepthLinked", value)) {
+        segment.isEndWidthAndHeightLinked = value;
+    }
+}
+
+// The length scheme of one segment, in the shape GetDetailsOfElements returns it (#2552).
+static GS::Optional<GS::UniString> ApplyAssemblySegmentLength (const GS::ObjectState& lengthOs, API_AssemblySegmentSchemeData& scheme)
+{
+    GS::UniString lengthType;
+    if (lengthOs.Get ("lengthType", lengthType)) {
+        if (lengthType == "Fixed") {
+            scheme.lengthType = APIAssemblySegment_Fixed;
+        } else if (lengthType == "Proportional") {
+            scheme.lengthType = APIAssemblySegment_Proportional;
+        } else {
+            return GS::UniString ("length.lengthType must be Fixed or Proportional.");
+        }
+    }
+    auto fixedLength = GetOptionalDouble (lengthOs, "fixedLength");
+    if (fixedLength.HasValue ()) {
+        scheme.fixedLength = fixedLength.Get ();
+    }
+    auto lengthProportion = GetOptionalDouble (lengthOs, "lengthProportion");
+    if (lengthProportion.HasValue ()) {
+        scheme.lengthProportion = lengthProportion.Get ();
+    }
+    // Only the value of the lengthType is used, so only that one must be positive; GetDetailsOfElements
+    // returns the other one too, often as 0.
+    if (scheme.lengthType == APIAssemblySegment_Fixed && scheme.fixedLength <= 0.0) {
+        return GS::UniString ("length.fixedLength must be greater than 0 for a Fixed segment.");
+    }
+    if (scheme.lengthType == APIAssemblySegment_Proportional && scheme.lengthProportion <= 0.0) {
+        return GS::UniString ("length.lengthProportion must be greater than 0 for a Proportional segment.");
+    }
+    return {};
+}
+
+static GSSize GetAssemblySegmentSchemeCount (const API_ElementMemo& memo)
+{
+    if (memo.assemblySegmentSchemes == nullptr) {
+        return 0;
+    }
+    return BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+}
+
+// The segment an item of the "segments" list of ModifyColumns writes: its segmentIndex, else its
+// position in the list, so the segments GetDetailsOfElements returns can be sent back as they are.
+static Int32 GetColumnSegmentIndex (const GS::ObjectState& segmentOs, UIndex position)
+{
+    Int32 segmentIndex = static_cast<Int32> (position);
+    segmentOs.Get ("segmentIndex", segmentIndex);
+    return segmentIndex;
+}
+
+// Checks the "segments" list of a ModifyColumns item (#2552) before anything is written, so a
+// wrong segment index, an unknown attribute, a cross section that does not match its structureType,
+// an invalid length or an invalid veneer leaves the column as it was.
+static GS::Optional<GS::UniString> CheckColumnSegments (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    GS::Array<GS::ObjectState> segmentItems;
+    if (!details.Get ("segments", segmentItems)) {
+        return {};
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.columnSegments == nullptr) {
+        return GS::UniString ("Failed to read the segments of the column.");
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.columnSegments)) / sizeof (API_ColumnSegmentType);
+    const GSSize nSchemes = GetAssemblySegmentSchemeCount (memo);
+
+    for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
+        const GS::ObjectState& segmentOs = segmentItems[i];
+        const Int32 segmentIndex = GetColumnSegmentIndex (segmentOs, i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            return GS::UniString::Printf ("segments[%d] writes segment %d, but the column has %d segments (segmentIndex 0 to %d).",
+                static_cast<int> (i), static_cast<int> (segmentIndex), static_cast<int> (nSegments), static_cast<int> (nSegments) - 1);
+        }
+        for (const char* key : { "extrusionSurfaceMaterial", "endsMaterial" }) {
+            GS::ObjectState materialOs;
+            bool overridden = false;
+            if (segmentOs.Get (key, materialOs) && materialOs.Get ("overridden", overridden) && overridden && !materialOs.Contains ("attributeId")) {
+                return GS::UniString::Printf ("segments[%d].%s is overridden but has no attributeId.", static_cast<int> (i), key);
+            }
+        }
+        const GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (
+            segmentOs, { "extrusionSurfaceMaterial", "endsMaterial" }, "");
+        if (idError.HasValue ()) {
+            return idError;
+        }
+        const GS::ObjectState* veneerOs = segmentOs.Get ("veneer");
+        if (veneerOs != nullptr) {
+            API_ColumnSegmentType probe = {};
+            const GS::Optional<GS::UniString> veneerError = ApplyColumnVeneer (*veneerOs, probe);
+            if (veneerError.HasValue ()) {
+                return veneerError;
+            }
+        }
+
+        // The segment's own cross section.
+        const GS::ObjectState* buildingMaterialIdOs = segmentOs.Get ("buildingMaterialId");
+        if (buildingMaterialIdOs != nullptr &&
+            GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs)) == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString::Printf ("No Building Material attribute was found for segments[%d].buildingMaterialId.", static_cast<int> (i));
+        }
+        const GS::ObjectState* profileIdOs = segmentOs.Get ("profileId");
+        if (profileIdOs != nullptr &&
+            GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs)) == ACAPI_CreateAttributeIndex (-1)) {
+            return GS::UniString::Printf ("No Profile attribute was found for segments[%d].profileId.", static_cast<int> (i));
+        }
+        // structureType is taken so the segments GetDetailsOfElements returns can be sent back; the
+        // structure itself follows buildingMaterialId or profileId, so it must agree with them.
+        // The fields for all segments are applied first, so they decide when the item gives neither.
+        GS::UniString structureType;
+        if (segmentOs.Get ("structureType", structureType)) {
+            bool isProfile = memo.columnSegments[segmentIndex].assemblySegmentData.modelElemStructureType == API_ProfileStructure;
+            if (details.Contains ("profileId")) {
+                isProfile = true;
+            } else if (details.Contains ("buildingMaterialId")) {
+                isProfile = false;
+            }
+            if (profileIdOs != nullptr) {
+                isProfile = true;
+            } else if (buildingMaterialIdOs != nullptr) {
+                isProfile = false;
+            }
+            if (structureType != GS::UniString (isProfile ? "Profile" : "Basic")) {
+                return GS::UniString::Printf ("segments[%d].structureType does not match the cross section of the segment: give buildingMaterialId to make it Basic or profileId to make it Profile.", static_cast<int> (i));
+            }
+        }
+
+        const GS::ObjectState* taperOs = segmentOs.Get ("taper");
+        if (taperOs != nullptr) {
+            API_AssemblySegmentData probe = memo.columnSegments[segmentIndex].assemblySegmentData;
+            ApplyColumnSegmentTaper (*taperOs, probe);
+            if (!probe.isHomogeneous && (probe.endWidth <= 0.0 || probe.endHeight <= 0.0)) {
+                return GS::UniString::Printf ("segments[%d].taper: a tapered segment (isHomogeneous false) needs endWidth and endDepth greater than 0.", static_cast<int> (i));
+            }
+        }
+
+        const GS::ObjectState* lengthOs = segmentOs.Get ("length");
+        if (lengthOs != nullptr) {
+            if (segmentIndex >= nSchemes) {
+                return GS::UniString::Printf ("segments[%d].length: Archicad returned no length scheme for segment %d of the column.", static_cast<int> (i), static_cast<int> (segmentIndex));
+            }
+            API_AssemblySegmentSchemeData probe = memo.assemblySegmentSchemes[segmentIndex];
+            const GS::Optional<GS::UniString> lengthError = ApplyAssemblySegmentLength (*lengthOs, probe);
+            if (lengthError.HasValue ()) {
+                return GS::UniString::Printf ("segments[%d].", static_cast<int> (i)) + lengthError.Get ();
+            }
+        }
+    }
+    return {};
+}
+
+// Writes one item of the "segments" list into its segment; scheme is the segment's length scheme,
+// or nullptr when the column has none for it (then CheckColumnSegments refused a length).
+static GS::Optional<GS::UniString> ApplyColumnSegment (const GS::ObjectState& segmentOs, API_ColumnSegmentType& segment, API_AssemblySegmentSchemeData* scheme, bool& schemeChanged)
+{
+    GS::ObjectState materialOs;
+    if (segmentOs.Get ("extrusionSurfaceMaterial", materialOs)) {
+        segment.extrusionSurfaceMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("endsMaterial", materialOs)) {
+        segment.endsMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    bool materialsChained = false;
+    if (segmentOs.Get ("materialsChained", materialsChained)) {
+        segment.materialsChained = materialsChained;
+    }
+    ApplyColumnSegmentCrossSection (segmentOs, segment.assemblySegmentData);
+    const GS::ObjectState* taperOs = segmentOs.Get ("taper");
+    if (taperOs != nullptr) {
+        ApplyColumnSegmentTaper (*taperOs, segment.assemblySegmentData);
+    }
+    const GS::ObjectState* lengthOs = segmentOs.Get ("length");
+    if (lengthOs != nullptr && scheme != nullptr) {
+        const GS::Optional<GS::UniString> lengthError = ApplyAssemblySegmentLength (*lengthOs, *scheme);
+        if (lengthError.HasValue ()) {
+            return lengthError;
+        }
+        schemeChanged = true;
+    }
+    const GS::ObjectState* veneerOs = segmentOs.Get ("veneer");
+    if (veneerOs != nullptr) {
+        return ApplyColumnVeneer (*veneerOs, segment);
+    }
+    return {};
+}
+
+namespace {
+
+// The floor plan display settings of a beam that ModifyBeams writes (#2529), under the names
+// GetDetailsOfElements reads them.
+const char* BeamDisplaySchemaProperties = R"(
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the beam is shown on (Show On Stories), for example { \"showOnHome\": true } for the home story only. Setting it without isAutoOnStoryVisibility turns the automatic story visibility off, which Archicad would otherwise recompute it from. The item fails when Archicad does not take the given combination." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true, Archicad recomputes visibility automatically from the actual elevation of the beam and ignores a visibility given together with it." },
+                        "displayOption": { "$ref": "#/DisplayOption" },
+                        "viewDepthLimitation": { "$ref": "#/ViewDepthLimitation" },
+                        "uncutProjectionMode": { "$ref": "#/ElemProjectionMode", "description": "Projection mode of the uncut part of the beam on the floor plan." },
+                        "overheadProjectionMode": { "$ref": "#/ElemProjectionMode", "description": "Projection mode of the overhead part of the beam on the floor plan." },
+                        "showContourLines": { "$ref": "#/BeamVisibleLines", "description": "Whether the contour lines of the beam are shown on the floor plan." },
+                        "showReferenceAxis": { "$ref": "#/BeamVisibleLines", "description": "Whether the reference axis of the beam is shown on the floor plan." },
+                        "cutContourLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the cut contour lines of the beam." },
+                        "cutContourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the cut contour lines of the beam." },
+                        "belowViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the uncut lines of the beam." },
+                        "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines of the beam." },
+                        "aboveViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the overhead lines of the beam." },
+                        "aboveViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the overhead lines of the beam." },
+                        "hiddenLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the hidden lines of the beam (the beam below a slab)." },
+                        "hiddenLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the hidden lines of the beam, for example a dashed line." },
+                        "referenceLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the reference axis of the beam." },
+                        "referenceLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the reference axis of the beam." },)";
+
+const char* BeamDisplayKeys[] = {
+    "visibility", "isAutoOnStoryVisibility", "displayOption", "viewDepthLimitation",
+    "uncutProjectionMode", "overheadProjectionMode", "showContourLines", "showReferenceAxis",
+    "cutContourLinePen", "cutContourLineTypeId", "belowViewLinePen", "belowViewLineTypeId",
+    "aboveViewLinePen", "aboveViewLineTypeId", "hiddenLinePen", "hiddenLineTypeId",
+    "referenceLinePen", "referenceLineTypeId"
+};
+
+bool HasBeamDisplaySettings (const GS::ObjectState& details)
+{
+    for (const char* key : BeamDisplayKeys) {
+        if (details.Contains (key)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BeamProjectionModeFromString (const GS::UniString& str, API_ElemProjectionModesID& out)
+{
+    if (str == "Symbolic")  { out = API_Symbolic;  return true; }
+    if (str == "Projected") { out = API_Projected; return true; }
+    if (str == "Hybrid")    { out = API_Hybrid;    return true; }
+    return false;
+}
+
+bool BeamVisibleLinesFromString (const GS::UniString& str, API_BeamVisibleLinesID& out)
+{
+    if (str == "ShowAlways") { out = APIBeamLineShowAlways; return true; }
+    if (str == "HideAlways") { out = APIBeamLineHideAlways; return true; }
+    if (str == "ByMVO")      { out = APIBeamLineByMVO;      return true; }
+    return false;
+}
+
+GS::Optional<GS::UniString> GetBeamLineType (const GS::ObjectState& details, const char* key, bool& has, API_AttributeIndex& lineType)
+{
+    const GS::ObjectState* lineTypeIdOs = details.Get (key);
+    has = lineTypeIdOs != nullptr;
+    if (!has) {
+        return {};
+    }
+    lineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeIdOs));
+    if (lineType == ACAPI_CreateAttributeIndex (-1)) {
+        return GS::UniString ("No Line Type attribute was found for ") + GS::UniString (key) + ".";
+    }
+    return {};
+}
+
+GS::Optional<GS::UniString> GetBeamPen (const GS::ObjectState& details, const char* key, bool& has, short& pen)
+{
+    Int32 value = 0;
+    has = details.Get (key, value);
+    if (!has) {
+        return {};
+    }
+    if (value < 1 || value > 255) {
+        return GS::UniString ("'") + GS::UniString (key) + "' must be a pen index from 1 to 255.";
+    }
+    pen = static_cast<short> (value);
+    return {};
+}
+
+// Writes the display settings given in details into element and mask. Everything is checked
+// before anything is written, so an invalid value leaves the beam as it was.
+GS::Optional<GS::UniString> ApplyBeamDisplaySettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    API_BeamType beam = element.beam;
+
+    GS::UniString str;
+    const bool hasDisplayOption = details.Get ("displayOption", str);
+    if (hasDisplayOption && !ElemDisplayOptionFromString (str, beam.displayOption)) {
+        return GS::UniString ("Invalid 'displayOption'.");
+    }
+    const bool hasViewDepthLimitation = details.Get ("viewDepthLimitation", str);
+    if (hasViewDepthLimitation && !ViewDepthLimitationFromString (str, beam.viewDepthLimitation)) {
+        return GS::UniString ("Invalid 'viewDepthLimitation'.");
+    }
+    const bool hasUncutProjectionMode = details.Get ("uncutProjectionMode", str);
+    if (hasUncutProjectionMode && !BeamProjectionModeFromString (str, beam.uncutProjectionMode)) {
+        return GS::UniString ("Invalid 'uncutProjectionMode'.");
+    }
+    const bool hasOverheadProjectionMode = details.Get ("overheadProjectionMode", str);
+    if (hasOverheadProjectionMode && !BeamProjectionModeFromString (str, beam.overheadProjectionMode)) {
+        return GS::UniString ("Invalid 'overheadProjectionMode'.");
+    }
+    const bool hasShowContourLines = details.Get ("showContourLines", str);
+    if (hasShowContourLines && !BeamVisibleLinesFromString (str, beam.showContourLines)) {
+        return GS::UniString ("Invalid 'showContourLines'.");
+    }
+    const bool hasShowReferenceAxis = details.Get ("showReferenceAxis", str);
+    if (hasShowReferenceAxis && !BeamVisibleLinesFromString (str, beam.showReferenceAxis)) {
+        return GS::UniString ("Invalid 'showReferenceAxis'.");
+    }
+
+    bool hasCutContourLinePen = false, hasBelowViewLinePen = false, hasAboveViewLinePen = false, hasHiddenLinePen = false, hasRefPen = false;
+    bool hasCutContourLineType = false, hasBelowViewLineType = false, hasAboveViewLineType = false, hasHiddenLineType = false, hasRefLineType = false;
+    const GS::Optional<GS::UniString> errors[] = {
+        GetBeamPen (details, "cutContourLinePen", hasCutContourLinePen, beam.cutContourLinePen),
+        GetBeamPen (details, "belowViewLinePen", hasBelowViewLinePen, beam.belowViewLinePen),
+        GetBeamPen (details, "aboveViewLinePen", hasAboveViewLinePen, beam.aboveViewLinePen),
+        GetBeamPen (details, "hiddenLinePen", hasHiddenLinePen, beam.hiddenLinePen),
+        GetBeamPen (details, "referenceLinePen", hasRefPen, beam.refPen),
+        GetBeamLineType (details, "cutContourLineTypeId", hasCutContourLineType, beam.cutContourLineType),
+        GetBeamLineType (details, "belowViewLineTypeId", hasBelowViewLineType, beam.belowViewLineType),
+        GetBeamLineType (details, "aboveViewLineTypeId", hasAboveViewLineType, beam.aboveViewLineType),
+        GetBeamLineType (details, "hiddenLineTypeId", hasHiddenLineType, beam.hiddenLineType),
+        GetBeamLineType (details, "referenceLineTypeId", hasRefLineType, beam.refLtype)
+    };
+    for (const GS::Optional<GS::UniString>& error : errors) {
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    GS::ObjectState visibilityOs;
+    const bool hasVisibility = details.Get ("visibility", visibilityOs);
+    if (hasVisibility) {
+        beam.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+        if (!details.Contains ("isAutoOnStoryVisibility")) {
+            // As on walls: while the automatic story visibility is on, Archicad recomputes the
+            // visibility from the beam's elevation and drops the one given here.
+            beam.isAutoOnStoryVisibility = false;
+        }
+    }
+    bool isAutoOnStoryVisibility = false;
+    const bool hasIsAutoOnStoryVisibility = details.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility);
+    if (hasIsAutoOnStoryVisibility) {
+        beam.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+    }
+
+    element.beam = beam;
+    if (hasVisibility)                                      ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, visibility);
+    if (hasVisibility || hasIsAutoOnStoryVisibility)        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, isAutoOnStoryVisibility);
+    if (hasDisplayOption)                                   ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, displayOption);
+    if (hasViewDepthLimitation)                             ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, viewDepthLimitation);
+    if (hasUncutProjectionMode)                             ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, uncutProjectionMode);
+    if (hasOverheadProjectionMode)                          ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, overheadProjectionMode);
+    if (hasShowContourLines)                                ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, showContourLines);
+    if (hasShowReferenceAxis)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, showReferenceAxis);
+    if (hasCutContourLinePen)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, cutContourLinePen);
+    if (hasCutContourLineType)                              ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, cutContourLineType);
+    if (hasBelowViewLinePen)                                ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, belowViewLinePen);
+    if (hasBelowViewLineType)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, belowViewLineType);
+    if (hasAboveViewLinePen)                                ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, aboveViewLinePen);
+    if (hasAboveViewLineType)                               ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, aboveViewLineType);
+    if (hasHiddenLinePen)                                   ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, hiddenLinePen);
+    if (hasHiddenLineType)                                  ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, hiddenLineType);
+    if (hasRefPen)                                          ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, refPen);
+    if (hasRefLineType)                                     ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, refLtype);
+    if (HasBeamDisplaySettings (details)) {
+        changed = true;
+    }
+    return {};
+}
+
+// Compares the display settings given in details with the beam as Archicad has it after the
+// change, and names every one it did not take. Empty when all were applied.
+GS::UniString GetBeamDisplaySettingsNotApplied (const API_BeamType& wanted, const API_BeamType& got, const GS::ObjectState& details)
+{
+    GS::UniString notApplied;
+    const auto checkEnum = [&] (const char* key, int wantedValue, int gotValue) {
+        if (details.Contains (key) && wantedValue != gotValue) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", key);
+        }
+    };
+    const auto checkPen = [&] (const char* key, short wantedPen, short gotPen) {
+        if (details.Contains (key) && wantedPen != gotPen) {
+            notApplied += GS::UniString::Printf (" %s is %d.", key, static_cast<int> (gotPen));
+        }
+    };
+    const auto checkLineType = [&] (const char* key, const API_AttributeIndex& wantedLineType, const API_AttributeIndex& gotLineType) {
+        if (details.Contains (key) && !(wantedLineType == gotLineType)) {
+            notApplied += GS::UniString::Printf (" %s was not applied.", key);
+        }
+    };
+
+    const bool visibilityGiven = details.Contains ("visibility");
+    if ((visibilityGiven || details.Contains ("isAutoOnStoryVisibility")) && wanted.isAutoOnStoryVisibility != got.isAutoOnStoryVisibility) {
+        notApplied += got.isAutoOnStoryVisibility ? " isAutoOnStoryVisibility is still true." : " isAutoOnStoryVisibility is false.";
+    }
+    // A visibility given together with isAutoOnStoryVisibility true is recomputed by Archicad, so
+    // it is only compared while the automatic visibility is off.
+    if (visibilityGiven && !wanted.isAutoOnStoryVisibility && !got.isAutoOnStoryVisibility) {
+        const API_StoryVisibility& w = wanted.visibility;
+        const API_StoryVisibility& g = got.visibility;
+        if (g.showOnHome != w.showOnHome || g.showAllAbove != w.showAllAbove || g.showAllBelow != w.showAllBelow ||
+            g.showRelAbove != w.showRelAbove || g.showRelBelow != w.showRelBelow) {
+            notApplied += GS::UniString::Printf (" visibility is showOnHome %s, showAllAbove %s, showAllBelow %s, showRelAbove %d, showRelBelow %d.",
+                g.showOnHome ? "true" : "false", g.showAllAbove ? "true" : "false", g.showAllBelow ? "true" : "false",
+                static_cast<int> (g.showRelAbove), static_cast<int> (g.showRelBelow));
+        }
+    }
+    checkEnum ("displayOption", wanted.displayOption, got.displayOption);
+    checkEnum ("viewDepthLimitation", wanted.viewDepthLimitation, got.viewDepthLimitation);
+    checkEnum ("uncutProjectionMode", wanted.uncutProjectionMode, got.uncutProjectionMode);
+    checkEnum ("overheadProjectionMode", wanted.overheadProjectionMode, got.overheadProjectionMode);
+    checkEnum ("showContourLines", wanted.showContourLines, got.showContourLines);
+    checkEnum ("showReferenceAxis", wanted.showReferenceAxis, got.showReferenceAxis);
+    checkPen ("cutContourLinePen", wanted.cutContourLinePen, got.cutContourLinePen);
+    checkPen ("belowViewLinePen", wanted.belowViewLinePen, got.belowViewLinePen);
+    checkPen ("aboveViewLinePen", wanted.aboveViewLinePen, got.aboveViewLinePen);
+    checkPen ("hiddenLinePen", wanted.hiddenLinePen, got.hiddenLinePen);
+    checkPen ("referenceLinePen", wanted.refPen, got.refPen);
+    checkLineType ("cutContourLineTypeId", wanted.cutContourLineType, got.cutContourLineType);
+    checkLineType ("belowViewLineTypeId", wanted.belowViewLineType, got.belowViewLineType);
+    checkLineType ("aboveViewLineTypeId", wanted.aboveViewLineType, got.aboveViewLineType);
+    checkLineType ("hiddenLineTypeId", wanted.hiddenLineType, got.hiddenLineType);
+    checkLineType ("referenceLineTypeId", wanted.refLtype, got.refLtype);
+    return notApplied;
+}
+
+} // namespace
+
 // errorMessage is set when a given field is invalid; it stays empty when Archicad refused the change.
 static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details, GS::UniString& errorMessage)
 {
@@ -4268,13 +5082,15 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
     const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = details.Get ("profileId");
     const GS::ObjectState* veneerOs = details.Get ("veneer");
-    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && veneerOs == nullptr) {
+    GS::Array<GS::ObjectState> segmentItems;
+    const bool hasSegments = details.Get ("segments", segmentItems);
+    if (!width.HasValue () && !depth.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && veneerOs == nullptr && !hasSegments) {
         return true;
     }
 
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError || memo.columnSegments == nullptr) {
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.columnSegments == nullptr) {
         return false;
     }
 
@@ -4287,28 +5103,41 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
                 return false;
             }
         }
-        API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
-        ApplySectionSize (segment, width, depth, hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
-        if (hasCircleBased) {
-            segment.circleBased = circleBased;
+        ApplyColumnSegmentCrossSection (details, memo.columnSegments[i].assemblySegmentData);
+    }
+
+    // After the fields for all segments, so a segment's own values win. The items were checked by
+    // CheckColumnSegments (#2552).
+    const GSSize nSchemes = GetAssemblySegmentSchemeCount (memo);
+    bool schemeChanged = false;
+    for (UIndex i = 0; i < segmentItems.GetSize (); ++i) {
+        const Int32 segmentIndex = GetColumnSegmentIndex (segmentItems[i], i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            continue;
         }
-        if (profileIdOs != nullptr) {
-            segment.modelElemStructureType = API_ProfileStructure;
-            segment.profileType = APISect_Poly;
-            segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
-            segment.circleBased = false;
-        } else if (buildingMaterialIdOs != nullptr) {
-            segment.modelElemStructureType = API_BasicStructure;
-            // A profiled segment keeps APISect_Poly, and with it its profile, unless the cross
-            // section is reset too (#1810, same as walls in #531).
-            if (segment.profileType == APISect_Poly) {
-                segment.profileType = APISect_Normal;
-            }
-            segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        API_AssemblySegmentSchemeData* scheme = segmentIndex < nSchemes ? &memo.assemblySegmentSchemes[segmentIndex] : nullptr;
+        const GS::Optional<GS::UniString> segmentError = ApplyColumnSegment (segmentItems[i], memo.columnSegments[segmentIndex], scheme, schemeChanged);
+        if (segmentError.HasValue ()) {
+            errorMessage = segmentError.Get ();
+            return false;
         }
     }
 
-    return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_ColumnSegment, &memo) == NoError;
+    if (!schemeChanged) {
+        return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_ColumnSegment, &memo) == NoError;
+    }
+
+    // ACAPI_Element_ChangeMemo is documented for polygons only; the segment schemes are written with
+    // ACAPI_Element_Change, as the DevKit's Element_Test example does for columns.
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return false;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, nSegments);
+    return ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme, true) == NoError;
 }
 
 static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details)
@@ -4354,6 +5183,96 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     }
 
     return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_BeamSegment, &memo) == NoError;
+}
+
+static GS::UniString GetProfileNameForMessage (API_AttributeIndex profileIndex)
+{
+    GS::UniString name;
+    API_Attribute attr = {};
+    attr.header.typeID = API_ProfileID;
+    attr.header.index = profileIndex;
+    attr.header.uniStringNamePtr = &name;
+    const bool found = ACAPI_Attribute_Get (&attr) == NoError;
+    DisposeAttribute (attr);
+    return found && !name.IsEmpty () ? name : GS::UniString ("(unnamed)");
+}
+
+// The cross section of a segment with a custom profile (API_ProfileStructure) keeps the size of
+// the profile: Archicad ignores a nominalWidth/nominalHeight written to it and still returns
+// NoError (#2554). The segments are read back after the change, so a given width or height that
+// did not apply to a profiled segment is reported instead of a silent success. Segments that are
+// not profiled are not checked, so linked width/height and other Archicad adjustments of basic
+// and complex sections are left as they were.
+template <typename SegmentType>
+static GS::Optional<GS::UniString> GetIgnoredProfiledSectionSize (
+    const SegmentType* segments,
+    const GS::ObjectState& details,
+    const char* heightKey)
+{
+    const auto width = GetOptionalDouble (details, "width");
+    const auto height = GetOptionalDouble (details, heightKey);
+    if (segments == nullptr || (!width.HasValue () && !height.HasValue ())) {
+        return GS::NoValue;
+    }
+
+    const double tolerance = 1e-6;
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<SegmentType*> (segments))) / sizeof (SegmentType);
+    for (GSSize i = 0; i < nSegments; ++i) {
+        const API_AssemblySegmentData& segment = segments[i].assemblySegmentData;
+        if (segment.modelElemStructureType != API_ProfileStructure) {
+            continue;
+        }
+        GS::Array<GS::UniString> ignored;
+        if (width.HasValue () && std::abs (segment.nominalWidth - width.Get ()) > tolerance) {
+            ignored.Push ("width");
+        }
+        // With linked width and height a different height given together with the width
+        // cannot both apply, so only the width is compared then.
+        const bool heightFollowsWidth = segment.isWidthAndHeightLinked && width.HasValue ();
+        if (height.HasValue () && !heightFollowsWidth && std::abs (segment.nominalHeight - height.Get ()) > tolerance) {
+            ignored.Push (heightKey);
+        }
+        if (ignored.IsEmpty ()) {
+            continue;
+        }
+        GS::UniString fields = ignored[0];
+        for (UIndex j = 1; j < ignored.GetSize (); ++j) {
+            fields += "/" + ignored[j];
+        }
+        const GS::UniString profileName = GetProfileNameForMessage (segment.profileAttr);
+        return GS::UniString::Printf ("%T not applied: the cross section is the profile %T, which sets the size (it stayed %g x %g). Send buildingMaterialId to switch to a basic cross section first; the other given fields were applied.",
+            fields.ToPrintf (),
+            profileName.ToPrintf (),
+            segment.nominalWidth,
+            segment.nominalHeight);
+    }
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> GetIgnoredBeamSectionSize (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    if (!details.Contains ("width") && !details.Contains ("height")) {
+        return GS::NoValue;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_BeamSegment) != NoError) {
+        return GS::NoValue;
+    }
+    return GetIgnoredProfiledSectionSize (memo.beamSegments, details, "height");
+}
+
+static GS::Optional<GS::UniString> GetIgnoredColumnSectionSize (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    if (!details.Contains ("width") && !details.Contains ("depth")) {
+        return GS::NoValue;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError) {
+        return GS::NoValue;
+    }
+    return GetIgnoredProfiledSectionSize (memo.columnSegments, details, "depth");
 }
 
 // The segments array of CreateBeams and ModifyBeams (#2551): each item changes the cross section,
@@ -4477,18 +5396,11 @@ static GS::Optional<GS::UniString> ApplyBeamSegmentsToMemo (API_ElementMemo& mem
 
         const GS::ObjectState* lengthOs = geometry->Get ("length");
         if (lengthOs != nullptr) {
-            API_AssemblySegmentSchemeData& scheme = memo.assemblySegmentSchemes[segmentIndex];
-            GS::UniString lengthType;
-            if (lengthOs->Get ("lengthType", lengthType)) {
-                scheme.lengthType = (lengthType == "Proportional") ? APIAssemblySegment_Proportional : APIAssemblySegment_Fixed;
-            }
-            const auto fixedLength = GetOptionalDouble (*lengthOs, "fixedLength");
-            if (fixedLength.HasValue ()) {
-                scheme.fixedLength = fixedLength.Get ();
-            }
-            const auto lengthProportion = GetOptionalDouble (*lengthOs, "lengthProportion");
-            if (lengthProportion.HasValue ()) {
-                scheme.lengthProportion = lengthProportion.Get ();
+            // Shared with the column segments: only the value of the lengthType must be positive, so the
+            // length GetDetailsOfElements returns can be sent back as it is.
+            const GS::Optional<GS::UniString> lengthError = ApplyAssemblySegmentLength (*lengthOs, memo.assemblySegmentSchemes[segmentIndex]);
+            if (lengthError.HasValue ()) {
+                return GS::UniString::Printf ("segments[%u].geometry.", static_cast<unsigned int> (i)) + lengthError.Get ();
             }
         }
     }
@@ -6696,12 +7608,12 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "verticalCurveHeight": { "type": "number", "description": "Optional rise of a vertically curved beam. A non-zero value makes a vertically curved beam; it wins over arcAngle." },
                         "width": {
                             "type": "number",
-                            "description": "Cross section width of the beam. Applied to all segments.",
+                            "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "height": {
                             "type": "number",
-                            "description": "Cross section height of the beam. Applied to all segments.",
+                            "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the height; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "anchorPoint": {
@@ -6929,6 +7841,9 @@ GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, 
 // them all into the Stair element. The tread, riser and structure settings are the Stair's own
 // per-part defaults (tread[role], riser[role], structure[role][side]), not its subelements.
 static const char* StairSettingsSchemaProperties = R"(
+                        "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
+                        "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
+                        "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -7176,8 +8091,28 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
         }
     }
 
+    auto treadDepth = GetOptionalDouble (parameters, "treadDepth");
+    if (treadDepth.HasValue ()) {
+        // The plain treadDepth field (written by ApplyStairSettings) is not an input: ACAPI_Element_Create lays the steps out from
+        // the stair rules, so an explicit going has to be pinned there as a min == max bound with
+        // both *Applied flags set. The standard's combined rules (2R+G, R+G, R/G) are released for
+        // this stair, otherwise they override the pinned going whenever the two conflict (#425).
+        // Pinned before ApplyStairSettings, so the rules given explicitly (#2531) are written last.
+        API_StairRulesData& rules = element.stair.rules;
+        rules.treadDepthMinValue = treadDepth.Get ();
+        rules.treadDepthMaxValue = treadDepth.Get ();
+        rules.treadDepthMinApplied = true;
+        rules.treadDepthMaxApplied = true;
+        rules.ruleMinApplied = false;
+        rules.ruleMaxApplied = false;
+        rules.riserPlusGoingMinApplied = false;
+        rules.riserPlusGoingMaxApplied = false;
+        rules.riserGoingRatioMinApplied = false;
+        rules.riserGoingRatioMaxApplied = false;
+    }
+
     // The settings ModifyStairs accepts, written the same way (#2220); ACAPI_Element_Create does
-    // not use the mask. treadDepth is also pinned in the stair rules below.
+    // not use the mask.
     API_Element unusedMask = {};
     ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
     const GS::Optional<GS::UniString> settingsError = ApplyStairSettings (parameters, element, unusedMask);
@@ -7200,25 +8135,6 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     auto baselineOffset = GetOptionalDouble (parameters, "baselineOffset");
     if (baselineOffset.HasValue ()) {
         element.stair.baselineOffset = baselineOffset.Get ();
-    }
-
-    auto treadDepth = GetOptionalDouble (parameters, "treadDepth");
-    if (treadDepth.HasValue ()) {
-        // The plain treadDepth field (written by ApplyStairSettings) is not an input: ACAPI_Element_Create lays the steps out from
-        // the stair rules, so an explicit going has to be pinned there as a min == max bound with
-        // both *Applied flags set. The standard's combined rules (2R+G, R+G, R/G) are released for
-        // this stair, otherwise they override the pinned going whenever the two conflict (#425).
-        API_StairRulesData& rules = element.stair.rules;
-        rules.treadDepthMinValue = treadDepth.Get ();
-        rules.treadDepthMaxValue = treadDepth.Get ();
-        rules.treadDepthMinApplied = true;
-        rules.treadDepthMaxApplied = true;
-        rules.ruleMinApplied = false;
-        rules.ruleMaxApplied = false;
-        rules.riserPlusGoingMinApplied = false;
-        rules.riserPlusGoingMaxApplied = false;
-        rules.riserGoingRatioMinApplied = false;
-        rules.riserGoingRatioMaxApplied = false;
     }
 
     // Build the baseline polyline in the memo
@@ -8168,6 +9084,47 @@ GS::Optional<GS::UniString> SolveStairBaselineCommand::GetRawResponseSchema () c
     })";
 }
 
+// The Rules and Standards of a stair, in the StairRules definition: the limits Archicad lays the
+// steps out by (#2526, #2531). SolveStairBaseline returns them for the stair it creates and
+// GetDetailsOfElements for a stair (declared in ExtendedElementCommands.hpp); CreateStairs and
+// ModifyStairs write the same fields. Outside the AC27 guard, because GetDetailsOfElements uses
+// it in every version.
+GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules)
+{
+    GS::ObjectState os;
+    os.Add ("riserHeightMinValue", rules.riserHeightMinValue);
+    os.Add ("riserHeightMinApplied", rules.riserHeightMinApplied);
+    os.Add ("riserHeightMaxValue", rules.riserHeightMaxValue);
+    os.Add ("riserHeightMaxApplied", rules.riserHeightMaxApplied);
+    os.Add ("treadDepthMinValue", rules.treadDepthMinValue);
+    os.Add ("treadDepthMinApplied", rules.treadDepthMinApplied);
+    os.Add ("treadDepthMaxValue", rules.treadDepthMaxValue);
+    os.Add ("treadDepthMaxApplied", rules.treadDepthMaxApplied);
+    os.Add ("ruleMinValue", rules.ruleMinValue);
+    os.Add ("ruleMinApplied", rules.ruleMinApplied);
+    os.Add ("ruleMaxValue", rules.ruleMaxValue);
+    os.Add ("ruleMaxApplied", rules.ruleMaxApplied);
+    os.Add ("riserPlusGoingMinValue", rules.riserPlusGoingMinValue);
+    os.Add ("riserPlusGoingMinApplied", rules.riserPlusGoingMinApplied);
+    os.Add ("riserPlusGoingMaxValue", rules.riserPlusGoingMaxValue);
+    os.Add ("riserPlusGoingMaxApplied", rules.riserPlusGoingMaxApplied);
+    os.Add ("riserGoingRatioMinValue", rules.riserGoingRatioMinValue);
+    os.Add ("riserGoingRatioMinApplied", rules.riserGoingRatioMinApplied);
+    os.Add ("riserGoingRatioMaxValue", rules.riserGoingRatioMaxValue);
+    os.Add ("riserGoingRatioMaxApplied", rules.riserGoingRatioMaxApplied);
+    os.Add ("stairPitchMinValue", rules.stairPitchMinValue);
+    os.Add ("stairPitchMinApplied", rules.stairPitchMinApplied);
+    os.Add ("stairPitchMaxValue", rules.stairPitchMaxValue);
+    os.Add ("stairPitchMaxApplied", rules.stairPitchMaxApplied);
+    os.Add ("landingLengthMinValue", rules.landingLengthMinValue);
+    os.Add ("landingLengthMinApplied", rules.landingLengthMinApplied);
+    os.Add ("walkingLineOffsetMinValue", rules.walkingLineOffsetMinValue);
+    os.Add ("walkingLineOffsetMinApplied", rules.walkingLineOffsetMinApplied);
+    os.Add ("winderTurnOffsetMinValue", rules.winderTurnOffsetMinValue);
+    os.Add ("winderTurnOffsetMinApplied", rules.winderTurnOffsetMinApplied);
+    return os;
+}
+
 #ifdef ServerMainVers_2700
 static GS::UniString StairSolutionToString (API_StairSolutionID solution)
 {
@@ -8255,6 +9212,11 @@ GS::ObjectState SolveStairBaselineCommand::Execute (const GS::ObjectState& param
         result.Add ("stepNum", static_cast<Int32> (element.stair.stepNum));
         result.Add ("riserHeight", element.stair.riserHeight);
         result.Add ("treadDepth", element.stair.treadDepth);
+        // The solver lays out no steps, so stepNum, riserHeight and treadDepth above are the given
+        // values or the tool defaults. The rules are what CreateStairs would lay the steps out by:
+        // SetTypeSpecificParameters has already pinned a given treadDepth in them, as CreateStairs
+        // does (#2526).
+        result.Add ("rules", CreateStairRulesObjectState (element.stair.rules));
 
         solutions (result);
     }
@@ -8292,7 +9254,7 @@ GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () con
                         "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
                         "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
                         "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
-                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going." },)") + StairSettingsSchemaProperties + R"(
+                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -8338,6 +9300,80 @@ static bool StairWalkingLinePositionFromString (const GS::UniString& str, API_Li
     if (str == "Center") { position = APILP_Center; return true; }
     if (str == "Auto")   { position = APILP_Auto;   return true; }
     return false;
+}
+
+// The limits of the stair's Rules and Standards (#2531), with the keys of the StairRules
+// definition: each limit's value and its applied flag (API_StairRulesData, the same members in
+// AC25 to AC30).
+struct StairRuleField {
+    const char*                 valueName;
+    const char*                 appliedName;
+    double API_StairRulesData::* value;
+    bool API_StairRulesData::*   applied;
+};
+
+static const StairRuleField StairRuleFields[] = {
+    { "riserHeightMinValue",       "riserHeightMinApplied",       &API_StairRulesData::riserHeightMinValue,       &API_StairRulesData::riserHeightMinApplied },
+    { "riserHeightMaxValue",       "riserHeightMaxApplied",       &API_StairRulesData::riserHeightMaxValue,       &API_StairRulesData::riserHeightMaxApplied },
+    { "treadDepthMinValue",        "treadDepthMinApplied",        &API_StairRulesData::treadDepthMinValue,        &API_StairRulesData::treadDepthMinApplied },
+    { "treadDepthMaxValue",        "treadDepthMaxApplied",        &API_StairRulesData::treadDepthMaxValue,        &API_StairRulesData::treadDepthMaxApplied },
+    { "ruleMinValue",              "ruleMinApplied",              &API_StairRulesData::ruleMinValue,              &API_StairRulesData::ruleMinApplied },
+    { "ruleMaxValue",              "ruleMaxApplied",              &API_StairRulesData::ruleMaxValue,              &API_StairRulesData::ruleMaxApplied },
+    { "riserPlusGoingMinValue",    "riserPlusGoingMinApplied",    &API_StairRulesData::riserPlusGoingMinValue,    &API_StairRulesData::riserPlusGoingMinApplied },
+    { "riserPlusGoingMaxValue",    "riserPlusGoingMaxApplied",    &API_StairRulesData::riserPlusGoingMaxValue,    &API_StairRulesData::riserPlusGoingMaxApplied },
+    { "riserGoingRatioMinValue",   "riserGoingRatioMinApplied",   &API_StairRulesData::riserGoingRatioMinValue,   &API_StairRulesData::riserGoingRatioMinApplied },
+    { "riserGoingRatioMaxValue",   "riserGoingRatioMaxApplied",   &API_StairRulesData::riserGoingRatioMaxValue,   &API_StairRulesData::riserGoingRatioMaxApplied },
+    { "stairPitchMinValue",        "stairPitchMinApplied",        &API_StairRulesData::stairPitchMinValue,        &API_StairRulesData::stairPitchMinApplied },
+    { "stairPitchMaxValue",        "stairPitchMaxApplied",        &API_StairRulesData::stairPitchMaxValue,        &API_StairRulesData::stairPitchMaxApplied },
+    { "landingLengthMinValue",     "landingLengthMinApplied",     &API_StairRulesData::landingLengthMinValue,     &API_StairRulesData::landingLengthMinApplied },
+    { "walkingLineOffsetMinValue", "walkingLineOffsetMinApplied", &API_StairRulesData::walkingLineOffsetMinValue, &API_StairRulesData::walkingLineOffsetMinApplied },
+    { "winderTurnOffsetMinValue",  "winderTurnOffsetMinApplied",  &API_StairRulesData::winderTurnOffsetMinValue,  &API_StairRulesData::winderTurnOffsetMinApplied }
+};
+
+// The given rules object into the stair's rules: each given value and applied flag is written, with
+// its mask byte (as ACAPI_ELEMENT_MASK_SET sets it). Archicad's input validation does not refuse
+// an unknown key inside a definition the schema refers to (the same as for CreateProfiles, #2585,
+// and the floorPlanLayout check of #2530), so a misspelt rule was ignored and the change reported
+// as a success; an unknown key or a value of the wrong type is refused here, before anything is
+// written.
+static GS::Optional<GS::UniString> ApplyStairRules (const GS::ObjectState& rulesOs, API_StairRulesData& rules, API_StairRulesData& rulesMask)
+{
+    GS::Optional<GS::UniString> error;
+    rulesOs.EnumerateFields ([&] (const GS::String& key) {
+        if (error.HasValue ()) {
+            return;
+        }
+        for (const StairRuleField& field : StairRuleFields) {
+            if (key == field.valueName || key == field.appliedName) {
+                return;
+            }
+        }
+        error = GS::UniString ("Unknown key '") + GS::UniString (key.ToCStr ()) + "' in rules.";
+    });
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    API_StairRulesData given = rules;
+    for (const StairRuleField& field : StairRuleFields) {
+        if (rulesOs.Contains (field.valueName) && !rulesOs.Get (field.valueName, given.*field.value)) {
+            return GS::UniString ("rules.") + field.valueName + " must be a number.";
+        }
+        if (rulesOs.Contains (field.appliedName) && !rulesOs.Get (field.appliedName, given.*field.applied)) {
+            return GS::UniString ("rules.") + field.appliedName + " must be a boolean.";
+        }
+    }
+    for (const StairRuleField& field : StairRuleFields) {
+        if (rulesOs.Contains (field.valueName)) {
+            rules.*field.value = given.*field.value;
+            *reinterpret_cast<char*> (&(rulesMask.*field.value)) = -1;
+        }
+        if (rulesOs.Contains (field.appliedName)) {
+            rules.*field.applied = given.*field.applied;
+            *reinterpret_cast<char*> (&(rulesMask.*field.applied)) = -1;
+        }
+    }
+    return {};
 }
 
 static bool StairStoryVisibilityFromString (const GS::UniString& str, API_StairStoryVisibilityID& visibility)
@@ -8454,6 +9490,29 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     }
     if (details.Get ("totalHeightLocked", stair.totalHeightLocked)) {
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, totalHeightLocked);
+    }
+    // The top link (#2531), as walls and columns take it: with a non-zero relativeTopStory
+    // Archicad computes totalHeight from the story levels and topOffset.
+    Int32 relativeTopStory = 0;
+    if (details.Get ("relativeTopStory", relativeTopStory)) {
+        if (relativeTopStory < -32768 || relativeTopStory > 32767) {
+            return GS::UniString ("relativeTopStory is out of range.");
+        }
+        stair.relativeTopStory = static_cast<short> (relativeTopStory);
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, relativeTopStory);
+    }
+    auto topOffset = GetOptionalDouble (details, "topOffset");
+    if (topOffset.HasValue ()) {
+        stair.topOffset = topOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, topOffset);
+    }
+    // The Rules and Standards (#2531): only the given limits and applied flags.
+    const GS::ObjectState* rulesOs = details.Get ("rules");
+    if (rulesOs != nullptr) {
+        const GS::Optional<GS::UniString> rulesError = ApplyStairRules (*rulesOs, stair.rules, mask.stair.rules);
+        if (rulesError.HasValue ()) {
+            return rulesError;
+        }
     }
     if (details.Get ("finishVisible", stair.finishVisible)) {
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, finishVisible);
@@ -8764,6 +9823,46 @@ static GS::UniString CheckStairDisplayApplied (const API_Element& wanted, const 
     return notApplied;
 }
 
+// Whether the mask marks any value or applied flag of the stair's rules (#2531).
+static bool IsAnyStairRuleMasked (const API_StairRulesData& rulesMask)
+{
+    for (const StairRuleField& field : StairRuleFields) {
+        if (*reinterpret_cast<const char*> (&(rulesMask.*field.value)) != 0 || *reinterpret_cast<const char*> (&(rulesMask.*field.applied)) != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the rule values and applied flags
+// marked in givenRulesMask (the ones given, and the going pinned for a treadDepth) that differ now.
+// Empty when none were given or all were applied.
+static GS::UniString CheckStairRulesApplied (const API_Element& wanted, const API_StairRulesData& givenRulesMask)
+{
+    if (!IsAnyStairRuleMasked (givenRulesMask)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    const API_StairRulesData& want = wanted.stair.rules;
+    const API_StairRulesData& got = changed.stair.rules;
+    GS::UniString notApplied;
+    for (const StairRuleField& field : StairRuleFields) {
+        if (*reinterpret_cast<const char*> (&(givenRulesMask.*field.value)) != 0 && std::fabs (got.*field.value - want.*field.value) > 1e-6) {
+            notApplied += GS::UniString (" rules.") + field.valueName + GS::UniString::Printf (" is %g.", got.*field.value);
+        }
+        if (*reinterpret_cast<const char*> (&(givenRulesMask.*field.applied)) != 0 && got.*field.applied != want.*field.applied) {
+            notApplied += GS::UniString (" rules.") + field.appliedName + (got.*field.applied ? " is true." : " is false.");
+        }
+    }
+    return notApplied;
+}
+
 GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stairsWithDetails;
@@ -8797,10 +9896,57 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
+            auto treadDepth = GetOptionalDouble (item, "treadDepth");
+            if (treadDepth.HasValue ()) {
+                // Archicad lays the steps out from the stair rules, not from the plain treadDepth field
+                // ApplyStairSettings writes, so writing only that field changed nothing (#2525). The going
+                // is pinned in the rules as CreateStairs pins it (#425): a min == max bound with both
+                // *Applied flags set, and the standard's combined rules (2R+G, R+G, R/G) released, which
+                // otherwise override the pinned going whenever the two conflict. Pinned before
+                // ApplyStairSettings, as CreateStairs pins it before the settings that follow it.
+                API_StairRulesData& rules = element.stair.rules;
+                rules.treadDepthMinValue = treadDepth.Get ();
+                rules.treadDepthMaxValue = treadDepth.Get ();
+                rules.treadDepthMinApplied = true;
+                rules.treadDepthMaxApplied = true;
+                rules.ruleMinApplied = false;
+                rules.ruleMaxApplied = false;
+                rules.riserPlusGoingMinApplied = false;
+                rules.riserPlusGoingMaxApplied = false;
+                rules.riserGoingRatioMinApplied = false;
+                rules.riserGoingRatioMaxApplied = false;
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMinValue);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMaxValue);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.treadDepthMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.ruleMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.ruleMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserPlusGoingMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserPlusGoingMaxApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserGoingRatioMinApplied);
+                ACAPI_ELEMENT_MASK_SET (mask, API_StairType, rules.riserGoingRatioMaxApplied);
+            }
+
             const GS::Optional<GS::UniString> settingsError = ApplyStairSettings (item, element, mask);
             if (settingsError.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *settingsError));
                 continue;
+            }
+
+            // The rules given (and the pinned going) are marked by their own mask bytes. Archicad
+            // ignored a change of the rules marked only that way (#2531: the riser limit and the 2R+G
+            // flag stayed as they were, and the change reported success), which is what happens when
+            // the rules are taken by the mask byte of the whole member, ACAPI_ELEMENT_MASK_CHECK (mask,
+            // API_StairType, rules), i.e. the first byte of riserHeightMinValue, unless that rule is
+            // given. So the whole rules member is marked: element holds the stair's own rules from
+            // ACAPI_Element_Get, so the rules not given are written back as they are. The given ones
+            // are read back after the change.
+            const API_StairRulesData givenRulesMask = mask.stair.rules;
+            if (IsAnyStairRuleMasked (givenRulesMask)) {
+                char* rulesMaskBytes = reinterpret_cast<char*> (&mask.stair.rules);
+                for (size_t i = 0; i < sizeof (API_StairRulesData); ++i) {
+                    rulesMaskBytes[i] = -1;
+                }
             }
 
             // No memo is passed, so the baseline and the position of the stair are kept.
@@ -8816,6 +9962,12 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString notApplied = CheckStairDisplayApplied (element, mask);
             if (!notApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every floor plan display setting:" + notApplied));
+                continue;
+            }
+            // The same for the rules (#2531), which Archicad ignored without an error.
+            const GS::UniString rulesNotApplied = CheckStairRulesApplied (element, givenRulesMask);
+            if (!rulesNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
                 continue;
             }
 
@@ -11383,6 +12535,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetRawResponseSchema () const
 }
 
 static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, const GS::Array<GSIndex>& edgeIndices, const GS::Array<GS::ObjectState>& pivotEdges);
+static GS::Optional<GS::UniString> CheckRoofPivotEdgeAttributesApplied (const API_Guid& guid, const GS::Array<GS::ObjectState>& pivotEdges);
 
 GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
@@ -11530,6 +12683,14 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
                         err = ACAPI_Element_Change (&created, &createdMask, &createdMemo, APIMemoMask_AdditionalPolygon, true);
                         if (err != NoError) {
                             edgeError = "Failed to set the roof planes of the edges of the new roof, so it was not created.";
+                        } else {
+                            // The plane surfaces and cover fills are read back as ModifyRoofs does (#2582).
+                            auto appliedError = CheckRoofPivotEdgeAttributesApplied (element.header.guid, pivotEdges);
+                            if (appliedError.HasValue ()) {
+                                err = APIERR_GENERAL;
+                                edgeError = appliedError.Get ();
+                                edgeError.Append (" The roof was not created.");
+                            }
                         }
                     }
                 }
@@ -12516,8 +13677,8 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "isFlipped": { "type": "boolean" },
                         "profileAngle": { "type": "number" },
                         "anchorPoint": { "$ref": "#/BeamAnchorPoint" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the height: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
@@ -12535,7 +13696,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                             "items": {
                                 "$ref": "#/BeamSegmentModification"
                             }
-                        },)") + BeamSurfaceAndFillSchemaProperties + R"(
+                        },)") + BeamDisplaySchemaProperties + BeamSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -12562,6 +13723,14 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
 
     const Stories stories = GetStories ();
 
+    struct BeamDisplayCheck {
+        UIndex                  resultIndex;
+        API_Guid                guid;
+        API_BeamType            wanted;
+        const GS::ObjectState*  item;
+    };
+    GS::Array<BeamDisplayCheck> displayChecks;
+
     return ExecuteModifyWithResults ("Modify Beams", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
@@ -12584,6 +13753,20 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, settingsError.Get ()));
                 continue;
             }
+            const GS::Optional<GS::UniString> displayError = ApplyBeamDisplaySettings (element, mask, item, changed);
+            if (displayError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, displayError.Get ()));
+                continue;
+            }
+            if (HasBeamDisplaySettings (item)) {
+                // This item's result is the next one pushed; it is checked after the command.
+                BeamDisplayCheck check = {};
+                check.resultIndex = results.GetSize ();
+                check.guid = element.header.guid;
+                check.wanted = element.beam;
+                check.item = &item;
+                displayChecks.Push (check);
+            }
             const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
 
             // The segments are checked before anything is written, so a wrong segmentIndex leaves
@@ -12601,13 +13784,28 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
             }
-            const auto applySegments = [&] () -> GS::ObjectState {
-                if (!hasSegments) {
-                    return CreateSuccessfulExecutionResult ();
+            // Applies the cross section fields, reads back whether a custom profile ignored the
+            // given size (#2554), then applies the segments; a failed segment change is reported
+            // first, else the ignored size.
+            const auto applySectionAndSegments = [&] () -> GS::ObjectState {
+                GS::Optional<GS::UniString> ignoredSize;
+                if (hasSectionFields) {
+                    if (!ApplyBeamSectionToMemo (element.header.guid, item)) {
+                        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section.");
+                    }
+                    ignoredSize = GetIgnoredBeamSectionSize (element.header.guid, item);
                 }
-                GS::UniString segmentsMessage;
-                const GSErrCode segmentsErr = ApplyBeamSegmentsToBeam (element.header.guid, segments, segmentsMessage);
-                return segmentsErr == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (segmentsErr, segmentsMessage);
+                if (hasSegments) {
+                    GS::UniString segmentsMessage;
+                    const GSErrCode segmentsErr = ApplyBeamSegmentsToBeam (element.header.guid, segments, segmentsMessage);
+                    if (segmentsErr != NoError) {
+                        return CreateFailedExecutionResult (segmentsErr, segmentsMessage);
+                    }
+                }
+                if (ignoredSize.HasValue ()) {
+                    return CreateFailedExecutionResult (APIERR_REFUSEDPAR, ignoredSize.Get ());
+                }
+                return CreateSuccessfulExecutionResult ();
             };
 
             GS::Array<GS::ObjectState> holes;
@@ -12624,11 +13822,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err, "Failed to modify beam holes."));
                     continue;
                 }
-                if (hasSectionFields && !ApplyBeamSectionToMemo (element.header.guid, item)) {
-                    results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
-                    continue;
-                }
-                results.Push (applySegments ());
+                results.Push (applySectionAndSegments ());
                 continue;
             }
 
@@ -12645,12 +13839,28 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                 }
             }
 
-            if (hasSectionFields && !ApplyBeamSectionToMemo (element.header.guid, item)) {
-                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+            results.Push (applySectionAndSegments ());
+        }
+    }, [&](GS::Array<GS::ObjectState>& results) {
+        // Read back after the undoable command has ended, so a display setting Archicad did not
+        // take (a story visibility combination it drops, for example) fails the item instead of
+        // reporting a success (#2529).
+        for (const BeamDisplayCheck& check : displayChecks) {
+            bool success = false;
+            if (check.resultIndex >= results.GetSize () || !results[check.resultIndex].Get ("success", success) || !success) {
                 continue;
             }
-
-            results.Push (applySegments ());
+            API_Element changed = {};
+            changed.header.guid = check.guid;
+            GSErrCode err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                results[check.resultIndex] = CreateFailedExecutionResult (err, "Failed to read the beam back after the change.");
+                continue;
+            }
+            const GS::UniString notApplied = GetBeamDisplaySettingsNotApplied (check.wanted, changed.beam, *check.item);
+            if (!notApplied.IsEmpty ()) {
+                results[check.resultIndex] = CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every given display setting to the beam; the other given fields were changed.") + notApplied);
+            }
         }
     });
 }
@@ -12790,6 +14000,29 @@ static GS::Optional<GS::UniString> GetIgnoredSlabFillOrientation (const API_Guid
     return GS::UniString::Printf ("Archicad did not apply floorFill.orientation %T: on a Slab it applies only the orientation type through the API. The other details given were applied.", list.ToPrintf ());
 }
 
+// The execution result of a changed Slab: it fails when Archicad did not apply a given fill
+// orientation or floor plan and section display setting (#2561), naming each one.
+static GS::ObjectState CreateModifiedSlabResult (const API_Guid& slabGuid, const GS::ObjectState& item)
+{
+    GS::UniString message;
+    const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (slabGuid, item);
+    if (ignoredOrientation.HasValue ()) {
+        message = *ignoredOrientation;
+    }
+    const GS::Array<GS::UniString> unapplied = GetUnappliedSlabDisplaySettings (slabGuid, item);
+    if (!unapplied.IsEmpty ()) {
+        GS::UniString list;
+        for (UIndex i = 0; i < unapplied.GetSize (); ++i) {
+            list += (i == 0 ? "" : ", ") + unapplied[i];
+        }
+        if (!message.IsEmpty ()) {
+            message += " ";
+        }
+        message += "Archicad did not apply " + list + " to the Slab. The other details given were applied.";
+    }
+    return message.IsEmpty () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, message);
+}
+
 GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -12910,8 +14143,8 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err, hasEdgeSideMaterials ? "Failed to modify the edges of the slab." : "Failed to modify the edge trims of the slab."));
                     continue;
                 }
-                const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (element.header.guid, item);
-                results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
+                // Read back as the other paths are: the orientation and the display settings (#2561).
+                results.Push (CreateModifiedSlabResult (element.header.guid, item));
                 continue;
             }
 
@@ -12971,8 +14204,7 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err, "Failed to modify slab geometry."));
                     continue;
                 }
-                const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (slabGuid, item);
-                results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
+                results.Push (CreateModifiedSlabResult (slabGuid, item));
                 continue;
             }
 
@@ -12986,8 +14218,7 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (err, "Failed to modify slab."));
                 continue;
             }
-            const GS::Optional<GS::UniString> ignoredOrientation = GetIgnoredSlabFillOrientation (element.header.guid, item);
-            results.Push (ignoredOrientation.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, *ignoredOrientation) : CreateSuccessfulExecutionResult ());
+            results.Push (CreateModifiedSlabResult (element.header.guid, item));
         }
     });
 }
@@ -13009,7 +14240,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
         "properties": {
             "curtainWallsWithDetails": {
                 "type": "array",
-                "description": "Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications, and the floor plan display fields GetDetailsOfElements returns for a curtain wall, under the same names. Every given field is read back, and one Archicad did not apply fails the item.",
+                "description": "Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, plus flipped, offset and nominalWidth, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications, and the floor plan display fields GetDetailsOfElements returns for a curtain wall, under the same names. Every given field is read back, and one Archicad did not apply fails the item.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -13033,6 +14264,19 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         "height": {
                             "type": "number",
                             "description": "The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flipped": {
+                            "type": "boolean",
+                            "description": "The new side of the reference line the curtain wall is on (API_CurtainWallType::flipped, the flipped value GetDetailsOfElements returns). Changing it mirrors the curtain wall to the other side of its reference line; the reference line itself stays where it is."
+                        },
+                        "offset": {
+                            "type": "number",
+                            "description": "The new offset of the panels from the reference line (API_CurtainWallType::offset, the offset value GetDetailsOfElements returns), e.g. 0.1 for 10 cm."
+                        },
+                        "nominalWidth": {
+                            "type": "number",
+                            "description": "The new nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth, the nominalWidth value GetDetailsOfElements returns).",
                             "exclusiveMinimum": 0.0
                         },
                         "primaryPattern": {
@@ -13465,6 +14709,32 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
         changed = true;
     }
 
+    // The side of the reference line, the panel offset from it and the nominal width: plain
+    // fields of the curtain wall, changed with the others below and read back.
+    bool flipped = false;
+    const bool hasFlipped = item.Get ("flipped", flipped);
+    if (hasFlipped) {
+        element.curtainWall.flipped = flipped;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, flipped);
+        changed = true;
+    }
+    double offset = 0.0;
+    const bool hasOffset = item.Get ("offset", offset);
+    if (hasOffset) {
+        element.curtainWall.offset = offset;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, offset);
+        changed = true;
+    }
+    double nominalWidth = 0.0;
+    const bool hasNominalWidth = item.Get ("nominalWidth", nominalWidth);
+    if (hasNominalWidth) {
+        if (nominalWidth <= 0.0) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "nominalWidth must be positive.");
+        }
+        element.curtainWall.nominalWidth = nominalWidth;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, nominalWidth);
+        changed = true;
+    }
     const auto displayError = ApplyCurtainWallDisplay (item, element, mask, changed);
     if (displayError.HasValue ()) {
         return CreateFailedExecutionResult (APIERR_BADPARS, displayError.Get ());
@@ -13621,6 +14891,15 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
         }
         if (item.Contains ("zCoordinate") && std::fabs (readBack.curtainWall.planeOffset - element.curtainWall.planeOffset) > 1e-6 && std::fabs (readBack.curtainWall.storyRelLevel - element.curtainWall.storyRelLevel) > 1e-6) {
             return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the bottom elevation to the curtain wall.");
+        }
+        if (hasFlipped && readBack.curtainWall.flipped != flipped) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply flipped to the curtain wall.");
+        }
+        if (hasOffset && std::fabs (readBack.curtainWall.offset - offset) > 1e-6) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the offset to the curtain wall.");
+        }
+        if (hasNominalWidth && std::fabs (readBack.curtainWall.nominalWidth - nominalWidth) > 1e-6) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the nominal width to the curtain wall.");
         }
         if (!coordinates.IsEmpty ()) {
             // The reference line is read back too: a polygon change Archicad accepted but
@@ -13903,6 +15182,74 @@ GS::ObjectState ModifyCurtainWallFramesCommand::Execute (const GS::ObjectState& 
     });
 }
 
+// The attributes a roof plane of a Multi-plane Roof can have of its own (Custom Plane Settings,
+// #2582): the key in pivotEdges[].levels[], the attribute type and the API_RoofSegmentData member.
+struct RoofSegmentAttributeField {
+    const char*         key;
+    API_AttrTypeID      type;
+    const char*         typeName;
+    API_AttributeIndex  API_RoofSegmentData::* member;
+};
+
+static const RoofSegmentAttributeField RoofSegmentAttributeFields[] = {
+    { "topMaterialId",    API_MaterialID, "Surface", &API_RoofSegmentData::topMaterial },
+    { "bottomMaterialId", API_MaterialID, "Surface", &API_RoofSegmentData::bottomMaterial },
+    { "coverFillId",      API_FilltypeID, "Fill",    &API_RoofSegmentData::coverFillType }
+};
+
+// The attribute index of the given key of a pivotEdges level, if the key is given; an error
+// when it names no attribute of its type.
+static GS::Optional<GS::UniString> GetRoofSegmentAttribute (const GS::ObjectState& level, const RoofSegmentAttributeField& field, UIndex edge, UIndex levelIndex, GS::Optional<API_AttributeIndex>& index)
+{
+    index = GS::NoValue;
+    GS::ObjectState idOs;
+    if (!level.Get (field.key, idOs)) {
+        return {};
+    }
+    const API_AttributeIndex found = GetAttributeIndexFromGuid (field.type, GetGuidFromObjectState (idOs));
+    if (found == ACAPI_CreateAttributeIndex (-1)) {
+        return GS::UniString::Printf ("No %s attribute was found for pivotEdges[%u].levels[%u].%s.", field.typeName, (unsigned) edge, (unsigned) levelIndex, field.key);
+    }
+    index = found;
+    return {};
+}
+
+// Reads the roof back after CreateRoofs or ModifyRoofs wrote its "pivotEdges" and names the first plane
+// surface or cover fill that Archicad did not apply (#2582).
+static GS::Optional<GS::UniString> CheckRoofPivotEdgeAttributesApplied (const API_Guid& guid, const GS::Array<GS::ObjectState>& pivotEdges)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&]() {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_AdditionalPolygon) != NoError || memo.pivotPolyEdges == nullptr) {
+        return GS::UniString ("The roof planes could not be read back after the change.");
+    }
+    const GS::Array<GSIndex> edgeIndices = GetPivotEdgeIndices (memo);
+    if (edgeIndices.GetSize () != pivotEdges.GetSize ()) {
+        return GS::UniString ("The edges of the pivot polygon changed; the roof planes could not be checked.");
+    }
+    for (UIndex k = 0; k < pivotEdges.GetSize (); ++k) {
+        GS::Array<GS::ObjectState> levels;
+        if (!pivotEdges[k].Get ("levels", levels)) {
+            continue;
+        }
+        const API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[edgeIndices[k]];
+        for (UIndex j = 0; j < levels.GetSize (); ++j) {
+            for (const RoofSegmentAttributeField& field : RoofSegmentAttributeFields) {
+                GS::Optional<API_AttributeIndex> expected;
+                if (GetRoofSegmentAttribute (levels[j], field, k, j, expected).HasValue () || !expected.HasValue ()) {
+                    continue;
+                }
+                if (edge.levelEdgeData == nullptr || (Int32) j >= edge.nLevelEdgeData || !(edge.levelEdgeData[j].*field.member == expected.Get ())) {
+                    return GS::UniString::Printf ("Archicad did not apply pivotEdges[%u].levels[%u].%s.", (unsigned) k, (unsigned) j, field.key);
+                }
+            }
+        }
+    }
+    return {};
+}
+
 ModifyCurtainWallPanelsCommand::ModifyCurtainWallPanelsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -14112,6 +15459,16 @@ static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, c
                 if (levels[j].Get ("angleType", angleType) && angleType != "Sloped" && angleType != "Gable") {
                     return "Unknown angleType '" + angleType + "': use Sloped or Gable.";
                 }
+                for (const RoofSegmentAttributeField& field : RoofSegmentAttributeFields) {
+                    GS::Optional<API_AttributeIndex> index;
+                    auto attributeError = GetRoofSegmentAttribute (levels[j], field, k, j, index);
+                    if (attributeError.HasValue ()) {
+                        return attributeError;
+                    }
+                    if (write && index.HasValue ()) {
+                        segment.*field.member = index.Get ();
+                    }
+                }
                 if (!write) {
                     continue;
                 }
@@ -14141,6 +15498,9 @@ static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, c
             target.levelEdgeData[j].angle = source.levelEdgeData[j].angle;
             target.levelEdgeData[j].eavesOverhang = source.levelEdgeData[j].eavesOverhang;
             target.levelEdgeData[j].angleType = source.levelEdgeData[j].angleType;
+            target.levelEdgeData[j].topMaterial = source.levelEdgeData[j].topMaterial;
+            target.levelEdgeData[j].bottomMaterial = source.levelEdgeData[j].bottomMaterial;
+            target.levelEdgeData[j].coverFillType = source.levelEdgeData[j].coverFillType;
         }
     }
     return {};
@@ -14746,6 +16106,88 @@ static GS::Optional<GS::UniString> ApplyPolygonEdgeSideMaterials (API_ElementMem
     return {};
 }
 
+// The curve resolution of a multi-plane roof's curved pivot edges (segmentType, segmentsByArc
+// and segmentsByCircle of API_PolyRoofData, see ModifyRoofs) (#2582). given tells whether any
+// of them was in the item. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyRoofSegmentation (API_Element& element, API_Element& mask, const GS::ObjectState& item, bool& given)
+{
+    given = false;
+    GS::UniString segmentType;
+    const bool hasSegmentType = item.Get ("segmentType", segmentType);
+    if (hasSegmentType && segmentType != "SegmentsByCircle" && segmentType != "SegmentsByArc") {
+        return "Unknown segmentType '" + segmentType + "': use SegmentsByCircle or SegmentsByArc.";
+    }
+    Int32 segmentsByArc = 0;
+    const bool hasSegmentsByArc = item.Get ("segmentsByArc", segmentsByArc);
+    if (hasSegmentsByArc && segmentsByArc < 1) {
+        return GS::UniString ("'segmentsByArc' must be at least 1.");
+    }
+    Int32 segmentsByCircle = 0;
+    const bool hasSegmentsByCircle = item.Get ("segmentsByCircle", segmentsByCircle);
+    if (hasSegmentsByCircle && segmentsByCircle < 3) {
+        return GS::UniString ("'segmentsByCircle' must be at least 3.");
+    }
+
+    API_PolyRoofData& polyRoof = element.roof.u.polyRoof;
+    if (hasSegmentType) {
+        polyRoof.segmentType = segmentType == "SegmentsByArc" ? APIShellBase_SegmentsByArc : APIShellBase_SegmentsByCircle;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.segmentType);
+    }
+    if (hasSegmentsByArc) {
+        polyRoof.segmentsByArc = segmentsByArc;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.segmentsByArc);
+    }
+    if (hasSegmentsByCircle) {
+        polyRoof.segmentsByCircle = segmentsByCircle;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.segmentsByCircle);
+    }
+    given = hasSegmentType || hasSegmentsByArc || hasSegmentsByCircle;
+    return {};
+}
+
+// Each pivot edge of a multi-plane roof carries its own curve resolution too
+// (API_PivotPolyEdgeData), which the roof's planes are built from, so the roof's values are
+// copied to every edge, the closing vertex of each contour included (#2582).
+static void CopyRoofSegmentationToPivotEdges (const API_PolyRoofData& polyRoof, API_ElementMemo& memo)
+{
+    if (memo.pivotPolyEdges == nullptr) {
+        return;
+    }
+    const GSSize nEdges = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    for (GSIndex i = 0; i < nEdges; ++i) {
+        memo.pivotPolyEdges[i].segmentType = polyRoof.segmentType;
+        memo.pivotPolyEdges[i].segmentsByArc = polyRoof.segmentsByArc;
+        memo.pivotPolyEdges[i].segmentsByCircle = polyRoof.segmentsByCircle;
+    }
+}
+
+// Reads the roof back after ModifyRoofs wrote the given curve resolution, and names what
+// Archicad did not apply (#2582).
+static GS::Optional<GS::UniString> CheckRoofSegmentation (const API_Guid& guid, const GS::ObjectState& item)
+{
+    API_Element element = {};
+    element.header.guid = guid;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return GS::UniString ("Modified the roof, but failed to read it back to check the segmentation.");
+    }
+    const API_PolyRoofData& polyRoof = element.roof.u.polyRoof;
+    GS::UniString segmentType;
+    if (item.Get ("segmentType", segmentType)) {
+        const API_ShellBaseSegmentTypeID expected = segmentType == "SegmentsByArc" ? APIShellBase_SegmentsByArc : APIShellBase_SegmentsByCircle;
+        if (polyRoof.segmentType != expected) {
+            return "Archicad did not apply segmentType '" + segmentType + "'.";
+        }
+    }
+    Int32 segments = 0;
+    if (item.Get ("segmentsByArc", segments) && polyRoof.segmentsByArc != segments) {
+        return GS::UniString::Printf ("Archicad did not apply segmentsByArc %d: the roof has %d.", (int) segments, (int) polyRoof.segmentsByArc);
+    }
+    if (item.Get ("segmentsByCircle", segments) && polyRoof.segmentsByCircle != segments) {
+        return GS::UniString::Printf ("Archicad did not apply segmentsByCircle %d: the roof has %d.", (int) segments, (int) polyRoof.segmentsByCircle);
+    }
+    return {};
+}
+
 // Reads a multi-plane roof back after ModifyRoofs wrote its contourPolygon (#2582): the overhang
 // must be Manual, the contour's outline must have the given points and the contour as many holes
 // as given. The points are compared as a set, as Archicad may start the outline at another vertex.
@@ -14789,6 +16231,107 @@ static GS::Optional<GS::UniString> CheckRoofContour (const API_Guid& guid, const
     return {};
 }
 
+// The outline (first contour) of a roof with its arcs, in the keys ModifyRoofs takes, so that
+// 'holes' given without 'polygonOutline' keep it: the polygon of a single-plane roof, the pivot
+// polygon of a multi-plane roof. memo is the roof's memo from ACAPI_Element_GetMemo.
+static void GetCurrentRoofOutline (const API_ElementMemo& memo, bool isPlaneRoof, GS::Array<GS::ObjectState>& outline, GS::Array<GS::ObjectState>& arcs)
+{
+    // Only borrows the handles of memo, so it is never disposed.
+    API_ElementMemo polygonView = {};
+    if (isPlaneRoof) {
+        polygonView.coords = memo.coords;
+        polygonView.pends = memo.pends;
+        polygonView.parcs = memo.parcs;
+    } else {
+        polygonView.coords = memo.additionalPolyCoords;
+        polygonView.pends = memo.additionalPolyPends;
+        polygonView.parcs = memo.additionalPolyParcs;
+    }
+    if (polygonView.coords == nullptr) {
+        return;
+    }
+    GS::ObjectState current;
+    AddPolygonWithHolesFromMemoCoords (polygonView, current, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
+    current.Get ("polygonOutline", outline);
+    current.Get ("polygonArcs", arcs);
+}
+
+// Resizes the pivot polygon data of a multi-plane roof's own memo (from ACAPI_Element_GetMemo)
+// after BuildRoofMemoFromGeometry gave it a pivot polygon of nCoords points and nSubPolys
+// contours, so that every array has the length Archicad expects: the vertex and edge IDs and
+// pivotPolyEdges one record per point (nCoords + 1), the contour IDs one per contour. The
+// records up to keepUpTo (the closing point of the outline, when the outline kept its point
+// count) stay as they were, so those edges keep their IDs and roof planes. The others are new:
+// ID 0, as API_ElementMemo asks for new vertices, edges and contours, and the roof planes of the
+// first edge of the old outline. An empty memo built from scratch (no IDs, no pivotPolyEdges) is
+// refused by ACAPI_Element_Change on an existing roof (Archicad 29, #2398).
+static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCount, GSIndex keepUpTo, Int32 nCoords, Int32 nSubPolys)
+{
+    const GSSize newCoordCount = nCoords + 1;
+    const auto resizeIds = [] (UInt32**& ids, GSSize count, GSIndex lastKept) {
+        if (ids == nullptr) {
+            return;
+        }
+        ids = reinterpret_cast<UInt32**> (BMReallocHandle (reinterpret_cast<GSHandle> (ids), count * sizeof (UInt32), REALLOC_CLEAR, 0));
+        if (ids == nullptr) {
+            return;
+        }
+        for (GSIndex i = lastKept + 1; i < count; ++i) {
+            (*ids)[i] = 0;
+        }
+    };
+    resizeIds (memo.additionalPolyVertexIDs, newCoordCount, keepUpTo);
+    resizeIds (memo.additionalPolyEdgeIDs, newCoordCount, keepUpTo);
+    resizeIds (memo.additionalPolyContourIDs, nSubPolys + 1, keepUpTo > 0 ? 1 : 0);
+
+    if (memo.pivotPolyEdges == nullptr) {
+        return;
+    }
+    const GSSize oldEdgeCount = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    if (oldEdgeCount < 2 || oldEdgeCount != oldCoordCount) {
+        return;
+    }
+
+    // The planes of the first edge of the old outline, for the new edges.
+    API_PivotPolyEdgeData templateEdge = memo.pivotPolyEdges[1];
+    GS::Array<API_RoofSegmentData> templateSegments;
+    for (Int32 j = 0; j < templateEdge.nLevelEdgeData && templateEdge.levelEdgeData != nullptr; ++j) {
+        API_RoofSegmentData segment = templateEdge.levelEdgeData[j];
+        segment.lcoo = {};
+        templateSegments.Push (segment);
+    }
+
+    // The records that are not kept give up their level data before the array is resized.
+    for (GSIndex i = keepUpTo + 1; i < oldEdgeCount; ++i) {
+        if (memo.pivotPolyEdges[i].levelEdgeData != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&memo.pivotPolyEdges[i].levelEdgeData));
+        }
+        memo.pivotPolyEdges[i] = {};
+    }
+    API_PivotPolyEdgeData* edges = reinterpret_cast<API_PivotPolyEdgeData*> (
+        BMReallocPtr (reinterpret_cast<GSPtr> (memo.pivotPolyEdges), newCoordCount * sizeof (API_PivotPolyEdgeData), REALLOC_CLEAR, 0));
+    if (edges == nullptr) {
+        return;
+    }
+    memo.pivotPolyEdges = edges;
+    for (GSIndex i = keepUpTo + 1; i < newCoordCount; ++i) {
+        API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];
+        edge = {};
+        edge.segmentType = templateEdge.segmentType;
+        edge.segmentsByArc = templateEdge.segmentsByArc;
+        edge.segmentsByCircle = templateEdge.segmentsByCircle;
+        if (!templateSegments.IsEmpty ()) {
+            edge.levelEdgeData = reinterpret_cast<API_RoofSegmentData*> (BMAllocatePtr (templateSegments.GetSize () * sizeof (API_RoofSegmentData), ALLOCATE_CLEAR, 0));
+            if (edge.levelEdgeData != nullptr) {
+                for (UIndex j = 0; j < templateSegments.GetSize (); ++j) {
+                    edge.levelEdgeData[j] = templateSegments[j];
+                }
+                edge.nLevelEdgeData = (Int32) templateSegments.GetSize ();
+            }
+        }
+    }
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -14829,7 +16372,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "contourPolygon": {
                             "type": "object",
-                            "description": "Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).",
+                            "description": "Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, holes (the holes of the pivot polygon), pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).",
                             "properties": {
                                 "polygonOutline": {
                                     "type": "array",
@@ -14855,6 +16398,21 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 "$ref": "#/RoofLevel"
                             }
                         },
+                        "segmentType": {
+                            "type": "string",
+                            "enum": [ "SegmentsByCircle", "SegmentsByArc" ],
+                            "description": "Multi-plane roofs only: how the curved edges of the pivot polygon (polygonArcs) are resolved into planes, as GetDetailsOfElements reports it. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments. Written to the roof and to every edge of its pivot polygon; the roof is read back and the item fails when Archicad did not apply it. Cannot be combined with contourPolygon, as none of segmentsByArc and segmentsByCircle can."
+                        },
+                        "segmentsByArc": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Multi-plane roofs only: the number of segments of each arc with segmentType SegmentsByArc. Written as segmentType is."
+                        },
+                        "segmentsByCircle": {
+                            "type": "integer",
+                            "minimum": 3,
+                            "description": "Multi-plane roofs only: the number of segments of a whole circle with segmentType SegmentsByCircle. Written as segmentType is."
+                        },
                         "structureType": {
                             "$ref": "#/RoofStructureType"
                         },
@@ -14862,7 +16420,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "compositeId": { "$ref": "#/AttributeId" },
                         "polygonOutline": {
                             "type": "array",
-                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. A multi-plane roof's contour follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline), or is written on its own with contourPolygon. The coordinates are plan (x, y) coordinates; the elevation is set with level.",
+                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. A multi-plane roof's contour follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline), or is written on its own with contourPolygon. The coordinates are plan (x, y) coordinates; the elevation is set with level. The roof gets the given 'holes', or none without them.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
@@ -14870,14 +16428,14 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": { "$ref": "#/Holes2D" },
+                        "holes": { "$ref": "#/Holes2D", "description": "The holes of the roof: of a single-plane roof in its polygon, of a multi-plane roof in its pivot polygon. Replaces the roof's holes; given without 'polygonOutline' the roof keeps its outline, and an empty array removes every hole. On a multi-plane roof the edges of an outline that keeps its number of points keep their roof planes; every other edge (a new hole's, or each edge of an outline with another number of points) gets the roof planes of the first edge of the old outline." },
                         "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the top of the roof; overridden false clears the override." },
                         "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the sides of the roof; overridden false clears the override. Edges with a custom surface (edgeSideMaterials) keep theirs." },
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the bottom of the roof; overridden false clears the override." },
                         "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "edgeSideMaterials": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline.",
+                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline or holes.",
                             "items": { "$ref": "#/OverriddenMaterial" }
                         },
                         "cutBodyType": {
@@ -14902,7 +16460,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTrims": {
                             "type": "array",
-                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline or contourPolygon, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
+                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with pivotEdges, eavesOverhang, segmentType, segmentsByArc or segmentsByCircle, which move the contour.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -14921,14 +16479,14 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTypes": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline.",
+                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline or holes.",
                             "items": {
                                 "$ref": "#/RoofEdgeType"
                             }
                         },
                         "pivotEdges": {
                             "type": "array",
-                            "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
+                            "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline or holes.",
                             "items": { "$ref": "#/RoofPivotEdgeChange" }
                         },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
@@ -14977,30 +16535,35 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
             // The fields of the other roof class would be written into the wrong member of
             // the roof's union (u.planeRoof / u.polyRoof), so they are refused.
-            if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") || item.Contains ("contourPolygon"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges' and 'contourPolygon' are only valid for multi-plane roofs."));
+            if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") || item.Contains ("contourPolygon") ||
+                                item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges', 'contourPolygon', 'segmentType', 'segmentsByArc' and 'segmentsByCircle' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (item.Contains ("contourPolygon") && (item.Contains ("polygonOutline") || item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'pivotEdges' or 'eavesOverhang', which make the contour from the pivot polygon."));
+            // The segmentation of curved pivot edges makes the contour again too (#2582).
+            if (item.Contains ("contourPolygon") && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("pivotEdges") || item.Contains ("eavesOverhang") ||
+                                                     item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'holes', 'pivotEdges', 'eavesOverhang', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour from the pivot polygon."));
                 continue;
             }
             if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes") || item.Contains ("edgeSideMaterials"))) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTypes' and 'edgeSideMaterials' are only valid for single-plane roofs."));
                 continue;
             }
-            if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("contourPolygon"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline' or 'contourPolygon', which make new edges."));
+            if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("contourPolygon"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', 'holes' or 'contourPolygon', which make new edges."));
                 continue;
             }
-            if (item.Contains ("edgeTypes") && item.Contains ("polygonOutline")) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline', which makes new edges."));
+            if (item.Contains ("edgeTypes") && (item.Contains ("polygonOutline") || item.Contains ("holes"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
                 continue;
             }
             // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
             // trims would be written onto a contour Archicad replaces in the same change (#2435).
-            if (item.Contains ("edgeTrims") && (item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'pivotEdges' or 'eavesOverhang', which move the roof's contour: send them in two calls."));
+            // The segmentation of curved pivot edges re-cuts the contour as well (#2582).
+            if (item.Contains ("edgeTrims") && (item.Contains ("pivotEdges") || item.Contains ("eavesOverhang") ||
+                                                item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'pivotEdges', 'eavesOverhang', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which move the roof's contour: send them in two calls."));
                 continue;
             }
 
@@ -15024,6 +16587,26 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, floorPlanError.Get ()));
                 continue;
             }
+            bool segmentationGiven = false;
+            if (!isPlaneRoof) {
+                auto segmentationError = ApplyRoofSegmentation (element, mask, item, segmentationGiven);
+                if (segmentationError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentationError.Get ()));
+                    continue;
+                }
+                changed = changed || segmentationGiven;
+            }
+            // A successful result of a multi-plane roof whose segmentation was given becomes a
+            // failure when the roof read back does not have it.
+            const API_Guid roofGuid = element.header.guid;
+            const auto checkSegmentation = [&] (const GS::ObjectState& result) -> GS::ObjectState {
+                bool success = false;
+                if (!segmentationGiven || !result.Get ("success", success) || !success) {
+                    return result;
+                }
+                const auto checkError = CheckRoofSegmentation (roofGuid, item);
+                return checkError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()) : result;
+            };
             {
                 bool cutBodyGiven = false;
                 auto cutBodyError = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_ContoursDown, APIShellBaseCutBody_PivotLinesDown }, element.roof.shellBase.cutBodyType, cutBodyGiven);
@@ -15121,10 +16704,14 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
+            // The segmentation is also written to every pivot edge (CopyRoofSegmentationToPivotEdges),
+            // through the pivot polygon memo as pivotEdges is; with polygonOutline or holes, which
+            // make a new pivot polygon, it is copied to its edges in the geometry change below.
             GS::Array<GS::ObjectState> pivotEdges;
-            if (item.Get ("pivotEdges", pivotEdges)) {
-                if (item.Contains ("polygonOutline")) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'pivotEdges' cannot be combined with 'polygonOutline', which makes new edges."));
+            const bool hasPivotEdges = item.Get ("pivotEdges", pivotEdges);
+            if (hasPivotEdges || (segmentationGiven && !item.Contains ("polygonOutline") && !item.Contains ("holes"))) {
+                if (item.Contains ("polygonOutline") || item.Contains ("holes")) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'pivotEdges' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
                     continue;
                 }
                 API_ElementMemo memo = {};
@@ -15137,13 +16724,23 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the edges of the roof's pivot polygon."));
                     continue;
                 }
-                auto edgeError = ApplyRoofPivotEdges (memo, edgeIndices, pivotEdges);
-                if (edgeError.HasValue ()) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
-                    continue;
+                if (hasPivotEdges) {
+                    auto edgeError = ApplyRoofPivotEdges (memo, edgeIndices, pivotEdges);
+                    if (edgeError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
+                        continue;
+                    }
+                }
+                if (segmentationGiven) {
+                    CopyRoofSegmentationToPivotEdges (element.roof.u.polyRoof, memo);
                 }
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the roof planes of the edges."));
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, hasPivotEdges ? "Failed to modify the roof planes of the edges." : "Failed to modify the segmentation of the roof."));
+                    continue;
+                }
+                auto appliedError = hasPivotEdges ? CheckRoofPivotEdgeAttributesApplied (element.header.guid, pivotEdges) : GS::Optional<GS::UniString> ();
+                results.Push (checkSegmentation (appliedError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, appliedError.Get ()) : CreateSuccessfulExecutionResult ()));
                 continue;
             }
 
@@ -15251,8 +16848,13 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             GS::Array<GS::ObjectState> polygonOutline;
-            if (item.Get ("polygonOutline", polygonOutline)) {
-                if (polygonOutline.GetSize () < 3) {
+            const bool hasNewOutline = item.Get ("polygonOutline", polygonOutline);
+            GS::Array<GS::ObjectState> holes;
+            const bool hasHolesField = item.Get ("holes", holes);
+            if (hasNewOutline || hasHolesField) {
+                // 'holes' can be given on its own, as ModifySlabs takes it (#2398): the roof keeps
+                // its outline (a multi-plane roof its pivot polygon's outline) and gets these holes.
+                if (hasNewOutline && polygonOutline.GetSize () < 3) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'polygonOutline' must contain at least 3 coordinates."));
                     continue;
                 }
@@ -15264,9 +16866,15 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 ACAPI_Element_GetMemo (element.header.guid, &memo);
 
                 GS::Array<GS::ObjectState> polygonArcs;
-                GS::Array<GS::ObjectState> holes;
-                item.Get ("polygonArcs", polygonArcs);
-                item.Get ("holes", holes);
+                if (hasNewOutline) {
+                    item.Get ("polygonArcs", polygonArcs);
+                } else {
+                    GetCurrentRoofOutline (memo, isPlaneRoof, polygonOutline, polygonArcs);
+                    if (polygonOutline.GetSize () < 3) {
+                        results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read the outline of the roof."));
+                        continue;
+                    }
+                }
                 if (isPlaneRoof) {
                     // A single-plane roof keeps its outline in the polygon of the memo, as a Slab
                     // does. A memo built from scratch is refused there with APIERR_BADPOLY when the
@@ -15309,10 +16917,28 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 }
 
                 const API_ShellBaseType oldShellBase = element.roof.shellBase;
+                // The pivot edge data and the vertex, edge and contour IDs of the memo have one
+                // record per point of the old pivot polygon (pivotPolyEdges must be nCoords + 1
+                // long), so after a hole is added or removed they are resized to the new polygon
+                // (ResizeRoofPivotPolygonData). The roof's own memo is edited: a memo built from
+                // scratch was refused by ACAPI_Element_Change (#2398).
+                const GSSize oldCoordCount = memo.additionalPolyCoords == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
+                const GSSize oldPendCount = memo.additionalPolyPends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32);
+                const GSIndex oldOutlineEnd = oldPendCount >= 2 ? (*memo.additionalPolyPends)[1] : 0;
                 auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
+                }
+                const API_Polygon& pivotPolygon = element.roof.u.polyRoof.pivotPolygon;
+                const GSIndex newOutlineEnd = (*memo.additionalPolyPends)[1];
+                const GSIndex keepUpTo = oldOutlineEnd > 0 && oldOutlineEnd == newOutlineEnd ? newOutlineEnd : 0;
+                if (oldCoordCount != pivotPolygon.nCoords + 1 || oldPendCount != pivotPolygon.nSubPolys + 1) {
+                    ResizeRoofPivotPolygonData (memo, oldCoordCount, keepUpTo, pivotPolygon.nCoords, pivotPolygon.nSubPolys);
+                }
+                if (segmentationGiven) {
+                    // The kept and the new pivot edges get the segmentation given for the roof (#2582).
+                    CopyRoofSegmentationToPivotEdges (element.roof.u.polyRoof, memo);
                 }
 
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
@@ -15321,7 +16947,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
                 err = RestoreRoofSurfaces (element.header.guid, oldShellBase);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Modified the roof geometry, but failed to restore the roof's surface overrides."));
+                results.Push (checkSegmentation (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Modified the roof geometry, but failed to restore the roof's surface overrides.")));
                 continue;
             }
 
@@ -15331,7 +16957,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof."));
+            results.Push (checkSegmentation (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof.")));
         }
     });
 }
@@ -16027,13 +17653,20 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "wrapping": { "type": "boolean" },
                         "topOffset": { "type": "number" },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column, the diameter of a round one. Applied to all segments." },
-                        "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column, the diameter of a round one. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the depth: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
-                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
+                        "veneer": { "$ref": "#/ColumnVeneer", "description": "Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments." },
+                        "segments": {
+                            "type": "array",
+                            "description": "Writes single segments of the column: their surfaces, veneer, cross section, taper and length. Each item writes the segment given by its segmentIndex, else the segment at its position in this list, so the segments GetDetailsOfElements returns can be sent back as they are; segments not listed stay as they are. Applied after the fields above, so a segment's own values win over the ones applied to all segments.",
+                            "items": {
+                                "$ref": "#/ColumnSegmentSurfacesModification"
+                            }
+                        },)") + ColumnDisplaySchemaProperties + ColumnSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -16092,6 +17725,11 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                     continue;
                 }
             }
+            const GS::Optional<GS::UniString> segmentsError = CheckColumnSegments (element.header.guid, item);
+            if (segmentsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentsError.Get ()));
+                continue;
+            }
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
@@ -16115,7 +17753,7 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 check.item = &item;
                 displayChecks.Push (check);
             }
-            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer");
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("depth") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("veneer") || item.Contains ("segments");
             if (!changed && !hasSectionFields) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No column fields to modify."));
                 continue;
@@ -16132,9 +17770,16 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             if (hasSectionFields) {
                 GS::UniString sectionError;
                 bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item, sectionError);
-                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : sectionError.IsEmpty ()
-                    ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section.")
-                    : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                if (!sectionOk) {
+                    results.Push (sectionError.IsEmpty ()
+                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments.")
+                        : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> ignoredSize = GetIgnoredColumnSectionSize (element.header.guid, item);
+                results.Push (ignoredSize.HasValue ()
+                    ? CreateFailedExecutionResult (APIERR_REFUSEDPAR, ignoredSize.Get ())
+                    : CreateSuccessfulExecutionResult ());
                 continue;
             }
 

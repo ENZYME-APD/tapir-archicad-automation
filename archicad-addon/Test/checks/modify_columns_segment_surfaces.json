@@ -1,0 +1,186 @@
+{
+  "title": "ModifyColumns sets and clears the surfaces and the veneer of a column segment, and refuses a wrong segment, surface or veneer (#2552)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Column" ],
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surfA": "attributes[0].attributeId.guid",
+        "surfB": "attributes[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "a column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 920.0, "y": 920.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0
+          }
+        ]
+      },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "the column has one segment",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "one segment" }
+      ]
+    },
+    {
+      "id": "segment surfaces and veneer; refused items",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              {
+                "segmentIndex": 0,
+                "materialsChained": false,
+                "extrusionSurfaceMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
+                "endsMaterial": { "overridden": true, "attributeId": { "guid": "${surfB}" } },
+                "veneer": { "thickness": 0.02 }
+              }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 5, "endsMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "extrusionSurfaceMaterial": { "overridden": true, "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "extrusionSurfaceMaterial": { "overridden": true } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "veneer": { "buildingMaterialId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 5, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "segment surfaces and veneer written" },
+        { "path": "executionResults[1].success", "eq": false, "name": "segment index past the last segment refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown surface refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "overridden surface without attributeId refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "unknown veneer building material refused" }
+      ]
+    },
+    {
+      "id": "read the segment surfaces",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "save": {
+        "readExtrusion": "detailsOfElements[0].details.segments[0].extrusionSurfaceMaterial.attributeId.guid",
+        "readEnds": "detailsOfElements[0].details.segments[0].endsMaterial.attributeId.guid"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "still one segment" },
+        { "path": "detailsOfElements[0].details.segments[0].materialsChained", "eq": false, "name": "surfaces unchained" },
+        { "path": "detailsOfElements[0].details.segments[0].extrusionSurfaceMaterial.overridden", "eq": true, "name": "extrusion surface overridden" },
+        { "path": "detailsOfElements[0].details.segments[0].endsMaterial.overridden", "eq": true, "name": "ends surface overridden" },
+        { "path": "detailsOfElements[0].details.segments[0].veneer.thickness", "approx": 0.02, "tol": 0.0001, "name": "segment veneer thickness" }
+      ]
+    },
+    {
+      "id": "compare the read surfaces with the written ones",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${surfA}" } },
+          { "attributeId": { "guid": "${surfB}" } },
+          { "attributeId": { "guid": "${readExtrusion}" } },
+          { "attributeId": { "guid": "${readEnds}" } }
+        ]
+      },
+      "save": {
+        "surfAIndex": "surfaces[0].index",
+        "surfBIndex": "surfaces[1].index",
+        "readExtrusionIndex": "surfaces[2].index",
+        "readEndsIndex": "surfaces[3].index"
+      },
+      "expect": [
+        { "expr": "${surfBIndex} - ${surfAIndex}", "ne": 0, "name": "two different surfaces" },
+        { "expr": "${readExtrusionIndex} - ${surfAIndex}", "eq": 0, "name": "extrusion surface (refused items changed nothing)" },
+        { "expr": "${readEndsIndex} - ${surfBIndex}", "eq": 0, "name": "ends surface" }
+      ]
+    },
+    {
+      "id": "clear the extrusion surface, by the item's position in the list",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "extrusionSurfaceMaterial": { "overridden": false } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "extrusion surface override cleared" }
+      ]
+    },
+    {
+      "id": "read the cleared surface",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "save": {
+        "keptEnds": "detailsOfElements[0].details.segments[0].endsMaterial.attributeId.guid"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].extrusionSurfaceMaterial.overridden", "eq": false, "name": "extrusion surface override cleared" },
+        { "path": "detailsOfElements[0].details.segments[0].endsMaterial.overridden", "eq": true, "name": "ends surface still overridden" },
+        { "path": "detailsOfElements[0].details.segments[0].veneer.thickness", "approx": 0.02, "tol": 0.0001, "name": "segment veneer kept" }
+      ]
+    },
+    {
+      "id": "compare the kept ends surface with the written one",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${keptEnds}" } }
+        ]
+      },
+      "save": { "keptEndsIndex": "surfaces[0].index" },
+      "expect": [
+        { "expr": "${keptEndsIndex} - ${surfBIndex}", "eq": 0, "name": "ends surface kept" }
+      ]
+    }
+  ]
+}

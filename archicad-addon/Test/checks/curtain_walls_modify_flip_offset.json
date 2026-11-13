@@ -1,0 +1,92 @@
+{
+  "title": "ModifyCurtainWalls: flipped, offset and nominalWidth are written, read back and leave the rest unchanged",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a one-segment curtain wall",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [
+              { "x": 940.0, "y": 940.0 },
+              { "x": 946.0, "y": 940.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0
+          }
+        ]
+      },
+      "save": { "cw": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall created" }
+      ]
+    },
+    {
+      "id": "read it back as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWall", "name": "it is a curtain wall" },
+        { "path": "detailsOfElements[0].details.flipped", "exists": true, "name": "details report flipped" },
+        { "path": "detailsOfElements[0].details.offset", "exists": true, "name": "details report offset" },
+        { "path": "detailsOfElements[0].details.nominalWidth", "exists": true, "name": "details report nominalWidth" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: flipped true, offset 0.1, nominalWidth 0.25",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${cw}" }, "flipped": true, "offset": 0.1, "nominalWidth": 0.25 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "flipped, offset and nominalWidth accepted" }
+      ]
+    },
+    {
+      "id": "details after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.flipped", "eq": true, "name": "flipped is true" },
+        { "path": "detailsOfElements[0].details.offset", "approx": 0.1, "name": "offset is 0.1" },
+        { "path": "detailsOfElements[0].details.nominalWidth", "approx": 0.25, "name": "nominalWidth is 0.25" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "height unchanged" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].x", "approx": 940.0, "name": "reference line start x unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 946.0, "name": "reference line end x unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].y", "approx": 940.0, "name": "reference line end y unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: flipped back to false, offset -0.05",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${cw}" }, "flipped": false, "offset": -0.05 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "flip back and negative offset accepted" }
+      ]
+    },
+    {
+      "id": "details after flipping back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.flipped", "eq": false, "name": "flipped is false" },
+        { "path": "detailsOfElements[0].details.offset", "approx": -0.05, "name": "offset is -0.05" },
+        { "path": "detailsOfElements[0].details.nominalWidth", "approx": 0.25, "name": "nominalWidth not given, so unchanged" }
+      ]
+    }
+  ]
+}
