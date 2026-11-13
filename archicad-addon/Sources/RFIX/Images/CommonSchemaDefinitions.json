@@ -14770,6 +14770,16 @@
             "type": "integer",
             "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
           },
+          "lines": {
+            "type": "array",
+            "description": "Present only when labelClass is 'Text' and Archicad reports the line starts. Read-only: the lines as Archicad lays the text out, the breaks of a wrapped text included, each without the line-end characters that end it.",
+            "items": { "type": "string" }
+          },
+          "lineStarts": {
+            "type": "array",
+            "description": "Present with 'lines'. Read-only: the offset in 'text' of the first character of each entry of 'lines'.",
+            "items": { "type": "integer" }
+          },
           "runs": {
             "type": "array",
             "description": "Present only when labelClass is 'Text' and the content has paragraphs (always for content Tapir created): one entry per styled run, a single run too.",
@@ -15340,6 +15350,16 @@
             "paragraphCount": {
                 "type": "integer",
                 "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+            },
+            "lines": {
+                "type": "array",
+                "description": "Read-only: the lines as Archicad lays the text out, the breaks of a wrapped text (style.nonBreaking false) included, each without the line-end characters that end it. Present when Archicad reports the line starts.",
+                "items": { "type": "string" }
+            },
+            "lineStarts": {
+                "type": "array",
+                "description": "Read-only: the offset in 'text' of the first character of each entry of 'lines'.",
+                "items": { "type": "integer" }
             },
             "runs": {
                 "type": "array",

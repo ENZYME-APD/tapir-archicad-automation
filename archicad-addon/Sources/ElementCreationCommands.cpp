@@ -6751,6 +6751,55 @@ static GS::Optional<GS::UniString> GetRawTextContent (const API_Guid& elemGuid)
     return GetTextContentFromMemo (memo);
 }
 
+// The lines as Archicad lays them out (#2804): memo.textLineStarts holds the offset of each line's
+// first character in the content, the breaks of a wrapped text included (APIdefs_Elements.h: "Text
+// line starts array (indices into the text content)"; ACAPinc.h, ACAPI_Element_GetMemo: "the line
+// starts (offsets into textContent)"). They are read as offsets into the same content the paragraphs
+// index, which is read as characters. The starts are only reported when they are usable: ascending
+// and inside the content; a start at the very end of the content (a closing entry) adds no line.
+// Each line is its slice of the content without the line-end characters that end it.
+static void AddTextLines (GS::ObjectState& os, const API_ElementMemo& memo, const GS::UniString& content)
+{
+    if (memo.textLineStarts == nullptr) {
+        return;
+    }
+    const USize nStarts = static_cast<USize> (BMhGetSize (reinterpret_cast<GSHandle> (memo.textLineStarts)) / sizeof (short));
+    if (nStarts == 0) {
+        return;
+    }
+
+    const USize contentLength = content.GetLength ();
+    GS::Array<UIndex> starts;
+    for (UIndex i = 0; i < nStarts; ++i) {
+        const short start = (*memo.textLineStarts)[i];
+        if (start < 0 || static_cast<USize> (start) > contentLength) {
+            return;
+        }
+        if (!starts.IsEmpty () && static_cast<UIndex> (start) <= starts.GetLast ()) {
+            return;
+        }
+        if (static_cast<USize> (start) == contentLength && contentLength > 0) {
+            break;
+        }
+        starts.Push (static_cast<UIndex> (start));
+    }
+    if (starts.IsEmpty ()) {
+        return;
+    }
+
+    const auto& startList = os.AddList<Int32> ("lineStarts");
+    const auto& lineList = os.AddList<GS::UniString> ("lines");
+    for (UIndex i = 0; i < starts.GetSize (); ++i) {
+        const UIndex start = starts[i];
+        UIndex end = (i + 1 < starts.GetSize ()) ? starts[i + 1] : contentLength;
+        while (end > start && (content[end - 1] == '\n' || content[end - 1] == '\r')) {
+            --end;
+        }
+        startList (static_cast<Int32> (start));
+        lineList (GS::UniString (content.GetSubstring (start, end - start)));
+    }
+}
+
 GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 {
     API_ElementMemo memo = {};
@@ -6766,6 +6815,8 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
     if (rawContent.HasValue ()) {
         os.Add ("rawText", *rawContent);
     }
+
+    AddTextLines (os, memo, content);
 
     const UInt32 nParagraphs = (memo.paragraphs != nullptr) ? static_cast<UInt32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.paragraphs)) / sizeof (API_ParagraphType)) : 0;
     os.Add ("paragraphCount", static_cast<int> (nParagraphs));
