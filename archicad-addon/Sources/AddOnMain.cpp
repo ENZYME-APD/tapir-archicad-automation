@@ -546,7 +546,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CloseProjectCommand> (
             projectCommands, "1.3.1",
-            "Closes the currently opened project."
+            "Closes the currently opened project. Fails, instead of answering success, when Archicad leaves the project open, as it does with its last open project."
         );
         err |= RegisterCommand<SaveProjectCommand> (
             projectCommands, "1.3.1",

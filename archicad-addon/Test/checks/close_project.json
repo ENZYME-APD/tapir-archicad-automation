@@ -1,0 +1,36 @@
+{
+  "title": "CloseProject on Archicad's only open project fails and says the project is still open (#2798)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "untitled project before",
+      "command": "GetProjectInfo",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isUntitled", "eq": true, "name": "the runner's untitled project is open" }
+      ]
+    },
+    {
+      "id": "close the only project",
+      "command": "CloseProject",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": false, "name": "no success while the project stays open" },
+        { "path": "error.code", "eq": -2130312312, "name": "APIERR_REFUSEDCMD" },
+        { "path": "error.message", "contains": "still open", "name": "the message says the project is still open" }
+      ]
+    },
+    {
+      "id": "still open",
+      "command": "GetProjectInfo",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isUntitled", "eq": true, "name": "the same untitled project is still open" }
+      ]
+    }
+  ]
+}
