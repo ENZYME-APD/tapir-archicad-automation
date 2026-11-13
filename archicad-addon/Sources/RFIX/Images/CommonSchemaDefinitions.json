@@ -1,7 +1,7 @@
 {
     "AutoTextExpression": {
         "type": "string",
-        "minLength": 1
+        "minLength": 2
     },
     "InterpretedAutoText": {
         "type": "object",
