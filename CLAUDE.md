@@ -538,8 +538,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   authors that touch no release-critical path. It also merges the issue bot's
   PRs (`claude/` branches) with no human interaction once every build check is
   green and `claude-review` has been a success for `BOT_AUTO_MERGE_DELAY_HOURS`
-  (default 72), with no open thread by a person, no changes requested and no
-  `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
+  (default 72), with no open thread by a person and no changes requested;
+  `BOT_AUTO_MERGE=false` turns that off. A `do-not-merge` or `needs-maintainer`
+  label holds any PR, a person's as well as the bot's.
   This is a deliberate maintainer decision to minimize human maintenance.
 - `delete_merged_branches.yml` — deletes the head branch of every merged pull
   request of this repository, however it was merged, when its tip is still the

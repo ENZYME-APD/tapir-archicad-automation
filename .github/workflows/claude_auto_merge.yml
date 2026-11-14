@@ -7,11 +7,14 @@ name: Auto Merge
 #   2. every check has passed
 #   3. the diff touches none of the release critical paths
 #
+# and are not held: a draft, or labelled `do-not-merge` or `needs-maintainer`,
+# is never merged, whoever opened it.
+#
 # Bot pull requests. The maintainer's decision: a pull request the issue bot
 # (claude_issue_triage.yml) opened from anyone's issue is merged without a
 # person, once
-#   - it is the Actions bot's, from a claude/ branch of this repository, ready
-#     (not a draft) and labelled neither `do-not-merge` nor `needs-maintainer`;
+#   - it is the Actions bot's, from a claude/ branch of this repository, and
+#     not held (see above);
 #   - the Archicad, Grasshopper and installer build checks ran on its head
 #     commit and passed (claude_bot_pr_steward.yml starts them);
 #   - the commit status `claude-review` on that head is a success, and has been
@@ -51,7 +54,7 @@ name: Auto Merge
 # an auto-merge label. The three gates test who wrote it, whether it is green
 # and what it touches - not whether anyone wanted it merged - so a pull request
 # left open to park work will merge itself at the next sweep. Mark such a pull
-# request as a draft, which is the opt-out. Note also that a green `review`
+# request as a draft or label it `do-not-merge`, which are the opt-outs. Note also that a green `review`
 # check means the review ran, not that it approved anything - for a human's
 # pull request. For the issue bot's, the `claude-review` status is the review's
 # verdict, and it is required.
@@ -200,6 +203,13 @@ jobs:
               echo "::endgroup::"; continue
             fi
 
+            # A person holds any pull request - the bot's or a person's - with
+            # `do-not-merge` or `needs-maintainer` (or by making it a draft).
+            if printf '%s' "$info" | jq -e '[.labels[].name] | (index("do-not-merge") or index("needs-maintainer"))' >/dev/null; then
+              echo "skip: labelled do-not-merge or needs-maintainer"
+              echo "::endgroup::"; continue
+            fi
+
             # Gate 1: the author must have write access - or it is the issue
             # bot's own pull request and clears the bot gates (see the header).
             # No other bot qualifies.
@@ -222,10 +232,6 @@ jobs:
               esac
               if [ "$fromFork" != "false" ]; then
                 echo "skip: a bot pull request from another repository"
-                echo "::endgroup::"; continue
-              fi
-              if printf '%s' "$info" | jq -e '[.labels[].name] | (index("do-not-merge") or index("needs-maintainer"))' >/dev/null; then
-                echo "skip: labelled do-not-merge or needs-maintainer"
                 echo "::endgroup::"; continue
               fi
 
