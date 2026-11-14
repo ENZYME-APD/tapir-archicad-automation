@@ -1,0 +1,72 @@
+{
+  "title": "GetDetailsOfElements: a text's lines as Archicad breaks them (#2804)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a wrapped text, an auto-width one and one of two lines",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          {
+            "coordinate": { "x": 720.0, "y": 720.0, "z": 0.0 },
+            "text": "A long line of text that does not fit into a narrow text box",
+            "height": 2.5,
+            "justification": "Left",
+            "width": 30.0
+          },
+          {
+            "coordinate": { "x": 720.0, "y": 715.0, "z": 0.0 },
+            "text": "A long line of text that does not fit into a narrow text box",
+            "height": 2.5,
+            "justification": "Left"
+          },
+          {
+            "coordinate": { "x": 720.0, "y": 710.0, "z": 0.0 },
+            "text": "First\nSecond",
+            "height": 2.5,
+            "justification": "Left"
+          }
+        ]
+      },
+      "save": {
+        "t0": "elements[0].elementId.guid",
+        "t1": "elements[1].elementId.guid",
+        "t2": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wrapped text created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "auto-width text created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "two-line text created" }
+      ]
+    },
+    {
+      "id": "read the lines back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t0}" } },
+          { "elementId": { "guid": "${t1}" } },
+          { "elementId": { "guid": "${t2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "the first text wraps" },
+        { "path": "detailsOfElements[0].details.lines", "exists": true, "name": "a wrapped text reports its lines" },
+        { "path": "detailsOfElements[0].details.lineStarts[0]", "eq": 0, "name": "the first line starts at the beginning" },
+        { "path": "detailsOfElements[0].details.lineStarts[1]", "gt": 0, "name": "the second line starts after the first" },
+        { "path": "detailsOfElements[0].details.lines[0]", "ne": "A long line of text that does not fit into a narrow text box", "name": "the first wrapped line is not the whole text" },
+        { "path": "detailsOfElements[1].details.lines", "len": 1, "name": "auto-width text has one line" },
+        { "path": "detailsOfElements[1].details.lines[0]", "eq": "A long line of text that does not fit into a narrow text box", "name": "the one line is the whole text" },
+        { "path": "detailsOfElements[2].details.lines", "len": 2, "name": "a line end starts a new line" },
+        { "path": "detailsOfElements[2].details.lines[0]", "eq": "First", "name": "first line without its line end" },
+        { "path": "detailsOfElements[2].details.lines[1]", "eq": "Second", "name": "second line" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t0}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t2}" } } ] } }
+  ]
+}
