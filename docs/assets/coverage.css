@@ -193,3 +193,11 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: .875rem; c
 /* All parameters is --done; the JSON and partial marks take the ramp's lighter step, so they still differ. */
 :root:not([data-style="legacy"]) .swatch.p-json { background: var(--merged) }
 :root:not([data-style="legacy"]) .swatch.p-partial { box-shadow: inset 0 0 0 1.5px var(--merged) }
+/* The phone filter sheet, drawn like its twin, the Display menu's sheet (see site.css): a 1 px line on
+   top, 12 px corners, and a Done button with a 1 px line and 8 px corners, 44 px high to tap. */
+@media (max-width: 640px) {
+    :root:not([data-style="legacy"]) .chip-filter { border-top: 1px solid var(--border-strong); border-radius: var(--radius-card) var(--radius-card) 0 0 }
+    :root:not([data-style="legacy"]) .sheet-done { min-height: 44px; padding: 7px 12px; background: transparent; color: var(--fg);
+        border: 1px solid var(--border-strong); border-radius: var(--radius-control); cursor: pointer }
+    :root:not([data-style="legacy"]) .sheet-done:hover { border-color: var(--link); color: var(--link) }
+}
