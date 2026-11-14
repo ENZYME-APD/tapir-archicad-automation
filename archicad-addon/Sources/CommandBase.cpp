@@ -56,6 +56,9 @@ GS::Optional<GS::UniString> CommandBase::GetSchemaDefinitions () const
             schemas.Push (responseSchema.Get ());
         }
         mSchemaDefinitions = GetCommonSchemaDefinitionsFor (schemas);
+        if (mSchemaDefinitions.HasValue ()) {
+            mSchemaDefinitions = ToArchicadSchemaReferences (mSchemaDefinitions.Get ());
+        }
     });
     return mSchemaDefinitions;
 }
@@ -75,6 +78,70 @@ GS::Optional<GS::UniString> CommandBase::GetRawResponseSchema () const
 GS::Optional<GS::UniString> CommandBase::GetResponseSchema () const
 {
     return {};
+}
+
+ArchicadSchemaCommand::ArchicadSchemaCommand (GS::Owner<CommandBase> command) :
+    mCommand (std::move (command))
+{
+}
+
+GS::String ArchicadSchemaCommand::GetName () const
+{
+    return mCommand->GetName ();
+}
+
+GS::String ArchicadSchemaCommand::GetNamespace () const
+{
+    return mCommand->GetNamespace ();
+}
+
+GS::Optional<GS::UniString> ArchicadSchemaCommand::GetSchemaDefinitions () const
+{
+    return mCommand->GetSchemaDefinitions ();
+}
+
+GS::Optional<GS::UniString> ArchicadSchemaCommand::GetInputParametersSchema () const
+{
+    // The schema never changes; call_once because Archicad may ask from more than one thread.
+    std::call_once (mInputParametersSchemaOnce, [this] () {
+        mInputParametersSchema = mCommand->GetInputParametersSchema ();
+        if (mInputParametersSchema.HasValue ()) {
+            mInputParametersSchema = ToArchicadSchemaReferences (mInputParametersSchema.Get ());
+        }
+    });
+    return mInputParametersSchema;
+}
+
+GS::Optional<GS::UniString> ArchicadSchemaCommand::GetResponseSchema () const
+{
+    return mCommand->GetResponseSchema ();
+}
+
+API_AddOnCommandExecutionPolicy ArchicadSchemaCommand::GetExecutionPolicy () const
+{
+    return mCommand->GetExecutionPolicy ();
+}
+
+#ifdef ServerMainVers_2600
+bool ArchicadSchemaCommand::IsProcessWindowVisible () const
+{
+    return mCommand->IsProcessWindowVisible ();
+}
+#endif
+
+GS::ObjectState ArchicadSchemaCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
+{
+    return mCommand->Execute (parameters, processControl);
+}
+
+void ArchicadSchemaCommand::OnResponseValidationFailed (const GS::ObjectState& response) const
+{
+    mCommand->OnResponseValidationFailed (response);
+}
+
+GSErrCode InstallArchicadSchemaCommand (GS::Owner<CommandBase> command)
+{
+    return ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (GS::NewOwned<ArchicadSchemaCommand> (std::move (command)));
 }
 
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage)

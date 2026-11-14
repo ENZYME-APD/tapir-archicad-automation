@@ -323,3 +323,35 @@ GS::Optional<GS::UniString> GetCommonSchemaDefinitionsFor (const GS::Array<GS::U
     result += "\n}";
     return result;
 }
+
+GS::UniString ToArchicadSchemaReferences (const GS::UniString& schema)
+{
+    static const std::string refKey = "\"$ref\"";
+    static const std::string definitionsPrefix = "definitions/";
+    std::string text (schema.ToCStr (0, MaxUSize, CC_UTF8).Get ());
+    size_t pos = 0;
+    bool changed = false;
+    while ((pos = text.find (refKey, pos)) != std::string::npos) {
+        // A key, not the text "$ref" escaped inside a description.
+        const bool isKey = pos == 0 || text[pos - 1] != '\\';
+        pos += refKey.size ();
+        if (!isKey) {
+            continue;
+        }
+        size_t valuePos = text.find_first_not_of (" \t\r\n", pos);
+        if (valuePos == std::string::npos || text[valuePos] != ':') {
+            continue;
+        }
+        valuePos = text.find_first_not_of (" \t\r\n", valuePos + 1);
+        if (valuePos == std::string::npos || text.compare (valuePos, 3, "\"#/") != 0) {
+            continue;
+        }
+        if (text.compare (valuePos + 3, definitionsPrefix.size (), definitionsPrefix) == 0) {
+            continue;
+        }
+        text.insert (valuePos + 3, definitionsPrefix);
+        changed = true;
+        pos = valuePos + 3 + definitionsPrefix.size ();
+    }
+    return changed ? GS::UniString (text.c_str (), CC_UTF8) : schema;
+}

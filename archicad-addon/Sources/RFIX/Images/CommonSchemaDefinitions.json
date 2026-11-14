@@ -17908,7 +17908,7 @@
     "TypeSpecificSettings": {
         "description": "Defines the modifiable type-specific settings for an element. Used as input for SET requests.",
         "type": "object",
-        "oneOf": [
+        "anyOf": [
             {
                 "$ref": "#/WallSettings"
             },

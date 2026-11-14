@@ -12,3 +12,9 @@ const GS::UniString& GetCommonSchemaDefinitions ();
 // in the file, one of another form, a schema that cannot be read), it gives the whole file, so a
 // command never loses a definition it needs.
 GS::Optional<GS::UniString> GetCommonSchemaDefinitionsFor (const GS::Array<GS::UniString>& schemas);
+
+// The schema as Archicad needs it: Archicad puts the definitions GetSchemaDefinitions hands it under
+// "definitions" of the schema it validates with, so a "$ref": "#/<Name>" there points nowhere and
+// Archicad accepts any value for it. This writes each such reference as "#/definitions/<Name>".
+// The sources and the docs keep "#/<Name>".
+GS::UniString ToArchicadSchemaReferences (const GS::UniString& schema);
