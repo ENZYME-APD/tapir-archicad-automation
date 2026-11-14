@@ -1,0 +1,187 @@
+{
+  "title": "ModifySlabs keeps the Edge Angles and the custom edge surfaces of a slab when polygonOutline is given: unchanged, with a moved corner and with a point added on an edge (#2822)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Slab" ],
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surfA": "attributes[0].attributeId.guid",
+        "surfB": "attributes[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "a rectangular slab",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.3,
+            "sideMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
+            "polygonCoordinates": [
+              { "x": 980.0, "y": 980.0 },
+              { "x": 988.0, "y": 980.0 },
+              { "x": 988.0, "y": 986.0 },
+              { "x": 980.0, "y": 986.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "edges 1 and 3 at custom angles, edge 2 with its own surface",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "edgeTrims": [
+              { "trimType": "Vertical" },
+              { "trimType": "CustomAngle", "angle": 0.9 },
+              { "trimType": "Vertical" },
+              { "trimType": "CustomAngle", "angle": 1.2 }
+            ],
+            "edgeSideMaterials": [
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": true, "attributeId": { "guid": "${surfB}" } },
+              { "overridden": false }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "edge angles and edge surface written" }
+      ]
+    },
+    {
+      "id": "the same outline written back",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "polygonOutline": [
+              { "x": 980.0, "y": 980.0 },
+              { "x": 988.0, "y": 980.0 },
+              { "x": 988.0, "y": 986.0 },
+              { "x": 980.0, "y": 986.0 },
+              { "x": 980.0, "y": 980.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "unchanged outline written" }
+      ]
+    },
+    {
+      "id": "the edges kept their angles and surface",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeTrims", "len": 4, "name": "four edges" },
+        { "path": "detailsOfElements[0].details.edgeTrims[0].trimType", "eq": "Vertical", "name": "edge 0 vertical" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].trimType", "eq": "CustomAngle", "name": "edge 1 still custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].angle", "approx": 0.9, "tol": 0.0001, "name": "edge 1 angle kept" },
+        { "path": "detailsOfElements[0].details.edgeTrims[2].trimType", "eq": "Vertical", "name": "edge 2 vertical" },
+        { "path": "detailsOfElements[0].details.edgeTrims[3].trimType", "eq": "CustomAngle", "name": "edge 3 still custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[3].angle", "approx": 1.2, "tol": 0.0001, "name": "edge 3 angle kept" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].overridden", "eq": true, "name": "edge 2 still has its own surface" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].attributeId.guid", "eq": "${surfB}", "name": "edge 2 surface kept" },
+        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfA}", "name": "slab side surface kept" }
+      ]
+    },
+    {
+      "id": "one corner moved by half a metre",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "polygonOutline": [
+              { "x": 980.0, "y": 980.0 },
+              { "x": 988.0, "y": 980.0 },
+              { "x": 988.5, "y": 986.5 },
+              { "x": 980.0, "y": 986.0 },
+              { "x": 980.0, "y": 980.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved corner written" }
+      ]
+    },
+    {
+      "id": "the moved edges kept their angle and surface",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.polygonOutline[2].x", "approx": 988.5, "tol": 0.0001, "name": "corner moved" },
+        { "path": "detailsOfElements[0].details.edgeTrims", "len": 4, "name": "still four edges" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].trimType", "eq": "CustomAngle", "name": "moved edge 1 still custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].angle", "approx": 0.9, "tol": 0.0001, "name": "moved edge 1 angle kept" },
+        { "path": "detailsOfElements[0].details.edgeTrims[3].angle", "approx": 1.2, "tol": 0.0001, "name": "edge 3 angle kept" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].attributeId.guid", "eq": "${surfB}", "name": "moved edge 2 surface kept" }
+      ]
+    },
+    {
+      "id": "a point added on edge 3",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "polygonOutline": [
+              { "x": 980.0, "y": 980.0 },
+              { "x": 988.0, "y": 980.0 },
+              { "x": 988.5, "y": 986.5 },
+              { "x": 980.0, "y": 986.0 },
+              { "x": 980.0, "y": 983.0 },
+              { "x": 980.0, "y": 980.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "added point written" }
+      ]
+    },
+    {
+      "id": "both parts of the split edge kept its angle, the other edges theirs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeTrims", "len": 5, "name": "five edges" },
+        { "path": "detailsOfElements[0].details.edgeTrims[0].trimType", "eq": "Vertical", "name": "edge 0 vertical" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].angle", "approx": 0.9, "tol": 0.0001, "name": "edge 1 angle kept" },
+        { "path": "detailsOfElements[0].details.edgeTrims[3].trimType", "eq": "CustomAngle", "name": "first part of the split edge custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[3].angle", "approx": 1.2, "tol": 0.0001, "name": "first part angle" },
+        { "path": "detailsOfElements[0].details.edgeTrims[4].trimType", "eq": "CustomAngle", "name": "second part of the split edge custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[4].angle", "approx": 1.2, "tol": 0.0001, "name": "second part angle" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].attributeId.guid", "eq": "${surfB}", "name": "edge 2 surface kept" }
+      ]
+    }
+  ]
+}

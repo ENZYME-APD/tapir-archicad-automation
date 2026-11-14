@@ -13959,6 +13959,23 @@ static GS::Optional<GS::UniString> ApplyPolygonEdgeTrims (API_ElementMemo& memo,
 static GS::Optional<GS::UniString> ApplyPolygonEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& elementSideMaterial, bool isSlab);
 static GS::Array<Int32> GetPolygonEdgeIndices (const API_ElementMemo& memo);
 
+// The edge data of one edge of a single-plane roof's or a slab's polygon: its trim, its side
+// surface and its edge type, with the ends of the edge they belonged to. Edge i runs from
+// coords[i] to coords[i + 1]; index 0 and the closing vertex of each contour (the pends) carry
+// no edge.
+struct RoofPolygonEdge {
+    Int32                   index;
+    API_Coord               begin;
+    API_Coord               end;
+    API_EdgeTrim            trim;
+    API_OverriddenAttribute sideMaterial;
+    API_RoofEdgeTypeID      edgeType;
+};
+
+static GS::Array<RoofPolygonEdge> GetRoofPolygonEdges (const API_ElementMemo& memo);
+static void RestoreRoofPolygonEdges (API_ElementMemo& memo, const GS::Array<RoofPolygonEdge>& oldEdges, bool sameContours, bool hadEdgeTypes);
+static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo);
+
 ModifySlabsCommand::ModifySlabsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -13999,7 +14016,7 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3,
-                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed."
+                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed. The Edge Angle and the custom surface of an edge are kept when the new edge lies on an old one (an unchanged or split edge), or, with the same point counts as before, from the edge with the same index (moved points); other edges are Vertical with the slab's side surface."
                         },
                         "polygonArcs": {
                             "type": "array",
@@ -14267,11 +14284,27 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                 });
                 ACAPI_Element_GetMemo (element.header.guid, &memo);
 
+                // ApplySlabPolygonChange leaves every edge Vertical with the slab's side surface, so
+                // the Edge Angles and the custom edge surfaces set in Slab Settings were lost on every
+                // outline or hole change, even an unchanged outline (#2822). They are given back as
+                // ModifyRoofs gives them back to a roof's polygon: each new edge keeps the data of the
+                // old edge it lies on, and with unchanged point counts that of the edge with the same index.
+                GS::Array<RoofPolygonEdge> oldEdges = GetRoofPolygonEdges (memo);
+                const GSSize oldSideMaterialCount = memo.sideMaterials == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.sideMaterials) / sizeof (API_OverriddenAttribute);
+                for (RoofPolygonEdge& oldEdge : oldEdges) {
+                    if (oldEdge.index >= oldSideMaterialCount) {
+                        // No surface stored for the edge: the slab's side surface, as ApplySlabPolygonChange writes it.
+                        oldEdge.sideMaterial = element.slab.sideMat;
+                    }
+                }
+                const GS::Array<Int32> oldContours = GetContourPointCounts (memo);
+
                 auto error = ApplySlabPolygonChange (memo, element.slab.sideMat, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
                 }
+                RestoreRoofPolygonEdges (memo, oldEdges, GetContourPointCounts (memo) == oldContours, false);
 
                 // Non-geometry field changes (thickness/level/etc, accumulated into mask above)
                 // are applied first via ACAPI_Element_Change; the polygon itself goes through
@@ -15626,18 +15659,6 @@ static GS::Optional<GS::UniString> ApplyPlaneRoofPivot (API_Element& element, AP
 
     return {};
 }
-
-// The edge data of one edge of a single-plane roof's polygon: its trim, its side surface and
-// its edge type, with the ends of the edge they belonged to. Edge i runs from coords[i] to
-// coords[i + 1]; index 0 and the closing vertex of each contour (the pends) carry no edge.
-struct RoofPolygonEdge {
-    Int32                   index;
-    API_Coord               begin;
-    API_Coord               end;
-    API_EdgeTrim            trim;
-    API_OverriddenAttribute sideMaterial;
-    API_RoofEdgeTypeID      edgeType;
-};
 
 static GS::Array<Int32> GetPolygonEdgeIndices (const API_ElementMemo& memo)
 {
