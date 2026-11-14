@@ -1092,7 +1092,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateBeamsCommand> (
             elementCommands, "1.4.0",
             "Creates Beam elements based on the given parameters. Takes the same cut fill pens, cover fill and holes as ModifyBeams, besides the position, shape, slant and cross section; "
-            "settings not given come from the Beam tool defaults or the favorite. Both commands take the same segments array, which sets the cross section, taper and length of single segments. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27."
+            "settings not given come from the Beam tool defaults or the favorite. Both commands take the same segments array, which sets the cross section, taper, length and surfaces of single segments. Not written by either command: the cut fill pens before Archicad 27."
         );
         err |= RegisterCommand<CreateStairsCommand> (
             elementCommands, "1.5.0",
@@ -1308,7 +1308,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyBeamsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens, cover fill and holes, and the same absolute zCoordinate of the reference line (with an optional floorIndex), and the same segments array, which changes the cross section, taper and length of single segments and leaves the others as they are. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, uncut and overhead projection modes, whether the contour lines and the reference axis are shown, and the pens and line types of the cut contour, uncut, overhead, hidden and reference lines; each is read back after the change, and one Archicad did not take fails the item. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27."
+            "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens, cover fill and holes, and the same absolute zCoordinate of the reference line (with an optional floorIndex), and the same segments array, which changes the cross section, taper, length and the left, top, right, bottom, ends and extrusion surfaces of single segments (the surfaces in the shape GetDetailsOfElements returns them) and leaves the others as they are. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, uncut and overhead projection modes, whether the contour lines and the reference axis are shown, and the pens and line types of the cut contour, uncut, overhead, hidden and reference lines; each is read back after the change, and one Archicad did not take fails the item. Not written: the cut fill pens before Archicad 27."
         );
         err |= RegisterCommand<ModifySlabsCommand> (
             elementCommands, "1.4.0",

@@ -11889,7 +11889,7 @@
     },
     "BeamSegmentModification": {
         "type": "object",
-        "description": "Changes one existing segment of a beam.",
+        "description": "Changes one existing segment of a beam: its geometry and its surfaces, which take the shape of BeamSegmentSurfaces, so the segments GetDetailsOfElements returns can be sent back. Only the given fields change. Send overridden false to make a side take its surface from the cross section again.",
         "properties": {
             "segmentIndex": {
                 "type": "integer",
@@ -11898,6 +11898,34 @@
             },
             "geometry": {
                 "$ref": "#/BeamSegmentGeometryModification"
+            },
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the left side of the segment."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the top of the segment."
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the right side of the segment."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the bottom of the segment."
+            },
+            "endsMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the beginning and end of the segment."
+            },
+            "extrusionMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the extrusion of a profiled segment. Written from Archicad 28; before that it gets a failed execution result."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained. Send false with surfaces that should differ from each other."
             }
         },
         "additionalProperties": false

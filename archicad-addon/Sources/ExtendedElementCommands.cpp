@@ -5213,6 +5213,56 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
     return ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_ColumnSegment | APIMemoMask_AssemblySegmentScheme, true) == NoError;
 }
 
+// Checks the surfaces of item i of the segments array of CreateBeams and ModifyBeams (#2535)
+// before anything is written, so a wrong or unknown surface leaves the beam as it was.
+static GS::Optional<GS::UniString> CheckBeamSegmentSurfaces (const GS::ObjectState& segmentOs, UIndex i)
+{
+    for (const char* key : { "leftMaterial", "topMaterial", "rightMaterial", "bottomMaterial", "endsMaterial", "extrusionMaterial" }) {
+        GS::ObjectState materialOs;
+        bool overridden = false;
+        if (segmentOs.Get (key, materialOs) && materialOs.Get ("overridden", overridden) && overridden && !materialOs.Contains ("attributeId")) {
+            return GS::UniString::Printf ("segments[%u].%s is overridden but has no attributeId.", static_cast<unsigned int> (i), key);
+        }
+    }
+#ifndef ServerMainVers_2800
+    if (segmentOs.Contains ("extrusionMaterial")) {
+        return GS::UniString ("segments[].extrusionMaterial is written from Archicad 28.");
+    }
+#endif
+    return CheckSurfaceAndFillAttributeIds (
+        segmentOs, { "leftMaterial", "topMaterial", "rightMaterial", "bottomMaterial", "endsMaterial", "extrusionMaterial" }, "");
+}
+
+static void ApplyBeamSegmentSurfaces (const GS::ObjectState& segmentOs, API_BeamSegmentType& segment)
+{
+    GS::ObjectState materialOs;
+    if (segmentOs.Get ("leftMaterial", materialOs)) {
+        segment.leftMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("topMaterial", materialOs)) {
+        segment.topMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("rightMaterial", materialOs)) {
+        segment.rightMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("bottomMaterial", materialOs)) {
+        segment.bottomMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("endsMaterial", materialOs)) {
+        segment.endsMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+#ifdef ServerMainVers_2800
+    // not a member of API_BeamSegmentType before Archicad 28
+    if (segmentOs.Get ("extrusionMaterial", materialOs)) {
+        segment.extrusionMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+#endif
+    bool materialsChained = false;
+    if (segmentOs.Get ("materialsChained", materialsChained)) {
+        segment.materialsChained = materialsChained;
+    }
+}
+
 static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details)
 {
     auto width = GetOptionalDouble (details, "width");
@@ -5370,6 +5420,10 @@ static GS::Optional<GS::UniString> CheckBeamSegments (const GS::Array<GS::Object
             return GS::UniString::Printf ("segments[%u]: the beam has no segment %d. It has %d segment(s), with segmentIndex 0 to %d; this command does not add segments.",
                 static_cast<unsigned int> (i), static_cast<int> (segmentIndex), static_cast<int> (nSegments), static_cast<int> (nSegments) - 1);
         }
+        const GS::Optional<GS::UniString> surfacesError = CheckBeamSegmentSurfaces (item, i);
+        if (surfacesError.HasValue ()) {
+            return surfacesError;
+        }
         const GS::ObjectState* geometry = item.Get ("geometry");
         if (geometry == nullptr) {
             continue;
@@ -5409,11 +5463,12 @@ static GS::Optional<GS::UniString> ApplyBeamSegmentsToMemo (API_ElementMemo& mem
     }
 
     for (UIndex i = 0; i < segments.GetSize (); ++i) {
+        const Int32 segmentIndex = GetBeamSegmentItemIndex (segments[i], i);
+        ApplyBeamSegmentSurfaces (segments[i], memo.beamSegments[segmentIndex]);
         const GS::ObjectState* geometry = segments[i].Get ("geometry");
         if (geometry == nullptr) {
             continue;
         }
-        const Int32 segmentIndex = GetBeamSegmentItemIndex (segments[i], i);
         API_AssemblySegmentData& segment = memo.beamSegments[segmentIndex].assemblySegmentData;
 
         bool boolValue = false;
@@ -7717,7 +7772,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         },
                         "segments": {
                             "type": "array",
-                            "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite, or segmentCount segments: their cross section, taper and length. Applied after segmentCount and the cross section given for all segments, so a segment given here keeps its own values. A segmentIndex the beam does not have is an error and the beam is not created.",
+                            "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite, or segmentCount segments: their cross section, taper, length and surfaces. Applied after segmentCount and the cross section given for all segments, so a segment given here keeps its own values. A segmentIndex the beam does not have is an error and the beam is not created.",
                             "items": {
                                 "$ref": "#/BeamSegmentModification"
                             }
@@ -13781,7 +13836,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         },
                         "segments": {
                             "type": "array",
-                            "description": "Optional changes to single segments of the beam: their cross section, taper and length. Only the segments and keys given change, so the neighbouring segments stay as they are. Applied after the cross section given for all segments. Segments are not added or removed; a segmentIndex the beam does not have fails the item before anything of it is written.",
+                            "description": "Optional changes to single segments of the beam: their cross section, taper, length and surfaces. Only the segments and keys given change, so the neighbouring segments stay as they are. Applied after the cross section given for all segments. Segments are not added or removed; a segmentIndex the beam does not have, or a wrong surface, fails the item before anything of it is written.",
                             "items": {
                                 "$ref": "#/BeamSegmentModification"
                             }
