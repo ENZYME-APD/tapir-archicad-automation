@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-14 17:18 UTC",
+ "generatedAt": "2026-11-14 21:31 UTC",
  "versions": [
   25,
   26,
@@ -13919,7 +13919,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2836,
+     "title": "Expose adding Layout Book layouts to a publisher set (and removing them)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_CreateLayout",
@@ -14034,7 +14039,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2836,
+     "title": "Expose adding Layout Book layouts to a publisher set (and removing them)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_DimStand_Get",
@@ -14206,7 +14216,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2836,
+     "title": "Expose adding Layout Book layouts to a publisher set (and removing them)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorItem",
@@ -14572,7 +14587,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2836,
+     "title": "Expose adding Layout Book layouts to a publisher set (and removing them)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_RegisterCallbackInterface",
@@ -14664,7 +14684,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2836,
+     "title": "Expose adding Layout Book layouts to a publisher set (and removing them)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_CatchAttributeReplacement",

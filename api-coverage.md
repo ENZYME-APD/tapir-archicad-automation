@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-14 17:18 UTC.
+Archicad 25–30 DevKits; updated 2026-11-14 21:31 UTC.
 
 | | Status |
 |---|---|
@@ -468,12 +468,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
 - ✅ `ACAPI_Navigator_ChangeStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_ChangeStructureDisplayID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeViewOptions` – Changes the actual model view options. <sub>(was `APIEnv_ChangeViewOptionsID`)</sub>
-- ✅ `ACAPI_Navigator_CloneProjectMapItemToViewMap` – Clones a Navigator item from the project map to view map. <sub>(was `APINavigator_CloneProjectMapItemToViewMapID`)</sub>
+- ✅ `ACAPI_Navigator_CloneProjectMapItemToViewMap` – Clones a Navigator item from the project map to view map. <sub>(was `APINavigator_CloneProjectMapItemToViewMapID`)</sub> — [#2836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2836 "Expose adding Layout Book layouts to a publisher set (and removing them)")
 - ✅ `ACAPI_Navigator_CreateLayout` – Creates a new layout. <sub>(was `APIEnv_CreateLayoutID`)</sub>
 - ✅ `ACAPI_Navigator_CreateNavigatorVPItem` – Creates a new Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_CreateNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_CreateSubSet` – Creates the Subset in the Layout Book. <sub>(was `APIDb_CreateSubSetID`)</sub>
 - ✅ `ACAPI_Navigator_DeleteNavigatorVPItem` – Deletes a Navigator viewpoint root, group or leaf node from the Project Map. <sub>(was `APINavigator_DeleteNavigatorVPItemID`)</sub>
-- ✅ `ACAPI_Navigator_DeleteNavigatorView` – Deletes the given navigator view. <sub>(was `APINavigator_DeleteNavigatorViewID`)</sub>
+- ✅ `ACAPI_Navigator_DeleteNavigatorView` – Deletes the given navigator view. <sub>(was `APINavigator_DeleteNavigatorViewID`)</sub> — [#2836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2836 "Expose adding Layout Book layouts to a publisher set (and removing them)")
 - ✅ `ACAPI_Navigator_DimStand_Get` <sub>AC27–30</sub> – Get a dimension preference by index or name.
 - ✅ `ACAPI_Navigator_DimStand_GetNum` <sub>AC27–30</sub> – Get the number of dimension preferences.
 - ✅ `ACAPI_Navigator_DimStand_Search` <sub>AC27–30</sub> – Search a dimension preference by name or index.
@@ -481,7 +481,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_GetLayoutBook` – Retrieves the Book Settings. <sub>(was `APIDb_GetLayoutBookID`)</sub>
 - ✅ `ACAPI_Navigator_GetLayoutSets` – Returns the settings of a layout. <sub>(was `APIEnv_GetLayoutSetsID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorChildNum` – Retrieves the number of children of a navigator item. <sub>(was `APINavigator_GetNavigatorChildNumID`)</sub>
-- ✅ `ACAPI_Navigator_GetNavigatorChildrenItems` – Retrieves the child items of a navigator item. <sub>(was `APINavigator_GetNavigatorChildrenItemsID`)</sub>
+- ✅ `ACAPI_Navigator_GetNavigatorChildrenItems` – Retrieves the child items of a navigator item. <sub>(was `APINavigator_GetNavigatorChildrenItemsID`)</sub> — [#2836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2836 "Expose adding Layout Book layouts to a publisher set (and removing them)")
 - ✅ `ACAPI_Navigator_GetNavigatorItem` – Retrieves a navigator item. <sub>(was `APINavigator_GetNavigatorItemID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorParentItem` – Retrieves the parent item of a navigator item. <sub>(was `APINavigator_GetNavigatorParentItemID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorSet` – Retrieves information about a Project Navigator Map or Publisher Set. <sub>(was `APINavigator_GetNavigatorSetID`)</sub> — [#2813](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2813 "PublishPublisherSet: list the written files, document selectedNavigatorItemIds")
@@ -497,11 +497,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_ModelViewOptions_Get` <sub>AC27–30</sub> – Get an API_ModelViewOptionsType by index.
 - ✅ `ACAPI_Navigator_ModelViewOptions_GetNum` <sub>AC27–30</sub> – Get the number of API_ModelViewOptions.
 - ✅ `ACAPI_Navigator_ModelViewOptions_Search` <sub>AC27–30</sub> – Search an API_ModelViewOptions_Head by name or index.
-- ✅ `ACAPI_Navigator_NewNavigatorView` – Creates a new Navigator View. <sub>(was `APINavigator_NewNavigatorViewID`)</sub>
+- ✅ `ACAPI_Navigator_NewNavigatorView` – Creates a new Navigator View. <sub>(was `APINavigator_NewNavigatorViewID`)</sub> — [#2836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2836 "Expose adding Layout Book layouts to a publisher set (and removing them)")
 - ➖ `ACAPI_Navigator_RegisterCallbackInterface` – Registers an object with virtual functions that are implemented by the AddOn. These are called by Archicad when certain events happen relating to the navigator items that are registered by the AddOn. <sub>(was `APINavigator_RegisterCallbackInterfaceID`)</sub> *(event handlers, not commands)*
 - ✅ `ACAPI_Navigator_SearchNavigatorItem` – Searches the navigator items of the requested database. <sub>(was `APINavigator_SearchNavigatorItemID`)</sub>
 - ✅ `ACAPI_Navigator_SetMasterLayoutOnLayout` – Sets the layout context of current database for drawing. <sub>(was `APIAny_SetMasterLayoutOnLayoutID`)</sub>
-- ✅ `ACAPI_Navigator_SetNavigatorItemPosition` – With this function a navigator item can be moved to another place. It can be used with items on the layout map and on the view maps (in case of teamworking on the public and on the users' own view map as well. <sub>(was `APINavigator_SetNavigatorItemPositionID`)</sub>
+- ✅ `ACAPI_Navigator_SetNavigatorItemPosition` – With this function a navigator item can be moved to another place. It can be used with items on the layout map and on the view maps (in case of teamworking on the public and on the users' own view map as well. <sub>(was `APINavigator_SetNavigatorItemPositionID`)</sub> — [#2836](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2836 "Expose adding Layout Book layouts to a publisher set (and removing them)")
 
 ## General
 
