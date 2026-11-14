@@ -2835,12 +2835,56 @@ GS::Optional<GS::UniString> CloseProjectCommand::GetRawResponseSchema () const
     })";
 }
 
+// What tells the open project apart from another one: whether it is saved or Teamwork, its file
+// (or server location) and the modification stamp of its database.
+struct OpenProjectIdentity {
+    bool          untitled = false;
+    bool          teamwork = false;
+    GS::UniString location;
+    UInt64        modiStamp = 0;
+
+    explicit OpenProjectIdentity (const API_ProjectInfo& projectInfo) :
+        untitled (projectInfo.untitled),
+        teamwork (projectInfo.teamwork),
+        modiStamp (projectInfo.modiStamp)
+    {
+        const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+        if (!projectInfo.untitled && projectLocation != nullptr) {
+            location = projectLocation->ToDisplayText ();
+        }
+    }
+
+    bool IsSameAs (const OpenProjectIdentity& other) const
+    {
+        return untitled == other.untitled && teamwork == other.teamwork && location == other.location && modiStamp == other.modiStamp;
+    }
+};
+
+// ACAPI_ProjectOperation_Close can answer NoError and leave the project open (#2798, Archicad 29
+// on macOS: Archicad keeps its last open project), so the project is read again afterwards and
+// the command only succeeds when the project it found before is no longer the open one.
 GS::ObjectState CloseProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
+    GS::Optional<OpenProjectIdentity> projectBefore;
+    {
+        API_ProjectInfo projectInfo = {};
+        if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError) {
+            projectBefore = OpenProjectIdentity (projectInfo);
+        }
+    }
+
     GSErrCode err = ACAPI_ProjectOperation_Close ();
     if (err != NoError) {
         return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to close the project. There might be none currently open.");
     }
+
+    if (projectBefore.HasValue ()) {
+        API_ProjectInfo projectInfo = {};
+        if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError && OpenProjectIdentity (projectInfo).IsSameAs (*projectBefore)) {
+            return CreateFailedExecutionResult (APIERR_REFUSEDCMD, "Archicad did not close the project: it is still open. Archicad keeps its last open project open; use OpenProject or NewProject to replace it, or QuitArchicad to quit.");
+        }
+    }
+
     return CreateSuccessfulExecutionResult ();
 }
 
