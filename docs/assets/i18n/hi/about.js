@@ -1,7 +1,7 @@
 /* हिन्दी: the About page (about/index.html). See ../README.md.
    The names of the people stay as they are. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'About Tapir – open-source Archicad add-on': 'Tapir का परिचय – open-source Archicad add-on',
+    'About the open-source Archicad add-on | Tapir': 'Open-source Archicad add-on का परिचय | Tapir',
     'Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template, who builds it and how to support it.':
         'Open-source Archicad add-on Tapir क्यों है, यह Enzyme के R&D और Tibor Lorántfy के JSON template से कैसे बना, इसे कौन बनाता है और इसका समर्थन कैसे करें।',
     '<a href="../">Tapir</a> / About': '<a href="../">Tapir</a> / परिचय',
@@ -53,13 +53,13 @@
 
     // Principles
     'Principles': 'सिद्धांत',
-    '<b>FREE</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
+    '<b>Free</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
         '<b>मुफ़्त</b><strong>कभी कोई क़ीमत नहीं</strong><span>Add-on, plugin और हर शेयर की गई script के लिए MIT लाइसेंस।</span>',
-    '<b>OPEN</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
+    '<b>Open</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
         '<b>खुला</b><strong>सबके सामने बना</strong><span>हर issue, pull request और review GitHub पर है।</span>',
-    '<b>SIGNED</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
+    '<b>Signed</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
         '<b>साइन किया हुआ</b><strong>इंस्टॉल करने के लिए सुरक्षित</strong><span>Windows installer, SignPath के ज़रिए साइन किया गया है; macOS installer और add-ons साइन और notarize किए गए हैं।</span>',
-    '<b>WEEKLY</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
+    '<b>Weekly</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
         '<b>साप्ताहिक</b><strong>छोटे, नियमित releases</strong><span>कुछ बदला हो तो हर सोमवार एक release।</span>',
 
     // Support

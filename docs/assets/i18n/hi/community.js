@@ -1,7 +1,7 @@
 /* हिन्दी: the Community page (community/index.html, with the texts community/community.js reads
    from it). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Community – Archicad automation with Tapir': 'समुदाय – Tapir के साथ Archicad automation',
+    'Archicad automation community | Tapir': 'Archicad automation समुदाय | Tapir',
     'Ask on Discord, report a bug, test a fix in your Archicad: how Tapir\'s community and its bots turn a report into a release, and how the project grew.':
         'Discord पर पूछें, bug रिपोर्ट करें, अपने Archicad में fix टेस्ट करें: Tapir का समुदाय और उसके bots एक रिपोर्ट को release में कैसे बदलते हैं, और प्रोजेक्ट कैसे बढ़ा।',
     '<a href="../">Tapir</a> / Community': '<a href="../">Tapir</a> / समुदाय',
@@ -28,16 +28,16 @@
     'How the bots <em>work.</em>': 'Bots कैसे <em>काम करते हैं।</em>',
     'Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.':
         'ज़्यादातर fixes bots लिखते हैं और लोग जाँचते हैं। Maintainers नियम तय करते हैं और किसी भी बदलाव को रोक सकते हैं; कोई fix आपके Archicad में काम करता है या नहीं, यह आप तय करते हैं।',
-    '<b>01</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
-        '<b>01</b><strong>पोस्ट करें</strong><span>Bug या विचार को Discord या GitHub पर लिखें। Discord पर GitHub account की ज़रूरत नहीं।</span>',
-    '<b>02</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
-        '<b>02</b><strong>एक issue</strong><span>हर आधे घंटे में, Discord की जो पोस्ट bug रिपोर्ट या feature request जैसी लगती हैं, वे GitHub issues बन जाती हैं, और bot लिंक के साथ जवाब देता है।</span>',
-    '<b>03</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
-        '<b>03</b><strong>Fix का मसौदा</strong><span>Issue bot जवाब देता है, जो जानकारी कम है वह पूछता है, या fix लिखकर एक pull request खोलता है। उसे हर Archicad संस्करण के लिए build किया जाता है और उसका review होता है।</span>',
-    '<b>04</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
-        '<b>04</b><strong>आप टेस्ट करें</strong><span>Pull request पर एक comment में build हुए add-on का लिंक होता है, और रिपोर्ट करने वाले व्यक्ति से उसे आज़माने को कहा जाता है।</span>',
-    '<b>05</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
-        '<b>05</b><strong>Release हुआ</strong><span>Green और review हो जाने पर, अगर कोई maintainer न रोके तो तीन दिन बाद उसे merge कर दिया जाता है, और वह सोमवार की <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a> में आता है।</span>',
+    '<b aria-hidden="true">1</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
+        '<b aria-hidden="true">1</b><strong>पोस्ट करें</strong><span>Bug या विचार को Discord या GitHub पर लिखें। Discord पर GitHub account की ज़रूरत नहीं।</span>',
+    '<b aria-hidden="true">2</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
+        '<b aria-hidden="true">2</b><strong>एक issue</strong><span>हर आधे घंटे में, Discord की जो पोस्ट bug रिपोर्ट या feature request जैसी लगती हैं, वे GitHub issues बन जाती हैं, और bot लिंक के साथ जवाब देता है।</span>',
+    '<b aria-hidden="true">3</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
+        '<b aria-hidden="true">3</b><strong>Fix का मसौदा</strong><span>Issue bot जवाब देता है, जो जानकारी कम है वह पूछता है, या fix लिखकर एक pull request खोलता है। उसे हर Archicad संस्करण के लिए build किया जाता है और उसका review होता है।</span>',
+    '<b aria-hidden="true">4</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
+        '<b aria-hidden="true">4</b><strong>आप टेस्ट करें</strong><span>Pull request पर एक comment में build हुए add-on का लिंक होता है, और रिपोर्ट करने वाले व्यक्ति से उसे आज़माने को कहा जाता है।</span>',
+    '<b aria-hidden="true">5</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
+        '<b aria-hidden="true">5</b><strong>Release हुआ</strong><span>Green और review हो जाने पर, अगर कोई maintainer न रोके तो तीन दिन बाद उसे merge कर दिया जाता है, और वह सोमवार की <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a> में आता है।</span>',
 
     // Report and test
     'Report and test': 'रिपोर्ट और टेस्ट',

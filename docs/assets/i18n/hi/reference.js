@@ -22,9 +22,9 @@
     'All <em>commands.</em>': 'सभी <em>कमांड।</em>',
 
     // The two coverage pages
-    'Overview': 'सारांश',
+    'Coverage at a <em>glance.</em>': 'Coverage एक <em>नज़र में।</em>',
     'By group': 'Group के अनुसार',
-    'Checklist': 'Checklist',
+    'The whole <em>checklist.</em>': 'पूरी <em>checklist।</em>',
 
     // The Archicad API coverage (api-coverage/)
     'Archicad API coverage checklist | Tapir': 'Archicad API कवरेज checklist | Tapir',

@@ -1,7 +1,7 @@
 /* 中文 (简体): the About page (about/index.html). See ../README.md.
    The names of the people stay as they are. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'About Tapir – open-source Archicad add-on': '关于 Tapir – 开源 Archicad 插件',
+    'About the open-source Archicad add-on | Tapir': '关于这款开源 Archicad 插件 | Tapir',
     'Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template, who builds it and how to support it.':
         '开源 Archicad 插件 Tapir 为何存在，它如何从 Enzyme 的研发和 Tibor Lorántfy 的 JSON 模板成长起来，由谁开发，以及如何支持它。',
     '<a href="../">Tapir</a> / About': '<a href="../">Tapir</a> / 关于',
@@ -52,13 +52,13 @@
 
     // Principles
     'Principles': '原则',
-    '<b>FREE</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
+    '<b>Free</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
         '<b>免费</b><strong>永远免费</strong><span>Add-On、Grasshopper 插件和每个共享脚本都采用 MIT 许可证。</span>',
-    '<b>OPEN</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
+    '<b>Open</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
         '<b>开放</b><strong>公开开发</strong><span>每个 issue、pull request 和审查都在 GitHub 上。</span>',
-    '<b>SIGNED</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
+    '<b>Signed</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
         '<b>已签名</b><strong>安全安装</strong><span>Windows 安装程序通过 SignPath 签名；macOS 安装程序和 Add-On 均已签名并经过公证。</span>',
-    '<b>WEEKLY</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
+    '<b>Weekly</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
         '<b>每周</b><strong>小步、稳定的发布</strong><span>只要有改动，每周一发布一次。</span>',
 
     // Support

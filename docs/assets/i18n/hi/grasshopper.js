@@ -14,13 +14,13 @@
     'What the components <em>do.</em>': 'Components <em>क्या करते हैं।</em>',
     'Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the <strong>Tapir</strong> tab, grouped as in Archicad.':
         'हर component, Archicad को एक Tapir कमांड भेजता है और जवाब आपको Grasshopper data के रूप में देता है। ये <strong>Tapir</strong> tab पर मिलते हैं, Archicad की तरह समूहों में।',
-    '<b>READ</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
+    '<b>Read</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
         '<b>पढ़ें</b><strong>Elements और उनका data</strong><span>Type, story या selection के अनुसार elements; उनकी properties, classifications, settings और geometry।</span>',
-    '<b>CHANGE</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
+    '<b>Change</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
         '<b>बदलें</b><strong>जो आप देते हैं</strong><span>आपके दिए गए elements की property values, classifications, layers, IDs और tool settings।</span>',
-    '<b>CREATE</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
+    '<b>Create</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
         '<b>बनाएँ</b><strong>Rhino geometry से</strong><span>Points और curves से walls, doors, windows, railings, level dimensions और बहुत कुछ।</span>',
-    '<b>PROJECT</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
+    '<b>Project</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
         '<b>प्रोजेक्ट</b><strong>फ़ाइल का बाक़ी हिस्सा</strong><span>Stories, attributes, navigator views, layouts, issues, favorites और libraries।</span>',
     'Which Tapir commands have a component, and which settings each covers, is on the <a href="../gh-coverage/">Grasshopper coverage</a> page.':
         'किन Tapir कमांड का component है, और हर एक कौन-सी settings cover करता है, यह <a href="../gh-coverage/">Grasshopper कवरेज</a> पेज पर है।',
@@ -37,12 +37,12 @@
     'Placed along a <code>ReferenceLine</code>.': 'एक <code>ReferenceLine</code> के साथ-साथ रखे जाते हैं।',
     'Placed at a <code>Position</code>, optionally on a parent element.':
         'एक <code>Position</code> पर रखे जाते हैं, चाहें तो किसी parent element पर।',
-    '<b>REFRESH</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
-        '<b>REFRESH</b><strong>पढ़ता है</strong><span><code>ElementGuid</code> के elements पढ़ता है और हर output भरता है।</span>',
-    '<b>EXECUTE</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
-        '<b>EXECUTE</b><strong>लिखता है</strong><span>दी गई settings उन elements में लिखता है। सिर्फ़ वही keys लिखी जाती हैं जो आप देते हैं।</span>',
-    '<b>CREATE</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
-        '<b>CREATE</b><strong>नए elements बनाता है</strong><span>Geometry inputs से, tool के defaults या किसी <code>FavoriteName</code> से शुरू करके।</span>',
+    '<b>Refresh</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
+        '<b>Refresh</b><strong>पढ़ता है</strong><span><code>ElementGuid</code> के elements पढ़ता है और हर output भरता है।</span>',
+    '<b>Execute</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
+        '<b>Execute</b><strong>लिखता है</strong><span>दी गई settings उन elements में लिखता है। सिर्फ़ वही keys लिखी जाती हैं जो आप देते हैं।</span>',
+    '<b>Create</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
+        '<b>Create</b><strong>नए elements बनाता है</strong><span>Geometry inputs से, tool के defaults या किसी <code>FavoriteName</code> से शुरू करके।</span>',
     'Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed straight back into the same input. Archicad has no command to change railings or level dimensions after they are placed, so for those Execute only writes the ID, layer and draw order.':
         'जब तक आप Execute या Create नहीं दबाते, Archicad में कुछ नहीं लिखा जाता। Refresh से पढ़ा गया JSON output सीधे उसी input में वापस दिया जा सकता है। Railings या level dimensions रखने के बाद उन्हें बदलने का कोई कमांड Archicad में नहीं है, इसलिए उनके लिए Execute सिर्फ़ ID, layer और draw order लिखता है।',
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Note</strong> Walls remembers the walls its Create made, in the <code>.gh</code> file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component\'s menu.':

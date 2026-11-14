@@ -1,7 +1,7 @@
 /* 日本語: the Community page (community/index.html, with the texts community/community.js reads
    from it). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Community – Archicad automation with Tapir': 'コミュニティ – Tapir による Archicad 自動化',
+    'Archicad automation community | Tapir': 'Archicad 自動化コミュニティ | Tapir',
     'Ask on Discord, report a bug, test a fix in your Archicad: how Tapir\'s community and its bots turn a report into a release, and how the project grew.':
         'Discord で質問し、バグを報告し、お使いの Archicad で修正をテストする。Tapir のコミュニティとボットが報告をリリースにつなげる仕組みと、プロジェクトの成長の歩みです。',
     '<a href="../">Tapir</a> / Community': '<a href="../">Tapir</a> / コミュニティ',
@@ -28,16 +28,16 @@
     'How the bots <em>work.</em>': 'ボットの<em>仕組み。</em>',
     'Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.':
         'ほとんどの修正はボットが書き、人が確認します。メンテナーがルールを決め、どの変更でも止めることができます。修正があなたの Archicad で動くかどうかを決めるのはあなたです。',
-    '<b>01</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
-        '<b>01</b><strong>投稿する</strong><span>バグやアイデアを Discord か GitHub に書きます。Discord なら GitHub アカウントは不要です。</span>',
-    '<b>02</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
-        '<b>02</b><strong>Issue になる</strong><span>30 分ごとに、バグ報告や機能リクエストらしい Discord の投稿が GitHub の Issue になり、ボットがそのリンクを返信します。</span>',
-    '<b>03</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
-        '<b>03</b><strong>修正案</strong><span>Issue ボットが回答するか、足りない情報を尋ねるか、修正を書いてプルリクエストを作成します。プルリクエストはすべての Archicad バージョン向けにビルドされ、レビューされます。</span>',
-    '<b>04</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
-        '<b>04</b><strong>あなたがテスト</strong><span>プルリクエストのコメントにビルドされたアドオンへのリンクが載り、報告した人に試してもらうよう依頼します。</span>',
-    '<b>05</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
-        '<b>05</b><strong>リリース</strong><span>ビルドが通りレビューが済むと、メンテナーが止めない限り 3 日後にマージされ、月曜日の<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">リリース</a>に含まれます。</span>',
+    '<b aria-hidden="true">1</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
+        '<b aria-hidden="true">1</b><strong>投稿する</strong><span>バグやアイデアを Discord か GitHub に書きます。Discord なら GitHub アカウントは不要です。</span>',
+    '<b aria-hidden="true">2</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
+        '<b aria-hidden="true">2</b><strong>Issue になる</strong><span>30 分ごとに、バグ報告や機能リクエストらしい Discord の投稿が GitHub の Issue になり、ボットがそのリンクを返信します。</span>',
+    '<b aria-hidden="true">3</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
+        '<b aria-hidden="true">3</b><strong>修正案</strong><span>Issue ボットが回答するか、足りない情報を尋ねるか、修正を書いてプルリクエストを作成します。プルリクエストはすべての Archicad バージョン向けにビルドされ、レビューされます。</span>',
+    '<b aria-hidden="true">4</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
+        '<b aria-hidden="true">4</b><strong>あなたがテスト</strong><span>プルリクエストのコメントにビルドされたアドオンへのリンクが載り、報告した人に試してもらうよう依頼します。</span>',
+    '<b aria-hidden="true">5</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
+        '<b aria-hidden="true">5</b><strong>リリース</strong><span>ビルドが通りレビューが済むと、メンテナーが止めない限り 3 日後にマージされ、月曜日の<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">リリース</a>に含まれます。</span>',
 
     // Report and test
     'Report and test': '報告とテスト',

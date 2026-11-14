@@ -14,14 +14,14 @@
     'What the components <em>do.</em>': 'Cosa fanno i <em>componenti.</em>',
     'Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the <strong>Tapir</strong> tab, grouped as in Archicad.':
         'Ogni componente invia un comando Tapir ad Archicad e ti restituisce la risposta come dati Grasshopper. Li trovi nella scheda <strong>Tapir</strong>, raggruppati come in Archicad.',
-    '<b>READ</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
-        '<b>LEGGERE</b><strong>Elementi e loro dati</strong><span>Elementi per tipo, piano o selezione; le loro proprietà, classificazioni, impostazioni e geometria.</span>',
-    '<b>CHANGE</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
-        '<b>MODIFICARE</b><strong>Ciò che passi</strong><span>Valori di proprietà, classificazioni, layer, ID e impostazioni strumento degli elementi che passi.</span>',
-    '<b>CREATE</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
-        '<b>CREARE</b><strong>Dalla geometria di Rhino</strong><span>Muri, porte, finestre, ringhiere, quote di livello e altro, da punti e curve.</span>',
-    '<b>PROJECT</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
-        '<b>PROGETTO</b><strong>Il resto del file</strong><span>Piani, attributi, viste del navigatore, layout, segnalazioni, preferiti e librerie.</span>',
+    '<b>Read</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
+        '<b>Leggere</b><strong>Elementi e loro dati</strong><span>Elementi per tipo, piano o selezione; le loro proprietà, classificazioni, impostazioni e geometria.</span>',
+    '<b>Change</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
+        '<b>Modificare</b><strong>Ciò che passi</strong><span>Valori di proprietà, classificazioni, layer, ID e impostazioni strumento degli elementi che passi.</span>',
+    '<b>Create</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
+        '<b>Creare</b><strong>Dalla geometria di Rhino</strong><span>Muri, porte, finestre, ringhiere, quote di livello e altro, da punti e curve.</span>',
+    '<b>Project</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
+        '<b>Progetto</b><strong>Il resto del file</strong><span>Piani, attributi, viste del navigatore, layout, segnalazioni, preferiti e librerie.</span>',
     'Which Tapir commands have a component, and which settings each covers, is on the <a href="../gh-coverage/">Grasshopper coverage</a> page.':
         'Quali comandi Tapir hanno un componente, e quali impostazioni copre ciascuno, è nella pagina <a href="../gh-coverage/">Copertura Grasshopper</a>.',
 
@@ -34,12 +34,12 @@
     'Placed in an <code>OwnerWall</code> at a <code>CenterOffset</code>.': 'Posizionata in un <code>OwnerWall</code> a un <code>CenterOffset</code>.',
     'Placed along a <code>ReferenceLine</code>.': 'Posizionata lungo una <code>ReferenceLine</code>.',
     'Placed at a <code>Position</code>, optionally on a parent element.': 'Posizionata in una <code>Position</code>, facoltativamente su un elemento padre.',
-    '<b>REFRESH</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
-        '<b>REFRESH</b><strong>Legge</strong><span>Legge gli elementi in <code>ElementGuid</code> e riempie ogni uscita.</span>',
-    '<b>EXECUTE</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
-        '<b>EXECUTE</b><strong>Scrive</strong><span>Scrive le impostazioni date in quegli elementi. Vengono scritte solo le chiavi che indichi.</span>',
-    '<b>CREATE</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
-        '<b>CREATE</b><strong>Crea nuovi elementi</strong><span>Dagli ingressi di geometria, partendo dai valori predefiniti dello strumento o da un <code>FavoriteName</code>.</span>',
+    '<b>Refresh</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
+        '<b>Refresh</b><strong>Legge</strong><span>Legge gli elementi in <code>ElementGuid</code> e riempie ogni uscita.</span>',
+    '<b>Execute</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
+        '<b>Execute</b><strong>Scrive</strong><span>Scrive le impostazioni date in quegli elementi. Vengono scritte solo le chiavi che indichi.</span>',
+    '<b>Create</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
+        '<b>Create</b><strong>Crea nuovi elementi</strong><span>Dagli ingressi di geometria, partendo dai valori predefiniti dello strumento o da un <code>FavoriteName</code>.</span>',
     'Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed straight back into the same input. Archicad has no command to change railings or level dimensions after they are placed, so for those Execute only writes the ID, layer and draw order.':
         'Nulla viene scritto in Archicad finché non premi Execute o Create. Un\'uscita JSON letta da Refresh può tornare direttamente nello stesso ingresso. Archicad non ha un comando per modificare ringhiere o quote di livello dopo averle posizionate, quindi per queste Execute scrive solo l\'ID, il layer e l\'ordine di visualizzazione.',
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Note</strong> Walls remembers the walls its Create made, in the <code>.gh</code> file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component\'s menu.':

@@ -1,7 +1,7 @@
 /* 中文 (简体): the Community page (community/index.html, with the texts community/community.js reads
    from it). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Community – Archicad automation with Tapir': '社区 – 用 Tapir 实现 Archicad 自动化',
+    'Archicad automation community | Tapir': 'Archicad 自动化社区 | Tapir',
     'Ask on Discord, report a bug, test a fix in your Archicad: how Tapir\'s community and its bots turn a report into a release, and how the project grew.':
         '在 Discord 上提问、报告 bug、在你的 Archicad 中测试修复：Tapir 的社区和它的机器人如何把一份报告变成一次发布，以及这个项目如何成长。',
     '<a href="../">Tapir</a> / Community': '<a href="../">Tapir</a> / 社区',
@@ -28,16 +28,16 @@
     'How the bots <em>work.</em>': '机器人如何<em>工作。</em>',
     'Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.':
         '大多数修复由机器人编写、由人检查。维护者制定规则，并且可以叫停任何改动；修复在你的 Archicad 中是否有效，由你来判断。',
-    '<b>01</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
-        '<b>01</b><strong>发帖</strong><span>在 Discord 或 GitHub 上描述 bug 或想法。在 Discord 上不需要 GitHub 账号。</span>',
-    '<b>02</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
-        '<b>02</b><strong>一个 issue</strong><span>每半小时，看起来像 bug 报告或功能请求的 Discord 帖子会变成 GitHub issue，机器人会回复链接。</span>',
-    '<b>03</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
-        '<b>03</b><strong>修复草案</strong><span>issue 机器人会回答、询问缺少的信息，或者编写修复并创建 pull request。它会为每个 Archicad 版本构建并经过审查。</span>',
-    '<b>04</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
-        '<b>04</b><strong>你来测试</strong><span>pull request 上的一条评论会给出构建好的插件的链接，并请报告问题的人试用。</span>',
-    '<b>05</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
-        '<b>05</b><strong>发布</strong><span>构建通过并经过审查后，除非维护者叫停，它会在三天后合并，并随周一的<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">版本</a>发布。</span>',
+    '<b aria-hidden="true">1</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
+        '<b aria-hidden="true">1</b><strong>发帖</strong><span>在 Discord 或 GitHub 上描述 bug 或想法。在 Discord 上不需要 GitHub 账号。</span>',
+    '<b aria-hidden="true">2</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
+        '<b aria-hidden="true">2</b><strong>一个 issue</strong><span>每半小时，看起来像 bug 报告或功能请求的 Discord 帖子会变成 GitHub issue，机器人会回复链接。</span>',
+    '<b aria-hidden="true">3</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
+        '<b aria-hidden="true">3</b><strong>修复草案</strong><span>issue 机器人会回答、询问缺少的信息，或者编写修复并创建 pull request。它会为每个 Archicad 版本构建并经过审查。</span>',
+    '<b aria-hidden="true">4</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
+        '<b aria-hidden="true">4</b><strong>你来测试</strong><span>pull request 上的一条评论会给出构建好的插件的链接，并请报告问题的人试用。</span>',
+    '<b aria-hidden="true">5</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
+        '<b aria-hidden="true">5</b><strong>发布</strong><span>构建通过并经过审查后，除非维护者叫停，它会在三天后合并，并随周一的<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">版本</a>发布。</span>',
 
     // Report and test
     'Report and test': '报告与测试',
