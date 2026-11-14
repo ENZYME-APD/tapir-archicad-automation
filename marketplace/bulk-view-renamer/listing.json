@@ -1,13 +1,19 @@
 {
     "slug": "bulk-view-renamer",
     "name": "Bulk View Renamer",
-    "summary": "Renames the views of the View Map, or of one folder, in one go: find and replace, prefix and suffix, or a pattern with a counter.",
+    "summary": "Renames the views of the View Map or the Project Map, or of one folder, in one go: find and replace, prefix and suffix, or a pattern with a counter.",
     "category": "navigator-views",
-    "tags": ["views", "view-map", "renaming", "navigator"],
+    "tags": ["views", "view-map", "project-map", "renaming", "navigator"],
     "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "BulkViewRenamer.py",
     "versions": [
+        {
+            "version": "1.2.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "A Map choice: works on the View Map or on the Project Map, with the same folders that open and close. In the Project Map the sections, elevations, interior elevations, details and worksheets are renamed; the other viewpoints are listed as cannot rename."
+        },
         {
             "version": "1.1.0",
             "archicadVersions": [25, 26, 27, 28, 29, 30],
