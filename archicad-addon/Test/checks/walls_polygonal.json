@@ -1,0 +1,276 @@
+{
+  "title": "CreateWalls and ModifyWalls make and change polygonal walls, Basic only, with the reference line on a given edge (#2563)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "L-shaped polygonal wall, no structure given (a Composite tool default must not turn it straight, #1914)",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "geometryType": "Polygonal",
+            "polygonOutline": [
+              { "x": 940.0, "y": 800.0 },
+              { "x": 946.0, "y": 800.0 },
+              { "x": 946.0, "y": 800.3 },
+              { "x": 940.3, "y": 800.3 },
+              { "x": 940.3, "y": 804.0 },
+              { "x": 940.0, "y": 804.0 }
+            ],
+            "begCoordinate": { "x": 940.0, "y": 800.0 },
+            "endCoordinate": { "x": 946.0, "y": 800.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.7
+          }
+        ]
+      },
+      "save": { "lwall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "polygonal wall created" }
+      ]
+    },
+    {
+      "id": "read the L-shaped wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${lwall}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.geometryType", "eq": "Polygonal", "name": "Archicad kept it polygonal" },
+        { "path": "detailsOfElements[0].details.structureType", "eq": "Basic", "name": "made Basic" },
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Outside" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 7, "name": "6 corners, closed" },
+        { "path": "detailsOfElements[0].details.polygonOutline[3].x", "approx": 940.3, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.polygonOutline[4].y", "approx": 804.0, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 940.0, "tol": 0.0001, "name": "reference line on the first edge" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 946.0, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.7, "tol": 0.0001 }
+      ]
+    },
+    {
+      "id": "polygonal wall with a curved edge, reference line on another edge",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "geometryType": "Polygonal",
+            "structureType": "Basic",
+            "polygonOutline": [
+              { "x": 950.0, "y": 800.0 },
+              { "x": 954.0, "y": 800.0 },
+              { "x": 954.0, "y": 800.25 },
+              { "x": 950.0, "y": 800.25 }
+            ],
+            "polygonArcs": [ { "begIndex": 2, "endIndex": 3, "arcAngle": 0.5 } ],
+            "begCoordinate": { "x": 950.0, "y": 800.0 },
+            "endCoordinate": { "x": 954.0, "y": 800.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.7
+          }
+        ]
+      },
+      "save": { "arcwall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curved polygonal wall created" }
+      ]
+    },
+    {
+      "id": "read the curved polygonal wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${arcwall}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.geometryType", "eq": "Polygonal" },
+        { "path": "detailsOfElements[0].details.polygonArcs", "len": 1, "name": "the arc is kept" },
+        { "path": "detailsOfElements[0].details.polygonArcs[0].begIndex", "eq": 2 },
+        { "path": "detailsOfElements[0].details.polygonArcs[0].arcAngle", "approx": 0.5, "tol": 0.0001 }
+      ]
+    },
+    {
+      "id": "refused: Composite structure, reference line not on an edge, thickness, curved reference edge",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "geometryType": "Polygonal",
+            "structureType": "Composite",
+            "polygonOutline": [ { "x": 960.0, "y": 800.0 }, { "x": 964.0, "y": 800.0 }, { "x": 964.0, "y": 800.3 }, { "x": 960.0, "y": 800.3 } ],
+            "begCoordinate": { "x": 960.0, "y": 800.0 },
+            "endCoordinate": { "x": 964.0, "y": 800.0 }
+          },
+          {
+            "geometryType": "Polygonal",
+            "polygonOutline": [ { "x": 960.0, "y": 805.0 }, { "x": 964.0, "y": 805.0 }, { "x": 964.0, "y": 805.3 }, { "x": 960.0, "y": 805.3 } ],
+            "begCoordinate": { "x": 960.0, "y": 805.0 },
+            "endCoordinate": { "x": 962.0, "y": 805.0 }
+          },
+          {
+            "geometryType": "Polygonal",
+            "thickness": 0.3,
+            "polygonOutline": [ { "x": 960.0, "y": 810.0 }, { "x": 964.0, "y": 810.0 }, { "x": 964.0, "y": 810.3 }, { "x": 960.0, "y": 810.3 } ],
+            "begCoordinate": { "x": 960.0, "y": 810.0 },
+            "endCoordinate": { "x": 964.0, "y": 810.0 }
+          },
+          {
+            "geometryType": "Polygonal",
+            "polygonOutline": [ { "x": 960.0, "y": 815.0 }, { "x": 964.0, "y": 815.0 }, { "x": 964.0, "y": 815.3 }, { "x": 960.0, "y": 815.3 } ],
+            "polygonArcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 0.4 } ],
+            "begCoordinate": { "x": 960.0, "y": 815.0 },
+            "endCoordinate": { "x": 964.0, "y": 815.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 4 },
+        { "path": "elements[0].error", "exists": true, "name": "Composite polygonal wall refused" },
+        { "path": "elements[1].error", "exists": true, "name": "reference line off the outline refused" },
+        { "path": "elements[2].error", "exists": true, "name": "thickness refused" },
+        { "path": "elements[3].error", "exists": true, "name": "curved reference edge refused" }
+      ]
+    },
+    {
+      "id": "change the outline of the L-shaped wall (closed outline as GetDetailsOfElements returns it)",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          {
+            "elementId": { "guid": "${lwall}" },
+            "geometryType": "Polygonal",
+            "polygonOutline": [
+              { "x": 940.0, "y": 800.0 },
+              { "x": 947.0, "y": 800.0 },
+              { "x": 947.0, "y": 800.4 },
+              { "x": 940.0, "y": 800.4 },
+              { "x": 940.0, "y": 800.0 }
+            ],
+            "begCoordinate": { "x": 940.0, "y": 800.0 },
+            "endCoordinate": { "x": 947.0, "y": 800.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "new outline written" }
+      ]
+    },
+    {
+      "id": "read the changed outline",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${lwall}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.geometryType", "eq": "Polygonal" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "4 corners, closed" },
+        { "path": "detailsOfElements[0].details.polygonOutline[1].x", "approx": 947.0, "tol": 0.0001, "name": "the new corner" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].y", "approx": 800.4, "tol": 0.0001 }
+      ]
+    },
+    {
+      "id": "refused: begCoordinate/endCoordinate alone move the reference edge of a polygonal wall off its outline (#1914)",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          { "elementId": { "guid": "${lwall}" }, "begCoordinate": { "x": 941.0, "y": 801.0 }, "endCoordinate": { "x": 945.0, "y": 801.0 } },
+          { "elementId": { "guid": "${lwall}" }, "endCoordinate": { "x": 950.0, "y": 800.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "both ends without polygonOutline refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "one end without polygonOutline refused" }
+      ]
+    },
+    {
+      "id": "the refused items wrote nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${lwall}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.geometryType", "eq": "Polygonal" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5 },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 940.0, "tol": 0.0001, "name": "reference edge start unchanged" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 947.0, "tol": 0.0001, "name": "reference edge end unchanged" },
+        { "path": "detailsOfElements[0].details.polygonOutline[1].x", "approx": 947.0, "tol": 0.0001 }
+      ]
+    },
+    {
+      "id": "Basic structure and height on a polygonal wall keep it polygonal; Composite is refused",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          { "elementId": { "guid": "${lwall}" }, "structureType": "Basic", "height": 3.1 },
+          { "elementId": { "guid": "${lwall}" }, "structureType": "Composite" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "Composite on a polygonal wall refused" }
+      ]
+    },
+    {
+      "id": "still polygonal after the structure change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${lwall}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.geometryType", "eq": "Polygonal", "name": "Basic no longer turns it straight" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.1, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5 }
+      ]
+    },
+    {
+      "id": "a straight Basic wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 940.0, "y": 820.0 },
+            "endCoordinate": { "x": 945.0, "y": 820.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.7,
+            "structureType": "Basic",
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": { "straight": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "turn the straight wall polygonal; its own begCoordinate/endCoordinate pick the reference edge",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          {
+            "elementId": { "guid": "${straight}" },
+            "geometryType": "Polygonal",
+            "polygonOutline": [
+              { "x": 940.0, "y": 820.0 },
+              { "x": 945.0, "y": 820.0 },
+              { "x": 945.0, "y": 820.5 },
+              { "x": 942.0, "y": 820.2 },
+              { "x": 940.0, "y": 820.2 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "straight wall made polygonal" }
+      ]
+    },
+    {
+      "id": "read the converted wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${straight}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.geometryType", "eq": "Polygonal" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 6 },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].y", "approx": 820.5, "tol": 0.0001 }
+      ]
+    }
+  ]
+}

@@ -2672,9 +2672,7 @@ GS::Optional<GS::UniString> ApplyWallStructure (
             }
             element.wall.composite = APIInvalidAttributeIndex;
             element.wall.profileAttr = APIInvalidAttributeIndex;
-            if (element.wall.type == APIWtyp_Poly) {
-                element.wall.type = APIWtyp_Normal;
-            }
+            // A polygonal wall stays polygonal: Basic is the one structure it can have (#2563).
             // A complex-profile favorite or tool default leaves the cross section on APISect_Poly, and with
             // it the wall stays a profile wall without a profile (#531): structureType Profile, a null
             // profileId. Slanted and Trapez cross sections are kept, as they are valid for this structure.
@@ -2688,9 +2686,8 @@ GS::Optional<GS::UniString> ApplyWallStructure (
                 element.wall.composite = selection.composite;
             }
             element.wall.profileAttr = APIInvalidAttributeIndex;
-            if (element.wall.type == APIWtyp_Poly) {
-                element.wall.type = APIWtyp_Normal;
-            }
+            // A polygonal wall cannot be Composite; PreparePolygonalWall refuses it instead of
+            // turning the wall into a straight one, which needs geometryType Straight (#2563).
             if (element.wall.profileType == APISect_Poly) {
                 element.wall.profileType = APISect_Normal;
             }
@@ -2701,12 +2698,10 @@ GS::Optional<GS::UniString> ApplyWallStructure (
             if (selection.profile != APIInvalidAttributeIndex) {
                 element.wall.profileAttr = selection.profile;
             }
-            // Note: unlike Basic/Composite above, wall.type (the plan outline shape) is left
-            // untouched here - it is orthogonal to modelElemStructureType (the cross section),
-            // same relationship as profileType/slantAlpha for a Slanted/Trapez wall. Forcing
-            // APIWtyp_Poly here previously made ACAPI_Element_Create/_Change fail outright,
-            // since a Poly wall needs an actual polygon memo that neither CreateWalls nor
-            // ModifyWalls builds.
+            // Note: wall.type (the plan outline shape) is left untouched here - it is orthogonal
+            // to modelElemStructureType (the cross section), same relationship as
+            // profileType/slantAlpha for a Slanted/Trapez wall. A polygonal wall cannot be a
+            // Profile wall; PreparePolygonalWall refuses that combination (#2563).
             break;
         case StructureSelectionKind::Unspecified:
             break;
@@ -3775,10 +3770,10 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
     bool changed = false;
     GS::UniString geometryType;
     if (details.Get ("geometryType", geometryType)) {
-        // Only Straight/Trapezoid are settable here: Polygonal would need a full outline/arc
-        // memo (like ModifySlabs' polygonOutline), which the wall's Modify command does not
-        // take as input at all yet. This is the plan outline shape (wall.type), unrelated to
-        // profileType/slantAlpha/slantBeta below (the cross section shape).
+        // Straight/Trapezoid are set here. Polygonal needs the outline memo, which
+        // PreparePolygonalWall builds from polygonOutline after this (#2563). This is the plan
+        // outline shape (wall.type), unrelated to profileType/slantAlpha/slantBeta below (the
+        // cross section shape).
         if (geometryType == "Trapezoid") {
             element.wall.type = APIWtyp_Trapez;
             ACAPI_ELEMENT_MASK_SET (mask, API_WallType, type);
@@ -4123,6 +4118,328 @@ GS::Optional<GS::UniString> CheckWallSlantTakesEffect (const API_Element& elemen
         !isNoChange (slantBeta.Get (), previousSlantBeta)) {
         return GS::UniString ("'slantBeta' only takes effect on a wall whose profileType is Trapez; send profileType in the same item.");
     }
+    return {};
+}
+
+// Archicad drops the outline of a new polygonal wall and makes a straight wall from begC to endC
+// when the Wall tool default has a Composite (or Profile) structure, whatever structure the
+// element itself has (#1914, confirmed in Archicad 28 and 29). This switches the tool default's
+// structure to Basic for the create or change of a polygonal wall and puts it back afterwards,
+// so the user's next wall starts from the defaults it had.
+class WallDefaultBasicStructureScope {
+public:
+    WallDefaultBasicStructureScope ()
+    {
+        savedDefaults = {};
+#ifdef ServerMainVers_2600
+        savedDefaults.header.type = API_WallID;
+#else
+        savedDefaults.header.typeID = API_WallID;
+#endif
+        if (ACAPI_Element_GetDefaults (&savedDefaults, nullptr) != NoError || savedDefaults.wall.modelElemStructureType == API_BasicStructure) {
+            return;
+        }
+        API_Element basicDefaults = savedDefaults;
+        basicDefaults.wall.modelElemStructureType = API_BasicStructure;
+        API_Element mask;
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, modelElemStructureType);
+        switched = ACAPI_Element_ChangeDefaults (&basicDefaults, nullptr, &mask) == NoError;
+    }
+
+    ~WallDefaultBasicStructureScope ()
+    {
+        if (!switched) {
+            return;
+        }
+        API_Element mask;
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, modelElemStructureType);
+        ACAPI_Element_ChangeDefaults (&savedDefaults, nullptr, &mask);
+    }
+
+    WallDefaultBasicStructureScope (const WallDefaultBasicStructureScope&) = delete;
+    WallDefaultBasicStructureScope& operator= (const WallDefaultBasicStructureScope&) = delete;
+
+private:
+    API_Element savedDefaults;
+    bool switched = false;
+};
+
+const char* WallGeometryTypeName (API_WallTypeID type)
+{
+    switch (type) {
+        case APIWtyp_Normal: return "Straight";
+        case APIWtyp_Trapez: return "Trapezoid";
+        case APIWtyp_Poly:   return "Polygonal";
+    }
+    return "Straight";
+}
+
+// The polygonal wall of CreateWalls and ModifyWalls (#2563), called after ApplyWallDetails and
+// ApplyWallStructure. isPolygonal is set when the wall is polygonal after the item: geometryType
+// Polygonal, or no geometryType on a wall that already is one (wasPolygonal, ModifyWalls only).
+// When the item gives polygonOutline, memo is rebuilt to hold it (pass it with
+// APIMemoMask_Polygon) and outlineGiven is set.
+//
+// Everything Archicad does not take on a polygonal wall is an error rather than a guess:
+// - a polygonal wall is single-fill only (Archicad Help, "Polygonal walls are only available as
+//   single fills"), so an explicit Composite or Profile structure fails the item and any other
+//   structure (a Composite tool default or wall) becomes Basic;
+// - its reference line is always on the outside (APIdefs_Elements.h, API_WallReferenceLineLocationID)
+//   and its cross section is vertical, so other values of referenceLineLocation and profileType fail;
+// - the outline sets its shape, so thickness, begThickness, endThickness, a non-zero arcAngle,
+//   offset or logHeight, and logDetails fail;
+// - begCoordinate and endCoordinate must be the two ends of one straight edge of the outline, in
+//   the outline's order: that edge is the reference line (rLinInd). Archicad crashes in the
+//   junction update when begC and endC are not a real edge of the polygon (#1914).
+// The memo is built as a hand-drawn polygonal wall has it (#1914): one closed contour,
+// vertexIDs [n, 1..n, 1], edgeIDs [0, 1..n, 1] and a parcs handle even without arcs.
+GS::Optional<GS::UniString> PreparePolygonalWall (
+    API_Element& element,
+    API_Element& mask,
+    API_ElementMemo& memo,
+    const GS::ObjectState& details,
+    bool wasPolygonal,
+    bool& isPolygonal,
+    bool& outlineGiven)
+{
+    isPolygonal = false;
+    outlineGiven = false;
+
+    GS::UniString geometryType;
+    const bool hasGeometryType = details.Get ("geometryType", geometryType);
+    const bool hasOutline = details.Contains ("polygonOutline");
+    const bool hasArcs = details.Contains ("polygonArcs");
+    isPolygonal = hasGeometryType ? geometryType == "Polygonal" : wasPolygonal;
+    if (!isPolygonal) {
+        if (hasOutline || hasArcs) {
+            return GS::UniString ("'polygonOutline' and 'polygonArcs' are only taken for a Polygonal wall: send geometryType Polygonal with them.");
+        }
+        return {};
+    }
+    if (hasArcs && !hasOutline) {
+        return GS::UniString ("'polygonArcs' needs 'polygonOutline' in the same item: its indices refer to the outline's points.");
+    }
+    if (!hasOutline && !wasPolygonal) {
+        return GS::UniString ("geometryType Polygonal needs 'polygonOutline' (and 'polygonArcs' for curved edges), the outline of the wall.");
+    }
+
+    // Structure: Basic only.
+    StructureSelection selection;
+    auto structureError = ParseStructureSelection (details, true, true, selection);
+    if (structureError.HasValue ()) {
+        return structureError;
+    }
+    if (selection.kind == StructureSelectionKind::Composite || selection.kind == StructureSelectionKind::Profile) {
+        return GS::UniString ("A Polygonal wall can only have a Basic structure: Archicad makes polygonal walls single-fill only. Send structureType Basic (or a buildingMaterialId), or geometryType Straight or Trapezoid for a Composite or Profile wall.");
+    }
+    if (element.wall.modelElemStructureType != API_BasicStructure) {
+        element.wall.modelElemStructureType = API_BasicStructure;
+        element.wall.composite = APIInvalidAttributeIndex;
+        element.wall.profileAttr = APIInvalidAttributeIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, modelElemStructureType);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, composite);
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, profileAttr);
+    }
+    if (element.wall.buildingMaterial == APIInvalidAttributeIndex) {
+        return GS::UniString ("The wall has no building material for its Basic structure: send buildingMaterialId with geometryType Polygonal.");
+    }
+
+    // Cross section and reference line: vertical, on the outside.
+    GS::UniString profileTypeStr;
+    if (details.Get ("profileType", profileTypeStr) && profileTypeStr != "Normal") {
+        return GS::UniString ("A Polygonal wall is vertical: its profileType can only be Normal.");
+    }
+    if (element.wall.profileType != APISect_Normal) {
+        element.wall.profileType = APISect_Normal;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, profileType);
+    }
+    GS::UniString referenceLineLocationStr;
+    if (details.Get ("referenceLineLocation", referenceLineLocationStr) && referenceLineLocationStr != "Outside") {
+        return GS::UniString ("The reference line of a Polygonal wall is always on its outside: referenceLineLocation can only be Outside.");
+    }
+    if (element.wall.referenceLineLocation != APIWallRefLine_Outside) {
+        element.wall.referenceLineLocation = APIWallRefLine_Outside;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, referenceLineLocation);
+    }
+
+    // What the outline sets.
+    for (const char* key : { "thickness", "begThickness", "endThickness", "logDetails" }) {
+        if (details.Contains (key)) {
+            return GS::UniString::Printf ("'%s' does not apply to a Polygonal wall: its outline (polygonOutline) sets its shape.", key);
+        }
+    }
+    for (const char* key : { "arcAngle", "offset", "logHeight" }) {
+        auto value = GetOptionalDouble (details, key);
+        if (value.HasValue () && std::abs (value.Get ()) > 1e-9) {
+            return GS::UniString::Printf ("'%s' does not apply to a Polygonal wall and can only be 0: its outline (polygonOutline) sets its shape.", key);
+        }
+    }
+
+    if (!hasOutline) {
+        return {};
+    }
+
+    bool flipped = false;
+    if (details.Get ("flipped", flipped) && flipped) {
+        return GS::UniString ("'flipped' true cannot be combined with polygonOutline: the outline is drawn as given, with its reference line on the edge from begCoordinate to endCoordinate.");
+    }
+
+    GS::Array<GS::ObjectState> outlineOs;
+    details.Get ("polygonOutline", outlineOs);
+    GS::Array<API_Coord> coords;
+    for (const GS::ObjectState& coordOs : outlineOs) {
+        coords.Push (Get2DCoordinateFromObjectState (coordOs));
+    }
+    // GetDetailsOfElements returns the outline closed (its last point repeats the first one).
+    if (coords.GetSize () > 3 && IsSame2DCoordinate (coords.GetFirst (), coords.GetLast ())) {
+        coords.Pop ();
+    }
+    const Int32 n = static_cast<Int32> (coords.GetSize ());
+    if (n < 3) {
+        return GS::UniString ("'polygonOutline' of a Polygonal wall needs at least 3 different points.");
+    }
+    for (Int32 i = 0; i < n; ++i) {
+        if (IsSame2DCoordinate (coords[i], coords[(i + 1) % n])) {
+            return GS::UniString::Printf ("'polygonOutline' has a zero-length edge between points %d and %d.", (int) i, (int) ((i + 1) % n));
+        }
+    }
+    double doubleArea = 0.0;
+    for (Int32 i = 0; i < n; ++i) {
+        const API_Coord& a = coords[i];
+        const API_Coord& b = coords[(i + 1) % n];
+        doubleArea += a.x * b.y - b.x * a.y;
+    }
+    if (std::abs (doubleArea) < 1e-6) {
+        return GS::UniString ("'polygonOutline' has no area: its points lie on one line.");
+    }
+
+    // The arcs, in the 0-based indexing GetDetailsOfElements returns: each on one edge, from
+    // point begIndex to point begIndex + 1 (the closing edge ends at index n, the first point again).
+    GS::Array<GS::ObjectState> arcsOs;
+    details.Get ("polygonArcs", arcsOs);
+    GS::Array<API_PolyArc> arcs;
+    GS::Array<bool> edgeHasArc;
+    for (Int32 i = 0; i < n; ++i) {
+        edgeHasArc.Push (false);
+    }
+    constexpr double FullCircle = 6.283185307179586;
+    for (const GS::ObjectState& arcOs : arcsOs) {
+        Int32 begIndex = -1;
+        Int32 endIndex = -1;
+        double arcAngle = 0.0;
+        if (!arcOs.Get ("begIndex", begIndex) || !arcOs.Get ("endIndex", endIndex) || !arcOs.Get ("arcAngle", arcAngle)) {
+            return GS::UniString ("Each item of 'polygonArcs' needs begIndex, endIndex and arcAngle.");
+        }
+        if (begIndex < 0 || begIndex >= n || endIndex != begIndex + 1) {
+            return GS::UniString::Printf ("'polygonArcs' item from %d to %d is not an edge of polygonOutline: an arc goes from point begIndex to point begIndex + 1 (0-based; the closing edge ends at %d).", (int) begIndex, (int) endIndex, (int) n);
+        }
+        if (std::abs (arcAngle) < 1e-9 || std::abs (arcAngle) >= FullCircle) {
+            return GS::UniString::Printf ("'polygonArcs' item on edge %d needs an arcAngle that is not 0 and less than a full circle.", (int) begIndex);
+        }
+        if (edgeHasArc[begIndex]) {
+            return GS::UniString::Printf ("'polygonArcs' has two arcs on edge %d.", (int) begIndex);
+        }
+        edgeHasArc[begIndex] = true;
+        API_PolyArc arc = {};
+        arc.begIndex = begIndex + 1;
+        arc.endIndex = endIndex + 1;
+        arc.arcAngle = arcAngle;
+        arcs.Push (arc);
+    }
+
+    // The reference line edge: begCoordinate -> endCoordinate (the item's, or the wall's own).
+    Int32 referenceEdge = -1;
+    for (Int32 i = 0; i < n; ++i) {
+        if (IsSame2DCoordinate (coords[i], element.wall.begC) && IsSame2DCoordinate (coords[(i + 1) % n], element.wall.endC)) {
+            referenceEdge = i;
+            break;
+        }
+    }
+    if (referenceEdge < 0) {
+        return GS::UniString ("begCoordinate and endCoordinate of a Polygonal wall must be the two ends of one edge of polygonOutline, in the outline's order: that edge carries the wall's reference line. Send the begCoordinate and endCoordinate of the edge that should carry it.");
+    }
+    if (edgeHasArc[referenceEdge]) {
+        return GS::UniString ("The reference line edge (begCoordinate to endCoordinate) of a Polygonal wall must be a straight edge of polygonOutline, without an arc.");
+    }
+
+    const Int32 nCoords = n + 1;
+    const Int32 nArcs = static_cast<Int32> (arcs.GetSize ());
+    ACAPI_DisposeElemMemoHdls (&memo);
+    memo = {};
+    memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle ((nArcs > 0 ? nArcs : 1) * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    memo.vertexIDs = reinterpret_cast<UInt32**> (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+    memo.edgeIDs = reinterpret_cast<UInt32**> (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.parcs == nullptr || memo.vertexIDs == nullptr || memo.edgeIDs == nullptr) {
+        return GS::UniString ("Failed to allocate the outline of the polygonal wall.");
+    }
+    for (Int32 i = 0; i < n; ++i) {
+        (*memo.coords)[i + 1] = coords[i];
+        (*memo.vertexIDs)[i + 1] = static_cast<UInt32> (i + 1);
+        (*memo.edgeIDs)[i + 1] = static_cast<UInt32> (i + 1);
+    }
+    (*memo.coords)[nCoords] = coords[0];
+    (*memo.vertexIDs)[0] = static_cast<UInt32> (n);
+    (*memo.vertexIDs)[nCoords] = 1;
+    (*memo.edgeIDs)[0] = 0;
+    (*memo.edgeIDs)[nCoords] = 1;
+    (*memo.pends)[0] = 0;
+    (*memo.pends)[1] = nCoords;
+    for (Int32 i = 0; i < nArcs; ++i) {
+        (*memo.parcs)[i] = arcs[i];
+    }
+
+    element.wall.type = APIWtyp_Poly;
+    element.wall.poly.nCoords = nCoords;
+    element.wall.poly.nSubPolys = 1;
+    element.wall.poly.nArcs = nArcs;
+    // The reference line and the materials of its side lie on the reference edge (1-based edge
+    // indices), the opposite side's on the edge across the outline, as on a hand-drawn wall.
+    const Int32 referenceEdgeIndex = referenceEdge + 1;
+    element.wall.rLinInd = referenceEdgeIndex;
+    element.wall.rLinEndInd = referenceEdgeIndex;
+    element.wall.refInd = referenceEdgeIndex;
+    element.wall.refEndInd = referenceEdgeIndex;
+    element.wall.oppInd = ((referenceEdgeIndex + n / 2 - 1) % n) + 1;
+    element.wall.oppEndInd = element.wall.oppInd;
+    element.wall.begC = coords[referenceEdge];
+    element.wall.endC = coords[(referenceEdge + 1) % n];
+    element.wall.angle = 0.0;
+    element.wall.offset = 0.0;
+    element.wall.logHeight = 0.0;
+    element.wall.beamFlags = 0;
+    element.wall.flipped = false;
+    element.wall.thickness1 = element.wall.thickness;
+    if (!details.Contains ("polyCanChange") && !wasPolygonal) {
+        element.wall.polyCanChange = false;
+    }
+    // A junction sequence out of its documented range (0..999), as some templates' Wall tool
+    // default has, also made Archicad drop the polygon (#1914).
+    if (element.wall.sequence < 0 || element.wall.sequence > 999) {
+        element.wall.sequence = 0;
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, sequence);
+    }
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, type);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, poly);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, rLinInd);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, rLinEndInd);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, refInd);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, refEndInd);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, oppInd);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, oppEndInd);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, begC);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, endC);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, angle);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, offset);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, logHeight);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, beamFlags);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, flipped);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness1);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, polyCanChange);
+    outlineGiven = true;
     return {};
 }
 
@@ -7340,7 +7657,18 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 // ApplyWallDetails, declared once so that the two schemas cannot drift apart. Each line
 // ends with a comma, so the fragment is followed by at least one more property.
 static const char* WallSharedSettingsSchemaProperties = R"(
-                        "geometryType": { "$ref": "#/WallModificationGeometryType", "description": "Plan outline of the wall. Trapezoid makes begThickness and endThickness the wall's thickness at its begin and end point. Polygonal is not settable here; it is read-only via GetDetailsOfElements. CreateWalls makes a Straight wall when this is omitted. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
+                        "geometryType": { "$ref": "#/WallModificationGeometryType", "description": "Plan outline of the wall. Trapezoid makes begThickness and endThickness the wall's thickness at its begin and end point. Polygonal makes the wall the shape of polygonOutline (with polygonArcs), the keys GetDetailsOfElements returns for a polygonal wall; begCoordinate and endCoordinate must then be the two ends of one straight edge of the outline, in its order, which carries the reference line. Archicad makes polygonal walls single-fill only, so a polygonal wall is Basic: an explicit Composite or Profile structure (structureType, compositeId, profileId) fails the item, and a Composite or Profile tool default, favorite or wall becomes Basic. Its referenceLineLocation is always Outside and its profileType Normal; thickness, begThickness, endThickness, logDetails, a non-zero arcAngle, offset or logHeight, and flipped true with a new outline fail the item. A wall with windows or doors cannot become polygonal. The wall is read back, and an item fails when Archicad did not make it polygonal (a new wall is then deleted again). ModifyWalls keeps a polygonal wall polygonal when geometryType is omitted; send Straight or Trapezoid to change its outline to one of those. CreateWalls makes a Straight wall when this is omitted. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
+                        "polygonOutline": {
+                            "type": "array",
+                            "description": "The outline of a Polygonal wall (geometryType), at least 3 points, as GetDetailsOfElements returns it: a closing point that repeats the first one is dropped. Replaces the outline of a polygonal wall in ModifyWalls; its begCoordinate and endCoordinate (the item's, or else the wall's own) must be the two ends of one of its straight edges, in its order.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 3
+                        },
+                        "polygonArcs": {
+                            "type": "array",
+                            "description": "The curved edges of polygonOutline, 0-based as GetDetailsOfElements returns them: an arc goes from point begIndex to point begIndex + 1, and on the closing edge of n points from n - 1 to n. Only with polygonOutline; the edge that carries the reference line must be straight.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
                         "begThickness": { "type": "number", "exclusiveMinimum": 0.0, "description": "Thickness at begCoordinate, the same value as thickness (applied after it, so it wins when both are given). Together with endThickness it shapes a Trapezoid wall (geometryType). Like thickness, it only takes effect on a Basic wall." },
                         "endThickness": { "type": "number", "exclusiveMinimum": 0.0, "description": "Thickness at endCoordinate. Only takes effect on a Trapezoid wall (geometryType); a Straight wall has one thickness. Like thickness, it only takes effect on a Basic wall." },
                         "profileType": { "$ref": "#/WallModificationProfileType", "description": "Cross section shape of the wall. slantAlpha needs Slanted or Trapez, slantBeta needs Trapez. When omitted, CreateWalls keeps the favorite's or the Wall tool default's and ModifyWalls the wall's own." },
@@ -7490,7 +7818,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
     })";
 }
 
-GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
+GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
     const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
     if (layerError.HasValue ()) {
@@ -7518,9 +7846,10 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     // fields the item actually names are written here, so a favorite's composite,
     // reference line location, top link and offsets survive into the new wall (#766):
     // forcing Basic / Center / relativeTopStory 0 here used to silently undo them.
-    // The plan outline is the one exception: a Poly wall needs a polygon memo that
-    // this command does not build, so the outline starts as the plain Normal one and
-    // only geometryType Trapezoid (applied by ApplyWallDetails below) changes it.
+    // The plan outline is the one exception: a Poly tool default or favorite would bring
+    // its own polygon, so the outline starts as the plain Normal one and only geometryType
+    // Trapezoid (applied by ApplyWallDetails below) or Polygonal with polygonOutline
+    // (PreparePolygonalWall, #2563) changes it.
     element.wall.type = APIWtyp_Normal;
     element.wall.begC = begCoordinate;
     element.wall.endC = endCoordinate;
@@ -7590,6 +7919,14 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     const double previousSlantBeta = element.wall.slantBeta;
     API_Element unusedMask = {};
     ApplyWallDetails (element, unusedMask, parameters);
+    // geometryType Polygonal: builds the outline memo, and makes the wall Basic unless the item
+    // asks for another structure, which is refused (#2563). CreateElement below creates it.
+    bool isPolygonal = false;
+    bool outlineGiven = false;
+    auto polygonalError = PreparePolygonalWall (element, unusedMask, memo, parameters, false, isPolygonal, outlineGiven);
+    if (polygonalError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, polygonalError.Get ());
+    }
     // A Profile wall's cross section is its profile (APISect_Poly, set by ApplyWallStructure
     // above or kept from the favorite); profileType would replace it after the structure was
     // chosen, which ModifyWalls never does (it applies the structure last). Refuse it rather
@@ -7602,6 +7939,35 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
         return CreateErrorResponse (APIERR_BADPARS, slantError.Get ());
     }
 
+    return {};
+}
+
+// A polygonal wall is created with the Wall tool default switched to a Basic structure, as
+// Archicad otherwise makes a straight wall of it (#1914), and read back: a wall Archicad did not
+// make polygonal after all is deleted again and the item fails (#2563).
+GS::Optional<GS::ObjectState> CreateWallsCommand::CreateElement (API_Element& element, API_ElementMemo& memo, const GS::ObjectState& parameters) const
+{
+    if (element.wall.type != APIWtyp_Poly) {
+        return CreateElementsCommandBase::CreateElement (element, memo, parameters);
+    }
+
+    GSErrCode err = NoError;
+    {
+        const WallDefaultBasicStructureScope basicStructureDefault;
+        err = ACAPI_Element_Create (&element, &memo);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create the polygonal Wall.");
+    }
+
+    API_Element created = {};
+    created.header.guid = element.header.guid;
+    err = ACAPI_Element_Get (&created);
+    if (err != NoError || created.wall.type != APIWtyp_Poly) {
+        const GS::UniString made = err == NoError ? GS::UniString (WallGeometryTypeName (created.wall.type)) : GS::UniString ("unreadable");
+        ACAPI_Element_Delete ({ element.header.guid });
+        return CreateErrorResponse (APIERR_GENERAL, "Archicad made a " + made + " wall instead of the Polygonal one, so it was deleted again.");
+    }
     return {};
 }
 
@@ -13582,8 +13948,8 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "begCoordinate": { "$ref": "#/Coordinate2D" },
-                        "endCoordinate": { "$ref": "#/Coordinate2D" },
+                        "begCoordinate": { "$ref": "#/Coordinate2D", "description": "The start of the wall's reference line. On a Polygonal wall it is the start of its reference edge, and a new value is only taken together with polygonOutline (the item fails otherwise)." },
+                        "endCoordinate": { "$ref": "#/Coordinate2D", "description": "The end of the wall's reference line. On a Polygonal wall it is the end of its reference edge, and a new value is only taken together with polygonOutline (the item fails otherwise)." },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
                         "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
                         "thickness": {
@@ -13709,12 +14075,43 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             const double previousSlantAlpha = element.wall.slantAlpha;
             const double previousSlantBeta = element.wall.slantBeta;
+            const bool wasPolygonal = element.wall.type == APIWtyp_Poly;
+            const bool hasOpenings = element.wall.hasWindow || element.wall.hasDoor;
+            const API_Coord previousBegC = element.wall.begC;
+            const API_Coord previousEndC = element.wall.endC;
             bool changed = ApplyWallDetails (element, mask, item);
             auto error = ApplyWallStructure (element, &mask, item, changed);
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
             }
+            // geometryType Polygonal, or a polygonal wall's new outline (#2563).
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            bool isPolygonal = false;
+            bool outlineGiven = false;
+            auto polygonalError = PreparePolygonalWall (element, mask, memo, item, wasPolygonal, isPolygonal, outlineGiven);
+            if (polygonalError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, polygonalError.Get ()));
+                continue;
+            }
+            // The begC and endC of a polygonal wall are the ends of its reference edge, which
+            // PreparePolygonalWall checks only against a new outline. Moved on their own they
+            // would not be an edge of the wall's polygon, and Archicad crashes in the junction
+            // update then (#1914), so they are refused without polygonOutline. The values the
+            // wall already has (as GetDetailsOfElements returns them) are accepted.
+            if (isPolygonal && !outlineGiven &&
+                (!IsSame2DCoordinate (element.wall.begC, previousBegC) || !IsSame2DCoordinate (element.wall.endC, previousEndC))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'begCoordinate' and 'endCoordinate' of a Polygonal wall are the ends of its reference edge: send them with 'polygonOutline' in the same item to move them. Nothing was written."));
+                continue;
+            }
+            // Archicad cannot put an opening into a polygonal wall (see IsPolygonalWall), so what
+            // would happen to the ones a wall has is not tried.
+            if (isPolygonal && !wasPolygonal && hasOpenings) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The wall has windows or doors, which a Polygonal wall cannot have: delete them first."));
+                continue;
+            }
+            changed = changed || outlineGiven || (isPolygonal && !wasPolygonal);
             auto slantError = CheckWallSlantTakesEffect (element, previousSlantAlpha, previousSlantBeta, item);
             if (slantError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, slantError.Get ()));
@@ -13725,8 +14122,35 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify wall."));
+            if (!outlineGiven) {
+                err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify wall."));
+                continue;
+            }
+
+            // A new outline: changed with the Wall tool default on a Basic structure, as a new
+            // polygonal wall is created (#1914), and read back.
+            {
+                const WallDefaultBasicStructureScope basicStructureDefault;
+                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon, true);
+            }
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to change the outline of the polygonal wall."));
+                continue;
+            }
+            API_Element changedWall = {};
+            changedWall.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changedWall);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to read the wall back after changing its outline."));
+                continue;
+            }
+            if (changedWall.wall.type != APIWtyp_Poly) {
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL,
+                    GS::UniString ("Archicad made a ") + WallGeometryTypeName (changedWall.wall.type) + " wall instead of the Polygonal one. Undo the command (Edit > Undo Modify Walls) to get the wall back."));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }
