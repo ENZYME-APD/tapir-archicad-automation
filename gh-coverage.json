@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-14 10:55 UTC",
+ "generatedAt": "2026-11-14 17:18 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -6378,7 +6378,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 23,
+   "parameterCount": 24,
    "coveredParameters": [
     "dimensionsWithDetails",
     "dimensionsWithDetails.appearance",
@@ -6404,7 +6404,8 @@
     "dimensionsWithDetails.witnessPointTexts.customText",
     "dimensionsWithDetails.witnessPointTexts.index",
     "dimensionsWithDetails.witnessPointTexts.resetTextPosition",
-    "dimensionsWithDetails.witnessPointTexts.superscript"
+    "dimensionsWithDetails.witnessPointTexts.superscript",
+    "dimensionsWithDetails.witnessPointTexts.textPosition"
    ],
    "pullRequests": [],
    "issues": []

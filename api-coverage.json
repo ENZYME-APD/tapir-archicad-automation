@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-14 10:55 UTC",
+ "generatedAt": "2026-11-14 17:18 UTC",
  "versions": [
   25,
   26,
@@ -25479,10 +25479,6 @@
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
     {
-     "number": 2793,
-     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
-    },
-    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     },
@@ -31186,10 +31182,6 @@
     {
      "number": 2815,
      "title": "DeleteElements: delete each element in the database that contains it"
-    },
-    {
-     "number": 2793,
-     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
     {
      "number": 2786,
@@ -37673,10 +37665,6 @@
     {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
-    },
-    {
-     "number": 2793,
-     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
     {
      "number": 2781,
@@ -44347,10 +44335,6 @@
      "title": "DeleteElements: delete each element in the database that contains it"
     },
     {
-     "number": 2793,
-     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
-    },
-    {
      "number": 2786,
      "title": "GetDetailsOfElements: return the source view of a Drawing"
     },
@@ -47489,10 +47473,6 @@
     {
      "number": 2815,
      "title": "DeleteElements: delete each element in the database that contains it"
-    },
-    {
-     "number": 2793,
-     "title": "ModifyAssociativeDimensions: set a witness point's text position; GetDimensionData returns it"
     },
     {
      "number": 2786,
