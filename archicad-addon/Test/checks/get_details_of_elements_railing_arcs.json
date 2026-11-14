@@ -1,0 +1,63 @@
+{
+  "title": "GetDetailsOfElements (Railing): referenceLineArcs returns the curved segments of the reference line (#2799)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a straight railing and a railing with one curved segment",
+      "command": "CreateRailingsFromPolyline",
+      "params": {
+        "railingsData": [
+          {
+            "polylineCoordinates": [
+              { "x": 600.0, "y": 600.0, "z": 0.0 },
+              { "x": 604.0, "y": 600.0, "z": 0.0 },
+              { "x": 604.0, "y": 603.0, "z": 0.0 }
+            ],
+            "floorIndex": 0
+          },
+          {
+            "polylineCoordinates": [
+              { "x": 600.0, "y": 610.0, "z": 0.0 },
+              { "x": 604.0, "y": 610.0, "z": 0.0 },
+              { "x": 606.0, "y": 612.0, "z": 0.0 }
+            ],
+            "polylineArcs": [
+              { "begIndex": 1, "endIndex": 2, "arcAngle": 1.5707963267948966 }
+            ],
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": {
+        "straight": "elements[0].elementId.guid",
+        "curved": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "straight railing created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "curved railing created" }
+      ]
+    },
+    {
+      "id": "read them back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${straight}" } },
+          { "elementId": { "guid": "${curved}" } }
+        ]
+      },
+      "save": {
+        "angle": "detailsOfElements[1].details.referenceLineArcs[0].arcAngle"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLineArcs", "len": 0, "name": "a straight railing has no arcs" },
+        { "path": "detailsOfElements[1].details.referenceLine", "len": 3, "name": "curved railing keeps its three nodes" },
+        { "path": "detailsOfElements[1].details.referenceLineArcs", "len": 1, "name": "the curved segment is returned" },
+        { "path": "detailsOfElements[1].details.referenceLineArcs[0].begIndex", "eq": 1, "name": "arc starts at node 1 (index into referenceLine)" },
+        { "path": "detailsOfElements[1].details.referenceLineArcs[0].endIndex", "eq": 2, "name": "arc ends at node 2" },
+        { "expr": "${angle} * ${angle}", "approx": 2.4674011002723395, "tol": 0.0001, "name": "arc angle is a quarter turn" }
+      ]
+    }
+  ]
+}
