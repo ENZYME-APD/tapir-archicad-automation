@@ -1,0 +1,203 @@
+{
+  "title": "ModifySlabs grows a 4-point slab outline to 36 and 60 points (#2818)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [
+    "Slab"
+  ],
+  "steps": [
+    {
+      "id": "two square slabs",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.15,
+            "polygonCoordinates": [
+              {"x": 1100, "y": 960},
+              {"x": 1117, "y": 960},
+              {"x": 1117, "y": 977},
+              {"x": 1100, "y": 977}
+            ]
+          },
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.15,
+            "polygonCoordinates": [
+              {"x": 1130, "y": 960},
+              {"x": 1159, "y": 960},
+              {"x": 1159, "y": 989},
+              {"x": 1130, "y": 989}
+            ]
+          }
+        ]
+      },
+      "save": {
+        "s36": "elements[0].elementId.guid",
+        "s60": "elements[1].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "two slabs created"
+        }
+      ]
+    },
+    {
+      "id": "4 -> 36 points (failed: every inserted point halved the first edge)",
+      "command": "ModifySlabs",
+      "creates": false,
+      "timeout": 60,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${s36}"
+            },
+            "polygonOutline": [
+              {"x": 1100, "y": 960},
+              {"x": 1117, "y": 960},
+              {"x": 1117, "y": 961}, {"x": 1116, "y": 961},
+              {"x": 1116, "y": 962}, {"x": 1115, "y": 962},
+              {"x": 1115, "y": 963}, {"x": 1114, "y": 963},
+              {"x": 1114, "y": 964}, {"x": 1113, "y": 964},
+              {"x": 1113, "y": 965}, {"x": 1112, "y": 965},
+              {"x": 1112, "y": 966}, {"x": 1111, "y": 966},
+              {"x": 1111, "y": 967}, {"x": 1110, "y": 967},
+              {"x": 1110, "y": 968}, {"x": 1109, "y": 968},
+              {"x": 1109, "y": 969}, {"x": 1108, "y": 969},
+              {"x": 1108, "y": 970}, {"x": 1107, "y": 970},
+              {"x": 1107, "y": 971}, {"x": 1106, "y": 971},
+              {"x": 1106, "y": 972}, {"x": 1105, "y": 972},
+              {"x": 1105, "y": 973}, {"x": 1104, "y": 973},
+              {"x": 1104, "y": 974}, {"x": 1103, "y": 974},
+              {"x": 1103, "y": 975}, {"x": 1102, "y": 975},
+              {"x": 1102, "y": 976}, {"x": 1101, "y": 976},
+              {"x": 1101, "y": 977}, {"x": 1100, "y": 977}
+            ],
+            "holes": []
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "outline changed"
+        }
+      ]
+    },
+    {
+      "id": "4 -> 60 points (failed: every inserted point halved the first edge)",
+      "command": "ModifySlabs",
+      "creates": false,
+      "timeout": 60,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${s60}"
+            },
+            "polygonOutline": [
+              {"x": 1130, "y": 960},
+              {"x": 1159, "y": 960},
+              {"x": 1159, "y": 961}, {"x": 1158, "y": 961},
+              {"x": 1158, "y": 962}, {"x": 1157, "y": 962},
+              {"x": 1157, "y": 963}, {"x": 1156, "y": 963},
+              {"x": 1156, "y": 964}, {"x": 1155, "y": 964},
+              {"x": 1155, "y": 965}, {"x": 1154, "y": 965},
+              {"x": 1154, "y": 966}, {"x": 1153, "y": 966},
+              {"x": 1153, "y": 967}, {"x": 1152, "y": 967},
+              {"x": 1152, "y": 968}, {"x": 1151, "y": 968},
+              {"x": 1151, "y": 969}, {"x": 1150, "y": 969},
+              {"x": 1150, "y": 970}, {"x": 1149, "y": 970},
+              {"x": 1149, "y": 971}, {"x": 1148, "y": 971},
+              {"x": 1148, "y": 972}, {"x": 1147, "y": 972},
+              {"x": 1147, "y": 973}, {"x": 1146, "y": 973},
+              {"x": 1146, "y": 974}, {"x": 1145, "y": 974},
+              {"x": 1145, "y": 975}, {"x": 1144, "y": 975},
+              {"x": 1144, "y": 976}, {"x": 1143, "y": 976},
+              {"x": 1143, "y": 977}, {"x": 1142, "y": 977},
+              {"x": 1142, "y": 978}, {"x": 1141, "y": 978},
+              {"x": 1141, "y": 979}, {"x": 1140, "y": 979},
+              {"x": 1140, "y": 980}, {"x": 1139, "y": 980},
+              {"x": 1139, "y": 981}, {"x": 1138, "y": 981},
+              {"x": 1138, "y": 982}, {"x": 1137, "y": 982},
+              {"x": 1137, "y": 983}, {"x": 1136, "y": 983},
+              {"x": 1136, "y": 984}, {"x": 1135, "y": 984},
+              {"x": 1135, "y": 985}, {"x": 1134, "y": 985},
+              {"x": 1134, "y": 986}, {"x": 1133, "y": 986},
+              {"x": 1133, "y": 987}, {"x": 1132, "y": 987},
+              {"x": 1132, "y": 988}, {"x": 1131, "y": 988},
+              {"x": 1131, "y": 989}, {"x": 1130, "y": 989}
+            ],
+            "holes": []
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "outline changed"
+        }
+      ]
+    },
+    {
+      "id": "the new outlines read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s36}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${s60}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.polygonOutline",
+          "len": 37,
+          "name": "4 -> 36: 36 points and the closing one"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline[20].x",
+          "approx": 1108.0,
+          "name": "4 -> 36: the new points (x)"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline[20].y",
+          "approx": 970.0,
+          "name": "4 -> 36: the new points (y)"
+        },
+        {
+          "path": "detailsOfElements[1].details.polygonOutline",
+          "len": 61,
+          "name": "4 -> 60: 60 points and the closing one"
+        },
+        {
+          "path": "detailsOfElements[1].details.polygonOutline[40].x",
+          "approx": 1140.0,
+          "name": "4 -> 60: the new points (x)"
+        },
+        {
+          "path": "detailsOfElements[1].details.polygonOutline[40].y",
+          "approx": 980.0,
+          "name": "4 -> 60: the new points (y)"
+        }
+      ]
+    }
+  ]
+}
