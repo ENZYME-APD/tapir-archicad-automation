@@ -40,9 +40,10 @@ using LibraryPartChange = std::pair<GS::UniString, std::function<ACAPI::Result<v
 
 // Calls function with the GSM object of the loaded library part, or returns the error.
 // asExecutionResult selects the error shape: an execution result for the Set commands, an error response otherwise.
-// forModify gets the object the Set commands modify (GetGSMObjectToModify): a part of a local library folder
-// whose library object is not editable is loaded from its file, and the libraries are reloaded after a
-// successful change, so the loaded library reads the changed file.
+// forModify gets the object the Set commands modify (LibraryPartFileChanges::GetGSMObjectToModify): a part
+// of a local library folder whose library object is not editable is loaded from its file, and a part of the
+// embedded library from a temporary copy that replaces it after a successful change; then the libraries are
+// reloaded, so the loaded library reads the changed file.
 template <typename Function>
 static GS::ObjectState WithGSMObject (const GS::UniString& name, bool asExecutionResult, const Function& function, bool forModify = false)
 {
@@ -60,17 +61,21 @@ static GS::ObjectState WithGSMObject (const GS::UniString& name, bool asExecutio
         return Fail (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
     }
 
-    bool loadedFromFile = false;
-    auto gsmObject = forModify ? GetGSMObjectToModify (libraryManager, libPart.Unwrap (), loadedFromFile) : libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+    LibraryPartFileChanges fileChanges;
+    LibraryPartFileChanges::FileIndex fileIndex;
+    auto gsmObject = forModify ? fileChanges.GetGSMObjectToModify (libraryManager.Unwrap (), libPart.Unwrap (), fileIndex) : libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
     if (gsmObject.IsErr ()) {
-        return Fail (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'.");
+        const GS::UniString errorText (gsmObject.UnwrapErr ().text.c_str ());
+        return Fail (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'" + (errorText.IsEmpty () ? GS::UniString () : " (" + errorText + ")") + ".");
     }
 
     GS::ObjectState result = function (gsmObject);
     bool success = false;
-    if (loadedFromFile && result.Get ("success", success) && success) {
-        ACAPI_ProjectOperation_ReloadLibraries ();
+    if (result.Get ("success", success) && success) {
+        fileChanges.Changed (fileIndex, 0);
     }
+    // The object loaded from a file does not belong to the library, so it may stay alive meanwhile.
+    fileChanges.Finish (result);
     return result;
 }
 
@@ -79,7 +84,7 @@ template <typename GSMObjectResult>
 static GS::ObjectState ModifyLibraryPart (GSMObjectResult& gsmObject, const GS::UniString& name, const GS::UniString& undoString, const std::vector<LibraryPartChange>& changes)
 {
     if (!gsmObject->IsEditable ()) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified: a part of a local library folder whose file is writable, or a part of the embedded library when Archicad reports it editable (in a saved project it may not). A part of a library package, a BIMcloud, built-in or read-only library must first be copied into a local library folder (CopyLibraryParts with targetFolder).");
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified: a part of the embedded library, or of a local library folder whose file is writable. A part of a library package, a BIMcloud, built-in or read-only library must first be copied into the embedded library or a local library folder (CopyLibraryParts, with targetFolder for a folder).");
     }
 
     GS::ObjectState result = CreateSuccessfulExecutionResult ();
