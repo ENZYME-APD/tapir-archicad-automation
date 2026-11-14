@@ -3033,6 +3033,54 @@ static GS::Optional<GS::UniString> CheckProfileCoordinates (const GS::ObjectStat
     return {};
 }
 
+// Maps an arc of a CreateProfiles newSkins contour (begIndex/endIndex 0-based within the contour's own
+// polygonCoordinates, nVertices of them) onto the contour's closed vertex list, in which the closing edge
+// ends at the repeated first vertex, index nVertices (see BuildHatchPolygonGeometry). The arc must lie on
+// one edge of the contour, in either direction; the closing edge may be given as nVertices-1 -> 0 (as
+// CreateSlabs takes it) or nVertices-1 -> nVertices, and the direction is kept. Returns false for an arc
+// that is not on an edge of the contour.
+static bool GetProfileContourArcEdge (Int32 begIndex, Int32 endIndex, Int32 nVertices, Int32& outBegIndex, Int32& outEndIndex)
+{
+    if (nVertices < 3 || begIndex < 0 || endIndex < 0 || begIndex > nVertices || endIndex > nVertices) {
+        return false;
+    }
+    const Int32 beg = begIndex % nVertices;
+    const Int32 end = endIndex % nVertices;
+    if ((beg + 1) % nVertices == end) {
+        outBegIndex = beg;
+        outEndIndex = beg + 1;
+        return true;
+    }
+    if ((end + 1) % nVertices == beg) {
+        outBegIndex = end + 1;
+        outEndIndex = end;
+        return true;
+    }
+    return false;
+}
+
+static GS::Optional<GS::UniString> CheckProfileContourArcs (const GS::ObjectState& contour, const GS::UniString& contourPath)
+{
+    GS::Array<GS::ObjectState> polygonCoordinates;
+    contour.Get ("polygonCoordinates", polygonCoordinates);
+    GS::Array<GS::ObjectState> polygonArcs;
+    if (polygonCoordinates.GetSize () < 3 || !contour.Get ("polygonArcs", polygonArcs)) {
+        return {};
+    }
+    const Int32 nVertices = (Int32) polygonCoordinates.GetSize ();
+    for (UIndex a = 0; a < polygonArcs.GetSize (); ++a) {
+        Int32 begIndex = -1, endIndex = -1;
+        Int32 mappedBeg, mappedEnd;
+        polygonArcs[a].Get ("begIndex", begIndex);
+        polygonArcs[a].Get ("endIndex", endIndex);
+        if (!GetProfileContourArcEdge (begIndex, endIndex, nVertices, mappedBeg, mappedEnd)) {
+            return GS::UniString::Printf ("%T: begIndex %d and endIndex %d are not the two ends of one edge of the contour; they must be consecutive vertices (0 to %d), and the closing edge is %d -> 0.",
+                ProfileItemPath (contourPath, "polygonArcs", a).ToPrintf (), (int) begIndex, (int) endIndex, (int) nVertices - 1, (int) nVertices - 1);
+        }
+    }
+    return {};
+}
+
 static GS::Optional<GS::UniString> CheckProfileEdgeOverrides (const GS::ObjectState& skinOs, const GS::UniString& skinPath)
 {
     GS::Array<GS::ObjectState> edgeOverrides;
@@ -3144,6 +3192,9 @@ static GS::Optional<GS::UniString> CheckProfileNestedItems (const GS::ObjectStat
                         for (UIndex a = 0; a < polygonArcs.GetSize () && !error.HasValue (); ++a) {
                             error = CheckProfileItemKeys (polygonArcs[a], ProfileItemPath (contourPath, "polygonArcs", a), { "begIndex", "endIndex", "arcAngle" });
                         }
+                    }
+                    if (!error.HasValue ()) {
+                        error = CheckProfileContourArcs (contours[c], contourPath);
                     }
                     if (error.HasValue ()) {
                         return error;
@@ -3647,7 +3698,8 @@ static GS::Optional<GS::UniString> ApplyProfileStretchZones (ProfileVectorImage&
 //     public API's polygon+holes convention (e.g. Hole2D) - this module has no separate "hole" concept,
 //     a hatch's shape is simply however many closed subpolys its coords/subPolyEnds describe.
 // arcs' begIndex/endIndex are taken as 0-based within their own contour's polygonCoordinates (matching
-// the public API's PolyArc convention) and rebased onto the absolute coords array here.
+// the public API's PolyArc convention) and rebased onto the absolute coords array here; an arc on the
+// closing edge (n-1 -> 0) goes to the repeated first vertex (GetProfileContourArcEdge).
 #ifdef ServerMainVers_2700
 static void BuildHatchPolygonGeometry (const GS::Array<GS::ObjectState>& contours, GS::Array<Coord>& outCoords, GS::Array<PolyArcRec>& outArcs, GS::Array<UInt32>& outSubPolyEnds)
 {
@@ -3676,8 +3728,13 @@ static void BuildHatchPolygonGeometry (const GS::Array<GS::ObjectState>& contour
             for (const GS::ObjectState& arcOs : polygonArcs) {
                 Int32 begIndex = 0, endIndex = 0;
                 double arcAngle = 0.0;
-                if (arcOs.Get ("begIndex", begIndex) && arcOs.Get ("endIndex", endIndex) && arcOs.Get ("arcAngle", arcAngle)) {
-                    outArcs.Push (PolyArcRec (iStart + (UIndex) begIndex, iStart + (UIndex) endIndex, arcAngle));
+                Int32 edgeBeg = 0, edgeEnd = 0;
+                // The closing edge ends at the repeated first vertex (iStart + n), not at iStart: an arc
+                // n-1 -> 0 pointing back at iStart left Archicad with an invalid skin it dropped (#2828).
+                // Arcs not on an edge are refused by CheckProfileContourArcs before anything is built.
+                if (arcOs.Get ("begIndex", begIndex) && arcOs.Get ("endIndex", endIndex) && arcOs.Get ("arcAngle", arcAngle) &&
+                    GetProfileContourArcEdge (begIndex, endIndex, (Int32) polygonCoordinates.GetSize (), edgeBeg, edgeEnd)) {
+                    outArcs.Push (PolyArcRec (iStart + (UIndex) edgeBeg, iStart + (UIndex) edgeEnd, arcAngle));
                 }
             }
         }
