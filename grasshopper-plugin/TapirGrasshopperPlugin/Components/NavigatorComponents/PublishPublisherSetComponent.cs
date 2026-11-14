@@ -37,6 +37,17 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             SetOptionality(new[] { 1, 2 });
         }
 
+        protected override void AddOutputs()
+        {
+            OutText(
+                "OutputFolder",
+                "The local or LAN folder the set was published to. Empty when the set publishes elsewhere (to the Internet or a BIMcloud/Teamwork file server).");
+
+            OutTexts(
+                "WrittenFiles",
+                "Full paths of the files in OutputFolder and its subfolders that were created or changed by the publishing. Empty when OutputFolder is empty or holds more than 20000 files and folders.");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -81,10 +92,24 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 }
             }
 
-            SetCadValues(
-                CommandName,
-                input,
-                ToAddOn);
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToAddOn,
+                    JHelp.Deserialize<PublishPublisherSetResponse>,
+                    out PublishPublisherSetResponse response) ||
+                response == null)
+            {
+                return;
+            }
+
+            da.SetData(
+                0,
+                response.OutputFolder);
+
+            da.SetDataList(
+                1,
+                response.WrittenFiles ?? new List<string>());
         }
 
         protected override System.Drawing.Bitmap Icon =>

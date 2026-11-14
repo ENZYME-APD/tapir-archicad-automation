@@ -19,6 +19,15 @@ namespace TapirGrasshopperPlugin.Types.Navigator
         public List<NavigatorGuidWrapper> SelectedNavigatorItemIds;
     }
 
+    public class PublishPublisherSetResponse
+    {
+        [JsonProperty("outputFolder")]
+        public string OutputFolder;
+
+        [JsonProperty("writtenFiles")]
+        public List<string> WrittenFiles;
+    }
+
     public class NavigatorItemWithRotation
     {
         [JsonProperty("navigatorItemId")]

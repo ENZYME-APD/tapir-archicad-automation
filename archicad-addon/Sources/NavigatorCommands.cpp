@@ -48,7 +48,12 @@ static IO::Location GetPublisherSetPath (const API_Guid& rootGuid)
         std::unique_ptr<GS::UniString> host (set.host);
         std::unique_ptr<GS::UniString> dirName (set.dirName);
 
-        if (err == NoError && set.rootGuid == rootGuid && path != nullptr) {
+        if (err == NoError && set.rootGuid == rootGuid) {
+            // For a set published to a BIMcloud/Teamwork file server, path is only the
+            // temporary local folder Archicad uploads from, so no folder is reported.
+            if (path == nullptr || twFileServerPath != nullptr) {
+                return {};
+            }
             return *path;
         }
     }
