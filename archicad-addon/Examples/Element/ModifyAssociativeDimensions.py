@@ -23,6 +23,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyAssociativeDimensions', {'dimensi
     'textHeight': 3.5,
     'textPen': 5,
     'textFrame': True,
+    'textStyle': {'bold': True, 'italic': False, 'widthFactor': 0.9},
     'defaultWitnessForm': 'Fix',
     'defaultWitnessVal': 0.5,
     'witnessPointTexts': [{'index': 1, 'customText': 'Gap'}]
