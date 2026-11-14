@@ -15523,6 +15523,371 @@ GS::ObjectState ModifyCurtainWallPanelsCommand::Execute (const GS::ObjectState& 
     });
 }
 
+ModifyCurtainWallClassesCommand::ModifyCurtainWallClassesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyCurtainWallClassesCommand::GetName () const
+{
+    return "ModifyCurtainWallClasses";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallClassesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "curtainWallsWithClasses": {
+                "type": "array",
+                "description": "Curtain Walls whose class defaults to edit, with the classes to change. GetDetailsOfElements lists the frameClasses and panelClasses of a curtain wall. Only the given classes and fields are changed. The frames and panels of a changed class take its new values; frames and panels whose settings were customized apart from their class are left as they are.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "frameClasses": {
+                            "type": "array",
+                            "description": "Custom frame classes to change, each picked by classIndex or className (when both are given they must name the same class).",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "classIndex": {
+                                        "type": "integer",
+                                        "minimum": 4,
+                                        "description": "The frame class to change: 4 is the first custom frame class of the curtain wall, 5 the second and so on (the classIndex of its frameClasses in GetDetailsOfElements). The built-in classes 0 to 3 have no class defaults here."
+                                    },
+                                    "className": {
+                                        "type": "string",
+                                        "description": "The name of the frame class to change, as the Curtain Wall Settings list it."
+                                    },
+                                    "frameContour": {
+                                        "type": "object",
+                                        "description": "The contour of the frames of the class. Only the given keys are changed. a1 and a2 are each half of the frame width (a 60 mm wide frame has a1 and a2 of 0.03), b2 is the depth outside and b1 + b2 the whole depth.",
+                                        "properties": {
+                                            "a1": { "type": "number", "minimum": 0.0, "description": "Contour width inside." },
+                                            "a2": { "type": "number", "minimum": 0.0, "description": "Contour width outside." },
+                                            "b1": { "type": "number", "minimum": 0.0, "description": "Contour length inside." },
+                                            "b2": { "type": "number", "minimum": 0.0, "description": "Contour length outside." }
+                                        },
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
+                        "panelClasses": {
+                            "type": "array",
+                            "description": "Panel classes to change, each picked by classIndex or className (when both are given they must name the same class).",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "classIndex": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "description": "The panel class to change: 1 is the first panel class of the curtain wall, 2 the second and so on (the classIndex of its panelClasses in GetDetailsOfElements, and of a panel)."
+                                    },
+                                    "className": {
+                                        "type": "string",
+                                        "description": "The name of the panel class to change, as the Curtain Wall Settings list it."
+                                    },
+                                    "thickness": {
+                                        "type": "number",
+                                        "exclusiveMinimum": 0.0,
+                                        "description": "The new thickness of the panels of the class (a 35 mm panel is 0.035)."
+                                    },
+                                    "outerSurfaceId": {
+                                        "$ref": "#/AttributeId",
+                                        "description": "The surface for the outer side of the panels; it overrides the surface of their building material."
+                                    },
+                                    "innerSurfaceId": {
+                                        "$ref": "#/AttributeId",
+                                        "description": "The surface for the inner side of the panels; it overrides the surface of their building material."
+                                    },
+                                    "edgeSurfaceId": {
+                                        "$ref": "#/AttributeId",
+                                        "description": "The surface for the edges of the panels; it overrides the surface of their building material."
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["curtainWallsWithClasses"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyCurtainWallClassesCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+namespace {
+
+// The position of a class in cWallFrameDefaults/cWallPanelDefaults, picked by "classIndex"
+// (numbered from firstClassIndex) or "className"; both must agree when both are given.
+template <typename GetClassName>
+GS::Optional<GS::UniString> FindCurtainWallClass (const GS::ObjectState& classItem, const char* kind, Int32 firstClassIndex, UInt32 nClasses, const GetClassName& getName, UInt32& position)
+{
+    Int32 classIndex = 0;
+    const bool hasIndex = classItem.Get ("classIndex", classIndex);
+    GS::UniString className;
+    const bool hasName = classItem.Get ("className", className);
+    if (!hasIndex && !hasName) {
+        return GS::UniString::Printf ("A %s class item needs classIndex or className.", kind);
+    }
+    if (hasIndex) {
+        if (classIndex < firstClassIndex || static_cast<UInt32> (classIndex - firstClassIndex) >= nClasses) {
+            return GS::UniString::Printf ("classIndex %d is not a %s class of the curtain wall (%d to %d).", classIndex, kind, firstClassIndex, firstClassIndex + static_cast<Int32> (nClasses) - 1);
+        }
+        position = static_cast<UInt32> (classIndex - firstClassIndex);
+        if (hasName && getName (position) != className) {
+            return GS::UniString::Printf ("classIndex %d and className name different %s classes.", classIndex, kind);
+        }
+        return {};
+    }
+    for (UInt32 i = 0; i < nClasses; ++i) {
+        if (getName (i) == className) {
+            position = i;
+            return {};
+        }
+    }
+    return GS::UniString::Printf ("The curtain wall has no %s class named '", kind) + className + GS::UniString ("'.");
+}
+
+bool IsSameOverriddenAttribute (const API_OverriddenAttribute& actual, const API_AttributeIndex& expected)
+{
+    API_AttributeIndex index = ACAPI_CreateAttributeIndex (0);
+    return GetOverriddenAttribute (actual, index) && index == expected;
+}
+
+// The class defaults are changed in the memo of the curtain wall (cWallFrameDefaults and
+// cWallPanelDefaults), as the DevKit's Element_Test changes them; the frames and panels of the class
+// are given the same values in cWallFrames and cWallPanels, as Archicad does when a class is edited
+// in the Curtain Wall Settings. Everything is validated before anything is written.
+GS::ObjectState ModifyCurtainWallClasses (const GS::ObjectState& item)
+{
+    if (item.Get ("elementId") == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field.");
+    }
+    API_Element curtainWall = {};
+    curtainWall.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+    GSErrCode err = ACAPI_Element_Get (&curtainWall);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to load the curtain wall.");
+    }
+    if (GetElemTypeId (curtainWall.header) != API_CurtainWallID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Curtain Wall.");
+    }
+
+    GS::Array<GS::ObjectState> frameClassItems;
+    item.Get ("frameClasses", frameClassItems);
+    GS::Array<GS::ObjectState> panelClassItems;
+    item.Get ("panelClasses", panelClassItems);
+    if (frameClassItems.IsEmpty () && panelClassItems.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give frameClasses or panelClasses.");
+    }
+
+    constexpr UInt64 readMask = APIMemoMask_CWallFrameClasses | APIMemoMask_CWallPanelClasses | APIMemoMask_CWallFrames | APIMemoMask_CWallPanels;
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (curtainWall.header.guid, &memo, readMask);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the classes of the curtain wall.");
+    }
+    const UInt32 nFrameClasses = memo.cWallFrameDefaults != nullptr ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrameDefaults)) / sizeof (API_CWFrameType)) : 0;
+    const UInt32 nPanelClasses = memo.cWallPanelDefaults != nullptr ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallPanelDefaults)) / sizeof (API_CWPanelType)) : 0;
+    const UInt32 nMemoFrames = memo.cWallFrames != nullptr ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrames)) / sizeof (API_CWFrameType)) : 0;
+    const UInt32 nFrames = curtainWall.curtainWall.nFrames < nMemoFrames ? curtainWall.curtainWall.nFrames : nMemoFrames;
+    const UInt32 nMemoPanels = memo.cWallPanels != nullptr ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallPanels)) / sizeof (API_CWPanelType)) : 0;
+    const UInt32 nPanels = curtainWall.curtainWall.nPanels < nMemoPanels ? curtainWall.curtainWall.nPanels : nMemoPanels;
+
+    // The changed classes, as they must read back.
+    GS::Array<UInt32> changedFrameClasses;
+    GS::Array<UInt32> changedPanelClasses;
+
+    for (UIndex k = 0; k < frameClassItems.GetSize (); ++k) {
+        const GS::ObjectState& classItem = frameClassItems[k];
+        UInt32 position = 0;
+        const auto findError = FindCurtainWallClass (classItem, "frame", APICWFrameClass_FirstCustomClass, nFrameClasses,
+            [&memo] (UInt32 i) { return GS::UniString (memo.cWallFrameDefaults[i].className); }, position);
+        if (findError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("frameClasses[%u]: ", k) + findError.Get ());
+        }
+        if (changedFrameClasses.Contains (position)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("frameClasses[%u] names a frame class that an earlier item changes already.", k));
+        }
+        GS::ObjectState contour;
+        if (!classItem.Get ("frameContour", contour)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("frameClasses[%u]: nothing to change, give frameContour.", k));
+        }
+        API_CWFrameType& frameClass = memo.cWallFrameDefaults[position];
+        bool hasValue = false;
+        const auto setValue = [&] (const char* key, double& target) {
+            double value = 0.0;
+            if (contour.Get (key, value)) {
+                target = value;
+                hasValue = true;
+            }
+        };
+        setValue ("a1", frameClass.a1);
+        setValue ("a2", frameClass.a2);
+        setValue ("b1", frameClass.b1);
+        setValue ("b2", frameClass.b2);
+        if (!hasValue) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("frameClasses[%u]: frameContour has no value to change.", k));
+        }
+        if (frameClass.a1 < 0.0 || frameClass.a2 < 0.0 || frameClass.b1 < 0.0 || frameClass.b2 < 0.0) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("frameClasses[%u]: the frameContour values must not be negative.", k));
+        }
+        changedFrameClasses.Push (position);
+    }
+
+    for (UIndex k = 0; k < panelClassItems.GetSize (); ++k) {
+        const GS::ObjectState& classItem = panelClassItems[k];
+        UInt32 position = 0;
+        const auto findError = FindCurtainWallClass (classItem, "panel", APICWPanelClass_FirstCustomClass, nPanelClasses,
+            [&memo] (UInt32 i) { return GS::UniString (memo.cWallPanelDefaults[i].className); }, position);
+        if (findError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("panelClasses[%u]: ", k) + findError.Get ());
+        }
+        if (changedPanelClasses.Contains (position)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("panelClasses[%u] names a panel class that an earlier item changes already.", k));
+        }
+        API_CWPanelType& panelClass = memo.cWallPanelDefaults[position];
+        bool hasValue = false;
+        double thickness = 0.0;
+        if (classItem.Get ("thickness", thickness)) {
+            if (thickness <= 0.0) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("panelClasses[%u]: thickness must be positive.", k));
+            }
+            panelClass.thickness = thickness;
+            hasValue = true;
+        }
+        const struct { const char* fieldName; API_OverriddenAttribute* target; } surfaceFields[] = {
+            { "outerSurfaceId", &panelClass.outerSurfaceMaterial },
+            { "innerSurfaceId", &panelClass.innerSurfaceMaterial },
+            { "edgeSurfaceId",  &panelClass.cutSurfaceMaterial }
+        };
+        for (const auto& field : surfaceFields) {
+            bool hasSurface = false;
+            API_AttributeIndex surfaceIndex = ACAPI_CreateAttributeIndex (0);
+            const auto attributeError = TryResolveAttributeField (classItem, field.fieldName, API_MaterialID, hasSurface, surfaceIndex);
+            if (attributeError.HasValue ()) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("panelClasses[%u]: ", k) + attributeError.Get ());
+            }
+            if (hasSurface) {
+                SetOverriddenAttribute (*field.target, surfaceIndex);
+                hasValue = true;
+            }
+        }
+        if (!hasValue) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("panelClasses[%u]: nothing to change, give thickness or a surface.", k));
+        }
+        changedPanelClasses.Push (position);
+    }
+
+    // The frames and panels of the changed classes take the new values. Customized ones have the
+    // classID APICWFrameClass_Customized/APICWPanelClass_Customized and keep theirs.
+    bool framesChanged = false;
+    for (UInt32 i = 0; i < nFrames; ++i) {
+        API_CWFrameType& frame = memo.cWallFrames[i];
+        if (frame.classID < APICWFrameClass_FirstCustomClass || !changedFrameClasses.Contains (frame.classID - APICWFrameClass_FirstCustomClass)) {
+            continue;
+        }
+        const API_CWFrameType& frameClass = memo.cWallFrameDefaults[frame.classID - APICWFrameClass_FirstCustomClass];
+        frame.a1 = frameClass.a1;
+        frame.a2 = frameClass.a2;
+        frame.b1 = frameClass.b1;
+        frame.b2 = frameClass.b2;
+        framesChanged = true;
+    }
+    bool panelsChanged = false;
+    for (UInt32 i = 0; i < nPanels; ++i) {
+        API_CWPanelType& panel = memo.cWallPanels[i];
+        if (panel.hidden || panel.classID < APICWPanelClass_FirstCustomClass || !changedPanelClasses.Contains (panel.classID - APICWPanelClass_FirstCustomClass)) {
+            continue;
+        }
+        const API_CWPanelType& panelClass = memo.cWallPanelDefaults[panel.classID - APICWPanelClass_FirstCustomClass];
+        panel.thickness = panelClass.thickness;
+        panel.outerSurfaceMaterial = panelClass.outerSurfaceMaterial;
+        panel.innerSurfaceMaterial = panelClass.innerSurfaceMaterial;
+        panel.cutSurfaceMaterial = panelClass.cutSurfaceMaterial;
+        panelsChanged = true;
+    }
+
+    const UInt64 writeMask = (changedFrameClasses.IsEmpty () ? 0 : APIMemoMask_CWallFrameClasses) |
+                             (changedPanelClasses.IsEmpty () ? 0 : APIMemoMask_CWallPanelClasses) |
+                             (framesChanged ? APIMemoMask_CWallFrames : 0) |
+                             (panelsChanged ? APIMemoMask_CWallPanels : 0);
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&curtainWall, &mask, &memo, writeMask, true);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to change the classes of the curtain wall.");
+    }
+
+    // Read it back: a change Archicad accepted but did not apply is a failure, not a success.
+    API_ElementMemo checkMemo = {};
+    const GS::OnExit checkGuard ([&checkMemo] () { ACAPI_DisposeElemMemoHdls (&checkMemo); });
+    if (ACAPI_Element_GetMemo (curtainWall.header.guid, &checkMemo, APIMemoMask_CWallFrameClasses | APIMemoMask_CWallPanelClasses) != NoError) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The change was written, but the classes could not be read back.");
+    }
+    const auto differs = [] (double a, double b) { return std::fabs (a - b) > 1e-6; };
+    const UInt32 nCheckFrameClasses = checkMemo.cWallFrameDefaults != nullptr ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (checkMemo.cWallFrameDefaults)) / sizeof (API_CWFrameType)) : 0;
+    for (const UInt32 position : changedFrameClasses) {
+        if (position >= nCheckFrameClasses) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "A changed frame class is no longer in the curtain wall after the change.");
+        }
+        const API_CWFrameType& expected = memo.cWallFrameDefaults[position];
+        const API_CWFrameType& actual = checkMemo.cWallFrameDefaults[position];
+        if (differs (actual.a1, expected.a1) || differs (actual.a2, expected.a2) || differs (actual.b1, expected.b1) || differs (actual.b2, expected.b2)) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString ("Archicad accepted the change but did not apply the frame contour of the frame class '") + GS::UniString (expected.className) + GS::UniString ("'."));
+        }
+    }
+    const UInt32 nCheckPanelClasses = checkMemo.cWallPanelDefaults != nullptr ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (checkMemo.cWallPanelDefaults)) / sizeof (API_CWPanelType)) : 0;
+    for (UIndex k = 0; k < changedPanelClasses.GetSize (); ++k) {
+        const UInt32 position = changedPanelClasses[k];
+        if (position >= nCheckPanelClasses) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "A changed panel class is no longer in the curtain wall after the change.");
+        }
+        const API_CWPanelType& expected = memo.cWallPanelDefaults[position];
+        const API_CWPanelType& actual = checkMemo.cWallPanelDefaults[position];
+        const GS::ObjectState& classItem = panelClassItems[k];
+        API_AttributeIndex expectedSurface = ACAPI_CreateAttributeIndex (0);
+        const bool surfacesApplied =
+            (!classItem.Contains ("outerSurfaceId") || (GetOverriddenAttribute (expected.outerSurfaceMaterial, expectedSurface) && IsSameOverriddenAttribute (actual.outerSurfaceMaterial, expectedSurface))) &&
+            (!classItem.Contains ("innerSurfaceId") || (GetOverriddenAttribute (expected.innerSurfaceMaterial, expectedSurface) && IsSameOverriddenAttribute (actual.innerSurfaceMaterial, expectedSurface))) &&
+            (!classItem.Contains ("edgeSurfaceId") || (GetOverriddenAttribute (expected.cutSurfaceMaterial, expectedSurface) && IsSameOverriddenAttribute (actual.cutSurfaceMaterial, expectedSurface)));
+        if (differs (actual.thickness, expected.thickness) || !surfacesApplied) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString ("Archicad accepted the change but did not apply it to the panel class '") + GS::UniString (expected.className) + GS::UniString ("'."));
+        }
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
+}
+
+GS::ObjectState ModifyCurtainWallClassesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "curtainWallsWithClasses", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Curtain Wall Classes", items, [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            results.Push (ModifyCurtainWallClasses (item));
+        }
+    });
+}
+
 // Writes the given "pivotEdges" (see ModifyRoofs) into memo.pivotPolyEdges; edgeIndices maps
 // each item to its pivotPolyEdges index (GetPivotEdgeIndices). Changes nothing on an error.
 static GS::Optional<GS::UniString> ApplyRoofPivotEdges (API_ElementMemo& memo, const GS::Array<GSIndex>& edgeIndices, const GS::Array<GS::ObjectState>& pivotEdges)

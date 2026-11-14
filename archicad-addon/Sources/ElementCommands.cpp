@@ -2583,6 +2583,49 @@ static void AddCurtainWallReferenceLine (const API_Element& elem, GS::ObjectStat
     }
 }
 
+// The custom frame classes and the panel classes of a curtain wall (cWallFrameDefaults and
+// cWallPanelDefaults), numbered as the frames, the panels and ModifyCurtainWallClasses number them.
+static void AddCurtainWallClasses (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_CWallFrameClasses | APIMemoMask_CWallPanelClasses) != NoError) {
+        return;
+    }
+    if (memo.cWallFrameDefaults != nullptr) {
+        const auto& frameClasses = typeSpecificDetails.AddList<GS::ObjectState> ("frameClasses");
+        const UInt32 nFrameClasses = static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallFrameDefaults)) / sizeof (API_CWFrameType));
+        for (UInt32 i = 0; i < nFrameClasses; ++i) {
+            const API_CWFrameType& frameClass = memo.cWallFrameDefaults[i];
+            frameClasses (GS::ObjectState (
+                "classIndex", static_cast<Int32> (APICWFrameClass_FirstCustomClass + i),
+                "className", GS::UniString (frameClass.className),
+                "frameContour", GS::ObjectState ("a1", frameClass.a1, "a2", frameClass.a2, "b1", frameClass.b1, "b2", frameClass.b2)));
+        }
+    }
+    if (memo.cWallPanelDefaults != nullptr) {
+        const auto& panelClasses = typeSpecificDetails.AddList<GS::ObjectState> ("panelClasses");
+        const UInt32 nPanelClasses = static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWallPanelDefaults)) / sizeof (API_CWPanelType));
+        for (UInt32 i = 0; i < nPanelClasses; ++i) {
+            const API_CWPanelType& panelClass = memo.cWallPanelDefaults[i];
+            GS::ObjectState panelClassOS (
+                "classIndex", static_cast<Int32> (APICWPanelClass_FirstCustomClass + i),
+                "className", GS::UniString (panelClass.className),
+                "thickness", panelClass.thickness);
+            const auto addSurface = [&panelClassOS] (const char* key, const API_OverriddenAttribute& surface) {
+                API_AttributeIndex index = ACAPI_CreateAttributeIndex (0);
+                if (GetOverriddenAttribute (surface, index)) {
+                    panelClassOS.Add (key, CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, index)));
+                }
+            };
+            addSurface ("outerSurfaceId", panelClass.outerSurfaceMaterial);
+            addSurface ("innerSurfaceId", panelClass.innerSurfaceMaterial);
+            addSurface ("edgeSurfaceId", panelClass.cutSurfaceMaterial);
+            panelClasses (panelClassOS);
+        }
+    }
+}
+
 // A CoordinateSystem3D as CreateShells reads it: the axes are the columns of the 3x4 row-major
 // tmx and the origin is its translation column.
 static GS::ObjectState CreateCoordinateSystem3DObjectState (const API_Tranmat& tranmat)
@@ -3903,6 +3946,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (elem.curtainWall.overheadLineType != APIInvalidAttributeIndex) {
                     typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.curtainWall.overheadLineType)));
                 }
+                AddCurtainWallClasses (elem, typeSpecificDetails);
             } break;
 
             case API_CurtainWallSegmentID: {

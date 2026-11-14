@@ -13822,6 +13822,20 @@
             "aboveViewLineTypeId": {
                 "$ref": "#/AttributeId",
                 "description": "Line type of the curtain wall's view above the cut plane on the floor plan, the overhead lines (API_CurtainWallType::overheadLineType). Omitted when not set."
+            },
+            "frameClasses": {
+                "type": "array",
+                "description": "The custom frame classes of the curtain wall (API_ElementMemo::cWallFrameDefaults), as ModifyCurtainWallClasses changes them. Omitted when Archicad cannot return them.",
+                "items": {
+                    "$ref": "#/CurtainWallFrameClass"
+                }
+            },
+            "panelClasses": {
+                "type": "array",
+                "description": "The panel classes of the curtain wall (API_ElementMemo::cWallPanelDefaults), as ModifyCurtainWallClasses changes them. Omitted when Archicad cannot return them.",
+                "items": {
+                    "$ref": "#/CurtainWallPanelClass"
+                }
             }
         },
         "additionalProperties": false,
@@ -13847,6 +13861,91 @@
             "pen",
             "belowViewLinePen",
             "aboveViewLinePen"
+        ]
+    },
+    "CurtainWallFrameClass": {
+        "type": "object",
+        "description": "A custom frame class of a curtain wall: the defaults its frames of that class take.",
+        "properties": {
+            "classIndex": {
+                "type": "integer",
+                "description": "The number of the frame class, as the frames and the cells of CreateCurtainWalls and ModifyCurtainWallFrames number it: 4 is the first custom frame class of the curtain wall, 5 the second and so on (0 to 3 are the built-in Deleted, Division, Corner and Boundary classes, which are not listed)."
+            },
+            "className": {
+                "type": "string",
+                "description": "The name of the frame class, as the Curtain Wall Settings list it and GetDetailsOfElements returns it for a frame."
+            },
+            "frameContour": {
+                "type": "object",
+                "description": "The contour of the frames of the class. a1 and a2 are equal and add up to the width of the frame in its Frame Settings (a 60 mm wide frame has a1 and a2 of 0.03); b2 is its depth outside (h) and b1 + b2 its whole depth (b).",
+                "properties": {
+                    "a1": {
+                        "type": "number",
+                        "description": "Contour width inside: half of the frame width."
+                    },
+                    "a2": {
+                        "type": "number",
+                        "description": "Contour width outside: half of the frame width."
+                    },
+                    "b1": {
+                        "type": "number",
+                        "description": "Contour length inside: the frame depth minus b2."
+                    },
+                    "b2": {
+                        "type": "number",
+                        "description": "Contour length outside."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "a1",
+                    "a2",
+                    "b1",
+                    "b2"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classIndex",
+            "className",
+            "frameContour"
+        ]
+    },
+    "CurtainWallPanelClass": {
+        "type": "object",
+        "description": "A panel class of a curtain wall: the defaults its panels of that class take.",
+        "properties": {
+            "classIndex": {
+                "type": "integer",
+                "description": "The number of the panel class, as the panels, the cells of CreateCurtainWalls and ModifyCurtainWallPanels number it: 1 is the first panel class of the curtain wall, 2 the second and so on."
+            },
+            "className": {
+                "type": "string",
+                "description": "The name of the panel class, as the Curtain Wall Settings list it and GetDetailsOfElements returns it for a panel."
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the panels of the class."
+            },
+            "outerSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface on the outer side of the panels (API_CWPanelType::outerSurfaceMaterial). Omitted when the class does not override it, so the panels show the surface of their building material."
+            },
+            "innerSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface on the inner side of the panels (API_CWPanelType::innerSurfaceMaterial). Omitted when the class does not override it."
+            },
+            "edgeSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface of the edges of the panels (API_CWPanelType::cutSurfaceMaterial). Omitted when the class does not override it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classIndex",
+            "className",
+            "thickness"
         ]
     },
     "CurtainWallSegmentDetails": {
