@@ -5,7 +5,11 @@
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
+#include "Folder.hpp"
+#include "File.hpp"
 #include <memory>
+#include <vector>
+#include <algorithm>
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -26,8 +30,84 @@ static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
     return table;
 }
 
+// The saved local or LAN output folder of a publisher set, empty when it publishes elsewhere.
+static IO::Location GetPublisherSetPath (const API_Guid& rootGuid)
+{
+    Int32 numberOfPublisherSets = 0;
+    ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets);
+
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        set.wantsExtraInfo = true;
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&set, &ii);
+
+        // The publishing parameters are allocated by Archicad and owned by the caller.
+        std::unique_ptr<IO::Location> path (set.path);
+        std::unique_ptr<IO::Location> twFileServerPath (set.twFileServerPath);
+        std::unique_ptr<GS::UniString> host (set.host);
+        std::unique_ptr<GS::UniString> dirName (set.dirName);
+
+        if (err == NoError && set.rootGuid == rootGuid) {
+            // For a set published to a BIMcloud/Teamwork file server, path is only the
+            // temporary local folder Archicad uploads from, so no folder is reported.
+            if (path == nullptr || twFileServerPath != nullptr) {
+                return {};
+            }
+            return *path;
+        }
+    }
+
+    return {};
+}
+
+static const UInt32 MaxScannedOutputEntries = 20000;
+
+// Collects the files under the folder with their modification times. Returns false when the
+// folder holds more than MaxScannedOutputEntries entries, so a huge folder is not listed.
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes, UInt32& entryCount)
+{
+    IO::Folder folder (folderLoc);
+    if (folder.GetStatus () != NoError) {
+        return true;
+    }
+
+    bool withinLimit = true;
+    GS::Array<IO::Location> subFolders;
+    folder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+        if (!withinLimit || ++entryCount > MaxScannedOutputEntries) {
+            withinLimit = false;
+            return;
+        }
+
+        const IO::Location entryLoc (folderLoc, name);
+        if (isFolder) {
+            subFolders.Push (entryLoc);
+            return;
+        }
+
+        GSTime modificationTime = 0;
+        IO::File (entryLoc).GetModificationTime (&modificationTime);
+        fileTimes.Put (entryLoc.ToDisplayText (), modificationTime);
+    });
+
+    for (const IO::Location& subFolder : subFolders) {
+        if (!withinLimit || !CollectFileTimes (subFolder, fileTimes, entryCount)) {
+            return false;
+        }
+    }
+
+    return withinLimit;
+}
+
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes)
+{
+    UInt32 entryCount = 0;
+    return CollectFileTimes (folderLoc, fileTimes, entryCount);
+}
+
 PublishPublisherSetCommand::PublishPublisherSetCommand() :
-    CommandBase(CommonSchema::NotUsed)
+    CommandBase(CommonSchema::Used)
 {
 }
 
@@ -53,13 +133,35 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
             },
             "selectedNavigatorItemIds": {
                 "$ref": "#/NavigatorItemIds",
-                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set."
+                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set. Each item wraps its id in navigatorItemId, as the items of GetNavigatorItemTree do: [{\"navigatorItemId\": {\"guid\": \"6E1C3A9B-0F2D-4B8E-9C7A-1D2E3F405162\"}}], not [{\"guid\": \"...\"}]."
             }
         },
         "additionalProperties": false,
         "required": [
             "publisherSetName"
         ]
+    })";
+}
+
+GS::Optional<GS::UniString> PublishPublisherSetCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "outputFolder": {
+                "type": "string",
+                "description": "The local or LAN folder the set was published to: outputPath, else the path saved in the publisher set. Absent when the set publishes elsewhere (to the Internet or a BIMcloud/Teamwork file server)."
+            },
+            "writtenFiles": {
+                "type": "array",
+                "description": "Full paths of the files in outputFolder and its subfolders that were created or changed while the command ran, as found when Archicad reported the publishing finished. Absent when outputFolder is absent or holds more than 20000 files and folders.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
     })";
 }
 
@@ -70,16 +172,20 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
 
     const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
     if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
-        return CreateErrorResponse(Error, "Not valid publisher set name.");
+        return CreateErrorResponse(Error, GS::UniString("Not valid publisher set name: no publisher set is named \"") + publisherSetName + "\". GetPublisherSets lists the names.");
     }
 
     API_PublishPars publishPars = {};
     publishPars.guid = publisherSetNameGuidTable.Get(publisherSetName);
 
+    IO::Location outputFolder;
     if (parameters.Contains("outputPath")) {
         GS::UniString outputPath;
         parameters.Get("outputPath", outputPath);
         publishPars.path = new IO::Location(outputPath);
+        outputFolder = *publishPars.path;
+    } else {
+        outputFolder = GetPublisherSetPath(publishPars.guid);
     }
 
     GS::Array<API_Guid> selectedLinks;
@@ -92,7 +198,7 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
             const API_Guid selectedGuid = GetGuidFromNavigatorItemIdArrayItem(navigatorItemIdArrayItem);
             if (selectedGuid == APINULLGuid) {
                 delete publishPars.path;
-                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing.");
+                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing. Each item must be {\"navigatorItemId\": {\"guid\": \"...\"}}.");
             }
             selectedLinks.Push(selectedGuid);
         }
@@ -102,6 +208,11 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         }
     }
 
+    // The API reports neither the files it writes nor a later end of publishing, so the files
+    // are found by comparing the output folder before and after the call.
+    GS::HashTable<GS::UniString, GSTime> filesBefore;
+    bool canListFiles = !outputFolder.IsEmpty() && CollectFileTimes(outputFolder, filesBefore);
+
     GSErrCode err = ACAPI_ProjectOperation_Publish(&publishPars, selectedLinksPtr);
     delete publishPars.path;
 
@@ -109,7 +220,31 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         return CreateErrorResponse(err, "Publishing failed. Check output path!");
     }
 
-    return {};
+    GS::ObjectState response;
+    if (outputFolder.IsEmpty()) {
+        return response;
+    }
+
+    response.Add("outputFolder", outputFolder.ToDisplayText());
+
+    GS::HashTable<GS::UniString, GSTime> filesAfter;
+    canListFiles = canListFiles && CollectFileTimes(outputFolder, filesAfter);
+    if (canListFiles) {
+        std::vector<GS::UniString> writtenFiles;
+        filesAfter.Enumerate([&](const GS::UniString& path, const GSTime& modificationTime) {
+            if (!filesBefore.ContainsKey(path) || filesBefore.Get(path) != modificationTime) {
+                writtenFiles.push_back(path);
+            }
+        });
+        std::sort(writtenFiles.begin(), writtenFiles.end());
+
+        const auto& writtenFilesList = response.AddList<GS::UniString>("writtenFiles");
+        for (const GS::UniString& path : writtenFiles) {
+            writtenFilesList(path);
+        }
+    }
+
+    return response;
 }
 
 GetPublisherSetsCommand::GetPublisherSetsCommand () :

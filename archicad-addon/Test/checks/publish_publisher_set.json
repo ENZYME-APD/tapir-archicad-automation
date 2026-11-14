@@ -1,0 +1,59 @@
+{
+  "title": "PublishPublisherSet names the set it cannot find and checks the shape of selectedNavigatorItemIds (#2801)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the publisher sets can be listed",
+      "command": "GetPublisherSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        {
+          "path": "publisherSets",
+          "exists": true,
+          "name": "publisherSets listed"
+        }
+      ]
+    },
+    {
+      "id": "a publisher set name that does not exist",
+      "command": "PublishPublisherSet",
+      "creates": false,
+      "params": {
+        "publisherSetName": "Tapir check 2801 no such set"
+      },
+      "expect": [
+        {
+          "path": "error.message",
+          "contains": "Tapir check 2801 no such set",
+          "name": "the error names the set"
+        },
+        {
+          "path": "error.message",
+          "contains": "GetPublisherSets",
+          "name": "the error says where the names are"
+        }
+      ]
+    },
+    {
+      "id": "selectedNavigatorItemIds as plain guids instead of navigatorItemId objects",
+      "command": "PublishPublisherSet",
+      "creates": false,
+      "params": {
+        "publisherSetName": "Tapir check 2801 no such set",
+        "selectedNavigatorItemIds": [
+          {
+            "guid": "00000000-0000-0000-0000-00000000BEEF"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "__envelopeError__",
+          "exists": true,
+          "name": "refused by the input schema (items must be {navigatorItemId: {guid}})"
+        }
+      ]
+    }
+  ]
+}
