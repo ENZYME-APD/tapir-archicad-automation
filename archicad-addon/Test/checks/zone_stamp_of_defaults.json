@@ -1,0 +1,129 @@
+{
+  "title": "GetZoneStampOfDefaults reads and SetZoneStampOfDefaults changes the zone stamp of the Zone tool defaults, and CreateZones uses it (#2780)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Zone" ],
+  "steps": [
+    {
+      "id": "the zone stamp and category of the defaults",
+      "command": "GetZoneStampOfDefaults",
+      "creates": false,
+      "params": {},
+      "save": {
+        "origIndex": "stamp.index",
+        "origName": "stamp.name",
+        "catGuid": "category.categoryAttributeId.guid",
+        "catStampIndex": "category.stampIndex"
+      },
+      "expect": [
+        { "path": "stamp.index", "gt": 0, "name": "the defaults have a zone stamp" },
+        { "path": "stamp.isMissing", "eq": false, "name": "the stock template's stamp is loaded" },
+        { "path": "stamp.name", "exists": true },
+        { "path": "stamp.guid", "exists": true },
+        { "path": "category.categoryAttributeId.guid", "exists": true, "name": "the defaults have a Zone Category" },
+        { "path": "category.stampIndex", "gt": 0, "name": "the category's stamp is loaded" }
+      ]
+    },
+    {
+      "id": "stamp of the category, with the category given",
+      "command": "SetZoneStampOfDefaults",
+      "creates": false,
+      "params": { "categoryAttributeId": { "guid": "${catGuid}" }, "useStampOfCategory": true },
+      "save": { "newIndex": "stamp.index" },
+      "expect": [
+        { "path": "executionResult.success", "eq": true },
+        { "path": "stamp.isMissing", "eq": false }
+      ]
+    },
+    {
+      "id": "stamp by name",
+      "command": "SetZoneStampOfDefaults",
+      "creates": false,
+      "params": { "libraryPart": { "name": "${origName}" } },
+      "expect": [
+        { "expr": "${newIndex} - ${catStampIndex}", "eq": 0, "name": "the previous step gave the defaults the category's stamp" },
+        { "path": "executionResult.success", "eq": true },
+        { "path": "stamp.name", "eq": "${origName}", "name": "the defaults got the named stamp" },
+        { "path": "stamp.isMissing", "eq": false }
+      ]
+    },
+    {
+      "id": "read back",
+      "command": "GetZoneStampOfDefaults",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "stamp.name", "eq": "${origName}", "name": "the change is kept in the defaults" },
+        { "path": "category.categoryAttributeId.guid", "eq": "${catGuid}" }
+      ]
+    },
+    {
+      "id": "a zone made from the changed defaults",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck stamp defaults zone",
+            "numberStr": "S1",
+            "floorIndex": 0,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 980.0, "y": 760.0 },
+                { "x": 984.0, "y": 760.0 },
+                { "x": 984.0, "y": 763.0 },
+                { "x": 980.0, "y": 763.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created" }
+      ]
+    },
+    {
+      "id": "a stamp that is not loaded",
+      "command": "SetZoneStampOfDefaults",
+      "creates": false,
+      "params": { "libraryPart": { "name": "TapirCheck no such zone stamp 2780" } },
+      "expect": [
+        { "path": "executionResult.success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "libraryPart and useStampOfCategory together",
+      "command": "SetZoneStampOfDefaults",
+      "creates": false,
+      "params": { "libraryPart": { "name": "${origName}" }, "useStampOfCategory": true },
+      "expect": [
+        { "path": "executionResult.success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "nothing to change",
+      "command": "SetZoneStampOfDefaults",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "executionResult.success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "the defaults are unchanged by the refused calls",
+      "command": "GetZoneStampOfDefaults",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "stamp.name", "eq": "${origName}" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "id": "restore the original stamp",
+      "command": "SetZoneStampOfDefaults",
+      "creates": false,
+      "params": { "libraryPart": { "index": "${origIndex}" } }
+    }
+  ]
+}
