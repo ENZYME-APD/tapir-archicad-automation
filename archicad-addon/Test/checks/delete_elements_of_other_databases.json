@@ -1,0 +1,117 @@
+{
+  "title": "DeleteElements deletes a floor plan polyline and a worksheet polyline while the 3D window is the current one, and the 3D window stays",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "polyline on the floor plan",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          { "coordinates": [ { "x": 810.0, "y": 810.0 }, { "x": 813.0, "y": 813.0 }, { "x": 816.0, "y": 810.0 } ] }
+        ]
+      },
+      "save": { "floorPlanPolyline": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "worksheet",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "Tapir check delete from 3D", "referenceId": "TAPIR-CHK-DEL3D" }
+        ]
+      },
+      "save": {
+        "worksheetDb": "databases[0].databaseId.guid",
+        "worksheetItem": "databases[0].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "copy of the polyline in the worksheet",
+      "command": "CopyElementsToDatabase",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${floorPlanPolyline}" } } ],
+        "targetDatabaseId": { "guid": "${worksheetDb}" }
+      },
+      "save": { "worksheetPolyline": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "3DModel" }
+    },
+    {
+      "id": "dry run from the 3D window",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${floorPlanPolyline}" } },
+          { "elementId": { "guid": "${worksheetPolyline}" } }
+        ],
+        "dryRun": true
+      },
+      "expect": [
+        { "path": "executionResults[0].wouldDelete", "eq": true, "name": "floor plan polyline would be deleted" },
+        { "path": "executionResults[1].wouldDelete", "eq": true, "name": "worksheet polyline would be deleted" }
+      ]
+    },
+    {
+      "id": "delete from the 3D window",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${floorPlanPolyline}" } },
+          { "elementId": { "guid": "${worksheetPolyline}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "floor plan polyline deleted, as the dry run said" },
+        { "path": "executionResults[1].success", "eq": true, "name": "worksheet polyline deleted, as the dry run said" }
+      ]
+    },
+    {
+      "id": "the 3D window is still the current one",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "eq": "3DModel" }
+      ]
+    },
+    {
+      "id": "both are gone",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${floorPlanPolyline}" } },
+          { "elementId": { "guid": "${worksheetPolyline}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].error.message", "contains": "does not exist", "name": "floor plan polyline is gone" },
+        { "path": "executionResults[1].error.message", "contains": "does not exist", "name": "worksheet polyline is gone" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${worksheetItem}" } } ] }
+    }
+  ]
+}

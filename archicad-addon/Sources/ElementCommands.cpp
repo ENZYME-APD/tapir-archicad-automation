@@ -12621,7 +12621,7 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
+                "description": "The elements to delete, of any database (the floor plan, a section, a worksheet, a layout, ...): each is deleted in the database that contains it, whichever window is the current one, and the current window stays. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
             },
             "dryRun": {
                 "$ref": "#/DryRun"
@@ -12676,35 +12676,63 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // with the walls listed before their zone opened that dialog, while deleting the
     // zone first in a call of its own did not; so the zones get a call of their own,
     // before the rest, within the same undoable command.
+    //
+    // Each element is checked and deleted with the database that contains it as the
+    // current database, and the starting database is put back at the end, so the front
+    // window stays: ACAPI_Element_Delete did not delete a Dimension of the floor plan
+    // while the 3D window was the current one, nor a Text of a worksheet while another
+    // worksheet was (#1473). So the elements other than zones get one call for each
+    // database that contains some of them.
+    API_DatabaseInfo startingDatabase = {};
+    const bool hasStartingDatabase = ACAPI_Database_GetCurrentDatabase (&startingDatabase) == NoError;
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (hasStartingDatabase) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        }
+    });
+    const auto changeToContainingDatabase = [&] (const API_Guid& elemGuid) {
+        if (hasStartingDatabase) {
+            ChangeToContainingDatabase (elemGuid, currentDatabase);
+        }
+    };
+
     GS::Array<bool> existedBeforeDelete;
     GS::Array<API_Guid> zoneGuids;
-    GS::Array<API_Guid> otherGuids;
+    GS::Array<API_Guid> databaseIdsOfOtherGuids;
+    GS::HashTable<API_Guid, GS::Array<API_Guid>> otherGuidsByDatabaseId;
+    ElementChangeReporter changeReporter;
     for (const API_Guid& elemGuid : elemGuids) {
+        changeToContainingDatabase (elemGuid);
         API_Elem_Head elemHead = {};
         const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
         existedBeforeDelete.Push (exists);
         if (!exists) {
             continue;
         }
+        changeReporter.Add (elemGuid);
         if (GetElemTypeId (elemHead) == API_ZoneID) {
             zoneGuids.Push (elemGuid);
         } else {
-            otherGuids.Push (elemGuid);
+            const API_Guid databaseId = DatabaseIdResolver::Instance ().GetIdOfDatabase (currentDatabase);
+            if (!otherGuidsByDatabaseId.ContainsKey (databaseId)) {
+                databaseIdsOfOtherGuids.Push (databaseId);
+                otherGuidsByDatabaseId.Add (databaseId, {});
+            }
+            otherGuidsByDatabaseId[databaseId].Push (elemGuid);
         }
     }
 
-    ElementChangeReporter changeReporter (zoneGuids);
-    for (const API_Guid& elemGuid : otherGuids) {
-        changeReporter.Add (elemGuid);
-    }
-
     GSErrCode deleteErr = NoError;
-    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
+    if (!zoneGuids.IsEmpty () || !databaseIdsOfOtherGuids.IsEmpty ()) {
         CallUndoableCommandUnlessDryRun (dryRun, "DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
+                changeToContainingDatabase (zoneGuids.GetFirst ());
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
             }
-            if (!otherGuids.IsEmpty ()) {
+            for (const API_Guid& databaseId : databaseIdsOfOtherGuids) {
+                const GS::Array<API_Guid>& otherGuids = otherGuidsByDatabaseId[databaseId];
+                changeToContainingDatabase (otherGuids.GetFirst ());
                 const GSErrCode otherErr = ACAPI_Element_Delete (otherGuids);
                 if (deleteErr == NoError) {
                     deleteErr = otherErr;
@@ -12737,6 +12765,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
         // With dryRun every existing element is still there, and the checks below say
         // whether the deletion would skip it.
         const API_Guid& elemGuid = elemGuids[i];
+        changeToContainingDatabase (elemGuid);
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());
