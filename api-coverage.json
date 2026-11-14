@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-14 07:24 UTC",
+ "generatedAt": "2026-11-14 08:08 UTC",
  "versions": [
   25,
   26,
@@ -6764,6 +6764,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2827,
+     "title": "SetDetailsOfElements: report a layerIndex/floorIndex Archicad did not apply (Curtain Wall frames and panels)"
+    },
+    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -7833,7 +7837,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2827,
+     "title": "SetDetailsOfElements: report a layerIndex/floorIndex Archicad did not apply (Curtain Wall frames and panels)"
+    }
+   ],
    "issues": []
   },
   {
