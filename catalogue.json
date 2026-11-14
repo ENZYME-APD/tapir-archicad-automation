@@ -2,6 +2,43 @@
   "version": 1,
   "scripts": [
     {
+      "slug": "assign-home-story",
+      "name": "Assign Home Story",
+      "summary": "Gives the selected elements the home story they sit on in 3D, by the centre, bottom or most of their height, and keeps them in place.",
+      "category": "modeling-geometry",
+      "tags": [
+        "stories",
+        "home-story",
+        "cleanup",
+        "import"
+      ],
+      "author": {
+        "name": "Jorge Beneitez",
+        "github": "JBENEITEZ"
+      },
+      "license": "MIT",
+      "entry": "AssignHomeStory.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace.",
+          "commit": "d71d150dac6b0a48df9468d9d6d1532cb6defcee",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/d71d150dac6b0a48df9468d9d6d1532cb6defcee/marketplace/assign-home-story/AssignHomeStory.py",
+          "sha256": "76716a87a51a0b494efba261a00c3133fa57518d8670fdfbb9163427e5cf0f96"
+        }
+      ]
+    },
+    {
       "slug": "building-material-property-audit",
       "name": "Building Material Property Audit",
       "summary": "Lists a custom property of every Building Material so the empty values stand out, exports the list and fills in a value for the materials you choose.",
@@ -58,6 +95,22 @@
       "entry": "BulkViewRenamer.py",
       "changes": "model",
       "versions": [
+        {
+          "version": "1.1.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "Shows the views in the View Map's folders, which open and close, with a Type column, and a Type choice that lists only one type of view (floor plan, section, elevation, schedule, ...). Selecting a folder selects its views.",
+          "commit": "e64fcdfaa3c130c459db25d0e4e8490d21c82d92",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/e64fcdfaa3c130c459db25d0e4e8490d21c82d92/marketplace/bulk-view-renamer/BulkViewRenamer.py",
+          "sha256": "dc3afd4ea5f20a40b7b48af20a29cca90a0716a2683fe1fae79ddb8c249afd2c"
+        },
         {
           "version": "1.0.0",
           "archicadVersions": [
