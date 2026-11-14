@@ -3037,9 +3037,11 @@ static GS::Optional<GS::UniString> CheckProfileCoordinates (const GS::ObjectStat
 // polygonCoordinates, nVertices of them) onto the contour's closed vertex list, in which the closing edge
 // ends at the repeated first vertex, index nVertices (see BuildHatchPolygonGeometry). The arc must lie on
 // one edge of the contour, in either direction; the closing edge may be given as nVertices-1 -> 0 (as
-// CreateSlabs takes it) or nVertices-1 -> nVertices, and the direction is kept. Returns false for an arc
-// that is not on an edge of the contour.
-static bool GetProfileContourArcEdge (Int32 begIndex, Int32 endIndex, Int32 nVertices, Int32& outBegIndex, Int32& outEndIndex)
+// CreateSlabs takes it) or nVertices-1 -> nVertices. The edge is always returned forward (i -> i+1), as
+// Archicad's polygons store their arcs; outReversed is true when the arc was given backwards, and its
+// arcAngle must then be negated to describe the same arc. Returns false for an arc that is not on an
+// edge of the contour.
+static bool GetProfileContourArcEdge (Int32 begIndex, Int32 endIndex, Int32 nVertices, Int32& outBegIndex, Int32& outEndIndex, bool& outReversed)
 {
     if (nVertices < 3 || begIndex < 0 || endIndex < 0 || begIndex > nVertices || endIndex > nVertices) {
         return false;
@@ -3049,11 +3051,13 @@ static bool GetProfileContourArcEdge (Int32 begIndex, Int32 endIndex, Int32 nVer
     if ((beg + 1) % nVertices == end) {
         outBegIndex = beg;
         outEndIndex = beg + 1;
+        outReversed = false;
         return true;
     }
     if ((end + 1) % nVertices == beg) {
-        outBegIndex = end + 1;
-        outEndIndex = end;
+        outBegIndex = end;
+        outEndIndex = end + 1;
+        outReversed = true;
         return true;
     }
     return false;
@@ -3071,9 +3075,10 @@ static GS::Optional<GS::UniString> CheckProfileContourArcs (const GS::ObjectStat
     for (UIndex a = 0; a < polygonArcs.GetSize (); ++a) {
         Int32 begIndex = -1, endIndex = -1;
         Int32 mappedBeg, mappedEnd;
+        bool reversed;
         polygonArcs[a].Get ("begIndex", begIndex);
         polygonArcs[a].Get ("endIndex", endIndex);
-        if (!GetProfileContourArcEdge (begIndex, endIndex, nVertices, mappedBeg, mappedEnd)) {
+        if (!GetProfileContourArcEdge (begIndex, endIndex, nVertices, mappedBeg, mappedEnd, reversed)) {
             return GS::UniString::Printf ("%T: begIndex %d and endIndex %d are not the two ends of one edge of the contour; they must be consecutive vertices (0 to %d), and the closing edge is %d -> 0.",
                 ProfileItemPath (contourPath, "polygonArcs", a).ToPrintf (), (int) begIndex, (int) endIndex, (int) nVertices - 1, (int) nVertices - 1);
         }
@@ -3729,12 +3734,14 @@ static void BuildHatchPolygonGeometry (const GS::Array<GS::ObjectState>& contour
                 Int32 begIndex = 0, endIndex = 0;
                 double arcAngle = 0.0;
                 Int32 edgeBeg = 0, edgeEnd = 0;
+                bool reversed = false;
                 // The closing edge ends at the repeated first vertex (iStart + n), not at iStart: an arc
                 // n-1 -> 0 pointing back at iStart left Archicad with an invalid skin it dropped (#2828).
+                // A backwards arc is stored forward with its angle negated, which is the same arc.
                 // Arcs not on an edge are refused by CheckProfileContourArcs before anything is built.
                 if (arcOs.Get ("begIndex", begIndex) && arcOs.Get ("endIndex", endIndex) && arcOs.Get ("arcAngle", arcAngle) &&
-                    GetProfileContourArcEdge (begIndex, endIndex, (Int32) polygonCoordinates.GetSize (), edgeBeg, edgeEnd)) {
-                    outArcs.Push (PolyArcRec (iStart + (UIndex) edgeBeg, iStart + (UIndex) edgeEnd, arcAngle));
+                    GetProfileContourArcEdge (begIndex, endIndex, (Int32) polygonCoordinates.GetSize (), edgeBeg, edgeEnd, reversed)) {
+                    outArcs.Push (PolyArcRec (iStart + (UIndex) edgeBeg, iStart + (UIndex) edgeEnd, reversed ? -arcAngle : arcAngle));
                 }
             }
         }

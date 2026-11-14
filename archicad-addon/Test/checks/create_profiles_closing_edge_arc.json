@@ -104,6 +104,9 @@
         {"path": "profiles", "len": 1},
         {"path": "profiles[0].skins", "len": 3, "name": "no skin is missing"},
         {"path": "profiles[0].skins[0].outlineArcs", "len": 1},
+        {"path": "profiles[0].skins[0].outlineArcs[0].begIndex", "eq": 4, "name": "reversed arc stored forward: starts at the last vertex"},
+        {"path": "profiles[0].skins[0].outlineArcs[0].endIndex", "eq": 5, "name": "reversed arc stored forward: ends at the closing vertex"},
+        {"path": "profiles[0].skins[0].outlineArcs[0].arcAngle", "approx": 1.0, "tol": 0.0001, "name": "reversed arc's angle negated"},
         {"path": "profiles[0].skins[1].outlineArcs", "len": 1},
         {"path": "profiles[0].skins[2].outlineArcs", "len": 1}
       ]
