@@ -1112,6 +1112,7 @@ struct WitnessPointText {
     GS::Optional<GS::UniString> customText;    // with Archicad's keyword in place of the placeholder
     GS::Optional<bool> superscript;
     bool resetTextPosition = false;
+    GS::Optional<API_Coord> textPosition;      // the note's pos, fixed there as a drag by hand does (#2792)
 };
 
 // Reads ModifyAssociativeDimensions' witnessPointTexts. A customText without content makes the
@@ -1171,7 +1172,18 @@ static GS::Optional<GS::ObjectState> ParseWitnessPointTexts (const GS::ObjectSta
         }
         item.Get ("resetTextPosition", text.resetTextPosition);
 
-        if (!text.contentType.HasValue () && !text.customText.HasValue () && !text.superscript.HasValue () && !text.resetTextPosition) {
+        const GS::ObjectState* textPosition = item.Get ("textPosition");
+        if (textPosition != nullptr) {
+            if (!textPosition->Contains ("x") || !textPosition->Contains ("y")) {
+                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The 'textPosition' of the item of 'witnessPointTexts' with index %d needs 'x' and 'y'.", text.index));
+            }
+            if (text.resetTextPosition) {
+                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The item of 'witnessPointTexts' with index %d gives both 'textPosition' and 'resetTextPosition'.", text.index));
+            }
+            text.textPosition = Get2DCoordinateFromObjectState (*textPosition);
+        }
+
+        if (!text.contentType.HasValue () && !text.customText.HasValue () && !text.superscript.HasValue () && !text.resetTextPosition && !text.textPosition.HasValue ()) {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The item of 'witnessPointTexts' with index %d changes nothing.", text.index));
         }
         result.Push (text);
@@ -1211,6 +1223,10 @@ static bool ApplyWitnessPointTexts (const GS::Array<WitnessPointText>& texts, co
         if (text.resetTextPosition) {
             note.fixPos = false;
         }
+        if (text.textPosition.HasValue ()) {
+            note.pos = text.textPosition.Get ();
+            note.fixPos = true;
+        }
     }
     return true;
 }
@@ -1244,6 +1260,13 @@ static void CheckWitnessPointTexts (const GS::Array<WitnessPointText>& texts, co
         }
         if (text.resetTextPosition && note.fixPos) {
             notApplied += prefix + "resetTextPosition";
+        }
+        if (text.textPosition.HasValue ()) {
+            const double tolerance = 1e-6;
+            const API_Coord& wanted = text.textPosition.Get ();
+            if (!note.fixPos || std::abs (note.pos.x - wanted.x) > tolerance || std::abs (note.pos.y - wanted.y) > tolerance) {
+                notApplied += prefix + "textPosition";
+            }
         }
     }
 }
@@ -13339,7 +13362,7 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                         "witnessPointTexts": {
                             "type": "array",
                             "minItems": 1,
-                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the reset to the automatic position. Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.",
+                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position (moved and fixed, or reset to the automatic position). Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -13363,7 +13386,11 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                                     },
                                     "resetTextPosition": {
                                         "type": "boolean",
-                                        "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing."
+                                        "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing. Cannot be given with textPosition."
+                                    },
+                                    "textPosition": {
+                                        "$ref": "#/Coordinate2D",
+                                        "description": "Optional: moves the text there and fixes it, as dragging it by hand does (API note pos, fixPos true). In the coordinates GetDimensionData returns the witness points and the textPosition of each text in, so a text can be moved relative to where it is."
                                     }
                                 },
                                 "additionalProperties": false,
@@ -17466,6 +17493,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("customText", GetDimensionNoteTextWithPlaceholder (dimElem.note));
                 witnessPoint.Add ("superscript", (dimElem.note.effectBits & APIEffect_SuperScript) != 0);
                 witnessPoint.Add ("textPositionFixed", dimElem.note.fixPos);
+                witnessPoint.Add ("textPosition", Create2DCoordinateObjectState (dimElem.note.pos));
 
                 // The witness parameters, as CreateAssociativeDimensions takes them, so a dimension
                 // placed by hand can be read back to learn what an element type needs (#633).

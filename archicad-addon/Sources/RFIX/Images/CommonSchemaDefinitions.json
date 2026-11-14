@@ -6268,7 +6268,11 @@
             },
             "textPositionFixed": {
                 "type": "boolean",
-                "description": "Whether the text was moved by hand from its automatic position (API note fixPos); ModifyAssociativeDimensions' resetTextPosition sets it back to false."
+                "description": "Whether the text was moved by hand from its automatic position (API note fixPos); ModifyAssociativeDimensions' resetTextPosition sets it back to false, its textPosition to true."
+            },
+            "textPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Where the text is (API note pos, its left bottom as Archicad keeps it), in the coordinates of the witness points; ModifyAssociativeDimensions' witnessPointTexts[].textPosition takes the same coordinates. Compare them across dimensions to find texts that overlap."
             }
         }
     },
