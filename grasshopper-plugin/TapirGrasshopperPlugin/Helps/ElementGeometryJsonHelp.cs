@@ -172,7 +172,7 @@ namespace TapirGrasshopperPlugin.Helps
                 Texts.Add(
                     JsonOutputHelp.Scalar(
                         primitive,
-                        "text"),
+                        "content"),
                     path);
                 Primitives.Add(
                     primitive.ToString(Formatting.None),
