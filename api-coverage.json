@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-14 08:08 UTC",
+ "generatedAt": "2026-11-14 08:27 UTC",
  "versions": [
   25,
   26,
@@ -4777,6 +4777,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
+    {
      "number": 2815,
      "title": "DeleteElements: delete each element in the database that contains it"
     }
@@ -5786,6 +5790,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -6834,6 +6842,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -7549,6 +7561,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -7838,6 +7854,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
     {
      "number": 2827,
      "title": "SetDetailsOfElements: report a layerIndex/floorIndex Archicad did not apply (Curtain Wall frames and panels)"
@@ -9256,7 +9276,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    }
+   ],
    "issues": []
   },
   {
@@ -9340,7 +9365,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    }
+   ],
    "issues": []
   },
   {
@@ -9361,7 +9391,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    }
+   ],
    "issues": []
   },
   {
@@ -25424,6 +25459,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
+    {
+     "number": 2831,
+     "title": "CreateProfiles: an arc on a newSkins contour's closing edge no longer deletes the skin"
+    },
+    {
      "number": 2812,
      "title": "ApplyFavoritesToElements: settingGroups to apply only chosen panels (e.g. Floor Plan and Section)"
     },
@@ -31132,6 +31175,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
     {
      "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
@@ -37603,6 +37650,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
+    {
+     "number": 2831,
+     "title": "CreateProfiles: an arc on a newSkins contour's closing edge no longer deletes the skin"
+    },
     {
      "number": 2813,
      "title": "PublishPublisherSet: list the written files, document selectedNavigatorItemIds"
@@ -44280,6 +44335,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
+    {
      "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     },
@@ -47419,6 +47478,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2832,
+     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
+    },
     {
      "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
