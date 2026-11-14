@@ -4607,6 +4607,51 @@ struct RequestedDrawingSettings {
     }
 };
 
+// Reported live (#2824): ACAPI_Element_Change returns NoError for a new layer or story of a
+// Curtain Wall frame or panel and keeps the old one, because these parts follow their Curtain
+// Wall. The header is read back so a value not taken is reported, not answered with success.
+// Returns the error message, or an empty string when everything given was applied.
+static GS::UniString DescribeHeaderNotApplied (const API_Elem_Head&       elemHead,
+                                               const GS::Optional<short>& requestedFloorIndex,
+                                               const GS::Optional<Int32>& requestedLayerIndex)
+{
+    API_Elem_Head changedHead = {};
+    changedHead.guid = elemHead.guid;
+    if (ACAPI_Element_GetHeader (&changedHead) != NoError) {
+        return GS::UniString ();
+    }
+
+    GS::UniString notApplied;
+    if (requestedLayerIndex.HasValue () && GetAttributeIndex (changedHead.layer) != *requestedLayerIndex) {
+        notApplied += GS::UniString::Printf ("layerIndex (it stayed %d instead of %d)",
+            static_cast<int> (GetAttributeIndex (changedHead.layer)), static_cast<int> (*requestedLayerIndex));
+    }
+    if (requestedFloorIndex.HasValue () && changedHead.floorInd != *requestedFloorIndex) {
+        if (!notApplied.IsEmpty ())
+            notApplied += " and ";
+        notApplied += GS::UniString::Printf ("floorIndex (it stayed %d instead of %d)",
+            static_cast<int> (changedHead.floorInd), static_cast<int> (*requestedFloorIndex));
+    }
+    if (notApplied.IsEmpty ()) {
+        return GS::UniString ();
+    }
+
+    GS::UniString message = "Archicad did not apply " + notApplied + ".";
+    switch (GetElemTypeId (changedHead)) {
+        case API_CurtainWallFrameID:
+        case API_CurtainWallPanelID:
+        case API_CurtainWallJunctionID:
+        case API_CurtainWallAccessoryID:
+            message += " The layer and story of a Curtain Wall frame, panel, junction or accessory follow its Curtain Wall; set them on the Curtain Wall.";
+            break;
+        default:
+            message += " If the element is a part of another element (of a Stair, Railing, Beam or Column, for example), its layer and story follow that element; set them on it.";
+            break;
+    }
+    message += " The other details given were applied.";
+    return message;
+}
+
 GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementsWithDetails;
@@ -4685,14 +4730,19 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool hasElementChanges = false;
+            // Kept to read them back after the change (#2824).
+            GS::Optional<short> requestedFloorIndex;
+            GS::Optional<Int32> requestedLayerIndex;
             if (GetIndexValue (*details, "floorIndex", elem.header.floorInd)) {
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                requestedFloorIndex = elem.header.floorInd;
                 hasElementChanges = true;
             }
             Int32 layerIndex;
             if (GetIndexValue (*details, "layerIndex", layerIndex)) {
                 elem.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+                requestedLayerIndex = layerIndex;
                 hasElementChanges = true;
             }
             short drwIndexTarget = -1;
@@ -5426,6 +5476,13 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     executionResults (CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf (
                         "Archicad did not apply drawingScale: it stayed %g instead of %g. The other details given were applied.",
                         changedElem.drawing.drawingScale, *requestedDrawingScale)));
+                    continue;
+                }
+            }
+            if (requestedFloorIndex.HasValue () || requestedLayerIndex.HasValue ()) {
+                const GS::UniString notApplied = DescribeHeaderNotApplied (elem.header, requestedFloorIndex, requestedLayerIndex);
+                if (!notApplied.IsEmpty ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, notApplied));
                     continue;
                 }
             }
