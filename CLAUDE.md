@@ -541,6 +541,18 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (default 72), with no open thread by a person, no changes requested and no
   `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
   This is a deliberate maintainer decision to minimize human maintenance.
+- `schema_refinement.yml` — add `<!-- tapir-schema-refinement -->` to an open,
+  non-draft PR targeting `main`. The author can post `/check-schema` to compare
+  main's schemas with the proposed merge. People with write access can check any
+  marked PR or post `/merge-schema` to check and merge. Merging also requires the
+  existing build and review checks to pass. If main or the PR changes during
+  validation, post a new command. GitHub's merge API pins the PR head; a main
+  change immediately after the final check can still race with the merge.
+  Results appear as PR comments linking to the
+  Actions run; its `schema-report` download contains the JSON comparison.
+  `tools/check_schema_refinement.py` compares schemas;
+  `tools/merge_schema_refinement.py` handles commands and merging.
+  Scheduled auto-merge skips marked PRs.
 - `delete_merged_branches.yml` — deletes the head branch of every merged pull
   request of this repository, however it was merged, when its tip is still the
   merged head and no open pull request uses it; run by hand (dry run by default)

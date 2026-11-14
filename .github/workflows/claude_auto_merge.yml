@@ -176,7 +176,7 @@ jobs:
             echo "::group::PR #$pr"
 
             if ! info=$(gh pr view "$pr" --repo "$REPO" \
-              --json number,state,isDraft,mergeable,baseRefName,author,title,headRefOid,headRefName,isCrossRepository,labels); then
+              --json number,state,isDraft,mergeable,baseRefName,author,title,body,headRefOid,headRefName,isCrossRepository,labels); then
               echo "skip: could not read the pull request"
               echo "::endgroup::"; continue
             fi
@@ -189,6 +189,11 @@ jobs:
             isBot=$(printf '%s' "$info" | jq -r '.author.is_bot // false')
             headOid=$(printf '%s' "$info" | jq -r '.headRefOid')
             fromFork=$(printf '%s' "$info" | jq -r '.isCrossRepository')
+
+            if printf '%s' "$info" | jq -e '(.body // "") | contains("<!-- tapir-schema-refinement -->")' >/dev/null; then
+              echo "skip: schema refinement requires the maintainer's /merge-schema command"
+              echo "::endgroup::"; continue
+            fi
 
             if [ "$state" != "OPEN" ] || [ "$draft" != "false" ]; then
               echo "skip: not an open, ready pull request (state=$state draft=$draft)"
