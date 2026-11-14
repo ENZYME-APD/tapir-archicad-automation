@@ -1,0 +1,262 @@
+{
+  "title": "DeleteAndReplaceAttributes replaces a profile in a profiled column and a zone category in a zone (#2829)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bm": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "profiles A and B for columns",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2829 A",
+            "wallType": false, "beamType": true, "coluType": true, "handrailType": false, "otherGDLObjectType": false,
+            "newSkins": [
+              {
+                "contours": [ { "polygonCoordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.12, "y": 0.0 }, { "x": 0.12, "y": 0.24 }, { "x": 0.0, "y": 0.24 } ] } ],
+                "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+                "isCore": true,
+                "isFinish": false
+              }
+            ]
+          },
+          {
+            "name": "TapirCheck Profile 2829 B",
+            "wallType": false, "beamType": true, "coluType": true, "handrailType": false, "otherGDLObjectType": false,
+            "newSkins": [
+              {
+                "contours": [ { "polygonCoordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.2, "y": 0.0 }, { "x": 0.2, "y": 0.2 }, { "x": 0.0, "y": 0.2 } ] } ],
+                "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+                "isCore": true,
+                "isFinish": false
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "pA": "attributeIds[0].attributeId.guid", "pB": "attributeIds[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": false, "name": "profile A created" },
+        { "path": "attributeIds[1].error", "exists": false, "name": "profile B created" }
+      ]
+    },
+    {
+      "id": "a column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 940.0, "y": 940.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "axisRotationAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "depth": 0.3,
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "the column uses profile A",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "profileId": { "attributeId": { "guid": "${pA}" } } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "profile set" }
+      ]
+    },
+    {
+      "id": "replace profile A by B, dry run",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Profile",
+        "dryRun": true,
+        "attributes": [ { "attributeId": { "guid": "${pA}" }, "replacementAttributeId": { "guid": "${pB}" } } ]
+      },
+      "expect": [
+        { "path": "dryRun", "eq": true, "name": "dry run flag" },
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].wouldDelete", "eq": true, "name": "would delete A" },
+        { "path": "attributes[0].elements", "len": 1, "name": "lists the column" },
+        { "path": "attributes[0].elements[0].elementId.guid", "eq": "${c1}", "name": "the column" }
+      ]
+    },
+    {
+      "id": "the column still uses A after the dry run",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.profileId.guid", "eq": "${pA}", "name": "profile A" }
+      ]
+    },
+    {
+      "id": "replace profile A by B",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Profile",
+        "attributes": [ { "attributeId": { "guid": "${pA}" }, "replacementAttributeId": { "guid": "${pB}" } } ]
+      },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].elements", "len": 1, "name": "rewrote the column" },
+        { "path": "attributes[0].warnings", "exists": false, "name": "no warnings" }
+      ]
+    },
+    {
+      "id": "the column uses B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.profileId.guid", "eq": "${pB}", "name": "profile B" }
+      ]
+    },
+    {
+      "id": "[A, B] after the replacement",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${pA}" } }, { "attributeId": { "guid": "${pB}" } } ], "fields": [ "width" ] },
+      "expect": [
+        { "path": "profiles[0].error", "exists": true, "name": "A deleted" },
+        { "path": "profiles[1].error", "exists": false, "name": "B kept" }
+      ]
+    },
+    {
+      "id": "zone categories A and B",
+      "command": "CreateZoneCategories",
+      "creates": false,
+      "params": {
+        "zoneCategoryDataArray": [
+          { "name": "TapirCheck Zone Category 2829 A", "categoryCode": "TC2829A", "color": { "red": 0.9, "green": 0.8, "blue": 0.4 } },
+          { "name": "TapirCheck Zone Category 2829 B", "categoryCode": "TC2829B", "color": { "red": 0.4, "green": 0.8, "blue": 0.9 } }
+        ],
+        "overwriteExisting": true
+      },
+      "save": { "zcA": "attributeIds[0].attributeId.guid", "zcB": "attributeIds[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "zone category A created" },
+        { "path": "attributeIds[1].attributeId.guid", "exists": true, "name": "zone category B created" }
+      ]
+    },
+    {
+      "id": "a zone of category A",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck zone 2829",
+            "numberStr": "Z2829",
+            "floorIndex": 0,
+            "categoryAttributeId": { "guid": "${zcA}" },
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 950.0, "y": 940.0 },
+                { "x": 954.0, "y": 940.0 },
+                { "x": 954.0, "y": 943.0 },
+                { "x": 950.0, "y": 943.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created" }
+      ]
+    },
+    {
+      "id": "the zone has category A",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.categoryAttributeId.guid", "eq": "${zcA}", "name": "category A" }
+      ]
+    },
+    {
+      "id": "replace zone category A by B, dry run",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "ZoneCategory",
+        "dryRun": true,
+        "attributes": [ { "attributeId": { "guid": "${zcA}" }, "replacementAttributeId": { "guid": "${zcB}" } } ]
+      },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].wouldDelete", "eq": true, "name": "would delete A" },
+        { "path": "attributes[0].elements", "len": 1, "name": "lists the zone" },
+        { "path": "attributes[0].elements[0].elementId.guid", "eq": "${z1}", "name": "the zone" }
+      ]
+    },
+    {
+      "id": "replace zone category A by B",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "ZoneCategory",
+        "attributes": [ { "attributeId": { "guid": "${zcA}" }, "replacementAttributeId": { "guid": "${zcB}" } } ]
+      },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].elements", "len": 1, "name": "rewrote the zone" },
+        { "path": "attributes[0].warnings", "exists": false, "name": "no warnings" }
+      ]
+    },
+    {
+      "id": "the zone has category B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.categoryAttributeId.guid", "eq": "${zcB}", "name": "category B" }
+      ]
+    },
+    {
+      "id": "[A, B] zone categories after the replacement",
+      "command": "GetZoneCategories",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${zcA}" } }, { "attributeId": { "guid": "${zcB}" } } ] },
+      "expect": [
+        { "path": "zoneCategories[0].error", "exists": true, "name": "A deleted" },
+        { "path": "zoneCategories[1].error", "exists": false, "name": "B kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Profile", "attributeId": { "attributeId": { "guid": "${pB}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Profile", "attributeId": { "attributeId": { "guid": "${pA}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "ZoneCategory", "attributeId": { "attributeId": { "guid": "${zcB}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "ZoneCategory", "attributeId": { "attributeId": { "guid": "${zcA}" } } } ] }
+    }
+  ]
+}
