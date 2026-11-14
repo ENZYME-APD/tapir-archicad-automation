@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-14 03:33 UTC",
+ "generatedAt": "2026-11-14 07:24 UTC",
  "versions": [
   25,
   26,
@@ -6780,7 +6780,12 @@
      "title": "ModifyRoofs: keep the side surface when the edge surfaces are written"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2824,
+     "title": "SetDetailsOfElements: `layerIndex` / `floorIndex` on CurtainWallFrame / CurtainWallPanel answer success but are not applied (they follow the Curtain Wall)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeContent",
