@@ -22369,6 +22369,22 @@
             "type"
         ]
     },
+    "MEPRouteTransitionDefaults": {
+        "type": "object",
+        "description": "The transition default of a routing element, the transition of routingNodeParameters (RoutingElement::Modifier::SetRoutingNodeDefaultParameters). Archicad 29 or newer. The angle is set on the routing element only: Archicad keeps the route's angle when a single node is given one.",
+        "properties": {
+            "angle": {
+                "type": "number",
+                "description": "In degrees, between 1 and 89. Sets the length of the transitions Archicad makes from then on, on a duct or cable carrier route: the largest half size step times tan(angle). A route keeps the angle it was created with until this changes it; Archicad gives an error for pipes."
+            },
+            "preferenceTableId": {
+                "$ref": "#/Guid",
+                "description": "A transition preference table, as returned by GetMEPPreferenceTables."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "MEPTransitionDefaults": {
         "type": "object",
         "description": "The transition parameters of a routing node (RoutingNode::Modifier::SetTransitionDefaultParameters). Archicad 29 or newer.",
@@ -22425,15 +22441,7 @@
                 "required": []
             },
             "transition": {
-                "type": "object",
-                "properties": {
-                    "preferenceTableId": {
-                        "$ref": "#/Guid",
-                        "description": "A transition preference table, as returned by GetMEPPreferenceTables."
-                    }
-                },
-                "additionalProperties": false,
-                "required": []
+                "$ref": "#/MEPRouteTransitionDefaults"
             }
         },
         "additionalProperties": false,

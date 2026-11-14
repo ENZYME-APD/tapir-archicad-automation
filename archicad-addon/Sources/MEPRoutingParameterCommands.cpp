@@ -19,6 +19,7 @@
 #include "ACAPI/MEPRigidSegmentDefault.hpp"
 #endif
 
+#include <cmath>
 #include <optional>
 #include <utility>
 
@@ -316,17 +317,59 @@ static std::optional<GS::UniString> ApplyElbowChanges (ElbowDefault& elbowDefaul
     return error;
 }
 
-static std::optional<GS::UniString> ApplyTransitionTableChange (TransitionDefault& transitionDefault, const std::optional<ACAPI::MEP::UniqueID>& tableId)
+// The keys of a transition parameters object.
+struct TransitionChanges {
+    std::optional<double>               angle;
+    std::optional<ACAPI::MEP::UniqueID> preferenceTableId;
+};
+
+// Returns an error when a value is not valid. TransitionDefault::Modifier::SetAngle takes [1, 89] degrees.
+static std::optional<GS::UniString> ReadTransitionChanges (const GS::ObjectState& parameters, TransitionChanges& changes)
 {
-    if (!tableId.has_value ()) {
+    double angle = 0.0;
+    if (parameters.Get ("angle", angle)) {
+        if (angle < 1.0 || angle > 89.0) {
+            return GS::UniString ("angle must be between 1 and 89 degrees.");
+        }
+        changes.angle = angle;
+    }
+    return ReadRoutingParameterTableId (parameters, changes.preferenceTableId);
+}
+
+// The angle sets the transition length of ducts and cable carriers (length = the largest half size step
+// times the tangent of the angle); Archicad gives an error for pipes.
+static std::optional<GS::UniString> ApplyTransitionChanges (TransitionDefault& transitionDefault, const TransitionChanges& changes)
+{
+    if (!changes.angle.has_value () && !changes.preferenceTableId.has_value ()) {
         return std::nullopt;
     }
     std::optional<GS::UniString> error;
     ACAPI::Result<void> result = transitionDefault.Modify ([&](TransitionDefault::Modifier& modifier) {
-        CheckRoutingParameterSetter (modifier.SetPreferenceTable (tableId.value ()), "the transition preference table", error);
+        if (changes.preferenceTableId.has_value ()) {
+            CheckRoutingParameterSetter (modifier.SetPreferenceTable (changes.preferenceTableId.value ()), "the transition preference table", error);
+        }
+        if (changes.angle.has_value ()) {
+            CheckRoutingParameterSetter (modifier.SetAngle (changes.angle.value ()), "the transition angle", error);
+        }
     });
     CheckRoutingParameterSetter (result, "the transition default", error);
     return error;
+}
+
+static std::optional<GS::UniString> ApplyTransitionTableChange (TransitionDefault& transitionDefault, const std::optional<ACAPI::MEP::UniqueID>& tableId)
+{
+    return ApplyTransitionChanges (transitionDefault, TransitionChanges { std::nullopt, tableId });
+}
+
+// Whether a transition default has the asked angle; it is read back because a setter can answer OK and
+// keep the old value (as the preference tables do, fork issue #10).
+static bool TransitionHasAngle (const TransitionDefault& transitionDefault, const std::optional<double>& angle)
+{
+    if (!angle.has_value ()) {
+        return true;
+    }
+    const auto current = RoutingParameterValueOf (transitionDefault.GetAngle ());
+    return current.has_value () && std::abs (current.value () - angle.value ()) < 1e-6;
 }
 #endif
 
@@ -578,6 +621,7 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
     }
     RoutingNodeDefault nodeDefault = routingElement->GetRoutingNodeDefaultParameters ();
 #ifdef ServerMainVers_2900
+    TransitionChanges transitionChanges;
     const GS::ObjectState* elbowParameters = nodeParameters != nullptr ? nodeParameters->Get ("elbow") : nullptr;
     const GS::ObjectState* transitionParameters = nodeParameters != nullptr ? nodeParameters->Get ("transition") : nullptr;
     if (nodeParameters != nullptr) {
@@ -593,9 +637,10 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
             }
         }
         if (transitionParameters != nullptr && !error.has_value ()) {
-            error = ReadRoutingParameterTableId (*transitionParameters, tables.transition);
+            error = ReadTransitionChanges (*transitionParameters, transitionChanges);
             if (!error.has_value ()) {
-                error = ApplyTransitionTableChange (transitionDefault, tables.transition);
+                tables.transition = transitionChanges.preferenceTableId;
+                error = ApplyTransitionChanges (transitionDefault, transitionChanges);
             }
         }
         if (error.has_value ()) {
@@ -630,6 +675,14 @@ static GS::ObjectState SetRoutingParametersOfRoutingElement (const ACAPI::MEP::U
     if (error.has_value ()) {
         return CreateFailedExecutionResult (APIERR_GENERAL, error.value ());
     }
+#ifdef ServerMainVers_2900
+    if (transitionChanges.angle.has_value ()) {
+        ACAPI::Result<RoutingElement> changedRoute = RoutingElement::Get (elementId);
+        if (changedRoute.IsErr () || !TransitionHasAngle (changedRoute->GetRoutingNodeDefaultParameters ().GetTransitionDefault (), transitionChanges.angle)) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad accepted the transition angle but the route kept its old angle.");
+        }
+    }
+#endif
     if (tables.IsEmpty ()) {
         return CreateSuccessfulExecutionResult ();
     }
@@ -671,6 +724,8 @@ static GS::ObjectState SetRoutingParametersOfRoutingNode (const ACAPI::MEP::Uniq
             error = ApplyElbowChanges (elbowDefault, elbowChanges);
         }
     }
+    // No angle here: Archicad 29 and 30 answer OK to SetAngle on a node's transition default but keep the
+    // angle of the route, so the angle is set on the routing element only.
     if (transitionParameters != nullptr && !error.has_value ()) {
         error = ReadRoutingParameterTableId (*transitionParameters, tables.transition);
         if (!error.has_value ()) {
