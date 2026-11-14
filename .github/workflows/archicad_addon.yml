@@ -173,7 +173,7 @@ jobs:
         "version=$version" >> $env:GITHUB_OUTPUT
     # --noupx: UPX, when on PATH, would rewrite the bundled DLLs.
     - name: Build Installer
-      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
+      run: pyinstaller --noconfirm --onefile --windowed --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
     - name: Rename Installer
       run: Move-Item dist/TapirInstaller.exe dist/TapirInstaller_Win.exe
     - name: Check Version Resource
