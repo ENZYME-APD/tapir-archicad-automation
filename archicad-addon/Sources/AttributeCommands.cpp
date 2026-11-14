@@ -10746,6 +10746,12 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_MaterialID,         API_WallType, wall, refMat);
             REINDEX_FIELD (API_MaterialID,         API_WallType, wall, oppMat);
             REINDEX_FIELD (API_MaterialID,         API_WallType, wall, sidMat);
+            // The profile counts only when the structure uses it, as in GetUnusedAttributes; otherwise profileAttr may
+            // still hold an old index, and the element would be changed for nothing. Only DeleteAndReplaceAttributes
+            // rewrites profiles.
+            if (element.wall.modelElemStructureType == API_ProfileStructure) {
+                REINDEX_FIELD (API_ProfileID,      API_WallType, wall, profileAttr);
+            }
             break;
         case API_CurtainWallID:
             REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, overheadLineType);
@@ -10784,6 +10790,9 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_MaterialID,         API_ColumnSegmentType, columnSegment, endsMaterial);
             REINDEX_FIELD (API_BuildingMaterialID, API_ColumnSegmentType, columnSegment, venBuildingMaterial);
             REINDEX_FIELD (API_BuildingMaterialID, API_ColumnSegmentType, columnSegment, assemblySegmentData.buildingMaterial);
+            if (element.columnSegment.assemblySegmentData.modelElemStructureType == API_ProfileStructure) {
+                REINDEX_FIELD (API_ProfileID,      API_ColumnSegmentType, columnSegment, assemblySegmentData.profileAttr);
+            }
             break;
         case API_BeamID:
             REINDEX_FIELD (API_LinetypeID,         API_BeamType, beam, aboveViewLineType);
@@ -10803,6 +10812,9 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, extrusionMaterial);
 #endif
             REINDEX_FIELD (API_BuildingMaterialID, API_BeamSegmentType, beamSegment, assemblySegmentData.buildingMaterial);
+            if (element.beamSegment.assemblySegmentData.modelElemStructureType == API_ProfileStructure) {
+                REINDEX_FIELD (API_ProfileID,      API_BeamSegmentType, beamSegment, assemblySegmentData.profileAttr);
+            }
             break;
         case API_WindowID:
         case API_DoorID:
@@ -11028,8 +11040,8 @@ Int32 GetMemoArrayCount (const T* array)
     return array == nullptr ? 0 : static_cast<Int32> (BMGetPtrSize (reinterpret_cast<GSConstPtr> (array)) / sizeof (T));
 }
 
-// The library part parameters whose type is the job's attribute type (a fill, surface, line type or building
-// material parameter), as single values and as arrays.
+// The library part parameters whose type is the job's attribute type (a fill, surface, line type, building
+// material or profile parameter), as single values and as arrays.
 bool RewriteAddPars (API_AddParType** params, const ReindexJob& job)
 {
     if (params == nullptr) {
@@ -11041,6 +11053,7 @@ bool RewriteAddPars (API_AddParType** params, const ReindexJob& job)
         case API_LinetypeID:         wantedType = APIParT_LineTyp; break;
         case API_MaterialID:         wantedType = APIParT_Mater; break;
         case API_BuildingMaterialID: wantedType = APIParT_BuildingMaterial; break;
+        case API_ProfileID:          wantedType = APIParT_Profile; break;
         default: return false;
     }
     const double from = GetAttributeIndex (job.from);
@@ -11856,6 +11869,7 @@ GS::UniString GetReindexableAttributeTypeName (API_AttrTypeID typeID)
         case API_MaterialID:         return "surface";
         case API_BuildingMaterialID: return "building material";
         case API_ZoneCatID:          return "zone category";
+        case API_ProfileID:          return "profile";
         default:                     return "attribute";
     }
 }
@@ -12267,6 +12281,16 @@ GS::ObjectState ReindexAttributesCommand::Execute (const GS::ObjectState& parame
 
 namespace {
 
+// The types DeleteAndReplaceAttributes takes: those of ReindexAttributes, and profiles, whose references the
+// scanner rewrites only for this command (ReindexAttributes does not take them).
+API_AttrTypeID GetReplaceableAttributeType (const GS::UniString& typeStr)
+{
+    if (typeStr == "Profile") {
+        return API_ProfileID;
+    }
+    return GetReindexableAttributeType (typeStr);
+}
+
 // The references found by DeleteAndReplaceAttribute, in the shape of ReindexAttributes' result.
 void AddReplacementScanToResult (GS::ObjectState& result, const ReferenceScan& scan, bool dryRun, const GS::UniString& typeName)
 {
@@ -12450,7 +12474,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetInputParameter
         "properties": {
             "attributeType": {
                 "type": "string",
-                "enum": ["Fill", "Line", "Surface", "BuildingMaterial"],
+                "enum": ["Fill", "Line", "Surface", "BuildingMaterial", "Profile", "ZoneCategory"],
                 "description": "The type of the attributes to delete and of their replacements."
             },
             "attributes": {
@@ -12518,7 +12542,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
                                 },
                                 "elements": {
                                     "$ref": "#/Elements",
-                                    "description": "The elements that referred to the deleted attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (side surfaces, roof levels, morph faces, cutting planes). They refer to the replacement now, unless dryRun is true."
+                                    "description": "The elements that referred to the deleted attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (column and beam segments, side surfaces, roof levels, morph faces, cutting planes). They refer to the replacement now, unless dryRun is true."
                                 },
                                 "hotlinkElements": {
                                     "$ref": "#/Elements",
@@ -12615,9 +12639,9 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
 #ifdef ServerMainVers_2700
     GS::UniString typeStr;
     parameters.Get ("attributeType", typeStr);
-    const API_AttrTypeID typeID = GetReindexableAttributeType (typeStr);
+    const API_AttrTypeID typeID = GetReplaceableAttributeType (typeStr);
     if (typeID == API_ZombieAttrID) {
-        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface or BuildingMaterial.");
+        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface, BuildingMaterial, Profile or ZoneCategory.");
     }
     GS::Array<GS::ObjectState> attributes;
     parameters.Get ("attributes", attributes);
