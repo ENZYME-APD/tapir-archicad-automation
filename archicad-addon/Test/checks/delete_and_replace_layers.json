@@ -1,0 +1,162 @@
+{
+  "title": "DeleteAndReplaceAttributes moves the elements of a layer to a locked replacement layer, deletes the layer, keeps the replacement locked and changes nothing with dryRun (#2829)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "layer A and a locked layer B",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "TapirCheck Layer 2829 A", "isHidden": false, "isLocked": false },
+          { "name": "TapirCheck Layer 2829 B", "isHidden": false, "isLocked": true }
+        ]
+      },
+      "save": { "layerA": "attributeIds[0].attributeId.guid", "layerB": "attributeIds[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "layer A created" },
+        { "path": "attributeIds[1].attributeId.guid", "exists": true, "name": "layer B created" }
+      ]
+    },
+    {
+      "id": "indices of A and B",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerA}" } }, { "attributeId": { "guid": "${layerB}" } } ],
+        "fields": [ "isLocked" ]
+      },
+      "save": { "indexA": "layers[0].index", "indexB": "layers[1].index" },
+      "expect": [
+        { "path": "layers[1].isLocked", "eq": true, "name": "B is locked" }
+      ]
+    },
+    {
+      "id": "a wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 960, "y": 960 }, "endCoordinate": { "x": 964, "y": 960 }, "height": 2.5, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "the wall onto layer A",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${wall}" }, "details": { "layerIndex": "${indexA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "A replaced by itself",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Layer",
+        "attributes": [ { "attributeId": { "guid": "${layerA}" }, "replacementAttributeId": { "guid": "${layerA}" } } ]
+      },
+      "expect": [
+        { "path": "attributes", "len": 1, "name": "one item" },
+        { "path": "attributes[0].error", "exists": true, "name": "error item" }
+      ]
+    },
+    {
+      "id": "replace layer A by B, dry run",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Layer",
+        "dryRun": true,
+        "attributes": [ { "attributeId": { "guid": "${layerA}" }, "replacementAttributeId": { "guid": "${layerB}" } } ]
+      },
+      "expect": [
+        { "path": "dryRun", "eq": true, "name": "dry run flag" },
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].wouldDelete", "eq": true, "name": "would delete A" },
+        { "path": "attributes[0].elements", "len": 1, "name": "lists the wall" },
+        { "path": "attributes[0].elements[0].elementId.guid", "eq": "${wall}", "name": "the wall" },
+        { "path": "attributes[0].viewsToRebuild", "exists": true, "name": "lists the views to rebuild" }
+      ]
+    },
+    {
+      "id": "the wall is still on A after the dry run",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "fields": [ "layerIndex" ]
+      },
+      "save": { "wallLayerAfterDryRun": "detailsOfElements[0].layerIndex" },
+      "expect": [
+        { "expr": "${wallLayerAfterDryRun} - ${indexA}", "approx": 0, "name": "on A" }
+      ]
+    },
+    {
+      "id": "replace layer A by B",
+      "command": "DeleteAndReplaceAttributes",
+      "creates": false,
+      "params": {
+        "attributeType": "Layer",
+        "attributes": [ { "attributeId": { "guid": "${layerA}" }, "replacementAttributeId": { "guid": "${layerB}" } } ]
+      },
+      "expect": [
+        { "path": "attributes[0].error", "exists": false, "name": "no error" },
+        { "path": "attributes[0].elements", "len": 1, "name": "moved the wall" },
+        { "path": "attributes[0].warnings", "exists": false, "name": "no warnings" }
+      ]
+    },
+    {
+      "id": "the wall is on B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "fields": [ "layerIndex" ]
+      },
+      "save": { "wallLayer": "detailsOfElements[0].layerIndex" },
+      "expect": [
+        { "path": "detailsOfElements[0].error", "exists": false, "name": "the wall was not deleted with A" },
+        { "expr": "${wallLayer} - ${indexB}", "approx": 0, "name": "on B" }
+      ]
+    },
+    {
+      "id": "[A, B] after the replacement",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerA}" } }, { "attributeId": { "guid": "${layerB}" } } ],
+        "fields": [ "isLocked" ]
+      },
+      "expect": [
+        { "path": "layers[0].error", "exists": true, "name": "A deleted" },
+        { "path": "layers[1].error", "exists": false, "name": "B kept" },
+        { "path": "layers[1].isLocked", "eq": true, "name": "B locked again" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteElements",
+      "params": { "elements": [ { "elementId": { "guid": "${wall}" } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerB}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerA}" } } } ] }
+    }
+  ]
+}

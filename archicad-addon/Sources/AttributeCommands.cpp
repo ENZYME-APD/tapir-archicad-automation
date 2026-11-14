@@ -10746,6 +10746,12 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_MaterialID,         API_WallType, wall, refMat);
             REINDEX_FIELD (API_MaterialID,         API_WallType, wall, oppMat);
             REINDEX_FIELD (API_MaterialID,         API_WallType, wall, sidMat);
+            // The profile counts only when the structure uses it, as in GetUnusedAttributes; otherwise profileAttr may
+            // still hold an old index, and the element would be changed for nothing. Only DeleteAndReplaceAttributes
+            // rewrites profiles.
+            if (element.wall.modelElemStructureType == API_ProfileStructure) {
+                REINDEX_FIELD (API_ProfileID,      API_WallType, wall, profileAttr);
+            }
             break;
         case API_CurtainWallID:
             REINDEX_FIELD (API_LinetypeID,         API_CurtainWallType, curtainWall, overheadLineType);
@@ -10784,6 +10790,9 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_MaterialID,         API_ColumnSegmentType, columnSegment, endsMaterial);
             REINDEX_FIELD (API_BuildingMaterialID, API_ColumnSegmentType, columnSegment, venBuildingMaterial);
             REINDEX_FIELD (API_BuildingMaterialID, API_ColumnSegmentType, columnSegment, assemblySegmentData.buildingMaterial);
+            if (element.columnSegment.assemblySegmentData.modelElemStructureType == API_ProfileStructure) {
+                REINDEX_FIELD (API_ProfileID,      API_ColumnSegmentType, columnSegment, assemblySegmentData.profileAttr);
+            }
             break;
         case API_BeamID:
             REINDEX_FIELD (API_LinetypeID,         API_BeamType, beam, aboveViewLineType);
@@ -10803,6 +10812,9 @@ bool RewriteElementFields (API_Element& element, API_Element& mask, const Reinde
             REINDEX_FIELD (API_MaterialID,         API_BeamSegmentType, beamSegment, extrusionMaterial);
 #endif
             REINDEX_FIELD (API_BuildingMaterialID, API_BeamSegmentType, beamSegment, assemblySegmentData.buildingMaterial);
+            if (element.beamSegment.assemblySegmentData.modelElemStructureType == API_ProfileStructure) {
+                REINDEX_FIELD (API_ProfileID,      API_BeamSegmentType, beamSegment, assemblySegmentData.profileAttr);
+            }
             break;
         case API_WindowID:
         case API_DoorID:
@@ -11028,8 +11040,8 @@ Int32 GetMemoArrayCount (const T* array)
     return array == nullptr ? 0 : static_cast<Int32> (BMGetPtrSize (reinterpret_cast<GSConstPtr> (array)) / sizeof (T));
 }
 
-// The library part parameters whose type is the job's attribute type (a fill, surface, line type or building
-// material parameter), as single values and as arrays.
+// The library part parameters whose type is the job's attribute type (a fill, surface, line type, building
+// material or profile parameter), as single values and as arrays.
 bool RewriteAddPars (API_AddParType** params, const ReindexJob& job)
 {
     if (params == nullptr) {
@@ -11041,6 +11053,7 @@ bool RewriteAddPars (API_AddParType** params, const ReindexJob& job)
         case API_LinetypeID:         wantedType = APIParT_LineTyp; break;
         case API_MaterialID:         wantedType = APIParT_Mater; break;
         case API_BuildingMaterialID: wantedType = APIParT_BuildingMaterial; break;
+        case API_ProfileID:          wantedType = APIParT_Profile; break;
         default: return false;
     }
     const double from = GetAttributeIndex (job.from);
@@ -11856,6 +11869,7 @@ GS::UniString GetReindexableAttributeTypeName (API_AttrTypeID typeID)
         case API_MaterialID:         return "surface";
         case API_BuildingMaterialID: return "building material";
         case API_ZoneCatID:          return "zone category";
+        case API_ProfileID:          return "profile";
         default:                     return "attribute";
     }
 }
@@ -12267,6 +12281,286 @@ GS::ObjectState ReindexAttributesCommand::Execute (const GS::ObjectState& parame
 
 namespace {
 
+// The types DeleteAndReplaceAttributes takes: those of ReindexAttributes, profiles, whose references the scanner
+// rewrites only for this command (ReindexAttributes does not take them), and layers, which DeleteAndReplaceLayer
+// handles on its own.
+API_AttrTypeID GetReplaceableAttributeType (const GS::UniString& typeStr)
+{
+    if (typeStr == "Profile") {
+        return API_ProfileID;
+    }
+    if (typeStr == "Layer") {
+        return API_LayerID;
+    }
+    return GetReindexableAttributeType (typeStr);
+}
+
+// Reads a Favorite with its memo and sub-elements, as ScanFavorites reads it. The caller disposes the memos with
+// DisposeFavoriteMemosOfScan.
+GSErrCode GetFavoriteWithSubElements (API_Favorite& favorite)
+{
+    favorite.memo.New ();
+    favorite.subElements.New ();   // a curtain wall's frame and panel classes, a stair's structures and markers
+    return ACAPI_Favorite_Get (&favorite);
+}
+
+void DisposeFavoriteMemosOfScan (API_Favorite& favorite)
+{
+    if (favorite.memo.HasValue ()) {
+        ACAPI_DisposeElemMemoHdls (favorite.memo.GetPtr ());
+    }
+    if (favorite.subElements.HasValue ()) {
+        for (API_SubElement& subElement : *favorite.subElements) {
+            ACAPI_DisposeElemMemoHdls (&subElement.memo);
+        }
+    }
+}
+
+bool IsFavoriteOnLayer (const API_Favorite& favorite, const API_AttributeIndex& layer)
+{
+    if (favorite.element.header.layer == layer) {
+        return true;
+    }
+    if (favorite.subElements.HasValue ()) {
+        for (const API_SubElement& subElement : *favorite.subElements) {
+            if (subElement.subElem.header.layer == layer) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// The names of the Favorites whose element or one of its sub-elements is on the layer. With a new layer, those are
+// set to it; only is then the list of Favorites to change (all when null). A Favorite that Archicad does not change
+// is named in warnings instead, and so is not in the list. The Favorite is read again after the change, since
+// ACAPI_Favorite_Change can answer NoError and keep some settings (see ScanFavorites).
+GS::Array<GS::UniString> UpdateFavoritesOnLayer (const API_AttributeIndex& layer, const GS::Optional<API_AttributeIndex>& newLayer, const GS::Array<GS::UniString>* only, GS::Array<GS::UniString>& warnings)
+{
+    GS::Array<GS::UniString> favorites;
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        const API_ElemTypeID typeID = static_cast<API_ElemTypeID> (type);
+        GS::Array<GS::UniString> names;
+        if (ACAPI_Favorite_GetNum (typeID, nullptr, nullptr, &names) != NoError) {
+            continue;
+        }
+        for (const GS::UniString& name : names) {
+            if (only != nullptr && !only->Contains (name)) {
+                continue;
+            }
+            API_Favorite favorite (name);
+            const GS::OnExit cleanup ([&favorite] () { DisposeFavoriteMemosOfScan (favorite); });
+            if (GetFavoriteWithSubElements (favorite) != NoError || !IsFavoriteOnLayer (favorite, layer)) {
+                continue;
+            }
+            if (!newLayer.HasValue ()) {
+                favorites.Push (name);
+                continue;
+            }
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            if (favorite.element.header.layer == layer) {
+                favorite.element.header.layer = newLayer.Get ();
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+            }
+            if (favorite.subElements.HasValue ()) {
+                for (API_SubElement& subElement : *favorite.subElements) {
+                    if (subElement.subElem.header.layer == layer) {
+                        subElement.subElem.header.layer = newLayer.Get ();
+                        API_Element subMask = {};
+                        ACAPI_ELEMENT_MASK_CLEAR (subMask);
+                        ACAPI_ELEMENT_MASK_SET (subMask, API_Elem_Head, layer);
+                        subElement.mask = subMask;
+                    }
+                }
+            }
+            bool written = (ACAPI_Favorite_Change (favorite, &mask, 0) == NoError);
+            if (written) {
+                API_Favorite check (name);
+                const GS::OnExit checkCleanup ([&check] () { DisposeFavoriteMemosOfScan (check); });
+                if (GetFavoriteWithSubElements (check) == NoError && IsFavoriteOnLayer (check, layer)) {
+                    written = false;
+                }
+            }
+            if (written) {
+                favorites.Push (name);
+            } else {
+                warnings.Push (GS::UniString::Printf ("The Favorite '%T' is still on the deleted layer: Archicad did not take the change from ACAPI_Favorite_Change.", name.ToPrintf ()));
+            }
+        }
+    }
+    return favorites;
+}
+
+// Sets the layer of the given tool defaults, to undo UpdateToolDefaultsOnLayer.
+void SetLayerOfToolDefaults (const GS::Array<API_ElemTypeID>& types, const API_AttributeIndex& layer)
+{
+    for (API_ElemTypeID typeID : types) {
+        API_Element defaults = {};
+        defaults.header.type = typeID;
+        if (ACAPI_Element_GetDefaults (&defaults, nullptr) != NoError) {
+            continue;
+        }
+        API_Element mask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+        defaults.header.layer = layer;
+        ACAPI_Element_ChangeDefaults (&defaults, nullptr, &mask);
+    }
+}
+
+// Deletes a layer and puts its elements on another one, as described in the command's registration. Deleting a layer
+// deletes the elements on it, so the elements are not rewritten to a temporary copy as for the other types: they are
+// moved to the replacement first, the way ReindexLayer moves them, and the layer is deleted only once it is empty in
+// every view and layout. On any failure the moved elements, tool defaults and Favorites go back, and nothing is deleted.
+GS::ObjectState DeleteAndReplaceLayer (const GS::Array<API_DatabaseInfo>& databases, const API_Guid& layerGuid, const API_Guid& replacementGuid, bool dryRun)
+{
+    GS::UniString name;
+    API_Attribute oldLayer = {};
+    oldLayer.header.guid = layerGuid;
+    if (GetLayer (oldLayer, name) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, "The layer to delete was not found.");
+    }
+    GS::UniString replacementName;
+    API_Attribute replacement = {};
+    replacement.header.guid = replacementGuid;
+    if (GetLayer (replacement, replacementName) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, "The replacement layer was not found.");
+    }
+    const API_AttributeIndex oldIndex = oldLayer.header.index;
+    const API_AttributeIndex replacementIndex = replacement.header.index;
+    if (replacementIndex == oldIndex) {
+        return CreateErrorResponse (APIERR_BADPARS, "The replacement must be another layer than the one to delete.");
+    }
+    if (GetAttributeIndex (oldIndex) == 1) {
+        return CreateErrorResponse (APIERR_BADPARS, "The Archicad Layer (index 1) cannot be deleted.");
+    }
+
+    GS::Array<ElementInDatabase> elements;
+    GS::Array<API_DatabaseInfo> sectionElementViews;
+    GSErrCode err = CollectElementsOnLayer (databases, oldIndex, elements, &sectionElementViews);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the elements of every view and layout, so the layer was not deleted.");
+    }
+    GS::Array<ElementInDatabase> hotlinked;
+    for (const ElementInDatabase& element : elements) {
+        API_DatabaseInfo database = element.database;
+        ACAPI_Database_ChangeCurrentDatabase (&database);
+        API_Elem_Head head = {};
+        head.guid = element.guid;
+        if (ACAPI_Element_GetHeader (&head) == NoError && head.hotlinkGuid != APINULLGuid) {
+            hotlinked.Push (element);
+        }
+    }
+    if (!hotlinked.IsEmpty ()) {
+        // Their layer cannot be changed, and deleting the layer would delete them.
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf ("The layer was not deleted: %u of its elements come from a hotlinked module, whose elements cannot be moved to another layer (%T). Deleting the layer would delete them; move them in the module file first.", hotlinked.GetSize (), ListElementGuids (hotlinked).ToPrintf ()));
+    }
+
+    GS::ObjectState result;
+    result.Add ("attributeId", CreateGuidObjectState (layerGuid));
+    result.Add ("replacementAttributeId", CreateGuidObjectState (replacementGuid));
+    GS::Array<GS::UniString> warnings;
+    const auto addLists = [&] (const GS::Array<ElementInDatabase>& listedElements, const GS::Array<API_ElemTypeID>& toolDefaults, const GS::Array<GS::UniString>& favorites) {
+        result.Add ("elements", GetElementIds (listedElements));
+        result.Add ("hotlinkElements", GS::Array<GS::ObjectState> ());
+        const auto& toolDefaultNames = result.AddList<GS::UniString> ("toolDefaults");
+        for (API_ElemTypeID typeID : toolDefaults) {
+            toolDefaultNames (GetElementTypeNonLocalizedName (typeID));
+        }
+        result.Add ("favorites", favorites);
+        result.Add ("attributes", GS::Array<GS::ObjectState> ());
+        result.Add ("overrideRules", GS::Array<GS::UniString> ());
+        result.Add ("viewsToRebuild", GetDatabaseIds (sectionElementViews));
+        if (!warnings.IsEmpty ()) {
+            result.Add ("warnings", warnings);
+        }
+    };
+    if (dryRun) {
+        result.Add ("wouldDelete", true);
+        const GS::Array<GS::UniString> favorites = UpdateFavoritesOnLayer (oldIndex, GS::NoValue, nullptr, warnings);
+        addLists (elements, UpdateToolDefaultsOnLayer (oldIndex, GS::NoValue), favorites);
+        return result;
+    }
+
+    // Elements on a hidden or locked layer cannot be changed, so both layers are shown and unlocked while the
+    // elements are moved, and their own flags are put back afterwards. Archicad keeps these flags per open window:
+    // they are read and written in the current one, from the floor plan (as in DeleteAndReplaceAttribute).
+    API_DatabaseInfo floorPlan = databases[0];
+    ACAPI_Database_ChangeCurrentDatabase (&floorPlan);
+    const LayerFlags oldFlags = oldLayer.header.flags;
+    const LayerFlags replacementFlags = replacement.header.flags;
+    err = SetLayerFlags (oldIndex, WithoutHiddenAndLocked (oldFlags));
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to show and unlock the layer for the move, so it was not deleted.");
+    }
+    const bool replacementFlagsChanged = (WithoutHiddenAndLocked (replacementFlags) != replacementFlags);
+    if (replacementFlagsChanged) {
+        err = SetLayerFlags (replacementIndex, WithoutHiddenAndLocked (replacementFlags));
+        if (err != NoError) {
+            SetLayerFlags (oldIndex, oldFlags);
+            return CreateErrorResponse (err, "Failed to show and unlock the replacement layer for the move, so the layer was not deleted.");
+        }
+    }
+    const auto restoreReplacementFlags = [&] () {
+        ACAPI_Database_ChangeCurrentDatabase (&floorPlan);
+        if (replacementFlagsChanged) {
+            SetLayerFlags (replacementIndex, replacementFlags);
+        }
+    };
+
+    GS::Array<ElementInDatabase> moved;
+    GS::Array<ElementInDatabase> notMoved;
+    const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) {
+        for (const ElementInDatabase& element : moved) {
+            SetLayerOfElementInDatabase (element, oldIndex);
+        }
+        restoreReplacementFlags ();
+        SetLayerFlags (oldIndex, oldFlags);
+        return CreateErrorResponse (failErr, message);
+    };
+
+    for (const ElementInDatabase& element : elements) {
+        if (SetLayerOfElementInDatabase (element, replacementIndex) == NoError) {
+            moved.Push (element);
+        } else {
+            notMoved.Push (element);
+        }
+    }
+    if (!notMoved.IsEmpty ()) {
+        return fail (APIERR_GENERAL, GS::UniString::Printf ("The layer was not deleted: %u of its elements could not be moved to the replacement layer (they may be locked, or not reserved in Teamwork): %T.", notMoved.GetSize (), ListElementGuids (notMoved).ToPrintf ()));
+    }
+    GS::Array<ElementInDatabase> left;
+    err = CollectElementsOnLayer (databases, oldIndex, left);
+    if (err != NoError) {
+        return fail (err, "The layer was not deleted: the views and layouts could not be read again to check that it is empty.");
+    }
+    if (!left.IsEmpty ()) {
+        return fail (APIERR_GENERAL, GS::UniString::Printf ("The layer was not deleted: %u elements were still on it after the move: %T.", left.GetSize (), ListElementGuids (left).ToPrintf ()));
+    }
+
+    // The tool defaults and Favorites are moved before the layer is deleted, while they can still be told by its
+    // index, and moved back if it cannot be deleted.
+    const GS::Array<API_ElemTypeID> toolDefaults = UpdateToolDefaultsOnLayer (oldIndex, replacementIndex);
+    const GS::Array<GS::UniString> favorites = UpdateFavoritesOnLayer (oldIndex, replacementIndex, nullptr, warnings);
+    for (API_ElemTypeID typeID : UpdateToolDefaultsOnLayer (oldIndex, GS::NoValue)) {
+        warnings.Push (GS::UniString::Printf ("The tool default of %T is still on the deleted layer: Archicad did not take the change.", GetElementTypeNonLocalizedName (typeID).ToPrintf ()));
+    }
+
+    // Only now, with the layer empty in every view and layout, is it deleted.
+    ACAPI_Database_ChangeCurrentDatabase (&floorPlan);
+    err = DeleteLayer (oldIndex);
+    if (err != NoError) {
+        GS::Array<GS::UniString> ignored;
+        SetLayerOfToolDefaults (toolDefaults, oldIndex);
+        UpdateFavoritesOnLayer (replacementIndex, oldIndex, &favorites, ignored);
+        return fail (err, "Archicad did not delete the layer (in Teamwork it has to be reserved), so its elements were put back on it.");
+    }
+    restoreReplacementFlags ();
+    addLists (moved, toolDefaults, favorites);
+    return result;
+}
+
 // The references found by DeleteAndReplaceAttribute, in the shape of ReindexAttributes' result.
 void AddReplacementScanToResult (GS::ObjectState& result, const ReferenceScan& scan, bool dryRun, const GS::UniString& typeName)
 {
@@ -12450,7 +12744,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetInputParameter
         "properties": {
             "attributeType": {
                 "type": "string",
-                "enum": ["Fill", "Line", "Surface", "BuildingMaterial"],
+                "enum": ["Fill", "Line", "Surface", "BuildingMaterial", "Profile", "ZoneCategory", "Layer"],
                 "description": "The type of the attributes to delete and of their replacements."
             },
             "attributes": {
@@ -12518,7 +12812,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
                                 },
                                 "elements": {
                                     "$ref": "#/Elements",
-                                    "description": "The elements that referred to the deleted attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (side surfaces, roof levels, morph faces, cutting planes). They refer to the replacement now, unless dryRun is true."
+                                    "description": "The elements that referred to the deleted attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (column and beam segments, side surfaces, roof levels, morph faces, cutting planes). They refer to the replacement now, unless dryRun is true."
                                 },
                                 "hotlinkElements": {
                                     "$ref": "#/Elements",
@@ -12571,14 +12865,18 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
                                 },
                                 "layersShown": {
                                     "type": "array",
-                                    "description": "The hidden or locked layers of the elements that were shown and unlocked for the change and put back afterwards. Not present with dryRun.",
+                                    "description": "The hidden or locked layers of the elements that were shown and unlocked for the change and put back afterwards. Not present with dryRun, nor for Layer.",
                                     "items": {
                                         "$ref": "#/AttributeIdArrayItem"
                                     }
                                 },
+                                "viewsToRebuild": {
+                                    "$ref": "#/Databases",
+                                    "description": "Only for Layer: the sections, elevations, interior elevations and 3D documents that show elements of the deleted layer. The model elements they show are deleted with the layer and come back on the replacement layer when the view is rebuilt: Archicad does that when the view is opened, unless it is set to be rebuilt manually. To rebuild one at once, call ChangeWindow with its databaseId and then RebuildCurrentDatabase."
+                                },
                                 "warnings": {
                                     "type": "array",
-                                    "description": "What still refers to the deleted attribute: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written. What could not be rewritten to the replacement keeps a copy of the deleted attribute, whose attribute id the last warning names.",
+                                    "description": "What still refers to the deleted attribute: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written. What could not be rewritten to the replacement keeps a copy of the deleted attribute, whose attribute id the last warning names. For Layer: a tool default or Favorite that is still on the deleted layer.",
                                     "items": {
                                         "type": "string"
                                     }
@@ -12615,9 +12913,9 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
 #ifdef ServerMainVers_2700
     GS::UniString typeStr;
     parameters.Get ("attributeType", typeStr);
-    const API_AttrTypeID typeID = GetReindexableAttributeType (typeStr);
+    const API_AttrTypeID typeID = GetReplaceableAttributeType (typeStr);
     if (typeID == API_ZombieAttrID) {
-        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface or BuildingMaterial.");
+        return CreateErrorResponse (APIERR_BADPARS, "attributeType must be Fill, Line, Surface, BuildingMaterial, Profile, ZoneCategory or Layer.");
     }
     GS::Array<GS::ObjectState> attributes;
     parameters.Get ("attributes", attributes);
@@ -12639,7 +12937,13 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
     const auto& results = response.AddList<GS::ObjectState> ("attributes");
     const auto replaceAll = [&] () -> GSErrCode {
         for (const GS::ObjectState& attribute : attributes) {
-            results (DeleteAndReplaceAttribute (databases, typeID, GetGuidFromAttributesArrayItem (attribute), GetGuidFromArrayItem ("replacementAttributeId", attribute), dryRun));
+            const API_Guid attributeGuid = GetGuidFromAttributesArrayItem (attribute);
+            const API_Guid replacementGuid = GetGuidFromArrayItem ("replacementAttributeId", attribute);
+            if (typeID == API_LayerID) {
+                results (DeleteAndReplaceLayer (databases, attributeGuid, replacementGuid, dryRun));
+            } else {
+                results (DeleteAndReplaceAttribute (databases, typeID, attributeGuid, replacementGuid, dryRun));
+            }
         }
         return NoError;
     };
