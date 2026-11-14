@@ -35,7 +35,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             InText(
                 "AttributeType",
                 "The type of the attributes to delete and of their replacements: Fill, Line, Surface, " +
-                "BuildingMaterial, Profile or ZoneCategory.");
+                "BuildingMaterial, Profile, ZoneCategory or Layer.");
 
             InGenerics(
                 "AttributeGuids",
