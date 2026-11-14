@@ -14677,6 +14677,10 @@
                 "type": "string",
                 "description": "Path of the drawing's external source file (the Drawing Manager's Path column). Present only when the source is a file (external view, DWG/DXF, PDF, image, ...). Read-only."
             },
+            "sourceNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The navigator item (view or viewpoint) the drawing shows, as the sourceNavigatorItemId of its Layout Book item; GetViewSettings accepts it. Absent when the source is not a navigator item (external file). Read-only."
+            },
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."

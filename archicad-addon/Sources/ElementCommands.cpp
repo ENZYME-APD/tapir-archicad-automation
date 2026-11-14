@@ -1423,6 +1423,12 @@ static void AddDrawingManagerDetails (const API_Guid& drawingGuid, GS::ObjectSta
     if (linkInfo.linkPath != nullptr) {
         os.Add ("linkPath", linkInfo.linkPath->ToDisplayText ());
     }
+    // The navigator item the drawing shows: the same guid as the sourceNavigatorItemId of the
+    // drawing's Layout Book item (see FindDrawingOfNavigatorItemInCurrentDatabase), so it can be
+    // passed to GetViewSettings - unlike navigatorItemId, which is the drawing's own link item.
+    if (linkInfo.linkGuid != APINULLGuid) {
+        os.Add ("sourceNavigatorItemId", CreateGuidObjectState (linkInfo.linkGuid));
+    }
 }
 
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
