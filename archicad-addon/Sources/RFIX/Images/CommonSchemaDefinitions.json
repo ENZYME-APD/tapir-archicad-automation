@@ -29160,6 +29160,10 @@
             "charSpaceFactor": {
                 "type": "number"
             },
+            "content": {
+                "type": "string",
+                "description": "Text: the text the primitive draws, as Archicad displays it (for example a line of a zone stamp or a label, with its values already filled in)."
+            },
             "drawSegmentMode": {
                 "type": "integer"
             },
@@ -29321,11 +29325,19 @@
                 "items": {
                     "$ref": "#/DrawingPrimitive"
                 }
+            },
+            "texts": {
+                "type": "array",
+                "description": "The content of every Text primitive of the element, in the order Archicad draws them: the text as Archicad displays it, for example the lines of a zone stamp.",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "additionalProperties": false,
         "required": [
-            "primitives"
+            "primitives",
+            "texts"
         ]
     },
     "NavigatorParentItem": {
