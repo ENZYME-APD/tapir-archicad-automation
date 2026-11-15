@@ -3724,7 +3724,7 @@
             },
             "polygonArcs": {
                 "type": "array",
-                "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates.",
+                "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates and must be the two ends of one edge (consecutive vertices, either direction); the closing edge is n-1 -> 0 (n-1 -> n is also accepted). An arc that is not on an edge is refused with an error.",
                 "items": {
                     "$ref": "#/PolyArc"
                 }
