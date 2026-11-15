@@ -15482,6 +15482,10 @@
                 "$ref": "#/StairRules",
                 "description": "The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied."
             },
+            "headroom": {
+                "$ref": "#/StairHeadroom",
+                "description": "The headroom of the stair (Stair Settings > Headroom), as stored in the stair. Whether the headroom body is shown is a Model View Option, not part of the stair."
+            },
             "level": {
                 "type": "number",
                 "description": "Height of the stair base above the home story level."
@@ -15843,6 +15847,17 @@
             "walkingLineOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing offset is applied." },
             "winderTurnOffsetMinValue": { "type": "number", "description": "Minimum winder width." },
             "winderTurnOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum winder width is applied." }
+        },
+        "additionalProperties": false
+    },
+    "StairHeadroom": {
+        "type": "object",
+        "description": "The headroom of a Stair (API_StairHeadroomData, Stair Settings > Headroom): the clear space above the flights that Archicad checks against the elements above the stair. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
+        "properties": {
+            "method": { "type": "string", "enum": ["RightAngleToSlope", "VerticallyToSlope", "Unknown"], "description": "How the headroom is generated: at right angle to the slope of the stair (APIHM_RightAngleToSlope) or vertically to it (APIHM_VerticallyToSlope). GetDetailsOfElements returns Unknown for a value it does not know; CreateStairs and ModifyStairs refuse Unknown." },
+            "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the headroom." },
+            "leftOffset": { "type": "number", "description": "The offset of the headroom from the left side of the stair." },
+            "rightOffset": { "type": "number", "description": "The offset of the headroom from the right side of the stair." }
         },
         "additionalProperties": false
     },

@@ -4252,6 +4252,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("treadDepthLocked", elem.stair.treadDepthLocked);
                 typeSpecificDetails.Add ("totalHeightLocked", elem.stair.totalHeightLocked);
                 typeSpecificDetails.Add ("rules", CreateStairRulesObjectState (elem.stair.rules));
+                typeSpecificDetails.Add ("headroom", CreateStairHeadroomObjectState (elem.stair.stairHeadroomData));
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
