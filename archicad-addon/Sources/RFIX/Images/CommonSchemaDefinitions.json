@@ -6253,6 +6253,26 @@
                 "type": "boolean",
                 "description": "Whether the dimension text has a frame."
             },
+            "fontIndex": {
+                "type": "integer",
+                "description": "Font attribute index of the dimension text."
+            },
+            "fontName": {
+                "type": "string",
+                "description": "The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index."
+            },
+            "bold": {
+                "type": "boolean",
+                "description": "Whether the dimension text is bold."
+            },
+            "italic": {
+                "type": "boolean",
+                "description": "Whether the dimension text is italic."
+            },
+            "underline": {
+                "type": "boolean",
+                "description": "Whether the dimension text is underlined."
+            },
             "content": {
                 "type": "string",
                 "enum": ["MeasuredValue", "CustomText"],
@@ -15059,6 +15079,26 @@
                 "type": "boolean",
                 "description": "The text frame of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
             },
+            "fontIndex": {
+                "type": "integer",
+                "description": "The font attribute index of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
+            "fontName": {
+                "type": "string",
+                "description": "The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index."
+            },
+            "bold": {
+                "type": "boolean",
+                "description": "Bold text in the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
+            "italic": {
+                "type": "boolean",
+                "description": "Italic text in the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
+            "underline": {
+                "type": "boolean",
+                "description": "Underlined text in the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
             "defaultWitnessForm": {
                 "type": "string",
                 "description": "The witness line form of the dimension's settings; each witness point has its own witnessForm.",
@@ -15101,6 +15141,10 @@
             "textHeight",
             "textPen",
             "textFrame",
+            "fontIndex",
+            "bold",
+            "italic",
+            "underline",
             "defaultWitnessForm",
             "defaultWitnessVal",
             "staticDimension",

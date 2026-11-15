@@ -734,6 +734,26 @@ static const char* DimensionSettingsSchemaProperties = R"(
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
                         },
+                        "fontName": {
+                            "type": "string",
+                            "description": "Optional font of the dimension texts (the Text Style of the Dimension Settings), applied to every witness point: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given."
+                        },
+                        "fontIndex": {
+                            "type": "integer",
+                            "description": "Optional font of the dimension texts given by its Font attribute index (as GetFontsByName returns it), applied to every witness point."
+                        },
+                        "bold": {
+                            "type": "boolean",
+                            "description": "Optional bold dimension texts, applied to every witness point. The other styles are kept."
+                        },
+                        "italic": {
+                            "type": "boolean",
+                            "description": "Optional italic dimension texts, applied to every witness point. The other styles are kept."
+                        },
+                        "underline": {
+                            "type": "boolean",
+                            "description": "Optional underlined dimension texts, applied to every witness point. The other styles are kept."
+                        },
                         "appearance": {
                             "type": "string",
                             "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
@@ -802,6 +822,31 @@ static GS::ObjectState LayeredElementDimensionsToObjectState (char compAutoThick
         "referenceLine", (compAutoThick & LayeredDimensionReferenceLineBit) != 0);
 }
 
+// The three styles of the Text Style of the Dimension Settings in a note's faceBits (#2839). Only
+// these are set; any other bit Archicad keeps there stays.
+static unsigned short DimensionTextStyleBits ()
+{
+    return static_cast<unsigned short> (APIFace_Bold | APIFace_Italic | APIFace_Underline);
+}
+
+static unsigned short DimensionTextStyleBitsFor (bool bold, bool italic, bool underline)
+{
+    return static_cast<unsigned short> ((bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0));
+}
+
+// The font and style of a dimension note, with the names the dimension commands take.
+static void AddDimensionTextStyle (GS::ObjectState& os, const API_NoteType& note)
+{
+    os.Add ("fontIndex", static_cast<Int32> (note.noteFont));
+    const GS::Optional<GS::UniString> fontName = GetFontNameFromIndex (note.noteFont);
+    if (fontName.HasValue ()) {
+        os.Add ("fontName", *fontName);
+    }
+    os.Add ("bold", (note.faceBits & APIFace_Bold) != 0);
+    os.Add ("italic", (note.faceBits & APIFace_Italic) != 0);
+    os.Add ("underline", (note.faceBits & APIFace_Underline) != 0);
+}
+
 // Writes the settings of DimensionSettingsSchemaProperties given in data to element.dimension,
 // and sets their bits in mask when it is not nullptr. The text settings go to defNote and the
 // witness line settings to defWitnessForm/defWitnessVal; the creation commands copy these into
@@ -866,6 +911,43 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         element.dimension.defNote.frame = textFrame;
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.frame);
+        }
+    }
+
+    // The Text Style of the Dimension Settings (#2839), as ModifyLevelDimensions takes it: fontName
+    // resolved to the loaded font of that name, else fontIndex as given.
+    GS::Optional<short> fontIndex;
+    GS::UniString fontName;
+    if (data.Get ("fontName", fontName)) {
+        fontIndex = GetFontIndexFromName (fontName);
+        if (!fontIndex.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADNAME, GS::UniString::Printf ("No loaded font is named '%T'. fontName takes the name of a Font attribute, as GetDetailsOfElements reports it in fontName; use fontIndex to give the font by its index instead.", fontName.ToPrintf ()));
+        }
+    } else {
+        Int32 fontIndexValue = 0;
+        if (data.Get ("fontIndex", fontIndexValue)) {
+            fontIndex = static_cast<short> (fontIndexValue);
+        }
+    }
+    if (fontIndex.HasValue ()) {
+        element.dimension.defNote.noteFont = *fontIndex;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.noteFont);
+        }
+    }
+
+    const unsigned short faceBits = element.dimension.defNote.faceBits;
+    bool bold = (faceBits & APIFace_Bold) != 0;
+    bool italic = (faceBits & APIFace_Italic) != 0;
+    bool underline = (faceBits & APIFace_Underline) != 0;
+    bool faceChanged = false;
+    faceChanged |= data.Get ("bold", bold);
+    faceChanged |= data.Get ("italic", italic);
+    faceChanged |= data.Get ("underline", underline);
+    if (faceChanged) {
+        element.dimension.defNote.faceBits = static_cast<unsigned short> ((faceBits & ~DimensionTextStyleBits ()) | DimensionTextStyleBitsFor (bold, italic, underline));
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.faceBits);
         }
     }
 
@@ -1032,7 +1114,9 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
     const bool hasTextFrame = data.Contains ("textFrame");
     const bool hasWitnessForm = data.Contains ("defaultWitnessForm");
     const bool hasWitnessVal = data.Contains ("defaultWitnessVal");
-    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasWitnessForm && !hasWitnessVal) {
+    const bool hasFont = data.Contains ("fontName") || data.Contains ("fontIndex");
+    const bool hasStyle = data.Contains ("bold") || data.Contains ("italic") || data.Contains ("underline");
+    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasWitnessForm && !hasWitnessVal && !hasFont && !hasStyle) {
         return false;
     }
     if (memo.dimElems == nullptr || *memo.dimElems == nullptr) {
@@ -1049,6 +1133,23 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
         }
         if (hasTextFrame) {
             dimElem.note.frame = element.dimension.defNote.frame;
+        }
+        if (hasFont) {
+            dimElem.note.noteFont = element.dimension.defNote.noteFont;
+        }
+        if (hasStyle) {
+            // Only the styles given change in every witness point; the others stay as each has them.
+            unsigned short faceBits = dimElem.note.faceBits;
+            const unsigned short defBits = element.dimension.defNote.faceBits;
+            const auto copyBit = [&] (const char* name, unsigned short bit) {
+                if (data.Contains (name)) {
+                    faceBits = static_cast<unsigned short> ((faceBits & ~bit) | (defBits & bit));
+                }
+            };
+            copyBit ("bold", APIFace_Bold);
+            copyBit ("italic", APIFace_Italic);
+            copyBit ("underline", APIFace_Underline);
+            dimElem.note.faceBits = faceBits;
         }
         if (hasWitnessForm) {
             dimElem.witnessForm = element.dimension.defWitnessForm;
@@ -1288,6 +1389,7 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("textHeight", element.dimension.defNote.noteSize);
     details.Add ("textPen", static_cast<Int32> (element.dimension.defNote.notePen));
     details.Add ("textFrame", element.dimension.defNote.frame);
+    AddDimensionTextStyle (details, element.dimension.defNote);
     details.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
     details.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
     details.Add ("staticDimension", element.dimension.defStaticDim);
@@ -13573,6 +13675,18 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                     if (item.Contains ("textFrame") && firstPoint.note.frame != element.dimension.defNote.frame) {
                         notApplied += " textFrame";
                     }
+                    if ((item.Contains ("fontName") || item.Contains ("fontIndex")) && firstPoint.note.noteFont != element.dimension.defNote.noteFont) {
+                        notApplied += " font";
+                    }
+                    if (item.Contains ("bold") && (firstPoint.note.faceBits & APIFace_Bold) != (element.dimension.defNote.faceBits & APIFace_Bold)) {
+                        notApplied += " bold";
+                    }
+                    if (item.Contains ("italic") && (firstPoint.note.faceBits & APIFace_Italic) != (element.dimension.defNote.faceBits & APIFace_Italic)) {
+                        notApplied += " italic";
+                    }
+                    if (item.Contains ("underline") && (firstPoint.note.faceBits & APIFace_Underline) != (element.dimension.defNote.faceBits & APIFace_Underline)) {
+                        notApplied += " underline";
+                    }
                     if (item.Contains ("defaultWitnessForm") && firstPoint.witnessForm != element.dimension.defWitnessForm) {
                         notApplied += " witnessForm of the witness points";
                     }
@@ -17489,6 +17603,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("textHeight", dimElem.note.noteSize);
                 witnessPoint.Add ("textPen", static_cast<Int32> (dimElem.note.notePen));
                 witnessPoint.Add ("textFrame", dimElem.note.frame);
+                AddDimensionTextStyle (witnessPoint, dimElem.note);
                 witnessPoint.Add ("content", GS::UniString (dimElem.note.contentType == API_NoteContent_Custom ? "CustomText" : "MeasuredValue"));
                 witnessPoint.Add ("customText", GetDimensionNoteTextWithPlaceholder (dimElem.note));
                 witnessPoint.Add ("superscript", (dimElem.note.effectBits & APIEffect_SuperScript) != 0);
