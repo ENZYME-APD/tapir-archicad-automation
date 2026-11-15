@@ -3456,7 +3456,16 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
 
             case API_LabelID: {
-                AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
+                // A label in a section, elevation, interior elevation or 3D document belongs to the section
+                // element that shows its model element there; the owner is reported as that model element,
+                // the way the element listing commands report a section element (#2876).
+                API_Guid labelOwner = elem.label.parent;
+                API_ElemTypeID labelOwnerType = GetElemTypeId (elem.label.parentType);
+                if (labelOwnerType == API_SectElemID) {
+                    labelOwner = GetParentElemOfSectElem (labelOwner);
+                    labelOwnerType = API_ZombieElemID; // read from the owner's header
+                }
+                AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), labelOwner, labelOwnerType);
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.label.begC));
                 typeSpecificDetails.Add ("midCoordinate", Create2DCoordinateObjectState (elem.label.midC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.label.endC));
