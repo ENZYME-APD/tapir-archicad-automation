@@ -4530,6 +4530,9 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     return changed;
 }
 
+} // namespace
+
+// Declared in CommandBase.hpp and used by GetDetailsOfElements, so outside the anonymous namespace.
 bool ColumnCoreSymbolTypeToString (short coreSymbolType, GS::UniString& out)
 {
     switch (coreSymbolType) {
@@ -4549,6 +4552,8 @@ bool ColumnCoreSymbolTypeFromString (const GS::UniString& str, short& out)
     if (str == "CrossHair") { out = 4; return true; }
     return false;
 }
+
+namespace {
 
 namespace {
 
