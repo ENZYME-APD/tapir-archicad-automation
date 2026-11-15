@@ -16146,6 +16146,76 @@
             "settings"
         ]
     },
+    "InteriorElevationSegmentSettableDetails": {
+        "type": "object",
+        "description": "The changes to one segment of an Interior Elevation, for SetInteriorElevationsDetails. Only the fields given are changed.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the segment in the segments that GetDetailsOfElements returns for the interior elevation, from 0."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the segment, shown in the Project Map."
+            },
+            "id": {
+                "type": "string",
+                "description": "The new reference ID of the segment, shown in its marker and in the Project Map."
+            },
+            "settings": {
+                "$ref": "#/SectionElevationSettableDetails",
+                "description": "The segment settings to change (API_SectionSegment), with the keys of SetSectionsAndElevationsDetails. showOnStories, storyToShowOn and markerShowType are not settings of a segment and are refused here; showOnStories and storyToShowOn are set on the interior elevation itself."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentIndex"
+        ]
+    },
+    "InteriorElevationSettableDetails": {
+        "type": "object",
+        "description": "The settings of an Interior Elevation element and of its segments that SetInteriorElevationsDetails changes, with the keys of InteriorElevationDetails. Only the fields given are changed.",
+        "properties": {
+            "showOnStories": {
+                "type": "string",
+                "enum": ["All", "OneStory", "InRange", "PartRange"],
+                "description": "Which stories the interior elevation is shown on."
+            },
+            "storyToShowOn": {
+                "type": "integer",
+                "description": "The story index the interior elevation is shown on, if showOnStories is 'OneStory'."
+            },
+            "useCommonMarker": {
+                "type": "boolean",
+                "description": "Whether the common marker of the interior elevation is shown."
+            },
+            "commonMarkerPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the common marker."
+            },
+            "commonMarkerFontIndex": {
+                "type": "integer",
+                "description": "Font index of the common marker."
+            },
+            "commonMarkerSize": {
+                "type": "number",
+                "description": "Size of the common marker."
+            },
+            "commonMarkerTextSize": {
+                "type": "number",
+                "description": "Size of the common marker's text."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The segments to change, each chosen by its segmentIndex. Segments not listed are kept as they are.",
+                "items": {
+                    "$ref": "#/InteriorElevationSegmentSettableDetails"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "PictureAnchorPoint": {
         "type": "string",
         "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
