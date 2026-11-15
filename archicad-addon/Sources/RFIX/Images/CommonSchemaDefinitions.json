@@ -5067,6 +5067,16 @@
             "EntireElement"
         ]
     },
+    "ColumnCoreSymbolType": {
+        "type": "string",
+        "description": "Core symbol of a column in the floor plan (API_ColumnType::coreSymbolType): Plain (no symbol), Slash, X or CrossHair.",
+        "enum": [
+            "Plain",
+            "Slash",
+            "X",
+            "CrossHair"
+        ]
+    },
     "ElemProjectionMode": {
         "type": "string",
         "description": "Floor plan projection mode of an element part (API_ElemProjectionModesID).",
@@ -11291,6 +11301,17 @@
             "coreSymbolPen": {
                 "type": "integer",
                 "description": "Pen of the core symbol lines (slash, X or crosshair) of the column."
+            },
+            "coreSymbolType": {
+                "$ref": "#/ColumnCoreSymbolType"
+            },
+            "coreSymbolPar1": {
+                "type": "number",
+                "description": "Length of the crosshair outside the column's contour line, used by the CrossHair core symbol."
+            },
+            "coreSymbolPar2": {
+                "type": "number",
+                "description": "Distance of the crosshair from the column's centre, used by the CrossHair core symbol."
             },
             "belowViewLinePen": {
                 "type": "integer",

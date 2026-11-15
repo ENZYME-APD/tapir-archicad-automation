@@ -3363,6 +3363,15 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("veneerLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.venLineType)));
                 }
                 typeSpecificDetails.Add ("coreSymbolPen", (Int32) elem.column.coreSymbolPen);
+                {
+                    // The core symbol and its crosshair sizes, written by ModifyColumns (#2858).
+                    GS::UniString coreSymbolType;
+                    if (ColumnCoreSymbolTypeToString (elem.column.coreSymbolType, coreSymbolType)) {
+                        typeSpecificDetails.Add ("coreSymbolType", coreSymbolType);
+                    }
+                }
+                typeSpecificDetails.Add ("coreSymbolPar1", elem.column.coreSymbolPar1);
+                typeSpecificDetails.Add ("coreSymbolPar2", elem.column.coreSymbolPar2);
                 typeSpecificDetails.Add ("belowViewLinePen", (Int32) elem.column.belowViewLinePen);
                 if (elem.column.belowViewLineType != APIInvalidAttributeIndex) {
                     typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.belowViewLineType)));

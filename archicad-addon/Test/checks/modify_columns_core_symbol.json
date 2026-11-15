@@ -1,0 +1,114 @@
+{
+  "title": "GetDetailsOfElements reads, and ModifyColumns writes, the core symbol of a column and its crosshair sizes (#2858)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Column" ],
+  "steps": [
+    {
+      "id": "a column away from the origin",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 920.0, "y": 920.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "read the core symbol fields",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coreSymbolType", "exists": true },
+        { "path": "detailsOfElements[0].details.coreSymbolPar1", "exists": true },
+        { "path": "detailsOfElements[0].details.coreSymbolPar2", "exists": true }
+      ]
+    },
+    {
+      "id": "write a crosshair with its sizes",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c1}" },
+            "coreSymbolType": "CrossHair",
+            "coreSymbolPar1": 0.15,
+            "coreSymbolPar2": 0.05,
+            "coreSymbolPen": 23
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "crosshair written" }
+      ]
+    },
+    {
+      "id": "read the crosshair back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coreSymbolType", "eq": "CrossHair" },
+        { "path": "detailsOfElements[0].details.coreSymbolPar1", "approx": 0.15, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.coreSymbolPar2", "approx": 0.05, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.coreSymbolPen", "eq": 23 }
+      ]
+    },
+    {
+      "id": "switch to the X symbol",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          { "elementId": { "guid": "${c1}" }, "coreSymbolType": "X" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "X written" }
+      ]
+    },
+    {
+      "id": "read the X symbol back, the sizes kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coreSymbolType", "eq": "X" },
+        { "path": "detailsOfElements[0].details.coreSymbolPar1", "approx": 0.15, "tol": 0.0001, "name": "crosshair length kept" },
+        { "path": "detailsOfElements[0].details.coreSymbolPen", "eq": 23, "name": "pen kept" }
+      ]
+    },
+    {
+      "id": "a negative crosshair size fails the item and changes nothing",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          { "elementId": { "guid": "${c1}" }, "coreSymbolPen": 30, "coreSymbolType": "Slash", "coreSymbolPar1": -0.1 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "negative size refused" }
+      ]
+    },
+    {
+      "id": "the column is unchanged",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coreSymbolType", "eq": "X", "name": "symbol kept" },
+        { "path": "detailsOfElements[0].details.coreSymbolPar1", "approx": 0.15, "tol": 0.0001, "name": "crosshair length kept" },
+        { "path": "detailsOfElements[0].details.coreSymbolPen", "eq": 23, "name": "pen kept" }
+      ]
+    }
+  ]
+}
