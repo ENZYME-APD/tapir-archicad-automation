@@ -14776,7 +14776,7 @@
           },
           "paragraphCount": {
             "type": "integer",
-            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands write one paragraph per line of the content)."
           },
           "runs": {
             "type": "array",
@@ -15421,7 +15421,7 @@
             },
             "paragraphCount": {
                 "type": "integer",
-                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands write one paragraph per line of the content)."
             },
             "runs": {
                 "type": "array",
@@ -17942,7 +17942,7 @@
             },
             "height": {
                 "type": "number",
-                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
+                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content (one paragraph per line) with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
                 "$ref": "#/Justification",

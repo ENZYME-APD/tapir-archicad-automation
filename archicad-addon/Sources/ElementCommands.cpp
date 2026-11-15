@@ -5108,7 +5108,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         GS::UniString text;
                         if (typeSpecificDetails->Get ("text", text)) {
                             // Same content handling as CreateTexts: the whole textContent is replaced
-                            // and the paragraphs memo is rebuilt as a single paragraph/run, so any
+                            // and the paragraphs memo is rebuilt with one run and one paragraph per line, so any
                             // per-run formatting of the old content is dropped and the element becomes
                             // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
                             // A new height given alongside is carried into the rebuilt run via elem.text.size.
