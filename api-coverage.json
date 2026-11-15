@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 08:37 UTC",
+ "generatedAt": "2026-11-15 09:46 UTC",
  "versions": [
   25,
   26,
@@ -7105,8 +7105,17 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2850,
+     "title": "CreateInteriorElevations: place each item on its floorIndex story"
+    }
+   ],
    "issues": [
+    {
+     "number": 2849,
+     "title": "CreateInteriorElevations: floorIndex is ignored, the interior elevation is placed on the current story (success)"
+    },
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
@@ -16293,6 +16302,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2850,
+     "title": "CreateInteriorElevations: place each item on its floorIndex story"
+    },
+    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -16463,6 +16476,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2850,
+     "title": "CreateInteriorElevations: place each item on its floorIndex story"
+    },
     {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
@@ -19767,7 +19784,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2847,
+     "title": "SetZoom: show the whole model box in a rotated floor plan window"
+    }
+   ],
    "issues": [
     {
      "number": 2846,
@@ -20015,7 +20037,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2847,
+     "title": "SetZoom: show the whole model box in a rotated floor plan window"
+    }
+   ],
    "issues": [
     {
      "number": 2846,
@@ -25597,6 +25624,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2850,
+     "title": "CreateInteriorElevations: place each item on its floorIndex story"
+    },
     {
      "number": 2841,
      "title": "Dimensions: font and bold/italic/underline on associative dimensions"
@@ -37793,6 +37824,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2850,
+     "title": "CreateInteriorElevations: place each item on its floorIndex story"
+    },
     {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
