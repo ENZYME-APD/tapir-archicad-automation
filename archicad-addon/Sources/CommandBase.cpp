@@ -1830,6 +1830,8 @@ GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
     return name;
 }
 
+static bool IsFontAddedBySearch (short fontIndex);
+
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
 {
     GS::Array<short> fontIndices;
@@ -1849,7 +1851,7 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
     GS::Optional<short> caseInsensitiveMatch;
     for (const short fontIndex : fontIndices) {
         const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
-        if (!name.HasValue ()) {
+        if (!name.HasValue () || IsFontAddedBySearch (fontIndex)) {
             continue;
         }
         if (*name == fontName) {
@@ -1884,6 +1886,25 @@ static Int32 GetLoadedFontCount ()
 #endif
 }
 
+// The fonts Archicad's search added to the font list for a name no font has, with the name they
+// got: a later search for that name finds them as if they were loaded (#2839, Archicad 30).
+static std::map<short, GS::UniString>& FontsAddedBySearch ()
+{
+    static std::map<short, GS::UniString> fonts;
+    return fonts;
+}
+
+static bool IsFontAddedBySearch (short fontIndex)
+{
+    const std::map<short, GS::UniString>& fonts = FontsAddedBySearch ();
+    const auto found = fonts.find (fontIndex);
+    if (found == fonts.end ()) {
+        return false;
+    }
+    const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
+    return name.HasValue () && *name == found->second;
+}
+
 GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
 {
     // Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
@@ -1909,7 +1930,15 @@ GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
     // Only an index of a font that was loaded before the search is returned: on Archicad 26 and 28
     // (German) a name no font has was answered with NoError and a new index (1907, 1908), as if
     // the search had added the font to the list (#2470).
-    if (foundIndex < 1 || foundIndex > loadedFontCount || !GetFontNameFromIndex (foundIndex).HasValue ()) {
+    // Archicad 30 keeps the added font in the list, so it is remembered and refused again later.
+    if (foundIndex > loadedFontCount) {
+        const GS::Optional<GS::UniString> addedName = GetFontNameFromIndex (foundIndex);
+        if (addedName.HasValue ()) {
+            FontsAddedBySearch ()[foundIndex] = *addedName;
+        }
+        return GS::NoValue;
+    }
+    if (foundIndex < 1 || !GetFontNameFromIndex (foundIndex).HasValue () || IsFontAddedBySearch (foundIndex)) {
         return GS::NoValue;
     }
     return foundIndex;

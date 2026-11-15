@@ -129,6 +129,29 @@
       ]
     },
     {
+      "id": "GetFontsByName: the refused font is still not loaded",
+      "command": "GetFontsByName",
+      "creates": false,
+      "params": { "fontNames": [ "Tapir Check No Such Font" ] },
+      "expect": [
+        { "path": "fonts[0].error", "exists": true, "name": "unknown font not found after a refusal" },
+        { "path": "fonts[0].fontIndex", "exists": false, "name": "no index for the unknown font" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: the same unknown font again",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textStyle": { "fontName": "Tapir Check No Such Font" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown font refused the second time" }
+      ]
+    },
+    {
       "id": "the refused font changed nothing",
       "command": "GetDetailsOfElements",
       "creates": false,
