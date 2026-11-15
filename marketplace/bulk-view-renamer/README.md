@@ -15,7 +15,8 @@ anything is renamed.
    (Stories, Sections, Elevations, ...), which open and close the same way.
 3. In *Views in* choose the whole map or one folder (its subfolders are included), and in
    *Type* all types or one type of view.
-4. Choose how the names change:
+4. In *Rename* choose *Name* or *ID* (one field per run), then how it changes (the table's *New
+   name* column is the new ID when *ID* is chosen, and clashes are checked among IDs):
    - *Find and replace*: *Find* and *Replace with*, optionally *Match case* and
      *Regular expression*.
    - *Prefix and suffix*: *Add before* and *Add after*.
@@ -44,7 +45,8 @@ one in the window's status line. It writes no files.
 
 ## Limits
 
-- Only view names change, not view IDs or the views' settings.
+- Only the chosen field (name or ID) changes, not the views' settings. An ID that would become
+  empty is skipped, because Archicad ignores an empty ID.
 - In the Project Map only sections, elevations, interior elevations, details and worksheets can
   be renamed. Archicad does not let a script rename the other viewpoints (stories, 3D views,
   schedules, project indexes, lists) through the Navigator, so they are listed as

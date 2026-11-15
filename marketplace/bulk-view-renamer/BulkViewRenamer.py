@@ -14,7 +14,8 @@
 Bulk View Renamer
 
 Lists the views of the View Map, or the viewpoints of the Project Map, or of
-one of their folders, and renames them in one go: find and replace (optionally
+one of their folders, and renames them in one go - their names or their IDs, one
+field per run: find and replace (optionally
 a regular expression), a prefix and a suffix, or a pattern with a counter. The
 views are shown in the map's folders, which open and close, with each view's
 type (floor plan, section, elevation, schedule, ...), and can be limited to one
@@ -68,6 +69,7 @@ FOLDER_TYPES = ("FolderItem", "UndefinedItem")  # UndefinedItem: clone folders
 PATH_SEPARATOR = " / "
 PREVIEW_LINES = 15
 MODES = [("replace", "Find and replace"), ("affix", "Prefix and suffix"), ("pattern", "Pattern with counter")]
+FIELD_NAME, FIELD_ID = "Name", "ID"  # the field that is renamed, one per run
 PATTERN_TOKEN = re.compile(r"\{(name|id|n)\}")
 
 STATUS_RENAME, STATUS_UNCHANGED, STATUS_EMPTY, STATUS_CLASH, STATUS_KEPT, STATUS_FIXED = (
@@ -85,8 +87,13 @@ class View:
     # the folders above the view, outermost first, as (guid, name)
     folder_chain: tuple[tuple[str, str], ...] = ()
     renamable: bool = True  # False for the Project Map viewpoints Archicad does not let be renamed
-    new_name: str = ""
+    new_name: str = ""  # the new value of the field that is renamed (the name or the ID)
     status: str = STATUS_UNCHANGED
+
+
+def current_value(view: View, field: str) -> str:
+    """ The name or the ID of the view, whichever field is renamed. """
+    return view.view_id if field == FIELD_ID else view.name
 
 
 def type_name(view_type: str) -> str:
@@ -180,11 +187,17 @@ class BulkViewRenamer:
         self.type_box.bind("<<ComboboxSelected>>", lambda _e: self._fill_table())
 
         self.mode = tk.StringVar(value=MODES[0][0])
+        self.field = tk.StringVar(value=FIELD_NAME)
         modes = ttk.Frame(body)
         modes.grid(row=1, column=0, sticky="ew")
-        for column, (key, caption) in enumerate(MODES):
+        ttk.Label(modes, text="Rename:").grid(row=0, column=0, sticky="w")
+        for column, caption in enumerate((FIELD_NAME, FIELD_ID), start=1):
+            ttk.Radiobutton(modes, text=caption, value=caption, variable=self.field,
+                            command=self._change_field).grid(row=0, column=column, sticky="w", padx=(6, 0))
+        for column, (key, caption) in enumerate(MODES, start=3):
             ttk.Radiobutton(modes, text=caption, value=key, variable=self.mode,
-                            command=self._show_mode).grid(row=0, column=column, sticky="w", padx=(0, 16))
+                            command=self._show_mode).grid(row=0, column=column, sticky="w",
+                                                          padx=(24 if column == 3 else 0, 16))
 
         self.options = ttk.Frame(body, padding=(0, 6, 0, 8))
         self.options.grid(row=2, column=0, sticky="ew")
@@ -203,7 +216,7 @@ class BulkViewRenamer:
                                          ("Digits:", "digits", 4)], []),
         }
         ttk.Label(self.mode_frames["pattern"], style="Muted.TLabel",
-                  text="{name} is the current name, {id} the view's ID, {n} the counter "
+                  text="{name} is the view's name, {id} its ID, {n} the counter "
                        "(counting in map order over the listed views, or the selected ones).").grid(
             row=1, column=0, columnspan=8, sticky="w", pady=(4, 0))
         for variable in self.vars.values():
@@ -249,6 +262,10 @@ class BulkViewRenamer:
             column += 1
         return frame
 
+    def _change_field(self) -> None:
+        self.tree.heading("new", text=f"New {self.field.get().lower()}")
+        self._update_preview()
+
     def _show_mode(self) -> None:
         for key, frame in self.mode_frames.items():
             if key == self.mode.get():
@@ -268,10 +285,11 @@ class BulkViewRenamer:
     def _renamer(self):
         """ A function giving the new name of a view and its counter value, or raising ValueError. """
         mode = self.mode.get()
+        field = self.field.get()
         if mode == "replace":
             find = self.vars["find"].get()
             if not find:
-                return lambda view, _n: view.name
+                return lambda view, _n: current_value(view, field)
             flags = 0 if self.vars["case"].get() else re.IGNORECASE
             try:
                 expression = re.compile(find if self.vars["regex"].get() else re.escape(find), flags)
@@ -281,14 +299,14 @@ class BulkViewRenamer:
             if self.vars["regex"].get():
                 def regex_replace(view: View, _n: int) -> str:
                     try:
-                        return expression.sub(replacement, view.name)
+                        return expression.sub(replacement, current_value(view, field))
                     except (re.error, IndexError) as e:  # e.g. \2 with one group
                         raise ValueError(f"The replacement is not valid: {e}") from e
                 return regex_replace
-            return lambda view, _n: expression.sub(lambda _m: replacement, view.name)
+            return lambda view, _n: expression.sub(lambda _m: replacement, current_value(view, field))
         if mode == "affix":
             prefix, suffix = self.vars["prefix"].get(), self.vars["suffix"].get()
-            return lambda view, _n: f"{prefix}{view.name}{suffix}"
+            return lambda view, _n: f"{prefix}{current_value(view, field)}{suffix}"
         pattern = self.vars["pattern"].get()
         digits = max(0, min(self._int("digits", 0), 10))
 
@@ -305,7 +323,7 @@ class BulkViewRenamer:
             self._compute_new_names(selected)
         except ValueError as e:
             for view in self.listed:
-                view.new_name, view.status = view.name, STATUS_UNCHANGED
+                view.new_name, view.status = current_value(view, self.field.get()), STATUS_UNCHANGED
             self._show_rows()
             self.rename_button.state(["disabled"])
             self.window.set_status(str(e), "error")
@@ -339,19 +357,20 @@ class BulkViewRenamer:
     def _compute_new_names(self, selected: set[str]) -> None:
         """ Sets the new name and the status of every listed view; raises ValueError on bad settings. """
         renamer = self._renamer()
+        field = self.field.get()
         counter, step = self._int("start", 1), self._int("step", 1)
         for view in self.listed:
             if not view.renamable:  # listed to keep the map's structure, but neither renamed nor counted
-                view.new_name, view.status = view.name, STATUS_FIXED
+                view.new_name, view.status = current_value(view, field), STATUS_FIXED
                 continue
             if selected and view.guid not in selected:
-                view.new_name, view.status = view.name, STATUS_KEPT
+                view.new_name, view.status = current_value(view, field), STATUS_KEPT
                 continue
             view.new_name = renamer(view, counter).strip()
             counter += step
-            if not view.new_name:
+            if not view.new_name:  # an empty ID is ignored by RenameNavigatorItem, an empty name is not valid
                 view.status = STATUS_EMPTY
-            elif view.new_name == view.name:
+            elif view.new_name == current_value(view, field):
                 view.status = STATUS_UNCHANGED
             else:
                 view.status = STATUS_RENAME
@@ -360,9 +379,11 @@ class BulkViewRenamer:
         """ A renamed view clashes when another view in the same folder ends up with the same name.
         Every view of the folder counts, also those outside the scope or not selected. """
         listed = {view.guid for view in self.listed}
+        field = self.field.get()
         final_names: dict[tuple[str, str], int] = {}
         for view in self.views:
-            name = view.new_name if view.guid in listed and view.status == STATUS_RENAME else view.name
+            name = (view.new_name if view.guid in listed and view.status == STATUS_RENAME
+                    else current_value(view, field))
             key = (view.parent, name.casefold())
             final_names[key] = final_names.get(key, 0) + 1
         for view in self.listed:
@@ -437,12 +458,14 @@ class BulkViewRenamer:
         if not views:
             return
         clashes = sum(1 for view in views if view.status == STATUS_CLASH)
-        lines = [f"{view.name}  →  {view.new_name}" for view in views[:PREVIEW_LINES]]
+        field = self.field.get()
+        label = field if field == FIELD_ID else field.lower()
+        lines = [f"{view.name}: {current_value(view, field)}  →  {view.new_name}" for view in views[:PREVIEW_LINES]]
         if len(views) > PREVIEW_LINES:
             lines.append(f"... and {len(views) - PREVIEW_LINES} more")
-        message = f"Rename {len(views)} view(s)?\n\n" + "\n".join(lines)
+        message = f"Change the {label} of {len(views)} view(s)?\n\n" + "\n".join(lines)
         if clashes:
-            message += (f"\n\n{clashes} of them will have the same name as another view in their folder "
+            message += (f"\n\n{clashes} of them will have the same {label} as another view in their folder "
                         "(marked as clash in the table).")
         if not self.window.ask_ok_cancel(SCRIPT_NAME, message):
             return
@@ -450,10 +473,11 @@ class BulkViewRenamer:
         failures: list[tuple[View, str]] = []
         try:
             with self.window.busy(f"Renaming {len(views)} view(s)..."):
+                key = "newId" if field == FIELD_ID else "newName"
                 for view in views:
                     try:
                         run_tapir("RenameNavigatorItem", {"navigatorItemId": {"guid": view.guid},
-                                                          "newName": view.new_name})
+                                                          key: view.new_name})
                     except ArchicadError as e:
                         failures.append((view, str(e)))
         finally:
@@ -461,7 +485,7 @@ class BulkViewRenamer:
             self.read()
         renamed = len(views) - len(failures)
         if failures:
-            print(f"{len(failures)} view(s) could not be renamed:")
+            print(f"{len(failures)} view(s) could not be renamed ({label}):")
             for view, error in failures:
                 print(f"  {view.folder}{PATH_SEPARATOR if view.folder else ''}{view.view_id} {view.name} "
                       f"-> {view.new_name}: {error}")
@@ -469,7 +493,7 @@ class BulkViewRenamer:
             self.window.set_status(f"Renamed {renamed} view(s), {len(failures)} failed (see the palette output). "
                                    f"First: {first_view.name}: {first_error}", "error")
         else:
-            self.window.set_status(f"Renamed {renamed} view(s).", "ok")
+            self.window.set_status(f"Changed the {label} of {renamed} view(s).", "ok")
 
     def run(self) -> None:
         self.window.run(on_start=self.read)
