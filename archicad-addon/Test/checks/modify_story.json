@@ -48,9 +48,9 @@
       "command": "ModifyStory",
       "creates": false,
       "params": { "storyIndex": "${a}", "name": "Tapir Modified A", "height": 3.5, "dispOnSections": false },
-      "save": { "aLevel1": "story.level" },
+      "save": { "aLevel1": "story.level", "aIndex1": "story.index" },
       "expect": [
-        { "path": "story.index", "eq": "${a}" },
+        { "expr": "${aIndex1} - ${a}", "eq": 0, "name": "the answer is story A" },
         { "path": "story.name", "eq": "Tapir Modified A" },
         { "path": "story.dispOnSections", "eq": false },
         { "path": "story.height", "approx": 3.5, "tol": 0.001 },
@@ -208,9 +208,10 @@
       "command": "GetStories",
       "creates": false,
       "params": {},
+      "save": { "lastEnd": "lastStory", "firstEnd": "firstStory" },
       "expect": [
-        { "path": "lastStory", "eq": "${c}" },
-        { "path": "firstStory", "eq": "${first}" }
+        { "expr": "${lastEnd} - ${c}", "eq": 0, "name": "C is still the top story" },
+        { "expr": "${firstEnd} - ${first}", "eq": 0, "name": "the bottom story is kept" }
       ]
     }
   ],

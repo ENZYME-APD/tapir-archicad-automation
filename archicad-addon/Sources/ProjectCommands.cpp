@@ -2895,6 +2895,73 @@ GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, 
     if (newPosition < 0) {
         return CreateErrorResponse (APIERR_GENERAL, "Failed to find the inserted story.");
     }
+    const short newFloorId = (*storyInfo.data)[newPosition].floorId;
+
+    // Archicad does not always give the new story the height of the insert command (it keeps
+    // the height of the story it was inserted next to), so the height is set afterwards, as
+    // ModifyStory does: the new story is made the active one, APIStory_SetHeight moves the
+    // stories above it with its top, and the previously active story is restored.
+    const auto readNewHeight = [&] (double& newHeight) -> bool {
+        const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+        if (newPosition + 1 >= recordCount) {
+            return false;
+        }
+        newHeight = (*storyInfo.data)[newPosition + 1].level - (*storyInfo.data)[newPosition].level;
+        return true;
+    };
+    double newHeight = 0.0;
+    if (readNewHeight (newHeight) && std::abs (newHeight - height) >= StoryLevelTolerance) {
+        const short newStoryIndex = (*storyInfo.data)[newPosition].index;
+        const short originalActStory = storyInfo.actStory;
+        {
+            bool actStoryMoved = false;
+            const GS::OnExit restoreActStory ([&] () {
+                if (actStoryMoved) {
+                    API_StoryCmdType goBackCmd = {};
+                    goBackCmd.action = APIStory_GoTo;
+                    goBackCmd.index  = originalActStory;
+                    ACAPI_ProjectSetting_ChangeStorySettings (&goBackCmd);
+                }
+            });
+
+            API_StoryCmdType goToCmd = {};
+            goToCmd.action = APIStory_GoTo;
+            goToCmd.index  = newStoryIndex;
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "The story was inserted, but failed to make it active to set its height.");
+            }
+            actStoryMoved = newStoryIndex != originalActStory;
+
+            API_StoryCmdType heightCmd = {};
+            heightCmd.action = APIStory_SetHeight;
+            heightCmd.index  = newStoryIndex;
+            heightCmd.height = height;
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&heightCmd);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "The story was inserted, but failed to set its height.");
+            }
+        }
+
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrive stories info.");
+        }
+        newPosition = -1;
+        for (short i = 0; i <= storyInfo.lastStory - storyInfo.firstStory; ++i) {
+            if ((*storyInfo.data)[i].floorId == newFloorId) {
+                newPosition = i;
+                break;
+            }
+        }
+        if (newPosition < 0) {
+            return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+        }
+        if (readNewHeight (newHeight) && std::abs (newHeight - height) >= StoryLevelTolerance) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+                "The story was inserted, but failed to set its height: requested %.4f, got %.4f.", height, newHeight));
+        }
+    }
 
     bool dispOnSections = false;
     if (parameters.Get ("dispOnSections", dispOnSections) && (*storyInfo.data)[newPosition].dispOnSections != dispOnSections) {
@@ -3084,7 +3151,7 @@ GS::Optional<GS::UniString> ModifyStoryCommand::GetInputParametersSchema () cons
             },
             "level": {
                 "type": "number",
-                "description": "The new level of the story. Only this story moves: the story below gets taller or shorter, and the stories above stay where they are unless height is given too. It must stay above the level of the story below, and, without height, below the level of the story above."
+                "description": "The new level of the story. Only this story moves: the story below gets taller or shorter, and the stories above stay where they are unless height is given too. It must stay above the level of the story below, and, without height, below the level of the story above. On the top story without height its top stays where it is: moving it up makes it shorter by as much, and moving it down taller."
             },
             "height": {
                 "type": "number",
