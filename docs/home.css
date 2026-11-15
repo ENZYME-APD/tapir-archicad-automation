@@ -151,7 +151,7 @@
 :root:not([data-style="legacy"]) .hero .meta { font-family: var(--body); letter-spacing: normal; text-transform: none }
 :root:not([data-style="legacy"]) .plan-card { border-radius: var(--radius-card); border: 1px solid var(--line) }
 :root:not([data-style="legacy"]) .plan-bar { border-radius: 11px 11px 0 0 }
-:root:not([data-style="legacy"]) .plan-run { color: #FFFFFF; border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .plan-run { color: var(--plan-label-text); border-radius: var(--radius-control) }
 :root:not([data-style="legacy"]) .plan-sheet, :root:not([data-style="legacy"]) .plan-status { font-family: var(--body) }
 :root:not([data-style="legacy"]) .way .accent { fill: var(--accent-fill) }
 :root:not([data-style="legacy"]) .way .accent-line { stroke: var(--accent-fill) }

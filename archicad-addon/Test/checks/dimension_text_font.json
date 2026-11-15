@@ -1,5 +1,5 @@
 {
-  "title": "Associative dimensions: font and style (bold, italic, underline) of the dimension texts on create and modify, read back per witness point (#2839)",
+  "title": "Associative dimensions: textStyle font and bold/italic/underline on create and modify, read back per witness point, the other styles kept (#2839)",
   "minTapir": "2.0.1",
   "steps": [
     {
@@ -27,10 +27,7 @@
               { "coordinate": { "x": 825.0, "y": 800.0 } }
             ],
             "textHeight": 2.5,
-            "fontName": "Arial",
-            "bold": true,
-            "italic": false,
-            "underline": false
+            "textStyle": { "fontName": "Arial", "bold": true, "italic": false, "underline": false }
           }
         ]
       },
@@ -44,12 +41,13 @@
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "dFont": "detailsOfElements[0].details.textStyle.fontIndex" },
       "expect": [
-        { "path": "detailsOfElements[0].details.fontIndex", "eq": "${f}", "name": "font is Arial" },
-        { "path": "detailsOfElements[0].details.fontName", "contains": "Arial", "name": "font name read back" },
-        { "path": "detailsOfElements[0].details.bold", "eq": true, "name": "bold" },
-        { "path": "detailsOfElements[0].details.italic", "eq": false, "name": "not italic" },
-        { "path": "detailsOfElements[0].details.underline", "eq": false, "name": "not underlined" }
+        { "expr": "${dFont} - ${f}", "eq": 0, "name": "font is Arial" },
+        { "path": "detailsOfElements[0].details.textStyle.fontName", "contains": "Arial", "name": "font name read back" },
+        { "path": "detailsOfElements[0].details.textStyle.bold", "eq": true, "name": "bold" },
+        { "path": "detailsOfElements[0].details.textStyle.italic", "eq": false, "name": "not italic" },
+        { "path": "detailsOfElements[0].details.textStyle.underline", "eq": false, "name": "not underlined" }
       ]
     },
     {
@@ -57,12 +55,13 @@
       "command": "GetDimensionData",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "p0Font": "dimensionsData[0].witnessPoints[0].textStyle.fontIndex", "p2Font": "dimensionsData[0].witnessPoints[2].textStyle.fontIndex" },
       "expect": [
         { "path": "dimensionsData[0].witnessPoints", "len": 3, "name": "three witness points" },
-        { "path": "dimensionsData[0].witnessPoints[0].fontIndex", "eq": "${f}", "name": "first point in Arial" },
-        { "path": "dimensionsData[0].witnessPoints[2].fontIndex", "eq": "${f}", "name": "last point in Arial" },
-        { "path": "dimensionsData[0].witnessPoints[1].bold", "eq": true, "name": "middle point bold" },
-        { "path": "dimensionsData[0].witnessPoints[1].italic", "eq": false, "name": "middle point not italic" }
+        { "expr": "${p0Font} - ${f}", "eq": 0, "name": "first point in Arial" },
+        { "expr": "${p2Font} - ${f}", "eq": 0, "name": "last point in Arial" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.bold", "eq": true, "name": "middle point bold" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.italic", "eq": false, "name": "middle point not italic" }
       ]
     },
     {
@@ -71,7 +70,7 @@
       "creates": false,
       "params": {
         "dimensionsWithDetails": [
-          { "elementId": { "guid": "${d}" }, "bold": false, "italic": true, "underline": true }
+          { "elementId": { "guid": "${d}" }, "textStyle": { "bold": false, "italic": true, "underline": true } }
         ]
       },
       "expect": [
@@ -83,11 +82,12 @@
       "command": "GetDimensionData",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "p1Font": "dimensionsData[0].witnessPoints[1].textStyle.fontIndex" },
       "expect": [
-        { "path": "dimensionsData[0].witnessPoints[0].bold", "eq": false, "name": "first point no longer bold" },
-        { "path": "dimensionsData[0].witnessPoints[0].italic", "eq": true, "name": "first point italic" },
-        { "path": "dimensionsData[0].witnessPoints[2].underline", "eq": true, "name": "last point underlined" },
-        { "path": "dimensionsData[0].witnessPoints[1].fontIndex", "eq": "${f}", "name": "font kept" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.bold", "eq": false, "name": "first point no longer bold" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.italic", "eq": true, "name": "first point italic" },
+        { "path": "dimensionsData[0].witnessPoints[2].textStyle.underline", "eq": true, "name": "last point underlined" },
+        { "expr": "${p1Font} - ${f}", "eq": 0, "name": "font kept" },
         { "path": "dimensionsData[0].witnessPoints[1].textHeight", "approx": 2.5, "name": "text height kept" }
       ]
     },
@@ -97,7 +97,7 @@
       "creates": false,
       "params": {
         "dimensionsWithDetails": [
-          { "elementId": { "guid": "${d}" }, "underline": false }
+          { "elementId": { "guid": "${d}" }, "textStyle": { "underline": false } }
         ]
       },
       "expect": [
@@ -110,9 +110,9 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
       "expect": [
-        { "path": "dimensionsData[0].witnessPoints[1].underline", "eq": false, "name": "underline off" },
-        { "path": "dimensionsData[0].witnessPoints[1].italic", "eq": true, "name": "still italic" },
-        { "path": "dimensionsData[0].witnessPoints[1].bold", "eq": false, "name": "still not bold" }
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.underline", "eq": false, "name": "underline off" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.italic", "eq": true, "name": "still italic" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.bold", "eq": false, "name": "still not bold" }
       ]
     },
     {
@@ -121,7 +121,7 @@
       "creates": false,
       "params": {
         "dimensionsWithDetails": [
-          { "elementId": { "guid": "${d}" }, "fontName": "Tapir Check No Such Font" }
+          { "elementId": { "guid": "${d}" }, "textStyle": { "fontName": "Tapir Check No Such Font" } }
         ]
       },
       "expect": [
@@ -133,8 +133,9 @@
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "afterFont": "detailsOfElements[0].details.textStyle.fontIndex" },
       "expect": [
-        { "path": "detailsOfElements[0].details.fontIndex", "eq": "${f}", "name": "still Arial" }
+        { "expr": "${afterFont} - ${f}", "eq": 0, "name": "still Arial" }
       ]
     }
   ]

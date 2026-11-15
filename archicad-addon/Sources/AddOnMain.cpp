@@ -1580,6 +1580,8 @@ GSErrCode Initialize (void)
             "height, a Wall's reference line location, height and top link, a Column's height, top link and "
             "cross section width and depth, a Beam's cross section width and height) that are copied back after "
             "the Favorite has been applied, so that e.g. only the library part or the wall type changes. "
+            "settingGroups is the positive list instead: e.g. only FloorPlanAndSection applies just the pens, "
+            "line types, story visibility and cut and cover fills of a Column or Beam, and nothing else of the Favorite. "
             "With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, "
             "or to every element of its type that matches the filter."
         );
@@ -2037,6 +2039,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RenameAttributesCommand> (
             attributeCommands, "2.0.0",
             "Renames attributes of any type (layers, layer combinations, composites, surfaces, ...). Each attribute keeps its index, its id and its settings. A new name that another attribute of the same type already has is refused, and so is renaming the attributes Archicad does not allow to change (the built-in Archicad Layer, the Solid and Empty fills)."
+        );
+        err |= RegisterCommand<ModifyLayersCommand> (
+            attributeCommands, "2.0.1",
+            "Changes the given settings of existing layers: shown or hidden, locked, wireframe, the intersection group and the name. Only the given fields of a layer are changed; every other setting is kept, so unlike CreateLayers with overwriteExisting the whole layer need not be given. Archicad keeps the shown, locked and wireframe state of a layer per open window; like CreateLayers, this changes it in the current window. A name must not be empty or used by another layer, and the built-in Archicad Layer cannot be renamed. Each layer gets its own execution result. In a Teamwork project the LayerSettingsDialog lockable object set must be reserved first (see ReserveLockableObjectSet)."
         );
         err |= RegisterCommand<GetLinesCommand> (
             attributeCommands, "1.5.4",
