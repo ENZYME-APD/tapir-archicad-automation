@@ -12740,6 +12740,10 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                             "exclusiveMinimum": 0.0
                         },
                         "eavesOverhang": { "type": "number" },
+                        "fitSkylightToCurve": {
+                            "type": "boolean",
+                            "description": "Multi-plane roofs only: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments, as GetDetailsOfElements reports it. When omitted the new roof gets the value of the roof tool default."
+                        },
                         "levels": {
                             "type": "array",
                             "minItems": 1,
@@ -12805,9 +12809,13 @@ GS::ObjectState CreateRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             GS::Array<GS::ObjectState> roofLevels;
-            if (isSinglePlane && (data.Get ("levels", roofLevels) || GetOptionalDouble (data, "eavesOverhang").HasValue ())) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'levels' and 'eavesOverhang' are only valid for multi-plane roofs (omit 'pivotLine' to create one)."));
+            if (isSinglePlane && (data.Get ("levels", roofLevels) || GetOptionalDouble (data, "eavesOverhang").HasValue () || data.Contains ("fitSkylightToCurve"))) {
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'fitSkylightToCurve' are only valid for multi-plane roofs (omit 'pivotLine' to create one)."));
                 continue;
+            }
+            bool fitSkylightToCurve = false;
+            if (!isSinglePlane && data.Get ("fitSkylightToCurve", fitSkylightToCurve)) {
+                element.roof.u.polyRoof.fitSkylightToCurve = fitSkylightToCurve;
             }
             if (!isSinglePlane && GetOptionalDouble (data, "angle").HasValue ()) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "'angle' is only valid for single-plane roofs (add 'pivotLine' to create one)."));
@@ -16690,6 +16698,10 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "minimum": 3,
                             "description": "Multi-plane roofs only: the number of segments of a whole circle with segmentType SegmentsByCircle. Written as segmentType is."
                         },
+                        "fitSkylightToCurve": {
+                            "type": "boolean",
+                            "description": "Multi-plane roofs only: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments, as GetDetailsOfElements reports it. Moves neither the pivot polygon nor the contour; the roof is read back and the item fails when Archicad did not apply it."
+                        },
                         "structureType": {
                             "$ref": "#/RoofStructureType"
                         },
@@ -16813,8 +16825,8 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             // The fields of the other roof class would be written into the wrong member of
             // the roof's union (u.planeRoof / u.polyRoof), so they are refused.
             if (isPlaneRoof && (item.Contains ("levels") || item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") || item.Contains ("contourPolygon") ||
-                                item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges', 'contourPolygon', 'segmentType', 'segmentsByArc' and 'segmentsByCircle' are only valid for multi-plane roofs."));
+                                item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle") || item.Contains ("fitSkylightToCurve"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang', 'pivotEdges', 'contourPolygon', 'segmentType', 'segmentsByArc', 'segmentsByCircle' and 'fitSkylightToCurve' are only valid for multi-plane roofs."));
                 continue;
             }
             // The segmentation of curved pivot edges makes the contour again too (#2582).
@@ -16873,16 +16885,40 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 changed = changed || segmentationGiven;
             }
-            // A successful result of a multi-plane roof whose segmentation was given becomes a
-            // failure when the roof read back does not have it.
+            // How skylights follow the curved planes of a multi-plane roof (#2867). It moves no
+            // polygon, so it combines with every other field.
+            bool fitSkylightToCurve = false;
+            const bool fitSkylightGiven = !isPlaneRoof && item.Get ("fitSkylightToCurve", fitSkylightToCurve);
+            if (fitSkylightGiven) {
+                element.roof.u.polyRoof.fitSkylightToCurve = fitSkylightToCurve;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, u.polyRoof.fitSkylightToCurve);
+                changed = true;
+            }
+            // A successful result of a multi-plane roof whose segmentation or fitSkylightToCurve
+            // was given becomes a failure when the roof read back does not have it.
             const API_Guid roofGuid = element.header.guid;
             const auto checkSegmentation = [&] (const GS::ObjectState& result) -> GS::ObjectState {
                 bool success = false;
-                if (!segmentationGiven || !result.Get ("success", success) || !success) {
+                if ((!segmentationGiven && !fitSkylightGiven) || !result.Get ("success", success) || !success) {
                     return result;
                 }
-                const auto checkError = CheckRoofSegmentation (roofGuid, item);
-                return checkError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()) : result;
+                if (segmentationGiven) {
+                    const auto checkError = CheckRoofSegmentation (roofGuid, item);
+                    if (checkError.HasValue ()) {
+                        return CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ());
+                    }
+                }
+                if (fitSkylightGiven) {
+                    API_Element readBack = {};
+                    readBack.header.guid = roofGuid;
+                    if (ACAPI_Element_Get (&readBack) != NoError) {
+                        return CreateFailedExecutionResult (APIERR_GENERAL, "Modified the roof, but failed to read it back to check fitSkylightToCurve.");
+                    }
+                    if (readBack.roof.u.polyRoof.fitSkylightToCurve != fitSkylightToCurve) {
+                        return CreateFailedExecutionResult (APIERR_GENERAL, fitSkylightToCurve ? "Archicad did not apply fitSkylightToCurve true." : "Archicad did not apply fitSkylightToCurve false.");
+                    }
+                }
+                return result;
             };
             {
                 bool cutBodyGiven = false;
@@ -16977,7 +17013,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
                 auto checkError = CheckRoofContour (element.header.guid, contourOutline, contourHoles.GetSize ());
-                results.Push (checkError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()) : CreateSuccessfulExecutionResult ());
+                results.Push (checkSegmentation (checkError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()) : CreateSuccessfulExecutionResult ()));
                 continue;
             }
 
@@ -17085,7 +17121,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                         contourMask |= APIMemoMask_RoofEdgeTypes;
                     }
                     err = ACAPI_Element_Change (&element, &mask, &contourMemo, contourMask, true);
-                    results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the edge trims of the roof."));
+                    results.Push (checkSegmentation (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the edge trims of the roof.")));
                     continue;
                 }
                 if (changed) {
@@ -17120,7 +17156,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     memoMask |= APIMemoMask_RoofEdgeTypes;
                 }
                 err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : hasEdgeTypes ? "Failed to modify the edge types of the roof." : "Failed to modify the edge surfaces of the roof."));
+                results.Push (checkSegmentation (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : hasEdgeTypes ? "Failed to modify the edge types of the roof." : "Failed to modify the edge surfaces of the roof.")));
                 continue;
             }
 
