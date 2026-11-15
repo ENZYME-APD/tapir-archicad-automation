@@ -465,7 +465,9 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetStoriesCommand> (
             projectCommands, "1.1.5",
-            "Sets the story sructure of the currently loaded project."
+            "Sets the story structure of the currently loaded project to the given list of stories. "
+            "Existing stories outside the list are deleted, and Archicad deletes every element whose home story they are with them; dryRun lists those stories with the number of elements on each, without changing anything. "
+            "To add, change or delete a single story, use InsertStory or DeleteStory instead."
         );
         err |= RegisterCommand<InsertStoryCommand> (
             projectCommands, "2.0.1",

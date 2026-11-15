@@ -2389,6 +2389,8 @@ static GSErrCode RefreshStoryInfo (API_StoryInfo& storyInfo)
     return ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
 }
 
+static GSErrCode CountElementsOnStory (const short storyIndex, GS::USize& count);
+
 SetStoriesCommand::SetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -2406,6 +2408,10 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
         "properties": {
             "stories": {
                 "$ref": "#/StoriesSettings"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun",
+                "description": "If true, nothing is changed in the project and no undo step is created: the list is checked as in a real run, and the response lists the existing stories a real run would delete (with the number of elements Archicad would delete with each) and the number of stories it would insert. Default is false."
             }
         },
         "additionalProperties": false,
@@ -2418,34 +2424,125 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
 GS::Optional<GS::UniString> SetStoriesCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "Whether the story structure was set, or on a dry run, whether the list passed the checks a real run makes first."
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDeleteStories": {
+                "type": "array",
+                "description": "Only on a successful dry run: the existing stories a real run would delete, from the bottom up. Empty when it would delete none.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the story."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the story."
+                        },
+                        "elementCount": {
+                            "type": "integer",
+                            "description": "The number of elements whose home story is the story (in the floor plan database): Archicad deletes them together with it."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "name",
+                        "elementCount"
+                    ]
+                }
+            },
+            "wouldInsertStoryCount": {
+                "type": "integer",
+                "description": "Only on a successful dry run: the number of new stories a real run would add, the requested stories with no existing story at their index."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
     })";
 }
 
 
 GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    const bool dryRun = IsDryRun (parameters);
+    const auto failed = [dryRun] (GSErrCode errorCode, const GS::UniString& errorMessage) {
+        GS::ObjectState result = CreateFailedExecutionResult (errorCode, errorMessage);
+        AddDryRunField (result, dryRun);
+        return result;
+    };
+
     GS::Array<GS::ObjectState> stories;
     parameters.Get ("stories", stories);
 
     if (stories.IsEmpty ()) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "stories is missing or empty.");
+        return failed (APIERR_BADPARS, "stories is missing or empty.");
     }
 
     API_StoryInfo storyInfo = {};
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
     if (err != NoError) {
         BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        return failed (err, "Failed to retrive stories info.");
     }
 
     short newFirstStory = storyInfo.firstStory;
     if (!GetNewFirstStoryIndex (stories, storyInfo.firstStory, newFirstStory)) {
         BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-        return CreateFailedExecutionResult (APIERR_BADPARS, "The given story indices are not consecutive.");
+        return failed (APIERR_BADPARS, "The given story indices are not consecutive.");
     }
 
     const short newLastStory = newFirstStory + static_cast<short> (stories.GetSize ()) - 1;
+
+    if (dryRun) {
+        // A real run first inserts stories below and above the existing structure until it
+        // spans the requested indices, then deletes every story outside them; the inserted
+        // stories are all inside, so the deleted ones are the existing stories outside the
+        // requested index range, and the elements deleted are the ones on those stories.
+        GS::Array<StorySnapshot> existingStories;
+        TakeStorySnapshot (storyInfo, existingStories);
+        const short firstStory = storyInfo.firstStory;
+        const short lastStory  = storyInfo.lastStory;
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+
+        GS::ObjectState result ("success", true);
+        const auto& wouldDeleteStories = result.AddList<GS::ObjectState> ("wouldDeleteStories");
+        for (const StorySnapshot& story : existingStories) {
+            if (story.index >= newFirstStory && story.index <= newLastStory) {
+                continue;
+            }
+
+            GS::USize elementCount = 0;
+            err = CountElementsOnStory (story.index, elementCount);
+            if (err != NoError) {
+                return failed (err, "Failed to count the elements on the stories to delete.");
+            }
+
+            wouldDeleteStories (GS::ObjectState (
+                "index", story.index,
+                "name", story.name,
+                "elementCount", static_cast<Int32> (elementCount)));
+        }
+
+        // The requested stories without an existing story at their index are the new ones.
+        const Int32 overlap = GS::Max (0, GS::Min (lastStory, newLastStory) - GS::Max (firstStory, newFirstStory) + 1);
+        result.Add ("wouldInsertStoryCount", static_cast<Int32> (stories.GetSize ()) - overlap);
+        AddDryRunField (result, dryRun);
+        return result;
+    }
 
     // Grow the structure first - downwards and upwards - and only then cut off the
     // stories which are not needed any more, so the project never runs out of stories.
