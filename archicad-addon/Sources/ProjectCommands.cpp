@@ -2462,7 +2462,7 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetRawResponseSchema () const
             },
             "wouldInsertStoryCount": {
                 "type": "integer",
-                "description": "Only on a successful dry run: the number of new stories a real run would add, the requested stories with no existing story at their index."
+                "description": "Only on a successful dry run: the number of new stories a real run would add below and above the existing ones until they reach the requested indices. When the requested indices leave a gap above or below the existing stories, this includes the stories in the gap, which the real run deletes again."
             },
             "dryRun": {
                 "$ref": "#/DryRunFlag"
@@ -2509,9 +2509,10 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
 
     if (dryRun) {
         // A real run first inserts stories below and above the existing structure until it
-        // spans the requested indices, then deletes every story outside them; the inserted
-        // stories are all inside, so the deleted ones are the existing stories outside the
-        // requested index range, and the elements deleted are the ones on those stories.
+        // spans the requested indices, then deletes as many stories from the bottom and from
+        // the top as the grown structure has below and above them. So of the existing stories
+        // it deletes the ones outside the requested index range (with the elements on them),
+        // and of the inserted ones those in a gap between the existing and requested ranges.
         GS::Array<StorySnapshot> existingStories;
         TakeStorySnapshot (storyInfo, existingStories);
         const short firstStory = storyInfo.firstStory;
@@ -2537,9 +2538,11 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
                 "elementCount", static_cast<Int32> (elementCount)));
         }
 
-        // The requested stories without an existing story at their index are the new ones.
-        const Int32 overlap = GS::Max (0, GS::Min (lastStory, newLastStory) - GS::Max (firstStory, newFirstStory) + 1);
-        result.Add ("wouldInsertStoryCount", static_cast<Int32> (stories.GetSize ()) - overlap);
+        // The stories the real run inserts below and above the existing structure, including
+        // the ones in a gap between it and the requested indices, which it deletes again.
+        const Int32 insertBelowCount = GS::Max (0, static_cast<Int32> (firstStory) - static_cast<Int32> (newFirstStory));
+        const Int32 insertAboveCount = GS::Max (0, static_cast<Int32> (newLastStory) - static_cast<Int32> (lastStory));
+        result.Add ("wouldInsertStoryCount", insertBelowCount + insertAboveCount);
         AddDryRunField (result, dryRun);
         return result;
     }
@@ -2597,11 +2600,16 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
     }
 
     // Deleting a story deletes its elements as well, so never delete more stories than
-    // the number the grown structure has above the requested one.
-    GS::USize storiesToDelete = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) - stories.GetSize ();
+    // the number the grown structure has above the requested one. The number to delete
+    // from the bottom and from the top is fixed here, on the grown structure, rather than
+    // read from the indices after each deletion: Archicad may renumber the remaining
+    // stories when one is deleted, and then the stories deleted would no longer be the
+    // ones outside the requested indices (nor the ones a dry run lists).
+    GS::USize storiesToDeleteBelow = static_cast<GS::USize> (GS::Max (0, static_cast<Int32> (newFirstStory) - static_cast<Int32> (storyInfo.firstStory)));
+    GS::USize storiesToDeleteAbove = static_cast<GS::USize> (GS::Max (0, static_cast<Int32> (storyInfo.lastStory) - static_cast<Int32> (newLastStory)));
 
-    while (storiesToDelete > 0 && (storyInfo.firstStory < newFirstStory || storyInfo.lastStory > newLastStory)) {
-        const bool deleteFromBottom = storyInfo.firstStory < newFirstStory;
+    while (storiesToDeleteBelow > 0 || storiesToDeleteAbove > 0) {
+        const bool deleteFromBottom = storiesToDeleteBelow > 0;
 
         API_StoryCmdType storyCmd = {};
         storyCmd.action = APIStory_Delete;
@@ -2626,7 +2634,11 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
             return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to delete story.");
         }
 
-        --storiesToDelete;
+        if (deleteFromBottom) {
+            --storiesToDeleteBelow;
+        } else {
+            --storiesToDeleteAbove;
+        }
     }
 
     const GS::USize storyCount = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1);

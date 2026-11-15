@@ -24,7 +24,7 @@
       },
       "save": { "newIndex": "story.index", "newLevel": "story.level" },
       "expect": [
-        { "expr": "newIndex - top", "eq": 1, "name": "the new story is directly above the old top story" }
+        { "expr": "${newIndex} - ${top}", "eq": 1, "name": "the new story is directly above the old top story" }
       ]
     },
     {
@@ -110,9 +110,95 @@
         { "path": "success", "eq": false },
         { "path": "dryRun", "eq": true }
       ]
+    },
+    {
+      "id": "a story below the bottom story",
+      "command": "InsertStory",
+      "creates": false,
+      "params": {
+        "storyIndex": "${first}",
+        "position": "Below",
+        "name": "Tapir Dry Run Low Story",
+        "height": 3.0
+      },
+      "expect": [
+        { "path": "story.index", "exists": true }
+      ]
+    },
+    {
+      "id": "the stories with the low one",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "low": "firstStory", "mid": "lastStory" },
+      "expect": [
+        { "expr": "${mid} - ${low}", "gt": 1, "name": "the low story, the old stories and the dry run story" }
+      ]
+    },
+    {
+      "id": "a story above the top story",
+      "command": "InsertStory",
+      "creates": false,
+      "params": {
+        "storyIndex": "${mid}",
+        "position": "Above",
+        "name": "Tapir Dry Run High Story",
+        "height": 3.0
+      },
+      "save": { "high": "story.index" },
+      "expect": [
+        { "expr": "${high} - ${mid}", "eq": 1 }
+      ]
+    },
+    {
+      "id": "dry run trimming both ends: only the story between the new low and high ones is kept",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          { "index": "${mid}", "dispOnSections": true, "level": "${newLevel}", "name": "Tapir Dry Run Story" }
+        ],
+        "dryRun": true
+      },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "wouldDeleteStories[0].index", "eq": "${low}", "name": "the low story is deleted from the bottom" },
+        { "path": "wouldDeleteStories[0].elementCount", "eq": 0 },
+        { "path": "wouldDeleteStories[1].index", "ne": "${mid}", "name": "the kept story is not listed" },
+        { "path": "wouldInsertStoryCount", "eq": 0 }
+      ]
+    },
+    {
+      "id": "dry run of a story pinned far above the top, with a gap in between",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          { "index": 50, "dispOnSections": true, "level": 1000, "name": "Tapir Far Story" }
+        ],
+        "dryRun": true
+      },
+      "save": { "inserted": "wouldInsertStoryCount" },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "wouldDeleteStories[0].index", "eq": "${low}", "name": "every existing story is deleted, from the bottom" }
+      ]
+    },
+    {
+      "id": "a real run would insert every story from above the top one up to index 50",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "expr": "${inserted} + ${high}", "eq": 50, "name": "the stories in the gap are counted too" },
+        { "path": "firstStory", "eq": "${low}", "name": "the dry runs changed nothing at the bottom" },
+        { "path": "lastStory", "eq": "${high}", "name": "nor at the top" }
+      ]
     }
   ],
   "teardown": [
-    { "command": "DeleteStory", "params": { "storyIndex": "${newIndex}", "deleteElements": true } }
+    { "command": "DeleteStory", "params": { "storyIndex": "${high}", "deleteElements": true } },
+    { "command": "DeleteStory", "params": { "storyIndex": "${mid}", "deleteElements": true } },
+    { "command": "DeleteStory", "params": { "storyIndex": "${low}", "deleteElements": true } }
   ]
 }
