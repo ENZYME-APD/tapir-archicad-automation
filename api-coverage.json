@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 16:32 UTC",
+ "generatedAt": "2026-11-15 16:44 UTC",
  "versions": [
   25,
   26,
@@ -25658,6 +25658,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2865,
+     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
+    },
+    {
      "number": 2863,
      "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
     },
@@ -31385,6 +31389,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2865,
+     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
+    },
     {
      "number": 2863,
      "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
@@ -37876,6 +37884,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2865,
+     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
+    },
     {
      "number": 2863,
      "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
@@ -44593,6 +44605,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2865,
+     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
+    },
+    {
      "number": 2863,
      "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
     },
@@ -47752,6 +47768,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2865,
+     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
+    },
     {
      "number": 2863,
      "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
