@@ -7966,6 +7966,11 @@ static const char* StairSettingsSchemaProperties = R"(
                             "description": "The line types, pens and fills of the monolithic structure's symbol, per view (FloorPlan, CeilingPlan) and part (Visible, Hidden), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
                             "items": { "$ref": "#/StairMonolithStructureSymbolSettings" }
                         },
+                        "structureVisibilityOnStories": {
+                            "type": "array",
+                            "description": "Which structure symbols are shown on which of the stair's relevant stories, per view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns: whether one representation is used on every story, and per story range the visible structures, fills and monolithic parts. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureVisibilitySettings" }
+                        },
                         "treads": {
                             "type": "array",
                             "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
@@ -10047,6 +10052,236 @@ static GS::UniString CheckStairStructureSymbolsApplied (const API_Element& wante
     return notApplied;
 }
 
+// The visibility of the structure symbols on the stair's relevant stories (#2848):
+// API_StairType::structureVisibilityOnStories, per view, with the keys GetDetailsOfElements returns.
+static bool StairStructSymbVisibilityFromString (const GS::UniString& str, Int32& structure)
+{
+    if (str == "Beam")         { structure = APISV_Beam;         return true; }
+    if (str == "Cantilevered") { structure = APISV_Cantilevered; return true; }
+    if (str == "Stringer")     { structure = APISV_Stringer;     return true; }
+    if (str == "Monolith")     { structure = APISV_Monolith;     return true; }
+    return false;
+}
+
+static bool StairStructSymbRelevantStoriesFromString (const GS::UniString& str, Int32& stories)
+{
+    if (str == "AllStories")     { stories = APISCV_ALL_STORIES;     return true; }
+    if (str == "BelowRelevant")  { stories = APISCV_BELOW_RELEVANT;  return true; }
+    if (str == "BottomRelevant") { stories = APISCV_BOTTOM_RELEVANT; return true; }
+    if (str == "MiddleRelevant") { stories = APISCV_MID_RELEVANT;    return true; }
+    if (str == "TopRelevant")    { stories = APISCV_TOP_RELEVANT;    return true; }
+    if (str == "AboveRelevant")  { stories = APISCV_ABOVE_RELEVANT;  return true; }
+    return false;
+}
+
+static const char* const StairStructSymbViewNames[API_StairStructSymbViewNum] = { "FloorPlan", "CeilingPlan" };
+static const char* const StairStructSymbPartNames[API_StairStructSymbPartNum] = { "Visible", "Hidden" };
+static const char* const StairStructSymbTypeNames[API_StairStructSymbTypeNum] = { "UnderStructure", "Stringer" };
+static const char* const StairStructSymbVisibilityNames[API_StairStructSymbVisibilityNum] = { "Beam", "Cantilevered", "Stringer", "Monolith" };
+static const char* const StairStructSymbRelevantStoriesNames[API_StairStructSymbRelevantStoriesNum] = { "AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant" };
+
+struct StairMonolithPartVisibilityField {
+    const char*                             name;
+    bool API_MonolithPartsVisibilityData::* member;
+};
+
+static const StairMonolithPartVisibilityField StairMonolithPartVisibilityFields[] = {
+    { "connectionVisible",           &API_MonolithPartsVisibilityData::connectionVisible },
+    { "drainingVisible",             &API_MonolithPartsVisibilityData::drainingVisible },
+    { "landingLineVisible",          &API_MonolithPartsVisibilityData::landingLineVisible },
+    { "structureGoingVisible",       &API_MonolithPartsVisibilityData::structureGoingVisible },
+    { "structureGoingNosingVisible", &API_MonolithPartsVisibilityData::structureGoingNosingVisible }
+};
+
+// Reads the required boolean "visible" of a structures or fills item.
+static GS::Optional<GS::UniString> GetStairVisibleFlag (const GS::ObjectState& os, const GS::UniString& where, bool& visible)
+{
+    if (!os.Contains ("visible") || !os.Get ("visible", visible)) {
+        return where + ".visible must be true or false.";
+    }
+    return {};
+}
+
+// The visible structures, fills and monolithic parts of one story range: only the given items and
+// fields are written. Every value is checked first.
+static GS::Optional<GS::UniString> ApplyStairStructureVisibilityOnStory (const GS::ObjectState& storyOs, const GS::UniString& where, API_StairStructureComponentSettingsVisibilityOnStory& onStory, API_StairStructureComponentSettingsVisibilityOnStory& onStoryMask)
+{
+    GS::Array<GS::ObjectState> structures;
+    storyOs.Get ("structures", structures);
+    for (USize i = 0; i < structures.GetSize (); ++i) {
+        const GS::ObjectState& structureOs = structures[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".structures[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        GS::UniString structureStr;
+        Int32 part = 0;
+        Int32 structure = 0;
+        bool visible = false;
+        if (!structureOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        if (!structureOs.Get ("structure", structureStr) || !StairStructSymbVisibilityFromString (structureStr, structure)) {
+            return itemWhere + ".structure must be Beam, Cantilevered, Stringer or Monolith.";
+        }
+        const GS::Optional<GS::UniString> visibleError = GetStairVisibleFlag (structureOs, itemWhere, visible);
+        if (visibleError.HasValue ()) {
+            return visibleError;
+        }
+        onStory.structureVisibility[part][structure] = visible;
+        onStoryMask.structureVisibility[part][structure] = true;
+    }
+
+    GS::Array<GS::ObjectState> fills;
+    storyOs.Get ("fills", fills);
+    for (USize i = 0; i < fills.GetSize (); ++i) {
+        const GS::ObjectState& fillOs = fills[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".fills[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        GS::UniString typeStr;
+        Int32 part = 0;
+        Int32 type = 0;
+        bool visible = false;
+        if (!fillOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        if (!fillOs.Get ("structureType", typeStr) || !StairStructSymbTypeFromString (typeStr, type)) {
+            return itemWhere + ".structureType must be UnderStructure or Stringer.";
+        }
+        const GS::Optional<GS::UniString> visibleError = GetStairVisibleFlag (fillOs, itemWhere, visible);
+        if (visibleError.HasValue ()) {
+            return visibleError;
+        }
+        onStory.fillVisibility[part][type] = visible;
+        onStoryMask.fillVisibility[part][type] = true;
+    }
+
+    GS::Array<GS::ObjectState> monolithParts;
+    storyOs.Get ("monolithParts", monolithParts);
+    for (USize i = 0; i < monolithParts.GetSize (); ++i) {
+        const GS::ObjectState& partOs = monolithParts[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".monolithParts[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        Int32 part = 0;
+        if (!partOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        for (const StairMonolithPartVisibilityField& field : StairMonolithPartVisibilityFields) {
+            const GS::String key (field.name);
+            if (!partOs.Contains (key)) {
+                continue;
+            }
+            bool value = false;
+            if (!partOs.Get (key, value)) {
+                return itemWhere + "." + field.name + " must be true or false.";
+            }
+            onStory.monolithPartsVisibility[part].*field.member = value;
+            onStoryMask.monolithPartsVisibility[part].*field.member = true;
+        }
+    }
+    return {};
+}
+
+// structureVisibilityOnStories of CreateStairs and ModifyStairs (#2848): only the given fields of
+// the given items are written.
+static GS::Optional<GS::UniString> ApplyStairStructureVisibilityOnStories (const GS::ObjectState& details, API_StairType& stair, API_StairType& stairMask)
+{
+    GS::Array<GS::ObjectState> views;
+    details.Get ("structureVisibilityOnStories", views);
+    for (USize i = 0; i < views.GetSize (); ++i) {
+        const GS::ObjectState& viewOs = views[i];
+        const GS::UniString where = GS::UniString::Printf ("structureVisibilityOnStories[%u]", static_cast<unsigned> (i));
+        GS::UniString viewStr;
+        Int32 view = 0;
+        if (!viewOs.Get ("view", viewStr) || !StairStructSymbViewFromString (viewStr, view)) {
+            return where + ".view must be FloorPlan or CeilingPlan.";
+        }
+        API_StairStructureComponentSettingsVisibility& visibility = stair.structureVisibilityOnStories[view];
+        API_StairStructureComponentSettingsVisibility& visibilityMask = stairMask.structureVisibilityOnStories[view];
+
+        if (viewOs.Contains ("uniformSymbolRepresentationEnabled")) {
+            bool uniform = false;
+            if (!viewOs.Get ("uniformSymbolRepresentationEnabled", uniform)) {
+                return where + ".uniformSymbolRepresentationEnabled must be true or false.";
+            }
+            visibility.uniformSymbolRepresentationEnabled = uniform;
+            visibilityMask.uniformSymbolRepresentationEnabled = true;
+        }
+
+        GS::Array<GS::ObjectState> stories;
+        viewOs.Get ("stories", stories);
+        for (USize j = 0; j < stories.GetSize (); ++j) {
+            const GS::ObjectState& storyOs = stories[j];
+            const GS::UniString storyWhere = where + GS::UniString::Printf (".stories[%u]", static_cast<unsigned> (j));
+            GS::UniString storiesStr;
+            Int32 relevantStories = 0;
+            if (!storyOs.Get ("relevantStories", storiesStr) || !StairStructSymbRelevantStoriesFromString (storiesStr, relevantStories)) {
+                return storyWhere + ".relevantStories must be AllStories, BelowRelevant, BottomRelevant, MiddleRelevant, TopRelevant or AboveRelevant.";
+            }
+            const GS::Optional<GS::UniString> error = ApplyStairStructureVisibilityOnStory (storyOs, storyWhere,
+                visibility.structureVisibilityOnStories[relevantStories], visibilityMask.structureVisibilityOnStories[relevantStories]);
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+    return {};
+}
+
+static const char* StairVisibleText (bool visible)
+{
+    return visible ? "true" : "false";
+}
+
+// Reads the stair back after ModifyStairs changed it and names the structure visibility fields
+// given (marked in givenMask) that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairStructureVisibilityOnStoriesApplied (const API_Element& wanted, const API_StairType& givenMask)
+{
+    if (!IsAnyMaskByteSet (givenMask.structureVisibilityOnStories)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    GS::UniString notApplied;
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        const API_StairStructureComponentSettingsVisibility& want = wanted.stair.structureVisibilityOnStories[view];
+        const API_StairStructureComponentSettingsVisibility& got = changed.stair.structureVisibilityOnStories[view];
+        const API_StairStructureComponentSettingsVisibility& given = givenMask.structureVisibilityOnStories[view];
+        const GS::UniString viewWhere = GS::UniString ("structureVisibilityOnStories (") + StairStructSymbViewNames[view] + ")";
+        if (given.uniformSymbolRepresentationEnabled && got.uniformSymbolRepresentationEnabled != want.uniformSymbolRepresentationEnabled) {
+            notApplied += GS::UniString (" ") + viewWhere + ".uniformSymbolRepresentationEnabled is " + StairVisibleText (got.uniformSymbolRepresentationEnabled) + ".";
+        }
+        for (Int32 stories = 0; stories < API_StairStructSymbRelevantStoriesNum; ++stories) {
+            const API_StairStructureComponentSettingsVisibilityOnStory& wantStory = want.structureVisibilityOnStories[stories];
+            const API_StairStructureComponentSettingsVisibilityOnStory& gotStory = got.structureVisibilityOnStories[stories];
+            const API_StairStructureComponentSettingsVisibilityOnStory& givenStory = given.structureVisibilityOnStories[stories];
+            const GS::UniString where = GS::UniString ("structureVisibilityOnStories (") + StairStructSymbViewNames[view] + ", " + StairStructSymbRelevantStoriesNames[stories] + ")";
+            for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+                for (Int32 structure = 0; structure < API_StairStructSymbVisibilityNum; ++structure) {
+                    if (givenStory.structureVisibility[part][structure] && gotStory.structureVisibility[part][structure] != wantStory.structureVisibility[part][structure]) {
+                        notApplied += GS::UniString (" ") + where + ".structures (" + StairStructSymbPartNames[part] + ", " + StairStructSymbVisibilityNames[structure] + ").visible is " + StairVisibleText (gotStory.structureVisibility[part][structure]) + ".";
+                    }
+                }
+                for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+                    if (givenStory.fillVisibility[part][type] && gotStory.fillVisibility[part][type] != wantStory.fillVisibility[part][type]) {
+                        notApplied += GS::UniString (" ") + where + ".fills (" + StairStructSymbPartNames[part] + ", " + StairStructSymbTypeNames[type] + ").visible is " + StairVisibleText (gotStory.fillVisibility[part][type]) + ".";
+                    }
+                }
+                for (const StairMonolithPartVisibilityField& field : StairMonolithPartVisibilityFields) {
+                    const bool gotValue = gotStory.monolithPartsVisibility[part].*field.member;
+                    if (givenStory.monolithPartsVisibility[part].*field.member && gotValue != wantStory.monolithPartsVisibility[part].*field.member) {
+                        notApplied += GS::UniString (" ") + where + ".monolithParts (" + StairStructSymbPartNames[part] + ")." + field.name + " is " + StairVisibleText (gotValue) + ".";
+                    }
+                }
+            }
+        }
+    }
+    return notApplied;
+}
+
 // The settings CreateStairs and ModifyStairs share (StairSettingsSchemaProperties), written into
 // the Stair element and its mask (#2220). The tread, riser and structure settings are the per-part
 // defaults of the Stair (tread[role], riser[role], structure[role][side]); the DevKit's
@@ -10196,6 +10431,10 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     const GS::Optional<GS::UniString> symbolError = ApplyStairStructureSymbols (details, stair, mask.stair);
     if (symbolError.HasValue ()) {
         return symbolError;
+    }
+    const GS::Optional<GS::UniString> visibilityError = ApplyStairStructureVisibilityOnStories (details, stair, mask.stair);
+    if (visibilityError.HasValue ()) {
+        return visibilityError;
     }
 
     GS::Array<GS::ObjectState> treads;
@@ -10638,6 +10877,10 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             if (IsAnyMaskByteSet (mask.stair.monolithStructureSymbolData)) {
                 SetAllMaskBytes (mask.stair.monolithStructureSymbolData);
             }
+            // And the visibility of the structure symbols on the stories (#2848).
+            if (IsAnyMaskByteSet (mask.stair.structureVisibilityOnStories)) {
+                SetAllMaskBytes (mask.stair.structureVisibilityOnStories);
+            }
 
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -10664,6 +10907,11 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString symbolsNotApplied = CheckStairStructureSymbolsApplied (element, givenSymbolMask);
             if (!symbolsNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure symbol setting:" + symbolsNotApplied));
+                continue;
+            }
+            const GS::UniString visibilityNotApplied = CheckStairStructureVisibilityOnStoriesApplied (element, givenSymbolMask);
+            if (!visibilityNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure visibility setting:" + visibilityNotApplied));
                 continue;
             }
 

@@ -16085,6 +16085,121 @@
         "additionalProperties": false,
         "required": ["view", "part"]
     },
+    "StairStructureVisibilitySettings": {
+        "type": "object",
+        "description": "Which structure symbols of a Stair are shown on which of its relevant stories, for one view, that CreateStairs and ModifyStairs write (API_StairStructureComponentSettingsVisibility of API_StairType::structureVisibilityOnStories). Only the given fields of the given items are changed; GetDetailsOfElements reads them back in structureVisibilityOnStories, with the same keys.",
+        "properties": {
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the visibility is for (Unknown is refused)."
+            },
+            "uniformSymbolRepresentationEnabled": {
+                "type": "boolean",
+                "description": "Whether one structure symbol representation is used on every story (Archicad's uniform symbol representation) instead of the settings per story range."
+            },
+            "stories": {
+                "type": "array",
+                "description": "The visibility per story range relative to the stair's relevant stories (API_StairStructSymbRelevantStoriesID). Only the given story ranges are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "relevantStories": {
+                            "type": "string",
+                            "description": "The story range: every story, the stories below the relevant stories, the bottom, middle and top relevant story, or the stories above them.",
+                            "enum": ["AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant"]
+                        },
+                        "structures": {
+                            "type": "array",
+                            "description": "Whether the lines of each structure are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structure": {
+                                        "type": "string",
+                                        "description": "The structure: beam, cantilevered, stringer or monolithic.",
+                                        "enum": ["Beam", "Cantilevered", "Stringer", "Monolith"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its lines are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structure", "visible"]
+                            }
+                        },
+                        "fills": {
+                            "type": "array",
+                            "description": "Whether the fills of each structure type are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structureType": {
+                                        "type": "string",
+                                        "description": "The structure under the stair or the stringers.",
+                                        "enum": ["UnderStructure", "Stringer"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its fill is shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structureType", "visible"]
+                            }
+                        },
+                        "monolithParts": {
+                            "type": "array",
+                            "description": "Which parts of a monolithic structure are shown, per visible or hidden part. Only the given fields are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "connectionVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the connection lines are shown."
+                                    },
+                                    "drainingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the draining is shown."
+                                    },
+                                    "landingLineVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the landing lines are shown."
+                                    },
+                                    "structureGoingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the going lines of the structure are shown."
+                                    },
+                                    "structureGoingNosingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the nosing lines of the structure are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["relevantStories"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["view"]
+    },
     "StairLayout": {
         "type": "object",
         "description": "The floor plan or reflected ceiling plan display of a Stair's components (API_StairLayoutData).",
