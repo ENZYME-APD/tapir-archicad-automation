@@ -153,6 +153,26 @@
       ]
     },
     {
+      "id": "the floor plan for the elevation",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan" }
+    },
+    {
+      "id": "an elevation on the top story",
+      "command": "CreateElevations",
+      "params": {
+        "elevationsData": [
+          { "startCoordinate": { "x": 710, "y": 690 }, "endCoordinate": { "x": 715, "y": 690 }, "depth": 5.0,
+            "name": "Tapir Check Elevation", "id": "TCE-1", "floorIndex": "${top}" }
+        ]
+      },
+      "save": { "topElevation": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
       "id": "insert a story below the top story",
       "command": "InsertStory",
       "creates": false,
@@ -190,6 +210,16 @@
       ]
     },
     {
+      "id": "the elevation stayed on its story, not on the new one",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${topElevation}" } } ] },
+      "save": { "topElevationFloor": "detailsOfElements[0].floorIndex" },
+      "expect": [
+        { "expr": "${topElevationFloor} - ${topAfterBelow}", "eq": 0, "name": "the elevation marker is on the old top story at its new index (#2843)" }
+      ]
+    },
+    {
       "id": "the new story below is empty",
       "command": "DeleteStory",
       "creates": false,
@@ -217,6 +247,16 @@
       "save": { "topWallFloorAfter": "detailsOfElements[0].floorIndex" },
       "expect": [
         { "expr": "${topWallFloorAfter} - ${top}", "eq": 0, "name": "the wall followed its story when the story below was deleted" }
+      ]
+    },
+    {
+      "id": "the elevation is back on the top story",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${topElevation}" } } ] },
+      "save": { "topElevationFloorAfter": "detailsOfElements[0].floorIndex" },
+      "expect": [
+        { "expr": "${topElevationFloorAfter} - ${top}", "eq": 0, "name": "the elevation followed its story when the story below was deleted" }
       ]
     },
     {
