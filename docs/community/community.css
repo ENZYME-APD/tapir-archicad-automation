@@ -120,21 +120,8 @@
     .activity-card, .contributors { padding: 16px }
 }
 
-/* The Standard look (see the end of site.css): the chart's layers in the accent's green, a slate and a
-   pale green, dark to light so they still differ in lightness; light lines, 12 px corners, labels in
-   normal case. */
-:root:not([data-style="legacy"]) .growth { --layer-commits: #1F6B4E; --layer-github: #64748B; --layer-discord: #A7D3BF; --members: #111827 }
-:root:not([data-style="legacy"])[data-theme="dark"] .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
-}
-:root:not([data-style="legacy"]) .contributors, :root:not([data-style="legacy"]) .activity-card { border: 1px solid var(--line); border-radius: var(--radius-card) }
-:root:not([data-style="legacy"]) .growth-tip { border-color: var(--line); border-radius: 8px }
-:root:not([data-style="legacy"]) .growth-legend { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
-:root:not([data-style="legacy"]) .contributor-list li::before, :root:not([data-style="legacy"]) .contributor-list .counts { font-family: var(--body) }
-
 /* The map of where people use Tapir (user-map.js): world.svg's land dots as a mask in the line
-   colour, the towns as ochre dots with a soft halo over it, and the countries as a list. */
+   colour, the towns as ochre dots (the link colour in Standard) with a soft halo over it, and the countries as a list. */
 .map-figures { margin-bottom: 24px }
 .map-card { border: 1.5px solid var(--fg); background: var(--surface); padding: 20px 24px }
 .user-map { margin: 0 0 20px }
@@ -160,3 +147,23 @@
 .country-list .name { font-weight: 600 }
 .country-list .count { color: var(--muted); font: 500 .8125rem var(--mono) }
 .country-list .bar { grid-column: 1 / -1; height: 3px; background: var(--ochre) }
+
+/* The Standard look (see the end of site.css): the chart's layers in the accent's green, a slate and a
+   pale green, dark to light so they still differ in lightness; light lines, 12 px corners, labels in
+   normal case. */
+:root:not([data-style="legacy"]) .growth { --layer-commits: #1F6B4E; --layer-github: #64748B; --layer-discord: #A7D3BF; --members: #111827 }
+:root:not([data-style="legacy"])[data-theme="dark"] .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
+}
+:root:not([data-style="legacy"]) .contributors, :root:not([data-style="legacy"]) .activity-card { border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .growth-tip { border-color: var(--line); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .growth-legend { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) .contributor-list li::before, :root:not([data-style="legacy"]) .contributor-list .counts { font-family: var(--body) }
+/* The map: a card with a light line and 12 px corners, the towns and the country bars in the link
+   colour (so they follow the Display menu's Accent, and are blue in High contrast), and the town
+   label with 8 px corners. */
+:root:not([data-style="legacy"]) .map-card { border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .map-towns .dot, :root:not([data-style="legacy"]) .map-towns .halo { fill: var(--link) }
+:root:not([data-style="legacy"]) .country-list .bar { background: var(--link) }
+:root:not([data-style="legacy"]) .map-label { border-radius: var(--radius-control) }
