@@ -12871,6 +12871,10 @@
                 "type": "number",
                 "description": "Thickness of the floor finish (subfloor thickness) of the zone."
             },
+            "roomLSize": {
+                "type": "number",
+                "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements), so this value may not change how the stamp looks."
+            },
             "contourLine": {
                 "$ref": "#/ZoneContourLine"
             },
@@ -12904,6 +12908,7 @@
             "topOffset",
             "relativeTopStory",
             "floorThickness",
+            "roomLSize",
             "contourLine",
             "coverFill",
             "surface",
@@ -17444,6 +17449,11 @@
                 "type": "number",
                 "minimum": 0.0,
                 "description": "Thickness of the floor finish (subfloor thickness) of the zone."
+            },
+            "roomLSize": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
             },
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
