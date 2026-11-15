@@ -88,6 +88,10 @@
         'Profile इस्तेमाल करने वाली wall, beam या column के profile modifier values, या stretched width और height set करना',
     'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
         'इन्हें <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> से पढ़ें। बदलने के लिए profile को <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> से बदलें (इन elements के लिए एक copy, या profile खुद), या Archicad में element की settings में set करें।',
+    'Read or set how a grid element is shown in sections, elevations and interior elevations: its vertical extent and its markers at the top and bottom':
+        'Sections, elevations और interior elevations में grid element कैसे दिखता है, यह पढ़ना या set करना: उसका vertical extent और ऊपर व नीचे के markers',
+    'Select the grid elements in Archicad and set it for all of them at once in their settings dialog.':
+        'Archicad में grid elements select करें और उनके settings dialog में सभी के लिए एक साथ set करें।',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'कुछ और मिला जो Archicad API नहीं कर सकता? जाँचे गए DevKit headers के साथ एक issue में बताएँ, और उसे यहाँ जोड़ा जाएगा। <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Issue खोलें</a>'
