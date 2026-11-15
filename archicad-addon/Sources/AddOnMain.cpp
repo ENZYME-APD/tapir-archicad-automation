@@ -477,6 +477,11 @@ GSErrCode Initialize (void)
             "Deletes one story. Archicad deletes every element whose home story it is together with it, so a story that is the home story of any element is only deleted with deleteElements: true; "
             "otherwise it fails and gives the number of those elements. dryRun reports, without changing anything, whether the story would be deleted and how many elements with it."
         );
+        err |= RegisterCommand<ModifyStoryCommand> (
+            projectCommands, "2.0.1",
+            "Changes the name, level, height or level line display of one story, and returns the story as GetStories reports it. It never adds or deletes a story. "
+            "level moves only this story; height moves every story above with the top of this one, as in Archicad's Story Settings dialog. The elements of a moved story move with it."
+        );
         err |= RegisterCommand<GetAutoTextKeysCommand> (
             projectCommands, "1.5.9",
             "Retrieves the available autotext keys (name and embeddable key): the Project Info, layout, drawing, date and other autotexts Archicad lists, and the property based ones, optionally for a specific element. Embed a key in a Text or Label content by surrounding it with '<' and '>'."

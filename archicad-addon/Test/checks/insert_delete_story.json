@@ -28,7 +28,7 @@
         { "path": "story.name", "eq": "Tapir Check Story" },
         { "path": "story.height", "approx": 2.75, "tol": 0.001 },
         { "path": "story.dispOnSections", "eq": false },
-        { "expr": "newIndex - top", "eq": 1, "name": "the new story is directly above the old top story" }
+        { "expr": "${newIndex} - ${top}", "eq": 1, "name": "the new story is directly above the old top story" }
       ]
     },
     {
@@ -38,8 +38,8 @@
       "params": {},
       "save": { "firstAfter": "firstStory", "topAfter": "lastStory" },
       "expect": [
-        { "expr": "topAfter - top", "eq": 1, "name": "one story more on the top" },
-        { "expr": "firstAfter - first", "eq": 0, "name": "the bottom story is kept" }
+        { "expr": "${topAfter} - ${top}", "eq": 1, "name": "one story more on the top" },
+        { "expr": "${firstAfter} - ${first}", "eq": 0, "name": "the bottom story is kept" }
       ]
     },
     {
