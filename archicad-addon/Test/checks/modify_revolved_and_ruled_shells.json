@@ -1,0 +1,170 @@
+{
+  "title": "ModifyShells writes the profile, axis and angles of a revolved shell and both profiles, planes and the morphing rule of a ruled shell, keeping the GUID (#2859)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "half-turn revolved shell and ruled shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Revolved",
+            "floorIndex": 0,
+            "thickness": 0.1,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1204.0, "y": 1164.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 2.0, "y": 0.0 }, { "x": 2.0, "y": 3.0 } ]
+            },
+            "revolutionAngle": 3.141592653589793,
+            "beginAngle": 0.5,
+            "segmentsByCircle": 24
+          },
+          {
+            "shellClass": "Ruled",
+            "floorIndex": 0,
+            "thickness": 0.1,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1212.0, "y": 1168.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ]
+            },
+            "profilePlane": { "origin": { "x": 0.0, "y": 0.0, "z": 0.0 } },
+            "secondProfile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 1.5, "y": 0.25 }, { "x": 3.0, "y": 0.5 } ]
+            },
+            "secondProfilePlane": { "origin": { "x": 0.0, "y": 0.0, "z": 3.0 } },
+            "morphingRule": "Smooth"
+          }
+        ]
+      },
+      "save": {
+        "rev": "elements[0].elementId.guid",
+        "rul": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "revolved shell created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "ruled shell created" }
+      ]
+    },
+    {
+      "id": "change the geometry of both; keys of the other class are refused",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${rev}" },
+            "profile": { "coordinates": [ { "x": 3.0, "y": 0.0 }, { "x": 3.0, "y": 2.5 } ] },
+            "revolutionAngle": 1.5707963267948966,
+            "beginAngle": 0.25,
+            "segmentsByCircle": 36,
+            "segmentedSurfaces": true
+          },
+          {
+            "elementId": { "guid": "${rul}" },
+            "secondProfile": { "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 1.5, "y": 0.5 }, { "x": 3.0, "y": 1.0 } ] },
+            "secondProfilePlane": { "origin": { "x": 0.0, "y": 0.0, "z": 4.0 } },
+            "morphingRule": "Paired"
+          },
+          {
+            "elementId": { "guid": "${rul}" },
+            "revolutionAngle": 1.0
+          },
+          {
+            "elementId": { "guid": "${rev}" },
+            "secondProfilePlane": { "origin": { "x": 0.0, "y": 0.0, "z": 4.0 } }
+          },
+          {
+            "elementId": { "guid": "${rev}" },
+            "secondProfile": { "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 3.0, "y": 1.0 } ] }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 5, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "revolved shell changed" },
+        { "path": "executionResults[1].success", "eq": true, "name": "ruled shell changed" },
+        { "path": "executionResults[2].success", "eq": false, "name": "revolution angle of a ruled shell refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "profile plane of a revolved shell refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "second profile of a revolved shell refused" }
+      ]
+    },
+    {
+      "id": "the revolved shell's new geometry; base plane, axis and thickness kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rev}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Revolved", "name": "same GUID, still revolved" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 2 },
+        { "path": "detailsOfElements[0].details.profile.coordinates[0].x", "approx": 3.0, "name": "new radius at the bottom" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].x", "approx": 3.0, "name": "new radius at the top" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].y", "approx": 2.5, "name": "new height" },
+        { "path": "detailsOfElements[0].details.revolutionAngle", "approx": 1.5707963267948966, "tol": 1e-6, "name": "quarter turn written" },
+        { "path": "detailsOfElements[0].details.beginAngle", "approx": 0.25, "tol": 1e-6, "name": "begin angle written" },
+        { "path": "detailsOfElements[0].details.segmentsByCircle", "eq": 36, "name": "segments written" },
+        { "path": "detailsOfElements[0].details.segmentedSurfaces", "eq": true, "name": "segmented surfaces written" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.x", "approx": 1204.0, "name": "base plane kept (x)" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.y", "approx": 1164.0, "name": "base plane kept (y)" },
+        { "path": "detailsOfElements[0].details.axis.zAxis.y", "approx": 1.0, "tol": 1e-6, "name": "axis kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.1, "name": "thickness kept" }
+      ]
+    },
+    {
+      "id": "the ruled shell's new geometry; first profile and its plane kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rul}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Ruled", "name": "same GUID, still ruled" },
+        { "path": "detailsOfElements[0].details.secondProfile.coordinates", "len": 3 },
+        { "path": "detailsOfElements[0].details.secondProfile.coordinates[1].y", "approx": 0.5, "name": "second profile middle point written" },
+        { "path": "detailsOfElements[0].details.secondProfile.coordinates[2].y", "approx": 1.0, "name": "second profile end written" },
+        { "path": "detailsOfElements[0].details.secondProfilePlane.origin.z", "approx": 4.0, "name": "second profile plane moved up" },
+        { "path": "detailsOfElements[0].details.secondProfilePlane.zAxis.z", "approx": 1.0, "tol": 1e-6, "name": "second profile plane still horizontal" },
+        { "path": "detailsOfElements[0].details.morphingRule", "eq": "Paired", "name": "morphing rule written" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 2, "name": "first profile kept" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].x", "approx": 3.0, "name": "first profile end kept" },
+        { "path": "detailsOfElements[0].details.profilePlane.origin.z", "approx": 0.0, "name": "first profile plane kept" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.x", "approx": 1212.0, "name": "base plane kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.1, "name": "thickness kept" }
+      ]
+    },
+    {
+      "id": "move the revolution axis by its origin only",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          { "elementId": { "guid": "${rev}" }, "axis": { "origin": { "x": 1.0, "y": 0.0, "z": 0.0 } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "axis moved" }
+      ]
+    },
+    {
+      "id": "the axis moved and kept its direction",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rev}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.axis.origin.x", "approx": 1.0, "tol": 1e-6, "name": "axis origin written" },
+        { "path": "detailsOfElements[0].details.axis.zAxis.y", "approx": 1.0, "tol": 1e-6, "name": "axis direction kept" },
+        { "path": "detailsOfElements[0].details.revolutionAngle", "approx": 1.5707963267948966, "tol": 1e-6, "name": "revolution angle kept" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[0].x", "approx": 3.0, "name": "profile kept" }
+      ]
+    },
+    {
+      "id": "no shell was added or removed",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Shell" },
+      "expect": [
+        { "path": "elements", "len": 2 }
+      ]
+    }
+  ]
+}
