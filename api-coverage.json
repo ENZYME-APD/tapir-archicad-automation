@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 01:19 UTC",
+ "generatedAt": "2026-11-15 02:29 UTC",
  "versions": [
   25,
   26,
@@ -25500,6 +25500,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2841,
+     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
+    },
+    {
      "number": 2838,
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
@@ -31216,6 +31220,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2841,
+     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
+    },
     {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
@@ -37687,6 +37695,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2841,
+     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
+    },
     {
      "number": 2838,
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
@@ -44372,6 +44384,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2841,
+     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
+    },
+    {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
     },
@@ -47511,6 +47527,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2841,
+     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
+    },
     {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
