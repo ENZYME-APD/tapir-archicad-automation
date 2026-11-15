@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 16:44 UTC",
+ "generatedAt": "2026-11-15 20:25 UTC",
  "versions": [
   25,
   26,
@@ -6797,6 +6797,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2870,
+     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
+    },
+    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
@@ -7368,6 +7372,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2871,
+     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
+    },
+    {
+     "number": 2869,
+     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
+    },
     {
      "number": 2860,
      "title": "Stairs: read and write the headroom"
@@ -25658,6 +25670,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2872,
+     "title": "[3/4] Read and write linkedArrowAttributes of lines, polylines, arcs and splines"
+    },
+    {
+     "number": 2871,
+     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
+    },
+    {
+     "number": 2870,
+     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
+    },
+    {
+     "number": 2869,
+     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
+    },
+    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
@@ -25692,6 +25720,10 @@
     {
      "number": 2850,
      "title": "CreateInteriorElevations: place each item on its floorIndex story"
+    },
+    {
+     "number": 2841,
+     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2838,
@@ -31389,6 +31421,26 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2873,
+     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
+    },
+    {
+     "number": 2871,
+     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
+    },
+    {
+     "number": 2870,
+     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
+    },
+    {
+     "number": 2869,
+     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
+    },
+    {
+     "number": 2868,
+     "title": "[1/2] GetDetailsOfElements: read the structures of a stair (monolith and side stringer data) and StairStructure subelements"
+    },
     {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
@@ -37885,6 +37937,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2873,
+     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
+    },
+    {
+     "number": 2871,
+     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
+    },
+    {
+     "number": 2870,
+     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
+    },
+    {
+     "number": 2869,
+     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
+    },
+    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
@@ -37931,6 +37999,10 @@
     {
      "number": 2843,
      "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    },
+    {
+     "number": 2841,
+     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2838,
@@ -44605,6 +44677,26 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2873,
+     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
+    },
+    {
+     "number": 2871,
+     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
+    },
+    {
+     "number": 2870,
+     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
+    },
+    {
+     "number": 2869,
+     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
+    },
+    {
+     "number": 2868,
+     "title": "[1/2] GetDetailsOfElements: read the structures of a stair (monolith and side stringer data) and StairStructure subelements"
+    },
+    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
@@ -47768,6 +47860,26 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2873,
+     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
+    },
+    {
+     "number": 2871,
+     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
+    },
+    {
+     "number": 2870,
+     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
+    },
+    {
+     "number": 2869,
+     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
+    },
+    {
+     "number": 2868,
+     "title": "[1/2] GetDetailsOfElements: read the structures of a stair (monolith and side stringer data) and StairStructure subelements"
+    },
     {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
