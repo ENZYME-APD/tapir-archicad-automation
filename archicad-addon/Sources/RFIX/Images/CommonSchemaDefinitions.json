@@ -6518,7 +6518,7 @@
             },
             "floorIndex": {
                 "type": "integer",
-                "description": "The story to place the interior elevation on. Defaults to the current story."
+                "description": "The story to place the interior elevation on. Defaults to the current story. Archicad places an interior elevation on the active story, so for another story that story is activated while the interior elevation is created, and the previously active one is put back afterwards."
             }
         },
         "additionalProperties": false,

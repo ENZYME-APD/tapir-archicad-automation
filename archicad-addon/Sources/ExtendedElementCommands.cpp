@@ -19831,14 +19831,9 @@ GS::Optional<GS::UniString> CreateInteriorElevationsCommand::GetRawResponseSchem
     })";
 }
 
-GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+// Creates the given interior elevations in one undoable command, on the story that is active.
+static GS::ObjectState CreateInteriorElevationsOnActiveStory (const GS::Array<GS::ObjectState>& interiorElevationsData)
 {
-    GS::Array<GS::ObjectState> interiorElevationsData;
-    auto error = GetElementArray (parameters, "interiorElevationsData", interiorElevationsData);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
     return ExecuteCreateWithElements ("Create Interior Elevations", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : interiorElevationsData) {
             GS::Array<GS::ObjectState> nodeCoordinates;
@@ -19965,6 +19960,104 @@ GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState&
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
+}
+
+// ACAPI_Element_CreateExt puts a new interior elevation on the story that is active in the
+// floor plan, whatever header.floorInd says (#2849: with story 1 active, floorIndex 0 and 2
+// both gave an interior elevation on story 1). As CreateRailings and CreateZones do (#853),
+// the items are created in groups of one story each, with that story made active
+// (APIStory_GoTo), and the previously active story is put back afterwards. The story is
+// switched outside the undoable command, so each group is one undoable command. The
+// responses keep the order of the request. A call whose items all stay on the active story
+// runs exactly as before.
+GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> interiorElevationsData;
+    auto error = GetElementArray (parameters, "interiorElevationsData", interiorElevationsData);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (storyErr != NoError) {
+        return CreateInteriorElevationsOnActiveStory (interiorElevationsData);
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    std::vector<short> itemStories;
+    std::vector<short> storiesInOrder;
+    itemStories.reserve (interiorElevationsData.GetSize ());
+    for (const GS::ObjectState& data : interiorElevationsData) {
+        short story = originalActStory;
+        data.Get ("floorIndex", story);
+        itemStories.push_back (story);
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (story);
+        }
+    }
+
+    const bool needsStorySwitch = std::any_of (itemStories.begin (), itemStories.end (),
+        [&] (short story) { return story != originalActStory; });
+    if (!needsStorySwitch) {
+        return CreateInteriorElevationsOnActiveStory (interiorElevationsData);
+    }
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    std::vector<GS::ObjectState> results (interiorElevationsData.GetSize ());
+    for (const short story : storiesInOrder) {
+        GS::Array<GS::ObjectState> groupItems;
+        std::vector<size_t> groupIndices;
+        for (size_t i = 0; i < itemStories.size (); ++i) {
+            if (itemStories[i] == story) {
+                groupItems.Push (interiorElevationsData[static_cast<GS::UIndex> (i)]);
+                groupIndices.push_back (i);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            const GSErrCode err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                const GS::UniString message = GS::UniString::Printf (
+                    "Failed to activate story %d in the floor plan, where the interior elevation is created; see GetStories for the valid story indices.",
+                    static_cast<int> (story));
+                for (const size_t i : groupIndices) {
+                    results[i] = CreateErrorResponse (err, message);
+                }
+                continue;
+            }
+            activeStory = story;
+        }
+
+        const GS::ObjectState groupResponse = CreateInteriorElevationsOnActiveStory (groupItems);
+        GS::Array<GS::ObjectState> groupElements;
+        groupResponse.Get ("elements", groupElements);
+        for (size_t k = 0; k < groupIndices.size (); ++k) {
+            results[groupIndices[k]] = k < groupElements.GetSize ()
+                ? groupElements[static_cast<GS::UIndex> (k)]
+                : CreateErrorResponse (APIERR_GENERAL, "Failed to create interior elevation.");
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const GS::ObjectState& result : results) {
+        elements (result);
+    }
+    return response;
 }
 
 GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
