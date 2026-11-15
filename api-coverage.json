@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 01:01 UTC",
+ "generatedAt": "2026-11-15 01:19 UTC",
  "versions": [
   25,
   26,
@@ -5791,6 +5791,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2838,
+     "title": "ModifySections: move the section line and depth of Sections and Elevations"
+    },
+    {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
     },
@@ -6772,6 +6776,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2838,
+     "title": "ModifySections: move the section line and depth of Sections and Elevations"
+    },
+    {
      "number": 2827,
      "title": "SetDetailsOfElements: report a layerIndex/floorIndex Archicad did not apply (Curtain Wall frames and panels)"
     },
@@ -7326,6 +7334,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2838,
+     "title": "ModifySections: move the section line and depth of Sections and Elevations"
+    },
     {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
@@ -7905,6 +7917,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2838,
+     "title": "ModifySections: move the section line and depth of Sections and Elevations"
+    },
     {
      "number": 2809,
      "title": "GetDetailsOfElements: return the lines of a text as Archicad breaks them"
@@ -25484,6 +25500,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2838,
+     "title": "ModifySections: move the section line and depth of Sections and Elevations"
+    },
+    {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
     },
@@ -37667,6 +37687,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2838,
+     "title": "ModifySections: move the section line and depth of Sections and Elevations"
+    },
     {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
