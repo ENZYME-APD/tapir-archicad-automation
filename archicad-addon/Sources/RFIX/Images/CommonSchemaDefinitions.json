@@ -12479,6 +12479,10 @@
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12497,9 +12501,13 @@
             "Continuous"
         ]
     },
+    "LinkedArrowAttributes": {
+        "type": "boolean",
+        "description": "Are the size and pen of the start and end arrowheads linked (Archicad 29 and later; \"Links the start and end arrows sizes and pens\")? Read from Archicad 29 on, not returned before. Writing true links them: a size or pen given for one end only applies to both ends, two ends given different ones are refused, and without a size or pen given the end takes the start's. Writing false unlinks them. When it is not given, ends given a different size or pen are unlinked. Before Archicad 29 both ends always share one size and pen: true is accepted and changes nothing, false is refused."
+    },
     "LineArrowhead": {
         "type": "object",
-        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
+        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked, unless linkedArrowAttributes is given; see LinkedArrowAttributes). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
         "properties": {
             "visible": {
                 "type": "boolean",
@@ -12584,6 +12592,10 @@
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12641,6 +12653,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end. Only present for Arc, not Circle."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present for Arc, not Circle, from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -12707,6 +12723,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -17611,6 +17631,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -17657,6 +17681,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads of an Arc. A Circle refuses it."
             }
         },
         "additionalProperties": false,
@@ -17699,6 +17727,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -17740,6 +17772,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
