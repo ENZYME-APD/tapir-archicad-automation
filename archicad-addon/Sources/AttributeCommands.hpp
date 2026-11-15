@@ -378,6 +378,19 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Changes the given settings of existing layers (shown, locked, wireframe, intersection group, name),
+// keeping every other setting as it is (#2800), so a script does not have to write the whole layer back
+// with CreateLayers and overwriteExisting to flip one flag.
+class ModifyLayersCommand : public CommandBase
+{
+public:
+    ModifyLayersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class CreateProfilesCommand : public CommandBase
 {
 public:
