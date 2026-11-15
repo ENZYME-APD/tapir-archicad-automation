@@ -240,6 +240,134 @@
       ]
     },
     {
+      "id": "settingGroups: source column 0.24 x 0.32, target column 0.35 x 0.42 (#2802)",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          { "coordinates": { "x": 1550.0, "y": 1500.0, "z": 0.0 }, "floorIndex": 0, "height": 2.8,
+            "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.24, "depth": 0.32 },
+          { "coordinates": { "x": 1553.0, "y": 1500.0, "z": 0.0 }, "floorIndex": 0, "height": 2.8,
+            "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.35, "depth": 0.42 }
+        ]
+      },
+      "save": {
+        "penSourceColumn": "elements[0].elementId.guid",
+        "penTargetColumn": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 2 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "source column created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "target column created" }
+      ]
+    },
+    {
+      "id": "settingGroups: source beam 0.24 x 0.38, target beam 0.32 x 0.44 (#2802)",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          { "begCoordinate": { "x": 1550.0, "y": 1510.0 }, "endCoordinate": { "x": 1555.0, "y": 1510.0 }, "zCoordinate": 3.0,
+            "floorIndex": 0, "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.24, "height": 0.38 },
+          { "begCoordinate": { "x": 1550.0, "y": 1514.0 }, "endCoordinate": { "x": 1555.0, "y": 1514.0 }, "zCoordinate": 3.0,
+            "floorIndex": 0, "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.32, "height": 0.44 }
+        ]
+      },
+      "save": {
+        "penSourceBeam": "elements[0].elementId.guid",
+        "penTargetBeam": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 2 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "source beam created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "target beam created" }
+      ]
+    },
+    {
+      "id": "give the source column its own floor plan pens",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          { "elementId": { "guid": "${penSourceColumn}" }, "contourPen": 91, "belowViewLinePen": 92 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "give the source beam its own floor plan pens",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          { "elementId": { "guid": "${penSourceBeam}" }, "cutContourLinePen": 93, "belowViewLinePen": 94 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "favorites from the source column and beam with their pens",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${penSourceColumn}" }, "favorite": "Tapir check 2802 column favorite" },
+          { "elementId": { "guid": "${penSourceBeam}" }, "favorite": "Tapir check 2802 beam favorite" },
+          { "elementId": { "guid": "${wallId}" }, "favorite": "Tapir check 2802 wall favorite" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "column favorite created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "beam favorite created" },
+        { "path": "executionResults[2].success", "eq": true, "name": "wall favorite created" }
+      ]
+    },
+    {
+      "id": "apply only the Floor Plan and Section settings (#2802)",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favoritesToApply": [
+          { "elementId": { "guid": "${penTargetColumn}" }, "favorite": "Tapir check 2802 column favorite" },
+          { "elementId": { "guid": "${penTargetBeam}" }, "favorite": "Tapir check 2802 beam favorite" },
+          { "elementId": { "guid": "${wallId}" }, "favorite": "Tapir check 2802 wall favorite" }
+        ],
+        "settingGroups": [ "FloorPlanAndSection" ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "applied to the column" },
+        { "path": "executionResults[1].success", "eq": true, "name": "applied to the beam" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a wall is refused, not half applied" }
+      ]
+    },
+    {
+      "id": "the targets took the pens and kept their size and place",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${penTargetColumn}" } },
+          { "elementId": { "guid": "${penTargetBeam}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 91, "name": "column took the favorite's contour pen" },
+        { "path": "detailsOfElements[0].details.belowViewLinePen", "eq": 92, "name": "column took the favorite's uncut line pen" },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.35, "name": "column kept its width" },
+        { "path": "detailsOfElements[0].details.depth", "approx": 0.42, "name": "column kept its depth" },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.8, "name": "column kept its height" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1553.0, "name": "column not moved" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "column home story unchanged" },
+        { "path": "detailsOfElements[1].details.cutContourLinePen", "eq": 93, "name": "beam took the favorite's cut contour pen" },
+        { "path": "detailsOfElements[1].details.belowViewLinePen", "eq": 94, "name": "beam took the favorite's uncut line pen" },
+        { "path": "detailsOfElements[1].details.width", "approx": 0.32, "name": "beam kept its width" },
+        { "path": "detailsOfElements[1].details.height", "approx": 0.44, "name": "beam kept its height" },
+        { "path": "detailsOfElements[1].details.begCoordinate.y", "approx": 1514.0, "name": "beam not moved" }
+      ]
+    },
+    {
       "id": "stair A 1.10 m wide and stair B 1.25 m wide",
       "command": "CreateStairs",
       "params": {
@@ -340,7 +468,8 @@
     {
       "command": "DeleteFavorites",
       "params": {
-        "favorites": [ "Tapir check 2553 column favorite", "Tapir check 2553 beam favorite", "Tapir check stair favorite 2528" ]
+        "favorites": [ "Tapir check 2553 column favorite", "Tapir check 2553 beam favorite", "Tapir check stair favorite 2528",
+                       "Tapir check 2802 column favorite", "Tapir check 2802 beam favorite", "Tapir check 2802 wall favorite" ]
       }
     }
   ]

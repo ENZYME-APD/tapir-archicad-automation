@@ -1580,6 +1580,8 @@ GSErrCode Initialize (void)
             "height, a Wall's reference line location, height and top link, a Column's height, top link and "
             "cross section width and depth, a Beam's cross section width and height) that are copied back after "
             "the Favorite has been applied, so that e.g. only the library part or the wall type changes. "
+            "settingGroups is the positive list instead: e.g. only FloorPlanAndSection applies just the pens, "
+            "line types, story visibility and cut and cover fills of a Column or Beam, and nothing else of the Favorite. "
             "With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, "
             "or to every element of its type that matches the filter."
         );
