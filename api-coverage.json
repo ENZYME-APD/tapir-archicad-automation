@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 21:01 UTC",
+ "generatedAt": "2026-11-15 21:17 UTC",
  "versions": [
   25,
   26,
@@ -4899,6 +4899,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2879,
+     "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
+    },
+    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -5685,6 +5689,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2880,
+     "title": "Add LabelElements: label elements with the Label tool's current settings"
+    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -6672,7 +6680,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2879,
+     "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
+    }
+   ],
    "issues": [
     {
      "number": 2188,
@@ -6796,6 +6809,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2879,
+     "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
+    },
     {
      "number": 2870,
      "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
@@ -7076,6 +7093,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2880,
+     "title": "Add LabelElements: label elements with the Label tool's current settings"
+    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7372,6 +7393,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2879,
+     "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
+    },
     {
      "number": 2871,
      "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
@@ -7748,6 +7773,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2879,
+     "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
+    },
+    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -7941,6 +7970,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2880,
+     "title": "Add LabelElements: label elements with the Label tool's current settings"
+    },
+    {
+     "number": 2879,
+     "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
+    },
     {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
@@ -12433,6 +12470,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2880,
+     "title": "Add LabelElements: label elements with the Label tool's current settings"
+    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -37936,6 +37977,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2880,
+     "title": "Add LabelElements: label elements with the Label tool's current settings"
+    },
+    {
+     "number": 2879,
+     "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
+    },
     {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
