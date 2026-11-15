@@ -15934,6 +15934,157 @@
         },
         "additionalProperties": false
     },
+    "StairStructureSymbolSettings": {
+        "type": "object",
+        "description": "The line types, pens and fills of one structure symbol of a Stair that CreateStairs and ModifyStairs write (API_StairStructureSymbolData of API_StairType::structSymbData), for one structure type and view. Only the given fields are changed; GetDetailsOfElements reads them back in structureSymbols, with the same keys.",
+        "properties": {
+            "structureType": {
+                "type": "string",
+                "description": "The structure the symbol is for: the structure under the stair or the stringers.",
+                "enum": ["UnderStructure", "Stringer"]
+            },
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the symbol is for (Unknown is refused)."
+            },
+            "visibleLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the visible structure lines: a line type of the project."
+            },
+            "visibleLinePen": {
+                "type": "integer",
+                "description": "Pen of the visible structure lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "hiddenLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the hidden structure lines: a line type of the project."
+            },
+            "hiddenLinePen": {
+                "type": "integer",
+                "description": "Pen of the hidden structure lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "visibleFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the visible structure: a fill type of the project."
+            },
+            "visibleFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the visible structure fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "visibleFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the visible structure fill.",
+                "minimum": -1,
+                "maximum": 255
+            },
+            "hiddenFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the hidden structure: a fill type of the project."
+            },
+            "hiddenFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the hidden structure fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "hiddenFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the hidden structure fill.",
+                "minimum": -1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": ["structureType", "view"]
+    },
+    "StairMonolithStructureSymbolSettings": {
+        "type": "object",
+        "description": "The line types, pens and fills of one symbol of a Stair's monolithic structure that CreateStairs and ModifyStairs write (API_StairMonolithStructureSymbolData of API_StairType::monolithStructureSymbolData), for one view and visible or hidden part. Only the given fields are changed; GetDetailsOfElements reads them back in monolithStructureSymbols, with the same keys.",
+        "properties": {
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the symbol is for (Unknown is refused)."
+            },
+            "part": {
+                "$ref": "#/StairSymbolPart",
+                "description": "The visible or the hidden part of the structure (Unknown is refused)."
+            },
+            "goingLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the going lines: a line type of the project."
+            },
+            "goingLinePen": {
+                "type": "integer",
+                "description": "Pen of the going lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "goingNosingLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the nosing lines: a line type of the project."
+            },
+            "goingNosingLinePen": {
+                "type": "integer",
+                "description": "Pen of the nosing lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "connectionLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the connection lines: a line type of the project."
+            },
+            "connectionLinePen": {
+                "type": "integer",
+                "description": "Pen of the connection lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "connectionDetailLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the connection lines on detail views: a line type of the project."
+            },
+            "connectionDetailLinePen": {
+                "type": "integer",
+                "description": "Pen of the connection lines on detail views.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "drainingFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the draining: a fill type of the project."
+            },
+            "drainingFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the draining fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "drainingFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the draining fill.",
+                "minimum": -1,
+                "maximum": 255
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the contour lines: a line type of the project."
+            },
+            "contourLinePen": {
+                "type": "integer",
+                "description": "Pen of the contour lines.",
+                "minimum": 1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": ["view", "part"]
+    },
     "StairLayout": {
         "type": "object",
         "description": "The floor plan or reflected ceiling plan display of a Stair's components (API_StairLayoutData).",

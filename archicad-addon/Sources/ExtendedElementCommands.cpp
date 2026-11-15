@@ -7956,6 +7956,16 @@ static const char* StairSettingsSchemaProperties = R"(
                         "stairDisplayType": { "type": "string", "enum": ["Custom", "ByModelViewOptions"], "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them." },
                         "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of reflectedCeilingPlanLayout." },
                         "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of floorPlanLayout." },
+                        "structureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the structure symbol, per structure type (UnderStructure, Stringer) and view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureSymbolSettings" }
+                        },
+                        "monolithStructureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the monolithic structure's symbol, per view (FloorPlan, CeilingPlan) and part (Visible, Hidden), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairMonolithStructureSymbolSettings" }
+                        },
                         "treads": {
                             "type": "array",
                             "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
@@ -9810,6 +9820,233 @@ static GS::Optional<GS::UniString> ApplyStairLayoutSettings (const GS::ObjectSta
     return ApplyStairLayoutSymbolSettings (layoutOs, name, layout, layoutMask);
 }
 
+// The line types, pens and fills of the stair's structure symbols (#2848): API_StairType::structSymbData
+// (per structure type and view) and monolithStructureSymbolData (per view and visible or hidden part),
+// with the keys GetDetailsOfElements returns in structureSymbols and monolithStructureSymbols. Each
+// field is a line type, a fill (attribute) or a pen of one of the two symbol structs.
+enum class StairSymbolFieldKind {
+    LineType,
+    Fill,
+    Pen,
+    BackgroundPen
+};
+
+template <typename Data>
+struct StairSymbolField {
+    const char*                 name;
+    StairSymbolFieldKind        kind;
+    API_AttributeIndex Data::*  attribute;
+    short Data::*               pen;
+};
+
+static const StairSymbolField<API_StairStructureSymbolData> StairStructureSymbolFields[] = {
+    { "visibleLineTypeId",        StairSymbolFieldKind::LineType,      &API_StairStructureSymbolData::visibleLineType, nullptr },
+    { "visibleLinePen",           StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::visibleLinePen },
+    { "hiddenLineTypeId",         StairSymbolFieldKind::LineType,      &API_StairStructureSymbolData::hiddenLineType, nullptr },
+    { "hiddenLinePen",            StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::hiddenLinePen },
+    { "visibleFillId",            StairSymbolFieldKind::Fill,          &API_StairStructureSymbolData::visibleFillType, nullptr },
+    { "visibleFillPen",           StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::visibleFillPen },
+    { "visibleFillBackgroundPen", StairSymbolFieldKind::BackgroundPen, nullptr, &API_StairStructureSymbolData::visibleFillBackgroundPen },
+    { "hiddenFillId",             StairSymbolFieldKind::Fill,          &API_StairStructureSymbolData::hiddenFillType, nullptr },
+    { "hiddenFillPen",            StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::hiddenFillPen },
+    { "hiddenFillBackgroundPen",  StairSymbolFieldKind::BackgroundPen, nullptr, &API_StairStructureSymbolData::hiddenFillBackgroundPen }
+};
+
+static const StairSymbolField<API_StairMonolithStructureSymbolData> StairMonolithStructureSymbolFields[] = {
+    { "goingLineTypeId",            StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::goingLineType, nullptr },
+    { "goingLinePen",               StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::goingLinePen },
+    { "goingNosingLineTypeId",      StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::goingNosingLineType, nullptr },
+    { "goingNosingLinePen",         StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::goingNosingLinePen },
+    { "connectionLineTypeId",       StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::connectionLineType, nullptr },
+    { "connectionLinePen",          StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::connectionLinePen },
+    { "connectionDetailLineTypeId", StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::connectionDetailLineType, nullptr },
+    { "connectionDetailLinePen",    StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::connectionDetailLinePen },
+    { "drainingFillId",             StairSymbolFieldKind::Fill,          &API_StairMonolithStructureSymbolData::drainingFillType, nullptr },
+    { "drainingFillPen",            StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::drainingFillPen },
+    { "drainingFillBackgroundPen",  StairSymbolFieldKind::BackgroundPen, nullptr, &API_StairMonolithStructureSymbolData::drainingFillBackGroundPen },
+    { "contourLineTypeId",          StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::contourLineType, nullptr },
+    { "contourLinePen",             StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::contourLinePen }
+};
+
+// Writes the given fields of one symbol item into data and marks them in dataMask; every value is
+// checked first (Archicad's input validation does not check values inside a definition the schema
+// refers to), and a wrong one returns an error naming it.
+template <typename Data, size_t FieldCount>
+static GS::Optional<GS::UniString> ApplyStairSymbolFields (const GS::ObjectState& symbolOs, const GS::UniString& where, const StairSymbolField<Data> (&fields)[FieldCount], Data& data, Data& dataMask)
+{
+    for (const StairSymbolField<Data>& field : fields) {
+        const GS::String key (field.name);
+        if (!symbolOs.Contains (key)) {
+            continue;
+        }
+        const GS::UniString fieldWhere = where + "." + field.name;
+        if (field.attribute != nullptr) {
+            const bool isLineType = field.kind == StairSymbolFieldKind::LineType;
+            const GS::ObjectState* attributeId = symbolOs.Get (key);
+            const API_AttributeIndex index = attributeId != nullptr ?
+                GetAttributeIndexFromGuid (isLineType ? API_LinetypeID : API_FilltypeID, GetGuidFromObjectState (*attributeId)) :
+                ACAPI_CreateAttributeIndex (-1);
+            if (index == ACAPI_CreateAttributeIndex (-1)) {
+                return fieldWhere + (isLineType ? " is not a line type of the project." : " is not a fill type of the project.");
+            }
+            data.*field.attribute = index;
+            *reinterpret_cast<char*> (&(dataMask.*field.attribute)) = -1;
+        } else {
+            Int32 value = 0;
+            const Int32 minimum = field.kind == StairSymbolFieldKind::BackgroundPen ? -1 : 1;
+            if (!symbolOs.Get (key, value) || value < minimum || value > 255) {
+                return fieldWhere + (minimum == 1 ? " must be a pen index between 1 and 255." : " must be a pen index between -1 and 255.");
+            }
+            data.*field.pen = static_cast<short> (value);
+            *reinterpret_cast<char*> (&(dataMask.*field.pen)) = -1;
+        }
+    }
+    return {};
+}
+
+static bool StairStructSymbTypeFromString (const GS::UniString& str, Int32& type)
+{
+    if (str == "UnderStructure") { type = APIST_UnderStructure; return true; }
+    if (str == "Stringer")       { type = APIST_Stringer;       return true; }
+    return false;
+}
+
+static bool StairStructSymbViewFromString (const GS::UniString& str, Int32& view)
+{
+    if (str == "FloorPlan")   { view = APISV_FloorPlan;   return true; }
+    if (str == "CeilingPlan") { view = APISV_CeilingPlan; return true; }
+    return false;
+}
+
+static bool StairStructSymbPartFromString (const GS::UniString& str, Int32& part)
+{
+    if (str == "Visible") { part = APISP_Visible; return true; }
+    if (str == "Hidden")  { part = APISP_Hidden;  return true; }
+    return false;
+}
+
+// structureSymbols and monolithStructureSymbols of CreateStairs and ModifyStairs (#2848): only the
+// given fields of the given items are written.
+static GS::Optional<GS::UniString> ApplyStairStructureSymbols (const GS::ObjectState& details, API_StairType& stair, API_StairType& stairMask)
+{
+    GS::Array<GS::ObjectState> structureSymbols;
+    details.Get ("structureSymbols", structureSymbols);
+    for (USize i = 0; i < structureSymbols.GetSize (); ++i) {
+        const GS::ObjectState& symbolOs = structureSymbols[i];
+        const GS::UniString where = GS::UniString::Printf ("structureSymbols[%u]", static_cast<unsigned> (i));
+        GS::UniString typeStr;
+        GS::UniString viewStr;
+        Int32 type = 0;
+        Int32 view = 0;
+        if (!symbolOs.Get ("structureType", typeStr) || !StairStructSymbTypeFromString (typeStr, type)) {
+            return where + ".structureType must be UnderStructure or Stringer.";
+        }
+        if (!symbolOs.Get ("view", viewStr) || !StairStructSymbViewFromString (viewStr, view)) {
+            return where + ".view must be FloorPlan or CeilingPlan.";
+        }
+        const GS::Optional<GS::UniString> error = ApplyStairSymbolFields (symbolOs, where, StairStructureSymbolFields, stair.structSymbData[type][view], stairMask.structSymbData[type][view]);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    GS::Array<GS::ObjectState> monolithSymbols;
+    details.Get ("monolithStructureSymbols", monolithSymbols);
+    for (USize i = 0; i < monolithSymbols.GetSize (); ++i) {
+        const GS::ObjectState& symbolOs = monolithSymbols[i];
+        const GS::UniString where = GS::UniString::Printf ("monolithStructureSymbols[%u]", static_cast<unsigned> (i));
+        GS::UniString viewStr;
+        GS::UniString partStr;
+        Int32 view = 0;
+        Int32 part = 0;
+        if (!symbolOs.Get ("view", viewStr) || !StairStructSymbViewFromString (viewStr, view)) {
+            return where + ".view must be FloorPlan or CeilingPlan.";
+        }
+        if (!symbolOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return where + ".part must be Visible or Hidden.";
+        }
+        const GS::Optional<GS::UniString> error = ApplyStairSymbolFields (symbolOs, where, StairMonolithStructureSymbolFields, stair.monolithStructureSymbolData[view][part], stairMask.monolithStructureSymbolData[view][part]);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    return {};
+}
+
+// Whether any byte of a mask member is set.
+template <typename T>
+static bool IsAnyMaskByteSet (const T& maskMember)
+{
+    const char* bytes = reinterpret_cast<const char*> (&maskMember);
+    for (size_t i = 0; i < sizeof (T); ++i) {
+        if (bytes[i] != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Sets every byte of a mask member.
+template <typename T>
+static void SetAllMaskBytes (T& maskMember)
+{
+    char* bytes = reinterpret_cast<char*> (&maskMember);
+    for (size_t i = 0; i < sizeof (T); ++i) {
+        bytes[i] = -1;
+    }
+}
+
+// Names the given fields of one symbol item (marked in givenMask) that differ after the change.
+template <typename Data, size_t FieldCount>
+static GS::UniString StairSymbolFieldsNotApplied (const GS::UniString& where, const StairSymbolField<Data> (&fields)[FieldCount], const Data& want, const Data& got, const Data& givenMask)
+{
+    GS::UniString notApplied;
+    for (const StairSymbolField<Data>& field : fields) {
+        if (field.attribute != nullptr) {
+            if (*reinterpret_cast<const char*> (&(givenMask.*field.attribute)) != 0 && got.*field.attribute != want.*field.attribute) {
+                notApplied += GS::UniString (" ") + where + "." + field.name + (field.kind == StairSymbolFieldKind::LineType ? " is another line type." : " is another fill type.");
+            }
+        } else if (*reinterpret_cast<const char*> (&(givenMask.*field.pen)) != 0 && got.*field.pen != want.*field.pen) {
+            notApplied += GS::UniString (" ") + where + "." + field.name + GS::UniString::Printf (" is %d.", static_cast<int> (got.*field.pen));
+        }
+    }
+    return notApplied;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the structure symbol fields given
+// (marked in givenMask) that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairStructureSymbolsApplied (const API_Element& wanted, const API_StairType& givenMask)
+{
+    if (!IsAnyMaskByteSet (givenMask.structSymbData) && !IsAnyMaskByteSet (givenMask.monolithStructureSymbolData)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    static const char* const TypeNames[API_StairStructSymbTypeNum] = { "UnderStructure", "Stringer" };
+    static const char* const ViewNames[API_StairStructSymbViewNum] = { "FloorPlan", "CeilingPlan" };
+    static const char* const PartNames[API_StairStructSymbPartNum] = { "Visible", "Hidden" };
+
+    GS::UniString notApplied;
+    for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+        for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+            const GS::UniString where = GS::UniString ("structureSymbols (") + TypeNames[type] + ", " + ViewNames[view] + ")";
+            notApplied += StairSymbolFieldsNotApplied (where, StairStructureSymbolFields, wanted.stair.structSymbData[type][view], changed.stair.structSymbData[type][view], givenMask.structSymbData[type][view]);
+        }
+    }
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+            const GS::UniString where = GS::UniString ("monolithStructureSymbols (") + ViewNames[view] + ", " + PartNames[part] + ")";
+            notApplied += StairSymbolFieldsNotApplied (where, StairMonolithStructureSymbolFields, wanted.stair.monolithStructureSymbolData[view][part], changed.stair.monolithStructureSymbolData[view][part], givenMask.monolithStructureSymbolData[view][part]);
+        }
+    }
+    return notApplied;
+}
+
 // The settings CreateStairs and ModifyStairs share (StairSettingsSchemaProperties), written into
 // the Stair element and its mask (#2220). The tread, riser and structure settings are the per-part
 // defaults of the Stair (tread[role], riser[role], structure[role][side]); the DevKit's
@@ -9955,6 +10192,10 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
         if (layoutError.HasValue ()) {
             return layoutError;
         }
+    }
+    const GS::Optional<GS::UniString> symbolError = ApplyStairStructureSymbols (details, stair, mask.stair);
+    if (symbolError.HasValue ()) {
+        return symbolError;
     }
 
     GS::Array<GS::ObjectState> treads;
@@ -10385,6 +10626,19 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
+            // The structure symbols (#2848) the same way: Archicad may take structSymbData and
+            // monolithStructureSymbolData by the mask byte of the whole member, as it took the rules,
+            // so a given symbol field marks the whole member; element holds the stair's own symbols
+            // from ACAPI_Element_Get, so the ones not given are written back as they are. The given
+            // fields are read back after the change.
+            const API_StairType givenSymbolMask = mask.stair;
+            if (IsAnyMaskByteSet (mask.stair.structSymbData)) {
+                SetAllMaskBytes (mask.stair.structSymbData);
+            }
+            if (IsAnyMaskByteSet (mask.stair.monolithStructureSymbolData)) {
+                SetAllMaskBytes (mask.stair.monolithStructureSymbolData);
+            }
+
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             if (err != NoError) {
@@ -10404,6 +10658,12 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString rulesNotApplied = CheckStairRulesApplied (element, givenRulesMask);
             if (!rulesNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
+                continue;
+            }
+            // And for the structure symbols (#2848).
+            const GS::UniString symbolsNotApplied = CheckStairStructureSymbolsApplied (element, givenSymbolMask);
+            if (!symbolsNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure symbol setting:" + symbolsNotApplied));
                 continue;
             }
 
