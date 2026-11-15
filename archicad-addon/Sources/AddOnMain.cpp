@@ -1099,7 +1099,7 @@ GSErrCode Initialize (void)
             "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge "
             "and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, "
             "the top link (relativeTopStory, topOffset), the Rules and Standards, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
-            "and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); "
+            "and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides); "
             "settings not given come from the Stair tool defaults or the favorite."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
@@ -1395,10 +1395,11 @@ GSErrCode Initialize (void)
             "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, "
             "and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), "
             "and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on "
-            "and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. "
+            "and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) "
+            "and the line type, pen and symbol fill overrides; these are read back, and one Archicad did not apply is reported as an error. "
             "CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. "
             "A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. "
-            "Not written by this command: the baseline with its landings and winders, the break marks, lines and fills of the floor plan symbol, and the headroom; "
+            "Not written by this command: the baseline with its landings and winders, the line types, pens and fills of the structure symbols with their visibility on the stories, and the headroom; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
         err |= RegisterCommand<RecreateStairsCommand> (
