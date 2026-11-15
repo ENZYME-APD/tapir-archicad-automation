@@ -249,6 +249,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2702">#2702</a></td>
                         </tr>
 
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Create or rename a renovation filter, or set what it shows for each renovation status (Existing, To be Demolished, New: show, hide or override)</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Make and edit the filters in Document &gt; Renovation &gt; Renovation Filter Options. A script can list them with <a href="../archicad-addon/#GetRenovationFilters">GetRenovationFilters</a>, switch the current window's filter with <a href="../archicad-addon/#SetActiveRenovationFilter">SetActiveRenovationFilter</a>, set a saved view's filter with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a>, and read the renovation override styles, which are built-in graphic override rules, with <a href="../archicad-addon/#GetGraphicOverrideRules">GetGraphicOverrideRules</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The only renovation filter functions are <code>ACAPI_Renovation_GetRenovationFilters</code>, <code>_GetActualRenovationFilter</code> and <code>_SetActualRenovationFilter</code> (<code>ACAPI_Database.h</code>) and <code>ACAPI_Renovation_GetRenovationFilterName</code> (<code>ACAPI_Goodies.h</code>), AC28&ndash;AC30; no function creates, renames or deletes a filter, and no structure holds a filter's settings per renovation status (a filter is only a guid: <code>API_NavigatorView.renovationFilterGuid</code>, <code>API_Elem_Head.renovationFilterGuid</code>). The permissions <code>APIRenovationFilterCreate</code> and <code>APIRenovationFilterDeleteModify</code> (<code>APIdefs_Environment.h</code>) are only Teamwork rights.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Project and files</th></tr>
                         <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Undo or redo, as Edit &gt; Undo does</td>
@@ -317,6 +324,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2658">#2658</a></td>
                         </tr>
 
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Place a DWG, DXF or PDF file as a Drawing, as File &gt; External Content &gt; Place External Drawing does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Place the file by hand, then set its position, angle and scale with <a href="../archicad-addon/#SetDetailsOfElements">SetDetailsOfElements</a>. For a PDF page or an image, convert it to PNG or JPG and place it as a Picture (Figure), which the Archicad API can create (#2659).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_DrawingType</code> has no source file (<code>APIdefs_Elements.h</code>). The only function that knows a Drawing's file, <code>ACAPI_Drawing_GetDrawingLink</code> (<code>API_DrawingLinkInfo</code> with <code>API_DrawingLink_DXF_DWGID</code> and <code>API_DrawingLink_PDFID</code>; <code>APIDb_GetDrawingLinkID</code> in AC25&ndash;AC26), reads it; nothing creates or relinks one. <code>ACAPI_Drawing_StartDrawingData</code> builds a Drawing only from elements the add-on creates, and <code>API_PictureFormat</code> has no PDF or DWG format. The remark on <code>ACAPI_Hotlink_CreateHotlinkNode</code> (<code>ACAPI_Database.h</code>, AC27&ndash;AC30) says XRefs are handled by the DXF/DWG add-on, whose data format is not published (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/746">#746</a></td>
+                        </tr>
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Archicad's interface</th></tr>
                         <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read the text of the Session Report window</td>
