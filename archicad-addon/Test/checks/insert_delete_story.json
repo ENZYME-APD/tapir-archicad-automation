@@ -1,0 +1,154 @@
+{
+  "title": "InsertStory adds one story above the top story without deleting any, and DeleteStory refuses a story with elements unless deleteElements is given, with a dry run that changes nothing (#2842)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the stories before",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "first": "firstStory", "top": "lastStory" },
+      "expect": [
+        { "path": "stories", "exists": true }
+      ]
+    },
+    {
+      "id": "insert a story above the top story",
+      "command": "InsertStory",
+      "creates": false,
+      "params": {
+        "storyIndex": "${top}",
+        "position": "Above",
+        "name": "Tapir Check Story",
+        "height": 2.75,
+        "dispOnSections": false
+      },
+      "save": { "newIndex": "story.index", "newLevel": "story.level" },
+      "expect": [
+        { "path": "story.name", "eq": "Tapir Check Story" },
+        { "path": "story.height", "approx": 2.75, "tol": 0.001 },
+        { "path": "story.dispOnSections", "eq": false },
+        { "expr": "newIndex - top", "eq": 1, "name": "the new story is directly above the old top story" }
+      ]
+    },
+    {
+      "id": "one story more, none deleted",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "firstAfter": "firstStory", "topAfter": "lastStory" },
+      "expect": [
+        { "expr": "topAfter - top", "eq": 1, "name": "one story more on the top" },
+        { "expr": "firstAfter - first", "eq": 0, "name": "the bottom story is kept" }
+      ]
+    },
+    {
+      "id": "dry run on the empty story",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}", "dryRun": true },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "wouldDelete", "eq": true },
+        { "path": "elementCount", "eq": 0 },
+        { "path": "dryRun", "eq": true }
+      ]
+    },
+    {
+      "id": "the dry run deleted nothing",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "lastStory", "eq": "${newIndex}" }
+      ]
+    },
+    {
+      "id": "a wall on the new story",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 705, "y": 700 }, "floorIndex": "${newIndex}", "zCoordinate": 0,
+            "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "refused without deleteElements",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}" },
+      "expect": [
+        { "path": "success", "eq": false },
+        { "path": "elementCount", "eq": 1 }
+      ]
+    },
+    {
+      "id": "the refused story and its wall are still there",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "lastStory", "eq": "${newIndex}" }
+      ]
+    },
+    {
+      "id": "dry run with deleteElements",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}", "deleteElements": true, "dryRun": true },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "wouldDelete", "eq": true },
+        { "path": "elementCount", "eq": 1 },
+        { "path": "dryRun", "eq": true }
+      ]
+    },
+    {
+      "id": "delete it with its wall",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}", "deleteElements": true },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "elementCount", "eq": 1 },
+        { "path": "dryRun", "exists": false }
+      ]
+    },
+    {
+      "id": "back to the stories before",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "lastStory", "eq": "${top}" },
+        { "path": "firstStory", "eq": "${first}" }
+      ]
+    },
+    {
+      "id": "the wall went with the story",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "elements", "len": 0 }
+      ]
+    },
+    {
+      "id": "an unknown story",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": 999, "dryRun": true },
+      "expect": [
+        { "path": "success", "eq": false }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteStory", "params": { "storyIndex": "${newIndex}", "deleteElements": true } }
+  ]
+}
