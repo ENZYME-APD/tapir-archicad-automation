@@ -1,4 +1,4 @@
-"""Creates a Section, changes its name and reference ID with ModifySections and reads them back.
+"""Creates a Section, changes its name and reference ID, moves its end point and its depth line with ModifySections and reads them back.
 
 Deletes the section at the end.
 """
@@ -15,6 +15,9 @@ section = aclib.RunTapirCommand ('CreateSections', {
 
 aclib.PrintJson (aclib.RunTapirCommand ('ModifySections', {
     'sectionsWithDetails': [{'elementId': section['elementId'], 'name': 'Tapir Renamed Section', 'id': 'TX-2'}]
+}))
+aclib.PrintJson (aclib.RunTapirCommand ('ModifySections', {
+    'sectionsWithDetails': [{'elementId': section['elementId'], 'endCoordinate': {'x': 12.0, 'y': -2.0}, 'depth': 4.0}]
 }))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [section]})
 
