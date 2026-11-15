@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 02:29 UTC",
+ "generatedAt": "2026-11-15 08:26 UTC",
  "versions": [
   25,
   26,
@@ -4777,6 +4777,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    },
+    {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
     },
@@ -4900,6 +4912,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    },
     {
      "number": 2815,
      "title": "DeleteElements: delete each element in the database that contains it"
@@ -7684,7 +7708,20 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7866,6 +7903,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    },
     {
      "number": 2832,
      "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
@@ -16242,7 +16291,20 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": []
   },
   {
@@ -16400,7 +16462,20 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": []
   },
   {
@@ -20259,7 +20334,20 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": []
   },
   {
@@ -37696,6 +37784,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    },
+    {
      "number": 2841,
      "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
@@ -54378,7 +54478,20 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": []
   },
   {
@@ -54824,7 +54937,20 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": []
   },
   {
@@ -54950,7 +55076,20 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": []
   },
   {
