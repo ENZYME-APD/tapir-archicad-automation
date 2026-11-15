@@ -358,17 +358,12 @@ of #2765 that fixes it; strike it from this list in that part.
 now gets the 32 px of section 5 instead of 28 px), and `<main>`'s children on `api-coverage/` and
 `gh-coverage/` are indented like every other page's.
 
-**Page stylesheets that still draw the Legacy look in Standard** (part 4):
+**Numbering, labels and wording**: fixed in part 3. Every `.flow` numbers its steps `1, 2, 3` with
+`aria-hidden="true"`, its labels are no longer typed in capitals, every page title ends with ` | Tapir`
+and the coverage pages' section heads end in `<em>…</em>.`.
 
-- `community/community.css`, the map ("On the map", added after the Standard look): `.map-card` keeps
-  the 1.5 px ink border and square corners, the town dots, their halo and the country bars are
-  `--ochre` (so they ignore the Accent), and `.map-label` has square corners. No Standard rule exists
-  for any of them.
-- `assets/coverage.css`, the phone filter sheet of the coverage pages: `.chip-filter`'s 1.5 px ink top
-  line and `.sheet-done`'s pill shape and ink border have no Standard rule, while the Display menu's
-  sheet, its twin, has 1 px lines and an 8 px Done button.
-- `home.css`: the floor plan's Run button sets `color: #FFFFFF` in Standard, a literal instead of a
-  property.
+**Page stylesheets that still draw the Legacy look in Standard**: fixed in part 4. The community map,
+the coverage pages' phone filter sheet and the floor plan's Run button have their Standard rules.
 
 **Spacing and type off the scale** (part 5): fixed. Card and cell paddings, the phone gaps, the list
 indents and every text size in `site.css`, `motion.css`, `coverage.css` and the page stylesheets are on
