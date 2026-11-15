@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 16:20 UTC",
+ "generatedAt": "2026-11-15 16:32 UTC",
  "versions": [
   25,
   26,
@@ -5796,6 +5796,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2863,
+     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2862,
+     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
+    },
+    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
@@ -7361,6 +7369,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2860,
+     "title": "Stairs: read and write the headroom"
+    },
+    {
      "number": 2856,
      "title": "[3/3] ModifyStairs/CreateStairs: write the visibility of the structure symbols on the stories"
     },
@@ -7980,6 +7992,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2863,
+     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2862,
+     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
+    },
     {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
@@ -25638,6 +25658,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2863,
+     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2861,
+     "title": "Columns: read and write the core symbol type and its crosshair sizes"
+    },
+    {
+     "number": 2860,
+     "title": "Stairs: read and write the headroom"
+    },
+    {
      "number": 2856,
      "title": "[3/3] ModifyStairs/CreateStairs: write the visibility of the structure symbols on the stories"
     },
@@ -25656,10 +25688,6 @@
     {
      "number": 2850,
      "title": "CreateInteriorElevations: place each item on its floorIndex story"
-    },
-    {
-     "number": 2841,
-     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2838,
@@ -31358,16 +31386,28 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2863,
+     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2862,
+     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2861,
+     "title": "Columns: read and write the core symbol type and its crosshair sizes"
+    },
+    {
+     "number": 2860,
+     "title": "Stairs: read and write the headroom"
+    },
+    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
     {
      "number": 2853,
      "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
-    },
-    {
-     "number": 2841,
-     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2832,
@@ -37837,6 +37877,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2863,
+     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2861,
+     "title": "Columns: read and write the core symbol type and its crosshair sizes"
+    },
+    {
+     "number": 2860,
+     "title": "Stairs: read and write the headroom"
+    },
+    {
      "number": 2856,
      "title": "[3/3] ModifyStairs/CreateStairs: write the visibility of the structure symbols on the stories"
     },
@@ -37867,10 +37919,6 @@
     {
      "number": 2843,
      "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    },
-    {
-     "number": 2841,
-     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2838,
@@ -44545,16 +44593,28 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2863,
+     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2862,
+     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2861,
+     "title": "Columns: read and write the core symbol type and its crosshair sizes"
+    },
+    {
+     "number": 2860,
+     "title": "Stairs: read and write the headroom"
+    },
+    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
     {
      "number": 2853,
      "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
-    },
-    {
-     "number": 2841,
-     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2832,
@@ -47693,16 +47753,28 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2863,
+     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2862,
+     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
+    },
+    {
+     "number": 2861,
+     "title": "Columns: read and write the core symbol type and its crosshair sizes"
+    },
+    {
+     "number": 2860,
+     "title": "Stairs: read and write the headroom"
+    },
+    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
     {
      "number": 2853,
      "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
-    },
-    {
-     "number": 2841,
-     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2832,
