@@ -21869,6 +21869,10 @@ static GS::ObjectState ExecuteCreateDetailMarkers (const GS::ObjectState& parame
             if (data.Get ("floorIndex", floorIndex)) {
                 element.header.floorInd = floorIndex;
             }
+            bool constructionElementsOnly = false;
+            if (data.Get ("constructionElementsOnly", constructionElementsOnly)) {
+                element.detail.constructionElementsOnly = constructionElementsOnly;
+            }
 
             element.detail.linkData.sourceMarker = true;
             err = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
@@ -21916,7 +21920,8 @@ GS::Optional<GS::UniString> CreateDetailMarkersCommand::GetInputParametersSchema
                         "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
                         "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
                         "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
-                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." },
+                        "constructionElementsOnly": { "type": "boolean", "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the new viewpoint (API_DetailType::constructionElementsOnly). Default is that of the tool defaults." }
                     },
                     "additionalProperties": false,
                     "required": ["clipPolygon"]
@@ -21982,7 +21987,8 @@ GS::Optional<GS::UniString> CreateWorksheetMarkersCommand::GetInputParametersSch
                         "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
                         "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
                         "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
-                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." },
+                        "constructionElementsOnly": { "type": "boolean", "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the new viewpoint (API_DetailType::constructionElementsOnly). Default is that of the tool defaults." }
                     },
                     "additionalProperties": false,
                     "required": ["clipPolygon"]
@@ -22051,6 +22057,7 @@ GS::Optional<GS::UniString> ModifyDetailMarkersCommand::GetInputParametersSchema
                         "lineTypeIndex": { "type": "integer", "minimum": 1, "description": "Attribute index of the new line type of the boundary (API_DetailType::ltypeInd)." },
                         "angle": { "type": "number", "description": "The new rotation of the marker symbol, in radians (API_DetailType::angle)." },
                         "isHorizontalMarker": { "type": "boolean", "description": "Whether the marker symbol is always horizontal (API_DetailType::horizontalMarker)." },
+                        "constructionElementsOnly": { "type": "boolean", "description": "Copy construction elements only (API_DetailType::constructionElementsOnly), as GetDetailsOfElements returns it." },
                         "markerPenIndex": { "type": "integer", "minimum": 1, "maximum": 255, "description": "The new pen of the marker symbol, the library part placed as the marker (its markerId in GetDetailsOfElements)." }
                     },
                     "additionalProperties": false,
@@ -22096,9 +22103,11 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
             const bool hasAngle = item.Get ("angle", angle);
             const bool hasHorizontalMarker = item.Get ("isHorizontalMarker", isHorizontalMarker);
             const bool hasMarkerPen = item.Get ("markerPenIndex", markerPenIndex);
-            const bool hasSettings = hasPen || hasLineType || hasAngle || hasHorizontalMarker;
+            bool constructionElementsOnly = false;
+            const bool hasConstructionElementsOnly = item.Get ("constructionElementsOnly", constructionElementsOnly);
+            const bool hasSettings = hasPen || hasLineType || hasAngle || hasHorizontalMarker || hasConstructionElementsOnly;
             if (!hasName && !hasId && !hasClipPolygon && !hasSettings && !hasMarkerPen) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id', 'clipPolygon', 'penIndex', 'lineTypeIndex', 'angle', 'isHorizontalMarker' or 'markerPenIndex'."));
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id', 'clipPolygon', 'penIndex', 'lineTypeIndex', 'angle', 'isHorizontalMarker', 'constructionElementsOnly' or 'markerPenIndex'."));
                 continue;
             }
             if ((hasPen && (penIndex < 1 || penIndex > 255)) || (hasMarkerPen && (markerPenIndex < 1 || markerPenIndex > 255))) {
@@ -22164,7 +22173,8 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
             }
 
             if (hasSettings) {
-                // The fields the DevKit's Element_Test changes on Details and Worksheets with ACAPI_Element_Change.
+                // The fields the DevKit's Element_Test changes on Details and Worksheets with ACAPI_Element_Change
+                // (Do_Detail_Edit, constructionElementsOnly included).
                 API_Element mask = {};
                 ACAPI_ELEMENT_MASK_CLEAR (mask);
                 if (hasPen) {
@@ -22183,9 +22193,13 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
                     element.detail.horizontalMarker = isHorizontalMarker;
                     ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, horizontalMarker);
                 }
+                if (hasConstructionElementsOnly) {
+                    element.detail.constructionElementsOnly = constructionElementsOnly;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, constructionElementsOnly);
+                }
                 err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
                 if (err != NoError) {
-                    results.Push (CreateFailedExecutionResult (err, "Failed to change the pen, line type, angle or marker orientation of the marker."));
+                    results.Push (CreateFailedExecutionResult (err, "Failed to change the pen, line type, angle, marker orientation or 'Copy construction elements only' of the marker."));
                     continue;
                 }
             }
@@ -22251,8 +22265,9 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
             if ((hasPen && changed.detail.pen != penIndex) ||
                 (hasLineType && GetAttributeIndex (changed.detail.ltypeInd) != lineTypeIndex) ||
                 (hasAngle && !changed.detail.horizontalMarker && !IsSameDirection (changed.detail.angle, angle)) ||
-                (hasHorizontalMarker && changed.detail.horizontalMarker != isHorizontalMarker)) {
-                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new pen, line type, angle or marker orientation."));
+                (hasHorizontalMarker && changed.detail.horizontalMarker != isHorizontalMarker) ||
+                (hasConstructionElementsOnly && changed.detail.constructionElementsOnly != constructionElementsOnly)) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new pen, line type, angle, marker orientation or 'Copy construction elements only'."));
                 continue;
             }
             if (hasMarkerPen) {

@@ -3623,6 +3623,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("detailIdStr", detailIdStr);
                 typeSpecificDetails.Add ("isHorizontalMarker", elem.detail.horizontalMarker);
                 typeSpecificDetails.Add ("isWindowOpened", elem.detail.windOpened);
+                typeSpecificDetails.Add ("constructionElementsOnly", elem.detail.constructionElementsOnly);
                 AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
                 GS::ObjectState linkDataOS;
                 switch (elem.detail.linkData.referringLevel) {
