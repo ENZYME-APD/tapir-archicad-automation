@@ -4274,6 +4274,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.elevation.segment.nMainCoord), static_cast<GSSize> (elem.elevation.segment.nDepthCoord), typeSpecificDetails);
             } break;
 
+            case API_InteriorElevationID:
+                // The interior elevation's settings and its segments, each with its lines and
+                // the keys of SectionElevationDetails (#2851).
+                AddInteriorElevationDetails (elem, typeSpecificDetails);
+                break;
+
             case API_OpeningID:
                 // The opening's own settings are read by GetOpeningDetails (#2629).
                 typeSpecificDetails.Add ("error", "The details of an Opening are not returned here; use GetOpeningDetails. The id, layerIndex and the other common fields above are the Opening's.");

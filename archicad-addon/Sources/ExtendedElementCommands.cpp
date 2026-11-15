@@ -18766,9 +18766,11 @@ static API_CutPlanePlanConn StringToPlanConn (const GS::UniString& s)
     return APICutPl_Online;
 }
 
-static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneType& cutPlane, bool includeReadOnly)
+// The settings of one section segment, the keys of SectionElevationDetails. cutPlane, when given,
+// adds the settings a Section or an Elevation keeps outside its segment (showOnStories,
+// storyToShowOn, markerShowType) in their place; an Interior Elevation segment has none of them.
+static void AddSectionSegmentDetails (GS::ObjectState& os, const API_SectionSegment& seg, bool includeReadOnly, const API_CutPlaneType* cutPlane)
 {
-    const API_SectionSegment& seg = cutPlane.segment;
 
     os.Add ("name", GS::UniString (seg.cutPlName));
     os.Add ("id", GS::UniString (seg.cutPlIdStr));
@@ -18835,9 +18837,11 @@ static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneT
     os.Add ("boundaryDisplayMode", BoundaryDisplayToString (seg.boundaryDisplay));
     os.Add ("boundaryPenIndex", seg.boundaryPen);
     os.Add ("boundaryLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, seg.boundaryLineType)));
-    os.Add ("showOnStories", CutPlaneShowTypeToString (cutPlane.cutPlShow));
-    os.Add ("storyToShowOn", cutPlane.storyToShowOn);
-    os.Add ("markerShowType", cutPlane.markerShow == APICutPl_ShowWingMarkers ? GS::UniString ("WingMarkers") : GS::UniString ("MiddleMarker"));
+    if (cutPlane != nullptr) {
+        os.Add ("showOnStories", CutPlaneShowTypeToString (cutPlane->cutPlShow));
+        os.Add ("storyToShowOn", cutPlane->storyToShowOn);
+        os.Add ("markerShowType", cutPlane->markerShow == APICutPl_ShowWingMarkers ? GS::UniString ("WingMarkers") : GS::UniString ("MiddleMarker"));
+    }
     os.Add ("intendedPlanConnectivity", PlanConnToString (seg.intPlanConn));
 
     if (includeReadOnly) {
@@ -18849,6 +18853,96 @@ static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneT
         os.Add ("beginMarkerElementId", CreateElementIdObjectState (seg.begMarkerId));
         os.Add ("middleMarkerElementId", CreateElementIdObjectState (seg.midMarkerId));
         os.Add ("endMarkerElementId", CreateElementIdObjectState (seg.endMarkerId));
+    }
+}
+
+static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneType& cutPlane, bool includeReadOnly)
+{
+    AddSectionSegmentDetails (os, cutPlane.segment, includeReadOnly, &cutPlane);
+}
+
+// The segments of an Interior Elevation are in its memo (#2851): intElevSegments holds one
+// API_SectionSegment per segment, and sectionSegmentMainCoords and sectionSegmentDepthCoords
+// hold the main and depth line points of every segment one after the other, nMainCoord and
+// nDepthCoord points per segment (the DevKit's DumpSectionLineCoords reads the main line so).
+// The element's own segment only holds the defaults the segments were made from, so it is not
+// reported. Every count is checked against the size of its pointer.
+void AddInteriorElevationDetails (const API_Element& elem, GS::ObjectState& os)
+{
+    const API_InteriorElevationType& intElev = elem.interiorElevation;
+    os.Add ("showOnStories", CutPlaneShowTypeToString (intElev.cutPlShow));
+    os.Add ("storyToShowOn", intElev.storyToShowOn);
+    os.Add ("useCommonMarker", intElev.useCommonMarker);
+    os.Add ("commonMarkerGuid", APIGuidToString (intElev.markerGuid));
+    os.Add ("commonMarkerPenIndex", intElev.markerPen);
+    os.Add ("commonMarkerFontIndex", intElev.markerFont);
+    os.Add ("commonMarkerSize", intElev.markerSize);
+    os.Add ("commonMarkerTextSize", intElev.markerTextSize);
+
+    const auto& segments = os.AddList<GS::ObjectState> ("segments");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All) != NoError || memo.intElevSegments == nullptr) {
+        return;
+    }
+
+    const GSSize nSegments = std::min<GSSize> (static_cast<GSSize> (intElev.nSegments),
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment));
+    const GSSize nAllMain = memo.sectionSegmentMainCoords != nullptr
+        ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords)) / sizeof (API_Coord)
+        : 0;
+    const GSSize nAllDepth = memo.sectionSegmentDepthCoords != nullptr
+        ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentDepthCoords)) / sizeof (API_Coord)
+        : 0;
+
+    GSSize mainOffset = 0;
+    GSSize depthOffset = 0;
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        const API_SectionSegment& seg = memo.intElevSegments[i];
+        GS::ObjectState segmentOs;
+        segmentOs.Add ("name", GS::UniString (seg.cutPlName));
+        segmentOs.Add ("idStr", GS::UniString (seg.cutPlIdStr));
+
+        const GSSize nMain = std::max<GSSize> (0, std::min<GSSize> (static_cast<GSSize> (seg.nMainCoord), nAllMain - mainOffset));
+        const GSSize nDepth = std::max<GSSize> (0, std::min<GSSize> (static_cast<GSSize> (seg.nDepthCoord), nAllDepth - depthOffset));
+        const API_Coord* mainCoords = nMain > 0 ? memo.sectionSegmentMainCoords + mainOffset : nullptr;
+        const API_Coord* depthCoords = nDepth > 0 ? memo.sectionSegmentDepthCoords + depthOffset : nullptr;
+
+        const auto& mainList = segmentOs.AddList<GS::ObjectState> ("mainCoordinates");
+        for (GSIndex j = 0; j < nMain; ++j) {
+            mainList (Create2DCoordinateObjectState (mainCoords[j]));
+        }
+        const auto& depthList = segmentOs.AddList<GS::ObjectState> ("depthCoordinates");
+        for (GSIndex j = 0; j < nDepth; ++j) {
+            depthList (Create2DCoordinateObjectState (depthCoords[j]));
+        }
+
+        if (nMain >= 2) {
+            const API_Coord& begC = mainCoords[0];
+            segmentOs.Add ("startCoordinate", Create2DCoordinateObjectState (begC));
+            segmentOs.Add ("endCoordinate", Create2DCoordinateObjectState (mainCoords[nMain - 1]));
+            const double dx = mainCoords[1].x - begC.x;
+            const double dy = mainCoords[1].y - begC.y;
+            const double length = sqrt (dx * dx + dy * dy);
+            if (nDepth >= 1 && length > 1e-9) {
+                // Signed distance of the first depth point from the first line of the segment, positive on its left.
+                const API_Coord& depthC = depthCoords[0];
+                const double leftDistance = (dx * (depthC.y - begC.y) - dy * (depthC.x - begC.x)) / length;
+                segmentOs.Add ("depth", fabs (leftDistance));
+                const double side = leftDistance < 0.0 ? -1.0 : 1.0;
+                const API_Coord viewDirection = { -dy / length * side, dx / length * side };
+                segmentOs.Add ("viewDirection", Create2DCoordinateObjectState (viewDirection));
+            }
+        }
+
+        GS::ObjectState settings;
+        AddSectionSegmentDetails (settings, seg, true, nullptr);
+        segmentOs.Add ("settings", settings);
+        segments (segmentOs);
+
+        mainOffset += static_cast<GSSize> (seg.nMainCoord);
+        depthOffset += static_cast<GSSize> (seg.nDepthCoord);
     }
 }
 
@@ -19686,7 +19780,9 @@ GS::ObjectState GetSectionsAndElevationsDetailsCommand::Execute (const GS::Objec
         } else if (typeID == API_ElevationID) {
             AddSectionElevationDetails (os, elem.elevation, true);
         } else {
-            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, "The element is neither a Section nor an Elevation."));
+            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, typeID == API_InteriorElevationID
+                ? "The element is an Interior Elevation, not a Section or an Elevation; GetDetailsOfElements returns its settings and segments."
+                : "The element is neither a Section nor an Elevation."));
             continue;
         }
         detailsOfElements (os);
