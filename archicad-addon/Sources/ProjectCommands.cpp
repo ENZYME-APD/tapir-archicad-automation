@@ -2231,6 +2231,28 @@ static GS::ObjectState CreateStoryParametersObjectState (const API_StoryInfo& st
     return storyData;
 }
 
+// The height of the story at this position (0 is the bottom one), from the level of the record
+// above it (the virtual one for the top story); 0 when there is no such record.
+static double GetStoryHeightAt (const API_StoryInfo& storyInfo, const short position)
+{
+    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+    if (position < 0 || position + 1 >= recordCount) {
+        return 0.0;
+    }
+    return (*storyInfo.data)[position + 1].level - (*storyInfo.data)[position].level;
+}
+
+// The position (0 is the bottom one) of the story with this floorId, or -1.
+static short FindStoryPosition (const API_StoryInfo& storyInfo, const short floorId)
+{
+    for (short i = 0; i <= storyInfo.lastStory - storyInfo.firstStory; ++i) {
+        if ((*storyInfo.data)[i].floorId == floorId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 GetStoriesCommand::GetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -2837,22 +2859,18 @@ GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
     }
 
-    double height = 0.0;
-    if (parameters.Get ("height", height)) {
-        if (height <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "height must be greater than zero.");
-        }
-    } else {
-        // The height of the reference story; the array has a record above the top story too
-        // (see CreateStoryParametersObjectState), so every story has one.
-        const short referencePosition = storyIndex - storyInfo.firstStory;
-        const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
-        if (referencePosition + 1 < recordCount) {
-            height = (*storyInfo.data)[referencePosition + 1].level - (*storyInfo.data)[referencePosition].level;
-        }
-        if (height <= 0.0) {
-            return CreateErrorResponse (APIERR_GENERAL, "Failed to read the height of the story of storyIndex; give height.");
-        }
+    // The height of the reference story; the array has a record above the top story too
+    // (see CreateStoryParametersObjectState), so every story has one.
+    const short referenceFloorId = (*storyInfo.data)[storyIndex - storyInfo.firstStory].floorId;
+    const short originalActFloorId = (*storyInfo.data)[storyInfo.actStory - storyInfo.firstStory].floorId;
+    const double referenceHeight = GetStoryHeightAt (storyInfo, storyIndex - storyInfo.firstStory);
+    if (referenceHeight <= 0.0) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to read the height of the story of storyIndex.");
+    }
+
+    double height = referenceHeight;
+    if (parameters.Get ("height", height) && height <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "height must be greater than zero.");
     }
 
     // The new story is the one whose floorId was not there before: the indices of the other
@@ -2866,7 +2884,11 @@ GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, 
     API_StoryCmdType storyCmd = {};
     storyCmd.action = insertAbove ? APIStory_InsAbove : APIStory_InsBelow;
     storyCmd.index  = storyIndex;
-    storyCmd.height = height;
+    // Archicad gives this height to the story of storyIndex, not to the new one (tested on
+    // Archicad 30 in #2843: the new story got the reference story's old height). So the
+    // reference story is asked to keep its own height, and the new story's height is set
+    // afterwards with APIStory_SetHeight; both are read back and checked.
+    storyCmd.height = referenceHeight;
 
     GS::UniString name;
     parameters.Get ("name", name);
@@ -2894,6 +2916,71 @@ GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, 
     }
     if (newPosition < 0) {
         return CreateErrorResponse (APIERR_GENERAL, "Failed to find the inserted story.");
+    }
+    const short newFloorId = (*storyInfo.data)[newPosition].floorId;
+
+    // The heights are set on the active story, as in the DevKit's Environment_Control example;
+    // the story that was active before is made active again afterwards.
+    bool actStoryMoved = false;
+    const GS::OnExit restoreActStory ([&] () {
+        if (actStoryMoved && RefreshStoryInfo (storyInfo) == NoError) {
+            const short actPosition = FindStoryPosition (storyInfo, originalActFloorId);
+            if (actPosition >= 0) {
+                API_StoryCmdType goToCmd = {};
+                goToCmd.action = APIStory_GoTo;
+                goToCmd.index  = (*storyInfo.data)[actPosition].index;
+                ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+            }
+        }
+    });
+    const auto setStoryHeight = [&] (const short floorId, const double targetHeight) -> GSErrCode {
+        const short position = FindStoryPosition (storyInfo, floorId);
+        if (position < 0) {
+            return APIERR_GENERAL;
+        }
+        if (std::abs (GetStoryHeightAt (storyInfo, position) - targetHeight) < StoryLevelTolerance) {
+            return NoError;
+        }
+
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = (*storyInfo.data)[position].index;
+        GSErrCode cmdErr = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (cmdErr != NoError) {
+            return cmdErr;
+        }
+        actStoryMoved = true;
+
+        API_StoryCmdType heightCmd = {};
+        heightCmd.action = APIStory_SetHeight;
+        heightCmd.index  = goToCmd.index;
+        heightCmd.height = targetHeight;
+        cmdErr = ACAPI_ProjectSetting_ChangeStorySettings (&heightCmd);
+        if (cmdErr != NoError) {
+            return cmdErr;
+        }
+        return RefreshStoryInfo (storyInfo);
+    };
+
+    err = setStoryHeight (referenceFloorId, referenceHeight);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to keep the height of the story of storyIndex.");
+    }
+    err = setStoryHeight (newFloorId, height);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to set its height.");
+    }
+
+    const short referencePositionAfter = FindStoryPosition (storyInfo, referenceFloorId);
+    newPosition = FindStoryPosition (storyInfo, newFloorId);
+    if (newPosition < 0 || referencePositionAfter < 0) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+    if (std::abs (GetStoryHeightAt (storyInfo, newPosition) - height) >= StoryLevelTolerance ||
+        std::abs (GetStoryHeightAt (storyInfo, referencePositionAfter) - referenceHeight) >= StoryLevelTolerance) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The story was inserted, but Archicad gave it the height %.4f instead of %.4f, and the story of storyIndex the height %.4f instead of %.4f.",
+            GetStoryHeightAt (storyInfo, newPosition), height, GetStoryHeightAt (storyInfo, referencePositionAfter), referenceHeight));
     }
 
     bool dispOnSections = false;
