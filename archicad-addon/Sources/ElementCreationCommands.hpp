@@ -218,6 +218,18 @@ public:
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
+// Labels elements with the Label tool's current settings or a Label favorite, as
+// Document > Label Selected Items does (#2877).
+class LabelElementsCommand : public CreateElementsCommandBase
+{
+public:
+    LabelElementsCommand ();
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
+};
+
 class CreateTextsCommand : public CreateElementsCommandBase
 {
 public:

@@ -1,0 +1,80 @@
+{
+  "title": "LabelElements places one associative label per element with the Label tool's current settings, and refuses a missing element, a label and an unknown favorite (#2877)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "two walls to label",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 890, "y": 890 }, "endCoordinate": { "x": 894, "y": 890 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 890, "y": 895 }, "endCoordinate": { "x": 894, "y": 895 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid" },
+      "stopOnFail": true,
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "first wall created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "second wall created" }
+      ]
+    },
+    {
+      "id": "[label wall 1, label wall 2, missing element]",
+      "command": "LabelElements",
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${w2}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000ABCD" } }
+        ]
+      },
+      "save": { "l1": "elements[0].elementId.guid", "l2": "elements[1].elementId.guid" },
+      "stopOnFail": true,
+      "expect": [
+        { "path": "elements", "len": 3, "name": "one result per element" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall 1 labelled" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "wall 2 labelled" },
+        { "path": "elements[2].error", "exists": true, "name": "missing element: error, no label" }
+      ]
+    },
+    {
+      "id": "the labels belong to their walls",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${l1}" } }, { "elementId": { "guid": "${l2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Label", "name": "a label" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${w1}", "name": "label 1 is associative to wall 1" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Wall", "name": "label 1 parent is a wall" },
+        { "path": "detailsOfElements[1].details.ownerElementId.guid", "eq": "${w2}", "name": "label 2 is associative to wall 2" }
+      ]
+    },
+    {
+      "id": "a label cannot be labelled",
+      "command": "LabelElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${l1}" } } ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error", "exists": true, "name": "label given: error, no label" }
+      ]
+    },
+    {
+      "id": "an unknown favorite",
+      "command": "LabelElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } } ],
+        "favoriteName": "Tapir check no such label favorite 2877"
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error", "exists": true, "name": "unknown favorite: error, no label" }
+      ]
+    }
+  ]
+}
