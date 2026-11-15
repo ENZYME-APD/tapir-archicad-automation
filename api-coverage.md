@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-15 08:26 UTC.
+Archicad 25–30 DevKits; updated 2026-11-15 08:37 UTC.
 
 | | Status |
 |---|---|
@@ -394,7 +394,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_View_GetGhostRecord` – Retrieve a Trace record from the database. <sub>(was `APIEnv_GetGhostRecordID`)</sub>
 - ✅ `ACAPI_View_GetGhostStorySettings` – Retrieves the current ghost story settings. <sub>(was `APIEnv_GetGhostStorySettingsID`)</sub>
 - ✅ `ACAPI_View_GetShowHideState` – Returns the visibility of application. <sub>(was `APIEnv_GetShowHideStateID`)</sub>
-- ✅ `ACAPI_View_GetZoom` – Returns the actual zoom parameters of the current database. <sub>(was `APIDb_GetZoomID`)</sub>
+- ✅ `ACAPI_View_GetZoom` – Returns the actual zoom parameters of the current database. <sub>(was `APIDb_GetZoomID`)</sub> — [#2846](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2846 "SetZoom on a rotated floor plan: the zoomBox is not shown (it seems to be applied in the window's rotated frame, not in model coordinates)")
 - ✅ `ACAPI_View_GoToView` – Switches to the given navigator view. <sub>(was `APIDo_GoToViewID`)</sub>
 - ✅ `ACAPI_View_IsAutoGroupOn` – Returns the current state of the autogroup mode. <sub>(was `APIEnv_IsAutoGroupOnID`)</sub>
 - ✅ `ACAPI_View_IsAutoIntersectOn` – Returns the state of the automatic wall intersection flag. <sub>(was `APIEnv_IsAutoIntersectOnID`)</sub>
@@ -405,7 +405,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_View_Redraw` – Redraws the content of the current window. <sub>(was `APIDo_RedrawID`)</sub>
 - ✅ `ACAPI_View_ResetZoom` <sub>AC27–30</sub> – Restores the zoom parameters of the current database by a given number of steps.
 - ⬜ `ACAPI_View_SetCurrent3DStyle` – Sets an existing style as active. <sub>(was `APIEnv_SetCurrent3DStyleID`)</sub>
-- ✅ `ACAPI_View_SetZoom` – Sets the zoom box of the current database. <sub>(was `APIDb_SetZoomID`)</sub>
+- ✅ `ACAPI_View_SetZoom` – Sets the zoom box of the current database. <sub>(was `APIDb_SetZoomID`)</sub> — [#2846](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2846 "SetZoom on a rotated floor plan: the zoomBox is not shown (it seems to be applied in the window's rotated frame, not in model coordinates)")
 - ✅ `ACAPI_View_ShowAllIn3D` – Activates the 3D window and shows the whole model. <sub>(was `APIDo_ShowAllIn3DID`, `APIIo_ShowAllIn3DID`)</sub>
 - ✅ `ACAPI_View_ShowSelectionIn3D` – Activates the 3D window and shows the selected elements. <sub>(was `APIDo_ShowSelectionIn3DID`, `APIIo_ShowSelectionIn3DID`)</sub>
 - ✅ `ACAPI_View_StoreViewSettings` – Stores or restores the current view settings. <sub>(was `APIDb_StoreViewSettingsID`)</sub>

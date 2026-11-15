@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 08:26 UTC",
+ "generatedAt": "2026-11-15 08:37 UTC",
  "versions": [
   25,
   26,
@@ -19768,7 +19768,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2846,
+     "title": "SetZoom on a rotated floor plan: the zoomBox is not shown (it seems to be applied in the window's rotated frame, not in model coordinates)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_GoToView",
@@ -20011,7 +20016,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2846,
+     "title": "SetZoom on a rotated floor plan: the zoomBox is not shown (it seems to be applied in the window's rotated frame, not in model coordinates)"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_ShowAllIn3D",
