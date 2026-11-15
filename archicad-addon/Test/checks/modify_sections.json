@@ -128,6 +128,32 @@
       ]
     },
     {
+      "id": "set only the depth of the section to 4",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "depth": 4.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the section has depth 4 and the same line",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.depth", "approx": 4.0, "name": "depth changed alone" },
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 902.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.startCoordinate.y", "approx": 902.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 908.0, "name": "end kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 900.0, "name": "end kept" }
+      ]
+    },
+    {
       "id": "elevation from (920,900) to (930,900)",
       "command": "CreateElevations",
       "params": {
@@ -170,6 +196,30 @@
         { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 932.0, "name": "end moved" },
         { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 900.0 },
         { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck Move Elevation", "name": "name kept" }
+      ]
+    },
+    {
+      "id": "set only the depth of the elevation to 3",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${e1}" }, "depth": 3.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the elevation has depth 3 and the same line",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${e1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.depth", "approx": 3.0, "name": "depth changed alone" },
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 920.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 932.0, "name": "end kept" }
       ]
     }
   ]

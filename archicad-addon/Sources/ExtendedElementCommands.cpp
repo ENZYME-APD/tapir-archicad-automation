@@ -19333,6 +19333,7 @@ static double SectionLeftDistance (const API_Coord& beg, const API_Coord& end, c
 // distant area line keeps its distance too. The point counts stay the same, so the memo read from
 // the element is changed in place and written with ACAPI_Element_Change and the main coords mask, the way the DevKit's
 // Do_CutPlane_Or_Elevation_Edit_Coords (Element_Test) changes the coordinates of both types.
+// A depth the main coords change did not apply is then written with the depth coords mask.
 // It is read back, so a change Archicad did not take is reported instead of a success.
 // The element is loaded here again, after any name or ID change, as the sample does it.
 static GS::Optional<GS::UniString> ChangeSectionLines (const API_Guid& guid,
@@ -19414,34 +19415,62 @@ static GS::Optional<GS::UniString> ChangeSectionLines (const API_Guid& guid,
         PlaceSectionParallelLine (memo.sectionSegmentDistCoords, nDist, newBeg, newEnd, distDistance);
     }
 
-    // Only APIMemoMask_SectionMainCoords, as in Do_CutPlane_Or_Elevation_Edit_Coords: with the
-    // depth and distant area masks added, Archicad 26 and 30 answered APIERR_BADPARS (#2838). The
-    // depth and distant area points are in the memo passed, and are checked when read back.
-    err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionMainCoords, true);
-    if (err != NoError) {
-        return GS::UniString ("Archicad refused the new coordinates or depth.");
-    }
-
-    API_ElementMemo changed = {};
-    const GS::OnExit changedGuard ([&changed] () { ACAPI_DisposeElemMemoHdls (&changed); });
-    err = ACAPI_Element_GetMemo (guid, &changed, linesMask);
-    if (err != NoError) {
-        return GS::UniString ("Failed to read the lines back after the change.");
-    }
     constexpr double tolerance = 1e-5;
     const auto same = [] (const API_Coord& a, const API_Coord& b) {
         return fabs (a.x - b.x) < 1e-5 && fabs (a.y - b.y) < 1e-5;
     };
-    err = APIERR_REFUSEDPAR;
-    if (pointCount (changed.sectionSegmentMainCoords, 2) != 2 ||
-        !same (changed.sectionSegmentMainCoords[0], newBeg) || !same (changed.sectionSegmentMainCoords[1], newEnd)) {
-        return GS::UniString ("Archicad did not apply the new start and end coordinates.");
-    }
-    if (requestedDepth.HasValue ()) {
-        if (pointCount (changed.sectionSegmentDepthCoords, 1) != 1 ||
-            fabs (SectionLeftDistance (newBeg, newEnd, changed.sectionSegmentDepthCoords[0]) - depthDistance) > tolerance) {
-            return GS::UniString ("The section line was moved, but Archicad did not apply the new depth.");
+    const auto depthApplied = [&] (const API_ElementMemo& read) {
+        return pointCount (read.sectionSegmentDepthCoords, 1) == 1 &&
+            fabs (SectionLeftDistance (newBeg, newEnd, read.sectionSegmentDepthCoords[0]) - depthDistance) <= tolerance;
+    };
+    const bool lineMoved = requestedBeg.HasValue () || requestedEnd.HasValue ();
+
+    // Only APIMemoMask_SectionMainCoords, as in Do_CutPlane_Or_Elevation_Edit_Coords: with the
+    // depth and distant area masks added, Archicad 26 and 30 answered APIERR_BADPARS (#2838). The
+    // depth and distant area points are in the memo passed, and are checked when read back.
+    if (lineMoved) {
+        err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionMainCoords, true);
+        if (err != NoError) {
+            return GS::UniString ("Archicad refused the new start and end coordinates.");
         }
+
+        API_ElementMemo changed = {};
+        const GS::OnExit changedGuard ([&changed] () { ACAPI_DisposeElemMemoHdls (&changed); });
+        err = ACAPI_Element_GetMemo (guid, &changed, linesMask);
+        if (err != NoError) {
+            return GS::UniString ("Failed to read the lines back after the change.");
+        }
+        err = APIERR_REFUSEDPAR;
+        if (pointCount (changed.sectionSegmentMainCoords, 2) != 2 ||
+            !same (changed.sectionSegmentMainCoords[0], newBeg) || !same (changed.sectionSegmentMainCoords[1], newEnd)) {
+            return GS::UniString ("Archicad did not apply the new start and end coordinates.");
+        }
+        if (!requestedDepth.HasValue () || depthApplied (changed)) {
+            err = NoError;
+            return {};
+        }
+    }
+
+    // The main coords mask leaves the depth line where it was when only the depth changes
+    // (Archicad 30, #2838), so the depth line is written on its own with the depth coords mask.
+    const GS::UniString movedNote = lineMoved ? GS::UniString ("The section line was moved, but ") : GS::UniString ();
+    err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return GS::UniString ("Failed to load the element.");
+    }
+    err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionDepthCoords, true);
+    if (err != NoError) {
+        return movedNote + "Archicad refused the new depth.";
+    }
+    API_ElementMemo changedDepth = {};
+    const GS::OnExit changedDepthGuard ([&changedDepth] () { ACAPI_DisposeElemMemoHdls (&changedDepth); });
+    err = ACAPI_Element_GetMemo (guid, &changedDepth, linesMask);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the lines back after the change.");
+    }
+    err = APIERR_REFUSEDPAR;
+    if (!depthApplied (changedDepth)) {
+        return movedNote + "Archicad did not apply the new depth.";
     }
     err = NoError;
     return {};
