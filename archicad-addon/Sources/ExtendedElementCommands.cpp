@@ -8102,39 +8102,13 @@ static const char* StairSettingsSchemaProperties = R"(
                         "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout." },
                         "treads": {
                             "type": "array",
-                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
-                                    "visible": { "type": "boolean", "description": "Whether the treads are present." },
-                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the treads." },
-                                    "offset": { "type": "number", "description": "The offset of the treads." },
-                                    "nosingType": { "type": "string", "enum": ["ByValue", "BySlanting"], "description": "Whether the nosing is given by its length (nosingValue) or by the slant of the riser (nosingSlant)." },
-                                    "nosingValue": { "type": "number", "description": "The length of the nosing." },
-                                    "nosingSlant": { "type": "number", "description": "The slant of the nosing in radians." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["role"]
-                            }
+                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in treads.",
+                            "items": { "$ref": "#/StairTreadPartSettings" }
                         },
                         "risers": {
                             "type": "array",
-                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
-                                    "visible": { "type": "boolean", "description": "Whether the risers are present." },
-                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the risers." },
-                                    "offset": { "type": "number", "description": "The offset of the risers." },
-                                    "crossSection": { "type": "string", "enum": ["Simple", "Slanted"], "description": "The cross section of the risers." },
-                                    "angle": { "type": "number", "description": "The angle of a slanted riser in radians." },
-                                    "position": { "type": "string", "enum": ["OnTread", "BehindTread"], "description": "Whether the risers stand on the treads or behind them." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["role"]
-                            }
+                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in risers.",
+                            "items": { "$ref": "#/StairRiserPartSettings" }
                         },
                         "structures": {
                             "type": "array",
