@@ -2697,6 +2697,11 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
             segmentDetails.Add ("height", segment.height);
             segmentDetails.Add ("lateralOffset", segment.yOffset);
             segmentDetails.Add ("referenceLineLocation", segment.refLineLocation == APIRLL_Left ? "Left" : (segment.refLineLocation == APIRLL_Right ? "Right" : "Center"));
+            segmentDetails.Add ("visible", segment.visible);
+            segmentDetails.Add ("verticalOffset", segment.zOffset);
+            segmentDetails.Add ("slantAngle", segment.slantAngle);
+            segmentDetails.Add ("skewAngle", segment.skewAngle);
+            segmentDetails.Add ("relativeSkewingAngle", segment.relativeSkewingAngle);
             segments (segmentDetails);
         }
     }
@@ -2708,6 +2713,12 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
             nodeDetails.Add ("postOffset", node.postOffset);
             nodeDetails.Add ("elevation", node.elevation);
             nodeDetails.Add ("unifyPatterns", node.unifyPatterns);
+            nodeDetails.Add ("visible", node.visible);
+            nodeDetails.Add ("isStatic", node.isStatic);
+            nodeDetails.Add ("tiltedPost", node.tiltedPost);
+            nodeDetails.Add ("autoConnectionOffset", node.autoConnectionOffset);
+            nodeDetails.Add ("connectionOffset", node.connectionOffset);
+            nodeDetails.Add ("endingOffset", node.endingOffset);
             nodes (nodeDetails);
         }
     }

@@ -1,0 +1,38 @@
+{
+  "title": "GetDetailsOfElements reads the visibility, offsets and angles of a railing's segments and nodes",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "an L-shaped railing",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          { "coordinates": [ { "x": 580.0, "y": 500.0 }, { "x": 584.0, "y": 500.0 }, { "x": 584.0, "y": 503.0 } ], "floorIndex": 0, "height": 1.1 }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" } ]
+    },
+    {
+      "id": "read its segments and nodes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 2, "name": "two segments" },
+        { "path": "detailsOfElements[0].details.nodes", "len": 3, "name": "three nodes" },
+        { "path": "detailsOfElements[0].details.segments[0].visible", "eq": true, "name": "a new segment is visible" },
+        { "path": "detailsOfElements[0].details.segments[0].verticalOffset", "exists": true, "name": "segment vertical offset read" },
+        { "path": "detailsOfElements[0].details.segments[0].slantAngle", "exists": true, "name": "segment slant angle read" },
+        { "path": "detailsOfElements[0].details.segments[0].skewAngle", "exists": true, "name": "segment skew angle read" },
+        { "path": "detailsOfElements[0].details.segments[1].relativeSkewingAngle", "exists": true, "name": "segment relative skewing read" },
+        { "path": "detailsOfElements[0].details.nodes[0].visible", "eq": true, "name": "a new node is visible" },
+        { "path": "detailsOfElements[0].details.nodes[1].isStatic", "exists": true, "name": "node static flag read" },
+        { "path": "detailsOfElements[0].details.nodes[1].tiltedPost", "exists": true, "name": "node tilted post read" },
+        { "path": "detailsOfElements[0].details.nodes[2].autoConnectionOffset", "exists": true, "name": "node auto connection offset read" },
+        { "path": "detailsOfElements[0].details.nodes[2].connectionOffset", "exists": true, "name": "node connection offset read" },
+        { "path": "detailsOfElements[0].details.nodes[2].endingOffset", "exists": true, "name": "node ending offset read" }
+      ]
+    }
+  ]
+}
