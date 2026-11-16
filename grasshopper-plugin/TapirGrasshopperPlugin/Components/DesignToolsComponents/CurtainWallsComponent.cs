@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // (ExtendedElementCommands.cpp).
         private static readonly ISet<string> CreateCurtainWallsKeys = new HashSet<string>
         {
-            "cells", "coordinates", "favoriteName", "floorIndex", "height", "id", "primaryPattern",
+            "angle", "cells", "coordinates", "favoriteName", "floorIndex", "height", "id", "primaryPattern",
             "secondaryPattern", "zCoordinate"
         };
 

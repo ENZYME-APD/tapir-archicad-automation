@@ -75,12 +75,12 @@
     },
     {
       "get": "angle",
-      "set": null,
+      "set": "angle",
       "apiMember": "API_CurtainWallType::angle",
       "apiDescription": "Angle of the curtain wall (input only).",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Slant Angle",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm (text \"Slant Angle\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
