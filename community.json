@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-15T10:49:30Z",
+ "generatedAt": "2026-11-16T11:11:39Z",
  "months": [
   {
    "month": "2022-07",
@@ -421,13 +421,13 @@
  ],
  "totals": {
   "commits": 1355,
-  "discordMessages": 12128,
-  "discordMembers": 667,
+  "discordMessages": 12155,
+  "discordMembers": 670,
   "discordMembersChange": {
-   "diff": 27,
-   "days": 9
+   "diff": 30,
+   "days": 10
   },
-  "participants": 503
+  "participants": 505
  },
  "topContributors": [
   {
@@ -440,8 +440,8 @@
   {
    "name": "archispatialist",
    "login": "archispatialist",
-   "commits": 104,
-   "reports": 175,
+   "commits": 110,
+   "reports": 178,
    "tests": 0
   },
   {
@@ -456,7 +456,7 @@
    "login": "weltmaister",
    "commits": 54,
    "reports": 21,
-   "tests": 131
+   "tests": 138
   },
   {
    "name": "Cri5chan",
@@ -489,8 +489,8 @@
   {
    "name": "Ben Tristem",
    "login": "BenTristem",
-   "commits": 48,
-   "reports": 18,
+   "commits": 49,
+   "reports": 19,
    "tests": 0
   },
   {
@@ -571,6 +571,13 @@
    "tests": 0
   },
   {
+   "name": "Kappa-lo",
+   "login": "Kappa-lo",
+   "commits": 9,
+   "reports": 5,
+   "tests": 0
+  },
+  {
    "name": "akunia",
    "commits": 13,
    "reports": 0,
@@ -607,13 +614,6 @@
    "login": "poco2018",
    "commits": 8,
    "reports": 0,
-   "tests": 0
-  },
-  {
-   "name": "Kappa-lo",
-   "login": "Kappa-lo",
-   "commits": 6,
-   "reports": 2,
    "tests": 0
   },
   {
@@ -748,6 +748,10 @@
   {
    "date": "2026-11-15",
    "members": 667
+  },
+  {
+   "date": "2026-11-16",
+   "members": 670
   }
  ]
 }
