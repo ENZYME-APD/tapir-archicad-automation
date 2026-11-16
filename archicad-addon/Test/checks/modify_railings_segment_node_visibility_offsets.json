@@ -1,0 +1,70 @@
+{
+  "title": "ModifyRailings hides a segment and a node, offsets a segment, tilts a post and sets the rail connection offsets of a node",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a two-segment railing",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          { "coordinates": [ { "x": 600.0, "y": 500.0 }, { "x": 604.0, "y": 500.0 }, { "x": 604.0, "y": 503.0 } ], "floorIndex": 0, "bottomOffset": 0.0, "height": 1.0 }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" } ]
+    },
+    {
+      "id": "ModifyRailings: hide segment 1, raise segment 0, hide node 2, tilt the post of node 1 and set its connection offsets",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          {
+            "elementId": { "guid": "${r}" },
+            "segments": [
+              { "index": 0, "verticalOffset": 0.15 },
+              { "index": 1, "visible": false }
+            ],
+            "nodes": [
+              { "index": 1, "tiltedPost": true, "autoConnectionOffset": false, "connectionOffset": 0.04, "endingOffset": 0.02 },
+              { "index": 2, "visible": false }
+            ]
+          }
+        ]
+      },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "changes accepted and read back by the command" } ]
+    },
+    {
+      "id": "read them back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].verticalOffset", "approx": 0.15, "name": "segment 0 raised" },
+        { "path": "detailsOfElements[0].details.segments[0].visible", "eq": true, "name": "segment 0 still visible" },
+        { "path": "detailsOfElements[0].details.segments[1].visible", "eq": false, "name": "segment 1 hidden" },
+        { "path": "detailsOfElements[0].details.nodes[1].tiltedPost", "eq": true, "name": "post of node 1 tilted" },
+        { "path": "detailsOfElements[0].details.nodes[1].autoConnectionOffset", "eq": false, "name": "node 1 connection offset set by hand" },
+        { "path": "detailsOfElements[0].details.nodes[1].connectionOffset", "approx": 0.04, "name": "node 1 connection offset" },
+        { "path": "detailsOfElements[0].details.nodes[1].endingOffset", "approx": 0.02, "name": "node 1 ending offset" },
+        { "path": "detailsOfElements[0].details.nodes[2].visible", "eq": false, "name": "node 2 hidden" },
+        { "path": "detailsOfElements[0].details.nodes[0].visible", "eq": true, "name": "node 0 still visible" }
+      ]
+    },
+    {
+      "id": "show them again",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          {
+            "elementId": { "guid": "${r}" },
+            "segments": [ { "index": 1, "visible": true } ],
+            "nodes": [ { "index": 2, "visible": true } ]
+          }
+        ]
+      },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "shown again" } ]
+    }
+  ]
+}

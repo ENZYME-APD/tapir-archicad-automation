@@ -22348,6 +22348,14 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                         "$ref": "#/RailingReferenceLineLocation",
                                         "description": "The new location of this segment relative to the reference line. Applied before lateralOffset."
                                     },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether this segment is shown (API_RailingSegmentType::visible), as GetDetailsOfElements reads it."
+                                    },
+                                    "verticalOffset": {
+                                        "type": "number",
+                                        "description": "The new vertical offset of this segment (API_RailingSegmentType::zOffset), as GetDetailsOfElements reads it."
+                                    },
                                     "toprail": {
                                         "type": "object",
                                         "description": "Changes to the top rail of this segment (API_RailingToprailType), applied after the fields of the segment.",
@@ -22544,6 +22552,26 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                     "unifyPatterns": {
                                         "type": "boolean",
                                         "description": "True continues the pattern of the segments across the node, false crops the segments at it (API_RailingNodeType::unifyPatterns)."
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether this node is shown (API_RailingNodeType::visible), as GetDetailsOfElements reads it."
+                                    },
+                                    "tiltedPost": {
+                                        "type": "boolean",
+                                        "description": "Whether the node's post follows the slope of the segments (API_RailingNodeType::tiltedPost)."
+                                    },
+                                    "autoConnectionOffset": {
+                                        "type": "boolean",
+                                        "description": "Whether Archicad sets the connection offset of the rails at the node (API_RailingNodeType::autoConnectionOffset). Give false with connectionOffset to set it yourself."
+                                    },
+                                    "connectionOffset": {
+                                        "type": "number",
+                                        "description": "The new connection offset of the rails at the node (API_RailingNodeType::connectionOffset)."
+                                    },
+                                    "endingOffset": {
+                                        "type": "number",
+                                        "description": "The new ending offset of the rails at the node (API_RailingNodeType::endingOffset)."
                                     },
                                     "posts": {
                                         "type": "array",
@@ -22815,6 +22843,8 @@ struct RailingSegmentChange {
     GS::Optional<double>                        height;
     GS::Optional<double>                        lateralOffset;
     GS::Optional<API_RailingRefLineLocationID>  referenceLineLocation;
+    GS::Optional<bool>                          visible;
+    GS::Optional<double>                        verticalOffset;
     GS::Optional<bool>                          toprailVisible;
     GS::Array<RailingRailChange>                rails;
     GS::Array<RailingRailChange>                handrails;
@@ -22822,7 +22852,7 @@ struct RailingSegmentChange {
 
     bool HasSegmentFields () const
     {
-        return height.HasValue () || lateralOffset.HasValue () || referenceLineLocation.HasValue ();
+        return height.HasValue () || lateralOffset.HasValue () || referenceLineLocation.HasValue () || visible.HasValue () || verticalOffset.HasValue ();
     }
 };
 
@@ -22867,11 +22897,17 @@ struct RailingNodeChange {
     GS::Optional<double>            postOffset;
     GS::Optional<double>            elevation;
     GS::Optional<bool>              unifyPatterns;
+    GS::Optional<bool>              visible;
+    GS::Optional<bool>              tiltedPost;
+    GS::Optional<bool>              autoConnectionOffset;
+    GS::Optional<double>            connectionOffset;
+    GS::Optional<double>            endingOffset;
     GS::Array<RailingPartChange>    posts;
 
     bool HasNodeFields () const
     {
-        return postOffset.HasValue () || elevation.HasValue () || unifyPatterns.HasValue ();
+        return postOffset.HasValue () || elevation.HasValue () || unifyPatterns.HasValue () || visible.HasValue () ||
+               tiltedPost.HasValue () || autoConnectionOffset.HasValue () || connectionOffset.HasValue () || endingOffset.HasValue ();
     }
 };
 
@@ -22910,6 +22946,13 @@ GS::Optional<GS::UniString> ReadRailingSegmentChanges (const GS::ObjectState& it
             } else {
                 return GS::UniString::Printf ("segments: the referenceLineLocation of segment %d must be Left, Center or Right.", static_cast<int> (index));
             }
+        }
+        bool segmentVisible = false;
+        if (entry.Get ("visible", segmentVisible)) {
+            change.visible = segmentVisible;
+        }
+        if (entry.Get ("verticalOffset", value)) {
+            change.verticalOffset = value;
         }
         GS::ObjectState toprail;
         if (entry.Get ("toprail", toprail)) {
@@ -22963,6 +23006,21 @@ GS::Optional<GS::UniString> ReadRailingNodeChanges (const GS::ObjectState& item,
         if (entry.Get ("unifyPatterns", flag)) {
             change.unifyPatterns = flag;
         }
+        if (entry.Get ("visible", flag)) {
+            change.visible = flag;
+        }
+        if (entry.Get ("tiltedPost", flag)) {
+            change.tiltedPost = flag;
+        }
+        if (entry.Get ("autoConnectionOffset", flag)) {
+            change.autoConnectionOffset = flag;
+        }
+        if (entry.Get ("connectionOffset", value)) {
+            change.connectionOffset = value;
+        }
+        if (entry.Get ("endingOffset", value)) {
+            change.endingOffset = value;
+        }
         GS::Optional<GS::UniString> postError = ReadRailingPartChanges (entry, RailingPartKind::Post, "node", index, change.posts);
         if (postError.HasValue ()) {
             return postError;
@@ -23010,6 +23068,14 @@ GSErrCode ChangeRailingSegment (const API_Guid& railingGuid, const RailingSegmen
         segment.railingSegment.yOffset = change.lateralOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, yOffset);
     }
+    if (change.visible.HasValue ()) {
+        segment.railingSegment.visible = change.visible.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, visible);
+    }
+    if (change.verticalOffset.HasValue ()) {
+        segment.railingSegment.zOffset = change.verticalOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, zOffset);
+    }
     return ACAPI_Element_Change (&segment, &mask, nullptr, 0, true);
 }
 
@@ -23043,6 +23109,26 @@ GSErrCode ChangeRailingNode (const API_Guid& railingGuid, const RailingNodeChang
     if (change.unifyPatterns.HasValue ()) {
         node.railingNode.unifyPatterns = change.unifyPatterns.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, unifyPatterns);
+    }
+    if (change.visible.HasValue ()) {
+        node.railingNode.visible = change.visible.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, visible);
+    }
+    if (change.tiltedPost.HasValue ()) {
+        node.railingNode.tiltedPost = change.tiltedPost.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, tiltedPost);
+    }
+    if (change.autoConnectionOffset.HasValue ()) {
+        node.railingNode.autoConnectionOffset = change.autoConnectionOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, autoConnectionOffset);
+    }
+    if (change.connectionOffset.HasValue ()) {
+        node.railingNode.connectionOffset = change.connectionOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, connectionOffset);
+    }
+    if (change.endingOffset.HasValue ()) {
+        node.railingNode.endingOffset = change.endingOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, endingOffset);
     }
     return ACAPI_Element_Change (&node, &mask, nullptr, 0, true);
 }
@@ -23972,6 +24058,59 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                         notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
                     } else if (memo.railingNodes[expected.first].unifyPatterns != expected.second) {
                         notApplied += GS::UniString::Printf (" unifyPatterns of node %u is %s.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].unifyPatterns ? "true" : "false");
+                    }
+                }
+                // The visibility and offsets of single segments and nodes; the last change given for one wins.
+                const auto checkFlag = [&] (const char* what, const char* name, UInt32 index, bool present, bool got, bool want) {
+                    if (!present) {
+                        notApplied += GS::UniString::Printf (" %s %u is gone.", what, static_cast<unsigned> (index));
+                    } else if (got != want) {
+                        notApplied += GS::UniString::Printf (" %s of %s %u is %s.", name, what, static_cast<unsigned> (index), got ? "true" : "false");
+                    }
+                };
+                const auto checkValue = [&] (const char* what, const char* name, UInt32 index, bool present, double got, double want) {
+                    if (!present) {
+                        notApplied += GS::UniString::Printf (" %s %u is gone.", what, static_cast<unsigned> (index));
+                    } else if (std::abs (got - want) > tolerance) {
+                        notApplied += GS::UniString::Printf (" %s of %s %u is %.4f.", name, what, static_cast<unsigned> (index), got);
+                    }
+                };
+                std::map<UInt32, const RailingSegmentChange*> lastSegmentChanges;
+                for (const RailingSegmentChange& change : check.segmentChanges) {
+                    lastSegmentChanges[change.index] = &change;
+                }
+                std::map<UInt32, const RailingNodeChange*> lastNodeChanges;
+                for (const RailingNodeChange& change : check.nodeChanges) {
+                    lastNodeChanges[change.index] = &change;
+                }
+                for (const auto& entry : lastSegmentChanges) {
+                    const RailingSegmentChange& change = *entry.second;
+                    const bool present = hasSegment (change.index);
+                    if (change.visible.HasValue ()) {
+                        checkFlag ("Segment", "visible", change.index, present, present && memo.railingSegments[change.index].visible, change.visible.Get ());
+                    }
+                    if (change.verticalOffset.HasValue ()) {
+                        checkValue ("Segment", "verticalOffset", change.index, present, present ? memo.railingSegments[change.index].zOffset : 0.0, change.verticalOffset.Get ());
+                    }
+                }
+                for (const auto& entry : lastNodeChanges) {
+                    const RailingNodeChange& change = *entry.second;
+                    const bool present = hasNode (change.index);
+                    const API_RailingNodeType* node = present ? &memo.railingNodes[change.index] : nullptr;
+                    if (change.visible.HasValue ()) {
+                        checkFlag ("Node", "visible", change.index, present, node != nullptr && node->visible, change.visible.Get ());
+                    }
+                    if (change.tiltedPost.HasValue ()) {
+                        checkFlag ("Node", "tiltedPost", change.index, present, node != nullptr && node->tiltedPost, change.tiltedPost.Get ());
+                    }
+                    if (change.autoConnectionOffset.HasValue ()) {
+                        checkFlag ("Node", "autoConnectionOffset", change.index, present, node != nullptr && node->autoConnectionOffset, change.autoConnectionOffset.Get ());
+                    }
+                    if (change.connectionOffset.HasValue ()) {
+                        checkValue ("Node", "connectionOffset", change.index, present, node != nullptr ? node->connectionOffset : 0.0, change.connectionOffset.Get ());
+                    }
+                    if (change.endingOffset.HasValue ()) {
+                        checkValue ("Node", "endingOffset", change.index, present, node != nullptr ? node->endingOffset : 0.0, change.endingOffset.Get ());
                     }
                 }
                 // The top rail, rails and handrails, found again by their segment and index, and
