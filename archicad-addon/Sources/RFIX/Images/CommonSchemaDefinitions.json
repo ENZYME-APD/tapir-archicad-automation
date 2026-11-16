@@ -13963,6 +13963,119 @@
             "Custom"
         ]
     },
+    "StairTreadDetails": {
+        "type": "object",
+        "description": "A tread of a stair (API_StairTreadType), as GetSubelementsOfHierarchicalElements lists them in stairTreads. Its GDL parameters are read by GetGDLParametersOfElements.",
+        "properties": {
+            "role": {
+                "type": "string",
+                "enum": [ "Run", "Landing" ],
+                "description": "Whether the tread is on a flight (Run) or a landing."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the tread is shown."
+            },
+            "isCustom": {
+                "type": "boolean",
+                "description": "Whether the tread has its own settings instead of those of the stair."
+            },
+            "nosingType": {
+                "type": "string",
+                "enum": [ "ByValue", "BySlanting" ],
+                "description": "How the nosing is defined: by a value (nosingValue) or by slanting the riser (nosingSlant)."
+            },
+            "nosingValue": {
+                "type": "number",
+                "description": "The nosing length."
+            },
+            "nosingSlant": {
+                "type": "number",
+                "description": "The slant of the nosing."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the tread (API_StairTreadType::offset)."
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the tread."
+            },
+            "zOffset": {
+                "type": "number",
+                "description": "The vertical offset of the tread (API_StairTreadType::zOffset)."
+            },
+            "stairId": {
+                "$ref": "#/ElementId",
+                "description": "The stair the tread belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "role",
+            "visible",
+            "isCustom",
+            "nosingType",
+            "nosingValue",
+            "nosingSlant",
+            "offset",
+            "thickness",
+            "zOffset",
+            "stairId"
+        ]
+    },
+    "StairRiserDetails": {
+        "type": "object",
+        "description": "A riser of a stair (API_StairRiserType), as GetSubelementsOfHierarchicalElements lists them in stairRisers. Its GDL parameters are read by GetGDLParametersOfElements.",
+        "properties": {
+            "role": {
+                "type": "string",
+                "enum": [ "Run", "Landing" ],
+                "description": "Whether the riser is on a flight (Run) or a landing."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the riser is shown."
+            },
+            "riserPosition": {
+                "type": "string",
+                "enum": [ "OnTread", "BehindTread" ],
+                "description": "Whether the riser stands on the tread below or behind it."
+            },
+            "crossSection": {
+                "type": "string",
+                "enum": [ "Simple", "Slanted" ],
+                "description": "The cross section of the riser."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The slant angle of a slanted riser (API_StairRiserType::angle)."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the riser (API_StairRiserType::offset)."
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the riser."
+            },
+            "stairId": {
+                "$ref": "#/ElementId",
+                "description": "The stair the riser belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "role",
+            "visible",
+            "riserPosition",
+            "crossSection",
+            "angle",
+            "offset",
+            "thickness",
+            "stairId"
+        ]
+    },
     "CurtainWallFrameDetails": {
         "type": "object",
         "properties": {
@@ -16268,6 +16381,12 @@
             },
             {
                 "$ref": "#/CurtainWallFrameDetails"
+            },
+            {
+                "$ref": "#/StairTreadDetails"
+            },
+            {
+                "$ref": "#/StairRiserDetails"
             },
             {
                 "$ref": "#/MeshDetails"
