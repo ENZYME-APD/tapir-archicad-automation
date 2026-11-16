@@ -1,0 +1,131 @@
+{
+  "title": "CreateBeams and CreateColumns take the floor plan display settings ModifyBeams and ModifyColumns write (story visibility, display option, pens and line types), so a new element needs no second Modify call, and refuse an unknown line type without leaving an element behind (#2529)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Column", "Beam" ],
+  "steps": [
+    {
+      "id": "a line type",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "line": "attributes[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "at least two line types" }
+      ]
+    },
+    {
+      "id": "a beam created with its display settings",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 900.0 },
+            "endCoordinate": { "x": 906.0, "y": 900.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "isAutoOnStoryVisibility": false,
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 },
+            "displayOption": "CutOnly",
+            "cutContourLinePen": 21,
+            "belowViewLinePen": 22,
+            "aboveViewLinePen": 23,
+            "hiddenLinePen": 24,
+            "hiddenLineTypeId": { "guid": "${line}" },
+            "aboveViewLineTypeId": { "guid": "${line}" }
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "the new beam has them",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true },
+        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": false },
+        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 0 },
+        { "path": "detailsOfElements[0].details.displayOption", "eq": "CutOnly" },
+        { "path": "detailsOfElements[0].details.cutContourLinePen", "eq": 21 },
+        { "path": "detailsOfElements[0].details.belowViewLinePen", "eq": 22 },
+        { "path": "detailsOfElements[0].details.aboveViewLinePen", "eq": 23 },
+        { "path": "detailsOfElements[0].details.hiddenLinePen", "eq": 24 },
+        { "path": "detailsOfElements[0].details.hiddenLineTypeId.guid", "eq": "${line}" },
+        { "path": "detailsOfElements[0].details.aboveViewLineTypeId.guid", "eq": "${line}" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 900.0, "name": "geometry as given" }
+      ]
+    },
+    {
+      "id": "a column created with its display settings",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 910.0, "y": 900.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "isAutoOnStoryVisibility": false,
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 },
+            "contourPen": 21,
+            "contourLineTypeId": { "guid": "${line}" },
+            "aboveViewLinePen": 23,
+            "hiddenLinePen": 24,
+            "hiddenLineTypeId": { "guid": "${line}" }
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "the new column has them",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true },
+        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": false },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 21 },
+        { "path": "detailsOfElements[0].details.contourLineTypeId.guid", "eq": "${line}" },
+        { "path": "detailsOfElements[0].details.aboveViewLinePen", "eq": 23 },
+        { "path": "detailsOfElements[0].details.hiddenLinePen", "eq": 24 },
+        { "path": "detailsOfElements[0].details.hiddenLineTypeId.guid", "eq": "${line}" }
+      ]
+    },
+    {
+      "id": "an unknown line type is refused on create",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 910.0 },
+            "endCoordinate": { "x": 906.0, "y": 910.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "hiddenLineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "unknown line type refused" }
+      ]
+    },
+    {
+      "id": "only the two good elements exist",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Beam" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "no beam left behind by the refused item" }
+      ]
+    }
+  ]
+}

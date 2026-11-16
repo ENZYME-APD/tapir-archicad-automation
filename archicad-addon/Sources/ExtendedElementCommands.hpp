@@ -43,6 +43,15 @@ extern const char* BeamSurfaceAndFillSchemaProperties;
 extern const char* SlabSurfaceAndFillSchemaProperties;
 
 GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+
+// The floor plan display settings of a column (story visibility, display option, the pens and
+// line types of the contour, veneer, uncut, overhead and hidden lines), shared by CreateColumns
+// and ModifyColumns (#2529). GetColumnDisplaySettingsNotApplied names the given keys Archicad did
+// not take, comparing the requested column with the one Archicad stored.
+extern const char* ColumnDisplaySchemaProperties;
+bool HasColumnDisplaySettings (const GS::ObjectState& details);
+GS::Optional<GS::UniString> ApplyColumnDisplaySettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+GS::UniString GetColumnDisplaySettingsNotApplied (const API_ColumnType& wanted, const API_ColumnType& got, const GS::ObjectState& details);
 // Writes width and height (a column's depth) of a column or beam segment; see the definition.
 void ApplySectionSize (API_AssemblySegmentData& segment, const GS::Optional<double>& width, const GS::Optional<double>& height, bool hasIsWidthAndHeightLinked, bool isWidthAndHeightLinked);
 GS::Optional<GS::UniString> ApplyBeamSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
