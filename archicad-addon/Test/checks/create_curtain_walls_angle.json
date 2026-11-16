@@ -33,14 +33,24 @@
             "angle": 120.0,
             "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
             "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "coordinates": [ { "x": 940.0, "y": 940.0 }, { "x": 946.0, "y": 940.0 } ],
+            "zCoordinate": 1.5,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 60.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
           }
         ]
       },
-      "save": { "v": "elements[0].elementId.guid", "l": "elements[1].elementId.guid", "r": "elements[2].elementId.guid" },
+      "save": { "v": "elements[0].elementId.guid", "l": "elements[1].elementId.guid", "r": "elements[2].elementId.guid", "e": "elements[3].elementId.guid" },
       "expect": [
         { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall V created" },
         { "path": "elements[1].elementId.guid", "exists": true, "name": "curtain wall L created" },
-        { "path": "elements[2].elementId.guid", "exists": true, "name": "curtain wall R created" }
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "curtain wall R created" },
+        { "path": "elements[3].elementId.guid", "exists": true, "name": "curtain wall E created 1.5 m up at 60 degrees" }
       ]
     },
     {
@@ -76,13 +86,15 @@
         "elements": [
           { "elementId": { "guid": "${v}" } },
           { "elementId": { "guid": "${l}" } },
-          { "elementId": { "guid": "${r}" } }
+          { "elementId": { "guid": "${r}" } },
+          { "elementId": { "guid": "${e}" } }
         ]
       },
       "save": {
         "vs": "subelements[0].cWallSegments[0].elementId.guid",
         "ls": "subelements[1].cWallSegments[0].elementId.guid",
-        "rs": "subelements[2].cWallSegments[0].elementId.guid"
+        "rs": "subelements[2].cWallSegments[0].elementId.guid",
+        "es": "subelements[3].cWallSegments[0].elementId.guid"
       },
       "expect": [
         { "path": "subelements[1].cWallSegments", "len": 1, "name": "L has one segment" },
@@ -97,10 +109,20 @@
         "elements": [
           { "elementId": { "guid": "${vs}" } },
           { "elementId": { "guid": "${ls}" } },
-          { "elementId": { "guid": "${rs}" } }
+          { "elementId": { "guid": "${rs}" } },
+          { "elementId": { "guid": "${es}" } }
         ]
       },
+      "save": {
+        "lby": "detailsOfElements[1].details.begCoordinate.y",
+        "lbz": "detailsOfElements[1].details.begCoordinate.z",
+        "eby": "detailsOfElements[3].details.begCoordinate.y",
+        "ebz": "detailsOfElements[3].details.begCoordinate.z"
+      },
       "expect": [
+        { "expr": "${ebz} - ${lbz}", "approx": 1.5, "name": "E is 1.5 m above L, as its zCoordinate says" },
+        { "expr": "(${eby} - 940) - (${lby} - 910)", "approx": 0.0, "name": "E is not shifted sideways from its reference line" },
+        { "path": "detailsOfElements[3].details.extrusionVector.z", "approx": 3.0, "name": "E segment is 3 m high" },
         { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 0.0, "name": "V segment goes straight up" },
         { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 3.0, "name": "V segment is 3 m high" },
         { "path": "detailsOfElements[1].details.extrusionVector.x", "approx": 0.0, "name": "L segment leans across its reference line" },

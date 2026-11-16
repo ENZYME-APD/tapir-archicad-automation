@@ -6009,8 +6009,17 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
         // normal of the reference line is (-dirY, dirX).
         const double normalX = -dirY;
         const double normalY = dirX;
-        planeMatrix.tmx[0] = dirX;  planeMatrix.tmx[1] = normalX * sinA; planeMatrix.tmx[2] = normalX * cosA;  planeMatrix.tmx[3] = begC.x;
-        planeMatrix.tmx[4] = dirY;  planeMatrix.tmx[5] = normalY * sinA; planeMatrix.tmx[6] = normalY * cosA;  planeMatrix.tmx[7] = begC.y;
+        // Archicad moves the plane by planeOffset along its own z axis, so on a slanted plane the
+        // offset of the base from the home story would also shift it sideways and come out
+        // planeOffset * sin (angle) high (zCoordinate 1.5 gave a base at 1.299 m, 0.75 m to the
+        // left, in Archicad 29). The offset is stretched along the plane and the origin is moved
+        // back by its sideways part, so the reference line stays where it was given, at the
+        // given elevation.
+        const double baseOffset = element.curtainWall.planeOffset;
+        const double sideways = baseOffset * cosA / sinA;
+        element.curtainWall.planeOffset = baseOffset / sinA;
+        planeMatrix.tmx[0] = dirX;  planeMatrix.tmx[1] = normalX * sinA; planeMatrix.tmx[2] = normalX * cosA;  planeMatrix.tmx[3] = begC.x - normalX * sideways;
+        planeMatrix.tmx[4] = dirY;  planeMatrix.tmx[5] = normalY * sinA; planeMatrix.tmx[6] = normalY * cosA;  planeMatrix.tmx[7] = begC.y - normalY * sideways;
         planeMatrix.tmx[8] = 0.0;   planeMatrix.tmx[9] = -cosA;          planeMatrix.tmx[10] = sinA;           planeMatrix.tmx[11] = 0.0;
         // height is the vertical height; Archicad measures it along the plane.
         element.curtainWall.height /= sinA;
