@@ -137,8 +137,8 @@
         { "path": "detailsOfElements[0].details.edgeSideMaterials", "len": 4, "name": "still four edges" },
         { "path": "detailsOfElements[0].details.edgeSideMaterials[1].overridden", "eq": true, "name": "edge 1 has a custom surface" },
         { "path": "detailsOfElements[0].details.edgeSideMaterials[1].attributeId.guid", "eq": "${surfB}", "name": "edge 1 surface" },
-        { "path": "detailsOfElements[0].details.edgeSideMaterials[0].overridden", "eq": false, "name": "edge 0 has none" },
-        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].overridden", "eq": false, "name": "edge 2 has none" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[0].attributeId.guid", "eq": "${surfA}", "name": "edge 0 shows the side surface" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].attributeId.guid", "eq": "${surfA}", "name": "edge 2 shows the side surface" },
         { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "outline kept" },
         { "path": "detailsOfElements[0].details.angle", "approx": 0.5, "name": "angle kept" }
       ]
@@ -172,7 +172,7 @@
       "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].details.topMaterial.overridden", "eq": false, "name": "top surface override cleared" },
-        { "path": "detailsOfElements[0].details.edgeSideMaterials[1].overridden", "eq": false, "name": "edge 1 custom surface cleared" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[1].attributeId.guid", "eq": "${surfA}", "name": "edge 1 custom surface cleared: it shows the side surface again" },
         { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfA}", "name": "side surface kept" },
         { "path": "detailsOfElements[0].details.bottomMaterial.attributeId.guid", "eq": "${surfB}", "name": "bottom surface kept" }
       ]
