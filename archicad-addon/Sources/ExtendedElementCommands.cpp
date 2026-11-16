@@ -11029,6 +11029,229 @@ GS::ObjectState RecreateRailingsCommand::Execute (const GS::ObjectState& paramet
     return response;
 }
 
+// ============================================================================
+// RecreateCurtainWalls
+// ModifyCurtainWalls keeps the number of segments of a curtain wall (Archicad does not take more or
+// fewer reference line points through ACAPI_Element_Change), so a curtain wall gets a reference line
+// with more or fewer segments by being created again with itself as templateElementId, and deleted,
+// as RecreateRailings does for railings.
+// ============================================================================
+
+RecreateCurtainWallsCommand::RecreateCurtainWallsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateCurtainWallsCommand::GetName () const
+{
+    return "RecreateCurtainWalls";
+}
+
+GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "curtainWalls": {
+                "type": "array",
+                "description": "The curtain walls to recreate on a new reference line.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The curtain wall to recreate."
+                        },
+                        "coordinates": {
+                            "type": "array",
+                            "description": "The new reference line on the floor plan, as CreateCurtainWalls takes it: one segment per pair of consecutive points, so more or fewer points than the old curtain wall has add or remove segments. A slanted curtain wall needs exactly 2 points.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "coordinates"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["curtainWalls"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item per input curtain wall: the new curtain wall, or an error. After an error nothing was changed for that curtain wall.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "oldElementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The curtain wall that was deleted."
+                                },
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The new curtain wall."
+                                },
+                                "notCarriedOver": {
+                                    "type": "array",
+                                    "description": "What was linked to the old curtain wall and could not be moved to the new one: its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group. Only the dimensions of the current database (the active window) are listed.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "relation": {
+                                                "type": "string",
+                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"]
+                                            },
+                                            "elementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The label or dimension, as it was before the old curtain wall was deleted. Not given for Group."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": ["relation"]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["oldElementId", "elementId", "notCarriedOver"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    })";
+}
+
+GS::ObjectState RecreateCurtainWallsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> curtainWalls;
+    parameters.Get ("curtainWalls", curtainWalls);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const Stories stories = GetStories ();
+
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    for (const GS::ObjectState& item : curtainWalls) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        GS::Array<GS::ObjectState> coordinates;
+        if (elementId == nullptr || !item.Get ("coordinates", coordinates)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId and coordinates are required. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_CurtainWallID, "Curtain Wall", "curtain wall", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        // The item of CreateCurtainWalls: the new reference line, with the old curtain wall as
+        // template for everything else (its base, height, slant, frames, panels and pattern).
+        GS::ObjectState createItem;
+        createItem.Add ("templateElementId", CreateGuidObjectState (oldGuid));
+        {
+            const auto& list = createItem.AddList<GS::ObjectState> ("coordinates");
+            for (const GS::ObjectState& coordinate : coordinates) {
+                list (coordinate);
+            }
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Curtain Wall", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_CurtainWallID;
+#else
+            element.header.typeID = API_CurtainWallID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Curtain Wall defaults. Nothing was changed.");
+                return stepErr;
+            }
+            stepError = CreateCurtainWallsCommand ().SetTypeSpecificParameters (element, memo, stories, createItem);
+            if (stepError.HasValue ()) {
+                stepErr = APIERR_BADPARS;
+                return stepErr;
+            }
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a curtain wall on the new reference line with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "curtain wall", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the curtain wall."));
+            continue;
+        }
+
+        API_Element newElement = {};
+        newElement.header.guid = newGuid;
+        if (ACAPI_Element_Get (&newElement) == NoError) {
+            notification = {};
+            notification.notifID = APINotifyElement_New;
+            notification.elemHead = newElement.header;
+            AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+        }
+
+        GS::ObjectState result;
+        result.Add ("oldElementId", CreateGuidObjectState (oldGuid));
+        result.Add ("elementId", CreateGuidObjectState (newGuid));
+        const auto& notCarriedOver = result.AddList<GS::ObjectState> ("notCarriedOver");
+        for (const GS::Pair<GS::UniString, API_Guid>& lost : data.notCarriedOver) {
+            GS::ObjectState lostOs ("relation", lost.first);
+            if (lost.second != APINULLGuid) {
+                lostOs.Add ("elementId", CreateGuidObjectState (lost.second));
+            }
+            notCarriedOver (lostOs);
+        }
+        results (result);
+    }
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    return response;
+}
+
 CreateWindowsCommand::CreateWindowsCommand () :
     CommandBase (CommonSchema::Used)
 {
