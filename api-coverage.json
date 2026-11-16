@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-15 21:17 UTC",
+ "generatedAt": "2026-11-16 01:22 UTC",
  "versions": [
   25,
   26,
@@ -4028,7 +4028,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    }
+   ],
    "issues": [
     {
      "number": 2313,
@@ -4773,10 +4778,6 @@
     {
      "number": 2843,
      "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    },
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
     },
     {
      "number": 2815,
@@ -5824,10 +5825,6 @@
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
     {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -6118,12 +6115,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2810,
-     "title": "Return the text content of drawing primitives (zone stamp lines)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6822,12 +6814,12 @@
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
     {
-     "number": 2838,
-     "title": "ModifySections: move the section line and depth of Sections and Elevations"
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     },
     {
-     "number": 2827,
-     "title": "SetDetailsOfElements: report a layerIndex/floorIndex Archicad did not apply (Curtain Wall frames and panels)"
+     "number": 2838,
+     "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
     {
      "number": 2751,
@@ -6846,12 +6838,7 @@
      "title": "ModifyRoofs: keep the side surface when the edge surfaces are written"
     }
    ],
-   "issues": [
-    {
-     "number": 2824,
-     "title": "SetDetailsOfElements: `layerIndex` / `floorIndex` on CurtainWallFrame / CurtainWallPanel answer success but are not applied (they follow the Curtain Wall)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeContent",
@@ -6895,10 +6882,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -7422,6 +7405,10 @@
      "title": "[2/3] ModifyStairs/CreateStairs: write the line types, pens and fills of the stair's structure symbols"
     },
     {
+     "number": 2843,
+     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+    },
+    {
      "number": 2838,
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
@@ -7659,10 +7646,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -7989,14 +7972,6 @@
     {
      "number": 2843,
      "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    },
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    },
-    {
-     "number": 2827,
-     "title": "SetDetailsOfElements: report a layerIndex/floorIndex Archicad did not apply (Curtain Wall frames and panels)"
     }
    ],
    "issues": []
@@ -9432,12 +9407,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9521,12 +9491,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9547,12 +9512,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25771,14 +25731,6 @@
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
     {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    },
-    {
-     "number": 2831,
-     "title": "CreateProfiles: an arc on a newSkins contour's closing edge no longer deletes the skin"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -31509,10 +31461,6 @@
     {
      "number": 2853,
      "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
-    },
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
     },
     {
      "number": 2817,
@@ -38056,14 +38004,6 @@
     {
      "number": 2838,
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
-    },
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    },
-    {
-     "number": 2831,
-     "title": "CreateProfiles: an arc on a newSkins contour's closing edge no longer deletes the skin"
     },
     {
      "number": 2813,
@@ -44774,10 +44714,6 @@
      "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
     },
     {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
-    },
-    {
      "number": 2817,
      "title": "Modify a part of the embedded library in a temporary copy (SetLibraryPartScripts and the other Set commands)"
     },
@@ -47956,10 +47892,6 @@
     {
      "number": 2853,
      "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
-    },
-    {
-     "number": 2832,
-     "title": "[2/2] DeleteAndReplaceAttributes: accept Layer"
     },
     {
      "number": 2817,
