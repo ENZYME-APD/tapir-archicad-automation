@@ -434,6 +434,8 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .has-menu .brand { min-width: 0 }
     .has-menu .right { flex: none }
     .has-menu .menu-button { display: inline-flex }
+    /* Download is as high as the menu and search buttons next to it (#2886). */
+    .has-menu .right > .btn-sm { height: 38px; padding-block: 0 }
     .has-menu .site-menu {
         display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 1px; z-index: 20;
         background: var(--moss); border-bottom: 1px solid var(--cream-12); box-shadow: var(--shadow-menu);
@@ -483,7 +485,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 }
 @media (max-width: 400px) {
     .uses-grid, .uses-grid.three { grid-template-columns: 1fr }
-    .site-header .right .btn-sm { padding: 8px 12px }
+    .site-header .right .btn-sm { padding-inline: 12px }
 }
 /* Less motion: the Display menu's Motion Reduced, or System (no data-motion) when the system asks for
    it; Full keeps every animation whatever the system asks. The two blocks are the same. */
@@ -742,7 +744,9 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 /* Buttons, chips, the skip link. */
 :root:not([data-style="legacy"]) .skip-link, :root:not([data-style="legacy"]) .skip-link:focus { background: var(--accent-fill); color: var(--on-accent); border-radius: var(--radius-control) }
 :root:not([data-style="legacy"]) .btn { border-radius: var(--radius-control) }
-:root:not([data-style="legacy"]) .btn-primary, :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill); color: var(--on-accent) }
+/* The filled button's (transparent) border is as wide as the outlined one's 1 px line, so a filled and an
+   outlined button side by side are the same height (#2886). */
+:root:not([data-style="legacy"]) .btn-primary, :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill); color: var(--on-accent); border-width: 1px }
 :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill-hover) }
 :root:not([data-style="legacy"]) .btn-ghost, :root:not([data-style="legacy"]) .btn-line { border: 1px solid var(--border-strong); color: var(--fg); background: var(--surface) }
 :root:not([data-style="legacy"]) .btn-ghost:hover, :root:not([data-style="legacy"]) .btn-line:hover { border-color: var(--link); color: var(--link) }
