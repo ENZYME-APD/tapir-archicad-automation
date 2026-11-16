@@ -5676,6 +5676,12 @@ GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema 
                         "description": "Optional height of the curtain wall. When omitted, the height of the favorite (or of the Curtain Wall tool defaults) is kept.",
                         "exclusiveMinimum": 0.0
                     },
+                    "angle": {
+                        "type": "number",
+                        "description": "Optional slant angle of the curtain wall plane in degrees, measured from the horizontal: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first coordinate), more than 90 to the right. It is the value GetDetailsOfElements returns as angle. A slanted curtain wall needs a straight reference line (exactly 2 coordinates); height stays its vertical height, and zCoordinate the elevation of its reference line (Archicad raises the bottom of the panels by offset times the cosine of the angle). Give it even with a slanted favorite: Archicad does not take the slant of a favorite or of the tool defaults on creation, so without angle the curtain wall comes out vertical (seen in Archicad 29).",
+                        "exclusiveMinimum": 0.0,
+                        "exclusiveMaximum": 180.0
+                    },
                     "primaryPattern": {
                         "$ref": "#/CurtainWallPattern",
                         "description": "Optional column pattern: the sizes of the columns along the segment (the primary grid). When omitted, the pattern of the favorite (or of the tool defaults) is kept."
@@ -5964,8 +5970,60 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
         element.curtainWall.height = height;
     }
 
+    // The slant. ACAPI_Element_Create ignores API_CurtainWallType::angle (and so the angle of a
+    // slanted favorite or of the tool defaults), and a later ACAPI_Element_Change ignores the
+    // angle, the segments' extrusion and their contours alike - all confirmed in Archicad 29. It
+    // does take planeMatrix: the plane of the curtain wall, in which memo.coords are local
+    // coordinates and height is measured along the plane. A curtain wall drawn slanted in
+    // Archicad has its x axis along the reference line, its z axis (up the plane) leaning by
+    // 90 - angle degrees towards the left of the reference line, and its origin on the first
+    // point of the reference line. A vertical curtain wall has the identity matrix, which an
+    // angle of 90 writes; without angle the element is left as the defaults made it.
+    double angle = 90.0;
+    const bool hasAngle = parameters.Get ("angle", angle);
+    const bool slanted = hasAngle && std::fabs (angle - 90.0) > 1e-9;
+    if (slanted && coordinates.GetSize () != 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "A slanted curtain wall (angle other than 90) lies in one plane, so its coordinates must be the 2 points of a straight reference line.");
+    }
+    const API_Coord begC = Get2DCoordinateFromObjectState (coordinates[0]);
+    double sinA = 1.0;
+    double cosA = 0.0;
+    double dirX = 1.0;
+    double dirY = 0.0;
+    if (slanted) {
+        const API_Coord endC = Get2DCoordinateFromObjectState (coordinates[1]);
+        const double length = std::hypot (endC.x - begC.x, endC.y - begC.y);
+        dirX = (endC.x - begC.x) / length;
+        dirY = (endC.y - begC.y) / length;
+        const double angleRad = angle * std::acos (-1.0) / 180.0;
+        sinA = std::sin (angleRad);
+        cosA = std::cos (angleRad);
+    }
+    API_Tranmat& planeMatrix = element.curtainWall.planeMatrix;
+    if (hasAngle) {
+        element.curtainWall.angle = angle;
+        planeMatrix = {};
+    }
+    if (slanted) {
+        // Columns: x along the reference line, y across the plane, z up the plane; the left
+        // normal of the reference line is (-dirY, dirX).
+        const double normalX = -dirY;
+        const double normalY = dirX;
+        planeMatrix.tmx[0] = dirX;  planeMatrix.tmx[1] = normalX * sinA; planeMatrix.tmx[2] = normalX * cosA;  planeMatrix.tmx[3] = begC.x;
+        planeMatrix.tmx[4] = dirY;  planeMatrix.tmx[5] = normalY * sinA; planeMatrix.tmx[6] = normalY * cosA;  planeMatrix.tmx[7] = begC.y;
+        planeMatrix.tmx[8] = 0.0;   planeMatrix.tmx[9] = -cosA;          planeMatrix.tmx[10] = sinA;           planeMatrix.tmx[11] = 0.0;
+        // height is the vertical height; Archicad measures it along the plane.
+        element.curtainWall.height /= sinA;
+    } else if (hasAngle) {
+        planeMatrix.tmx[0] = 1.0;
+        planeMatrix.tmx[5] = 1.0;
+        planeMatrix.tmx[10] = 1.0;
+    }
+
     // The reference polyline: memo.coords holds the vertices from index 1 (index 0 is unused,
-    // as in every polygon memo), and every pair of consecutive vertices is one segment.
+    // as in every polygon memo), and every pair of consecutive vertices is one segment. They are
+    // in the coordinates of the plane: the floor plan itself for a vertical curtain wall, the
+    // distance along the reference line for a slanted one.
     const UInt32 nCoords = coordinates.GetSize ();
     if (memo.coords != nullptr) {
         BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
@@ -5975,7 +6033,8 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
     }
     memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     for (UIndex i = 0; i < nCoords; ++i) {
-        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+        const API_Coord c = Get2DCoordinateFromObjectState (coordinates[i]);
+        (*memo.coords)[i + 1] = slanted ? API_Coord { (c.x - begC.x) * dirX + (c.y - begC.y) * dirY, 0.0 } : c;
     }
     element.curtainWall.nSegments = nCoords - 1;
 
