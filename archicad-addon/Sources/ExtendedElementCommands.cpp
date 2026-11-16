@@ -28,6 +28,7 @@
 #include <limits>
 #include <map>
 #include <optional>
+#include <type_traits>
 #include <utility>
 
 namespace {
@@ -22514,6 +22515,68 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                                 "index"
                                             ]
                                         }
+                                    },)"
+        R"(
+                                    "pattern": {
+                                        "type": "object",
+                                        "description": "Changes to the railing pattern of this segment (API_RailingSegmentType::defPattern), applied after balusterSets: the models of its inner posts, panels and baluster sets and its distribution. The model is written, then the inner posts, panels and baluster sets the railing already has are changed through the railing's memo, and each of them is read back. Archicad 29 does not take a change to a single one of them (innerPosts, panels, balusterSets), and makes every segment of a railing follow the pattern of its first segment: a pattern change of segment 0 reaches every segment, one of another segment is not kept and is reported as a failure (confirmed on Archicad 29 build 5101).",
+                                        "properties": {
+                                            "distribution": {
+                                                "$ref": "#/RailingDistributionChange",
+                                                "description": "How the pattern repeats along the segment (API_RailingPatternType::distribution)."
+                                            },
+                                            "innerPost": {
+                                                "type": "object",
+                                                "description": "The inner post model of the pattern (API_RailingPatternType::defInnerPost).",
+                                                "properties": {
+                                                    "doublePostOffset": {
+                                                        "type": "number",
+                                                        "description": "The offset between the two posts of a double inner post (API_RailingInnerPostType::doublePostOffset)."
+                                                    },
+                                                    "postCount": {
+                                                        "type": "integer",
+                                                        "minimum": 1,
+                                                        "maximum": 2,
+                                                        "description": "The number of posts in each inner post, 1 or 2 (API_RailingInnerPostType::postNum)."
+                                                    },
+                                                    "verticalPosition": {
+                                                        "$ref": "#/RailingVerticalPositionChange"
+                                                    },
+                                                    "horizontalPosition": {
+                                                        "$ref": "#/RailingHorizontalPositionChange"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "panel": {
+                                                "type": "object",
+                                                "description": "The panel model of the pattern (API_RailingPatternType::defPanel).",
+                                                "properties": {
+                                                    "visible": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the panels are shown (API_RailingPanelType::visible)."
+                                                    },
+                                                    "frame": {
+                                                        "$ref": "#/RailingFrameChange"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "balusterSet": {
+                                                "type": "object",
+                                                "description": "The baluster set model of the pattern (API_RailingPatternType::defBalusterSet).",
+                                                "properties": {
+                                                    "frame": {
+                                                        "$ref": "#/RailingFrameChange"
+                                                    },
+                                                    "distribution": {
+                                                        "$ref": "#/RailingDistributionChange"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "additionalProperties": false
                                     }
                                 },
                                 "additionalProperties": false,
@@ -22566,6 +22629,19 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                                 "verticalPosition"
                                             ]
                                         }
+                                    },
+                                    "post": {
+                                        "type": "object",
+                                        "description": "Changes to the post model of this node (API_RailingNodeType::defPost), applied after posts. Archicad generates the posts of a node from it; Archicad 29 does not take a change to a single post (posts) and regenerates it from this model (confirmed on Archicad 29 build 5101).",
+                                        "properties": {
+                                            "verticalPosition": {
+                                                "$ref": "#/RailingVerticalPositionChange"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "verticalPosition"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false,
@@ -22683,24 +22759,58 @@ GS::Optional<GS::UniString> ReadRailingVerticalPositionChange (const GS::ObjectS
     return GS::NoValue;
 }
 
-// Reads the "posts" list of a node change, or the "innerPosts", "panels" or "balusterSets" list of a
-// segment change. ownerName is "node" or "segment". Returns an error text, or nothing.
-GS::Optional<GS::UniString> ReadRailingPartChanges (const GS::ObjectState& entry, RailingPartKind kind, const char* ownerName, Int32 ownerIndex, GS::Array<RailingPartChange>& changes)
+// Reads a distribution object (of a baluster set, or of a railing pattern) into change. Returns an
+// error text, or nothing.
+GS::Optional<GS::UniString> ReadRailingDistributionChange (const GS::ObjectState& distribution, const GS::UniString& prefix, RailingPartChange& change)
 {
-    const char* listKey = GetRailingPartListKey (kind);
-    GS::Array<GS::ObjectState> list;
-    if (!entry.Get (listKey, list)) {
-        return GS::NoValue;
-    }
-    for (const GS::ObjectState& partEntry : list) {
-        Int32 index = -1;
-        if (!partEntry.Get ("index", index) || index < 0) {
-            return GS::UniString::Printf ("%ss: %s %d: every item of %s needs a non-negative index.", ownerName, ownerName, static_cast<int> (ownerIndex), listKey);
+    GS::UniString text;
+    if (distribution.Get ("type", text)) {
+        if (text == "Divisions") {
+            change.distributionType = APIDT_Divisions;
+        } else if (text == "PatternLength") {
+            change.distributionType = APIDT_PatternLength;
+        } else if (text == "BestDivisionByLength") {
+            change.distributionType = APIDT_BestDivisionByLength;
+        } else {
+            return GS::UniString (prefix + "the distribution type must be Divisions, PatternLength or BestDivisionByLength.");
         }
-        const GS::UniString prefix = GS::UniString::Printf ("%ss: %s %d: item %d of %s: ", ownerName, ownerName, static_cast<int> (ownerIndex), static_cast<int> (index), listKey);
-        RailingPartChange change;
-        change.kind = kind;
-        change.index = static_cast<UInt32> (index);
+    }
+    if (distribution.Get ("alignment", text)) {
+        if (text == "StartWithPattern") {
+            change.distributionAlignment = APIPA_StartWithPattern;
+        } else if (text == "StartFromCenter") {
+            change.distributionAlignment = APIPA_StartFromCenter;
+        } else if (text == "CenterAligned") {
+            change.distributionAlignment = APIPA_CenterAligned;
+        } else if (text == "EndWithPattern") {
+            change.distributionAlignment = APIPA_EndWithPattern;
+        } else {
+            return GS::UniString (prefix + "the distribution alignment must be StartWithPattern, StartFromCenter, CenterAligned or EndWithPattern.");
+        }
+    }
+    double value = 0.0;
+    if (distribution.Get ("length", value)) {
+        if (value <= 0.0) {
+            return GS::UniString (prefix + "the distribution length must be positive.");
+        }
+        change.distributionLength = value;
+    }
+    Int32 amount = 0;
+    if (distribution.Get ("patternAmount", amount)) {
+        if (amount < 1) {
+            return GS::UniString (prefix + "patternAmount must be at least 1.");
+        }
+        change.patternAmount = static_cast<UInt32> (amount);
+    }
+    return GS::NoValue;
+}
+
+// Reads the fields of one post, inner post, panel or baluster set change (an item of a list, or the
+// model of a pattern or node) into change, whose kind is set. Returns an error text, or nothing.
+GS::Optional<GS::UniString> ReadRailingPartFields (const GS::ObjectState& partEntry, const GS::UniString& prefix, RailingPartChange& change)
+{
+    const RailingPartKind kind = change.kind;
+    {
         bool flag = false;
         double value = 0.0;
         GS::ObjectState vertical;
@@ -22762,50 +22872,86 @@ GS::Optional<GS::UniString> ReadRailingPartChanges (const GS::ObjectState& entry
         if (kind == RailingPartKind::BalusterSet) {
             GS::ObjectState distribution;
             if (partEntry.Get ("distribution", distribution)) {
-                GS::UniString text;
-                if (distribution.Get ("type", text)) {
-                    if (text == "Divisions") {
-                        change.distributionType = APIDT_Divisions;
-                    } else if (text == "PatternLength") {
-                        change.distributionType = APIDT_PatternLength;
-                    } else if (text == "BestDivisionByLength") {
-                        change.distributionType = APIDT_BestDivisionByLength;
-                    } else {
-                        return GS::UniString (prefix + "the distribution type must be Divisions, PatternLength or BestDivisionByLength.");
-                    }
-                }
-                if (distribution.Get ("alignment", text)) {
-                    if (text == "StartWithPattern") {
-                        change.distributionAlignment = APIPA_StartWithPattern;
-                    } else if (text == "StartFromCenter") {
-                        change.distributionAlignment = APIPA_StartFromCenter;
-                    } else if (text == "CenterAligned") {
-                        change.distributionAlignment = APIPA_CenterAligned;
-                    } else if (text == "EndWithPattern") {
-                        change.distributionAlignment = APIPA_EndWithPattern;
-                    } else {
-                        return GS::UniString (prefix + "the distribution alignment must be StartWithPattern, StartFromCenter, CenterAligned or EndWithPattern.");
-                    }
-                }
-                if (distribution.Get ("length", value)) {
-                    if (value <= 0.0) {
-                        return GS::UniString (prefix + "the distribution length must be positive.");
-                    }
-                    change.distributionLength = value;
-                }
-                Int32 amount = 0;
-                if (distribution.Get ("patternAmount", amount)) {
-                    if (amount < 1) {
-                        return GS::UniString (prefix + "patternAmount must be at least 1.");
-                    }
-                    change.patternAmount = static_cast<UInt32> (amount);
+                GS::Optional<GS::UniString> distributionError = ReadRailingDistributionChange (distribution, prefix, change);
+                if (distributionError.HasValue ()) {
+                    return distributionError;
                 }
             }
         }
-        if (!change.HasFields ()) {
-            return GS::UniString (prefix + "no fields to modify.");
+    }
+    if (!change.HasFields ()) {
+        return GS::UniString (prefix + "no fields to modify.");
+    }
+    return GS::NoValue;
+}
+
+// Reads the "posts" list of a node change, or the "innerPosts", "panels" or "balusterSets" list of a
+// segment change. ownerName is "node" or "segment". Returns an error text, or nothing.
+GS::Optional<GS::UniString> ReadRailingPartChanges (const GS::ObjectState& entry, RailingPartKind kind, const char* ownerName, Int32 ownerIndex, GS::Array<RailingPartChange>& changes)
+{
+    const char* listKey = GetRailingPartListKey (kind);
+    GS::Array<GS::ObjectState> list;
+    if (!entry.Get (listKey, list)) {
+        return GS::NoValue;
+    }
+    for (const GS::ObjectState& partEntry : list) {
+        Int32 index = -1;
+        if (!partEntry.Get ("index", index) || index < 0) {
+            return GS::UniString::Printf ("%ss: %s %d: every item of %s needs a non-negative index.", ownerName, ownerName, static_cast<int> (ownerIndex), listKey);
+        }
+        const GS::UniString prefix = GS::UniString::Printf ("%ss: %s %d: item %d of %s: ", ownerName, ownerName, static_cast<int> (ownerIndex), static_cast<int> (index), listKey);
+        RailingPartChange change;
+        change.kind = kind;
+        change.index = static_cast<UInt32> (index);
+        GS::Optional<GS::UniString> fieldError = ReadRailingPartFields (partEntry, prefix, change);
+        if (fieldError.HasValue ()) {
+            return fieldError;
         }
         changes.Push (change);
+    }
+    return GS::NoValue;
+}
+
+// Reads the "pattern" object of a segment change: the railing pattern of the segment
+// (API_RailingSegmentType::defPattern), from which Archicad generates its inner posts, panels and
+// baluster sets. Returns an error text, or nothing.
+GS::Optional<GS::UniString> ReadRailingPatternChange (const GS::ObjectState& entry, Int32 segmentIndex, GS::Array<RailingPartChange>& parts, GS::Optional<RailingPartChange>& distribution)
+{
+    GS::ObjectState pattern;
+    if (!entry.Get ("pattern", pattern)) {
+        return GS::NoValue;
+    }
+    const std::pair<const char*, RailingPartKind> models[] = {
+        { "innerPost", RailingPartKind::InnerPost }, { "panel", RailingPartKind::Panel }, { "balusterSet", RailingPartKind::BalusterSet }
+    };
+    for (const auto& model : models) {
+        GS::ObjectState modelEntry;
+        if (!pattern.Get (model.first, modelEntry)) {
+            continue;
+        }
+        RailingPartChange change;
+        change.kind = model.second;
+        GS::Optional<GS::UniString> fieldError = ReadRailingPartFields (modelEntry, GS::UniString::Printf ("segments: segment %d: pattern.%s: ", static_cast<int> (segmentIndex), model.first), change);
+        if (fieldError.HasValue ()) {
+            return fieldError;
+        }
+        parts.Push (change);
+    }
+    GS::ObjectState distributionEntry;
+    if (pattern.Get ("distribution", distributionEntry)) {
+        RailingPartChange change;
+        change.kind = RailingPartKind::BalusterSet;
+        GS::Optional<GS::UniString> distributionError = ReadRailingDistributionChange (distributionEntry, GS::UniString::Printf ("segments: segment %d: pattern.distribution: ", static_cast<int> (segmentIndex)), change);
+        if (distributionError.HasValue ()) {
+            return distributionError;
+        }
+        if (!change.HasFields ()) {
+            return GS::UniString::Printf ("segments: segment %d: pattern.distribution: no fields to modify.", static_cast<int> (segmentIndex));
+        }
+        distribution = change;
+    }
+    if (parts.IsEmpty () && !distribution.HasValue ()) {
+        return GS::UniString::Printf ("segments: segment %d: pattern: no fields to modify.", static_cast<int> (segmentIndex));
     }
     return GS::NoValue;
 }
@@ -22819,6 +22965,13 @@ struct RailingSegmentChange {
     GS::Array<RailingRailChange>                rails;
     GS::Array<RailingRailChange>                handrails;
     GS::Array<RailingPartChange>                parts;      // inner posts, panels and baluster sets, in that order
+    GS::Array<RailingPartChange>                patternParts;           // the inner post, panel and baluster set models of the pattern
+    GS::Optional<RailingPartChange>             patternDistribution;    // the distribution of the pattern itself
+
+    bool HasPatternFields () const
+    {
+        return !patternParts.IsEmpty () || patternDistribution.HasValue ();
+    }
 
     bool HasSegmentFields () const
     {
@@ -22868,6 +23021,7 @@ struct RailingNodeChange {
     GS::Optional<double>            elevation;
     GS::Optional<bool>              unifyPatterns;
     GS::Array<RailingPartChange>    posts;
+    GS::Optional<RailingPartChange> postModel;  // the post model of the node (API_RailingNodeType::defPost)
 
     bool HasNodeFields () const
     {
@@ -22928,10 +23082,14 @@ GS::Optional<GS::UniString> ReadRailingSegmentChanges (const GS::ObjectState& it
                 railError = ReadRailingPartChanges (entry, kind, "segment", index, change.parts);
             }
         }
+        if (!railError.HasValue ()) {
+            railError = ReadRailingPatternChange (entry, index, change.patternParts, change.patternDistribution);
+        }
         if (railError.HasValue ()) {
             return railError;
         }
-        if (!change.HasSegmentFields () && !change.toprailVisible.HasValue () && change.rails.IsEmpty () && change.handrails.IsEmpty () && change.parts.IsEmpty ()) {
+        if (!change.HasSegmentFields () && !change.toprailVisible.HasValue () && change.rails.IsEmpty () && change.handrails.IsEmpty () && change.parts.IsEmpty () &&
+            !change.HasPatternFields ()) {
             return GS::UniString::Printf ("segments: no fields to modify for segment %d.", static_cast<int> (index));
         }
         changes.Push (change);
@@ -22967,7 +23125,17 @@ GS::Optional<GS::UniString> ReadRailingNodeChanges (const GS::ObjectState& item,
         if (postError.HasValue ()) {
             return postError;
         }
-        if (!change.HasNodeFields () && change.posts.IsEmpty ()) {
+        GS::ObjectState postEntry;
+        if (entry.Get ("post", postEntry)) {
+            RailingPartChange model;
+            model.kind = RailingPartKind::Post;
+            postError = ReadRailingPartFields (postEntry, GS::UniString::Printf ("nodes: node %d: post: ", static_cast<int> (index)), model);
+            if (postError.HasValue ()) {
+                return postError;
+            }
+            change.postModel = model;
+        }
+        if (!change.HasNodeFields () && change.posts.IsEmpty () && !change.postModel.HasValue ()) {
             return GS::UniString::Printf ("nodes: no fields to modify for node %d.", static_cast<int> (index));
         }
         changes.Push (change);
@@ -23047,6 +23215,31 @@ GSErrCode ChangeRailingNode (const API_Guid& railingGuid, const RailingNodeChang
     return ACAPI_Element_Change (&node, &mask, nullptr, 0, true);
 }
 
+// The immediate parent of a railing component in its hierarchical element, or APINULLGuid.
+static API_Guid GetRailingHierarchicalParent (const API_Guid& elemGuid)
+{
+    if (elemGuid == APINULLGuid) {
+        return APINULLGuid;
+    }
+    const API_HierarchicalOwnerType ownerType = API_ParentHierarchicalOwner;
+    API_HierarchicalElemType hierarchicalElemType = API_UnknownElemType;
+    API_Guid parentGuid = APINULLGuid;
+    if (ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (&elemGuid, &ownerType, &hierarchicalElemType, &parentGuid) != NoError || parentGuid == elemGuid) {
+        return APINULLGuid;
+    }
+    return parentGuid;
+}
+
+// Whether a railing component belongs to the given node or segment. The DevKit documents the node or
+// segment as the owner field of a post, rail, top rail or handrail, but Archicad 29 (build 5101, FRA,
+// checked in Archicad) gives the railing itself in that field for every component. The component's
+// immediate parent in its hierarchical element is the node or segment there, so it is asked when the
+// owner field does not name the node or segment.
+static bool IsRailingComponentOf (const API_Elem_Head& head, const API_Guid& owner, const API_Guid& nodeOrSegmentGuid)
+{
+    return owner == nodeOrSegmentGuid || GetRailingHierarchicalParent (head.guid) == nodeOrSegmentGuid;
+}
+
 // The index-th component of a railing memo array (rails, handrails or top rails) whose owner is the
 // given segment, in the order of the memo, which is the order GetSubelementsOfHierarchicalElements lists.
 template <typename ComponentType>
@@ -23058,7 +23251,7 @@ const ComponentType* FindRailingSegmentComponent (const ComponentType* component
     const GSSize count = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<ComponentType*> (components))) / sizeof (ComponentType);
     UInt32 found = 0;
     for (GSSize i = 0; i < count; ++i) {
-        if (components[i].owner == segmentGuid) {
+        if (IsRailingComponentOf (components[i].head, components[i].owner, segmentGuid)) {
             if (found == index) {
                 return &components[i];
             }
@@ -23077,7 +23270,7 @@ UInt32 CountRailingSegmentComponents (const ComponentType* components, const API
     const GSSize count = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<ComponentType*> (components))) / sizeof (ComponentType);
     UInt32 found = 0;
     for (GSSize i = 0; i < count; ++i) {
-        if (components[i].owner == segmentGuid) {
+        if (IsRailingComponentOf (components[i].head, components[i].owner, segmentGuid)) {
             ++found;
         }
     }
@@ -23091,22 +23284,28 @@ const UInt64 RailingPartMemoMask = APIMemoMask_RailingSegment | APIMemoMask_Rail
 
 // Whether a component whose owner is the given GUID belongs to the segment: owned by the segment
 // itself, or by a railing pattern the segment owns. The DevKit names the segment as the owner of a
-// panel and a pattern as the owner of an inner post and a baluster set, so both are accepted.
-bool IsOwnedByRailingSegment (const API_Guid& owner, const API_Guid& segmentGuid, const API_RailingPatternType* patterns)
+// panel and a pattern as the owner of an inner post and a baluster set, so both are accepted. When
+// the owner field names neither (Archicad 29 gives the railing itself there, see
+// IsRailingComponentOf), the component's hierarchical parent and that parent's parent are asked:
+// an inner post or a baluster set has a pattern as parent, and the pattern has the segment.
+bool IsOwnedByRailingSegment (const API_Elem_Head& head, const API_Guid& owner, const API_Guid& segmentGuid, const API_RailingPatternType* patterns)
 {
     if (owner == segmentGuid) {
         return true;
     }
-    if (patterns == nullptr) {
-        return false;
-    }
-    const GSSize count = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<API_RailingPatternType*> (patterns))) / sizeof (API_RailingPatternType);
-    for (GSSize i = 0; i < count; ++i) {
-        if (patterns[i].head.guid == owner) {
-            return patterns[i].owner == segmentGuid;
+    if (patterns != nullptr) {
+        const GSSize count = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<API_RailingPatternType*> (patterns))) / sizeof (API_RailingPatternType);
+        for (GSSize i = 0; i < count; ++i) {
+            if (patterns[i].head.guid == owner) {
+                return patterns[i].owner == segmentGuid;
+            }
         }
     }
-    return false;
+    const API_Guid parentGuid = GetRailingHierarchicalParent (head.guid);
+    if (parentGuid == APINULLGuid) {
+        return false;
+    }
+    return parentGuid == segmentGuid || GetRailingHierarchicalParent (parentGuid) == segmentGuid;
 }
 
 // The index-th inner post, panel or baluster set of a segment, in the order of the memo; count is
@@ -23121,7 +23320,7 @@ const ComponentType* FindRailingSegmentPart (const ComponentType* components, co
     const ComponentType* found = nullptr;
     const GSSize n = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<ComponentType*> (components))) / sizeof (ComponentType);
     for (GSSize i = 0; i < n; ++i) {
-        if (IsOwnedByRailingSegment (components[i].owner, segmentGuid, patterns)) {
+        if (IsOwnedByRailingSegment (components[i].head, components[i].owner, segmentGuid, patterns)) {
             if (count == index) {
                 found = &components[i];
             }
@@ -23197,6 +23396,8 @@ GS::Optional<GS::UniString> CheckRailingPartIndices (const API_Element& railing,
     return GS::NoValue;
 }
 
+void ApplyRailingPartChange (API_Element& part, API_Element& mask, const RailingPartChange& change);
+
 // Changes a post of a node, or an inner post, panel or baluster set of a segment, as a subelement, the
 // way ChangeRailingComponent changes a rail. The memo is read again for every change, so a component
 // Archicad regenerated after an earlier change is still found by its owner and index.
@@ -23225,6 +23426,17 @@ GSErrCode ChangeRailingPart (const API_Element& railing, UInt32 ownerIndex, cons
     }
     API_Element mask = {};
     ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ApplyRailingPartChange (part, mask, change);
+    // Archicad 29 (build 5101, checked in Archicad) refuses posts, inner posts, panels and baluster sets
+    // as elements of their own with APIERR_BADPARS: it generates them from the post model of their node
+    // and the pattern of their segment, which nodes[].post and segments[].pattern change.
+    return ACAPI_Element_Change (&part, &mask, nullptr, 0, true);
+}
+
+// Writes the fields of a post, inner post, panel or baluster set change into part (the matching
+// member of the API_Element union) and sets them in mask.
+void ApplyRailingPartChange (API_Element& part, API_Element& mask, const RailingPartChange& change)
+{
     switch (change.kind) {
         case RailingPartKind::Post:
             if (change.bottomRailIndex.HasValue ()) {
@@ -23343,14 +23555,339 @@ GSErrCode ChangeRailingPart (const API_Element& railing, UInt32 ownerIndex, cons
             }
             break;
     }
-    return ACAPI_Element_Change (&part, &mask, nullptr, 0, true);
+    // Archicad reads the mask of a member on its first byte only (ACAPI_ELEMENT_MASK_CHECK), so the
+    // structs a changed field is in are set too: without verticalPosition, a topRailIndex is not taken
+    // (confirmed on Archicad 29 with the frames and positions of railing patterns).
+    const bool railIndex = change.bottomRailIndex.HasValue () || change.topRailIndex.HasValue ();
+    const bool frame = change.lateralOffset.HasValue () || change.topOffset.HasValue () || change.bottomOffset.HasValue () ||
+        change.beginOffset.HasValue () || change.endOffset.HasValue () || railIndex;
+    const bool distribution = change.distributionType.HasValue () || change.distributionAlignment.HasValue () ||
+        change.distributionLength.HasValue () || change.patternAmount.HasValue ();
+    switch (change.kind) {
+        case RailingPartKind::Post:
+            if (railIndex) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingPostType, verticalPosition);
+            }
+            break;
+        case RailingPartKind::InnerPost:
+            if (railIndex) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingInnerPostType, verticalPosition);
+            }
+            if (change.horizontalPosition.HasValue () || change.isStretchable.HasValue ()) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingInnerPostType, horizontalPosition);
+            }
+            break;
+        case RailingPartKind::Panel:
+            if (frame) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingPanelType, frame);
+            }
+            if (railIndex) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingPanelType, frame.verticalPosition);
+            }
+            break;
+        case RailingPartKind::BalusterSet:
+            if (frame) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingBalusterSetType, frame);
+            }
+            if (railIndex) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingBalusterSetType, frame.verticalPosition);
+            }
+            if (distribution) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingBalusterSetType, distribution);
+            }
+            break;
+    }
+}
+
+// Copies the mask of a component model (written into a temporary API_Element by
+// ApplyRailingPartChange) into the mask of the segment or node that holds the model, at the model's
+// offset, so that every field and enclosing struct set for the model is set in the holder's mask.
+void CopyRailingModelMask (API_Element& holderMask, size_t modelOffset, const API_Element& modelMask, size_t modelSourceOffset, size_t modelSize)
+{
+    char* to = reinterpret_cast<char*> (&holderMask) + modelOffset;
+    const char* from = reinterpret_cast<const char*> (&modelMask) + modelSourceOffset;
+    for (size_t i = 0; i < modelSize; ++i) {
+        to[i] = static_cast<char> (to[i] | from[i]);
+    }
+}
+
+// Changes the railing pattern model of a segment (API_RailingSegmentType::defPattern): the inner post,
+// panel and baluster set models of the patterns Archicad makes for it, and their distribution. The
+// segment is changed as a subelement, the way ChangeRailingSegment changes it. Archicad 29 keeps the
+// model but does not regenerate the patterns the segment already has from it (confirmed on Archicad
+// 29 build 5101), so ChangeRailingSegmentPattern also changes those.
+GSErrCode ChangeRailingSegmentModel (const API_Guid& railingGuid, const RailingSegmentChange& change)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingSegment);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.railingSegments == nullptr) {
+        return APIERR_GENERAL;
+    }
+    API_Element segment = {};
+    segment.header = memo.railingSegments[change.index].head;
+    err = ACAPI_Element_Get (&segment);
+    if (err != NoError) {
+        return err;
+    }
+    API_RailingPatternType& pattern = segment.railingSegment.defPattern;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    // Archicad reads the mask on the first byte of each member, so defPattern, the model and every
+    // struct a changed field is in are set (confirmed on Archicad 29: with defPattern alone, nothing is taken).
+    ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, defPattern);
+    const auto offsetInSegment = [&segment] (const void* member) {
+        return static_cast<size_t> (reinterpret_cast<const char*> (member) - reinterpret_cast<const char*> (&segment));
+    };
+    for (const RailingPartChange& part : change.patternParts) {
+        API_Element model = {};
+        API_Element modelMask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (modelMask);
+        switch (part.kind) {
+            case RailingPartKind::InnerPost:
+                model.railingInnerPost = pattern.defInnerPost;
+                ApplyRailingPartChange (model, modelMask, part);
+                pattern.defInnerPost = model.railingInnerPost;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, defPattern.defInnerPost);
+                CopyRailingModelMask (mask, offsetInSegment (&pattern.defInnerPost), modelMask, 0, sizeof (API_RailingInnerPostType));
+                break;
+            case RailingPartKind::Panel:
+                model.railingPanel = pattern.defPanel;
+                ApplyRailingPartChange (model, modelMask, part);
+                pattern.defPanel = model.railingPanel;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, defPattern.defPanel);
+                CopyRailingModelMask (mask, offsetInSegment (&pattern.defPanel), modelMask, 0, sizeof (API_RailingPanelType));
+                break;
+            case RailingPartKind::BalusterSet:
+                model.railingBalusterSet = pattern.defBalusterSet;
+                ApplyRailingPartChange (model, modelMask, part);
+                pattern.defBalusterSet = model.railingBalusterSet;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, defPattern.defBalusterSet);
+                CopyRailingModelMask (mask, offsetInSegment (&pattern.defBalusterSet), modelMask, 0, sizeof (API_RailingBalusterSetType));
+                break;
+            case RailingPartKind::Post:
+                break;
+        }
+    }
+    if (change.patternDistribution.HasValue ()) {
+        // The pattern's distribution has the shape of a baluster set's, so the same code writes it.
+        API_Element model = {};
+        API_Element modelMask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (modelMask);
+        model.railingBalusterSet.distribution = pattern.distribution;
+        ApplyRailingPartChange (model, modelMask, change.patternDistribution.Get ());
+        pattern.distribution = model.railingBalusterSet.distribution;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, defPattern.distribution);
+        const size_t distributionInModel = static_cast<size_t> (reinterpret_cast<const char*> (&model.railingBalusterSet.distribution) - reinterpret_cast<const char*> (&model));
+        CopyRailingModelMask (mask, offsetInSegment (&pattern.distribution), modelMask, distributionInModel, sizeof (API_RailingDistributionData));
+    }
+    return ACAPI_Element_Change (&segment, &mask, nullptr, 0, true);
+}
+
+void AppendRailingPartNotApplied (GS::UniString& notApplied, UInt32 ownerIndex, const RailingPartChange& change, const API_Element& got, double tolerance, const GS::UniString& whatName);
+
+// Whether every inner post, panel and baluster set of a segment has the values a pattern change
+// gives its models; notApplied (when given) gets what differs. A kind the segment has none of is fine.
+bool RailingSegmentPartsFollowPattern (const API_Guid& railingGuid, const RailingSegmentChange& change, GS::UniString* notApplied)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (railingGuid, &memo, RailingPartMemoMask) != NoError || memo.railingSegments == nullptr) {
+        return false;
+    }
+    const API_Guid segmentGuid = memo.railingSegments[change.index].head.guid;
+    bool follows = true;
+    for (const RailingPartChange& part : change.patternParts) {
+        RailingPartChange probe = part;
+        probe.index = 0;
+        UInt32 count = 0;
+        FindRailingPart (memo, segmentGuid, probe, count);
+        for (UInt32 i = 0; i < count; ++i) {
+            probe.index = i;
+            UInt32 unusedCount = 0;
+            const API_Elem_Head* head = FindRailingPart (memo, segmentGuid, probe, unusedCount);
+            API_Element got = {};
+            if (head == nullptr) {
+                follows = false;
+                continue;
+            }
+            got.header = *head;
+            if (ACAPI_Element_Get (&got) != NoError) {
+                follows = false;
+                continue;
+            }
+            GS::UniString differs;
+            AppendRailingPartNotApplied (differs, change.index, probe, got, 1e-4, GS::UniString ());
+            if (!differs.IsEmpty ()) {
+                follows = false;
+                if (notApplied != nullptr && notApplied->IsEmpty ()) {
+                    *notApplied = differs;
+                }
+            }
+        }
+    }
+    return follows;
+}
+
+// Writes a pattern change into the patterns of a segment through the memo of the railing
+// (API_ElementMemo::railingPatterns), when Archicad gives them there. tried is false when the memo
+// has no pattern of the segment.
+GSErrCode ChangeRailingSegmentPatternsThroughMemo (const API_Guid& railingGuid, const RailingSegmentChange& change, bool& tried)
+{
+    tried = false;
+    API_Element railing = {};
+    railing.header.guid = railingGuid;
+    GSErrCode err = ACAPI_Element_Get (&railing);
+    if (err != NoError) {
+        return err;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingSegment | APIMemoMask_RailingPattern);
+    if (err != NoError || memo.railingSegments == nullptr || memo.railingPatterns == nullptr) {
+        return err;
+    }
+    const API_Guid segmentGuid = memo.railingSegments[change.index].head.guid;
+    const GSSize n = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.railingPatterns)) / sizeof (API_RailingPatternType);
+    for (GSSize i = 0; i < n; ++i) {
+        API_RailingPatternType& pattern = memo.railingPatterns[i];
+        if (pattern.owner != segmentGuid && GetRailingHierarchicalParent (pattern.head.guid) != segmentGuid) {
+            continue;
+        }
+        tried = true;
+        for (const RailingPartChange& part : change.patternParts) {
+            API_Element model = {};
+            API_Element unusedMask = {};
+            switch (part.kind) {
+                case RailingPartKind::InnerPost:    model.railingInnerPost = pattern.defInnerPost;      ApplyRailingPartChange (model, unusedMask, part); pattern.defInnerPost = model.railingInnerPost;       break;
+                case RailingPartKind::Panel:        model.railingPanel = pattern.defPanel;              ApplyRailingPartChange (model, unusedMask, part); pattern.defPanel = model.railingPanel;               break;
+                case RailingPartKind::BalusterSet:  model.railingBalusterSet = pattern.defBalusterSet;  ApplyRailingPartChange (model, unusedMask, part); pattern.defBalusterSet = model.railingBalusterSet;   break;
+                case RailingPartKind::Post:         break;
+            }
+        }
+        if (change.patternDistribution.HasValue ()) {
+            API_Element model = {};
+            API_Element unusedMask = {};
+            model.railingBalusterSet.distribution = pattern.distribution;
+            ApplyRailingPartChange (model, unusedMask, change.patternDistribution.Get ());
+            pattern.distribution = model.railingBalusterSet.distribution;
+        }
+    }
+    if (!tried) {
+        return NoError;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    return ACAPI_Element_Change (&railing, &mask, &memo, APIMemoMask_RailingPattern, true);
+}
+
+// Writes a pattern change into every inner post, panel and baluster set of a segment through the
+// memo of the railing. Archicad 29 refuses these components as elements of their own, but takes them
+// in the railing's memo (confirmed on Archicad 29 build 5101: changed this way, the first inner post of
+// the first segment carried its change to every inner post of the railing).
+GSErrCode ChangeRailingSegmentPartsThroughMemo (const API_Guid& railingGuid, const RailingSegmentChange& change)
+{
+    API_Element railing = {};
+    railing.header.guid = railingGuid;
+    GSErrCode err = ACAPI_Element_Get (&railing);
+    if (err != NoError) {
+        return err;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (railingGuid, &memo, RailingPartMemoMask);
+    if (err != NoError || memo.railingSegments == nullptr) {
+        return err != NoError ? err : APIERR_GENERAL;
+    }
+    const API_Guid segmentGuid = memo.railingSegments[change.index].head.guid;
+    const auto applyToAll = [&] (auto* entries, auto memberOf, RailingPartKind kind) {
+        if (entries == nullptr) {
+            return;
+        }
+        using Entry = typename std::remove_pointer<decltype (entries)>::type;
+        const GSSize n = BMGetPtrSize (reinterpret_cast<GSPtr> (entries)) / sizeof (Entry);
+        for (const RailingPartChange& part : change.patternParts) {
+            if (part.kind != kind) {
+                continue;
+            }
+            for (GSSize i = 0; i < n; ++i) {
+                if (!IsOwnedByRailingSegment (entries[i].head, entries[i].owner, segmentGuid, memo.railingPatterns)) {
+                    continue;
+                }
+                API_Element component = {};
+                API_Element unusedMask = {};
+                memberOf (component) = entries[i];
+                ApplyRailingPartChange (component, unusedMask, part);
+                entries[i] = memberOf (component);
+            }
+        }
+    };
+    applyToAll (memo.railingInnerPosts, [] (API_Element& e) -> API_RailingInnerPostType& { return e.railingInnerPost; }, RailingPartKind::InnerPost);
+    applyToAll (memo.railingPanels, [] (API_Element& e) -> API_RailingPanelType& { return e.railingPanel; }, RailingPartKind::Panel);
+    applyToAll (memo.railingBalusterSets, [] (API_Element& e) -> API_RailingBalusterSetType& { return e.railingBalusterSet; }, RailingPartKind::BalusterSet);
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    return ACAPI_Element_Change (&railing, &mask, &memo, APIMemoMask_RailingInnerPost | APIMemoMask_RailingPanel | APIMemoMask_RailingBalusterSet, true);
+}
+
+// Changes the pattern of a segment: its model (defPattern), then, until the inner posts, panels and
+// baluster sets the segment already has follow it, the segment's patterns in the railing's memo and
+// those components themselves in the railing's memo.
+GSErrCode ChangeRailingSegmentPattern (const API_Guid& railingGuid, const RailingSegmentChange& change)
+{
+    GSErrCode err = ChangeRailingSegmentModel (railingGuid, change);
+    if (err != NoError || change.patternParts.IsEmpty () || RailingSegmentPartsFollowPattern (railingGuid, change, nullptr)) {
+        return err;
+    }
+    bool tried = false;
+    if (ChangeRailingSegmentPatternsThroughMemo (railingGuid, change, tried) == NoError && tried &&
+        RailingSegmentPartsFollowPattern (railingGuid, change, nullptr)) {
+        return NoError;
+    }
+    return ChangeRailingSegmentPartsThroughMemo (railingGuid, change);
+}
+
+// Changes the post model of a node (API_RailingNodeType::defPost), from which Archicad generates the
+// posts of the node. The node is changed as a subelement, the way ChangeRailingNode changes it.
+GSErrCode ChangeRailingNodePost (const API_Guid& railingGuid, UInt32 nodeIndex, const RailingPartChange& postModel)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingNode);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.railingNodes == nullptr) {
+        return APIERR_GENERAL;
+    }
+    API_Element node = {};
+    node.header = memo.railingNodes[nodeIndex].head;
+    err = ACAPI_Element_Get (&node);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element model = {};
+    API_Element modelMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (modelMask);
+    model.railingPost = node.railingNode.defPost;
+    ApplyRailingPartChange (model, modelMask, postModel);
+    node.railingNode.defPost = model.railingPost;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, defPost);
+    const size_t postInNode = static_cast<size_t> (reinterpret_cast<const char*> (&node.railingNode.defPost) - reinterpret_cast<const char*> (&node));
+    CopyRailingModelMask (mask, postInNode, modelMask, 0, sizeof (API_RailingPostType));
+    return ACAPI_Element_Change (&node, &mask, nullptr, 0, true);
 }
 
 // Compares a post, inner post, panel or baluster set read back after the command with the change
 // asked for, and appends what differs to notApplied.
-void AppendRailingPartNotApplied (GS::UniString& notApplied, UInt32 ownerIndex, const RailingPartChange& change, const API_Element& got, double tolerance)
+void AppendRailingPartNotApplied (GS::UniString& notApplied, UInt32 ownerIndex, const RailingPartChange& change, const API_Element& got, double tolerance, const GS::UniString& whatName = GS::UniString ())
 {
-    const GS::UniString what = GS::UniString::Printf ("%s %u of %s %u", GetRailingPartName (change.kind), static_cast<unsigned> (change.index),
+    const GS::UniString what = !whatName.IsEmpty () ? whatName : GS::UniString::Printf ("%s %u of %s %u", GetRailingPartName (change.kind), static_cast<unsigned> (change.index),
         change.kind == RailingPartKind::Post ? "node" : "segment", static_cast<unsigned> (ownerIndex));
     const auto checkNumber = [&] (const GS::Optional<double>& wanted, double value, const char* name) {
         if (wanted.HasValue () && std::abs (value - wanted.Get ()) > tolerance) {
@@ -23789,8 +24326,17 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                             err = ChangeRailingPart (element, change.index, part);
                             if (err != NoError) {
                                 subelementError = GS::UniString::Printf ("Failed to modify %s %u of segment %u of the railing.", GetRailingPartName (part.kind), static_cast<unsigned> (part.index), static_cast<unsigned> (change.index));
+                                if (err == APIERR_BADPARS) {
+                                    subelementError += GS::UniString::Printf (" Archicad generates the %ss of a segment from its pattern and does not take a change to one of them: change segments[].pattern instead.", GetRailingPartName (part.kind));
+                                }
                                 break;
                             }
+                        }
+                    }
+                    if (subelementError.IsEmpty () && change.HasPatternFields ()) {
+                        err = ChangeRailingSegmentPattern (element.header.guid, change);
+                        if (err != NoError) {
+                            subelementError = GS::UniString::Printf ("Failed to modify the pattern of segment %u of the railing.", static_cast<unsigned> (change.index));
                         }
                     }
                     if (!subelementError.IsEmpty ()) {
@@ -23811,7 +24357,16 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                         err = ChangeRailingPart (element, change.index, post);
                         if (err != NoError) {
                             subelementError = GS::UniString::Printf ("Failed to modify post %u of node %u of the railing.", static_cast<unsigned> (post.index), static_cast<unsigned> (change.index));
+                            if (err == APIERR_BADPARS) {
+                                subelementError += " Archicad generates the posts of a node from its post model and does not take a change to one of them: change nodes[].post instead.";
+                            }
                             break;
+                        }
+                    }
+                    if (subelementError.IsEmpty () && change.postModel.HasValue ()) {
+                        err = ChangeRailingNodePost (element.header.guid, change.index, change.postModel.Get ());
+                        if (err != NoError) {
+                            subelementError = GS::UniString::Printf ("Failed to modify the post model of node %u of the railing.", static_cast<unsigned> (change.index));
                         }
                     }
                     if (!subelementError.IsEmpty ()) {
@@ -23987,7 +24542,10 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                     const API_Guid segmentGuid = memo.railingSegments[change.index].head.guid;
                     if (change.toprailVisible.HasValue ()) {
                         const API_RailingToprailType* toprail = FindRailingSegmentComponent (memo.railingToprails, segmentGuid, 0);
-                        if (toprail == nullptr) {
+                        if (toprail == nullptr && !change.toprailVisible.Get ()) {
+                            // Archicad 29 (build 5101, checked in Archicad) leaves a hidden top rail out of
+                            // the railing's memo, so a top rail that is gone after hiding it was hidden.
+                        } else if (toprail == nullptr) {
                             notApplied += GS::UniString::Printf (" The top rail of segment %u is gone.", static_cast<unsigned> (change.index));
                         } else if (toprail->visible != change.toprailVisible.Get ()) {
                             notApplied += GS::UniString::Printf (" visible of the top rail of segment %u is %s.", static_cast<unsigned> (change.index), toprail->visible ? "true" : "false");
@@ -24046,6 +24604,66 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                             AppendRailingPartNotApplied (notApplied, part.first, change, got, tolerance);
                         }
                     }
+                }
+                // The pattern of the segments and the post model of the nodes, read back from the
+                // segment and node themselves and compared with their change.
+                for (const RailingSegmentChange& change : check.segmentChanges) {
+                    if (!change.HasPatternFields ()) {
+                        continue;
+                    }
+                    API_Element segment = {};
+                    if (hasSegment (change.index)) {
+                        segment.header = memo.railingSegments[change.index].head;
+                    }
+                    if (!hasSegment (change.index) || ACAPI_Element_Get (&segment) != NoError) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (change.index));
+                        continue;
+                    }
+                    const API_RailingPatternType& pattern = segment.railingSegment.defPattern;
+                    for (const RailingPartChange& part : change.patternParts) {
+                        API_Element got = {};
+                        switch (part.kind) {
+                            case RailingPartKind::InnerPost:    got.railingInnerPost = pattern.defInnerPost;        break;
+                            case RailingPartKind::Panel:        got.railingPanel = pattern.defPanel;                break;
+                            case RailingPartKind::BalusterSet:  got.railingBalusterSet = pattern.defBalusterSet;    break;
+                            case RailingPartKind::Post:         break;
+                        }
+                        AppendRailingPartNotApplied (notApplied, change.index, part, got, tolerance,
+                            GS::UniString::Printf ("the %s of the pattern of segment %u", GetRailingPartName (part.kind), static_cast<unsigned> (change.index)));
+                    }
+                    if (change.patternDistribution.HasValue ()) {
+                        API_Element got = {};
+                        got.railingBalusterSet.distribution = pattern.distribution;
+                        AppendRailingPartNotApplied (notApplied, change.index, change.patternDistribution.Get (), got, tolerance,
+                            GS::UniString::Printf ("the pattern of segment %u", static_cast<unsigned> (change.index)));
+                    }
+                    // The components the segment already has must follow the pattern too.
+                    GS::UniString partsDiffer;
+                    if (!change.patternParts.IsEmpty () && !RailingSegmentPartsFollowPattern (changed.header.guid, change, &partsDiffer)) {
+                        notApplied += GS::UniString::Printf (" The components of segment %u do not follow its pattern:", static_cast<unsigned> (change.index)) + partsDiffer;
+                        if (change.index > 0) {
+                            // Confirmed on Archicad 29 build 5101: every segment of a new railing follows the
+                            // pattern of its first segment.
+                            notApplied += " Archicad makes the segments of this railing follow the pattern of segment 0: change the pattern of segment 0, which reaches every segment.";
+                        }
+                    }
+                }
+                for (const RailingNodeChange& change : check.nodeChanges) {
+                    if (!change.postModel.HasValue ()) {
+                        continue;
+                    }
+                    API_Element node = {};
+                    if (hasNode (change.index)) {
+                        node.header = memo.railingNodes[change.index].head;
+                    }
+                    if (!hasNode (change.index) || ACAPI_Element_Get (&node) != NoError) {
+                        notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (change.index));
+                        continue;
+                    }
+                    API_Element got = {};
+                    got.railingPost = node.railingNode.defPost;
+                    AppendRailingPartNotApplied (notApplied, change.index, change.postModel.Get (), got, tolerance,
+                        GS::UniString::Printf ("the post model of node %u", static_cast<unsigned> (change.index)));
                 }
             }
             if (!notApplied.IsEmpty ()) {

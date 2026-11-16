@@ -2717,8 +2717,32 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
 // that owns each one (a node, a segment, a pattern, a baluster set or a rail) and, for the ones
 // placed from a library part, that library part. The library part is looked up from the unique
 // ID Archicad reports for the component, and left out when it is not in the loaded libraries.
-static void AddRailingComponentOwnerAndSymbol (GS::ObjectState& typeSpecificDetails, const API_Elem_Head& header, const API_Guid& owner, const API_Guid* symbolId)
+// The owner to report for a railing component. The DevKit documents the node, segment, pattern, baluster
+// set or rail as the owner field of a component, but Archicad 29 (build 5101, FRA, checked in Archicad)
+// gives the railing itself in that field for every component. The component's immediate parent in its
+// hierarchical element is the documented owner there, so it is reported instead of the railing.
+static API_Guid GetRailingComponentOwner (const API_Elem_Head& header, const API_Guid& owner)
 {
+    if (owner != APINULLGuid) {
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = owner;
+        if (ACAPI_Element_GetHeader (&ownerHead) != NoError || GetElemTypeId (ownerHead) != API_RailingID) {
+            return owner;
+        }
+    }
+    const API_HierarchicalOwnerType ownerType = API_ParentHierarchicalOwner;
+    API_HierarchicalElemType hierarchicalElemType = API_UnknownElemType;
+    API_Guid parentGuid = APINULLGuid;
+    if (ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (&header.guid, &ownerType, &hierarchicalElemType, &parentGuid) != NoError ||
+        parentGuid == APINULLGuid || parentGuid == header.guid) {
+        return owner;
+    }
+    return parentGuid;
+}
+
+static void AddRailingComponentOwnerAndSymbol (GS::ObjectState& typeSpecificDetails, const API_Elem_Head& header, const API_Guid& structOwner, const API_Guid* symbolId)
+{
+    const API_Guid owner = GetRailingComponentOwner (header, structOwner);
     if (owner != APINULLGuid) {
         typeSpecificDetails.Add ("ownerElementId", CreateGuidObjectState (owner));
         API_Elem_Head ownerHead = {};
