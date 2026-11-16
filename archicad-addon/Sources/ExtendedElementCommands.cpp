@@ -16542,6 +16542,10 @@ static void GetCurrentRoofOutline (const API_ElementMemo& memo, bool isPlaneRoof
 // ID 0, as API_ElementMemo asks for new vertices, edges and contours, and the roof planes of the
 // first edge of the old outline. An empty memo built from scratch (no IDs, no pivotPolyEdges) is
 // refused by ACAPI_Element_Change on an existing roof (Archicad 29, #2398).
+// The arrays are never resized in place with BMReallocPtr/BMReallocHandle: a memo pointer from
+// ACAPI_Element_GetMemo is not moveable, so growing it aborted Archicad with "Fatal memory error
+// in BMReallocPtr" (Archicad 29 on macOS, #2897, as in #452). A new block is allocated, the kept
+// records are copied into it and the old block is killed.
 static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCount, GSIndex keepUpTo, Int32 nCoords, Int32 nSubPolys)
 {
     const GSSize newCoordCount = nCoords + 1;
@@ -16549,13 +16553,16 @@ static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCo
         if (ids == nullptr) {
             return;
         }
-        ids = reinterpret_cast<UInt32**> (BMReallocHandle (reinterpret_cast<GSHandle> (ids), count * sizeof (UInt32), REALLOC_CLEAR, 0));
-        if (ids == nullptr) {
+        UInt32** newIds = reinterpret_cast<UInt32**> (BMAllocateHandle (count * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+        if (newIds == nullptr) {
             return;
         }
-        for (GSIndex i = lastKept + 1; i < count; ++i) {
-            (*ids)[i] = 0;
+        const GSSize oldCount = BMGetHandleSize (reinterpret_cast<GSConstHandle> (ids)) / sizeof (UInt32);
+        for (GSIndex i = 0; i <= lastKept && i < oldCount && i < count; ++i) {
+            (*newIds)[i] = (*ids)[i];
         }
+        BMKillHandle (reinterpret_cast<GSHandle*> (&ids));
+        ids = newIds;
     };
     resizeIds (memo.additionalPolyVertexIDs, newCoordCount, keepUpTo);
     resizeIds (memo.additionalPolyEdgeIDs, newCoordCount, keepUpTo);
@@ -16586,10 +16593,16 @@ static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCo
         memo.pivotPolyEdges[i] = {};
     }
     API_PivotPolyEdgeData* edges = reinterpret_cast<API_PivotPolyEdgeData*> (
-        BMReallocPtr (reinterpret_cast<GSPtr> (memo.pivotPolyEdges), newCoordCount * sizeof (API_PivotPolyEdgeData), REALLOC_CLEAR, 0));
+        BMAllocatePtr (newCoordCount * sizeof (API_PivotPolyEdgeData), ALLOCATE_CLEAR, 0));
     if (edges == nullptr) {
         return;
     }
+    // The kept records move to the new array with their level data; the old array is killed
+    // without it.
+    for (GSIndex i = 0; i <= keepUpTo && i < oldEdgeCount && i < newCoordCount; ++i) {
+        edges[i] = memo.pivotPolyEdges[i];
+    }
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.pivotPolyEdges));
     memo.pivotPolyEdges = edges;
     for (GSIndex i = keepUpTo + 1; i < newCoordCount; ++i) {
         API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];

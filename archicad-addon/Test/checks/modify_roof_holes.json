@@ -1,5 +1,5 @@
 {
-  "title": "ModifyRoofs adds and removes holes, with or without polygonOutline, on multi-plane and single-plane roofs (#2398)",
+  "title": "ModifyRoofs adds and removes holes, with or without polygonOutline, on multi-plane and single-plane roofs (#2398), without crashing Archicad when a hole grows the pivot memo (#2897)",
   "minTapir": "2.0.1",
   "requiresEmpty": [ "Roof" ],
   "steps": [
