@@ -1401,6 +1401,13 @@ GSErrCode Initialize (void)
             "Not written by this command: the baseline with its landings and winders, the break marks, lines and fills of the floor plan symbol, and the headroom; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
+        err |= RegisterCommand<RecreateRailingsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Railing elements on a new reference line - with more or fewer nodes and segments, in 2D as CreateRailings takes it or with an elevation per node and arcs as CreateRailingsFromPolyline takes it - because the Archicad API cannot change the reference line of an existing railing. "
+            "The new railing is created with the old one as templateElementId, so it gets its node and segment settings, posts, rails, handrails, toprails, panels and balusters, story visibility, pens, layer, home story and bottom offset; "
+            "it also gets its Element ID, renovation status, classifications, element categories, property values, solid element operations and trims, and the old railing is then deleted. Each railing is recreated in its own undo step, and when any step fails nothing is changed for that railing. "
+            "The result lists what could not be carried over (labels, dimensions, group). Settings given to single segments, nodes or posts of the old railing are not carried over: the new ones are generated from the railing's defaults, as when it is drawn again in Archicad."
+        );
         err |= RegisterCommand<RecreateStairsCommand> (
             elementCommands, "2.0.1",
             "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. "
