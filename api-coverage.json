@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-16 17:27 UTC",
+ "generatedAt": "2026-11-16 18:06 UTC",
  "versions": [
   25,
   26,
@@ -5810,6 +5810,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    },
+    {
      "number": 2863,
      "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
     },
@@ -6892,6 +6896,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -6929,7 +6937,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    }
+   ],
    "issues": []
   },
   {
@@ -7664,6 +7677,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -7701,7 +7718,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    }
+   ],
    "issues": [
     {
      "number": 1377,
@@ -9508,7 +9530,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    }
+   ],
    "issues": []
   },
   {
@@ -25688,6 +25715,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    },
+    {
      "number": 2872,
      "title": "[3/4] Read and write linkedArrowAttributes of lines, polylines, arcs and splines"
     },
@@ -31431,6 +31462,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2896,
+     "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
+    },
+    {
+     "number": 2895,
+     "title": "GetDetailsOfElements: read curtain wall junctions and accessories"
+    },
     {
      "number": 2891,
      "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
@@ -37946,6 +37985,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2894,
+     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
+    },
     {
      "number": 2888,
      "title": "CreateCurtainWalls: create slanted curtain walls from angle"
@@ -44691,6 +44734,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2896,
+     "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
+    },
+    {
+     "number": 2895,
+     "title": "GetDetailsOfElements: read curtain wall junctions and accessories"
+    },
+    {
      "number": 2891,
      "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
     },
@@ -47874,6 +47925,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2896,
+     "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
+    },
+    {
+     "number": 2895,
+     "title": "GetDetailsOfElements: read curtain wall junctions and accessories"
+    },
     {
      "number": 2891,
      "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
