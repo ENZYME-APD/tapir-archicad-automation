@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-16 18:06 UTC",
+ "generatedAt": "2026-11-16 18:54 UTC",
  "versions": [
   25,
   26,
@@ -8055,6 +8055,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2898,
+     "title": "ModifyRoofs: don't crash when a hole grows a multi-plane roof's pivot memo"
+    },
     {
      "number": 2863,
      "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
