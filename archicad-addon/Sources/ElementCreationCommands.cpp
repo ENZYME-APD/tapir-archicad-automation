@@ -8204,6 +8204,80 @@ static GS::Optional<GS::ObjectState> GetAngleDimensionLine (const GS::ObjectStat
     return {};
 }
 
+// Writes the two measured lines and the arc position of a static angle dimension, as
+// Do_CreateStaticAngleDimension of the DevKit's Element_Test example creates it: the four
+// reference points, the arc position and its center, the intersection of the two (infinite)
+// lines, as the Angle Dimension tool puts it. Shared by CreateAngleDimensions and
+// ModifyAngleDimensions. Returns the error response of a geometry that has no angle.
+static GS::Optional<GS::ObjectState> SetAngleDimensionGeometry (API_Element& element, const API_Coord& a1, const API_Coord& a2, const API_Coord& b1, const API_Coord& b2, const API_Coord& arcPosition)
+{
+    const double d1x = a2.x - a1.x, d1y = a2.y - a1.y;
+    const double d2x = b2.x - b1.x, d2y = b2.y - b1.y;
+    const double cross = d1x * d2y - d1y * d2x;
+    if (std::fabs (cross) < 1e-9 * std::hypot (d1x, d1y) * std::hypot (d2x, d2y)) {
+        return CreateErrorResponse (APIERR_BADPARS, "'firstLine' and 'secondLine' are parallel, so they have no angle to dimension.");
+    }
+    const double t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / cross;
+    API_Coord origo = {};
+    origo.x = a1.x + t * d1x;
+    origo.y = a1.y + t * d1y;
+    if (std::hypot (arcPosition.x - origo.x, arcPosition.y - origo.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, "'arcPosition' is the intersection of the two lines; it must be away from it, on the dimension arc.");
+    }
+
+    element.angleDimension.base[0].loc = a1;
+    element.angleDimension.base[1].loc = a2;
+    element.angleDimension.base[2].loc = b1;
+    element.angleDimension.base[3].loc = b2;
+    element.angleDimension.pos = arcPosition;
+    element.angleDimension.origo = origo;
+    return {};
+}
+
+// The settings CreateAngleDimensions and ModifyAngleDimensions both take beside the geometry:
+// smallArc, pen, textHeight and textPen. Sets their bits in mask when it is not nullptr.
+static GS::Optional<GS::ObjectState> ApplyAngleDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    if (parameters.Get ("smallArc", element.angleDimension.smallArc) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, smallArc);
+    }
+
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
+        }
+        element.angleDimension.linPen = static_cast<short> (pen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, linPen);
+        }
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
+        }
+        element.angleDimension.note.noteSize = textHeight;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, note.noteSize);
+        }
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
+        }
+        element.angleDimension.note.notePen = static_cast<short> (textPen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, note.notePen);
+        }
+    }
+
+    return {};
+}
+
 GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
 {
     API_Coord a1 = {}, a2 = {}, b1 = {}, b2 = {};
@@ -8226,32 +8300,10 @@ GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParam
     }
     const API_Coord arcPosition = Get2DCoordinateFromObjectState (*arcPositionOS);
 
-    // The center of the dimension arc is the intersection of the two (infinite) lines,
-    // as the Angle Dimension tool puts it.
-    const double d1x = a2.x - a1.x, d1y = a2.y - a1.y;
-    const double d2x = b2.x - b1.x, d2y = b2.y - b1.y;
-    const double cross = d1x * d2y - d1y * d2x;
-    if (std::fabs (cross) < 1e-9 * std::hypot (d1x, d1y) * std::hypot (d2x, d2y)) {
-        return CreateErrorResponse (APIERR_BADPARS, "'firstLine' and 'secondLine' are parallel, so they have no angle to dimension.");
+    const auto geometryError = SetAngleDimensionGeometry (element, a1, a2, b1, b2, arcPosition);
+    if (geometryError.HasValue ()) {
+        return geometryError;
     }
-    const double t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / cross;
-    API_Coord origo = {};
-    origo.x = a1.x + t * d1x;
-    origo.y = a1.y + t * d1y;
-    if (std::hypot (arcPosition.x - origo.x, arcPosition.y - origo.y) < 1e-9) {
-        return CreateErrorResponse (APIERR_BADPARS, "'arcPosition' is the intersection of the two lines; it must be away from it, on the dimension arc.");
-    }
-
-    // A static angle dimension, as Do_CreateStaticAngleDimension of the DevKit's Element_Test
-    // example creates it: the four reference points, the arc position and its center.
-    element.angleDimension.base[0].loc = a1;
-    element.angleDimension.base[1].loc = a2;
-    element.angleDimension.base[2].loc = b1;
-    element.angleDimension.base[3].loc = b2;
-    element.angleDimension.pos = arcPosition;
-    element.angleDimension.origo = origo;
-
-    parameters.Get ("smallArc", element.angleDimension.smallArc);
 
     Int32 floorIndex = 0;
     if (parameters.Get ("floorIndex", floorIndex)) {
@@ -8263,31 +8315,7 @@ GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParam
         return layerError;
     }
 
-    Int32 pen = 0;
-    if (parameters.Get ("pen", pen)) {
-        if (pen < 1 || pen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
-        }
-        element.angleDimension.linPen = static_cast<short> (pen);
-    }
-
-    double textHeight = 0.0;
-    if (parameters.Get ("textHeight", textHeight)) {
-        if (textHeight <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
-        }
-        element.angleDimension.note.noteSize = textHeight;
-    }
-
-    Int32 textPen = 0;
-    if (parameters.Get ("textPen", textPen)) {
-        if (textPen < 1 || textPen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
-        }
-        element.angleDimension.note.notePen = static_cast<short> (textPen);
-    }
-
-    return {};
+    return ApplyAngleDimensionSettings (parameters, element, nullptr);
 }
 
 // With a section or elevation window active, ACAPI_Element_Create of a dimension can report
@@ -8298,6 +8326,230 @@ GSErrCode CreateAngleDimensionsCommand::AfterCreate (const API_Element& /*reques
     API_Element created = {};
     created.header.guid = newElementGuid;
     return ACAPI_Element_Get (&created) == NoError ? NoError : APIERR_GENERAL;
+}
+
+ModifyAngleDimensionsCommand::ModifyAngleDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyAngleDimensionsCommand::GetName () const
+{
+    return "ModifyAngleDimensions";
+}
+
+GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "angleDimensionsWithDetails": {
+            "type": "array",
+            "description": "The Angle Dimensions to change, each with the settings to change. Only the given settings are changed; the keys are those CreateAngleDimensions takes and GetDetailsOfElements returns.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "firstLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The new first measured line. Optional parameter, by default the current one is kept."
+                    },
+                    "secondLine": {
+                        "$ref": "#/AngleDimensionLine",
+                        "description": "The new second measured line. It must not be parallel to the first one. Optional parameter, by default the current one is kept."
+                    },
+                    "arcPosition": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "A new point the dimension arc passes through: its distance from the intersection of the lines is the radius, and its side chooses the measured angle. Optional parameter, by default the current one is kept. When firstLine, secondLine or arcPosition is given, the dimension becomes static: it is no longer associated with the elements its points lay on."
+                    },
+                    "smallArc": {
+                        "type": "boolean",
+                        "description": "Measure the smaller angle between the lines (inner dimension) rather than the larger one (outer dimension). Optional parameter."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension and witness lines. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "angleDimensionsWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// The geometry goes through SetAngleDimensionGeometry and the settings through
+// ApplyAngleDimensionSettings, as in CreateAngleDimensions. A line or arc position not given keeps
+// the current one. The element is read back, so a value Archicad did not take is reported as a
+// failure instead of a success.
+GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("angleDimensionsWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    ACAPI_CallUndoableCommand ("ModifyAngleDimensions", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_AngleDimensionID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not an Angle Dimension."));
+                continue;
+            }
+            if (item.GetFieldCount () <= 1) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No angle dimension settings to modify."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            const bool geometryGiven = item.Contains ("firstLine") || item.Contains ("secondLine") || item.Contains ("arcPosition");
+            if (geometryGiven) {
+                API_Coord a1 = element.angleDimension.base[0].loc;
+                API_Coord a2 = element.angleDimension.base[1].loc;
+                API_Coord b1 = element.angleDimension.base[2].loc;
+                API_Coord b2 = element.angleDimension.base[3].loc;
+                API_Coord arcPosition = element.angleDimension.pos;
+                GS::Optional<GS::ObjectState> lineError;
+                if (item.Contains ("firstLine")) {
+                    lineError = GetAngleDimensionLine (item, "firstLine", a1, a2);
+                }
+                if (!lineError.HasValue () && item.Contains ("secondLine")) {
+                    lineError = GetAngleDimensionLine (item, "secondLine", b1, b2);
+                }
+                if (lineError.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (lineError.Get ()));
+                    continue;
+                }
+                const GS::ObjectState* arcPositionOS = item.Get ("arcPosition");
+                if (arcPositionOS != nullptr) {
+                    arcPosition = Get2DCoordinateFromObjectState (*arcPositionOS);
+                }
+                // Static, as CreateAngleDimensions makes them: the points no longer follow elements.
+                for (API_DimBase& dimBase : element.angleDimension.base) {
+                    dimBase.base = {};
+                }
+                const auto geometryError = SetAngleDimensionGeometry (element, a1, a2, b1, b2, arcPosition);
+                if (geometryError.HasValue ()) {
+                    executionResults (CreateFailedExecutionResult (geometryError.Get ()));
+                    continue;
+                }
+                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, base);
+                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, pos);
+                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, origo);
+            }
+
+            const auto settingsError = ApplyAngleDimensionSettings (item, element, &mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (settingsError.Get ()));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the angle dimension."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read the angle dimension back after the change."));
+                continue;
+            }
+            const double tolerance = 1e-6;
+            const auto sameCoord = [tolerance] (const API_Coord& c1, const API_Coord& c2) {
+                return std::abs (c1.x - c2.x) <= tolerance && std::abs (c1.y - c2.y) <= tolerance;
+            };
+            GS::UniString notApplied;
+            if (geometryGiven) {
+                bool sameLines = true;
+                for (UIndex i = 0; i < 4; ++i) {
+                    sameLines = sameLines && sameCoord (changed.angleDimension.base[i].loc, element.angleDimension.base[i].loc);
+                }
+                if (!sameLines) {
+                    notApplied += " firstLine/secondLine";
+                }
+                if (!sameCoord (changed.angleDimension.origo, element.angleDimension.origo)) {
+                    notApplied += " arcCenter";
+                }
+            }
+            if (item.Contains ("smallArc") && changed.angleDimension.smallArc != element.angleDimension.smallArc) {
+                notApplied += " smallArc";
+            }
+            if (item.Contains ("pen") && changed.angleDimension.linPen != element.angleDimension.linPen) {
+                notApplied += " pen";
+            }
+            if (item.Contains ("textHeight") && std::abs (changed.angleDimension.note.noteSize - element.angleDimension.note.noteSize) > tolerance) {
+                notApplied += " textHeight";
+            }
+            if (item.Contains ("textPen") && changed.angleDimension.note.notePen != element.angleDimension.note.notePen) {
+                notApplied += " textPen";
+            }
+            if (!notApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply:" + notApplied + "."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :

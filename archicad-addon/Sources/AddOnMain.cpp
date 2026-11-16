@@ -1298,6 +1298,10 @@ GSErrCode Initialize (void)
             elementCommands, "2.0.1",
             "Creates Angle Dimension elements (the Angle Dimension tool) measuring the angle between two lines, each given by two points, with the dimension arc through the given arcPosition, optionally based on an Angle Dimension favorite. The dimensions are static (not associated with elements) and are created in the current database - the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active - or in the one given by databaseId. GetDetailsOfElements returns their lines, arc and measured angle."
         );
+        err |= RegisterCommand<ModifyAngleDimensionsCommand> (
+            elementCommands, "2.0.1",
+            "Changes existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: the two measured lines, the arc position (and so the arc center, radius and measured angle), smallArc, the pen, and the text height and pen. Only the given settings are changed; a dimension given new lines or a new arc position becomes static. The element is read back, so a value Archicad did not take is reported as a failure."
+        );
         err |= RegisterCommand<ModifyLevelDimensionsCommand> (
             elementCommands, "2.0.0",
             "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId)."
