@@ -15499,6 +15499,11 @@
                 "type": "number",
                 "description": "The offset of the walking line from the side walkingLinePosition names, as CreateStairs and ModifyStairs take it."
             },
+            "walkingLineSymbolPosition": {
+                "type": "string",
+                "enum": [ "Auto", "Center", "Custom" ],
+                "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos), as CreateStairs and ModifyStairs take it."
+            },
             "numberingType": {
                 "type": "string",
                 "enum": [ "Treads", "Risers" ],
