@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-16 16:48 UTC",
+ "generatedAt": "2026-11-16 17:17 UTC",
  "versions": [
   25,
   26,
@@ -6802,6 +6802,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2888,
+     "title": "CreateCurtainWalls: create slanted curtain walls from angle"
+    },
+    {
      "number": 2879,
      "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
     },
@@ -7076,6 +7080,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2888,
+     "title": "CreateCurtainWalls: create slanted curtain walls from angle"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -37925,6 +37933,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2888,
+     "title": "CreateCurtainWalls: create slanted curtain walls from angle"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
