@@ -60,12 +60,12 @@
     'Describe it, <em>run it.</em>': '描述它，<em>运行它。</em>',
     'Without an MCP server, describe the task, give the AI the command list, and run the script it writes.':
         '没有 MCP 服务器时，描述任务，把命令列表交给 AI，然后运行它编写的脚本。',
-    '<b>01</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span>':
-        '<b>01</b><strong>描述您的需求</strong><span>例如：“提取 2 层所有复合外墙并计算它们的净体积。”</span>',
-    '<b>02</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python\'s standard library only, on port 19723.</span>':
-        '<b>02</b><strong>提供命令列表</strong><span>把<a href="../archicad-addon/">命令参考</a>和下面可运行的示例交给 AI。要求它只使用 Python 标准库，并使用端口 19723。</span>',
-    '<b>03</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span>':
-        '<b>03</b><strong>先阅读，再运行</strong><span>从 Tapir 面板或终端运行脚本之前先阅读它。会修改模型的脚本，请先在项目副本上试用。</span>',
+    '<b aria-hidden="true">1</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span>':
+        '<b aria-hidden="true">1</b><strong>描述您的需求</strong><span>例如：“提取 2 层所有复合外墙并计算它们的净体积。”</span>',
+    '<b aria-hidden="true">2</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python\'s standard library only, on port 19723.</span>':
+        '<b aria-hidden="true">2</b><strong>提供命令列表</strong><span>把<a href="../archicad-addon/">命令参考</a>和下面可运行的示例交给 AI。要求它只使用 Python 标准库，并使用端口 19723。</span>',
+    '<b aria-hidden="true">3</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span>':
+        '<b aria-hidden="true">3</b><strong>先阅读，再运行</strong><span>从 Tapir 面板或终端运行脚本之前先阅读它。会修改模型的脚本，请先在项目副本上试用。</span>',
     'for Claude or any AI tool': '适用于 Claude 或任何 AI 工具',
     'Write a Python script that uses only the standard library and sends Tapir commands to Archicad on http://127.0.0.1:19723, like the example I attach. Use the Tapir command reference I attach. Extract all composite exterior walls on level 2 and calculate their net volume. Only read the model; change nothing.':
         '编写一个只使用标准库的 Python 脚本，\n像我附上的示例那样，向\nhttp://127.0.0.1:19723 上的 Archicad 发送 Tapir 命令。\n使用我附上的 Tapir 命令参考。\n\n提取 2 层所有复合外墙，\n并计算它们的净体积。\n\n只读取模型，不要修改任何内容。',

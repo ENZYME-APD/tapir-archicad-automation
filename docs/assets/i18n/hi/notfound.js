@@ -1,6 +1,6 @@
 /* हिन्दी: the 404 page (404.html). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Page not found - Tapir': 'पेज नहीं मिला - Tapir',
+    'Page not found | Tapir': 'पेज नहीं मिला | Tapir',
     '<a href="./">Tapir</a> / 404': '<a href="./">Tapir</a> / 404',
     'This page of Tapir\'s site is not here. Install Tapir, read the reference of every command, browse the scripts or ask the community.':
         'Tapir की साइट का यह पेज यहाँ नहीं है। Tapir इंस्टॉल करें, हर कमांड का संदर्भ पढ़ें, scripts देखें या समुदाय से पूछें।',

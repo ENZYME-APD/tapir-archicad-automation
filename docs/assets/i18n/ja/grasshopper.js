@@ -14,13 +14,13 @@
     'What the components <em>do.</em>': 'コンポーネントで<em>できること。</em>',
     'Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the <strong>Tapir</strong> tab, grouped as in Archicad.':
         '各コンポーネントは Tapir コマンドを Archicad に送り、その応答を Grasshopper のデータとして返します。コンポーネントは <strong>Tapir</strong> タブにあり、Archicad と同じようにグループ分けされています。',
-    '<b>READ</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
+    '<b>Read</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
         '<b>読み取り</b><strong>要素とそのデータ</strong><span>タイプ、フロア、選択による要素の取得と、そのプロパティ、分類、設定、ジオメトリ。</span>',
-    '<b>CHANGE</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
+    '<b>Change</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
         '<b>変更</b><strong>渡したもの</strong><span>渡した要素のプロパティ値、分類、レイヤー、ID、ツール設定。</span>',
-    '<b>CREATE</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
+    '<b>Create</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
         '<b>作成</b><strong>Rhino のジオメトリから</strong><span>点や曲線から、壁、ドア、窓、手すり、レベル寸法など。</span>',
-    '<b>PROJECT</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
+    '<b>Project</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
         '<b>プロジェクト</b><strong>ファイルのその他の部分</strong><span>フロア、属性、ナビゲータのビュー、レイアウト、課題、お気に入り、ライブラリ。</span>',
     'Which Tapir commands have a component, and which settings each covers, is on the <a href="../gh-coverage/">Grasshopper coverage</a> page.':
         'どの Tapir コマンドにコンポーネントがあり、それぞれがどの設定に対応しているかは、<a href="../gh-coverage/">Grasshopper カバレッジ</a>のページにあります。',
@@ -34,12 +34,12 @@
     'Placed in an <code>OwnerWall</code> at a <code>CenterOffset</code>.': '<code>OwnerWall</code> の <code>CenterOffset</code> の位置に配置します。',
     'Placed along a <code>ReferenceLine</code>.': '<code>ReferenceLine</code> に沿って配置します。',
     'Placed at a <code>Position</code>, optionally on a parent element.': '<code>Position</code> に配置します。親要素の上にも配置できます。',
-    '<b>REFRESH</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
-        '<b>REFRESH</b><strong>読み取る</strong><span><code>ElementGuid</code> の要素を読み取り、すべての出力を埋めます。</span>',
-    '<b>EXECUTE</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
-        '<b>EXECUTE</b><strong>書き込む</strong><span>指定した設定をそれらの要素に書き込みます。書き込まれるのは指定したキーだけです。</span>',
-    '<b>CREATE</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
-        '<b>CREATE</b><strong>新しい要素を作る</strong><span>ジオメトリの入力から、ツールの既定値または <code>FavoriteName</code> を基に作成します。</span>',
+    '<b>Refresh</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
+        '<b>Refresh</b><strong>読み取る</strong><span><code>ElementGuid</code> の要素を読み取り、すべての出力を埋めます。</span>',
+    '<b>Execute</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
+        '<b>Execute</b><strong>書き込む</strong><span>指定した設定をそれらの要素に書き込みます。書き込まれるのは指定したキーだけです。</span>',
+    '<b>Create</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
+        '<b>Create</b><strong>新しい要素を作る</strong><span>ジオメトリの入力から、ツールの既定値または <code>FavoriteName</code> を基に作成します。</span>',
     'Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed straight back into the same input. Archicad has no command to change railings or level dimensions after they are placed, so for those Execute only writes the ID, layer and draw order.':
         'Execute か Create を押すまで、Archicad には何も書き込まれません。Refresh で読み取った JSON 出力は、そのまま同じ入力に戻せます。Archicad には配置後の手すりやレベル寸法を変更するコマンドがないため、これらについて Execute が書き込むのは ID、レイヤー、表示順序だけです。',
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Note</strong> Walls remembers the walls its Create made, in the <code>.gh</code> file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component\'s menu.':
