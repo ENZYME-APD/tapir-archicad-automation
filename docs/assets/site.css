@@ -198,7 +198,10 @@ main { display: block }
 
 /* ---------- figures (live numbers; a hidden one leaves no gap) ---------- */
 .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1.5px solid var(--fg); background: var(--surface); overflow: hidden }
-.figures > div { padding: 20px; display: grid; gap: 8px; align-content: start; box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); min-width: 0 }
+/* Each cell draws the line on its right and under it; the frame clips those of the last column and the
+   last row. So a last row with fewer cells than the columns still ends in a line, and the empty space
+   after it is closed off, not an open corner of the grid (#2892). */
+.figures > div { padding: 20px; display: grid; gap: 8px; align-content: start; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); min-width: 0 }
 .figures strong { font: 900 clamp(2.5rem, 5vw, 4rem)/.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.02em }
 .figures strong sup { font-size: .4em; vertical-align: top; color: var(--link) }
 .figures span { font: 500 .8125rem/1.4 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em }
@@ -395,7 +398,8 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 
 /* ---------- footer: the drawing's title block ---------- */
 .site-footer { margin-top: 72px; border-top: 1.5px solid var(--fg); background: var(--surface) }
-.tblock { display: grid; grid-template-columns: 2fr repeat(4, 1fr); border-left: 1.5px solid var(--fg); border-right: 1.5px solid var(--fg); margin-block: 32px 0 }
+/* A closed frame, as a drawing's title block is: its lines no longer start and end in the open (#2892). */
+.tblock { display: grid; grid-template-columns: 2fr repeat(4, 1fr); border: 1.5px solid var(--fg); margin-block: 32px 0 }
 .tblock > div { padding: 14px 16px; border-right: 1px solid var(--line); display: grid; gap: 6px; align-content: start; min-width: 0 }
 .tblock > div:last-child { border-right: 0 }
 .tblock .lab { font: 700 .75rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
@@ -787,7 +791,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 
 /* Footer. */
 :root:not([data-style="legacy"]) .site-footer { border-top: 1px solid var(--line) }
-:root:not([data-style="legacy"]) .tblock { border-left: 1px solid var(--line); border-right: 1px solid var(--line) }
+/* The title block as a card: a light line all round and 12 px corners, like the cards above it. */
+:root:not([data-style="legacy"]) .tblock { border: 1px solid var(--line); border-radius: var(--radius-card) }
 
 /* The Display menu (site.js): its button sits where the Dark/Light toggle was; the panel is a popover
    under it on wide screens and a sheet from the bottom where the header has its menu (below 640 px, and

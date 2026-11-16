@@ -10,7 +10,8 @@
    as a CSS mask so it takes the theme's colour; the towns are drawn over it in the same projection
    (SCALE, TX, TY are the numbers written in world.svg). Each town is a dot, larger the more people
    are there (by area); the pointer, a tap or the keyboard (Tab) names it. The list under the map
-   names every country with its count, so nothing is only in the picture. When the file cannot be
+   names every country with its count, so nothing is only in the picture. The figures above it are
+   the file's totals, and the continents, counted here from the places' country codes. When the file cannot be
    read, or holds no place, the section stays hidden. Its texts are in the page's HTML
    (data-place(s), data-country/-ies, data-map-label), translated by assets/site.js. */
 (function () {
@@ -45,6 +46,44 @@
         return [TX + SCALE * x, TY - SCALE * y];
     }
 
+    // The continent of each country (ISO 3166 code), for the Continents figure: the UN's geographic
+    // regions (M49), with the Americas split at Panama into North America (with Central America and the
+    // Caribbean) and South America. user-map.json has the countries but not their continents.
+    var CONTINENTS = {
+        Africa: 'DZ EG LY MA SD TN EH BI KM DJ ER ET KE MG MW MU YT MZ RE RW SC SO SS TZ UG ZM ZW AO CM CF TD CG CD GQ GA ST ' +
+                'BW SZ LS NA ZA BJ BF CV CI GM GH GN GW LR ML MR NE NG SH SN SL TG IO TF',
+        Asia: 'KZ KG TJ TM UZ CN HK MO KP JP MN KR TW BN KH ID LA MY MM PH SG TH TL VN AF BD BT IN IR MV NP PK LK ' +
+              'AM AZ BH CY GE IQ IL JO KW LB OM QA SA PS SY TR AE YE',
+        Europe: 'BY BG CZ HU PL MD RO RU SK UA AX DK EE FO FI GG IS IE IM JE LV LT NO SJ SE GB ' +
+                'AL AD BA HR GI GR VA IT MT ME MK PT SM RS SI ES XK AT BE FR DE LI LU MC NL CH',
+        NorthAmerica: 'AI AG AW BS BB BQ VG KY CU CW DM DO GD GP HT JM MQ MS PR BL KN LC MF VC SX TT TC VI ' +
+                      'BZ CR SV GT HN MX NI PA BM CA GL PM US',
+        SouthAmerica: 'AR BO BV BR CL CO EC FK GF GY PY PE GS SR UY VE',
+        Oceania: 'AU NZ NF CX CC HM FJ NC PG SB VU GU KI MH FM NR MP PW UM AS CK PF NU PN WS TK TO TV WF',
+        Antarctica: 'AQ'
+    };
+    var CONTINENT_OF = {};
+    Object.keys (CONTINENTS).forEach (function (continent) {
+        CONTINENTS[continent].split (' ').forEach (function (code) { CONTINENT_OF[code] = continent; });
+    });
+
+    // How many continents the places are on; null when a place's country is not known, so the
+    // figure stays hidden rather than showing too few.
+    function countContinents (places) {
+        var seen = {}, count = 0;
+        for (var i = 0; i < places.length; i++) {
+            var continent = CONTINENT_OF[String (places[i].countryCode || '').toUpperCase ()];
+            if (!continent) {
+                return null;
+            }
+            if (!seen[continent]) {
+                seen[continent] = true;
+                count++;
+            }
+        }
+        return count;
+    }
+
     function element (name, attributes) {
         var node = document.createElementNS (SVG_NS, name);
         for (var key in attributes) {
@@ -76,7 +115,13 @@
         if (!places.length) {
             return;
         }
-        var totals = data.totals || {};
+        var totals = {};
+        for (var key in (data.totals || {})) {
+            totals[key] = data.totals[key];
+        }
+        if (!isCount (totals.continents)) {
+            totals.continents = countContinents (places);
+        }
         var countries = (Array.isArray (data.countries) ? data.countries : []).filter (function (c) {
             return c && typeof c.name === 'string' && isCount (c.people) && c.people > 0;
         });

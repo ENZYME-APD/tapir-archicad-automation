@@ -144,6 +144,7 @@
     "People on the map": "地图上的人数",
     "Countries": "国家",
     "Towns": "城市",
+    "Continents": "大洲",
     "A dot per town, larger where more people are. Land: Natural Earth.": "每个城市一个点，人越多点越大。陆地数据：Natural Earth。",
     "Add your town on Discord": "在 Discord 上添加你的城市",
     "{place}, {country}: {count} person": "{place}，{country}：{count} 人",
