@@ -13963,6 +13963,71 @@
             "Custom"
         ]
     },
+    "CurtainWallJunctionDetails": {
+        "type": "object",
+        "description": "A junction of a curtain wall: a GDL object Archicad places where frames and panels meet (API_CWJunctionType). Its parameters are read by GetGDLParametersOfElements and its library part by the libraryPartUnId field.",
+        "properties": {
+            "category": {
+                "type": "string",
+                "enum": [ "System", "Custom" ],
+                "description": "Whether the junction is a system junction or a custom one (API_CWJunctionType::category)."
+            },
+            "flipped": {
+                "type": "boolean",
+                "description": "Whether the junction is flipped."
+            },
+            "clampingFrameCount": {
+                "type": "integer",
+                "description": "The number of frames the junction clamps (API_CWJunctionType::clampFramesNum)."
+            },
+            "clampingPanelCount": {
+                "type": "integer",
+                "description": "The number of panels the junction clamps (API_CWJunctionType::clampPanelsNum)."
+            },
+            "curtainWallId": {
+                "$ref": "#/ElementId",
+                "description": "The curtain wall the junction belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "category",
+            "flipped",
+            "clampingFrameCount",
+            "clampingPanelCount",
+            "curtainWallId"
+        ]
+    },
+    "CurtainWallAccessoryDetails": {
+        "type": "object",
+        "description": "An accessory of a curtain wall: a GDL object Archicad joins to a frame (API_CWAccessoryType). Its parameters are read by GetGDLParametersOfElements and its library part by the libraryPartUnId field.",
+        "properties": {
+            "category": {
+                "type": "string",
+                "enum": [ "System", "Custom" ],
+                "description": "Whether the accessory is a system accessory or a custom one (API_CWAccessoryType::category)."
+            },
+            "flipped": {
+                "type": "boolean",
+                "description": "Whether the accessory is flipped."
+            },
+            "referenceFrameId": {
+                "$ref": "#/ElementId",
+                "description": "The frame the accessory is joined to (API_CWAccessoryType::refFrame)."
+            },
+            "curtainWallId": {
+                "$ref": "#/ElementId",
+                "description": "The curtain wall the accessory belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "category",
+            "flipped",
+            "referenceFrameId",
+            "curtainWallId"
+        ]
+    },
     "CurtainWallFrameDetails": {
         "type": "object",
         "properties": {
@@ -16268,6 +16333,12 @@
             },
             {
                 "$ref": "#/CurtainWallFrameDetails"
+            },
+            {
+                "$ref": "#/CurtainWallJunctionDetails"
+            },
+            {
+                "$ref": "#/CurtainWallAccessoryDetails"
             },
             {
                 "$ref": "#/MeshDetails"
