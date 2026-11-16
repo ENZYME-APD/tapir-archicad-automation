@@ -15271,9 +15271,8 @@ GS::Optional<GS::UniString> ModifyCurtainWallFramesCommand::GetInputParametersSc
                             "description": "The frame class (classID) of the frame: 0 to 3 for the built-in classes, 4 and up for the frame classes of the owner curtain wall."
                         },
                         "type": {
-                            "type": "string",
-                            "enum": ["Invisible", "GDL", "InvisibleConnectedTurning", "InvisibleConnectedStill"],
-                            "description": "The type of the frame (API_CWFrameObjectTypeID)."
+                            "$ref": "#/CurtainWallFrameObjectType",
+                            "description": "The object type of the frame (API_CWFrameObjectTypeID), which GetDetailsOfElements reads as objectType. Not the frame class that GetDetailsOfElements reads as type: that one is classIndex here."
                         }
                     },
                     "additionalProperties": false,
