@@ -263,6 +263,92 @@
         { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.x", "approx": 1024.5, "tol": 0.001, "name": "round trip: third text position x" },
         { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.y", "approx": 997.75, "tol": 0.001, "name": "round trip: third text position y" }
       ]
+    },
+    {
+      "id": "lower slab at 1.2",
+      "command": "CreateSlabs",
+      "params": { "slabsData": [ { "level": 1.2, "floorIndex": 0, "polygonCoordinates": [ { "x": 1030.0, "y": 1000.0 }, { "x": 1034.0, "y": 1000.0 }, { "x": 1034.0, "y": 1004.0 }, { "x": 1030.0, "y": 1004.0 } ] } ] },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "lower slab created" }
+      ]
+    },
+    {
+      "id": "upper slab at 2.4",
+      "command": "CreateSlabs",
+      "params": { "slabsData": [ { "level": 2.4, "floorIndex": 0, "polygonCoordinates": [ { "x": 1030.0, "y": 1000.0 }, { "x": 1034.0, "y": 1000.0 }, { "x": 1034.0, "y": 1004.0 }, { "x": 1030.0, "y": 1004.0 } ] } ] },
+      "save": { "s2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "upper slab created" }
+      ]
+    },
+    {
+      "id": "level dimension owned by the lower slab",
+      "command": "CreateLevelDimensions",
+      "params": { "levelDimensionsData": [ { "position": { "x": 1032.0, "y": 1002.0 }, "parentElementId": { "guid": "${s1}" } } ] },
+      "save": { "ld": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read the owner",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ld}" } } ] },
+      "save": { "ldOwner": "detailsOfElements[0].details.ownerElementId" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s1}", "name": "owner is the lower slab" },
+        { "path": "detailsOfElements[0].details.staticLevel", "eq": false, "name": "associative" }
+      ]
+    },
+    {
+      "id": "owner to the upper slab by ownerElementId",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": { "levelDimensionsWithDetails": [ { "elementId": { "guid": "${ld}" }, "ownerElementId": { "guid": "${s2}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "ownerElementId (the key GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "owned by the upper slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ld}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s2}", "name": "owner is the upper slab" },
+        { "path": "detailsOfElements[0].details.staticLevel", "eq": false, "name": "still associative" },
+        { "path": "detailsOfElements[0].details.level", "approx": 2.4, "tol": 0.5, "name": "shows about the upper slab's height" }
+      ]
+    },
+    {
+      "id": "Static on",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": { "levelDimensionsWithDetails": [ { "elementId": { "guid": "${ld}" }, "staticLevel": true } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "Static on accepted" }
+      ]
+    },
+    {
+      "id": "send the owner read first back, with Static on",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": { "levelDimensionsWithDetails": [ { "elementId": { "guid": "${ld}" }, "ownerElementId": "${ldOwner}", "staticLevel": true } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the owner read is accepted, also with staticLevel true" }
+      ]
+    },
+    {
+      "id": "owned by the lower slab again, still static",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ld}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s1}", "name": "round trip: owner is the lower slab" },
+        { "path": "detailsOfElements[0].details.staticLevel", "eq": true, "name": "ownerElementId keeps the Static checkbox" }
+      ]
     }
   ]
 }

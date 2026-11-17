@@ -1300,7 +1300,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyLevelDimensionsCommand> (
             elementCommands, "2.0.0",
-            "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId)."
+            "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId, or ownerElementId as GetDetailsOfElements reads it, which keeps the Static checkbox)."
         );
         err |= RegisterCommand<ModifyWallsCommand> (
             elementCommands, "1.4.0",

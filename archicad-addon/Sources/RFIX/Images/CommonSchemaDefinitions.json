@@ -14895,11 +14895,11 @@
             },
             "ownerElementId": {
                 "$ref": "#/ElementId",
-                "description": "Present only for an associative level dimension: the element it measures."
+                "description": "Present when the level dimension has an owner element: the element it measures, also kept while the dimension is static. ModifyLevelDimensions takes it back with the same key."
             },
             "ownerElementType": {
                 "$ref": "#/ElementType",
-                "description": "Present only for an associative level dimension."
+                "description": "Present when the level dimension has an owner element. Only read."
             },
             "dimForm": {
                 "type": "integer",

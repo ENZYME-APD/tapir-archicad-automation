@@ -8352,6 +8352,10 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSche
                     "parentElementId": {
                         "$ref": "#/ElementId",
                         "description": "The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter."
+                    },
+                    "ownerElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The owner element as GetDetailsOfElements reads it (ownerElementId, the same Archicad field parentElementId writes), so a level dimension read can be sent back. Sets the owner like parentElementId, but leaves the Static checkbox as it is: on a static dimension the owner is kept for a later staticLevel false, so it can be given with level and staticLevel. Cannot name another element than a parentElementId given with it. Optional parameter."
                     },)") + LevelDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
@@ -8383,6 +8387,9 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
 // The static level, the Static checkbox and the owner element of an existing level dimension (#2656):
 // level makes it static with that value (the owner is kept), staticLevel switches the checkbox, and
 // parentElementId sets a new owner the way CreateLevelDimensions does and makes it associative.
+// ownerElementId is the owner as GetDetailsOfElements reads it (the same parentGuid), so a level
+// dimension read can be sent back: it sets the owner and leaves the Static checkbox as it is, so it
+// can be given with the level and staticLevel read with it.
 static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS::ObjectState& item, API_Element& element, API_Element& mask)
 {
     double level = 0.0;
@@ -8390,6 +8397,7 @@ static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS:
     bool staticLevel = false;
     const bool hasStaticLevel = item.Get ("staticLevel", staticLevel);
     const bool hasParent = item.Contains ("parentElementId");
+    const bool hasOwner = item.Contains ("ownerElementId");
 
     if (hasLevel && hasStaticLevel && !staticLevel) {
         return CreateErrorResponse (APIERR_BADPARS, "level makes the level dimension static, it cannot be given with staticLevel false.");
@@ -8397,9 +8405,12 @@ static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS:
     if (hasParent && (hasLevel || (hasStaticLevel && staticLevel))) {
         return CreateErrorResponse (APIERR_BADPARS, "parentElementId makes the level dimension associative, it cannot be given with level or with staticLevel true.");
     }
+    if (hasParent && hasOwner && GetGuidFromArrayItem ("parentElementId", item) != GetGuidFromArrayItem ("ownerElementId", item)) {
+        return CreateErrorResponse (APIERR_BADPARS, "parentElementId and ownerElementId name different elements; give one of them.");
+    }
 
-    if (hasParent) {
-        const API_Guid parentGuid = GetGuidFromArrayItem ("parentElementId", item);
+    if (hasParent || hasOwner) {
+        const API_Guid parentGuid = GetGuidFromArrayItem (hasParent ? "parentElementId" : "ownerElementId", item);
         API_Elem_Head parentElemHead = {};
         parentElemHead.guid = parentGuid;
         if (parentGuid == APINULLGuid || parentGuid == element.header.guid || ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
@@ -8411,10 +8422,12 @@ static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS:
         element.levelDimension.parentType = parentElemHead.typeID;
 #endif
         element.levelDimension.parentGuid = parentGuid;
-        element.levelDimension.staticLevel = false;
         ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentType);
         ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentGuid);
-        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+        if (hasParent) {
+            element.levelDimension.staticLevel = false;
+            ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+        }
     }
 
     if (hasLevel) {
@@ -8529,6 +8542,9 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
             }
             if (item.Contains ("parentElementId") && changed.levelDimension.parentGuid != element.levelDimension.parentGuid) {
                 notApplied += " parentElementId";
+            }
+            if (item.Contains ("ownerElementId") && changed.levelDimension.parentGuid != element.levelDimension.parentGuid) {
+                notApplied += " ownerElementId";
             }
             if (item.Contains ("pen") && changed.levelDimension.pen != element.levelDimension.pen) {
                 notApplied += " pen";
