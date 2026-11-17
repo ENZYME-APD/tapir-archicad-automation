@@ -12068,7 +12068,8 @@
                 "$ref": "#/ElementType"
             },
             "origin": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The placement point, z absolute (the home story level plus the offset). ModifyObjects and ModifyLamps take it back with the same key (and as coordinates)."
             },
             "dimensions": {
                 "$ref": "#/Coordinate3D"

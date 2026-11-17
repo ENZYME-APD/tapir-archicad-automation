@@ -1,6 +1,7 @@
 {
   "title": "Read back what the Modify commands write: GetDetailsOfElements reads each key with the same name and shape, and the value read is taken back unchanged by the Modify command (round trip)",
   "minTapir": "2.0.1",
+  "minArchicad": "27",
   "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Column", "Picture" ],
   "steps": [
     {
@@ -490,6 +491,90 @@
         { "path": "detailsOfElements[0].details.levels[1].height", "approx": 10.0, "name": "round trip: second level height" },
         { "path": "detailsOfElements[0].details.levels[1].angle", "approx": 0.3, "name": "round trip: second level angle" }
       ]
+    },
+    {
+      "id": "an Object of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "save": { "objectParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "an own object library part",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "Tapir Check Read Back Object", "parentId": "${objectParent}", "type": "Object", "path": "TapirCheckReadBack/Tapir Check Read Back Object.gsm", "a": 1.0, "b": 0.5, "script2D": "RECT2 0, 0, A, B", "script3D": "BLOCK A, B, 0.5" }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts[0].path", "exists": true, "name": "library part created" }
+      ]
+    },
+    {
+      "id": "an object",
+      "command": "CreateObjects",
+      "params": { "objectsData": [ { "libraryPartName": "Tapir Check Read Back Object", "coordinates": { "x": 1060.0, "y": 1000.0, "z": 0.0 } } ] },
+      "save": { "obj": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object created" }
+      ]
+    },
+    {
+      "id": "read the object's origin",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${obj}" } } ] },
+      "save": { "objOrigin": "detailsOfElements[0].details.origin" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1060.0, "name": "origin x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 1000.0, "name": "origin y" }
+      ]
+    },
+    {
+      "id": "move the object by its origin",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": { "objectsWithDetails": [ { "elementId": { "guid": "${obj}" }, "origin": { "x": 1065.0, "y": 1003.0, "z": 0.0 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "origin (the key GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "read the moved object",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${obj}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1065.0, "name": "moved in x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 1003.0, "name": "moved in y" },
+        { "path": "detailsOfElements[0].details.origin.z", "approx": 0.0, "name": "z kept" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story kept" }
+      ]
+    },
+    {
+      "id": "send the origin back as it was read",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": { "objectsWithDetails": [ { "elementId": { "guid": "${obj}" }, "origin": "${objOrigin}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the origin read is accepted" }
+      ]
+    },
+    {
+      "id": "the object where it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${obj}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1060.0, "name": "round trip: origin x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 1000.0, "name": "round trip: origin y" }
+      ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteEmbeddedLibraryItems", "params": { "embeddedLibraryItems": [ { "path": "TapirCheckReadBack" } ] } }
   ]
 }

@@ -3599,8 +3599,10 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
     API_Element& element, API_ElementMemo& memo, API_Element* mask,
     const Stories& stories, const GS::ObjectState& parameters)
 {
+    // origin is the placement as GetDetailsOfElements reads it (only in ModifyObjects and ModifyLamps),
+    // so an element read can be sent back; coordinates wins when both are given.
     GS::ObjectState coordinates;
-    if (parameters.Get ("coordinates", coordinates)) {
+    if (parameters.Get ("coordinates", coordinates) || parameters.Get ("origin", coordinates)) {
         const API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
 
         element.object.pos.x = apiCoordinate.x;
@@ -3935,6 +3937,10 @@ static GS::UniString BuildLibraryPartBasedModifySchema (const char* arrayFieldNa
                         },
                         "coordinates": {
                             "$ref": "#/Coordinate3D"
+                        },
+                        "origin": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new placement as GetDetailsOfElements reads it (origin, z absolute), the same as coordinates, so an element read can be sent back. Ignored when coordinates is given."
                         },
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
