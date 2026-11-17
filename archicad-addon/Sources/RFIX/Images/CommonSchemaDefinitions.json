@@ -14903,7 +14903,7 @@
             },
             "ownerElementId": {
                 "$ref": "#/ElementId",
-                "description": "Present when the level dimension has an owner element: the element it measures, also kept while the dimension is static. ModifyLevelDimensions takes it back with the same key."
+                "description": "Present when the level dimension has an owner element: the element it measures. ModifyLevelDimensions takes it back with the same key."
             },
             "ownerElementType": {
                 "$ref": "#/ElementType",

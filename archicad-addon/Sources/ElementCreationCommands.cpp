@@ -8374,7 +8374,7 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSche
                     },
                     "ownerElementId": {
                         "$ref": "#/ElementId",
-                        "description": "The owner element as GetDetailsOfElements reads it (ownerElementId, the same Archicad field parentElementId writes), so a level dimension read can be sent back. Sets the owner like parentElementId, but leaves the Static checkbox as it is: on a static dimension the owner is kept for a later staticLevel false, so it can be given with level and staticLevel. Cannot name another element than a parentElementId given with it. Optional parameter."
+                        "description": "The owner element as GetDetailsOfElements reads it (ownerElementId, the same Archicad field parentElementId writes), so a level dimension read can be sent back. Sets the owner like parentElementId, but does not change the Static checkbox (staticLevel) itself, so it can be sent back together with the staticLevel read with it. In tests on Archicad 29, staticLevel true failed for a level dimension with an owner, so the round trip is for associative level dimensions. Cannot name another element than a parentElementId given with it. Optional parameter."
                     },)") + LevelDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
@@ -8407,8 +8407,9 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
 // level makes it static with that value (the owner is kept), staticLevel switches the checkbox, and
 // parentElementId sets a new owner the way CreateLevelDimensions does and makes it associative.
 // ownerElementId is the owner as GetDetailsOfElements reads it (the same parentGuid), so a level
-// dimension read can be sent back: it sets the owner and leaves the Static checkbox as it is, so it
-// can be given with the level and staticLevel read with it.
+// dimension read can be sent back: it sets the owner and does not change the Static checkbox itself,
+// so it can be sent back with the staticLevel read with it. Archicad 29 did not make a level
+// dimension with an owner static (staticLevel true failed), so that combination is not promised.
 static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS::ObjectState& item, API_Element& element, API_Element& mask)
 {
     double level = 0.0;
