@@ -12371,6 +12371,200 @@ GS::ObjectState RecreateAngleDimensionsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+// ============================================================================
+// RecreateSkylights
+// Archicad 29 does not move a skylight onto another roof or shell through ACAPI_Element_Change: it
+// keeps API_SkylightType::owner (tested 17/11/2026). So the skylight is created again on the new
+// owner, as CreateSkylights creates one, with the old one's settings and GDL parameters, and the old
+// one is deleted. One undoable command per skylight, which leaves the old one as it was when a step
+// fails.
+// ============================================================================
+
+RecreateSkylightsCommand::RecreateSkylightsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateSkylightsCommand::GetName () const
+{
+    return "RecreateSkylights";
+}
+
+GS::Optional<GS::UniString> RecreateSkylightsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "skylights": {
+                "type": "array",
+                "description": "The skylights to recreate on another roof or shell.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The skylight to recreate."
+                        },
+                        "ownerId": {
+                            "$ref": "#/ElementId",
+                            "description": "The roof (single- or multi-plane) or shell to place the new skylight in, as CreateSkylights takes it. It may also be the skylight's own roof or shell."
+                        },
+                        "anchorPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Optional global XY coordinates of the new skylight's anchor point, as CreateSkylights and ModifySkylights take them and GetDetailsOfElements returns them. Archicad places the skylight on its owner at this point, so it has to lie on the new owner. When omitted, the old skylight's anchorPosition is kept."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "ownerId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["skylights"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateSkylightsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input skylight: the new skylight, or an error. After an error nothing was changed for that skylight. Labels of the old skylight are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateSkylightsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> skylights;
+    parameters.Get ("skylights", skylights);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    // Skylights live on the floor plan, where the old one is read and deleted and the new one created.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : skylights) {
+        if (databaseErr != NoError) {
+            results (CreateErrorResponse (databaseErr, "Failed to activate the floor plan database, where the skylight is recreated. Activate the floor plan in Archicad and run the command again. Nothing was changed."));
+            continue;
+        }
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        const GS::ObjectState* ownerId = item.Get ("ownerId");
+        if (elementId == nullptr || ownerId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId and ownerId are required. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+        const API_Guid ownerGuid = GetGuidFromObjectState (*ownerId);
+        // The owner is checked as CreateSkylights checks it.
+        if (!DoesElementExist (ownerGuid, API_RoofID) && !DoesElementExist (ownerGuid, API_ShellID)) {
+            results (CreateErrorResponse (APIERR_BADID, "'ownerId' is not a roof or a shell. Nothing was changed."));
+            continue;
+        }
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = ownerGuid;
+        GSErrCode err = ACAPI_Element_GetHeader (&ownerHead);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, "Failed to read the story of the new owner. Nothing was changed."));
+            continue;
+        }
+        const GS::Optional<API_Coord> anchorPosition = GetOptionalCoordinate2D (item, "anchorPosition");
+
+        StairDataToCarry data;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_SkylightID, "Skylight", "skylight", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        // The old skylight's GDL parameters (its memo's params), which the new one gets.
+        API_ElementMemo oldMemo = {};
+        const GS::OnExit oldMemoGuard ([&oldMemo] () { ACAPI_DisposeElemMemoHdls (&oldMemo); });
+        err = ACAPI_Element_GetMemo (oldGuid, &oldMemo, APIMemoMask_AddPars);
+        if (err != NoError || oldMemo.params == nullptr) {
+            results (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the GDL parameters of the skylight. Nothing was changed."));
+            continue;
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Skylight", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_SkylightID;
+#else
+            element.header.typeID = API_SkylightID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Skylight defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // The old skylight's whole API_SkylightType (size, anchor point, fix mode, azimuth,
+            // pens, line types, surfaces ...) with the defaults' header put back, as RecreateStairs
+            // does, and with the defaults' members that depend on the old owner, which Archicad sets
+            // from the new one as it does for CreateSkylights: the vertex of a multi-plane roof, the
+            // anchor level and the elevation angle; and the defaults' marker guid and look id.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_SkylightType defaults = element.skylight;
+            element.skylight = data.element.skylight;
+            element.header = defaultsHeader;
+            element.skylight.vertexID = defaults.vertexID;
+            element.skylight.anchorLevel = defaults.anchorLevel;
+            element.skylight.elevationAngle = defaults.elevationAngle;
+            element.skylight.openingBase.markGuid = defaults.openingBase.markGuid;
+            element.skylight.openingBase.lookId = defaults.openingBase.lookId;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = ownerHead.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+            element.skylight.owner = ownerGuid;
+            if (anchorPosition.HasValue ()) {
+                element.skylight.anchorPosition = anchorPosition.Get ();
+            }
+
+            // The old skylight's GDL parameters, of its library part (openingBase.libInd, copied above).
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = oldMemo.params;
+            oldMemo.params = nullptr;
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a skylight on the given roof or shell with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "skylight", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the skylight."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
+}
+
 CreateOpeningsCommand::CreateOpeningsCommand () :
     CommandBase (CommonSchema::Used)
 {

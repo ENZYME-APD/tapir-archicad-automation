@@ -1437,6 +1437,13 @@ GSErrCode Initialize (void)
             "its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old door's Element ID, classifications, element categories and property values, and the old door is then deleted. "
             "Each door is recreated in its own undo step, and when any step fails nothing is changed for that door. The new door has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old door, group)."
         );
+        err |= RegisterCommand<RecreateSkylightsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Skylight elements on another roof or shell (ownerId, optionally at a new anchorPosition on it), because Archicad does not move a skylight onto another roof or shell through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). "
+            "The new skylight is created as CreateSkylights creates one, from the Skylight tool defaults, with the old skylight's settings (size, anchor point, fix mode, azimuth, pens, line types, surfaces and the rest of API_SkylightType), library part and GDL parameters, layer and renovation status; "
+            "Archicad sets its plane, level and elevation angle from the new owner. It also gets the old skylight's Element ID, classifications, element categories and property values, and the old skylight is then deleted. "
+            "Each skylight is recreated in its own undo step, and when any step fails nothing is changed for that skylight. The new skylight has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old skylight, group)."
+        );
         err |= RegisterCommand<RecreateZonesCommand> (
             elementCommands, "2.0.1",
             "Recreates automatic Zone elements as manual zones (makeManual), because Archicad does not turn an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). "
