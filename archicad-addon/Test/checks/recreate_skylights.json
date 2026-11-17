@@ -38,11 +38,11 @@
       "stopOnFail": true
     },
     {
-      "id": "the skylight as created",
+      "id": "the skylight as created (Archicad 29 keeps CutOnly whatever displayOption CreateSkylights sends, see modify_skylights, so the option to keep is read here)",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
-      "save": { "part": "detailsOfElements[0].details.libPart.name", "anchorPoint": "detailsOfElements[0].details.anchorPoint" },
+      "save": { "part": "detailsOfElements[0].details.libPart.name", "anchorPoint": "detailsOfElements[0].details.anchorPoint", "display": "detailsOfElements[0].details.displayOption" },
       "expect": [ { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${r1}", "name": "the skylight is in R1" } ]
     },
     {
@@ -69,7 +69,7 @@
         { "path": "detailsOfElements[0].details.width", "approx": 0.9, "name": "keeps its width" },
         { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "keeps its height" },
         { "path": "detailsOfElements[0].details.pen", "eq": 5, "name": "keeps its pen" },
-        { "path": "detailsOfElements[0].details.displayOption", "eq": "CutAll", "name": "keeps its display option" },
+        { "path": "detailsOfElements[0].details.displayOption", "eq": "${display}", "name": "keeps its display option" },
         { "path": "detailsOfElements[0].details.anchorPoint", "eq": "${anchorPoint}", "name": "keeps its anchor point" },
         { "path": "detailsOfElements[0].details.libPart.name", "eq": "${part}", "name": "keeps its library part" }
       ]
