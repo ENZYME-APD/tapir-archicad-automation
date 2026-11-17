@@ -3283,6 +3283,187 @@ GS::ObjectState SetDefaultDesignOptionCommand::Execute (const GS::ObjectState& p
 #endif
 }
 
+#ifdef ServerMainVers_2900
+// The DesignOptionDetails of option, as GetDesignOptions lists them.
+static GS::ObjectState CreateDesignOptionDetails (const DesignOption& option)
+{
+    GS::ObjectState details;
+    details.Add ("designOptionId", CreateGuidObjectState (option.GetGuid ()));
+    details.Add ("name", option.GetName ());
+    details.Add ("id", option.GetId ());
+    details.Add ("ownerSetName", option.GetOwnerSetName ());
+    AddIsEditable (details, option);
+    return details;
+}
+#endif
+
+GetDefaultDesignOptionCommand::GetDefaultDesignOptionCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetDefaultDesignOptionCommand::GetName () const
+{
+    return "GetDefaultDesignOption";
+}
+
+GS::Optional<GS::UniString> GetDefaultDesignOptionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "isMainModel": {
+                "type": "boolean",
+                "description": "True when new elements go to the Main Model, false when they go to designOption."
+            },
+            "designOption": {
+                "$ref": "#/DesignOptionDetails",
+                "description": "The default design option, which new elements go to. Only present when isMainModel is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isMainModel"
+        ]
+    })";
+}
+
+GS::ObjectState GetDefaultDesignOptionCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2900
+    ACAPI::Result<DesignOptionManager> manager = CreateDesignOptionManager ();
+    if (manager.IsErr ()) {
+        return CreateErrorResponse (manager.UnwrapErr ().kind, "Unable to retrieve design options.");
+    }
+    const auto allDesignOptions = manager->GetAllDesignOptions ();
+    if (allDesignOptions.IsErr ()) {
+        return CreateErrorResponse (allDesignOptions.UnwrapErr ().kind, "Unable to retrieve design options.");
+    }
+
+    GS::ObjectState response;
+    // Without design options new elements can only go to the Main Model, so nothing is created.
+    if (allDesignOptions.Unwrap ().empty ()) {
+        response.Add ("isMainModel", true);
+        return response;
+    }
+
+    // The Archicad API has no function that returns the default (DesignOptionManager only has
+    // SetDesignOptionAsDefault, DesignOption no default flag). So a temporary slab is created, which
+    // Archicad puts into the default, its design option is read, and it is moved to the Main Model (an
+    // element in an option that is not shown cannot be deleted) and deleted again, in one undo step.
+    const GS::Optional<GS::ObjectState> windowError = CheckDesignOptionProjectAndWindow ();
+    if (windowError.HasValue ()) {
+        return *windowError;
+    }
+
+    // The slab is a floor plan element: it is created in the floor plan database, whatever window is in front.
+    API_DatabaseInfo previousDatabase = {};
+    bool switchedDatabase = false;
+    GSErrCode err = SwitchCurrentDatabaseToFloorPlan (previousDatabase, switchedDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to make the floor plan the current database for the temporary slab. Nothing was changed.");
+    }
+    const GS::OnExit restoreDatabase ([&] () {
+        if (switchedDatabase) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    API_Guid probeGuid = APINULLGuid;
+    bool isMainModel = false;
+    GS::Optional<GS::ObjectState> defaultOptionDetails;
+    GSErrCode stepErr = NoError;
+    GS::UniString failure;
+    // A step that fails returns its error from the command, which undoes the steps before it.
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Get Default Design Option", [&] () -> GSErrCode {
+        const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) -> GSErrCode {
+            stepErr = failErr != NoError ? failErr : APIERR_GENERAL;
+            failure = message;
+            return stepErr;
+        };
+
+        API_Element slab = {};
+        slab.header.type = API_SlabID;
+        API_ElementMemo memo = {};
+        const GS::OnExit memoGuard ([&] () {
+            ACAPI_DisposeElemMemoHdls (&memo);
+        });
+        GSErrCode createErr = ACAPI_Element_GetDefaults (&slab, &memo);
+        if (createErr != NoError) {
+            return fail (createErr, "Failed to read the Slab tool defaults for the temporary slab.");
+        }
+        // Archicad creates an element on a hidden or locked layer but then refuses to delete it again
+        // (#2632), so the slab goes on the ARCHICAD Layer when the layer of the defaults is hidden or locked.
+        GS::UniString layerReason;
+        if (GetLayerChangeError (slab.header.layer, layerReason) != NoError) {
+            const API_AttributeIndex archicadLayer = ACAPI_CreateAttributeIndex (1);
+            const GSErrCode layerErr = GetLayerChangeError (archicadLayer, layerReason);
+            if (layerErr != NoError) {
+                return fail (layerErr, "The temporary slab cannot be created: the layer of the Slab tool defaults and the ARCHICAD Layer are hidden or locked.");
+            }
+            slab.header.layer = archicadLayer;
+        }
+        GS::Array<GS::ObjectState> outline = {
+            Create2DCoordinateObjectState ({ 0.0, 0.0 }),
+            Create2DCoordinateObjectState ({ 0.1, 0.0 }),
+            Create2DCoordinateObjectState ({ 0.1, 0.1 }),
+            Create2DCoordinateObjectState ({ 0.0, 0.1 })
+        };
+        const GS::Optional<GS::UniString> memoError = BuildSlabMemoFromGeometry (slab, memo, outline, {}, {});
+        if (memoError.HasValue ()) {
+            return fail (APIERR_GENERAL, "Failed to build the temporary slab: " + *memoError);
+        }
+        createErr = ACAPI_Element_Create (&slab, &memo);
+        if (createErr != NoError) {
+            return fail (createErr, "Failed to create the temporary slab.");
+        }
+        probeGuid = slab.header.guid;
+
+        const auto status = manager->GetDesignOptionStatusOf (probeGuid);
+        if (status.IsErr ()) {
+            return fail (status.UnwrapErr ().kind, "Failed to read the design option of the temporary slab.");
+        }
+        if (std::holds_alternative<DesignOption> (*status)) {
+            defaultOptionDetails = CreateDesignOptionDetails (std::get<DesignOption> (*status));
+            const auto relinked = manager->RelinkElementToDesignOption (probeGuid, std::nullopt);
+            if (relinked.IsErr ()) {
+                return fail (relinked.UnwrapErr ().kind, "Failed to move the temporary slab to the Main Model before deleting it.");
+            }
+        } else if (std::holds_alternative<MainModelDesignOption> (*status)) {
+            isMainModel = true;
+        } else {
+            return fail (APIERR_GENERAL, "Archicad put the temporary slab into a design option that is missing, so the default could not be read.");
+        }
+
+        createErr = ACAPI_Element_Delete ({ probeGuid });
+        if (createErr != NoError) {
+            return fail (createErr, "Failed to delete the temporary slab.");
+        }
+        return NoError;
+    });
+
+    if (stepErr != NoError || undoErr != NoError) {
+        GS::UniString message = stepErr != NoError ? failure : GS::UniString ("Failed to open an undoable command.");
+        // The command was undone; the slab is named when Archicad kept it all the same.
+        API_Elem_Head probeHead = {};
+        if (probeGuid != APINULLGuid && LoadElementHeaderByGuid (probeGuid, probeHead)) {
+            message += " The temporary slab was left in the project, with elementId " + APIGuidToString (probeGuid) + "; delete it.";
+        } else {
+            message += " Nothing was left in the project.";
+        }
+        return CreateErrorResponse (stepErr != NoError ? stepErr : undoErr, message);
+    }
+
+    response.Add ("isMainModel", isMainModel);
+    if (defaultOptionDetails.HasValue ()) {
+        response.Add ("designOption", *defaultOptionDetails);
+    }
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 29 or newer.");
+#endif
+}
+
 ReorderDesignOptionSetsCommand::ReorderDesignOptionSetsCommand () :
     CommandBase (CommonSchema::Used)
 {

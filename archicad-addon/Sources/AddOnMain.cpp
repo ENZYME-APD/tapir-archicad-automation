@@ -3109,6 +3109,10 @@ GSErrCode Initialize (void)
             designOptionsCommands, "1.8.0",
             "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetDefaultDesignOptionCommand> (
+            designOptionsCommands, "2.0.1",
+            "Retrieves which design option, or the Main Model, is the default that new elements go to. The Archicad API has no function for it, so in a project with design options the command creates a temporary slab in the floor plan, reads its design option, moves it to the Main Model and deletes it, in one undo step that leaves the project as it was (without design options the answer is the Main Model and nothing is created). Needs a window where design options can be edited. Available from Archicad 29."
+        );
         err |= RegisterCommand<ReorderDesignOptionSetsCommand> (
             designOptionsCommands, "1.8.0",
             "Moves the given design option sets before another set or to the end of the list. Available from Archicad 29."
