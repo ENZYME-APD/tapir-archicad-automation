@@ -1,7 +1,7 @@
 /* Italiano: the About page (about/index.html). See ../README.md.
    The names of the people stay as they are. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'About Tapir – open-source Archicad add-on': 'Informazioni su Tapir – add-on open source per Archicad',
+    'About the open-source Archicad add-on | Tapir': 'Informazioni sull\'add-on open source per Archicad | Tapir',
     'Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template, who builds it and how to support it.':
         'Perché esiste Tapir, l\'add-on open source per Archicad, come è nato dalla R&S di Enzyme e dal modello JSON di Tibor Lorántfy, chi lo sviluppa e come sostenerlo.',
     '<a href="../">Tapir</a> / About': '<a href="../">Tapir</a> / Informazioni',
@@ -52,14 +52,14 @@
 
     // Principles
     'Principles': 'Principi',
-    '<b>FREE</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
-        '<b>GRATIS</b><strong>Nessun prezzo, mai</strong><span>Licenza MIT per l\'add-on, il plugin e ogni script condiviso.</span>',
-    '<b>OPEN</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
-        '<b>APERTO</b><strong>Sviluppato in pubblico</strong><span>Ogni issue, pull request e revisione è su GitHub.</span>',
-    '<b>SIGNED</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
-        '<b>FIRMATO</b><strong>Sicuro da installare</strong><span>L\'installer per Windows è firmato tramite SignPath; l\'installer per macOS e gli add-on sono firmati e notarizzati.</span>',
-    '<b>WEEKLY</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
-        '<b>SETTIMANALE</b><strong>Versioni piccole e costanti</strong><span>Una versione ogni lunedì, quando qualcosa è cambiato.</span>',
+    '<b>Free</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
+        '<b>Gratis</b><strong>Nessun prezzo, mai</strong><span>Licenza MIT per l\'add-on, il plugin e ogni script condiviso.</span>',
+    '<b>Open</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
+        '<b>Aperto</b><strong>Sviluppato in pubblico</strong><span>Ogni issue, pull request e revisione è su GitHub.</span>',
+    '<b>Signed</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
+        '<b>Firmato</b><strong>Sicuro da installare</strong><span>L\'installer per Windows è firmato tramite SignPath; l\'installer per macOS e gli add-on sono firmati e notarizzati.</span>',
+    '<b>Weekly</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
+        '<b>Settimanale</b><strong>Versioni piccole e costanti</strong><span>Una versione ogni lunedì, quando qualcosa è cambiato.</span>',
 
     // Support
     'Support Tapir': 'Sostieni Tapir',

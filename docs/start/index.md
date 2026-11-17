@@ -14,7 +14,7 @@ From download to your first script in about ten minutes. Steps 1 to 3 need no pr
 
 **With the installer (recommended).** It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.
 
-[Download WINDOWS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download MACOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
+[Download Windows](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download macOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
 
   - **Windows:** the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.
   - **macOS:** unzip the download and open the app.
@@ -59,6 +59,8 @@ Documents/Tapir/config.jsonJSON
   - Optionally, `includePattern` and `excludePattern` are regular expressions that choose which files of the folder the palette lists.
 
 The palette lists the folder's scripts next to the built-in ones the next time it loads its scripts.
+
+Many scripts use the helpers of the built-in scripts, the `utilities` and `aclib` folders. A Tapir newer than 2.0.0 gives them to every script it runs, so nothing more is needed. With Tapir 2.0.0 or older, copy those two folders from [builtin-scripts](https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts) next to the script.
 
 ## Write a script of your own
 
