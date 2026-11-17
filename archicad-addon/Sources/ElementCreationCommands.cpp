@@ -8345,24 +8345,12 @@ GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetInputParametersSche
     "properties": {
         "angleDimensionsWithDetails": {
             "type": "array",
-            "description": "The Angle Dimensions to change, each with the settings to change. Only the given settings are changed; the keys are those CreateAngleDimensions takes and GetDetailsOfElements returns.",
+            "description": "The Angle Dimensions to change, each with the settings to change. Only the given settings are changed; the keys are those CreateAngleDimensions takes and GetDetailsOfElements returns. The lines and the arc position cannot be changed: Archicad keeps them as they are, so delete the dimension and create it again with CreateAngleDimensions.",
             "items": {
                 "type": "object",
                 "properties": {
                     "elementId": {
                         "$ref": "#/ElementId"
-                    },
-                    "firstLine": {
-                        "$ref": "#/AngleDimensionLine",
-                        "description": "The new first measured line. Optional parameter, by default the current one is kept."
-                    },
-                    "secondLine": {
-                        "$ref": "#/AngleDimensionLine",
-                        "description": "The new second measured line. It must not be parallel to the first one. Optional parameter, by default the current one is kept."
-                    },
-                    "arcPosition": {
-                        "$ref": "#/Coordinate2D",
-                        "description": "A new point the dimension arc passes through: its distance from the intersection of the lines is the radius, and its side chooses the measured angle. Optional parameter, by default the current one is kept. When firstLine, secondLine or arcPosition is given, the dimension becomes static: it is no longer associated with the elements its points lay on."
                     },
                     "smallArc": {
                         "type": "boolean",
@@ -8412,10 +8400,11 @@ GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetRawResponseSchema (
     })";
 }
 
-// The geometry goes through SetAngleDimensionGeometry and the settings through
-// ApplyAngleDimensionSettings, as in CreateAngleDimensions. A line or arc position not given keeps
-// the current one. The element is read back, so a value Archicad did not take is reported as a
-// failure instead of a success.
+// The settings go through ApplyAngleDimensionSettings, as in CreateAngleDimensions. The geometry is
+// not taken: Archicad 29 (29.0.0 5101) keeps the points (base[].loc), the arc position (pos) and the
+// radius of an angle dimension as they were through ACAPI_Element_Change, also with every point
+// marked in the mask, so a new geometry means deleting the dimension and creating it again. The
+// element is read back, so a value Archicad did not take is reported as a failure.
 GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> itemsWithDetails;
@@ -8454,51 +8443,6 @@ GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& pa
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
 
-            const bool geometryGiven = item.Contains ("firstLine") || item.Contains ("secondLine") || item.Contains ("arcPosition");
-            if (geometryGiven) {
-                API_Coord a1 = element.angleDimension.base[0].loc;
-                API_Coord a2 = element.angleDimension.base[1].loc;
-                API_Coord b1 = element.angleDimension.base[2].loc;
-                API_Coord b2 = element.angleDimension.base[3].loc;
-                API_Coord arcPosition = element.angleDimension.pos;
-                GS::Optional<GS::ObjectState> lineError;
-                if (item.Contains ("firstLine")) {
-                    lineError = GetAngleDimensionLine (item, "firstLine", a1, a2);
-                }
-                if (!lineError.HasValue () && item.Contains ("secondLine")) {
-                    lineError = GetAngleDimensionLine (item, "secondLine", b1, b2);
-                }
-                if (lineError.HasValue ()) {
-                    executionResults (CreateFailedExecutionResult (lineError.Get ()));
-                    continue;
-                }
-                const GS::ObjectState* arcPositionOS = item.Get ("arcPosition");
-                if (arcPositionOS != nullptr) {
-                    arcPosition = Get2DCoordinateFromObjectState (*arcPositionOS);
-                }
-                // Static, as CreateAngleDimensions makes them: the points no longer follow elements.
-                for (API_DimBase& dimBase : element.angleDimension.base) {
-                    dimBase.base = {};
-                }
-                const auto geometryError = SetAngleDimensionGeometry (element, a1, a2, b1, b2, arcPosition);
-                if (geometryError.HasValue ()) {
-                    executionResults (CreateFailedExecutionResult (geometryError.Get ()));
-                    continue;
-                }
-                // Archicad reads a member's mask on its first byte only, and ACAPI_ELEMENT_MASK_SET
-                // (mask, ..., base) marks base[0] alone: each of the four points is marked, with its loc.
-                for (UIndex i = 0; i < 4; ++i) {
-                    ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, base[i]);
-                    ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, base[i].loc);
-                }
-                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, pos);
-                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, origo);
-                // The stored radius is not derived from pos by ACAPI_Element_Change: it is given too.
-                element.angleDimension.radius = std::hypot (element.angleDimension.pos.x - element.angleDimension.origo.x,
-                                                            element.angleDimension.pos.y - element.angleDimension.origo.y);
-                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, radius);
-            }
-
             const auto settingsError = ApplyAngleDimensionSettings (item, element, &mask);
             if (settingsError.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (settingsError.Get ()));
@@ -8520,26 +8464,7 @@ GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& pa
                 continue;
             }
             const double tolerance = 1e-6;
-            const auto sameCoord = [tolerance] (const API_Coord& c1, const API_Coord& c2) {
-                return std::abs (c1.x - c2.x) <= tolerance && std::abs (c1.y - c2.y) <= tolerance;
-            };
             GS::UniString notApplied;
-            if (geometryGiven) {
-                bool sameLines = true;
-                for (UIndex i = 0; i < 4; ++i) {
-                    sameLines = sameLines && sameCoord (changed.angleDimension.base[i].loc, element.angleDimension.base[i].loc);
-                }
-                if (!sameLines) {
-                    notApplied += " firstLine/secondLine";
-                }
-                if (!sameCoord (changed.angleDimension.origo, element.angleDimension.origo)) {
-                    notApplied += " arcCenter";
-                }
-                // Archicad may move pos along the arc, so the arc position is checked by its radius.
-                if (std::abs (changed.angleDimension.radius - element.angleDimension.radius) > tolerance) {
-                    notApplied += " arcPosition";
-                }
-            }
             if (item.Contains ("smallArc") && changed.angleDimension.smallArc != element.angleDimension.smallArc) {
                 notApplied += " smallArc";
             }

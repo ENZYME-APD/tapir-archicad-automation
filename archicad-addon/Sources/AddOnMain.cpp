@@ -1300,7 +1300,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyAngleDimensionsCommand> (
             elementCommands, "2.0.1",
-            "Changes existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: the two measured lines, the arc position (and so the arc center, radius and measured angle), smallArc, the pen, and the text height and pen. Only the given settings are changed; a dimension given new lines or a new arc position becomes static. The element is read back, so a value Archicad did not take is reported as a failure."
+            "Changes the settings of existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: smallArc, the pen, and the text height and pen. Only the given settings are changed. The lines and the arc position cannot be changed, as Archicad keeps them: delete the dimension and create it again with CreateAngleDimensions. The element is read back, so a value Archicad did not take is reported as a failure."
         );
         err |= RegisterCommand<ModifyLevelDimensionsCommand> (
             elementCommands, "2.0.0",
