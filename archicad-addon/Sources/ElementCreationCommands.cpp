@@ -2106,6 +2106,36 @@ static void SetLineFamilySettingsParameters (const GS::ObjectState& parameters, 
     parameters.Get ("roomSeparator", roomSeparator);
 }
 
+// The settings CreatePolylines and ModifyPolylines both take beside the polygon and the
+// arrowheads, written by ApplyPolylineSettings with the keys GetDetailsOfElements returns.
+static const char* PolylineSettingsSchemaProperties = R"(
+                    "linePenIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the polyline contour. Optional parameter."
+                    },
+                    "lineTypeIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Line type attribute index of the polyline contour. Optional parameter, ignored when lineTypeId is given."
+                    },
+                    "lineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it and GetDetailsOfElements returns it. Takes precedence over lineTypeIndex."
+                    },
+                    "penWeightMm": {
+                        "type": "number",
+                        "description": "Optional pen weight override in mm, greater than 0; -1 uses the weight of the pen."
+                    },
+                    "roomSeparator": {
+                        "type": "boolean",
+                        "description": "Is this a zone boundary line? Optional parameter."
+                    },
+                    "drawSegmentMode": {
+                        "$ref": "#/PolylineDrawSegmentMode"
+                    },)";
+
 CreatePolylinesCommand::CreatePolylinesCommand () :
     CreateElementsCommandBase ("CreatePolylines", API_PolyLineID, "polylinesData")
 {
@@ -2118,7 +2148,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
     "properties": {
         "polylinesData": {
             "type": "array",
-            "description": "Array of data to create Polylines.",
+            "description": "Array of data to create Polylines. The settings left out come from the Polyline tool defaults, or from the favorite given by favoriteName.",
             "items": {
                 "type": "object",
                 "description" : "The parameters of the new Polyline.",
@@ -2139,29 +2169,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "type": "integer",
                         "description" : "Layer attribute index to place the polyline on. Optional parameter, by default the current layer is used."
                     },
-                    "linePenIndex": {
-                        "type": "integer",
-                        "description" : "Pen index of the polyline contour. Optional parameter, by default the current pen is used."
-                    },
-                    "lineTypeIndex": {
-                        "type": "integer",
-                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used. Ignored when lineTypeId is given."
-                    },
-                    "lineTypeId": {
-                        "$ref": "#/AttributeId",
-                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it. Takes precedence over lineTypeIndex. By default the current line type is used."
-                    },
-                    "penWeightMm": {
-                        "type": "number",
-                        "description" : "Optional pen weight override in mm."
-                    },
-                    "roomSeparator": {
-                        "type": "boolean",
-                        "description": "Is this a zone boundary line? Optional, defaults to false."
-                    },
-                    "drawSegmentMode": {
-                        "$ref": "#/PolylineDrawSegmentMode"
-                    },)") + LineArrowsSchemaProperties + R"(
+)") + PolylineSettingsSchemaProperties + LineArrowsSchemaProperties + R"(
                     "coordinates": {
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
@@ -2222,6 +2230,104 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coordinates,
     }
 }
 
+// Defined with the object commands below.
+static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrTypeID attributeType, API_AttributeIndex& attributeIndex);
+
+static bool AttributeIndexExists (API_AttrTypeID attributeType, Int32 index)
+{
+    API_Attribute attribute = {};
+    attribute.header.typeID = attributeType;
+    attribute.header.index = ACAPI_CreateAttributeIndex (index);
+    if (ACAPI_Attribute_Get (&attribute) != NoError) {
+        return false;
+    }
+    DisposeAttribute (attribute);
+    return true;
+}
+
+// ACAPI_ELEMENT_MASK_SET marks a member by its first byte, so both members of an
+// API_ExtendedPenType are marked, the color override too.
+#define TAPIR_MASK_SET_EXTENDED_PEN(mask, typ, varnam)                   \
+    do {                                                                 \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.penIndex);             \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.colorOverridePenIndex); \
+    } while (false)
+
+// Writes the settings of PolylineSettingsSchemaProperties and the arrowheads (startArrow, endArrow)
+// given in parameters to element.polyLine: for CreatePolylines on the tool defaults (mask nullptr),
+// and for ModifyPolylines on the element read from the project, with the given fields marked in mask.
+// A given pen clears the color override of the pen, so the pen shows. Returns the error response of
+// an invalid value; element is then partly written and must not be used.
+static GS::Optional<GS::ObjectState> ApplyPolylineSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    API_PolyLineType& polyLine = element.polyLine;
+
+    Int32 linePenIndex = 0;
+    if (parameters.Get ("linePenIndex", linePenIndex)) {
+        if (linePenIndex < 1 || linePenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'linePenIndex' must be between 1 and 255.");
+        }
+        polyLine.linePen.penIndex = static_cast<short> (linePenIndex);
+        polyLine.linePen.colorOverridePenIndex = 0;
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_EXTENDED_PEN (*mask, API_PolyLineType, linePen);
+        }
+    }
+
+    const GS::ObjectState* lineTypeId = parameters.Get ("lineTypeId");
+    Int32 lineTypeIndex = 0;
+    const bool hasLineTypeIndex = parameters.Get ("lineTypeIndex", lineTypeIndex);
+    if (lineTypeId != nullptr) {
+        if (!ResolveAttributeIndex (*lineTypeId, API_LinetypeID, polyLine.ltypeInd)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'lineTypeId' is not a line type of the project.");
+        }
+    } else if (hasLineTypeIndex) {
+        if (lineTypeIndex < 1 || !AttributeIndexExists (API_LinetypeID, lineTypeIndex)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'lineTypeIndex' is not the index of a line type of the project.");
+        }
+        polyLine.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+    }
+    if ((lineTypeId != nullptr || hasLineTypeIndex) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, ltypeInd);
+    }
+
+    double penWeightMm = 0.0;
+    if (parameters.Get ("penWeightMm", penWeightMm)) {
+        if (penWeightMm <= 0.0 && std::abs (penWeightMm - API_DefPenWeigth) > 1e-9) {
+            return CreateErrorResponse (APIERR_BADPARS, "'penWeightMm' must be greater than 0, or -1 for the weight of the pen.");
+        }
+        polyLine.penWeight = penWeightMm;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, penWeight);
+        }
+    }
+
+    if (parameters.Get ("roomSeparator", polyLine.roomSeparator) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, roomSeparator);
+    }
+
+    GS::UniString drawSegmentMode;
+    if (parameters.Get ("drawSegmentMode", drawSegmentMode)) {
+        if (!PolylineDrawSegmentModeFromString (drawSegmentMode, polyLine.drawSegmentMode)) {
+            return CreateErrorResponse (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, drawSegmentMode);
+        }
+    }
+
+    bool arrowsChanged = false;
+    const GS::Optional<GS::UniString> arrowsError = ApplyLineArrows (parameters, GetLineArrows (polyLine), arrowsChanged);
+    if (arrowsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, arrowsError.Get ());
+    }
+    if (arrowsChanged && mask != nullptr) {
+        SetLineArrowsMask (GetLineArrows (mask->polyLine));
+    }
+
+    return {};
+}
+
 GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -2231,36 +2337,9 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
         element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
     }
 
-    short linePenIndex = 0;
-    if (parameters.Get ("linePenIndex", linePenIndex) && linePenIndex > 0) {
-        element.polyLine.linePen.penIndex = linePenIndex;
-        element.polyLine.linePen.colorOverridePenIndex = 0;
-    }
-
-    const GS::ObjectState* lineTypeId = parameters.Get ("lineTypeId");
-    Int32 lineTypeIndex = 0;
-    if (lineTypeId != nullptr) {
-        element.polyLine.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeId));
-    } else if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
-        element.polyLine.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
-    }
-
-    double penWeightMm = API_DefPenWeigth;
-    if (parameters.Get ("penWeightMm", penWeightMm)) {
-        element.polyLine.penWeight = penWeightMm;
-    }
-
-    parameters.Get ("roomSeparator", element.polyLine.roomSeparator);
-
-    GS::UniString drawSegmentMode;
-    if (parameters.Get ("drawSegmentMode", drawSegmentMode) &&
-        !PolylineDrawSegmentModeFromString (drawSegmentMode, element.polyLine.drawSegmentMode)) {
-        return CreateErrorResponse (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous.");
-    }
-
-    GS::Optional<GS::ObjectState> arrowsError = SetLineArrowsParameters (parameters, GetLineArrows (element.polyLine));
-    if (arrowsError.HasValue ()) {
-        return arrowsError;
+    const GS::Optional<GS::ObjectState> settingsError = ApplyPolylineSettings (parameters, element, nullptr);
+    if (settingsError.HasValue ()) {
+        return settingsError;
     }
 
     GS::Array<GS::ObjectState> coordinates;
@@ -2274,6 +2353,350 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
                   memo);
 
     return {};
+}
+
+// The optional databaseId of ModifyPolylines, handled as CreateElementsCommandBase::Execute
+// and ModifyPictures handle it: the database is switched inside the undoable command and switched back
+// afterwards, so the front window stays as it is; modify runs in the undoable command, in that database.
+// Returns the error response when Archicad cannot switch to it; nothing is changed then.
+static GS::Optional<GS::ObjectState> CallUndoableModifyInDatabase (const GS::ObjectState& parameters, const GS::UniString& undoName, const std::function<void ()>& modify)
+{
+    const GS::ObjectState* databaseIdOs = parameters.Get ("databaseId");
+    API_DatabaseInfo startingDatabase = {};
+    if (databaseIdOs != nullptr) {
+        API_WindowInfo startingWindow = {};
+        const bool hasStartingWindow = ACAPI_Window_GetCurrentWindow (&startingWindow) == NoError;
+        if (OpenDatabaseIfNeverOpened (GetGuidFromObjectState (*databaseIdOs)) && hasStartingWindow) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingWindow);
+            ACAPI_Window_ChangeWindow (&startingWindow);
+        }
+        const GSErrCode currentErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+        if (currentErr != NoError) {
+            return CreateErrorResponse (currentErr, "Failed to get the current database.");
+        }
+    }
+    GSErrCode databaseErr = NoError;
+
+    ACAPI_CallUndoableCommand (undoName, [&] () -> GSErrCode {
+        if (databaseIdOs != nullptr) {
+            databaseErr = ChangeCurrentDatabaseTo (GetGuidFromObjectState (*databaseIdOs));
+            if (databaseErr != NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+                return NoError;
+            }
+        }
+        const GS::OnExit databaseGuard ([&] () {
+            if (databaseIdOs != nullptr) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+            }
+        });
+        modify ();
+        return NoError;
+    });
+
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr, "Failed to switch to the database given by databaseId, so nothing was changed. A worksheet or detail whose window was never opened can be opened once with ChangeWindow by its databaseId.");
+    }
+    return {};
+}
+
+// The memo layout of a new polyline polygon for ACAPI_Element_Change, the one SetDetailsOfElements
+// writes: the open-polyline dummy coords[0] (-1, 0), one subpolygon, and vertexIDs numbered from 1
+// with vertexIDs[0] the largest of them, without which the change fails with APIERR_BADPOLY.
+// Returns false when the memo handles could not be allocated.
+static bool BuildPolylineChangeMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, API_Polygon& poly, API_ElementMemo& memo)
+{
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+    const Int32 nCoords = static_cast<Int32> (coordinates.GetSize ());
+
+    memo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    memo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.vertexIDs == nullptr || (memo.parcs == nullptr && !polyArcs.IsEmpty ())) {
+        return false;
+    }
+
+    (*memo.coords)[0] = { -1.0, 0.0 };
+    (*memo.vertexIDs)[0] = static_cast<UInt32> (nCoords);
+    for (Int32 i = 0; i < nCoords; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+        (*memo.vertexIDs)[i + 1] = static_cast<UInt32> (i + 1);
+    }
+    (*memo.pends)[0] = 0;
+    (*memo.pends)[1] = nCoords;
+    Int32 iArc = 0;
+    for (const API_PolyArc& arc : polyArcs) {
+        (*memo.parcs)[iArc++] = arc;
+    }
+
+    poly.nCoords   = nCoords;
+    poly.nSubPolys = 1;
+    poly.nArcs     = static_cast<Int32> (polyArcs.GetSize ());
+    return true;
+}
+
+// The arcs of a polygon outline of nCoords points join two neighbouring points: endIndex is begIndex + 1,
+// both between 0 and lastIndex (the last point of a polyline; for a closed outline the closing point, nCoords).
+static GS::Optional<GS::UniString> CheckOutlineArcs (const GS::Array<GS::ObjectState>& arcs, Int32 lastIndex)
+{
+    for (const GS::ObjectState& arc : arcs) {
+        Int32 begIndex = -1;
+        Int32 endIndex = -1;
+        arc.Get ("begIndex", begIndex);
+        arc.Get ("endIndex", endIndex);
+        if (begIndex < 0 || endIndex != begIndex + 1 || endIndex > lastIndex) {
+            return GS::UniString::Printf ("The arc from %d to %d does not join two neighbouring points of the coordinates: endIndex must be begIndex + 1, and both between 0 and %d.", begIndex, endIndex, lastIndex);
+        }
+    }
+    return {};
+}
+
+// Whether two Line-family elements have the same arrowheads (visibility, type, size and pen of both ends).
+static bool IsSameLineArrows (const LineArrows& arrows1, const LineArrows& arrows2)
+{
+#ifdef ServerMainVers_2900
+    const auto isSame = [] (const API_ArrowData& data1, const API_ArrowData& data2) {
+        return data1.arrowVisibility == data2.arrowVisibility && data1.arrowType == data2.arrowType &&
+               data1.arrowPen == data2.arrowPen && std::abs (data1.arrowSize - data2.arrowSize) < 1e-6;
+    };
+    return isSame (arrows1.start, arrows2.start) && isSame (arrows1.end, arrows2.end);
+#else
+    return arrows1.data.begArrow == arrows2.data.begArrow && arrows1.data.endArrow == arrows2.data.endArrow &&
+           arrows1.data.arrowType == arrows2.data.arrowType && arrows1.data.arrowPen == arrows2.data.arrowPen &&
+           std::abs (arrows1.data.arrowSize - arrows2.data.arrowSize) < 1e-6;
+#endif
+}
+
+// Points closer than this (in meters) are taken as the same when a new polygon is read back.
+static constexpr double PolygonReadBackTolerance = 1e-5;
+
+ModifyPolylinesCommand::ModifyPolylinesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPolylinesCommand::GetName () const
+{
+    return "ModifyPolylines";
+}
+
+GS::Optional<GS::UniString> ModifyPolylinesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "polylinesWithDetails": {
+            "type": "array",
+            "description": "The Polylines to change, each with the settings to change. Only the given settings are changed; the keys are those CreatePolylines takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },)") + PolylineSettingsSchemaProperties + R"(
+                    "startArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional new arrowhead at the start. Given, it is shown unless its visible is false; the type, size and pen left out are kept."
+                    },
+                    "endArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional new arrowhead at the end. Given, it is shown unless its visible is false; the type, size and pen left out are kept."
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The new points of the polyline, replacing all of its points, as CreatePolylines takes them and GetDetailsOfElements returns them. Optional parameter.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 2
+                    },
+                    "arcs": {
+                        "type": "array",
+                        "description": "The arcs of the new polygon, with indices into coordinates (endIndex is begIndex + 1). Only taken with coordinates; without it the new polygon has straight segments only.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database the polylines are in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), as CreatePolylines takes it. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the polylines are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "polylinesWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyPolylinesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// Changes one polyline: the settings through ApplyPolylineSettings, as in CreatePolylines, and the
+// polygon through the memo (ACAPI_Element_Change edits the polygon data of a polyline, ACAPinc.h),
+// in one ACAPI_Element_Change. The polyline is read back, so a value Archicad did not keep is
+// reported as a failure.
+static GS::ObjectState ModifyOnePolyline (const GS::ObjectState& item)
+{
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+    }
+
+    API_Element element = {};
+    element.header.guid = GetGuidFromObjectState (*elementId);
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to find the element");
+    }
+    if (GetElemTypeId (element.header) != API_PolyLineID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Polyline.");
+    }
+    if (item.GetFieldCount () <= 1) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No polyline settings to modify.");
+    }
+
+    GS::Array<GS::ObjectState> coordinates;
+    const bool hasCoordinates = item.Get ("coordinates", coordinates);
+    GS::Array<GS::ObjectState> arcs;
+    const bool hasArcs = item.Get ("arcs", arcs);
+    if (hasArcs && !hasCoordinates) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'arcs' is only taken with 'coordinates': the polygon is replaced as a whole.");
+    }
+    if (hasCoordinates) {
+        if (coordinates.GetSize () < 2) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "'coordinates' needs at least 2 points.");
+        }
+        const GS::Optional<GS::UniString> arcsError = CheckOutlineArcs (arcs, static_cast<Int32> (coordinates.GetSize ()) - 1);
+        if (arcsError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, arcsError.Get ());
+        }
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    const GS::Optional<GS::ObjectState> settingsError = ApplyPolylineSettings (item, element, &mask);
+    if (settingsError.HasValue ()) {
+        return CreateFailedExecutionResult (settingsError.Get ());
+    }
+
+    // ACAPI_Element_Change may answer NoError on a hidden or locked layer and change nothing.
+    GS::UniString layerReason;
+    err = GetLayerChangeError (element.header.layer, layerReason);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The polyline was not changed, because " + layerReason + ".");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    UInt64 memoMask = 0;
+    if (hasCoordinates) {
+        if (!BuildPolylineChangeMemo (coordinates, arcs, element.polyLine.poly, memo)) {
+            return CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the polygon of the polyline.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, poly);
+        memoMask = APIMemoMask_Polygon;
+    }
+
+    err = ACAPI_Element_Change (&element, &mask, memoMask != 0 ? &memo : nullptr, memoMask, true);
+    if (err != NoError) {
+        const GS::UniString refusal = DescribeElementEditRefusal (err, element.header);
+        return CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to modify the polyline.") : "Failed to modify the polyline, because " + refusal + ".");
+    }
+
+    // Read back, so a value Archicad did not take is reported instead of a success.
+    API_Element changed = {};
+    changed.header.guid = element.header.guid;
+    err = ACAPI_Element_Get (&changed);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the polyline back after the change.");
+    }
+    const API_PolyLineType& given = element.polyLine;
+    const API_PolyLineType& kept = changed.polyLine;
+    GS::UniString notApplied;
+    if (item.Contains ("linePenIndex") &&
+        (kept.linePen.penIndex != given.linePen.penIndex || kept.linePen.colorOverridePenIndex != given.linePen.colorOverridePenIndex)) {
+        notApplied += " linePenIndex";
+    }
+    if ((item.Contains ("lineTypeId") || item.Contains ("lineTypeIndex")) && GetAttributeIndex (kept.ltypeInd) != GetAttributeIndex (given.ltypeInd)) {
+        notApplied += item.Contains ("lineTypeId") ? " lineTypeId" : " lineTypeIndex";
+    }
+    if (item.Contains ("penWeightMm") && std::abs (kept.penWeight - given.penWeight) > 1e-6) {
+        notApplied += " penWeightMm";
+    }
+    if (item.Contains ("roomSeparator") && kept.roomSeparator != given.roomSeparator) {
+        notApplied += " roomSeparator";
+    }
+    if (item.Contains ("drawSegmentMode") && kept.drawSegmentMode != given.drawSegmentMode) {
+        notApplied += " drawSegmentMode";
+    }
+    if ((item.Contains ("startArrow") || item.Contains ("endArrow")) && !IsSameLineArrows (GetLineArrows (changed.polyLine), GetLineArrows (element.polyLine))) {
+        notApplied += " arrowheads";
+    }
+    if (hasCoordinates) {
+        bool polygonKept = kept.poly.nCoords == given.poly.nCoords && kept.poly.nArcs == given.poly.nArcs;
+        if (polygonKept) {
+            const std::vector<PolygonData> polygons = GetPolygonsFromMemoCoords (changed.header.guid);
+            polygonKept = !polygons.empty () && polygons[0].coords.size () == coordinates.GetSize ();
+            for (UIndex i = 0; polygonKept && i < coordinates.GetSize (); ++i) {
+                const API_Coord point = Get2DCoordinateFromObjectState (coordinates[i]);
+                polygonKept = std::abs (polygons[0].coords[i].x - point.x) < PolygonReadBackTolerance &&
+                              std::abs (polygons[0].coords[i].y - point.y) < PolygonReadBackTolerance;
+            }
+        }
+        if (!polygonKept) {
+            notApplied += hasArcs ? " coordinates arcs" : " coordinates";
+        }
+    }
+    if (!notApplied.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + ".");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+GS::ObjectState ModifyPolylinesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("polylinesWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    const GS::Optional<GS::ObjectState> databaseError = CallUndoableModifyInDatabase (parameters, "ModifyPolylines", [&] () {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState result = ModifyOnePolyline (item);
+            changeReporter.MarkChangedIfSucceeded (item, result);
+            executionResults (result);
+        }
+    });
+    if (databaseError.HasValue ()) {
+        return databaseError.Get ();
+    }
+
+    changeReporter.Report ();
+
+    return response;
 }
 
 CreateLineElementsCommand::CreateLineElementsCommand () :

@@ -1230,6 +1230,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.1.5",
             "Creates Polyline elements based on the given parameters."
         );
+        err |= RegisterCommand<ModifyPolylinesCommand> (
+            elementCommands, "2.0.1",
+            "Changes existing Polyline elements with the keys CreatePolylines takes and GetDetailsOfElements returns: the pen, the line type, the pen weight, zone boundary (roomSeparator), the dash mode (drawSegmentMode), the arrowheads at both ends, and the polygon (coordinates with its arcs, replaced as a whole; the polyline keeps its GUID). Only the given settings are changed. With databaseId the polylines are looked for in that database, e.g. a worksheet, a detail or a layout. The polyline is read back, so a value Archicad did not keep is reported as a failure."
+        );
         err |= RegisterCommand<CreateLineElementsCommand> (
             elementCommands, "1.5.6",
             "Creates Line elements based on the given parameters."
