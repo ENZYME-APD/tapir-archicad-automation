@@ -15523,7 +15523,7 @@
     },
     "StairDetails": {
         "type": "object",
-        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists; structures gives the structure settings they are built from, and GetDetailsOfElements reads a StairStructure subelement with the same keys.",
         "properties": {
             "stepNum": {
                 "type": "integer",
@@ -15864,6 +15864,13 @@
                     "additionalProperties": false,
                     "required": ["view", "uniformSymbolRepresentationEnabled", "stories"]
                 }
+            },
+            "structures": {
+                "type": "array",
+                "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side (API_StairType::structure), in the order Run LeftSide, RightSide, UnderSide, then Landing LeftSide, RightSide, UnderSide. These are the settings Archicad builds the StairStructure subelements from.",
+                "items": {
+                    "$ref": "#/StairStructureDetails"
+                }
             }
         },
         "additionalProperties": false,
@@ -15881,6 +15888,201 @@
             "finishVisible",
             "baseLinePoints"
         ]
+    },
+    "StairStructureDetails": {
+        "type": "object",
+        "description": "The settings of one structure of a stair: of one part (Run or Landing) and side in the stair's structures, or of a StairStructure subelement, whose values are the ones Archicad solved for that part (API_StairStructureType). monolith is given for a Monolith structure and sideStair for a Side structure; beam supported and cantilevered structures have no extra data.",
+        "properties": {
+            "role": {
+                "type": "string",
+                "description": "Whether the structure belongs to the flights (Run) or to the landings (Landing).",
+                "enum": ["Run", "Landing", "Unknown"]
+            },
+            "side": {
+                "type": "string",
+                "description": "Where the structure supports the steps: from the left, from the right or from under.",
+                "enum": ["LeftSide", "RightSide", "UnderSide", "Unknown"]
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the structure is modeled."
+            },
+            "structureType": {
+                "type": "string",
+                "description": "The type of the structure: side stringers, monolithic, beam supported or cantilevered.",
+                "enum": ["Side", "Monolith", "BeamSupport", "CantileveredSupport", "Unknown"]
+            },
+            "bottomType": {
+                "type": "string",
+                "description": "The bottom of the structure: stepped along with the steps, flat under the steps, or smooth.",
+                "enum": ["Stepped", "Flat", "Smooth", "Unknown"]
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the structure."
+            },
+            "horizontalThickness": {
+                "type": "number",
+                "description": "The horizontal thickness of the structure."
+            },
+            "monolith": {
+                "$ref": "#/StairMonolithStructure"
+            },
+            "sideStair": {
+                "$ref": "#/StairSideStructure"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["role", "side", "visible", "structureType", "bottomType", "thickness", "horizontalThickness"]
+    },
+    "StairMonolithStructure": {
+        "type": "object",
+        "description": "The data of a monolithic stair structure (API_MonolithStairStructData). An attribute that is not set is left out.",
+        "properties": {
+            "thinning": {
+                "type": "boolean",
+                "description": "Whether the structure is thinned."
+            },
+            "monolithThickness": {
+                "type": "number",
+                "description": "The thickness of the monolith."
+            },
+            "bottomOversize": {
+                "type": "number",
+                "description": "The size of the horizontal bottom."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the structure."
+            },
+            "sideFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the building material."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surfaces of the structure are chained."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The top surface of the structure."
+            },
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The left side surface of the structure."
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The right side surface of the structure."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The bottom surface of the structure."
+            },
+            "surfaceMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface material of the structure."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the cut parts' 2D representation."
+            },
+            "cutLinePen": {
+                "type": "integer",
+                "description": "The pen of the cut parts' 2D representation."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the 2D representation."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen of the 2D representation."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill pen of the structure."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill background pen of the structure."
+            },
+            "uniformDrainings": {
+                "type": "boolean",
+                "description": "Whether the drainings on the left and the right side are the same."
+            },
+            "drainings": {
+                "type": "array",
+                "description": "The drainings of the structure, on the left and on the right side.",
+                "items": {
+                    "$ref": "#/StairStructureDraining"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["thinning", "monolithThickness", "bottomOversize", "materialsChained", "topMaterial", "leftMaterial", "rightMaterial", "bottomMaterial", "cutLinePen", "pen", "cutFillPen", "cutFillBackgroundPen", "uniformDrainings", "drainings"]
+    },
+    "StairStructureDraining": {
+        "type": "object",
+        "description": "The draining of one side of a monolithic stair structure (API_StairStructureDrainingData).",
+        "properties": {
+            "side": {
+                "type": "string",
+                "enum": ["Left", "Right"]
+            },
+            "enabled": {
+                "type": "boolean",
+                "description": "Whether the draining is modeled."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the draining."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the draining from the boundary."
+            },
+            "horizontalDepth": {
+                "type": "number",
+                "description": "The horizontal depth of the draining."
+            },
+            "verticalDepth": {
+                "type": "number",
+                "description": "The vertical depth of the draining."
+            },
+            "material": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface of the draining."
+            },
+            "surfaceType": {
+                "type": "string",
+                "description": "Whether the draining is stepped or smooth.",
+                "enum": ["Stepped", "Smooth"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["side", "enabled", "width", "offset", "horizontalDepth", "verticalDepth", "material", "surfaceType"]
+    },
+    "StairSideStructure": {
+        "type": "object",
+        "description": "The data of a side (stringer) stair structure (API_SideStairStructData).",
+        "properties": {
+            "width": {
+                "type": "number",
+                "description": "The width of the stringer."
+            },
+            "heightAboveTread": {
+                "type": "number",
+                "description": "The height of the stringer above its tread."
+            },
+            "heightMeasure": {
+                "type": "string",
+                "description": "How the height above the tread is measured: perpendicular to the stair or vertically.",
+                "enum": ["Perpendicular", "Vertical"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["width", "heightAboveTread", "heightMeasure"]
     },
     "StairSymbolView": {
         "type": "string",
@@ -16395,6 +16597,9 @@
             },
             {
                 "$ref": "#/StairDetails"
+            },
+            {
+                "$ref": "#/StairStructureDetails"
             },
             {
                 "$ref": "#/SectionDetails"
