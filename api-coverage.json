@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-17 05:31 UTC",
+ "generatedAt": "2026-11-17 11:08 UTC",
  "versions": [
   25,
   26,
@@ -4035,6 +4035,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2915,
+     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
+    },
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
      "number": 2843,
      "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     }
@@ -5815,6 +5827,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
     },
@@ -6812,6 +6832,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2915,
+     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
+    },
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
      "number": 2900,
      "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
     },
@@ -6904,6 +6932,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2900,
+     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
+    },
     {
      "number": 2894,
      "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
@@ -7107,6 +7143,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
     {
      "number": 2891,
      "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
@@ -7408,6 +7452,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2915,
+     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
+    },
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
      "number": 2900,
      "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
     },
@@ -7681,6 +7737,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
+     "number": 2900,
+     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
+    },
     {
      "number": 2894,
      "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
@@ -8064,6 +8132,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
     {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
@@ -16406,6 +16478,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -16576,6 +16656,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
     {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
@@ -25701,6 +25789,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2913,
+     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
+    },
+    {
+     "number": 2911,
+     "title": "Stairs: write and read the position of the walking line symbol"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
     },
@@ -31440,6 +31544,34 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2913,
+     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
+    },
+    {
+     "number": 2912,
+     "title": "GetDetailsOfElements: read the visibility, offsets and angles of a railing's segments and nodes"
+    },
+    {
+     "number": 2911,
+     "title": "Stairs: write and read the position of the walking line symbol"
+    },
+    {
+     "number": 2910,
+     "title": "GetDetailsOfElements: read back the stair settings CreateStairs and ModifyStairs write"
+    },
+    {
+     "number": 2909,
+     "title": "GetDetailsOfElements: read the treads and risers of a stair"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
     {
      "number": 2896,
      "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
@@ -37951,6 +38083,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2915,
+     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
+    },
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2913,
+     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
+    },
+    {
+     "number": 2911,
+     "title": "Stairs: write and read the position of the walking line symbol"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
+     "number": 2907,
+     "title": "CreateRailingsFromPolyline: take templateElementId as CreateRailings does"
+    },
     {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
@@ -44692,6 +44848,34 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2913,
+     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
+    },
+    {
+     "number": 2912,
+     "title": "GetDetailsOfElements: read the visibility, offsets and angles of a railing's segments and nodes"
+    },
+    {
+     "number": 2911,
+     "title": "Stairs: write and read the position of the walking line symbol"
+    },
+    {
+     "number": 2910,
+     "title": "GetDetailsOfElements: read back the stair settings CreateStairs and ModifyStairs write"
+    },
+    {
+     "number": 2909,
+     "title": "GetDetailsOfElements: read the treads and risers of a stair"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
+    {
      "number": 2896,
      "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
     },
@@ -47871,6 +48055,34 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2913,
+     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
+    },
+    {
+     "number": 2912,
+     "title": "GetDetailsOfElements: read the visibility, offsets and angles of a railing's segments and nodes"
+    },
+    {
+     "number": 2911,
+     "title": "Stairs: write and read the position of the walking line symbol"
+    },
+    {
+     "number": 2910,
+     "title": "GetDetailsOfElements: read back the stair settings CreateStairs and ModifyStairs write"
+    },
+    {
+     "number": 2909,
+     "title": "GetDetailsOfElements: read the treads and risers of a stair"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
     {
      "number": 2896,
      "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
@@ -54446,6 +54658,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2914,
+     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
+    },
+    {
+     "number": 2908,
+     "title": "Add RecreateRailings: give an existing railing a new reference line"
+    },
     {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
