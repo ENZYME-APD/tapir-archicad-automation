@@ -4543,6 +4543,33 @@
         "description": "Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.",
         "enum": [ true ]
     },
+    "ElementFieldValue": {
+        "description": "The value of a field of an element's struct in the Archicad API, by the field's kind (see GetElementFieldDefinitions): a number, an integer, a boolean or a string, or for an optional pen or attribute (kinds OverriddenPen and OverriddenAttribute) an object with hasValue and value.",
+        "anyOf": [
+            {
+                "type": [ "number", "integer", "boolean", "string" ]
+            },
+            {
+                "$ref": "#/ElementFieldOptionalValue"
+            }
+        ]
+    },
+    "ElementFieldOptionalValue": {
+        "type": "object",
+        "description": "An optional pen or attribute of an element's struct (API_OverriddenPen or API_OverriddenAttribute in the Archicad API, e.g. cutFillPen or refMat of a wall, leftMaterial of a beam segment): value is used only when hasValue is true; otherwise the element uses its own setting (e.g. the pen or the surface of its building material). In SetElementFields and SetFieldsOfElementDefaults a member left out keeps its value, and a value given without hasValue sets hasValue to true.",
+        "properties": {
+            "hasValue": {
+                "type": "boolean",
+                "description": "Whether value replaces the element's own setting."
+            },
+            "value": {
+                "type": "integer",
+                "description": "The pen index (OverriddenPen) or the attribute index (OverriddenAttribute, e.g. of a surface). It means nothing while hasValue is false."
+            }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+    },
     "WouldDeleteExecutionResult": {
         "type": "object",
         "description": "The result of a dry run for a target that passed every check: a real run would delete it.",

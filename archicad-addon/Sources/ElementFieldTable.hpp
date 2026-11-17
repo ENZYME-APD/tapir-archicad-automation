@@ -10,14 +10,17 @@ namespace ElementFields {
 
 enum class FieldKind
 {
-    Real,           // float or double, by size
+    Real,                   // float or double, by size
     Bool,
-    SignedInt,      // signed integers and enums, by size
+    SignedInt,              // signed integers and enums, by size
     UnsignedInt,
-    CString,        // a char array
-    UString,        // a GS::uchar_t array
+    CString,                // a char array
+    UString,                // a GS::uchar_t array
     AttributeIndex,
-    Guid
+    Guid,
+    OverriddenPen,          // an API_OverriddenPen (APIOptional<API_PenIndex>), e.g. cutFillPen of a wall: {"hasValue", "value"}
+    OverriddenAttribute,    // an API_OverriddenAttribute (APIOptional<API_AttributeIndex>), e.g. refMat of a wall: {"hasValue", "value"}
+    UniStringPointer        // a GS::UniString* outside any union, e.g. note.contentUStr: the commands point it to a string they own
 };
 
 struct FieldInfo
@@ -26,7 +29,7 @@ struct FieldInfo
     UInt32      offset;         // from the start of the API_Element union
     UInt32      size;
     FieldKind   kind;
-    bool        readOnly;       // owners and counts that Archicad computes from the memo
+    bool        readOnly;       // owners and counts that Archicad computes from the memo, and the fields that choose an element's shape
     // The member of a union the field is in (e.g. "u.revolvedShell"), or nullptr. The members of a
     // union share their bytes: only the one the element uses (its roofClass, shellClass, labelClass
     // or structType) holds its values, and writing another one overwrites them.
