@@ -4,8 +4,9 @@
   "requiresEmpty": [ "Wall", "Zone" ],
   "steps": [
     {
-      "id": "a room of four walls whose reference lines close a 6 m square",
+      "id": "a room of four walls whose reference lines close a 6 m square (deleted in the teardown, after the zones)",
       "command": "CreateWalls",
+      "creates": false,
       "params": {
         "wallsData": [
           { "begCoordinate": { "x": 990.0, "y": 1020.0 }, "endCoordinate": { "x": 996.0, "y": 1020.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 },
@@ -14,7 +15,7 @@
           { "begCoordinate": { "x": 990.0, "y": 1026.0 }, "endCoordinate": { "x": 990.0, "y": 1020.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 }
         ]
       },
-      "save": { "w1": "elements[0].elementId.guid" }
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid", "w3": "elements[2].elementId.guid", "w4": "elements[3].elementId.guid" }
     },
     {
       "id": "an automatic zone in the room, with an Element ID",
@@ -114,6 +115,10 @@
     }
   ],
   "teardown": [
-    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${nz}" } } ] } }
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${nz}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w2}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w3}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w4}" } } ] } }
   ]
 }
