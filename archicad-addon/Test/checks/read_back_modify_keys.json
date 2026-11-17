@@ -414,6 +414,82 @@
         { "path": "detailsOfElements[0].details.box.xMin", "approx": 1038.0, "name": "round trip: box where it was, xMin" },
         { "path": "detailsOfElements[0].details.box.yMin", "approx": 999.0, "name": "round trip: box where it was, yMin" }
       ]
+    },
+    {
+      "id": "a multi-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          { "level": 0.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic", "eavesOverhang": 0.3, "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5 } ], "polygonCoordinates": [ { "x": 1050.0, "y": 1000.0 }, { "x": 1058.0, "y": 1000.0 }, { "x": 1058.0, "y": 1006.0 }, { "x": 1050.0, "y": 1006.0 } ] }
+        ]
+      },
+      "save": { "roof": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "roof created" }
+      ]
+    },
+    {
+      "id": "two roof levels",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${roof}" }, "levels": [ { "levelHeight": 1.0, "levelAngle": 0.7 }, { "levelHeight": 10.0, "levelAngle": 0.3 } ] } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "levels written" }
+      ]
+    },
+    {
+      "id": "read the two levels",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${roof}" } } ] },
+      "save": { "roofLevels": "detailsOfElements[0].details.levels" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.levels", "len": 2, "name": "two levels" },
+        { "path": "detailsOfElements[0].details.levels[0].height", "approx": 1.0, "name": "first level height" },
+        { "path": "detailsOfElements[0].details.levels[0].angle", "approx": 0.7, "name": "first level angle" },
+        { "path": "detailsOfElements[0].details.levels[1].angle", "approx": 0.3, "name": "second level angle" }
+      ]
+    },
+    {
+      "id": "one roof level",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${roof}" }, "levels": [ { "levelHeight": 10.0, "levelAngle": 0.4 } ] } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "one level written" }
+      ]
+    },
+    {
+      "id": "read the one level",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${roof}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.levels", "len": 1, "name": "one level" },
+        { "path": "detailsOfElements[0].details.levels[0].angle", "approx": 0.4, "name": "its angle" }
+      ]
+    },
+    {
+      "id": "send the two levels back as they were read",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${roof}" }, "levels": "${roofLevels}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "levels with height and angle (the keys GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "the two levels again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${roof}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.levels", "len": 2, "name": "round trip: two levels" },
+        { "path": "detailsOfElements[0].details.levels[0].height", "approx": 1.0, "name": "round trip: first level height" },
+        { "path": "detailsOfElements[0].details.levels[0].angle", "approx": 0.7, "name": "round trip: first level angle" },
+        { "path": "detailsOfElements[0].details.levels[1].height", "approx": 10.0, "name": "round trip: second level height" },
+        { "path": "detailsOfElements[0].details.levels[1].angle", "approx": 0.3, "name": "round trip: second level angle" }
+      ]
     }
   ]
 }

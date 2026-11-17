@@ -16651,6 +16651,7 @@
     },
     "RoofLevel": {
         "type": "object",
+        "description": "A level of a multi-plane roof: its height and the angle of the roof planes above it. Give levelHeight and levelAngle, or height and angle, the keys GetDetailsOfElements reads the levels with (RoofDetailsLevel), so the levels read can be sent back; levelHeight and levelAngle win when both forms are given.",
         "properties": {
             "levelHeight": {
                 "type": "number"
@@ -16658,12 +16659,31 @@
             "levelAngle": {
                 "type": "number",
                 "exclusiveMinimum": 0.0
+            },
+            "height": {
+                "type": "number",
+                "description": "The same as levelHeight, as GetDetailsOfElements reads it."
+            },
+            "angle": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "The same as levelAngle, as GetDetailsOfElements reads it."
             }
         },
         "additionalProperties": false,
-        "required": [
-            "levelHeight",
-            "levelAngle"
+        "anyOf": [
+            {
+                "required": [
+                    "levelHeight",
+                    "levelAngle"
+                ]
+            },
+            {
+                "required": [
+                    "height",
+                    "angle"
+                ]
+            }
         ]
     },
     "RoofPivotLine": {

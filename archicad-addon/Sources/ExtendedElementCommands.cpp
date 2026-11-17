@@ -4336,8 +4336,12 @@ GS::Optional<GS::UniString> ApplyRoofLevels (API_Element& element, API_Element* 
     for (UIndex i = 0; i < roofLevels.GetSize (); ++i) {
         double levelHeight = 0.0;
         double levelAngle = 0.0;
-        if (!roofLevels[i].Get ("levelHeight", levelHeight) || !roofLevels[i].Get ("levelAngle", levelAngle)) {
-            return "Each roof level must contain 'levelHeight' and 'levelAngle'.";
+        // height and angle are the keys GetDetailsOfElements reads the levels with, so the levels
+        // read can be sent back; levelHeight and levelAngle win when both are given.
+        const bool hasHeight = roofLevels[i].Get ("levelHeight", levelHeight) || roofLevels[i].Get ("height", levelHeight);
+        const bool hasAngle = roofLevels[i].Get ("levelAngle", levelAngle) || roofLevels[i].Get ("angle", levelAngle);
+        if (!hasHeight || !hasAngle) {
+            return "Each roof level must contain 'levelHeight' (or 'height') and 'levelAngle' (or 'angle').";
         }
         if (levelAngle <= 0.0) {
             return "'levelAngle' must be greater than zero.";
