@@ -523,6 +523,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.8.0",
             "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
         );
+        err |= RegisterCommand<MergeFileCommand> (
+            projectCommands, "2.0.1",
+            "Merges an Archicad project or module file into the model, as File > Interoperability > Merge does, at an origin, rotation and mirroring, each story of the file on the story with the same index (or from floorIndex on). The Archicad API has no merge, so the file is placed as a hotlink and the hotlink is broken, in one undo step, and the elements that are new afterwards are returned; Archicad leaves them grouped together. A file the project already hotlinks is refused, because breaking would break that hotlink too."
+        );
         err |= RegisterCommand<GetHotlinkOwnersOfElementsCommand> (
             projectCommands, "1.8.0",
             "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27."
