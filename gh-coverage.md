@@ -4,14 +4,14 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **788 of 803** applicable Tapir commands have a Grasshopper component (98 %): ✅ 788 done, ⬜ 15 open, ➖ 1 not applicable.
 
-Parameters of the 788 used commands: 🟢 728 every parameter has an input, 🟡 54 the rest through a JSON input, 🟠 6 some parameters missing.
+Parameters of the 788 used commands: 🟢 724 every parameter has an input, 🟡 57 the rest through a JSON input, 🟠 7 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 42 |  |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 66 |  |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 96 % | 181 | 174 |  |  |  | 7 |  |  | 134 | 40 |  |
+| Element Commands | 96 % | 181 | 174 |  |  |  | 7 |  |  | 133 | 41 |  |
 | Element grouping Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 27 | 27 |  |  |  |  |  |  | 26 |  | 1 |
 | Property Commands | 100 % | 31 | 31 |  |  |  |  |  |  | 31 |  |  |
@@ -20,7 +20,7 @@ Parameters of the 788 used commands: 🟢 728 every parameter has an input, 🟡
 | IFC Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Library Commands | 100 % | 51 | 51 |  |  |  |  |  |  | 51 |  |  |
 | Teamwork Commands | 100 % | 18 | 18 |  |  |  |  |  |  | 18 |  |  |
-| Navigator Commands | 94 % | 90 | 85 |  |  |  | 5 |  |  | 78 | 4 | 3 |
+| Navigator Commands | 94 % | 90 | 85 |  |  |  | 5 |  |  | 75 | 6 | 4 |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
 | Issue Management Commands | 100 % | 11 | 11 |  |  |  |  |  |  | 11 |  |  |
 | Revision Management Commands | 87 % | 8 | 7 |  |  |  | 1 |  |  | 7 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 728 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-17 11:08 UTC.
+Updated 2026-11-17 20:00 UTC.
 
 | | Status |
 |---|---|
@@ -286,7 +286,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetOpeningDetails` 🟢 1/1 parameters – `GetOpeningDetailsComponent`
 - ✅ `SetOpeningDetails` 🟢 23/23 parameters – `SetOpeningDetailsComponent`
 - ✅ `CreateMorphs` 🟢 41/41 parameters – `CreateMorphsComponent`, `MorphsComponent`
-- ✅ `CreateRoofs` 🟢 17/17 parameters – `CreateRoofsComponent`, `RoofsComponent`
+- ✅ `CreateRoofs` 🟡 17/18 parameters – `CreateRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsData.fitSkylightToCurve`</sub>
 - ✅ `CreateShells` 🟡 13/33 parameters – `CreateShellsComponent`<br><sub>no input: `shellsData.axis`, `shellsData.basePlane`, `shellsData.begPlaneTilt`, `shellsData.begShapeEdgeTrim`, `shellsData.begSideEdgeTrim`, `shellsData.beginAngle`, `shellsData.contour`, `shellsData.distortionAngle`, `shellsData.endPlaneTilt`, `shellsData.endShapeEdgeTrim`, `shellsData.endSideEdgeTrim`, `shellsData.extrusionStart`, `shellsData.favoriteName`, `shellsData.id`, `shellsData.morphingRule`, `shellsData.profilePlane`, `shellsData.secondProfile`, `shellsData.secondProfilePlane`, `shellsData.segmentsByCircle`, `shellsData.shapePlaneTilt`</sub>
 - ✅ `CreateSkylights` 🟡 13/30 parameters – `CreateSkylightsComponent`<br><sub>no input: `skylightsData.aboveViewLinePen`, `skylightsData.aboveViewLineTypeId`, `skylightsData.belowViewLinePen`, `skylightsData.belowViewLineTypeId`, `skylightsData.cutLineTypeId`, `skylightsData.displayOption`, `skylightsData.id`, `skylightsData.lineTypeId`, `skylightsData.sectionContourPen`, `skylightsData.sectionFillBackgroundPen`, `skylightsData.sectionFillId`, `skylightsData.sectionFillPen`, `skylightsData.surfaceId`, `skylightsData.useObjectLineTypes`, `skylightsData.useObjectMaterials`, `skylightsData.useObjectPens`, `skylightsData.useObjectSectionAttributes`</sub>
 - ✅ `ModifySkylights` 🟡 11/27 parameters – `ModifySkylightsComponent`<br><sub>no input: `skylightsWithDetails.aboveViewLinePen`, `skylightsWithDetails.aboveViewLineTypeId`, `skylightsWithDetails.belowViewLinePen`, `skylightsWithDetails.belowViewLineTypeId`, `skylightsWithDetails.cutLineTypeId`, `skylightsWithDetails.displayOption`, `skylightsWithDetails.lineTypeId`, `skylightsWithDetails.sectionContourPen`, `skylightsWithDetails.sectionFillBackgroundPen`, `skylightsWithDetails.sectionFillId`, `skylightsWithDetails.sectionFillPen`, `skylightsWithDetails.surfaceId`, `skylightsWithDetails.useObjectLineTypes`, `skylightsWithDetails.useObjectMaterials`, `skylightsWithDetails.useObjectPens`, `skylightsWithDetails.useObjectSectionAttributes`</sub>
@@ -300,14 +300,14 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetDimensionData` 🟢 2/2 parameters – `GetDimensionDataComponent`
 - ✅ `GetOpeningTransformations` 🟢 1/1 parameters – `GetOpeningTransformationsComponent`
 - ✅ `CreateZones` 🟡 20/24 parameters – `CreateZonesComponent`, `ZonesComponent`<br><sub>no input: `zonesData.polygonDisplay`, `zonesData.reducePercent`, `zonesData.stampPen`, `zonesData.surface`</sub>
-- ✅ `CreatePolylines` 🟡 11/16 parameters – `CreatePolylinesComponent`, `PolylinesComponent`<br><sub>no input: `databaseId`, `polylinesData.drawSegmentMode`, `polylinesData.endArrow`, `polylinesData.lineTypeId`, `polylinesData.startArrow`</sub>
-- ✅ `CreateLineElements` 🟡 10/13 parameters – `CreateLineElementsComponent`, `LinesComponent`<br><sub>no input: `databaseId`, `linesData.endArrow`, `linesData.startArrow`</sub>
-- ✅ `CreateArcs` 🟡 13/18 parameters – `ArcsComponent`, `CreateArcsComponent`<br><sub>no input: `arcsData.endArrow`, `arcsData.ratio`, `arcsData.reflected`, `arcsData.startArrow`, `databaseId`</sub>
+- ✅ `CreatePolylines` 🟡 11/17 parameters – `CreatePolylinesComponent`, `PolylinesComponent`<br><sub>no input: `databaseId`, `polylinesData.drawSegmentMode`, `polylinesData.endArrow`, `polylinesData.lineTypeId`, `polylinesData.linkedArrowAttributes`, `polylinesData.startArrow`</sub>
+- ✅ `CreateLineElements` 🟡 10/14 parameters – `CreateLineElementsComponent`, `LinesComponent`<br><sub>no input: `databaseId`, `linesData.endArrow`, `linesData.linkedArrowAttributes`, `linesData.startArrow`</sub>
+- ✅ `CreateArcs` 🟡 13/19 parameters – `ArcsComponent`, `CreateArcsComponent`<br><sub>no input: `arcsData.endArrow`, `arcsData.linkedArrowAttributes`, `arcsData.ratio`, `arcsData.reflected`, `arcsData.startArrow`, `databaseId`</sub>
 - ✅ `CreateCircles` 🟡 10/11 parameters – `CirclesComponent`, `CreateCirclesComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateHotspots` 🟡 8/9 parameters – `CreateHotspotsComponent`, `HotspotsComponent`<br><sub>no input: `databaseId`</sub>
 - ⬜ `CreatePictures`
 - ✅ `CreateHatches` 🟡 17/21 parameters – `CreateHatchesComponent`, `FillsComponent`<br><sub>no input: `databaseId`, `hatchesData.contourLineTypeId`, `hatchesData.fillCategory`, `hatchesData.fillOrientation`</sub>
-- ✅ `CreateSplines` 🟡 10/13 parameters – `CreateSplinesComponent`, `SplinesComponent`<br><sub>no input: `databaseId`, `splinesData.endArrow`, `splinesData.startArrow`</sub>
+- ✅ `CreateSplines` 🟡 10/14 parameters – `CreateSplinesComponent`, `SplinesComponent`<br><sub>no input: `databaseId`, `splinesData.endArrow`, `splinesData.linkedArrowAttributes`, `splinesData.startArrow`</sub>
 - ✅ `CreateObjects` 🟢 32/32 parameters – `CreateObjectsComponent`, `ObjectsComponent`
 - ✅ `CreateLamps` 🟢 34/34 parameters – `CreateLampsComponent`, `LampsComponent`
 - ✅ `GetGridElementDefaults` 🟢 0/0 parameters – `GetGridElementDefaultsComponent`
@@ -322,12 +322,12 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyWalls` 🟡 46/47 parameters – `ModifyWallsComponent`, `WallsApiComponent`, `WallsComponent`<br><sub>no input: `wallsWithDetails.endThickness`</sub>
 - ✅ `ModifyBeams` 🟡 26/45 parameters – `BeamsComponent`, `ModifyBeamsComponent`<br><sub>no input: `beamsWithDetails.aboveViewLinePen`, `beamsWithDetails.aboveViewLineTypeId`, `beamsWithDetails.belowViewLinePen`, `beamsWithDetails.belowViewLineTypeId`, `beamsWithDetails.cutContourLinePen`, `beamsWithDetails.cutContourLineTypeId`, `beamsWithDetails.displayOption`, `beamsWithDetails.hiddenLinePen`, `beamsWithDetails.hiddenLineTypeId`, `beamsWithDetails.isAutoOnStoryVisibility`, `beamsWithDetails.overheadProjectionMode`, `beamsWithDetails.referenceLinePen`, `beamsWithDetails.referenceLineTypeId`, `beamsWithDetails.segments`, `beamsWithDetails.showContourLines`, `beamsWithDetails.showReferenceAxis`, `beamsWithDetails.uncutProjectionMode`, `beamsWithDetails.viewDepthLimitation`, `beamsWithDetails.visibility`</sub>
 - ✅ `ModifySlabs` 🟡 18/32 parameters – `ModifySlabsComponent`, `SlabsComponent`<br><sub>no input: `slabsWithDetails.contourLineTypeId`, `slabsWithDetails.contourPen`, `slabsWithDetails.edgeSideMaterials`, `slabsWithDetails.edgeTrim`, `slabsWithDetails.edgeTrims`, `slabsWithDetails.fillVisibility`, `slabsWithDetails.hiddenContourLinePen`, `slabsWithDetails.hiddenContourLineTypeId`, `slabsWithDetails.isAutoOnStoryVisibility`, `slabsWithDetails.linkToSettings`, `slabsWithDetails.materialsChained`, `slabsWithDetails.sectionContourLineTypeId`, `slabsWithDetails.sectionContourPen`, `slabsWithDetails.visibility`</sub>
-- ✅ `ModifyColumns` 🟡 41/42 parameters – `ColumnsComponent`, `ModifyColumnsComponent`<br><sub>no input: `columnsWithDetails.segments`</sub>
+- ✅ `ModifyColumns` 🟡 44/45 parameters – `ColumnsComponent`, `ModifyColumnsComponent`<br><sub>no input: `columnsWithDetails.segments`</sub>
 - ✅ `ModifyWindows` 🟡 26/34 parameters – `ModifyWindowsComponent`, `WindowsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `windowsWithDetails.directionType`, `windowsWithDetails.fixPoint`, `windowsWithDetails.revealDepthLocation`, `windowsWithDetails.subFloorThickness`, `windowsWithDetails.surfaceId`, `windowsWithDetails.useObjectMaterials`, `windowsWithDetails.verticalLink`, `windowsWithDetails.verticalLinkStoryIndex`</sub>
 - ✅ `ModifyDoors` 🟡 26/34 parameters – `DoorsComponent`, `ModifyDoorsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `doorsWithDetails.directionType`, `doorsWithDetails.fixPoint`, `doorsWithDetails.revealDepthLocation`, `doorsWithDetails.subFloorThickness`, `doorsWithDetails.surfaceId`, `doorsWithDetails.useObjectMaterials`, `doorsWithDetails.verticalLink`, `doorsWithDetails.verticalLinkStoryIndex`</sub>
 - ✅ `ModifyOpenings` 🟢 5/5 parameters – `ModifyOpeningsComponent`
 - ✅ `ModifyMorphs` 🟢 37/37 parameters – `ModifyMorphsComponent`, `MorphsComponent`
-- ✅ `ModifyRoofs` 🟡 20/47 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.aboveViewLinePen`, `roofsWithDetails.aboveViewLineTypeId`, `roofsWithDetails.bottomMaterial`, `roofsWithDetails.contourLineTypeId`, `roofsWithDetails.contourPen`, `roofsWithDetails.contourPolygon`, `roofsWithDetails.cutBodyType`, `roofsWithDetails.cutFillBackgroundPen`, `roofsWithDetails.cutFillPen`, `roofsWithDetails.displayOption`, `roofsWithDetails.edgeSideMaterials`, `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.edgeTypes`, `roofsWithDetails.fillVisibility`, `roofsWithDetails.floorFill`, `roofsWithDetails.isAutoOnStoryVisibility`, `roofsWithDetails.materialsChained`, `roofsWithDetails.sectionContourLineTypeId`, `roofsWithDetails.sectionContourPen`, `roofsWithDetails.segmentType`, `roofsWithDetails.segmentsByArc`, `roofsWithDetails.segmentsByCircle`, `roofsWithDetails.sideMaterial`, `roofsWithDetails.topMaterial`, `roofsWithDetails.viewDepthLimitation`, `roofsWithDetails.visibility`</sub>
+- ✅ `ModifyRoofs` 🟡 20/48 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.aboveViewLinePen`, `roofsWithDetails.aboveViewLineTypeId`, `roofsWithDetails.bottomMaterial`, `roofsWithDetails.contourLineTypeId`, `roofsWithDetails.contourPen`, `roofsWithDetails.contourPolygon`, `roofsWithDetails.cutBodyType`, `roofsWithDetails.cutFillBackgroundPen`, `roofsWithDetails.cutFillPen`, `roofsWithDetails.displayOption`, `roofsWithDetails.edgeSideMaterials`, `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.edgeTypes`, `roofsWithDetails.fillVisibility`, `roofsWithDetails.fitSkylightToCurve`, `roofsWithDetails.floorFill`, `roofsWithDetails.isAutoOnStoryVisibility`, `roofsWithDetails.materialsChained`, `roofsWithDetails.sectionContourLineTypeId`, `roofsWithDetails.sectionContourPen`, `roofsWithDetails.segmentType`, `roofsWithDetails.segmentsByArc`, `roofsWithDetails.segmentsByCircle`, `roofsWithDetails.sideMaterial`, `roofsWithDetails.topMaterial`, `roofsWithDetails.viewDepthLimitation`, `roofsWithDetails.visibility`</sub>
 - ✅ `ModifyShells` 🟡 9/46 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.aboveViewLinePen`, `shellsWithDetails.aboveViewLineTypeId`, `shellsWithDetails.axis`, `shellsWithDetails.beginAngle`, `shellsWithDetails.bottomMaterial`, `shellsWithDetails.contour`, `shellsWithDetails.contourLineTypeId`, `shellsWithDetails.contourPen`, `shellsWithDetails.cutBodyType`, `shellsWithDetails.cutFillBackgroundPen`, `shellsWithDetails.cutFillPen`, `shellsWithDetails.displayOption`, `shellsWithDetails.distortionAngle`, `shellsWithDetails.edgeMaterials`, `shellsWithDetails.extrusionLength`, `shellsWithDetails.extrusionVector`, `shellsWithDetails.fillVisibility`, `shellsWithDetails.floorFill`, `shellsWithDetails.isAutoOnStoryVisibility`, `shellsWithDetails.materialsChained`, `shellsWithDetails.morphingRule`, `shellsWithDetails.profile`, `shellsWithDetails.profilePlane`, `shellsWithDetails.removeContour`, `shellsWithDetails.revolutionAngle`, `shellsWithDetails.secondProfile`, `shellsWithDetails.secondProfilePlane`, `shellsWithDetails.sectionContourLineTypeId`, `shellsWithDetails.sectionContourPen`, `shellsWithDetails.segmentType`, `shellsWithDetails.segmentedSurfaces`, `shellsWithDetails.segmentsByArc`, `shellsWithDetails.segmentsByCircle`, `shellsWithDetails.sideMaterial`, `shellsWithDetails.topMaterial`, `shellsWithDetails.viewDepthLimitation`, `shellsWithDetails.visibility`</sub>
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
 - ✅ `ModifyRailings` 🟡 11/34 parameters – `RailingsComponent`<br><sub>no input: `railingsWithDetails.nodes`, `railingsWithDetails.nodes.postOffset`, `railingsWithDetails.nodes.posts`, `railingsWithDetails.nodes.unifyPatterns`, `railingsWithDetails.segments`, `railingsWithDetails.segments.balusterSets`, `railingsWithDetails.segments.balusterSets.distribution`, `railingsWithDetails.segments.handrails`, `railingsWithDetails.segments.handrails.doubleHandrail`, `railingsWithDetails.segments.index`, `railingsWithDetails.segments.innerPosts`, `railingsWithDetails.segments.innerPosts.doublePostOffset`, `railingsWithDetails.segments.innerPosts.horizontalPosition`, `railingsWithDetails.segments.innerPosts.postCount`, `railingsWithDetails.segments.innerPosts.verticalPosition`, `railingsWithDetails.segments.lateralOffset`, `railingsWithDetails.segments.panels`, `railingsWithDetails.segments.panels.frame`, `railingsWithDetails.segments.rails`, `railingsWithDetails.segments.rails.horizontalOffset`, `railingsWithDetails.segments.rails.relative`, `railingsWithDetails.segments.toprail`, `railingsWithDetails.segments.toprail.visible`</sub>
@@ -635,9 +635,9 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateDetails` 🟢 3/3 parameters – `CreateDetailsComponent`
 - ✅ `CreateWorksheets` 🟢 3/3 parameters – `CreateWorksheetsComponent`
 - ⬜ `Create3DDocuments`
-- ✅ `CreateDetailMarkers` 🟢 8/8 parameters – `CreateDetailMarkersComponent`
-- ✅ `CreateWorksheetMarkers` 🟢 8/8 parameters – `CreateWorksheetMarkersComponent`
-- ✅ `ModifyDetailMarkers` 🟢 11/11 parameters – `ModifyDetailMarkersComponent`
+- ✅ `CreateDetailMarkers` 🟡 8/9 parameters – `CreateDetailMarkersComponent`<br><sub>no input: `detailMarkersData.constructionElementsOnly`</sub>
+- ✅ `CreateWorksheetMarkers` 🟡 8/9 parameters – `CreateWorksheetMarkersComponent`<br><sub>no input: `worksheetMarkersData.constructionElementsOnly`</sub>
+- ✅ `ModifyDetailMarkers` 🟠 11/12 parameters – `ModifyDetailMarkersComponent`<br><sub>no input: `detailMarkersWithDetails.constructionElementsOnly`</sub>
 - ✅ `CreateLayout` 🟡 7/20 parameters – `CreateLayoutComponent`<br><sub>no input: `layoutsData.layoutParameters.bottomMargin`, `layoutsData.layoutParameters.customLayoutNumber`, `layoutsData.layoutParameters.customLayoutNumbering`, `layoutsData.layoutParameters.displayMasterLayoutBelow`, `layoutsData.layoutParameters.doNotIncludeInNumbering`, `layoutsData.layoutParameters.horizontalSize`, `layoutsData.layoutParameters.leftMargin`, `layoutsData.layoutParameters.rightMargin`, `layoutsData.layoutParameters.topMargin`, `layoutsData.layoutParameters.verticalSize`, `layoutsData.paperHeight`, `layoutsData.paperWidth`, `layoutsData.previousNavigatorItemId`</sub>
 - ✅ `CreateLayoutSubset` 🟢 12/12 parameters – `CreateLayoutSubsetComponent`
 - ✅ `GetLayoutSubsetSettings` 🟢 1/1 parameters – `GetLayoutSubsetSettingsComponent`

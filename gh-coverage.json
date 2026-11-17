@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-17 11:08 UTC",
+ "generatedAt": "2026-11-17 20:00 UTC",
  "counts": {
   "done": 788,
   "open": 15,
   "not applicable": 1
  },
  "parameters": {
-  "all": 728,
-  "json": 54,
-  "partial": 6
+  "all": 724,
+  "json": 57,
+  "partial": 7
  },
  "items": [
   {
@@ -2865,7 +2865,7 @@
    "id": "GetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
+   "brief": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. A Stair returns the structure settings of each part and side (structures, with the monolith or side stringer data of its type), and a StairStructure subelement returns the same keys. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5954,8 +5954,8 @@
      "path": "Components/DesignToolsComponents/RoofsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 17,
+   "parameters": "json",
+   "parameterCount": 18,
    "coveredParameters": [
     "roofsData",
     "roofsData.angle",
@@ -5975,7 +5975,9 @@
     "roofsData.structureType",
     "roofsData.thickness"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "roofsData.fitSkylightToCurve"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -6372,7 +6374,7 @@
    "id": "ModifyAssociativeDimensions",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
+   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6419,7 +6421,7 @@
    "id": "GetDimensionData",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen and frame, and the text content (measured value or custom text), superscript and whether the text was moved by hand.",
+   "brief": "Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen, frame, font and style, and the text content (measured value or custom text), superscript and whether the text was moved by hand.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6528,7 +6530,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 16,
+   "parameterCount": 17,
    "coveredParameters": [
     "polylinesData",
     "polylinesData.arcs",
@@ -6547,6 +6549,7 @@
     "polylinesData.drawSegmentMode",
     "polylinesData.endArrow",
     "polylinesData.lineTypeId",
+    "polylinesData.linkedArrowAttributes",
     "polylinesData.startArrow"
    ],
    "pullRequests": [],
@@ -6570,7 +6573,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 14,
    "coveredParameters": [
     "linesData",
     "linesData.begCoordinate",
@@ -6586,6 +6589,7 @@
    "missingParameters": [
     "databaseId",
     "linesData.endArrow",
+    "linesData.linkedArrowAttributes",
     "linesData.startArrow"
    ],
    "pullRequests": [],
@@ -6609,7 +6613,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 18,
+   "parameterCount": 19,
    "coveredParameters": [
     "arcsData",
     "arcsData.angle",
@@ -6627,6 +6631,7 @@
    ],
    "missingParameters": [
     "arcsData.endArrow",
+    "arcsData.linkedArrowAttributes",
     "arcsData.ratio",
     "arcsData.reflected",
     "arcsData.startArrow",
@@ -6787,7 +6792,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 13,
+   "parameterCount": 14,
    "coveredParameters": [
     "splinesData",
     "splinesData.closed",
@@ -6803,6 +6808,7 @@
    "missingParameters": [
     "databaseId",
     "splinesData.endArrow",
+    "splinesData.linkedArrowAttributes",
     "splinesData.startArrow"
    ],
    "pullRequests": [],
@@ -7467,7 +7473,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 42,
+   "parameterCount": 45,
    "coveredParameters": [
     "columnsWithDetails",
     "columnsWithDetails.aboveViewLinePen",
@@ -7481,7 +7487,10 @@
     "columnsWithDetails.contourLineTypeId",
     "columnsWithDetails.contourPen",
     "columnsWithDetails.coreAnchor",
+    "columnsWithDetails.coreSymbolPar1",
+    "columnsWithDetails.coreSymbolPar2",
     "columnsWithDetails.coreSymbolPen",
+    "columnsWithDetails.coreSymbolType",
     "columnsWithDetails.coverFill",
     "columnsWithDetails.cutFillBackgroundPen",
     "columnsWithDetails.cutFillPen",
@@ -7753,7 +7762,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 47,
+   "parameterCount": 48,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7792,6 +7801,7 @@
     "roofsWithDetails.edgeTrims.trimType",
     "roofsWithDetails.edgeTypes",
     "roofsWithDetails.fillVisibility",
+    "roofsWithDetails.fitSkylightToCurve",
     "roofsWithDetails.floorFill",
     "roofsWithDetails.isAutoOnStoryVisibility",
     "roofsWithDetails.materialsChained",
@@ -14813,8 +14823,8 @@
      "path": "Components/NavigatorComponents/CreateDetailMarkersComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 8,
+   "parameters": "json",
+   "parameterCount": 9,
    "coveredParameters": [
     "detailMarkersData",
     "detailMarkersData.angle",
@@ -14825,7 +14835,9 @@
     "detailMarkersData.name",
     "detailMarkersData.polygonArcs"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "detailMarkersData.constructionElementsOnly"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -14842,8 +14854,8 @@
      "path": "Components/NavigatorComponents/CreateWorksheetMarkersComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 8,
+   "parameters": "json",
+   "parameterCount": 9,
    "coveredParameters": [
     "worksheetMarkersData",
     "worksheetMarkersData.angle",
@@ -14854,7 +14866,9 @@
     "worksheetMarkersData.name",
     "worksheetMarkersData.polygonArcs"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "worksheetMarkersData.constructionElementsOnly"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -14862,7 +14876,7 @@
    "id": "ModifyDetailMarkers",
    "group": "Navigator Commands",
    "version": "2.0.0",
-   "brief": "Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result.",
+   "brief": "Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen, and 'Copy construction elements only' of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result.",
    "status": "done",
    "reason": "",
    "components": [
@@ -14871,8 +14885,8 @@
      "path": "Components/NavigatorComponents/ModifyDetailMarkersComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 11,
+   "parameters": "partial",
+   "parameterCount": 12,
    "coveredParameters": [
     "detailMarkersWithDetails",
     "detailMarkersWithDetails.angle",
@@ -14886,7 +14900,9 @@
     "detailMarkersWithDetails.penIndex",
     "detailMarkersWithDetails.polygonArcs"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "detailMarkersWithDetails.constructionElementsOnly"
+   ],
    "pullRequests": [],
    "issues": []
   },

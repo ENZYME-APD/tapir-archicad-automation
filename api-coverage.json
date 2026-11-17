@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-17 11:08 UTC",
+ "generatedAt": "2026-11-17 20:00 UTC",
  "versions": [
   25,
   26,
@@ -2908,6 +2908,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -4035,6 +4039,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
      "number": 2915,
      "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
     },
@@ -4790,6 +4802,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -4921,6 +4941,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
     {
      "number": 2879,
      "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
@@ -5826,6 +5850,26 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
+     "number": 2918,
+     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
+    },
     {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
@@ -6832,6 +6876,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2924,
+     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
+    },
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
      "number": 2915,
      "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
     },
@@ -6854,10 +6910,6 @@
     {
      "number": 2879,
      "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
-    },
-    {
-     "number": 2870,
-     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
     },
     {
      "number": 2855,
@@ -6932,6 +6984,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2924,
+     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
+    },
     {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
@@ -7144,6 +7204,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -7194,6 +7266,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
     {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
@@ -7246,6 +7322,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
     {
      "number": 2815,
      "title": "DeleteElements: delete each element in the database that contains it"
@@ -7452,6 +7532,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2924,
+     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
+    },
+    {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    },
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
      "number": 2915,
      "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
     },
@@ -7478,10 +7574,6 @@
     {
      "number": 2871,
      "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
-    },
-    {
-     "number": 2869,
-     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
     },
     {
      "number": 2856,
@@ -7738,6 +7830,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2924,
+     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -7867,6 +7971,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
     {
      "number": 2879,
      "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
@@ -8110,7 +8222,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    }
+   ],
    "issues": []
   },
   {
@@ -8132,6 +8249,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
+     "number": 2918,
+     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
+    },
     {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
@@ -9399,7 +9528,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -9420,7 +9554,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -9462,7 +9601,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -9483,7 +9627,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11171,7 +11320,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11194,7 +11348,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -11443,7 +11602,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -14145,7 +14309,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    }
+   ],
    "issues": []
   },
   {
@@ -14242,7 +14411,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -14465,7 +14639,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": [
     {
      "number": 2836,
@@ -14516,7 +14695,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -14710,7 +14894,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -14756,7 +14945,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    }
+   ],
    "issues": []
   },
   {
@@ -14933,7 +15127,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": [
     {
      "number": 2836,
@@ -20420,7 +20619,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    }
+   ],
    "issues": []
   },
   {
@@ -20512,7 +20716,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    }
+   ],
    "issues": []
   },
   {
@@ -23405,7 +23614,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23600,7 +23814,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23616,7 +23835,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23632,7 +23856,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23746,7 +23975,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23763,7 +23997,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23780,7 +24019,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23797,7 +24041,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23814,7 +24063,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23883,7 +24137,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23901,7 +24160,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -23953,7 +24217,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -24257,7 +24526,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -24342,7 +24616,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -24495,7 +24774,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -24563,7 +24847,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -24580,7 +24869,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -25789,6 +26083,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    },
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -25813,28 +26115,12 @@
      "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
     {
-     "number": 2872,
-     "title": "[3/4] Read and write linkedArrowAttributes of lines, polylines, arcs and splines"
-    },
-    {
      "number": 2871,
      "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
     },
     {
-     "number": 2870,
-     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
-    },
-    {
-     "number": 2869,
-     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
-    },
-    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
-     "number": 2861,
-     "title": "Columns: read and write the core symbol type and its crosshair sizes"
     },
     {
      "number": 2856,
@@ -25851,10 +26137,6 @@
     {
      "number": 2852,
      "title": "[1/3] ModifyStairs/CreateStairs: write the stair symbol, break line and overrides of the floor plan and RCP"
-    },
-    {
-     "number": 2841,
-     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2838,
@@ -31290,6 +31572,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     }
@@ -31545,6 +31831,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
+     "number": 2918,
+     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
+    },
+    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -31589,28 +31891,8 @@
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
     {
-     "number": 2871,
-     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
-    },
-    {
-     "number": 2870,
-     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
-    },
-    {
-     "number": 2869,
-     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
-    },
-    {
-     "number": 2868,
-     "title": "[1/2] GetDetailsOfElements: read the structures of a stair (monolith and side stringer data) and StairStructure subelements"
-    },
-    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
-     "number": 2861,
-     "title": "Columns: read and write the core symbol type and its crosshair sizes"
     },
     {
      "number": 2855,
@@ -31775,6 +32057,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
@@ -32039,7 +32325,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -32057,7 +32348,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -32129,7 +32425,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -33320,7 +33621,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -34231,7 +34537,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -34868,7 +35179,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -35469,7 +35785,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -35786,7 +36107,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -36288,7 +36614,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -36351,7 +36682,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -36476,7 +36812,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -36655,7 +36996,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -37119,7 +37465,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -37391,7 +37742,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -37839,7 +38195,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38084,6 +38445,26 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2925,
+     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
+    },
+    {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    },
+    {
+     "number": 2921,
+     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
      "number": 2915,
      "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
     },
@@ -38136,20 +38517,8 @@
      "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
     },
     {
-     "number": 2870,
-     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
-    },
-    {
-     "number": 2869,
-     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
-    },
-    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
-     "number": 2861,
-     "title": "Columns: read and write the core symbol type and its crosshair sizes"
     },
     {
      "number": 2856,
@@ -38178,10 +38547,6 @@
     {
      "number": 2843,
      "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    },
-    {
-     "number": 2841,
-     "title": "Dimensions: font and bold/italic/underline on associative dimensions"
     },
     {
      "number": 2838,
@@ -38265,7 +38630,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38319,7 +38689,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38335,7 +38710,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38351,7 +38731,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38370,7 +38755,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38546,7 +38936,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38562,7 +38957,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38578,7 +38978,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -38910,6 +39315,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     }
@@ -39045,6 +39454,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
@@ -39199,7 +39612,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -39256,7 +39674,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -39293,7 +39716,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -39444,7 +39872,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -39482,7 +39915,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -40423,7 +40861,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -40614,7 +41057,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -40786,7 +41234,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -41697,7 +42150,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -42298,7 +42756,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -42933,7 +43396,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -43428,7 +43896,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -43800,7 +44273,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -43927,7 +44405,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -44003,7 +44486,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -44022,7 +44510,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -44060,7 +44553,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -44345,7 +44843,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -44848,6 +45351,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
+     "number": 2918,
+     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
+    },
+    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -44892,28 +45411,8 @@
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
     {
-     "number": 2871,
-     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
-    },
-    {
-     "number": 2870,
-     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
-    },
-    {
-     "number": 2869,
-     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
-    },
-    {
-     "number": 2868,
-     "title": "[1/2] GetDetailsOfElements: read the structures of a stair (monolith and side stringer data) and StairStructure subelements"
-    },
-    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
-     "number": 2861,
-     "title": "Columns: read and write the core symbol type and its crosshair sizes"
     },
     {
      "number": 2855,
@@ -45033,7 +45532,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -45071,7 +45575,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -45147,7 +45656,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -45183,7 +45697,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -45217,7 +45736,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -45273,6 +45797,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
@@ -46190,6 +46718,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
     }
@@ -46337,7 +46869,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -46804,6 +47341,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
@@ -47986,7 +48527,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -48056,6 +48602,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2923,
+     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
+    },
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    },
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
+     "number": 2918,
+     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
+    },
+    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -48100,28 +48662,8 @@
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
     {
-     "number": 2871,
-     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
-    },
-    {
-     "number": 2870,
-     "title": "[2/4] Detail and Worksheet markers: read and write 'Copy construction elements only'"
-    },
-    {
-     "number": 2869,
-     "title": "[1/4] Roofs: read and write fitSkylightToCurve"
-    },
-    {
-     "number": 2868,
-     "title": "[1/2] GetDetailsOfElements: read the structures of a stair (monolith and side stringer data) and StairStructure subelements"
-    },
-    {
      "number": 2865,
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
-     "number": 2861,
-     "title": "Columns: read and write the core symbol type and its crosshair sizes"
     },
     {
      "number": 2855,
@@ -48220,7 +48762,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -48403,6 +48950,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    },
+    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     }
@@ -48556,7 +49107,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -49016,7 +49572,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -49193,7 +49754,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2919,
+     "title": "Read back what the Modify commands write, with the same keys"
+    }
+   ],
    "issues": []
   },
   {
@@ -49539,7 +50105,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
@@ -54297,7 +54868,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2920,
+     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
+    }
+   ],
    "issues": []
   },
   {
