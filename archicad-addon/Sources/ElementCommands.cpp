@@ -4920,9 +4920,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, ltypeInd);
                         if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, roomSeparator);
                         if (GetElemTypeId (elem.header) == API_CircleID &&
-                            (typeSpecificDetails->Contains ("startArrow") || typeSpecificDetails->Contains ("endArrow"))) {
+                            (typeSpecificDetails->Contains ("startArrow") || typeSpecificDetails->Contains ("endArrow") || typeSpecificDetails->Contains ("linkedArrowAttributes"))) {
                             ACAPI_DisposeElemMemoHdls (&clipMemo);
-                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "A Circle has no ends, so it takes no startArrow or endArrow."));
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "A Circle has no ends, so it takes no startArrow, endArrow or linkedArrowAttributes."));
                             continue;
                         }
                         const GS::Optional<GS::UniString> arrowsError = SetLineArrowsFields (*typeSpecificDetails, elem.arc, mask.arc);

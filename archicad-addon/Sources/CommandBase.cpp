@@ -1348,6 +1348,7 @@ void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows)
 #ifdef ServerMainVers_2900
     os.Add ("startArrow", CreateLineArrowObjectState (arrows.start.arrowVisibility, arrows.start.arrowType, arrows.start.arrowSize, arrows.start.arrowPen));
     os.Add ("endArrow", CreateLineArrowObjectState (arrows.end.arrowVisibility, arrows.end.arrowType, arrows.end.arrowSize, arrows.end.arrowPen));
+    os.Add ("linkedArrowAttributes", arrows.linked);
 #else
     os.Add ("startArrow", CreateLineArrowObjectState (arrows.data.begArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
     os.Add ("endArrow", CreateLineArrowObjectState (arrows.data.endArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
@@ -1411,11 +1412,23 @@ GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, 
     if (error.HasValue ()) {
         return error;
     }
-    if (!start.given && !end.given) {
+    bool linkedRequested = false;
+    const bool linkedGiven = parameters.Get ("linkedArrowAttributes", linkedRequested);
+    if (!start.given && !end.given && !linkedGiven) {
         return {};
     }
 
 #ifdef ServerMainVers_2900
+    // Linked ends share their size and pen: a size or pen given for one end only applies to both.
+    if (linkedGiven && linkedRequested) {
+        if (start.size.HasValue () && end.size.HasValue () && start.size.Get () != end.size.Get ()) {
+            return GS::UniString ("Linked arrowheads share one size: with linkedArrowAttributes true, startArrow.size and endArrow.size must be the same.");
+        }
+        if (start.pen.HasValue () && end.pen.HasValue () && start.pen.Get () != end.pen.Get ()) {
+            return GS::UniString ("Linked arrowheads share one pen: with linkedArrowAttributes true, startArrow.pen and endArrow.pen must be the same.");
+        }
+    }
+
     const auto apply = [] (const RequestedLineArrow& requested, API_ArrowData& data) {
         if (!requested.given) {
             return;
@@ -1433,11 +1446,30 @@ GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, 
     };
     apply (start, arrows.start);
     apply (end, arrows.end);
-    // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
-    if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+    if (linkedGiven && linkedRequested) {
+        // The end that was given a size or pen sets it for both; otherwise the start's is used.
+        if (end.size.HasValue () && !start.size.HasValue ()) {
+            arrows.start.arrowSize = arrows.end.arrowSize;
+        } else {
+            arrows.end.arrowSize = arrows.start.arrowSize;
+        }
+        if (end.pen.HasValue () && !start.pen.HasValue ()) {
+            arrows.start.arrowPen = arrows.end.arrowPen;
+        } else {
+            arrows.end.arrowPen = arrows.start.arrowPen;
+        }
+        arrows.linked = true;
+    } else if (linkedGiven) {
+        arrows.linked = false;
+    } else if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+        // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
         arrows.linked = false;
     }
 #else
+    // Both ends always share one size and pen before Archicad 29, so they cannot be unlinked.
+    if (linkedGiven && !linkedRequested) {
+        return GS::UniString ("Before Archicad 29 both ends of a line always share one arrowhead size and pen: linkedArrowAttributes cannot be false.");
+    }
     // Both ends share one type, size and pen before Archicad 29.
     if (start.type.HasValue () && end.type.HasValue () && start.type.Get () != end.type.Get ()) {
         return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead type: startArrow.type and endArrow.type must be the same.");

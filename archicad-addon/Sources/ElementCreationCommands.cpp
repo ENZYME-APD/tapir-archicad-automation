@@ -2080,6 +2080,10 @@ static const char* LineArrowsSchemaProperties = R"(
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
                     },)";
 
 static GS::Optional<GS::ObjectState> SetLineArrowsParameters (const GS::ObjectState& parameters, const LineArrows& arrows)

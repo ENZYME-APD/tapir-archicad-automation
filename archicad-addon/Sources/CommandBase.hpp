@@ -282,12 +282,14 @@ LineArrows GetLineArrows (T& lineElem)
 #endif
 }
 
-// Adds "startArrow" and "endArrow" (visible, type, size, pen) to the details.
+// Adds "startArrow" and "endArrow" (visible, type, size, pen) to the details, and from Archicad 29
+// "linkedArrowAttributes".
 void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows);
 
-// Applies the optional "startArrow"/"endArrow" objects of the parameters. Sets changed when either
-// was given. Returns an error text for an unknown type, or, before Archicad 29, for two ends given
-// different types, sizes or pens.
+// Applies the optional "startArrow"/"endArrow" objects and "linkedArrowAttributes" flag of the
+// parameters. Sets changed when any was given. Returns an error text for an unknown type, for
+// linked ends given different sizes or pens, or, before Archicad 29, for two ends given different
+// types, sizes or pens or for linkedArrowAttributes false.
 GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, const LineArrows& arrows, bool& changed);
 
 // Marks every arrowhead member in the mask (pass GetLineArrows of the mask's union member).
