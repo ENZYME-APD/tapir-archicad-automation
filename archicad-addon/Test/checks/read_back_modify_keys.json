@@ -1,0 +1,85 @@
+{
+  "title": "Read back what the Modify commands write: GetDetailsOfElements reads each key with the same name and shape, and the value read is taken back unchanged by the Modify command (round trip)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Column" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "a column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          { "coordinates": { "x": 1000.0, "y": 1000.0, "z": 0.0 }, "floorIndex": 0, "height": 3.0, "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.4, "depth": 0.3 }
+        ]
+      },
+      "save": { "col": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "column veneer A",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${col}" }, "veneer": { "type": "Finish", "thickness": 0.03 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "veneer written" }
+      ]
+    },
+    {
+      "id": "read veneer A",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${col}" } } ] },
+      "save": { "colVeneer": "detailsOfElements[0].details.veneer" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.veneer.type", "eq": "Finish", "name": "veneer type read with the key ModifyColumns writes" },
+        { "path": "detailsOfElements[0].details.veneer.thickness", "approx": 0.03, "tol": 0.0001, "name": "veneer thickness read with the key ModifyColumns writes" },
+        { "path": "detailsOfElements[0].details.segments[0].veneer.thickness", "approx": 0.03, "tol": 0.0001, "name": "the segment has the same veneer" }
+      ]
+    },
+    {
+      "id": "column veneer B",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${col}" }, "veneer": { "type": "Other", "thickness": 0.05 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "other veneer written" }
+      ]
+    },
+    {
+      "id": "read veneer B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${col}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.veneer.type", "eq": "Other", "name": "veneer type changed" },
+        { "path": "detailsOfElements[0].details.veneer.thickness", "approx": 0.05, "tol": 0.0001, "name": "veneer thickness changed" }
+      ]
+    },
+    {
+      "id": "send veneer A back as it was read",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${col}" }, "veneer": "${colVeneer}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the veneer read is accepted" }
+      ]
+    },
+    {
+      "id": "veneer A again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${col}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.veneer.type", "eq": "Finish", "name": "round trip: veneer type" },
+        { "path": "detailsOfElements[0].details.veneer.thickness", "approx": 0.03, "tol": 0.0001, "name": "round trip: veneer thickness" }
+      ]
+    }
+  ]
+}

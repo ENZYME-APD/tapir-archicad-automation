@@ -11399,6 +11399,10 @@
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
             },
+            "veneer": {
+                "$ref": "#/ColumnVeneer",
+                "description": "The veneer of the first segment, the key ModifyColumns and CreateColumns write to all segments, so it can be sent back as it is read. Each segment's own veneer is in segments."
+            },
             "segments": {
                 "type": "array",
                 "description": "The segments of the column, in the order Archicad keeps them: the surfaces, the cross section, the taper and the length of each.",
