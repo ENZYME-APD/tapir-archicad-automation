@@ -103,5 +103,9 @@
       "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] },
       "expect": [ { "path": "detailsOfElements[0].details.referenceLine", "len": 2, "name": "the slanted curtain wall is still there, unchanged" } ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] } }
   ]
 }
