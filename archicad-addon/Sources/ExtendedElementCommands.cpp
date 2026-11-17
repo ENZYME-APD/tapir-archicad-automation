@@ -1499,10 +1499,40 @@ void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& ele
 // reported with the values it stored instead of a success.
 // ============================================================================
 
+// How far the hotspots of a wall near its ends (the corners of its faces, ACAPI_Element_GetHotspots)
+// are from the radial lines through its ends seen from center: the sum of the sines of the angles,
+// and in count how many hotspots were measured. Near 0 for the wall's own centre.
+static double WallEndHotspotDeviation (const GS::Array<API_ElementHotspot>& hotspots, const API_WallType& wall, const API_Coord& center, Int32& count)
+{
+    const double nearEnd = std::max (wall.thickness, wall.thickness1) + 1e-3;
+    const API_Coord ends[2] = { wall.begC, wall.endC };
+    double deviation = 0.0;
+    count = 0;
+    for (const API_ElementHotspot& hotspot : hotspots) {
+        for (const API_Coord& end : ends) {
+            const double toPointX = hotspot.second.x - end.x;
+            const double toPointY = hotspot.second.y - end.y;
+            const double distance = std::hypot (toPointX, toPointY);
+            const double radialX = end.x - center.x;
+            const double radialY = end.y - center.y;
+            const double radialLength = std::hypot (radialX, radialY);
+            if (distance < 1e-6 || distance > nearEnd || radialLength < 1e-9) {
+                continue;
+            }
+            deviation += std::fabs (radialX * toPointY - radialY * toPointX) / (radialLength * distance);
+            ++count;
+        }
+    }
+    return deviation;
+}
+
 // The centre and the radius of the arc a radial dimension measures: an arc or a circle (not an
-// elliptic one), or a curved wall, whose centre follows from its begC, endC and arc angle (positive
-// when the wall turns counterclockwise from begC to endC, as the arcs of polygons do). Returns the
-// reason for another element.
+// elliptic one), or a curved wall. A wall's centre is on the perpendicular bisector of the chord
+// from begC to endC, on its left or on its right: the DevKit does not document the sign of
+// API_WallType::angle (its Element_Test example computes it both ways), so the centre is the one
+// whose radial lines through the wall's ends pass through the wall's hotspots near those ends, and
+// the one on the left of the chord for a positive angle (counterclockwise, as the arcs of polygons)
+// when the hotspots tell neither. Returns the reason for another element.
 static GS::Optional<GS::UniString> GetRadialDimensionOwnerArc (const API_Element& owner, API_Coord& center, double& radius)
 {
     const API_ElemTypeID typeId = GetElemTypeId (owner.header);
@@ -1522,10 +1552,26 @@ static GS::Optional<GS::UniString> GetRadialDimensionOwnerArc (const API_Element
         if (owner.wall.type == APIWtyp_Poly || std::fabs (angle) < 1e-9 || chord < 1e-9) {
             return GS::UniString ("elementId is a straight or polygonal wall; only a curved wall has a radius.");
         }
-        // The centre is on the perpendicular bisector of the chord, on its left for a positive angle.
         const double toCenter = chord / (2.0 * std::tan (angle / 2.0));
-        center.x = (owner.wall.begC.x + owner.wall.endC.x) / 2.0 - chordY / chord * toCenter;
-        center.y = (owner.wall.begC.y + owner.wall.endC.y) / 2.0 + chordX / chord * toCenter;
+        const double midX = (owner.wall.begC.x + owner.wall.endC.x) / 2.0;
+        const double midY = (owner.wall.begC.y + owner.wall.endC.y) / 2.0;
+        API_Coord leftCenter = {};
+        leftCenter.x = midX - chordY / chord * toCenter;
+        leftCenter.y = midY + chordX / chord * toCenter;
+        API_Coord rightCenter = {};
+        rightCenter.x = midX + chordY / chord * toCenter;
+        rightCenter.y = midY - chordX / chord * toCenter;
+        center = leftCenter;
+        GS::Array<API_ElementHotspot> hotspots;
+        if (ACAPI_Element_GetHotspots (owner.header.guid, &hotspots) == NoError) {
+            Int32 leftCount = 0;
+            Int32 rightCount = 0;
+            const double leftDeviation = WallEndHotspotDeviation (hotspots, owner.wall, leftCenter, leftCount);
+            const double rightDeviation = WallEndHotspotDeviation (hotspots, owner.wall, rightCenter, rightCount);
+            if (rightCount > 0 && rightDeviation + 1e-3 < leftDeviation) {
+                center = rightCenter;
+            }
+        }
         radius = chord / (2.0 * std::fabs (std::sin (angle / 2.0)));
         return {};
     }
@@ -1563,7 +1609,7 @@ GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSch
             "description": "Array of data to create Radial Dimensions (the Radial Dimension tool), each measuring the radius of an arc, a circle or a curved wall. They are created in the current database (the floor plan, or the worksheet or detail whose window is active), or in the one given by databaseId, which must hold the measured element.",
             "items": {
                 "type": "object",
-                "description": "The parameters of the new Radial Dimension. It is linked to the measured element, so Archicad measures its radius and keeps the dimension up to date. Each new dimension is read back: when Archicad did not link it to the element, measured another radius or moved its dimension line, or did not keep a given setting, the item fails with the values Archicad stored and the dimension is deleted again.",
+                "description": "The parameters of the new Radial Dimension. It is linked to the measured element, so Archicad measures its radius and keeps the dimension up to date. Each new dimension is read back: when Archicad did not link it to the element, measured another radius, moved its dimension line off the given direction, or did not keep a given setting, the item fails with the values Archicad stored and the dimension is deleted again.",
                 "properties": {
                     "favoriteName": {
                         "type": "string",
@@ -1575,11 +1621,11 @@ GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSch
                     },
                     "elementId": {
                         "$ref": "#/ElementId",
-                        "description": "The measured element: an arc or a circle (not an elliptic one), or a curved wall. The dimension is placed on its story."
+                        "description": "The measured element: an arc or a circle (not an elliptic one), or a curved wall. The dimension is placed on its story. Archicad stores the link to a circle with the type Arc, so GetDetailsOfElements returns ownerElementType Arc for it."
                     },
                     "dimensionLineEnd": {
                         "$ref": "#/Coordinate2D",
-                        "description": "The end of the dimension line (API_RadialDimensionType endC), as GetDetailsOfElements returns it. It must not be the centre of the arc."
+                        "description": "The end of the dimension line (API_RadialDimensionType endC), as GetDetailsOfElements returns it. It must not be the centre of the arc. Archicad may lengthen the line along the same direction so that its text fits (Archicad 29 made a 0.5 m line 0.966 m long); GetDetailsOfElements returns the end it kept."
                     },
                     "basePoint": {
                         "$ref": "#/Coordinate2D",
@@ -1805,13 +1851,21 @@ GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Elemen
     API_Coord center = {};
     double radius = 0.0;
     if (ACAPI_Element_Get (&owner) == NoError && !GetRadialDimensionOwnerArc (owner, center, radius).HasValue ()) {
-        const double tolerance = GetElemTypeId (owner.header) == API_WallID ? owner.wall.thickness + 1e-6 : 1e-6;
+        const double tolerance = GetElemTypeId (owner.header) == API_WallID ? std::max (owner.wall.thickness, owner.wall.thickness1) + 1e-6 : 1e-6;
         if (std::fabs (got.dimVal - radius) > tolerance) {
             notKept += GS::UniString::Printf (" the radius is %g, the element's radius is %g.", got.dimVal, radius);
         }
-    }
-    if (std::fabs (got.endC.x - want.endC.x) > 1e-6 || std::fabs (got.endC.y - want.endC.y) > 1e-6) {
-        notKept += GS::UniString::Printf (" dimensionLineEnd is (%g, %g).", got.endC.x, got.endC.y);
+        // Archicad may lengthen the dimension line so that its text fits (Archicad 29: a 0.5 m line
+        // of a 1.5 m arc became 0.966 m long), along the same direction from the centre. So only a
+        // line end Archicad moved off that direction is reported.
+        const double wantX = want.endC.x - center.x;
+        const double wantY = want.endC.y - center.y;
+        const double gotX = got.endC.x - center.x;
+        const double gotY = got.endC.y - center.y;
+        const double lengths = std::hypot (wantX, wantY) * std::hypot (gotX, gotY);
+        if (lengths < 1e-12 || std::fabs (wantX * gotY - wantY * gotX) > 1e-6 * lengths || wantX * gotX + wantY * gotY <= 0.0) {
+            notKept += GS::UniString::Printf (" dimensionLineEnd is (%g, %g), off the direction of the given one from the centre.", got.endC.x, got.endC.y);
+        }
     }
     if (parameters.Contains ("linePen") && got.linPen != want.linPen) {
         notKept += GS::UniString::Printf (" linePen is %d.", (int) got.linPen);

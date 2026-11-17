@@ -1303,7 +1303,8 @@ GSErrCode Initialize (void)
             "Creates Radial Dimension elements (the Radial Dimension tool) measuring the radius of an arc, a circle or a curved wall, linked to that element, with the dimension line ending at dimensionLineEnd, "
             "optionally based on a Radial Dimension favorite, with the line pen, marker, text height, pen, position and direction, a custom text and the centre mark. "
             "The Archicad API does not document how a radial dimension stores the measured element, so the link is written as GetDetailsOfElements reads it from dimensions placed by hand (ownerElementInIndex and ownerElementLine can be given), "
-            "and each new dimension is read back: one Archicad did not link to the element, whose radius is not the element's, or that did not keep a given setting fails with the values Archicad stored and is deleted again. "
+            "and each new dimension is read back: one Archicad did not link to the element, whose radius is not the element's, whose dimension line Archicad moved off the given direction (it may lengthen the line so that the text fits) or that did not keep a given setting fails with the values Archicad stored and is deleted again. "
+            "Archicad stores the link to a circle with the type Arc. Tested on Archicad 29 with circles and arcs; curved walls are not confirmed yet (an earlier try was refused with APIERR_BADPARS). "
             "The dimensions are created in the current database or in the one given by databaseId; GetDetailsOfElements returns their radius, base point and owner element."
         );
         err |= RegisterCommand<ModifyLevelDimensionsCommand> (

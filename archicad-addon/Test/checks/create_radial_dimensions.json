@@ -1,5 +1,5 @@
 {
-  "title": "CreateRadialDimensions: radial dimensions of a circle and of an arc, linked to them and measuring their radius, read back with GetDetailsOfElements (which also shows how Archicad stored the link), a line refused",
+  "title": "CreateRadialDimensions: radial dimensions of a circle and of an arc, linked to them and measuring their radius (Archicad may lengthen the dimension line along its direction), read back with GetDetailsOfElements (which also shows how Archicad stored the link), a line refused",
   "minTapir": "2.0.1",
   "requiresEmpty": [ "Arc", "Circle", "Line", "RadialDimension" ],
   "steps": [
@@ -40,10 +40,10 @@
         { "path": "detailsOfElements[0].type", "eq": "RadialDimension", "name": "a radial dimension" },
         { "path": "detailsOfElements[0].details.radius", "approx": 2.0, "name": "measures the 2 m radius" },
         { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${c}", "name": "linked to the circle" },
-        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Circle", "name": "the owner is a circle" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Arc", "name": "the link to the circle is stored with the type Arc" },
         { "path": "detailsOfElements[0].details.ownerArcCenter.x", "approx": 950.0, "name": "centre of the measured circle (x)" },
-        { "path": "detailsOfElements[0].details.dimensionLineEnd.x", "approx": 953.0, "name": "dimension line end kept (x)" },
-        { "path": "detailsOfElements[0].details.dimensionLineEnd.y", "approx": 900.0, "name": "dimension line end kept (y)" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.x", "gt": 952.999, "name": "dimension line end kept or the line lengthened along its direction (x)" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.y", "approx": 900.0, "name": "dimension line end on its direction (y)" },
         { "path": "detailsOfElements[0].details.linePen", "eq": 2, "name": "line pen kept" },
         { "path": "detailsOfElements[0].details.textPen", "eq": 3, "name": "text pen kept" },
         { "path": "detailsOfElements[0].details.textDirection", "eq": "Radial", "name": "radial text kept" },
@@ -81,7 +81,9 @@
         { "path": "detailsOfElements[0].details.radius", "approx": 1.5, "name": "measures the 1.5 m radius" },
         { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${a}", "name": "linked to the arc" },
         { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Arc", "name": "the owner is an arc" },
-        { "path": "detailsOfElements[0].details.textPosition", "eq": "Above", "name": "text above the line kept" }
+        { "path": "detailsOfElements[0].details.textPosition", "eq": "Above", "name": "text above the line kept" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.x", "gt": 961.414, "name": "dimension line end at 45 degrees, kept or lengthened (x)" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.y", "gt": 901.414, "name": "dimension line end at 45 degrees, kept or lengthened (y)" }
       ]
     },
     {
