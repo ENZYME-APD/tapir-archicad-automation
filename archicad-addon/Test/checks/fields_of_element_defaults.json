@@ -1,0 +1,122 @@
+{
+  "title": "GetFieldsOfElementDefaults and SetFieldsOfElementDefaults read and write the fields of a tool's defaults, a new element gets them, a dry run changes nothing, and bad fields are refused",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "the pen and the offset of the Wall defaults, an unknown path and an unknown type",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Wall", "Unknown" ], "fields": [ "contPen", "offset", "noSuchField" ] },
+      "save": {
+        "pen0": "fieldsOfElementDefaults[0].fields.contPen",
+        "offset0": "fieldsOfElementDefaults[0].fields.offset"
+      },
+      "expect": [
+        { "path": "fieldsOfElementDefaults", "len": 2, "name": "one item per element type" },
+        { "path": "fieldsOfElementDefaults[0].elementType", "eq": "Wall", "name": "the Wall defaults" },
+        { "path": "fieldsOfElementDefaults[0].structName", "eq": "API_WallType", "name": "read from the wall struct" },
+        { "path": "fieldsOfElementDefaults[0].fields.contPen", "exists": true, "name": "the pen is read" },
+        { "path": "fieldsOfElementDefaults[0].missingFields[0]", "eq": "noSuchField", "name": "the unknown path is listed as missing" },
+        { "path": "fieldsOfElementDefaults[1].error", "exists": true, "name": "an unknown element type gets an error" }
+      ]
+    },
+    {
+      "id": "SetFieldsOfElementDefaults dry run: pen 77 and offset 0.037",
+      "command": "SetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "fieldsOfElementDefaults": [ { "elementType": "Wall", "fields": { "contPen": 77, "offset": 0.037 } } ], "dryRun": true },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the dry run is accepted" },
+        { "path": "executionResults[0].wouldChange.newValue.contPen", "eq": 77, "name": "it would write pen 77" },
+        { "path": "executionResults[0].wouldChange.oldValue.contPen", "eq": "${pen0}", "name": "over the current pen" }
+      ]
+    },
+    {
+      "id": "the dry run changed nothing",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Wall" ], "fields": [ "contPen" ] },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].fields.contPen", "eq": "${pen0}", "name": "the pen is unchanged" }
+      ]
+    },
+    {
+      "id": "SetFieldsOfElementDefaults: pen 77 and offset 0.037",
+      "command": "SetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "fieldsOfElementDefaults": [ { "elementType": "Wall", "fields": { "contPen": 77, "offset": 0.037 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "both values kept by Archicad" }
+      ]
+    },
+    {
+      "id": "the Wall defaults after the change",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Wall" ], "fields": [ "contPen", "offset" ] },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].fields.contPen", "eq": 77, "name": "pen 77" },
+        { "path": "fieldsOfElementDefaults[0].fields.offset", "approx": 0.037, "name": "offset 0.037" }
+      ]
+    },
+    {
+      "id": "a new wall with neither pen nor offset given",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 760.0, "y": 760.0 }, "endCoordinate": { "x": 764.0, "y": 760.0 }, "floorIndex": 0, "zCoordinate": 0.0, "height": 2.5 }
+        ]
+      },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "the new wall got the defaults",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ], "fields": [ "contPen", "offset" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.contPen", "eq": 77, "name": "the new wall has pen 77" },
+        { "path": "elementFields[0].fields.offset", "approx": 0.037, "name": "the new wall has offset 0.037" }
+      ]
+    },
+    {
+      "id": "SetFieldsOfElementDefaults: an unknown field, a read-only field, a string for a pen and an unknown type",
+      "command": "SetFieldsOfElementDefaults",
+      "creates": false,
+      "params": {
+        "fieldsOfElementDefaults": [
+          { "elementType": "Wall", "fields": { "noSuchField": 1 } },
+          { "elementType": "Wall", "fields": { "type": 1 } },
+          { "elementType": "Wall", "fields": { "contPen": "red" } },
+          { "elementType": "Unknown", "fields": { "contPen": 1 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "an unknown field refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a read-only field refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a string for a pen refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "an unknown element type refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Wall" ], "fields": [ "contPen" ] },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].fields.contPen", "eq": 77, "name": "still pen 77" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetFieldsOfElementDefaults",
+      "params": { "fieldsOfElementDefaults": [ { "elementType": "Wall", "fields": { "contPen": "${pen0}", "offset": "${offset0}" } } ] }
+    }
+  ]
+}

@@ -877,7 +877,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetElementFieldDefinitionsCommand> (
             elementCommands, "2.0.1",
-            "Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType) that GetElementFields reads and SetElementFields writes: its path, JSON type, C++ kind, size and whether it is read-only. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available."
+            "Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType) that GetElementFields reads and SetElementFields writes (and GetFieldsOfElementDefaults and SetFieldsOfElementDefaults in the tool defaults): its path, JSON type, C++ kind, size and whether it is read-only. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available."
         );
         err |= RegisterCommand<GetElementFieldsCommand> (
             elementCommands, "2.0.1",
@@ -886,6 +886,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetElementFieldsCommand> (
             elementCommands, "2.0.1",
             "Writes fields of elements by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_Change and a mask of exactly the given fields, in one undoable command. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept."
+        );
+        err |= RegisterCommand<GetFieldsOfElementDefaultsCommand> (
+            elementCommands, "2.0.1",
+            "Reads fields of the tool defaults of element types, the settings new elements of the type get, by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), e.g. thickness of the wall defaults: every field, or only the given ones. Reaches the default settings the other commands do not return. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available."
+        );
+        err |= RegisterCommand<SetFieldsOfElementDefaultsCommand> (
+            elementCommands, "2.0.1",
+            "Writes fields of the tool defaults of element types by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_ChangeDefaults and a mask of exactly the given fields: the elements created afterwards get them. Like the settings dialogs of the tools, it is not undoable. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept."
         );
         err |= RegisterCommand<EditHierarchicalElementCommand> (
             elementCommands, "1.8.0",

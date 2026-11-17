@@ -359,6 +359,108 @@ GS::Optional<API_ElemTypeID> GetElementTypeId (const API_Guid& guid, API_Element
     return GetElemTypeId (element.header);
 }
 
+// Reads the tool defaults of an element type (its generic variation), without the memo.
+GSErrCode GetDefaultsOfType (API_ElemTypeID typeId, API_Element& defaults)
+{
+    defaults = {};
+#ifdef ServerMainVers_2600
+    defaults.header.type = typeId;
+#else
+    defaults.header.typeID = typeId;
+#endif
+    return ACAPI_Element_GetDefaults (&defaults, nullptr);
+}
+
+// Adds to result the fields of element (every field, or only the wanted paths), with the asked paths
+// the element type does not have (missingFields) and those in a union member it does not use
+// (inactiveFields).
+void AddFieldsOf (GS::ObjectState& result, const FieldTable& table, API_ElemTypeID typeId, const API_Element& element, const GS::Array<GS::UniString>* wanted)
+{
+    GS::ObjectState values;
+    GS::Array<GS::UniString> missing;
+    GS::Array<GS::UniString> inactive;
+    if (wanted != nullptr) {
+        for (const GS::UniString& path : *wanted) {
+            const FieldInfo* field = FindField (table, GS::String (path.ToCStr ().Get ()));
+            if (field == nullptr) {
+                missing.Push (path);
+            } else if (!IsVariantActive (typeId, element, field->variant)) {
+                inactive.Push (path);
+            } else {
+                AddFieldValue (values, *field, element);
+            }
+        }
+    } else {
+        for (UInt32 i = 0; i < table.count; ++i) {
+            if (IsVariantActive (typeId, element, table.fields[i].variant)) {
+                AddFieldValue (values, table.fields[i], element);
+            }
+        }
+    }
+    result.Add ("fields", values);
+    if (!missing.IsEmpty ()) {
+        result.Add ("missingFields", missing);
+    }
+    if (!inactive.IsEmpty ()) {
+        result.Add ("inactiveFields", inactive);
+    }
+}
+
+// Writes the given values into wanted and sets their bytes in mask; lists the fields written in
+// written, with their values before and after in oldValues and newValues. Returns an error text when
+// a path is unknown or read-only, a value does not fit its field, or a field is in a union member
+// the element does not use; nothing otherwise.
+GS::UniString WriteFieldValues (const GS::ObjectState& fields, const FieldTable& table, API_ElemTypeID typeId, API_Element& wanted, API_Element& mask,
+                                GS::Array<const FieldInfo*>& written, GS::ObjectState& oldValues, GS::ObjectState& newValues)
+{
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    GS::UniString error;
+    const API_Element before = wanted;
+    fields.EnumerateFields ([&] (const GS::String& key) {
+        if (!error.IsEmpty ()) {
+            return;
+        }
+        const FieldInfo* field = FindField (table, key);
+        if (field == nullptr) {
+            error = GS::UniString ("The element type ") + GetElementTypeNonLocalizedName (typeId) + " has no field " + GS::UniString (key.ToCStr ()) + " (see GetElementFieldDefinitions).";
+            return;
+        }
+        if (field->readOnly) {
+            error = GS::UniString (key.ToCStr ()) + " is read-only: Archicad computes it, or it chooses the shape of the element (see GetElementFieldDefinitions).";
+            return;
+        }
+        GS::Optional<GS::UniString> writeError = WriteFieldValue (fields, key, *field, wanted, mask);
+        if (writeError.HasValue ()) {
+            error = writeError.Get ();
+            return;
+        }
+        written.Push (field);
+        AddFieldValue (oldValues, *field, before);
+        AddFieldValue (newValues, *field, wanted);
+    });
+    // A field of a union member the element does not use (after the given values, which may change
+    // the roofClass, shellClass, labelClass or structType) would overwrite the member it uses.
+    for (const FieldInfo* field : written) {
+        if (error.IsEmpty () && !IsVariantActive (typeId, wanted, field->variant)) {
+            error = GS::UniString (field->path) + " is in " + field->variant + ", which this element does not use: writing it would overwrite the data of the member it uses.";
+        }
+    }
+    return error;
+}
+
+// The written fields whose value in got is not the one in wanted, as " path is value." texts;
+// empty when Archicad kept every value.
+GS::UniString DescribeNotKept (const GS::Array<const FieldInfo*>& written, const API_Element& wanted, const API_Element& got)
+{
+    GS::UniString notKept;
+    for (const FieldInfo* field : written) {
+        if (!IsSameFieldValue (*field, wanted, got)) {
+            notKept += GS::UniString (" ") + field->path + " is " + FieldValueToString (*field, got) + ".";
+        }
+    }
+    return notKept;
+}
+
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -606,34 +708,7 @@ GS::ObjectState GetElementFieldsCommand::Execute (const GS::ObjectState& paramet
         GS::ObjectState result;
         result.Add ("elementType", GetElementTypeNonLocalizedName (*typeId));
         result.Add ("structName", table->structName);
-        GS::ObjectState values;
-        GS::Array<GS::UniString> missing;
-        GS::Array<GS::UniString> inactive;
-        if (hasWanted) {
-            for (const GS::UniString& path : wanted) {
-                const FieldInfo* field = FindField (*table, GS::String (path.ToCStr ().Get ()));
-                if (field == nullptr) {
-                    missing.Push (path);
-                } else if (!IsVariantActive (*typeId, element, field->variant)) {
-                    inactive.Push (path);
-                } else {
-                    AddFieldValue (values, *field, element);
-                }
-            }
-        } else {
-            for (UInt32 i = 0; i < table->count; ++i) {
-                if (IsVariantActive (*typeId, element, table->fields[i].variant)) {
-                    AddFieldValue (values, table->fields[i], element);
-                }
-            }
-        }
-        result.Add ("fields", values);
-        if (!missing.IsEmpty ()) {
-            result.Add ("missingFields", missing);
-        }
-        if (!inactive.IsEmpty ()) {
-            result.Add ("inactiveFields", inactive);
-        }
+        AddFieldsOf (result, *table, *typeId, element, hasWanted ? &wanted : nullptr);
         results (result);
     }
     return response;
@@ -753,40 +828,9 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
             prepared.Push (p);
             continue;
         }
-        ACAPI_ELEMENT_MASK_CLEAR (p.mask);
-        GS::UniString error;
-        const API_Element before = p.wanted;
         GS::ObjectState oldValues;
         GS::ObjectState newValues;
-        fields.EnumerateFields ([&] (const GS::String& key) {
-            if (!error.IsEmpty ()) {
-                return;
-            }
-            const FieldInfo* field = FindField (*table, key);
-            if (field == nullptr) {
-                error = GS::UniString ("The element type ") + GetElementTypeNonLocalizedName (*typeId) + " has no field " + GS::UniString (key.ToCStr ()) + " (see GetElementFieldDefinitions).";
-                return;
-            }
-            if (field->readOnly) {
-                error = GS::UniString (key.ToCStr ()) + " is read-only: Archicad computes it, or it chooses the shape of the element (see GetElementFieldDefinitions).";
-                return;
-            }
-            GS::Optional<GS::UniString> writeError = WriteFieldValue (fields, key, *field, p.wanted, p.mask);
-            if (writeError.HasValue ()) {
-                error = writeError.Get ();
-                return;
-            }
-            p.fields.Push (field);
-            AddFieldValue (oldValues, *field, before);
-            AddFieldValue (newValues, *field, p.wanted);
-        });
-        // A field of a union member the element does not use (after the given values, which may change
-        // the roofClass, shellClass, labelClass or structType) would overwrite the member it uses.
-        for (const FieldInfo* field : p.fields) {
-            if (error.IsEmpty () && !IsVariantActive (*typeId, p.wanted, field->variant)) {
-                error = GS::UniString (field->path) + " is in " + field->variant + ", which this element does not use: writing it would overwrite the data of the member it uses.";
-            }
-        }
+        const GS::UniString error = WriteFieldValues (fields, *table, *typeId, p.wanted, p.mask, p.fields, oldValues, newValues);
         if (!error.IsEmpty ()) {
             p.result = CreateFailedExecutionResult (APIERR_BADPARS, error);
             prepared.Push (p);
@@ -838,12 +882,7 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
                 if (ACAPI_Element_Get (&got) != NoError) {
                     p.result = CreateFailedExecutionResult (APIERR_GENERAL, "The element was changed but could not be read back.");
                 } else {
-                    GS::UniString notApplied;
-                    for (const FieldInfo* field : p.fields) {
-                        if (!IsSameFieldValue (*field, p.wanted, got)) {
-                            notApplied += GS::UniString (" ") + field->path + " is " + FieldValueToString (*field, got) + ".";
-                        }
-                    }
+                    const GS::UniString notApplied = DescribeNotKept (p.fields, p.wanted, got);
                     p.result = notApplied.IsEmpty () ? CreateSuccessfulExecutionResult () :
                         CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not keep every value:") + notApplied + " The other given fields were changed.");
                     changeReporter.MarkChanged (p.wanted.header.guid);
@@ -854,6 +893,277 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
     }
     if (!dryRun) {
         changeReporter.Report ();
+    }
+    AddDryRunField (response, dryRun);
+    return response;
+}
+
+// ---------------------------------------------------------------------------------------------
+// GetFieldsOfElementDefaults
+
+GetFieldsOfElementDefaultsCommand::GetFieldsOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetFieldsOfElementDefaultsCommand::GetName () const
+{
+    return "GetFieldsOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> GetFieldsOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "fields": {
+                "type": "array",
+                "description": "The paths of the fields to read (see GetElementFieldDefinitions), e.g. [\"thickness\", \"height\"]. Every field of the defaults is read when it is left out. A path the element type does not have is listed in missingFields.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetFieldsOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "fieldsOfElementDefaults": {
+                "type": "array",
+                "description": "The fields of the tool defaults of each element type, in the input order, or an error when the type has no fields in the table or no tool defaults.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "structName": {
+                                    "type": "string",
+                                    "description": "The C++ struct of the element type in the Archicad API."
+                                },
+                                "fields": {
+                                    "type": "object",
+                                    "description": "The value of each field of the tool defaults, by its path.",
+                                    "additionalProperties": {
+                                        "type": [ "number", "integer", "boolean", "string" ]
+                                    }
+                                },
+                                "missingFields": {
+                                    "type": "array",
+                                    "description": "The asked paths this element type does not have.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "inactiveFields": {
+                                    "type": "array",
+                                    "description": "The asked paths in a member of a union the defaults do not use (see variant in GetElementFieldDefinitions). Without the fields input, these are simply left out.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [ "elementType", "structName", "fields" ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fieldsOfElementDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    if (!IsAvailable ()) {
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, NotAvailableMessage);
+    }
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+    GS::Array<GS::UniString> wanted;
+    const bool hasWanted = parameters.Get ("fields", wanted);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("fieldsOfElementDefaults");
+    for (const GS::UniString& typeName : elementTypes) {
+        const API_ElemTypeID typeId = GetElementTypeFromNonLocalizedName (typeName);
+        const FieldTable* table = GetFieldTable (typeId);
+        if (table == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, GS::UniString ("No fields are known for the element type ") + typeName + "."));
+            continue;
+        }
+        API_Element defaults = {};
+        const GSErrCode err = GetDefaultsOfType (typeId, defaults);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, GS::UniString ("Failed to read the tool defaults of ") + typeName + "."));
+            continue;
+        }
+        GS::ObjectState result;
+        result.Add ("elementType", typeName);
+        result.Add ("structName", table->structName);
+        AddFieldsOf (result, *table, typeId, defaults, hasWanted ? &wanted : nullptr);
+        results (result);
+    }
+    return response;
+}
+
+// ---------------------------------------------------------------------------------------------
+// SetFieldsOfElementDefaults
+
+SetFieldsOfElementDefaultsCommand::SetFieldsOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetFieldsOfElementDefaultsCommand::GetName () const
+{
+    return "SetFieldsOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> SetFieldsOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "fieldsOfElementDefaults": {
+                "type": "array",
+                "description": "The element types whose tool defaults change and the fields to write to each.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "fields": {
+                            "type": "object",
+                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"thickness\": 0.25, \"height\": 2.7}. Only these fields change: they are written with ACAPI_Element_ChangeDefaults and a mask of exactly their bytes, then read back.",
+                            "additionalProperties": {
+                                "type": [ "number", "integer", "boolean", "string" ]
+                            },
+                            "minProperties": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType",
+                        "fields"
+                    ]
+                }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fieldsOfElementDefaults"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetFieldsOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per item, in the input order. Tool defaults whose fields Archicad did not all keep fail with the fields and the values Archicad kept; the other fields are changed. On a dry run, a successful result has wouldChange with the oldValue and newValue of the given fields."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    if (!IsAvailable ()) {
+        return CreateErrorResponse (APIERR_NOTSUPPORTED, NotAvailableMessage);
+    }
+    const bool dryRun = IsDryRun (parameters);
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("fieldsOfElementDefaults", items);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& item : items) {
+        GS::UniString typeName;
+        GS::ObjectState fields;
+        if (!item.Get ("elementType", typeName) || !item.Get ("fields", fields)) {
+            results (CreateFailedExecutionResult (APIERR_BADPARS, "elementType and fields are needed."));
+            continue;
+        }
+        const API_ElemTypeID typeId = GetElementTypeFromNonLocalizedName (typeName);
+        const FieldTable* table = GetFieldTable (typeId);
+        if (table == nullptr) {
+            results (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("No fields are known for the element type ") + typeName + "."));
+            continue;
+        }
+        API_Element wanted = {};
+        GSErrCode err = GetDefaultsOfType (typeId, wanted);
+        if (err != NoError) {
+            results (CreateFailedExecutionResult (err, GS::UniString ("Failed to read the tool defaults of ") + typeName + "."));
+            continue;
+        }
+        API_Element mask = {};
+        GS::Array<const FieldInfo*> written;
+        GS::ObjectState oldValues;
+        GS::ObjectState newValues;
+        const GS::UniString error = WriteFieldValues (fields, *table, typeId, wanted, mask, written, oldValues, newValues);
+        if (!error.IsEmpty ()) {
+            results (CreateFailedExecutionResult (APIERR_BADPARS, error));
+            continue;
+        }
+        if (dryRun) {
+            results (CreateWouldChangeExecutionResult (GS::ObjectState ("oldValue", oldValues, "newValue", newValues)));
+            continue;
+        }
+        // The tool defaults are not part of the undo history, as in the settings dialogs of the tools.
+        err = ACAPI_Element_ChangeDefaults (&wanted, nullptr, &mask);
+        if (err != NoError) {
+            results (CreateFailedExecutionResult (err, GS::UniString ("Archicad refused the change of the tool defaults of ") + typeName + "."));
+            continue;
+        }
+        API_Element got = {};
+        err = GetDefaultsOfType (typeId, got);
+        if (err != NoError) {
+            results (CreateFailedExecutionResult (err, GS::UniString ("The tool defaults of ") + typeName + " were changed but could not be read back."));
+            continue;
+        }
+        const GS::UniString notKept = DescribeNotKept (written, wanted, got);
+        results (notKept.IsEmpty () ? CreateSuccessfulExecutionResult () :
+            CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not keep every value:") + notKept + " The other given fields were changed."));
     }
     AddDryRunField (response, dryRun);
     return response;
