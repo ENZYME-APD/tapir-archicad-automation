@@ -112,6 +112,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("segmentType", RoofSegmentTypeToString (roof.u.polyRoof.segmentType));
         os.Add ("segmentsByArc", (Int32) roof.u.polyRoof.segmentsByArc);
         os.Add ("segmentsByCircle", (Int32) roof.u.polyRoof.segmentsByCircle);
+        os.Add ("fitSkylightToCurve", roof.u.polyRoof.fitSkylightToCurve);
         if (partMemo == nullptr) {
             AddPivotPolygonFromMemo (guid, os);
             AddPivotEdgesFromMemo (guid, os);

@@ -10826,6 +10826,10 @@
                 "type": "integer",
                 "description": "Multi-plane: the number of segments of a whole circle when segmentType is SegmentsByCircle."
             },
+            "fitSkylightToCurve": {
+                "type": "boolean",
+                "description": "Multi-plane: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments (fitSkylightToCurve of API_PolyRoofData). ModifyRoofs and CreateRoofs write it."
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.",
