@@ -16149,7 +16149,7 @@
             },
             "connectionLinePen": {
                 "type": "integer",
-                "description": "Pen of the connection lines.",
+                "description": "Pen of the connection lines. Archicad keeps it equal to connectionDetailLinePen: when the two are given different, both are read back as connectionDetailLinePen, and the difference is reported as an error, so give them the same pen.",
                 "minimum": 1,
                 "maximum": 255
             },
@@ -16159,7 +16159,7 @@
             },
             "connectionDetailLinePen": {
                 "type": "integer",
-                "description": "Pen of the connection lines on detail views.",
+                "description": "Pen of the connection lines on detail views. Archicad also uses it as connectionLinePen (see there).",
                 "minimum": 1,
                 "maximum": 255
             },
