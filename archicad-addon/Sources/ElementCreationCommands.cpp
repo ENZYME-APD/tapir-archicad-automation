@@ -2108,6 +2108,9 @@ static void SetLineFamilySettingsParameters (const GS::ObjectState& parameters, 
 
 // The settings CreatePolylines and ModifyPolylines both take beside the polygon and the
 // arrowheads, written by ApplyPolylineSettings with the keys GetDetailsOfElements returns.
+// penWeightMm, which ApplyPolylineSettings writes too, is only in the schema of CreatePolylines:
+// Archicad 29 (29.0.0 5101) did not keep a pen weight written with ACAPI_Element_Change, so
+// ModifyPolylines does not offer it.
 static const char* PolylineSettingsSchemaProperties = R"(
                     "linePenIndex": {
                         "type": "integer",
@@ -2123,10 +2126,6 @@ static const char* PolylineSettingsSchemaProperties = R"(
                     "lineTypeId": {
                         "$ref": "#/AttributeId",
                         "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it and GetDetailsOfElements returns it. Takes precedence over lineTypeIndex."
-                    },
-                    "penWeightMm": {
-                        "type": "number",
-                        "description": "Optional pen weight override in mm, greater than 0; -1 uses the weight of the pen."
                     },
                     "roomSeparator": {
                         "type": "boolean",
@@ -2170,6 +2169,10 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "description" : "Layer attribute index to place the polyline on. Optional parameter, by default the current layer is used."
                     },
 )") + PolylineSettingsSchemaProperties + LineArrowsSchemaProperties + R"(
+                    "penWeightMm": {
+                        "type": "number",
+                        "description": "Optional pen weight override in mm, greater than 0; -1 uses the weight of the pen."
+                    },
                     "coordinates": {
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
@@ -2468,6 +2471,16 @@ static bool IsSameLineArrows (const LineArrows& arrows1, const LineArrows& arrow
 #endif
 }
 
+// Whether a pen read back is the pen written: the same pen index, and no color override of another
+// pen. Only a colorOverridePenIndex above 0 is an override (API_ExtendedPenType::IsOverriden), and
+// Archicad 29 (29.0.0 5101) reads back another value than the 0 written to clear it, so the raw field
+// is not compared: a polyline whose pen alone was changed was reported as not changed.
+static bool IsSamePenWithoutOverride (const API_ExtendedPenType& kept, const API_ExtendedPenType& given)
+{
+    const short keptColorIndex = kept.colorOverridePenIndex > 0 ? kept.colorOverridePenIndex : kept.penIndex;
+    return kept.penIndex == given.penIndex && keptColorIndex == given.penIndex;
+}
+
 // Points closer than this (in meters) are taken as the same when a new polygon is read back.
 static constexpr double PolygonReadBackTolerance = 1e-5;
 
@@ -2488,7 +2501,7 @@ GS::Optional<GS::UniString> ModifyPolylinesCommand::GetInputParametersSchema () 
     "properties": {
         "polylinesWithDetails": {
             "type": "array",
-            "description": "The Polylines to change, each with the settings to change. Only the given settings are changed; the keys are those CreatePolylines takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs.",
+            "description": "The Polylines to change, each with the settings to change. Only the given settings are changed; the keys are those CreatePolylines takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs. The pen weight override (penWeightMm of CreatePolylines) is not taken: Archicad did not keep a pen weight changed on an existing polyline.",
             "items": {
                 "type": "object",
                 "properties": {
@@ -2631,15 +2644,11 @@ static GS::ObjectState ModifyOnePolyline (const GS::ObjectState& item)
     const API_PolyLineType& given = element.polyLine;
     const API_PolyLineType& kept = changed.polyLine;
     GS::UniString notApplied;
-    if (item.Contains ("linePenIndex") &&
-        (kept.linePen.penIndex != given.linePen.penIndex || kept.linePen.colorOverridePenIndex != given.linePen.colorOverridePenIndex)) {
+    if (item.Contains ("linePenIndex") && !IsSamePenWithoutOverride (kept.linePen, given.linePen)) {
         notApplied += " linePenIndex";
     }
     if ((item.Contains ("lineTypeId") || item.Contains ("lineTypeIndex")) && GetAttributeIndex (kept.ltypeInd) != GetAttributeIndex (given.ltypeInd)) {
         notApplied += item.Contains ("lineTypeId") ? " lineTypeId" : " lineTypeIndex";
-    }
-    if (item.Contains ("penWeightMm") && std::abs (kept.penWeight - given.penWeight) > 1e-6) {
-        notApplied += " penWeightMm";
     }
     if (item.Contains ("roomSeparator") && kept.roomSeparator != given.roomSeparator) {
         notApplied += " roomSeparator";
@@ -3916,15 +3925,14 @@ static GS::ObjectState ModifyOneHatch (const GS::ObjectState& item)
     const API_HatchType& given = element.hatch;
     const API_HatchType& kept = changed.hatch;
     GS::UniString notApplied;
-    if (item.Contains ("contourPenIndex") &&
-        (kept.contPen.penIndex != given.contPen.penIndex || kept.contPen.colorOverridePenIndex != given.contPen.colorOverridePenIndex)) {
+    if (item.Contains ("contourPenIndex") && !IsSamePenWithoutOverride (kept.contPen, given.contPen)) {
         notApplied += " contourPenIndex";
     }
     if (item.Contains ("contourLineTypeId") && GetAttributeIndex (kept.ltypeInd) != GetAttributeIndex (given.ltypeInd)) {
         notApplied += " contourLineTypeId";
     }
     if (item.Contains ("fillPenIndex") &&
-        (kept.fillPen.penIndex != given.fillPen.penIndex || kept.fillPen.colorOverridePenIndex != given.fillPen.colorOverridePenIndex ||
+        (!IsSamePenWithoutOverride (kept.fillPen, given.fillPen) ||
          (!item.Contains ("foregroundColor") && (kept.hatchFlags & APIHatch_HasFgRGBColor) != 0))) {
         notApplied += " fillPenIndex";
     }

@@ -1,5 +1,5 @@
 {
-  "title": "ModifyPolylines changes the pen, line type, dash mode, zone boundary, arrowheads and points of a polyline, also in a worksheet with databaseId, keeps what is not given and refuses bad input",
+  "title": "ModifyPolylines changes the pen, line type, dash mode, zone boundary, arrowheads and points of a polyline, also in a worksheet with databaseId, keeps what is not given, reports each change as applied and refuses bad input",
   "minTapir": "2.0.1",
   "steps": [
     {
@@ -111,19 +111,6 @@
       ]
     },
     {
-      "id": "a pen weight override",
-      "command": "ModifyPolylines",
-      "creates": false,
-      "params": {
-        "polylinesWithDetails": [
-          { "elementId": { "guid": "${p}" }, "penWeightMm": 0.5 }
-        ]
-      },
-      "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "pen weight kept by Archicad (read back by the command)" }
-      ]
-    },
-    {
       "id": "a wall to give as polyline",
       "command": "CreateWalls",
       "params": { "wallsData": [ { "begCoordinate": { "x": 1020.0, "y": 910.0 }, "endCoordinate": { "x": 1024.0, "y": 910.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 } ] },
@@ -140,19 +127,17 @@
           { "elementId": { "guid": "${p}" }, "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 0.5 } ] },
           { "elementId": { "guid": "${p}" }, "coordinates": [ { "x": 1020.0, "y": 900.0 }, { "x": 1023.0, "y": 903.0 }, { "x": 1026.0, "y": 900.0 } ], "arcs": [ { "begIndex": 0, "endIndex": 2, "arcAngle": 0.5 } ] },
           { "elementId": { "guid": "${p}" }, "lineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
-          { "elementId": { "guid": "${p}" }, "penWeightMm": 0.0 },
           { "elementId": { "guid": "${w}" }, "linePenIndex": 2 }
         ]
       },
       "expect": [
-        { "path": "executionResults", "len": 7, "name": "one result per item" },
+        { "path": "executionResults", "len": 6, "name": "one result per item" },
         { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
         { "path": "executionResults[1].success", "eq": false, "name": "an item with nothing to change refused" },
         { "path": "executionResults[2].success", "eq": false, "name": "arcs without coordinates refused" },
         { "path": "executionResults[3].success", "eq": false, "name": "an arc that skips a point refused" },
         { "path": "executionResults[4].success", "eq": false, "name": "an unknown line type refused" },
-        { "path": "executionResults[5].success", "eq": false, "name": "pen weight 0 refused" },
-        { "path": "executionResults[6].success", "eq": false, "name": "a wall refused" }
+        { "path": "executionResults[5].success", "eq": false, "name": "a wall refused" }
       ]
     },
     {
@@ -182,6 +167,20 @@
       },
       "expect": [
         { "path": "__envelopeError__", "exists": true, "name": "linePenIndex 300 refused by the schema" }
+      ]
+    },
+    {
+      "id": "the pen weight is not a ModifyPolylines key (Archicad does not keep it on a change)",
+      "command": "ModifyPolylines",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "polylinesWithDetails": [
+          { "elementId": { "guid": "${p}" }, "penWeightMm": 0.5 }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "penWeightMm refused by the schema" }
       ]
     },
     {

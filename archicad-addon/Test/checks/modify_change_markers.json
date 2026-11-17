@@ -210,17 +210,16 @@
       ]
     },
     {
-      "id": "an unknown marker component is not in the schema",
+      "id": "an unknown marker component is refused (Archicad 29 passes it to the command, which refuses it)",
       "command": "ModifyChangeMarkers",
       "creates": false,
-      "allowEnvelopeError": true,
       "params": {
         "changeMarkersWithDetails": [
           { "elementId": { "guid": "${m}" }, "markerComponent": "Everything" }
         ]
       },
       "expect": [
-        { "path": "__envelopeError__", "exists": true, "name": "markerComponent Everything refused by the schema" }
+        { "path": "executionResults[0].success", "eq": false, "name": "markerComponent Everything refused" }
       ]
     },
     {
@@ -230,7 +229,7 @@
       "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].details.linkType", "eq": "Unlinked", "name": "still not linked" },
-        { "path": "detailsOfElements[0].details.position.x", "approx": 1062.0, "name": "position kept" }
+        { "path": "detailsOfElements[0].details.markerComponent", "eq": "HeadAndCloud", "name": "components kept" }
       ]
     }
   ]
