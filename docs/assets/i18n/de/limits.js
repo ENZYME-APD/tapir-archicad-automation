@@ -109,6 +109,10 @@
         'Die Werte der Profil-Modifikatoren oder die gestreckte Breite und Höhe einer Wand, eines Unterzugs oder einer Stütze mit Profil einstellen',
     'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
         'Lesen Sie sie mit <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> aus. Um sie zu ändern, ändern Sie das Profil mit <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (eine Kopie für diese Elemente oder das Profil selbst) oder stellen Sie sie in den Einstellungen des Elements in Archicad ein.',
+    'Read or set how a grid element is shown in sections, elevations and interior elevations: its vertical extent and its markers at the top and bottom':
+        'Lesen oder einstellen, wie ein Rasterelement in Schnitten, Ansichten und Innenansichten gezeigt wird: seine vertikale Ausdehnung und seine Marken oben und unten',
+    'Select the grid elements in Archicad and set it for all of them at once in their settings dialog.':
+        'Wählen Sie die Rasterelemente in Archicad aus und stellen Sie es in ihrem Einstellungsdialog für alle auf einmal ein.',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Etwas anderes gefunden, das die Archicad-API nicht kann? Schreiben Sie es in ein Issue, mit den DevKit-Headern, die Sie geprüft haben, und es kommt auf diese Seite. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Ein Issue öffnen</a>'
