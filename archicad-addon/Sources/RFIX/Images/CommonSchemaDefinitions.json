@@ -5067,6 +5067,16 @@
             "EntireElement"
         ]
     },
+    "ColumnCoreSymbolType": {
+        "type": "string",
+        "description": "Core symbol of a column in the floor plan (API_ColumnType::coreSymbolType): Plain (no symbol), Slash, X or CrossHair.",
+        "enum": [
+            "Plain",
+            "Slash",
+            "X",
+            "CrossHair"
+        ]
+    },
     "ElemProjectionMode": {
         "type": "string",
         "description": "Floor plan projection mode of an element part (API_ElemProjectionModesID).",
@@ -10826,6 +10836,10 @@
                 "type": "integer",
                 "description": "Multi-plane: the number of segments of a whole circle when segmentType is SegmentsByCircle."
             },
+            "fitSkylightToCurve": {
+                "type": "boolean",
+                "description": "Multi-plane: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments (fitSkylightToCurve of API_PolyRoofData). ModifyRoofs and CreateRoofs write it."
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.",
@@ -11341,6 +11355,17 @@
             "coreSymbolPen": {
                 "type": "integer",
                 "description": "Pen of the core symbol lines (slash, X or crosshair) of the column."
+            },
+            "coreSymbolType": {
+                "$ref": "#/ColumnCoreSymbolType"
+            },
+            "coreSymbolPar1": {
+                "type": "number",
+                "description": "Length of the crosshair outside the column's contour line, used by the CrossHair core symbol."
+            },
+            "coreSymbolPar2": {
+                "type": "number",
+                "description": "Distance of the crosshair from the column's centre, used by the CrossHair core symbol."
             },
             "belowViewLinePen": {
                 "type": "integer",
@@ -11991,6 +12016,10 @@
                 "type": "boolean",
                 "description": "Side (detail/worksheet) window is opened?"
             },
+            "constructionElementsOnly": {
+                "type": "boolean",
+                "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the detail/worksheet (API_DetailType::constructionElementsOnly)."
+            },
             "clipPolygon": {
                 "type": "array",
                 "description": "The clip polygon of the detail/worksheet",
@@ -12028,6 +12057,7 @@
             "detailIdStr",
             "isHorizontalMarker",
             "isWindowOpened",
+            "constructionElementsOnly",
             "clipPolygon",
             "linkData"
         ]
@@ -12529,6 +12559,10 @@
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12547,9 +12581,13 @@
             "Continuous"
         ]
     },
+    "LinkedArrowAttributes": {
+        "type": "boolean",
+        "description": "Are the size and pen of the start and end arrowheads linked (Archicad 29 and later; \"Links the start and end arrows sizes and pens\")? Read from Archicad 29 on, not returned before. Writing true links them: a size or pen given for one end only applies to both ends, two ends given different ones are refused, and without a size or pen given the end takes the start's. Writing false unlinks them. When it is not given, ends given a different size or pen are unlinked. Before Archicad 29 both ends always share one size and pen: true is accepted and changes nothing, false is refused."
+    },
     "LineArrowhead": {
         "type": "object",
-        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
+        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked, unless linkedArrowAttributes is given; see LinkedArrowAttributes). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
         "properties": {
             "visible": {
                 "type": "boolean",
@@ -12634,6 +12672,10 @@
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12691,6 +12733,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end. Only present for Arc, not Circle."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present for Arc, not Circle, from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -12757,6 +12803,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -18038,6 +18088,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -18084,6 +18138,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads of an Arc. A Circle refuses it."
             }
         },
         "additionalProperties": false,
@@ -18126,6 +18184,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -18167,6 +18229,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,

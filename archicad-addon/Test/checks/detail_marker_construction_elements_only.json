@@ -1,0 +1,107 @@
+{
+  "title": "Detail and Worksheet markers: 'Copy construction elements only' is read by GetDetailsOfElements, written by CreateDetailMarkers, CreateWorksheetMarkers and ModifyDetailMarkers (#2867)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Detail", "Worksheet" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "detail marker, construction elements only",
+      "command": "CreateDetailMarkers",
+      "params": {
+        "detailMarkersData": [
+          {
+            "clipPolygon": [ { "x": 960.0, "y": 900.0 }, { "x": 964.0, "y": 900.0 }, { "x": 964.0, "y": 903.0 }, { "x": 960.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 959.0, "y": 899.0 },
+            "name": "TapirCheck Detail CEO",
+            "id": "TDC-1",
+            "floorIndex": 0,
+            "constructionElementsOnly": true
+          }
+        ]
+      },
+      "save": { "dm": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "worksheet marker, all elements",
+      "command": "CreateWorksheetMarkers",
+      "params": {
+        "worksheetMarkersData": [
+          {
+            "clipPolygon": [ { "x": 970.0, "y": 900.0 }, { "x": 974.0, "y": 900.0 }, { "x": 974.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 969.0, "y": 899.0 },
+            "name": "TapirCheck Worksheet CEO",
+            "id": "TWC-1",
+            "floorIndex": 0,
+            "constructionElementsOnly": false
+          }
+        ]
+      },
+      "save": { "wm": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "both markers read back with the value they were created with",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm}" } }, { "elementId": { "guid": "${wm}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.constructionElementsOnly", "eq": true, "name": "detail: written on create" },
+        { "path": "detailsOfElements[1].details.constructionElementsOnly", "eq": false, "name": "worksheet: written on create" }
+      ]
+    },
+    {
+      "id": "flip both with ModifyDetailMarkers",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "params": {
+        "detailMarkersWithDetails": [
+          { "elementId": { "guid": "${dm}" }, "constructionElementsOnly": false },
+          { "elementId": { "guid": "${wm}" }, "constructionElementsOnly": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "detail applied (read back by the command)" },
+        { "path": "executionResults[1].success", "eq": true, "name": "worksheet applied (read back by the command)" }
+      ]
+    },
+    {
+      "id": "both markers read back flipped, names kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm}" } }, { "elementId": { "guid": "${wm}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.constructionElementsOnly", "eq": false },
+        { "path": "detailsOfElements[1].details.constructionElementsOnly", "eq": true },
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck Detail CEO", "name": "name kept" },
+        { "path": "detailsOfElements[1].details.detailIdStr", "eq": "TWC-1", "name": "ID kept" }
+      ]
+    },
+    {
+      "id": "bad input: not a boolean",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "detailMarkersWithDetails": [
+          { "elementId": { "guid": "${dm}" }, "constructionElementsOnly": "yes" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" }
+      ]
+    }
+  ]
+}
