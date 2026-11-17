@@ -89,8 +89,6 @@
             "elementId": { "guid": "${s}" },
             "extraTopTread": true,
             "extraBottomTread": false,
-            "walkingLinePosition": "Left",
-            "walkingLineOffset": 0.4,
             "numberingType": "Risers",
             "inputDirection": "Upward",
             "uniformFinish": true,
@@ -99,7 +97,7 @@
         ]
       },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "walking line, numbering and extra tread change accepted" }
+        { "path": "executionResults[0].success", "eq": true, "name": "numbering and extra tread change accepted (the walking line is in stair_walking_line_position_change_ext.json)" }
       ]
     },
     {

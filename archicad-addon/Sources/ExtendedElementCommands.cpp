@@ -8090,8 +8090,8 @@ static const char* StairSettingsSchemaProperties = R"(
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
                         "extraTopTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its top." },
                         "extraBottomTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its bottom." },
-                        "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto)." },
-                        "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto." },
+                        "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto). The stair is read back: when Archicad did not keep it (Archicad 29.0.0 5101 keeps a default stair's Center through ACAPI_Element_Change and ACAPI_Element_Create), it is written again on its own with ACAPI_Element_ChangeExt, then ACAPI_Element_ChangeParameters, and a position the stair still does not have fails the item (CreateStairs then deletes the new stair) with the value Archicad kept." },
+                        "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto. Read back and written again like walkingLinePosition; from the left or the right side, an offset the stair does not have fails the item." },
                         "walkingLineSymbolPosition": { "type": "string", "enum": ["Auto", "Center", "Custom"], "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos): by Archicad (Auto), centered, or where it was placed by hand (Custom)." },
                         "numberingType": { "type": "string", "enum": ["Treads", "Risers"], "description": "Whether the steps are numbered on their treads or on their risers." },
                         "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward)." },
@@ -9730,6 +9730,16 @@ static bool StairWalkingLinePositionFromString (const GS::UniString& str, API_Li
     return false;
 }
 
+static GS::UniString StairWalkingLinePositionToString (API_LinePositionID position)
+{
+    switch (position) {
+        case APILP_Left:   return "Left";
+        case APILP_Right:  return "Right";
+        case APILP_Center: return "Center";
+        default:           return "Auto";
+    }
+}
+
 // The limits of the stair's Rules and Standards (#2531), with the keys of the StairRules
 // definition: each limit's value and its applied flag (API_StairRulesData, the same members in
 // AC25 to AC30).
@@ -10421,6 +10431,126 @@ static GS::UniString CheckStairHeadroomApplied (const API_Element& wanted, const
     return notApplied;
 }
 
+// Whether ApplyStairSettings marked a walking line field (walkingLinePosition, walkingLineOffset).
+static bool IsStairWalkingLineMasked (const API_Element& mask)
+{
+    return ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLinePosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLineOffset);
+}
+
+// Names the walking line fields marked in mask that the stair (got) does not have as wanted. The
+// offset is only compared from the left or the right side: it is not used with Center and Auto.
+static GS::UniString StairWalkingLineNotKept (const API_StairType& wanted, const API_StairType& got, const API_Element& mask)
+{
+    GS::UniString notKept;
+    if (ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLinePosition) && got.walkingLinePosition != wanted.walkingLinePosition) {
+        notKept += " walkingLinePosition is " + StairWalkingLinePositionToString (got.walkingLinePosition) + ".";
+    }
+    const bool offsetUsed = wanted.walkingLinePosition == APILP_Left || wanted.walkingLinePosition == APILP_Right;
+    if (offsetUsed && ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLineOffset) && std::fabs (got.walkingLineOffset - wanted.walkingLineOffset) > 1e-6) {
+        notKept += GS::UniString::Printf (" walkingLineOffset is %g.", got.walkingLineOffset);
+    }
+    return notKept;
+}
+
+// Makes the stair keep the walking line fields marked in givenMask, with their values in wanted,
+// after firstWriter (ACAPI_Element_Change or ACAPI_Element_Create) wrote them. Archicad 29.0.0 5101 keeps neither a
+// walkingLinePosition nor a walkingLineOffset written that way (a default straight stair stays
+// Center, 0.6, and the call returns NoError). So the stair is read back, and when it does not have
+// them, they are written again on their own: with ACAPI_Element_ChangeExt, which the DevKit (AC25 to
+// AC30) names for Stairs (no markers, no memo), then with ACAPI_Element_ChangeParameters, the change
+// of settings-type parameters, each read back. Returns the fields the stair still does not have,
+// with the functions tried, or an empty string when it has them.
+static GS::UniString KeepStairWalkingLine (const API_Guid& stairGuid, const API_StairType& wanted, const API_Element& givenMask, const char* firstWriter)
+{
+    API_Element walkingLineMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (walkingLineMask);
+    if (ACAPI_ELEMENT_MASK_CHECK (givenMask, API_StairType, walkingLinePosition)) {
+        ACAPI_ELEMENT_MASK_SET (walkingLineMask, API_StairType, walkingLinePosition);
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (givenMask, API_StairType, walkingLineOffset)) {
+        ACAPI_ELEMENT_MASK_SET (walkingLineMask, API_StairType, walkingLineOffset);
+    }
+
+    // The walking line fields the stair does not have; false when it cannot be read.
+    const auto readNotKept = [&] (GS::UniString& result) -> bool {
+        API_Element current = {};
+        current.header.guid = stairGuid;
+        if (ACAPI_Element_Get (&current) != NoError) {
+            result = " the stair could not be read back after the change.";
+            return false;
+        }
+        result = StairWalkingLineNotKept (wanted, current.stair, walkingLineMask);
+        return true;
+    };
+    // The stair as it is now with the wanted walking line fields written into it.
+    const auto prepare = [&] (API_Element& target) -> GSErrCode {
+        target = {};
+        target.header.guid = stairGuid;
+        const GSErrCode getErr = ACAPI_Element_Get (&target);
+        if (getErr != NoError) {
+            return getErr;
+        }
+        if (ACAPI_ELEMENT_MASK_CHECK (walkingLineMask, API_StairType, walkingLinePosition)) {
+            target.stair.walkingLinePosition = wanted.walkingLinePosition;
+        }
+        if (ACAPI_ELEMENT_MASK_CHECK (walkingLineMask, API_StairType, walkingLineOffset)) {
+            target.stair.walkingLineOffset = wanted.walkingLineOffset;
+        }
+        return NoError;
+    };
+
+    GS::UniString notKept;
+    if (!readNotKept (notKept) || notKept.IsEmpty ()) {
+        return notKept;
+    }
+    GS::UniString tried (firstWriter);
+
+    API_Element changed = {};
+    GSErrCode err = prepare (changed);
+    if (err == NoError) {
+        err = ACAPI_Element_ChangeExt (&changed, &walkingLineMask, nullptr, 0, 0, nullptr, true, 0);
+    }
+    tried += err == NoError ? GS::UniString (", ACAPI_Element_ChangeExt") : GS::UniString::Printf (", ACAPI_Element_ChangeExt (error %d)", (int) err);
+    if (!readNotKept (notKept) || notKept.IsEmpty ()) {
+        return notKept;
+    }
+
+    err = prepare (changed);
+    if (err == NoError) {
+        err = ACAPI_Element_ChangeParameters ({ stairGuid }, &changed, nullptr, &walkingLineMask);
+    }
+    tried += err == NoError ? GS::UniString (" and ACAPI_Element_ChangeParameters") : GS::UniString::Printf (" and ACAPI_Element_ChangeParameters (error %d)", (int) err);
+    if (!readNotKept (notKept) || notKept.IsEmpty ()) {
+        return notKept;
+    }
+    return notKept + " Tried " + tried + ".";
+}
+
+GSErrCode CreateStairsCommand::AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& failureReason) const
+{
+    // The walking line given (#2220) is read back on the new stair and written again when the
+    // create did not keep it (see KeepStairWalkingLine); a field it still does not have fails the
+    // item, which deletes the new stair.
+    API_Element givenMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (givenMask);
+    if (parameters.Contains ("walkingLinePosition")) {
+        ACAPI_ELEMENT_MASK_SET (givenMask, API_StairType, walkingLinePosition);
+    }
+    if (parameters.Contains ("walkingLineOffset")) {
+        ACAPI_ELEMENT_MASK_SET (givenMask, API_StairType, walkingLineOffset);
+    }
+    if (!IsStairWalkingLineMasked (givenMask)) {
+        return NoError;
+    }
+    const GS::UniString notKept = KeepStairWalkingLine (newElementGuid, requestedElement.stair, givenMask, "ACAPI_Element_Create");
+    if (notKept.IsEmpty ()) {
+        return NoError;
+    }
+    failureReason = "Archicad did not keep the walking line:" + notKept;
+    return APIERR_GENERAL;
+}
+
 GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stairsWithDetails;
@@ -10518,12 +10648,23 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             }
 
             // No memo is passed, so the baseline and the position of the stair are kept.
+            const API_StairType wantedStair = element.stair;
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to modify the stair."));
                 continue;
             }
             changeReporter.MarkChanged (element.header.guid);
+
+            // The walking line is read back and written again on its own when Archicad did not keep
+            // it (see KeepStairWalkingLine); a field it still does not have is reported, not a success.
+            if (IsStairWalkingLineMasked (mask)) {
+                const GS::UniString walkingLineNotKept = KeepStairWalkingLine (element.header.guid, wantedStair, mask, "ACAPI_Element_Change");
+                if (!walkingLineNotKept.IsEmpty ()) {
+                    executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not keep the walking line:" + walkingLineNotKept));
+                    continue;
+                }
+            }
 
             // The floor plan display is read back (#2530): Archicad may keep its own value for a
             // display setting without an error, which would otherwise be reported as a success.

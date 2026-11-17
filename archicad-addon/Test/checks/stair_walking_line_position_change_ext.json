@@ -1,0 +1,78 @@
+{
+  "title": "ModifyStairs and CreateStairs keep a walking line on the left or the right side (written again with ACAPI_Element_ChangeExt when ACAPI_Element_Change and ACAPI_Element_Create do not keep it), or report the value Archicad kept",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a straight stair with the walking line of the tool defaults",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          { "baseLinePoints": [ { "x": 820.0, "y": 700.0 }, { "x": 826.0, "y": 700.0 } ], "zCoordinate": 0.0, "floorIndex": 0, "totalHeight": 2.8, "flightWidth": 1.2 }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" } ]
+    },
+    {
+      "id": "ModifyStairs: walking line 0.35 from the left side",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": { "stairsWithDetails": [ { "elementId": { "guid": "${s}" }, "walkingLinePosition": "Left", "walkingLineOffset": 0.35 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "Left 0.35 kept (else the error names the value Archicad kept and the functions tried)" },
+        { "path": "executionResults[0].error.message", "exists": false, "name": "no error (else it names the walking line Archicad kept)" }
+      ]
+    },
+    {
+      "id": "read the left walking line back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.walkingLinePosition", "eq": "Left", "name": "walking line on the left side" },
+        { "path": "detailsOfElements[0].details.walkingLineOffset", "approx": 0.35, "name": "walking line 0.35 from it" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "name": "flight width unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: walking line on the right side, 0.25 from it",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": { "stairsWithDetails": [ { "elementId": { "guid": "${s}" }, "walkingLinePosition": "Right", "walkingLineOffset": 0.25 } ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "Right 0.25 kept" } ]
+    },
+    {
+      "id": "read the right walking line back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.walkingLinePosition", "eq": "Right", "name": "walking line on the right side" },
+        { "path": "detailsOfElements[0].details.walkingLineOffset", "approx": 0.25, "name": "walking line 0.25 from it" }
+      ]
+    },
+    {
+      "id": "CreateStairs: walking line 0.35 from the left side on creation",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          { "baseLinePoints": [ { "x": 830.0, "y": 700.0 }, { "x": 836.0, "y": 700.0 } ], "zCoordinate": 0.0, "floorIndex": 0, "totalHeight": 2.8, "flightWidth": 1.2, "walkingLinePosition": "Left", "walkingLineOffset": 0.35 }
+        ]
+      },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created with its walking line kept (else the error names the value Archicad kept)" }
+      ]
+    },
+    {
+      "id": "read the created walking line back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.walkingLinePosition", "eq": "Left", "name": "created walking line on the left side" },
+        { "path": "detailsOfElements[0].details.walkingLineOffset", "approx": 0.35, "name": "created walking line 0.35 from it" }
+      ]
+    }
+  ]
+}
