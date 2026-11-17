@@ -23839,10 +23839,19 @@ GSErrCode ChangeRailingSegmentPartsThroughMemo (const API_Guid& railingGuid, con
 GSErrCode ChangeRailingSegmentPattern (const API_Guid& railingGuid, const RailingSegmentChange& change)
 {
     GSErrCode err = ChangeRailingSegmentModel (railingGuid, change);
-    if (err != NoError || change.patternParts.IsEmpty () || RailingSegmentPartsFollowPattern (railingGuid, change, nullptr)) {
+    if (err != NoError) {
         return err;
     }
     bool tried = false;
+    if (change.patternParts.IsEmpty ()) {
+        // Only the distribution: it belongs to the patterns themselves, so it is written into the
+        // patterns the segment already has too, when the railing's memo gives them.
+        ChangeRailingSegmentPatternsThroughMemo (railingGuid, change, tried);
+        return NoError;
+    }
+    if (RailingSegmentPartsFollowPattern (railingGuid, change, nullptr)) {
+        return NoError;
+    }
     if (ChangeRailingSegmentPatternsThroughMemo (railingGuid, change, tried) == NoError && tried &&
         RailingSegmentPartsFollowPattern (railingGuid, change, nullptr)) {
         return NoError;
@@ -24636,6 +24645,24 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                         got.railingBalusterSet.distribution = pattern.distribution;
                         AppendRailingPartNotApplied (notApplied, change.index, change.patternDistribution.Get (), got, tolerance,
                             GS::UniString::Printf ("the pattern of segment %u", static_cast<unsigned> (change.index)));
+                        // The patterns the segment already has, when the railing's memo gives them.
+                        API_ElementMemo patternMemo = {};
+                        const GS::OnExit patternMemoGuard ([&patternMemo] () { ACAPI_DisposeElemMemoHdls (&patternMemo); });
+                        if (ACAPI_Element_GetMemo (changed.header.guid, &patternMemo, APIMemoMask_RailingPattern) == NoError && patternMemo.railingPatterns != nullptr) {
+                            const API_Guid segmentGuid = memo.railingSegments[change.index].head.guid;
+                            const GSSize nPatterns = BMGetPtrSize (reinterpret_cast<GSPtr> (patternMemo.railingPatterns)) / sizeof (API_RailingPatternType);
+                            for (GSSize i = 0; i < nPatterns; ++i) {
+                                const API_RailingPatternType& existing = patternMemo.railingPatterns[i];
+                                if (existing.owner != segmentGuid && GetRailingHierarchicalParent (existing.head.guid) != segmentGuid) {
+                                    continue;
+                                }
+                                API_Element gotPattern = {};
+                                gotPattern.railingBalusterSet.distribution = existing.distribution;
+                                AppendRailingPartNotApplied (notApplied, change.index, change.patternDistribution.Get (), gotPattern, tolerance,
+                                    GS::UniString::Printf ("a pattern of segment %u", static_cast<unsigned> (change.index)));
+                                break;
+                            }
+                        }
                     }
                     // The components the segment already has must follow the pattern too.
                     GS::UniString partsDiffer;

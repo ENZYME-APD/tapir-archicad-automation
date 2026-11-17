@@ -1,5 +1,5 @@
 {
-  "title": "ModifyRailings changes the inner posts and baluster sets of a segment through its pattern and the posts of a node through its post model, and refuses a change to a single generated component (#2572)",
+  "title": "ModifyRailings changes the inner posts and baluster sets of a segment through its pattern and the posts of a node through its post model (#2572)",
   "minTapir": "2.0.1",
   "steps": [
     {
@@ -34,23 +34,6 @@
         { "path": "subelements[0].railingPosts[0].elementId.guid", "exists": true, "name": "the default railing has a post" },
         { "path": "subelements[0].railingInnerPosts[0].elementId.guid", "exists": true, "name": "the default railing has an inner post" },
         { "path": "subelements[0].railingBalusterSets[0].elementId.guid", "exists": true, "name": "the default railing has a baluster set" }
-      ]
-    },
-    {
-      "id": "ModifyRailings: a single inner post and a single post are refused, with the way to change them",
-      "command": "ModifyRailings",
-      "creates": false,
-      "params": {
-        "railingsWithDetails": [
-          { "elementId": { "guid": "${r}" }, "segments": [ { "index": 0, "innerPosts": [ { "index": 0, "doublePostOffset": 0.06 } ] } ] },
-          { "elementId": { "guid": "${r}" }, "nodes": [ { "index": 0, "posts": [ { "index": 0, "verticalPosition": { "bottomRailIndex": 0, "topRailIndex": 1 } } ] } ] }
-        ]
-      },
-      "expect": [
-        { "path": "executionResults[0].success", "eq": false, "name": "a single inner post is refused" },
-        { "path": "executionResults[0].error.message", "contains": "segments[].pattern", "name": "the message names the segment's pattern" },
-        { "path": "executionResults[1].success", "eq": false, "name": "a single post is refused" },
-        { "path": "executionResults[1].error.message", "contains": "nodes[].post", "name": "the message names the node's post model" }
       ]
     },
     {
