@@ -8084,6 +8084,7 @@ static const char* StairSettingsSchemaProperties = R"(
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
                         "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error." },
+                        "headroom": { "$ref": "#/StairHeadroom", "description": "The headroom of the stair (Stair Settings > Headroom): only the given fields are written, the others are kept. An unknown key is refused, and ModifyStairs reads the given fields back and reports one Archicad did not apply as an error." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -8918,12 +8919,13 @@ void KillShellShapeHandles (API_ShellShapeData& shapeData, bool withIds)
     }
 }
 
-// A new profile for an existing extruded shell (#2453), in the format CreateShells takes. The
-// shell's polygon memo is read and only its first profile polyline is replaced, so written back
-// with the element the GUID, the base plane, the extrusion start and vector, the thickness and the
-// cut contours stay. The vertex and edge ids are kept when the number of points stays the same.
-// memo is filled here, unless memoLoaded says it already is, and must be disposed by the caller;
-// memoLoaded tells whether to write it.
+// New profiles for an existing shell, in the format CreateShells takes: 'profile' of every shell
+// class (#2453, revolved and ruled #2859) and 'secondProfile' of a ruled shell (#2859). The shell's
+// polygon memo is read and only the profile polylines given are replaced, so written back with the
+// element the GUID, the base plane, the extrusion, axis or profile planes, the thickness and the
+// cut contours stay. The vertex and edge ids of a profile are kept when its number of points stays
+// the same. memo is filled here, unless memoLoaded says it already is, and must be disposed by the
+// caller; memoLoaded tells whether to write it. Changes nothing on an error.
 GS::Optional<GS::UniString> ApplyShellProfile (
     API_Element& element,
     API_Element& mask,
@@ -8932,39 +8934,227 @@ GS::Optional<GS::UniString> ApplyShellProfile (
     bool& memoLoaded,
     bool& changed)
 {
-    const GS::ObjectState* profile = details.Get ("profile");
-    if (profile == nullptr) {
+    const GS::ObjectState* profiles[2] = { details.Get ("profile"), details.Get ("secondProfile") };
+    if (profiles[0] == nullptr && profiles[1] == nullptr) {
         return {};
     }
-    if (element.shell.shellClass != API_ExtrudedShellID) {
-        return GS::UniString ("'profile' can only be changed on an Extruded shell.");
+    if (profiles[1] != nullptr && element.shell.shellClass != API_RuledShellID) {
+        return GS::UniString ("'secondProfile' can only be changed on a Ruled shell.");
     }
 
-    API_Polygon newShape = {};
-    API_ShellShapeData newShapeData = {};
-    auto error = FillShellShape (*profile, newShape, newShapeData);
-    if (error.HasValue ()) {
-        KillShellShapeHandles (newShapeData, true);
-        return error;
+    // The profile polylines in the element, in the order of the memo's shellShapes.
+    API_Polygon* shapes[2] = { nullptr, nullptr };
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID: shapes[0] = &element.shell.u.extrudedShell.shellShape; break;
+        case API_RevolvedShellID: shapes[0] = &element.shell.u.revolvedShell.shellShape; break;
+        case API_RuledShellID:
+            shapes[0] = &element.shell.u.ruledShell.shellShape1;
+            shapes[1] = &element.shell.u.ruledShell.shellShape2;
+            break;
+        default:
+            return GS::UniString ("The profile of this shell class cannot be changed.");
+    }
+
+    API_Polygon newShapes[2] = {};
+    API_ShellShapeData newShapeData[2] = {};
+    const auto killNewShapes = [&newShapeData] () {
+        KillShellShapeHandles (newShapeData[0], true);
+        KillShellShapeHandles (newShapeData[1], true);
+    };
+    for (UIndex i = 0; i < 2; ++i) {
+        if (profiles[i] == nullptr) {
+            continue;
+        }
+        auto error = FillShellShape (*profiles[i], newShapes[i], newShapeData[i]);
+        if (error.HasValue ()) {
+            killNewShapes ();
+            return error;
+        }
     }
 
     if (!memoLoaded && ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
-        KillShellShapeHandles (newShapeData, true);
+        killNewShapes ();
         return GS::UniString ("Failed to load the profile of the shell.");
     }
     memoLoaded = true;
 
-    API_Polygon& shape = element.shell.u.extrudedShell.shellShape;
-    API_ShellShapeData& shapeData = memo.shellShapes[0];
-    KillShellShapeHandles (shapeData, newShape.nCoords != shape.nCoords);
-    shapeData.coords = newShapeData.coords;
-    shapeData.pends = newShapeData.pends;
-    shapeData.parcs = newShapeData.parcs;
-    shapeData.bodyFlags = newShapeData.bodyFlags;
-    shape = newShape;
+    for (UIndex i = 0; i < 2; ++i) {
+        if (profiles[i] == nullptr) {
+            continue;
+        }
+        API_Polygon& shape = *shapes[i];
+        API_ShellShapeData& shapeData = memo.shellShapes[i];
+        KillShellShapeHandles (shapeData, newShapes[i].nCoords != shape.nCoords);
+        shapeData.coords = newShapeData[i].coords;
+        shapeData.pends = newShapeData[i].pends;
+        shapeData.parcs = newShapeData[i].parcs;
+        shapeData.bodyFlags = newShapeData[i].bodyFlags;
+        shape = newShapes[i];
+    }
 
-    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape);
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID:
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape);
+            break;
+        case API_RevolvedShellID:
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.shellShape);
+            break;
+        default:
+            if (profiles[0] != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape1);
+            }
+            if (profiles[1] != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape2);
+            }
+            break;
+    }
     changed = true;
+    return {};
+}
+
+// The axis, the angles and the curve resolution of an existing revolved shell, and the profile
+// planes and morphing rule of an existing ruled shell (#2859), with the keys CreateShells takes and
+// GetDetailsOfElements returns. Only the keys given are written; a coordinate system given in part
+// changes only that part. Changes nothing on an error.
+GS::Optional<GS::UniString> ApplyShellClassGeometry (
+    API_Element& element,
+    API_Element& mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    static const char* const revolvedKeys[] = { "axis", "revolutionAngle", "beginAngle", "slantAngle", "distortionAngle", "segmentType", "segmentsByCircle", "segmentsByArc", "segmentedSurfaces" };
+    static const char* const ruledKeys[] = { "profilePlane", "secondProfilePlane", "morphingRule" };
+    if (element.shell.shellClass != API_RevolvedShellID) {
+        for (const char* key : revolvedKeys) {
+            if (details.Contains (key)) {
+                return GS::UniString::Printf ("'%s' can only be changed on a Revolved shell.", key);
+            }
+        }
+    }
+    if (element.shell.shellClass != API_RuledShellID) {
+        for (const char* key : ruledKeys) {
+            if (details.Contains (key)) {
+                return GS::UniString::Printf ("'%s' can only be changed on a Ruled shell.", key);
+            }
+        }
+    }
+
+    if (element.shell.shellClass == API_RevolvedShellID) {
+        API_RevolvedShellData& revolved = element.shell.u.revolvedShell;
+        API_Tranmat axisBase = revolved.axisBase;
+        auto axisError = ApplyCoordinateSystem3D (details, "axis", axisBase);
+        if (axisError.HasValue ()) {
+            return axisError;
+        }
+        const auto revolutionAngle = GetOptionalDouble (details, "revolutionAngle");
+        if (revolutionAngle.HasValue () && (revolutionAngle.Get () <= 0.0 || revolutionAngle.Get () > 2.0 * HalfTurn + 1e-9)) {
+            return GS::UniString ("'revolutionAngle' must be greater than 0 and at most 2*pi.");
+        }
+        const auto beginAngle = GetOptionalDouble (details, "beginAngle");
+        const auto slantAngle = GetOptionalDouble (details, "slantAngle");
+        const auto distortionAngle = GetOptionalDouble (details, "distortionAngle");
+        if (distortionAngle.HasValue () && (distortionAngle.Get () <= 0.0 || distortionAngle.Get () >= HalfTurn)) {
+            return GS::UniString ("'distortionAngle' must be between 0 and pi (pi/2 is no shear).");
+        }
+        GS::UniString segmentType;
+        const bool hasSegmentType = details.Get ("segmentType", segmentType);
+        if (hasSegmentType && segmentType != "ByCircle" && segmentType != "ByArc") {
+            return "Unknown segmentType '" + segmentType + "': use ByCircle or ByArc.";
+        }
+        Int32 segmentsByCircle = 0;
+        const bool hasSegmentsByCircle = details.Get ("segmentsByCircle", segmentsByCircle);
+        if (hasSegmentsByCircle && segmentsByCircle < 3) {
+            return GS::UniString ("'segmentsByCircle' must be at least 3.");
+        }
+        Int32 segmentsByArc = 0;
+        const bool hasSegmentsByArc = details.Get ("segmentsByArc", segmentsByArc);
+        if (hasSegmentsByArc && segmentsByArc < 1) {
+            return GS::UniString ("'segmentsByArc' must be at least 1.");
+        }
+        bool segmentedSurfaces = false;
+        const bool hasSegmentedSurfaces = details.Get ("segmentedSurfaces", segmentedSurfaces);
+
+        if (details.Contains ("axis")) {
+            revolved.axisBase = axisBase;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.axisBase);
+            changed = true;
+        }
+        if (revolutionAngle.HasValue ()) {
+            revolved.revolutionAngle = revolutionAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolutionAngle);
+            changed = true;
+        }
+        if (beginAngle.HasValue ()) {
+            revolved.begAngle = beginAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begAngle);
+            changed = true;
+        }
+        if (slantAngle.HasValue ()) {
+            revolved.slantAngle = slantAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.slantAngle);
+            changed = true;
+        }
+        if (distortionAngle.HasValue ()) {
+            revolved.distortionAngle = distortionAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.distortionAngle);
+            changed = true;
+        }
+        if (hasSegmentType) {
+            revolved.segmentType = segmentType == "ByArc" ? APIShellBase_SegmentsByArc : APIShellBase_SegmentsByCircle;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentType);
+            changed = true;
+        }
+        if (hasSegmentsByCircle) {
+            revolved.segmentsByCircle = segmentsByCircle;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentsByCircle);
+            changed = true;
+        }
+        if (hasSegmentsByArc) {
+            revolved.segmentsByArc = segmentsByArc;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentsByArc);
+            changed = true;
+        }
+        if (hasSegmentedSurfaces) {
+            revolved.segmentedSurfaces = segmentedSurfaces;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentedSurfaces);
+            changed = true;
+        }
+        return {};
+    }
+
+    if (element.shell.shellClass == API_RuledShellID) {
+        API_RuledShellData& ruled = element.shell.u.ruledShell;
+        API_Tranmat plane1 = ruled.plane1;
+        API_Tranmat plane2 = ruled.plane2;
+        auto planeError = ApplyCoordinateSystem3D (details, "profilePlane", plane1);
+        if (!planeError.HasValue ()) {
+            planeError = ApplyCoordinateSystem3D (details, "secondProfilePlane", plane2);
+        }
+        if (planeError.HasValue ()) {
+            return planeError;
+        }
+        GS::UniString morphingRule;
+        const bool hasMorphingRule = details.Get ("morphingRule", morphingRule);
+        if (hasMorphingRule && morphingRule != "Paired" && morphingRule != "Smooth") {
+            return "Unknown morphingRule '" + morphingRule + "': use Paired or Smooth.";
+        }
+
+        if (details.Contains ("profilePlane")) {
+            ruled.plane1 = plane1;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.plane1);
+            changed = true;
+        }
+        if (details.Contains ("secondProfilePlane")) {
+            ruled.plane2 = plane2;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.plane2);
+            changed = true;
+        }
+        if (hasMorphingRule) {
+            ruled.morphingRule = morphingRule == "Smooth" ? APIMorphingRule_Smooth : APIMorphingRule_Paired;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.morphingRule);
+            changed = true;
+        }
+    }
     return {};
 }
 
@@ -9367,6 +9557,29 @@ GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules)
     return os;
 }
 
+static const char* StairHeadroomMethodToString (API_HeadroomGenerationModeID method)
+{
+    switch (method) {
+        case APIHM_RightAngleToSlope:   return "RightAngleToSlope";
+        case APIHM_VerticallyToSlope:   return "VerticallyToSlope";
+        default:                        return "Unknown";
+    }
+}
+
+// The headroom of a stair (Stair Settings > Headroom), in the StairHeadroom definition (#2857).
+// GetDetailsOfElements returns it for a stair (declared in ExtendedElementCommands.hpp); CreateStairs
+// and ModifyStairs write the same fields. API_StairHeadroomData has these members in every DevKit
+// from AC25 on.
+GS::ObjectState CreateStairHeadroomObjectState (const API_StairHeadroomData& headroom)
+{
+    GS::ObjectState os;
+    os.Add ("method", StairHeadroomMethodToString (headroom.headroomMethod));
+    os.Add ("height", headroom.headroomHeight);
+    os.Add ("leftOffset", headroom.headroomLeftOffset);
+    os.Add ("rightOffset", headroom.headroomRightOffset);
+    return os;
+}
+
 #ifdef ServerMainVers_2700
 static GS::UniString StairSolutionToString (API_StairSolutionID solution)
 {
@@ -9614,6 +9827,74 @@ static GS::Optional<GS::UniString> ApplyStairRules (const GS::ObjectState& rules
             rules.*field.applied = given.*field.applied;
             *reinterpret_cast<char*> (&(rulesMask.*field.applied)) = -1;
         }
+    }
+    return {};
+}
+
+// The given headroom object (StairHeadroom) into the stair's headroom (#2857): each given field is
+// written, with its mask byte. As for the rules, Archicad's input validation does not refuse an
+// unknown key inside a definition the schema refers to, so an unknown key or a value of the wrong
+// type is refused here, before anything is written.
+static GS::Optional<GS::UniString> ApplyStairHeadroom (const GS::ObjectState& headroomOs, API_StairHeadroomData& headroom, API_StairHeadroomData& headroomMask)
+{
+    GS::Optional<GS::UniString> error;
+    headroomOs.EnumerateFields ([&] (const GS::String& key) {
+        if (error.HasValue ()) {
+            return;
+        }
+        if (key == "method" || key == "height" || key == "leftOffset" || key == "rightOffset") {
+            return;
+        }
+        error = GS::UniString ("Unknown key '") + GS::UniString (key.ToCStr ()) + "' in headroom.";
+    });
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    API_StairHeadroomData given = headroom;
+    if (headroomOs.Contains ("method")) {
+        GS::UniString method;
+        if (!headroomOs.Get ("method", method)) {
+            return GS::UniString ("headroom.method must be a string.");
+        }
+        if (method == "RightAngleToSlope") {
+            given.headroomMethod = APIHM_RightAngleToSlope;
+        } else if (method == "VerticallyToSlope") {
+            given.headroomMethod = APIHM_VerticallyToSlope;
+        } else {
+            return GS::UniString ("Invalid headroom.method: it must be RightAngleToSlope or VerticallyToSlope.");
+        }
+    }
+    if (headroomOs.Contains ("height")) {
+        if (!headroomOs.Get ("height", given.headroomHeight)) {
+            return GS::UniString ("headroom.height must be a number.");
+        }
+        if (given.headroomHeight <= 0.0) {
+            return GS::UniString ("headroom.height must be greater than 0.");
+        }
+    }
+    if (headroomOs.Contains ("leftOffset") && !headroomOs.Get ("leftOffset", given.headroomLeftOffset)) {
+        return GS::UniString ("headroom.leftOffset must be a number.");
+    }
+    if (headroomOs.Contains ("rightOffset") && !headroomOs.Get ("rightOffset", given.headroomRightOffset)) {
+        return GS::UniString ("headroom.rightOffset must be a number.");
+    }
+
+    if (headroomOs.Contains ("method")) {
+        headroom.headroomMethod = given.headroomMethod;
+        *reinterpret_cast<char*> (&headroomMask.headroomMethod) = -1;
+    }
+    if (headroomOs.Contains ("height")) {
+        headroom.headroomHeight = given.headroomHeight;
+        *reinterpret_cast<char*> (&headroomMask.headroomHeight) = -1;
+    }
+    if (headroomOs.Contains ("leftOffset")) {
+        headroom.headroomLeftOffset = given.headroomLeftOffset;
+        *reinterpret_cast<char*> (&headroomMask.headroomLeftOffset) = -1;
+    }
+    if (headroomOs.Contains ("rightOffset")) {
+        headroom.headroomRightOffset = given.headroomRightOffset;
+        *reinterpret_cast<char*> (&headroomMask.headroomRightOffset) = -1;
     }
     return {};
 }
@@ -10051,6 +10332,14 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
         const GS::Optional<GS::UniString> rulesError = ApplyStairRules (*rulesOs, stair.rules, mask.stair.rules);
         if (rulesError.HasValue ()) {
             return rulesError;
+        }
+    }
+    // The headroom (#2857): only the given fields.
+    const GS::ObjectState* headroomOs = details.Get ("headroom");
+    if (headroomOs != nullptr) {
+        const GS::Optional<GS::UniString> headroomError = ApplyStairHeadroom (*headroomOs, stair.stairHeadroomData, mask.stair.stairHeadroomData);
+        if (headroomError.HasValue ()) {
+            return headroomError;
         }
     }
     if (details.Get ("finishVisible", stair.finishVisible)) {
@@ -10598,6 +10887,47 @@ static GS::UniString CheckStairStructuresApplied (const API_Element& wanted, con
     return notApplied;
 }
 
+// Whether the mask marks any field of the stair's headroom (#2857).
+static bool IsAnyStairHeadroomFieldMasked (const API_StairHeadroomData& headroomMask)
+{
+    return *reinterpret_cast<const char*> (&headroomMask.headroomMethod) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomHeight) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomLeftOffset) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomRightOffset) != 0;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the headroom fields marked in
+// givenHeadroomMask that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairHeadroomApplied (const API_Element& wanted, const API_StairHeadroomData& givenHeadroomMask)
+{
+    if (!IsAnyStairHeadroomFieldMasked (givenHeadroomMask)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    const API_StairHeadroomData& want = wanted.stair.stairHeadroomData;
+    const API_StairHeadroomData& got = changed.stair.stairHeadroomData;
+    GS::UniString notApplied;
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomMethod) != 0 && got.headroomMethod != want.headroomMethod) {
+        notApplied += GS::UniString (" headroom.method is ") + StairHeadroomMethodToString (got.headroomMethod) + ".";
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomHeight) != 0 && std::fabs (got.headroomHeight - want.headroomHeight) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.height is %g.", got.headroomHeight);
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomLeftOffset) != 0 && std::fabs (got.headroomLeftOffset - want.headroomLeftOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.leftOffset is %g.", got.headroomLeftOffset);
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomRightOffset) != 0 && std::fabs (got.headroomRightOffset - want.headroomRightOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.rightOffset is %g.", got.headroomRightOffset);
+    }
+    return notApplied;
+}
+
 GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stairsWithDetails;
@@ -10683,6 +11013,16 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                     rulesMaskBytes[i] = -1;
                 }
             }
+            // The headroom is a member struct like the rules, so it is marked whole the same way
+            // (#2857): the fields not given are written back from ACAPI_Element_Get as they are, and
+            // the given ones are read back after the change.
+            const API_StairHeadroomData givenHeadroomMask = mask.stair.stairHeadroomData;
+            if (IsAnyStairHeadroomFieldMasked (givenHeadroomMask)) {
+                char* headroomMaskBytes = reinterpret_cast<char*> (&mask.stair.stairHeadroomData);
+                for (size_t i = 0; i < sizeof (API_StairHeadroomData); ++i) {
+                    headroomMaskBytes[i] = -1;
+                }
+            }
 
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -10709,6 +11049,12 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString structuresNotApplied = CheckStairStructuresApplied (element, mask);
             if (!structuresNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure setting:" + structuresNotApplied));
+                continue;
+            }
+            // And for the headroom (#2857).
+            const GS::UniString headroomNotApplied = CheckStairHeadroomApplied (element, givenHeadroomMask);
+            if (!headroomNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every headroom setting:" + headroomNotApplied));
                 continue;
             }
 
@@ -17896,7 +18242,67 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "profile": {
                             "$ref": "#/ShellProfile",
-                            "description": "Extruded shells only: the new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns (the plane across the extrusion, x horizontal, y up). It replaces the first profile polyline; the GUID, the base plane, the extrusion start and vector, the thickness and the cut contours are kept."
+                            "description": "The new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns. Extruded: in the plane across the extrusion (x horizontal, y up). Revolved: in the base plane's XY plane. Ruled: the first profile, in the XY plane of profilePlane. It replaces the first profile polyline; the GUID, the base plane, the extrusion, the axis, the profile planes, the thickness and the cut contours are kept."
+                        },
+                        "secondProfile": {
+                            "$ref": "#/ShellProfile",
+                            "description": "Ruled shells only: the new second profile polyline, in the XY plane of secondProfilePlane, as CreateShells takes it and GetDetailsOfElements returns it. The first profile and both planes are kept unless given too."
+                        },
+                        "profilePlane": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Ruled shells only: the new plane of the first profile, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change: 'origin' alone moves the plane, the three axes (all together) turn it. The profile keeps its coordinates in the plane."
+                        },
+                        "secondProfilePlane": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Ruled shells only: the new plane of the second profile, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change, as for profilePlane."
+                        },
+                        "morphingRule": {
+                            "type": "string",
+                            "enum": [ "Paired", "Smooth" ],
+                            "description": "Ruled shells only: how the two profiles are joined, segment by segment (Paired) or smoothly."
+                        },
+                        "axis": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Revolved shells only: the new coordinate system whose Z axis the profile is turned around, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change: 'origin' alone moves the axis, the three axes (all together) turn it. The profile is kept."
+                        },
+                        "revolutionAngle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "maximum": 6.283185307179587,
+                            "description": "Revolved shells only: the new angle the profile is turned through, in radians, at most 2*pi (a full turn)."
+                        },
+                        "beginAngle": {
+                            "type": "number",
+                            "description": "Revolved shells only: the new angle the revolution starts at, in radians."
+                        },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Revolved shells only: the new slant of the profile, in radians."
+                        },
+                        "distortionAngle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "exclusiveMaximum": 3.141592653589793,
+                            "description": "Revolved shells only: the new shear of the revolution, in radians, between 0 and pi; pi/2 is no shear."
+                        },
+                        "segmentType": {
+                            "type": "string",
+                            "enum": [ "ByCircle", "ByArc" ],
+                            "description": "Revolved shells only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+                        },
+                        "segmentsByCircle": {
+                            "type": "integer",
+                            "minimum": 3,
+                            "description": "Revolved shells only: the number of segments a full circle is resolved into, used when segmentType is ByCircle."
+                        },
+                        "segmentsByArc": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Revolved shells only: the number of segments the revolution arc is resolved into, used when segmentType is ByArc."
+                        },
+                        "segmentedSurfaces": {
+                            "type": "boolean",
+                            "description": "Revolved shells only: whether the revolved surface is broken into planes along the revolution arc."
                         },
                         "cutBodyType": {
                             "type": "string",
@@ -17952,8 +18358,11 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (!error.HasValue ()) {
                 error = ApplyShellExtrusion (element, mask, item, changed);
             }
-            // The contour and holes (#2431) and the profile (#2453) share one polygon memo: the cut
-            // polygons load it with the edge data, and the profile then reuses it.
+            if (!error.HasValue ()) {
+                error = ApplyShellClassGeometry (element, mask, item, changed);
+            }
+            // The contour and holes (#2431) and the profiles (#2453, #2859) share one polygon memo:
+            // the cut polygons load it with the edge data, and the profiles then reuse it.
             API_ElementMemo memo = {};
             const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
             bool cutPolygonsChanged = false;
@@ -20494,14 +20903,9 @@ GS::Optional<GS::UniString> CreateInteriorElevationsCommand::GetRawResponseSchem
     })";
 }
 
-GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+// Creates the given interior elevations in one undoable command, on the story that is active.
+static GS::ObjectState CreateInteriorElevationsOnActiveStory (const GS::Array<GS::ObjectState>& interiorElevationsData)
 {
-    GS::Array<GS::ObjectState> interiorElevationsData;
-    auto error = GetElementArray (parameters, "interiorElevationsData", interiorElevationsData);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
     return ExecuteCreateWithElements ("Create Interior Elevations", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : interiorElevationsData) {
             GS::Array<GS::ObjectState> nodeCoordinates;
@@ -20628,6 +21032,104 @@ GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState&
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
+}
+
+// ACAPI_Element_CreateExt puts a new interior elevation on the story that is active in the
+// floor plan, whatever header.floorInd says (#2849: with story 1 active, floorIndex 0 and 2
+// both gave an interior elevation on story 1). As CreateRailings and CreateZones do (#853),
+// the items are created in groups of one story each, with that story made active
+// (APIStory_GoTo), and the previously active story is put back afterwards. The story is
+// switched outside the undoable command, so each group is one undoable command. The
+// responses keep the order of the request. A call whose items all stay on the active story
+// runs exactly as before.
+GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> interiorElevationsData;
+    auto error = GetElementArray (parameters, "interiorElevationsData", interiorElevationsData);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (storyErr != NoError) {
+        return CreateInteriorElevationsOnActiveStory (interiorElevationsData);
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    std::vector<short> itemStories;
+    std::vector<short> storiesInOrder;
+    itemStories.reserve (interiorElevationsData.GetSize ());
+    for (const GS::ObjectState& data : interiorElevationsData) {
+        short story = originalActStory;
+        data.Get ("floorIndex", story);
+        itemStories.push_back (story);
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (story);
+        }
+    }
+
+    const bool needsStorySwitch = std::any_of (itemStories.begin (), itemStories.end (),
+        [&] (short story) { return story != originalActStory; });
+    if (!needsStorySwitch) {
+        return CreateInteriorElevationsOnActiveStory (interiorElevationsData);
+    }
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    std::vector<GS::ObjectState> results (interiorElevationsData.GetSize ());
+    for (const short story : storiesInOrder) {
+        GS::Array<GS::ObjectState> groupItems;
+        std::vector<size_t> groupIndices;
+        for (size_t i = 0; i < itemStories.size (); ++i) {
+            if (itemStories[i] == story) {
+                groupItems.Push (interiorElevationsData[static_cast<GS::UIndex> (i)]);
+                groupIndices.push_back (i);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            const GSErrCode err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                const GS::UniString message = GS::UniString::Printf (
+                    "Failed to activate story %d in the floor plan, where the interior elevation is created; see GetStories for the valid story indices.",
+                    static_cast<int> (story));
+                for (const size_t i : groupIndices) {
+                    results[i] = CreateErrorResponse (err, message);
+                }
+                continue;
+            }
+            activeStory = story;
+        }
+
+        const GS::ObjectState groupResponse = CreateInteriorElevationsOnActiveStory (groupItems);
+        GS::Array<GS::ObjectState> groupElements;
+        groupResponse.Get ("elements", groupElements);
+        for (size_t k = 0; k < groupIndices.size (); ++k) {
+            results[groupIndices[k]] = k < groupElements.GetSize ()
+                ? groupElements[static_cast<GS::UIndex> (k)]
+                : CreateErrorResponse (APIERR_GENERAL, "Failed to create interior elevation.");
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const GS::ObjectState& result : results) {
+        elements (result);
+    }
+    return response;
 }
 
 GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (

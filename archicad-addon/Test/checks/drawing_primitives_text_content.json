@@ -1,0 +1,66 @@
+{
+  "title": "GetDrawingPrimitivesOfElements and GetShapePrimitivesOfElements return the content of text primitives, also of a zone stamp (#2803)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Zone" ],
+  "steps": [
+    {
+      "id": "text element",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          { "coordinate": { "x": 980.0, "y": 980.0, "z": 0.0 }, "floorIndex": 0, "text": "Tapir2803", "height": 2.5, "justification": "Left" }
+        ]
+      },
+      "save": { "t1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "text created" }
+      ]
+    },
+    {
+      "id": "zone with a stamp",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirStamp2803",
+            "numberStr": "S2803",
+            "floorIndex": 0,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 990.0, "y": 980.0 },
+                { "x": 995.0, "y": 980.0 },
+                { "x": 995.0, "y": 984.0 },
+                { "x": 990.0, "y": 984.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created" }
+      ]
+    },
+    {
+      "id": "drawing primitives with text content",
+      "command": "GetDrawingPrimitivesOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${t1}" } }, { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "drawingPrimitivesOfElements", "len": 2 },
+        { "path": "drawingPrimitivesOfElements[0].texts", "len": 1, "name": "one text primitive for a one line text" },
+        { "path": "drawingPrimitivesOfElements[0].texts[0]", "eq": "Tapir2803", "name": "the text element's content" },
+        { "path": "drawingPrimitivesOfElements[1].texts[0]", "exists": true, "name": "the zone's drawing has the texts of its stamp" }
+      ]
+    },
+    {
+      "id": "shape primitives with text content",
+      "command": "GetShapePrimitivesOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${t1}" } } ] },
+      "expect": [
+        { "path": "shapePrimitivesOfElements[0].texts[0]", "eq": "Tapir2803", "name": "the same content as GetDrawingPrimitivesOfElements" }
+      ]
+    }
+  ]
+}

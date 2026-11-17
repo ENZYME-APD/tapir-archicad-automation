@@ -22,9 +22,9 @@
     'All <em>commands.</em>': 'Tutti i <em>comandi.</em>',
 
     // The two coverage pages
-    'Overview': 'Panoramica',
+    'Coverage at a <em>glance.</em>': 'La copertura in <em>sintesi.</em>',
     'By group': 'Per gruppo',
-    'Checklist': 'Checklist',
+    'The whole <em>checklist.</em>': 'La checklist <em>completa.</em>',
 
     // The Archicad API coverage (api-coverage/)
     'Archicad API coverage checklist | Tapir': 'Checklist della copertura dell\'API di Archicad | Tapir',
