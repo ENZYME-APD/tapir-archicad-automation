@@ -13900,69 +13900,6 @@
             "gridAngle"
         ]
     },
-    "CurtainWallPanelDetails": {
-        "type": "object",
-        "properties": {
-            "homeStoryLevel": {
-                "type": "number",
-                "description": "The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates."
-            },
-            "polygonCoordinates": {
-                "type": "array",
-                "description": "The 3D coordinates of the panel polygon. Their z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.",
-                "items": {
-                    "$ref": "#/Coordinate3D"
-                },
-                "minItems": 3
-            },
-            "isHidden": {
-                "type": "boolean",
-                "description": "Indicates if the panel is hidden (deleted panels remain in the database)."
-            },
-            "isDegenerate": {
-                "type": "boolean",
-                "description": "Indicates if the panel is degenerate. Omitted when Archicad cannot tell."
-            },
-            "segmentIndex": {
-                "type": "number",
-                "description": "The index of the curtain wall segment to which this panel belongs."
-            },
-            "className": {
-                "type": "string"
-            },
-            "classIndex": {
-                "type": "integer",
-                "description": "The panel class of the panel, numbered as in the cells of CreateCurtainWalls and in ModifyCurtainWallPanels: 0 is a deleted panel, 1 the first panel class of the curtain wall, 2 the second and so on. -1 is a panel whose settings were customized apart from its class."
-            },
-            "frames": {
-                "type": "array",
-                "description": "The surrounding frames.",
-                "items": {
-                    "$ref": "#/ElementIdArrayItem"
-                },
-                "minItems": 3
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "polygonCoordinates",
-            "isHidden",
-            "segmentIndex",
-            "className",
-            "frames"
-        ]
-    },
-    "CurtainWallFrameType": {
-        "type": "string",
-        "description": "Enumeration of available curtain wall frame types.",
-        "enum": [
-            "Deleted",
-            "Division",
-            "Corner",
-            "Boundary",
-            "Custom"
-        ]
-    },
     "CurtainWallJunctionDetails": {
         "type": "object",
         "description": "A junction of a curtain wall: a GDL object Archicad places where frames and panels meet (API_CWJunctionType). Its parameters are read by GetGDLParametersOfElements and its library part by the libraryPartUnId field.",
@@ -14026,6 +13963,69 @@
             "flipped",
             "referenceFrameId",
             "curtainWallId"
+        ]
+    },
+    "CurtainWallPanelDetails": {
+        "type": "object",
+        "properties": {
+            "homeStoryLevel": {
+                "type": "number",
+                "description": "The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates."
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "The 3D coordinates of the panel polygon. Their z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 3
+            },
+            "isHidden": {
+                "type": "boolean",
+                "description": "Indicates if the panel is hidden (deleted panels remain in the database)."
+            },
+            "isDegenerate": {
+                "type": "boolean",
+                "description": "Indicates if the panel is degenerate. Omitted when Archicad cannot tell."
+            },
+            "segmentIndex": {
+                "type": "number",
+                "description": "The index of the curtain wall segment to which this panel belongs."
+            },
+            "className": {
+                "type": "string"
+            },
+            "classIndex": {
+                "type": "integer",
+                "description": "The panel class of the panel, numbered as in the cells of CreateCurtainWalls and in ModifyCurtainWallPanels: 0 is a deleted panel, 1 the first panel class of the curtain wall, 2 the second and so on. -1 is a panel whose settings were customized apart from its class."
+            },
+            "frames": {
+                "type": "array",
+                "description": "The surrounding frames.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates",
+            "isHidden",
+            "segmentIndex",
+            "className",
+            "frames"
+        ]
+    },
+    "CurtainWallFrameType": {
+        "type": "string",
+        "description": "Enumeration of available curtain wall frame types.",
+        "enum": [
+            "Deleted",
+            "Division",
+            "Corner",
+            "Boundary",
+            "Custom"
         ]
     },
     "CurtainWallFrameDetails": {
