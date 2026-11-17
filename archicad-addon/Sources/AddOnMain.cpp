@@ -877,7 +877,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetElementFieldDefinitionsCommand> (
             elementCommands, "2.0.1",
-            "Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType) that GetElementFields reads and SetElementFields writes: its path, JSON type, C++ kind, size and whether it is read-only. The list is generated from the Archicad 29 DevKit headers; other Archicad versions answer that it is not available."
+            "Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType) that GetElementFields reads and SetElementFields writes: its path, JSON type, C++ kind, size and whether it is read-only. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available."
         );
         err |= RegisterCommand<GetElementFieldsCommand> (
             elementCommands, "2.0.1",

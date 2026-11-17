@@ -12,7 +12,7 @@ using namespace ElementFields;
 
 namespace {
 
-const char* NotAvailableMessage = "The element field table is not available in this Archicad version (it is generated from the Archicad 29 DevKit).";
+const char* NotAvailableMessage = "The element field table is not available in this Archicad version (it is generated from the Archicad 29 and 30 DevKits).";
 
 const char* GetKindName (FieldKind kind)
 {
@@ -54,7 +54,9 @@ bool IsVariantActive (API_ElemTypeID typeId, const API_Element& element, const c
     if (variant == nullptr) {
         return true;
     }
-#if defined (ServerMainVers_2900) && !defined (ServerMainVers_3000)
+#if defined (ServerMainVers_2900)
+    // The union members and their selectors are the same in the Archicad 29 and 30 DevKits, the
+    // versions ElementFieldTable has tables for; other versions have no table, so no variant.
     const GS::String v (variant);
     switch (typeId) {
         case API_RoofID:
