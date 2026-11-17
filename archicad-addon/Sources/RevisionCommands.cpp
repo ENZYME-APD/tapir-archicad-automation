@@ -930,7 +930,7 @@ GS::Optional<GS::UniString> CreateChangeMarkersCommand::GetInputParametersSchema
         "required": [
             "changeMarkersData"
         ]
-    })");
+    })";
 }
 
 GS::Optional<GS::UniString> CreateChangeMarkersCommand::GetRawResponseSchema () const
@@ -1158,7 +1158,7 @@ GS::Optional<GS::UniString> ModifyChangeMarkersCommand::GetInputParametersSchema
         "required": [
             "changeMarkersWithDetails"
         ]
-    })");
+    })";
 }
 
 GS::Optional<GS::UniString> ModifyChangeMarkersCommand::GetRawResponseSchema () const
