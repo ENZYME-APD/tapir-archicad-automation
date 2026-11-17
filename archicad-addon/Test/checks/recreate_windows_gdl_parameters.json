@@ -81,11 +81,28 @@
       "stopOnFail": true
     },
     {
+      "id": "the own window's GDL parameters as placed: the part's defaults (their number and order follow the subtype's template, so they are compared as whole lists)",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ] },
+      "save": { "defaultValues": "gdlParametersOfElements[0].parameters[*].value" },
+      "stopOnFail": true
+    },
+    {
       "id": "give tapirNote a value of its own",
       "command": "SetGDLParametersOfElements",
       "creates": false,
       "params": { "elementsWithGDLParameters": [ { "elementId": { "guid": "${w}" }, "gdlParameters": [ { "name": "tapirNote", "value": "carried over" } ] } ] },
       "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "tapirNote written" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "the old window's GDL parameters now",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ] },
+      "save": { "oldNames": "gdlParametersOfElements[0].parameters[*].name", "oldValues": "gdlParametersOfElements[0].parameters[*].value" },
+      "expect": [ { "path": "gdlParametersOfElements[0].parameters[*].value", "ne": "${defaultValues}", "name": "the old window's values differ from the part's defaults (tapirNote)" } ],
       "stopOnFail": true
     },
     {
@@ -112,8 +129,8 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${nw}" } } ] },
       "expect": [
-        { "path": "gdlParametersOfElements[0].parameters[2].name", "eq": "tapirNote", "name": "third parameter is tapirNote" },
-        { "path": "gdlParametersOfElements[0].parameters[2].value", "eq": "carried over", "name": "tapirNote has the old window's value, not the part's default" }
+        { "path": "gdlParametersOfElements[0].parameters[*].name", "eq": "${oldNames}", "name": "the same parameters as the old window, in the same order" },
+        { "path": "gdlParametersOfElements[0].parameters[*].value", "eq": "${oldValues}", "name": "the old window's values, tapirNote included, not the part's defaults" }
       ]
     }
   ],
