@@ -3600,6 +3600,10 @@ GSErrCode Initialize (void)
             solidElementOperationCommands, "1.5.9",
             "Removes the trim between an element and the roof or shell trimming it. The Archicad API removes the trimming connection between the two elements, so when they trim each other (two roofs or shells) both directions are removed; trim the other direction again with TrimElements to keep it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete."
         );
+        err |= RegisterCommand<RemoveElementTrimDirectionCommand> (
+            solidElementOperationCommands, "2.0.1",
+            "Removes one direction of a trim: the trim of an element by a roof or shell, keeping the other direction when the two trim each other (two roofs or shells). The Archicad API can only remove both directions at once, so the command reads the other direction and its trim type, removes the trim and trims the other direction again, in one undo step, and reads the result back. A pair whose element is not trimmed by its trimming element fails without changing anything; when Archicad fails to remove or trim again, the whole call is undone."
+        );
         err |= RegisterCommand<GetElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",
             "Which roofs and shells trim each queried element, with the trim type, and which elements it trims."
