@@ -10144,7 +10144,7 @@
         "properties": {
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "The current zoom parameters."
+                "description": "The current zoom parameters. In a rotated window (rotation is not 0) the box is in the window's own rotated frame, as Archicad stores it, not in model coordinates."
             },
             "rotation": {
                 "type": "number",
