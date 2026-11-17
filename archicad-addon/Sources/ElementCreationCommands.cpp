@@ -216,11 +216,9 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             }
 
             // As for the id below, a new element that could not be finished is deleted again.
-            GS::UniString failureReason;
-            err = AfterCreateWithReason (requestedElement, element.header.guid, data, failureReason);
+            err = AfterCreate (requestedElement, element.header.guid, data);
             if (err != NoError) {
-                const GS::UniString reasonText = failureReason.IsEmpty () ? GS::UniString () : " (" + failureReason + ")";
-                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + reasonText + ", " + DeleteUnfinishedElement (element.header.guid)));
+                elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", " + DeleteUnfinishedElement (element.header.guid)));
                 continue;
             }
 

@@ -46,9 +46,6 @@ protected:
     // prepared it and the item's parameters, for what the create itself does not keep. An error
     // deletes the new element.
     virtual GSErrCode AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/, const GS::ObjectState& /*parameters*/) const { return NoError; }
-    // AfterCreate for a command that also says why the new element could not be finished: the
-    // item's answer gives failureReason. The default calls AfterCreate and gives no reason.
-    virtual GSErrCode AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& /*failureReason*/) const { return AfterCreate (requestedElement, newElementGuid, parameters); }
 protected:
     GS::String     commandName;
     API_ElemTypeID elemTypeID;
