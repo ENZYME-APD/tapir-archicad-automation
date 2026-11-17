@@ -2355,7 +2355,7 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
     return {};
 }
 
-// The optional databaseId of ModifyPolylines, handled as CreateElementsCommandBase::Execute
+// The optional databaseId of ModifyPolylines and ModifyHatches, handled as CreateElementsCommandBase::Execute
 // and ModifyPictures handle it: the database is switched inside the undoable command and switched back
 // afterwards, so the front window stays as it is; modify runs in the undoable command, in that database.
 // Returns the error response when Archicad cannot switch to it; nothing is changed then.
@@ -3427,6 +3427,66 @@ GS::Optional<GS::ObjectState> CreatePicturesCommand::SetTypeSpecificParameters (
     return {};
 }
 
+// The settings CreateHatches and ModifyHatches both take beside the polygon, written by
+// ApplyHatchSettings with the keys GetDetailsOfElements returns.
+static const char* HatchSettingsSchemaProperties = R"(
+                    "contourPenIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "Optional pen index for the contour; 0 switches the contour off."
+                    },
+                    "contourLineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type of the contour."
+                    },
+                    "fillPenIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill. It switches off the RGB color of the fill foreground (foregroundColor), unless that is given too."
+                    },
+                    "fillBackgroundPenIndex": {
+                        "type": "integer",
+                        "minimum": -1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color. It switches off the RGB color of the fill background (backgroundColor), unless that is given too."
+                    },
+                    "foregroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
+                    },
+                    "backgroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
+                    },
+                    "fillId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional fill attribute. Given without buildingMaterialId, it makes the hatch a fill hatch; given with it, the hatch keeps its type (fill or building material) and both are written."
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material attribute, whose cut fill the hatch shows. Given without fillId, it makes the hatch a building material hatch."
+                    },
+                    "roomSpecial": {
+                        "type": "integer",
+                        "minimum": -128,
+                        "maximum": 100,
+                        "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
+                    },
+                    "showArea": {
+                        "type": "boolean",
+                        "description": "Optional: show the area text of the hatch."
+                    },
+                    "fillOrientation": {
+                        "$ref": "#/HatchOrientation",
+                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the current ones (the tool defaults for a new hatch). A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
+                    },
+                    "fillCategory": {
+                        "$ref": "#/HatchFillCategory",
+                        "description": "Optional fill category: Drafting, Cut or Cover."
+                    })";
+
 CreateHatchesCommand::CreateHatchesCommand () :
     CreateElementsCommandBase ("CreateHatches", API_HatchID, "hatchesData")
 {
@@ -3434,12 +3494,12 @@ CreateHatchesCommand::CreateHatchesCommand () :
 
 GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "hatchesData": {
             "type": "array",
-            "description": "Array of data to create Hatches.",
+            "description": "Array of data to create Hatches. The settings left out come from the Fill tool defaults, or from the favorite given by favoriteName.",
             "items": {
                 "type": "object",
                 "description": "The parameters of the new Hatch.",
@@ -3478,53 +3538,7 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     "holes": {
                         "$ref": "#/Holes2D",
                         "description": "Optional holes of the hatch, each with its polygonOutline and optional polygonArcs (arc indices are relative to the hole's own outline). The same format SetDetailsOfElements accepts and GetDetailsOfElements returns for hatches."
-                    },
-                    "contourPenIndex": {
-                        "type": "integer",
-                        "description": "Optional pen index for the contour; 0 switches the contour off. By default the current pen is used."
-                    },
-                    "contourLineTypeId": {
-                        "$ref": "#/AttributeId",
-                        "description": "Optional line type of the contour. By default the current line type is used."
-                    },
-                    "fillPenIndex": {
-                        "type": "integer",
-                        "description": "Optional pen index for the fill. By default the current pen is used."
-                    },
-                    "fillBackgroundPenIndex": {
-                        "type": "integer",
-                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color."
-                    },
-                    "foregroundColor": {
-                        "$ref": "#/ColorRGB",
-                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
-                    },
-                    "backgroundColor": {
-                        "$ref": "#/ColorRGB",
-                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
-                    },
-                    "fillId": {
-                        "$ref": "#/AttributeId",
-                        "description": "Optional fill attribute. By default the current fill is used."
-                    },
-                    "buildingMaterialId": {
-                        "$ref": "#/AttributeId"
-                    },
-                    "roomSpecial": {
-                        "type": "integer",
-                        "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
-                    },
-                    "showArea": {
-                        "type": "boolean"
-                    },
-                    "fillOrientation": {
-                        "$ref": "#/HatchOrientation",
-                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the default ones. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
-                    },
-                    "fillCategory": {
-                        "$ref": "#/HatchFillCategory",
-                        "description": "Optional fill category: Drafting, Cut or Cover. By default the current one is used."
-                    }
+                    },)") + HatchSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -3542,6 +3556,140 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
         "hatchesData"
     ]
 })";
+}
+
+// Writes the settings of HatchSettingsSchemaProperties given in parameters to element.hatch: for
+// CreateHatches on the tool defaults (mask nullptr), and for ModifyHatches on the element read from the
+// project, with the given fields marked in mask. A given pen index clears the matching RGB override,
+// which the element or the tool defaults may carry, so the pen actually shows; a given color sets the
+// override and wins over the pen. The hatch type decides which of fillInd and buildingMaterial Archicad
+// uses, so a given attribute alone also switches the type; when both are given the type is kept, as
+// SetDetailsOfElements does, so the details read can be written back unchanged. Returns the error
+// response of an invalid value; element is then partly written and must not be used.
+static GS::Optional<GS::ObjectState> ApplyHatchSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    API_HatchType& hatch = element.hatch;
+
+    Int32 contourPenIndex = 0;
+    if (parameters.Get ("contourPenIndex", contourPenIndex)) {
+        if (contourPenIndex < 0 || contourPenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'contourPenIndex' must be between 0 (no contour) and 255.");
+        }
+        hatch.contPen.penIndex = static_cast<short> (contourPenIndex);
+        hatch.contPen.colorOverridePenIndex = 0;
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_EXTENDED_PEN (*mask, API_HatchType, contPen);
+        }
+    }
+    const GS::ObjectState* contourLineTypeId = parameters.Get ("contourLineTypeId");
+    if (contourLineTypeId != nullptr) {
+        if (!ResolveAttributeIndex (*contourLineTypeId, API_LinetypeID, hatch.ltypeInd)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'contourLineTypeId' is not a line type of the project.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, ltypeInd);
+        }
+    }
+
+    Int32 fillPenIndex = 0;
+    if (parameters.Get ("fillPenIndex", fillPenIndex)) {
+        if (fillPenIndex < 1 || fillPenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'fillPenIndex' must be between 1 and 255.");
+        }
+        hatch.fillPen.penIndex = static_cast<short> (fillPenIndex);
+        hatch.fillPen.colorOverridePenIndex = 0;
+        hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_EXTENDED_PEN (*mask, API_HatchType, fillPen);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+    Int32 fillBackgroundPenIndex = 0;
+    if (parameters.Get ("fillBackgroundPenIndex", fillBackgroundPenIndex)) {
+        if (fillBackgroundPenIndex < -1 || fillBackgroundPenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'fillBackgroundPenIndex' must be between -1 (window background) and 255; 0 is transparent.");
+        }
+        hatch.fillBGPen = static_cast<short> (fillBackgroundPenIndex);
+        hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, fillBGPen);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+    if (GetColor (parameters, "foregroundColor", hatch.foregroundRGB)) {
+        hatch.hatchFlags |= APIHatch_HasFgRGBColor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, foregroundRGB);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+    if (GetColor (parameters, "backgroundColor", hatch.backgroundRGB)) {
+        hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, backgroundRGB);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+
+    const GS::ObjectState* fillId = parameters.Get ("fillId");
+    const GS::ObjectState* buildingMaterialId = parameters.Get ("buildingMaterialId");
+    if (fillId != nullptr) {
+        if (!ResolveAttributeIndex (*fillId, API_FilltypeID, hatch.fillInd)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'fillId' is not a fill of the project.");
+        }
+        if (buildingMaterialId == nullptr) {
+            hatch.hatchType = API_FillHatch;
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, fillInd);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchType);
+        }
+    }
+    if (buildingMaterialId != nullptr) {
+        if (!ResolveAttributeIndex (*buildingMaterialId, API_BuildingMaterialID, hatch.buildingMaterial)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'buildingMaterialId' is not a building material of the project.");
+        }
+        if (fillId == nullptr) {
+            hatch.hatchType = API_BuildingMaterialHatch;
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, buildingMaterial);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchType);
+        }
+    }
+
+    Int32 roomSpecial = 0;
+    if (parameters.Get ("roomSpecial", roomSpecial)) {
+        if (roomSpecial < -128 || roomSpecial > 100) {
+            return CreateErrorResponse (APIERR_BADPARS, "'roomSpecial' must be a percentage between 1 and 100, or negative to switch it off.");
+        }
+        hatch.roomSpecial = static_cast<char> (roomSpecial);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, roomSpecial);
+        }
+    }
+    if (parameters.Get ("showArea", hatch.showArea) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, showArea);
+    }
+
+    GS::ObjectState fillOrientationOs;
+    if (parameters.Get ("fillOrientation", fillOrientationOs)) {
+        ApplyHatchFillOrientation (fillOrientationOs, hatch.hatchOrientation);
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_HATCH_ORIENTATION (*mask, API_HatchType, hatchOrientation);
+        }
+    }
+    GS::UniString fillCategory;
+    if (parameters.Get ("fillCategory", fillCategory)) {
+        if (!HatchFillCategoryFromString (fillCategory, hatch.determination)) {
+            return CreateErrorResponse (APIERR_BADPARS, "fillCategory must be Drafting, Cut or Cover.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, determination);
+        }
+    }
+
+    return {};
 }
 
 GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
@@ -3572,64 +3720,327 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the polygon of the hatch.");
     }
 
-    short contourPenIndex = 0;
-    if (parameters.Get ("contourPenIndex", contourPenIndex)) {
-        element.hatch.contPen.penIndex = contourPenIndex;
-        element.hatch.contPen.colorOverridePenIndex = 0;
-    }
-    // A given pen index clears the matching RGB override, which the tool defaults may carry,
-    // so the pen actually shows. A given color sets the override and wins over the pen.
-    short fillPenIndex = 0;
-    if (parameters.Get ("fillPenIndex", fillPenIndex)) {
-        element.hatch.fillPen.penIndex = fillPenIndex;
-        element.hatch.fillPen.colorOverridePenIndex = 0;
-        element.hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
-    }
-    if (parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen)) {
-        element.hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
-    }
-    if (GetColor (parameters, "foregroundColor", element.hatch.foregroundRGB)) {
-        element.hatch.hatchFlags |= APIHatch_HasFgRGBColor;
-    }
-    if (GetColor (parameters, "backgroundColor", element.hatch.backgroundRGB)) {
-        element.hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
-    }
-    // The hatch type decides which of fillInd and buildingMaterial Archicad uses, so a given
-    // attribute alone also switches the type; when both are given the default type is kept,
-    // as SetDetailsOfElements does.
-    const GS::ObjectState* fillId = parameters.Get ("fillId");
-    const GS::ObjectState* buildingMaterialId = parameters.Get ("buildingMaterialId");
-    if (fillId != nullptr) {
-        element.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
-        if (buildingMaterialId == nullptr) {
-            element.hatch.hatchType = API_FillHatch;
+    return ApplyHatchSettings (parameters, element, nullptr);
+}
+
+ModifyHatchesCommand::ModifyHatchesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyHatchesCommand::GetName () const
+{
+    return "ModifyHatches";
+}
+
+GS::Optional<GS::UniString> ModifyHatchesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "hatchesWithDetails": {
+            "type": "array",
+            "description": "The Hatches (Fills) to change, each with the settings to change. Only the given settings are changed; the keys are those CreateHatches takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs and holes.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The new outline of the hatch, replacing the whole polygon, as CreateHatches takes it. The first point may be repeated at the end, as in the closed outline GetDetailsOfElements returns; that last point is then ignored. Optional parameter.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 3
+                    },
+                    "arcs": {
+                        "type": "array",
+                        "description": "The arcs of the new outline, with indices into coordinates. Only taken with coordinates; without it the new outline has straight edges only.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "holes": {
+                        "$ref": "#/Holes2D",
+                        "description": "The holes of the new polygon, each with its polygonOutline and optional polygonArcs (arc indices are relative to the hole's own outline), in the format GetDetailsOfElements returns. Only taken with coordinates; without it the new polygon has no holes."
+                    },)") + HatchSettingsSchemaProperties + R"(
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database the hatches are in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), as CreateHatches takes it. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the hatches are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
         }
+    },
+    "additionalProperties": false,
+    "required": [
+        "hatchesWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyHatchesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// Whether a hatch shows the orientation of its fill pattern: a fill hatch whose fill is not Solid
+// (Archicad ignores the orientation of Solid fills). The orientation of a building material hatch
+// depends on the building material's cut fill, so it is not compared either.
+static bool HatchKeepsFillOrientation (const API_HatchType& hatch)
+{
+    if (hatch.hatchType != API_FillHatch) {
+        return false;
     }
-    if (buildingMaterialId != nullptr) {
-        element.hatch.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialId));
-        if (fillId == nullptr) {
-            element.hatch.hatchType = API_BuildingMaterialHatch;
-        }
+    API_Attribute fill = {};
+    fill.header.typeID = API_FilltypeID;
+    fill.header.index = hatch.fillInd;
+    if (ACAPI_Attribute_Get (&fill) != NoError) {
+        return false;
     }
-    Int32 roomSpecial = 0;
-    if (parameters.Get ("roomSpecial", roomSpecial)) {
-        element.hatch.roomSpecial = (char) roomSpecial;
-    }
-    parameters.Get ("showArea", element.hatch.showArea);
-    GS::ObjectState fillOrientationOs;
-    if (parameters.Get ("fillOrientation", fillOrientationOs)) {
-        ApplyHatchFillOrientation (fillOrientationOs, element.hatch.hatchOrientation);
-    }
-    GS::UniString fillCategory;
-    if (parameters.Get ("fillCategory", fillCategory)) {
-        HatchFillCategoryFromString (fillCategory, element.hatch.determination);
-    }
-    const GS::ObjectState* contourLineTypeId = parameters.Get ("contourLineTypeId");
-    if (contourLineTypeId != nullptr) {
-        element.hatch.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+    const bool isSolid = fill.filltype.subType == APIFill_Solid;
+    DisposeAttribute (fill);
+    return !isSolid;
+}
+
+static bool IsSameColor (const API_RGBColor& color1, const API_RGBColor& color2)
+{
+    const double tolerance = 1e-4;
+    return std::abs (color1.f_red - color2.f_red) < tolerance &&
+           std::abs (color1.f_green - color2.f_green) < tolerance &&
+           std::abs (color1.f_blue - color2.f_blue) < tolerance;
+}
+
+// Changes one hatch: the settings through ApplyHatchSettings, as in CreateHatches, and the polygon
+// through the memo in the layout BuildHatchPolygonMemo writes for CreateHatches and SetDetailsOfElements
+// (ACAPI_Element_Change edits the polygon of a hatch, ACAPinc.h), in one ACAPI_Element_Change. The hatch
+// is read back, so a value Archicad did not keep is reported as a failure. Archicad may store a new
+// outline from another point or in the other direction, so the polygon is compared by its bounding box,
+// its number of contours (the outline and the holes) and its number of arcs.
+static GS::ObjectState ModifyOneHatch (const GS::ObjectState& item)
+{
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
     }
 
-    return {};
+    API_Element element = {};
+    element.header.guid = GetGuidFromObjectState (*elementId);
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to find the element");
+    }
+    if (GetElemTypeId (element.header) != API_HatchID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Hatch.");
+    }
+    if (item.GetFieldCount () <= 1) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No hatch settings to modify.");
+    }
+
+    GS::Array<GS::ObjectState> coordinates;
+    const bool hasCoordinates = item.Get ("coordinates", coordinates);
+    GS::Array<GS::ObjectState> arcs;
+    const bool hasArcs = item.Get ("arcs", arcs);
+    GS::Array<GS::ObjectState> holes;
+    const bool hasHoles = item.Get ("holes", holes);
+    if ((hasArcs || hasHoles) && !hasCoordinates) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'arcs' and 'holes' are only taken with 'coordinates': the polygon is replaced as a whole.");
+    }
+    GS::Array<GS::ObjectState> outline;
+    if (hasCoordinates) {
+        outline = GetOpenHatchOutline (coordinates);
+        if (outline.GetSize () < 3) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The hatch outline must contain at least 3 coordinates, not counting a last one that repeats the first.");
+        }
+        const GS::Optional<GS::UniString> arcsError = CheckOutlineArcs (arcs, static_cast<Int32> (outline.GetSize ()));
+        if (arcsError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, arcsError.Get ());
+        }
+        const GS::Optional<GS::UniString> holesError = ValidateHoles (holes);
+        if (holesError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, holesError.Get ());
+        }
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    const GS::Optional<GS::ObjectState> settingsError = ApplyHatchSettings (item, element, &mask);
+    if (settingsError.HasValue ()) {
+        return CreateFailedExecutionResult (settingsError.Get ());
+    }
+
+    // ACAPI_Element_Change may answer NoError on a hidden or locked layer and change nothing.
+    GS::UniString layerReason;
+    err = GetLayerChangeError (element.header.layer, layerReason);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The hatch was not changed, because " + layerReason + ".");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    UInt64 memoMask = 0;
+    if (hasCoordinates) {
+        if (!BuildHatchPolygonMemo (coordinates, arcs, holes, element.hatch.poly, memo)) {
+            return CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the polygon of the hatch.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, poly);
+        memoMask = APIMemoMask_Polygon;
+    }
+
+    err = ACAPI_Element_Change (&element, &mask, memoMask != 0 ? &memo : nullptr, memoMask, true);
+    if (err != NoError) {
+        const GS::UniString refusal = DescribeElementEditRefusal (err, element.header);
+        return CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to modify the hatch.") : "Failed to modify the hatch, because " + refusal + ".");
+    }
+
+    // Read back, so a value Archicad did not take is reported instead of a success.
+    API_Element changed = {};
+    changed.header.guid = element.header.guid;
+    err = ACAPI_Element_Get (&changed);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the hatch back after the change.");
+    }
+    const API_HatchType& given = element.hatch;
+    const API_HatchType& kept = changed.hatch;
+    GS::UniString notApplied;
+    if (item.Contains ("contourPenIndex") &&
+        (kept.contPen.penIndex != given.contPen.penIndex || kept.contPen.colorOverridePenIndex != given.contPen.colorOverridePenIndex)) {
+        notApplied += " contourPenIndex";
+    }
+    if (item.Contains ("contourLineTypeId") && GetAttributeIndex (kept.ltypeInd) != GetAttributeIndex (given.ltypeInd)) {
+        notApplied += " contourLineTypeId";
+    }
+    if (item.Contains ("fillPenIndex") &&
+        (kept.fillPen.penIndex != given.fillPen.penIndex || kept.fillPen.colorOverridePenIndex != given.fillPen.colorOverridePenIndex ||
+         (!item.Contains ("foregroundColor") && (kept.hatchFlags & APIHatch_HasFgRGBColor) != 0))) {
+        notApplied += " fillPenIndex";
+    }
+    if (item.Contains ("fillBackgroundPenIndex") &&
+        (kept.fillBGPen != given.fillBGPen || (!item.Contains ("backgroundColor") && (kept.hatchFlags & APIHatch_HasBkgRGBColor) != 0))) {
+        notApplied += " fillBackgroundPenIndex";
+    }
+    if (item.Contains ("foregroundColor") && ((kept.hatchFlags & APIHatch_HasFgRGBColor) == 0 || !IsSameColor (kept.foregroundRGB, given.foregroundRGB))) {
+        notApplied += " foregroundColor";
+    }
+    if (item.Contains ("backgroundColor") && ((kept.hatchFlags & APIHatch_HasBkgRGBColor) == 0 || !IsSameColor (kept.backgroundRGB, given.backgroundRGB))) {
+        notApplied += " backgroundColor";
+    }
+    if (item.Contains ("fillId") && (GetAttributeIndex (kept.fillInd) != GetAttributeIndex (given.fillInd) || kept.hatchType != given.hatchType)) {
+        notApplied += " fillId";
+    }
+    if (item.Contains ("buildingMaterialId") && (GetAttributeIndex (kept.buildingMaterial) != GetAttributeIndex (given.buildingMaterial) || kept.hatchType != given.hatchType)) {
+        notApplied += " buildingMaterialId";
+    }
+    // Archicad may store another negative value for "off" than the one given.
+    if (item.Contains ("roomSpecial") && (given.roomSpecial < 0 ? kept.roomSpecial >= 0 : kept.roomSpecial != given.roomSpecial)) {
+        notApplied += " roomSpecial";
+    }
+    if (item.Contains ("showArea") && kept.showArea != given.showArea) {
+        notApplied += " showArea";
+    }
+    if (item.Contains ("fillCategory") && kept.determination != given.determination) {
+        notApplied += " fillCategory";
+    }
+    if (item.Contains ("fillOrientation") && HatchKeepsFillOrientation (kept)) {
+        const API_HatchOrientation& givenOrientation = given.hatchOrientation;
+        const API_HatchOrientation& keptOrientation = kept.hatchOrientation;
+        const double tolerance = 1e-6;
+        // A Global fill follows the project origin and axes, so only its type is compared; the origin
+        // of a fill snapped to the project origin (GlobalOrigo) is not used, so it is not compared.
+        const bool compareOrigin = (givenOrientation.flags & APIHatchOrinFlag_GlobalOrigo) == 0;
+        if (keptOrientation.type != givenOrientation.type ||
+            (givenOrientation.type != API_HatchGlobal && (
+            (compareOrigin && std::abs (keptOrientation.origo.x - givenOrientation.origo.x) > tolerance) ||
+            (compareOrigin && std::abs (keptOrientation.origo.y - givenOrientation.origo.y) > tolerance) ||
+            std::abs (keptOrientation.matrix00 - givenOrientation.matrix00) > tolerance ||
+            std::abs (keptOrientation.matrix10 - givenOrientation.matrix10) > tolerance ||
+            std::abs (keptOrientation.matrix01 - givenOrientation.matrix01) > tolerance ||
+            std::abs (keptOrientation.matrix11 - givenOrientation.matrix11) > tolerance))) {
+            notApplied += " fillOrientation";
+        }
+    }
+    if (hasCoordinates) {
+        bool polygonKept = kept.poly.nSubPolys == given.poly.nSubPolys && kept.poly.nArcs == given.poly.nArcs;
+        if (polygonKept) {
+            const std::vector<PolygonData> polygons = GetPolygonsFromMemoCoords (changed.header.guid);
+            polygonKept = !polygons.empty () && !polygons[0].coords.empty ();
+            if (polygonKept) {
+                API_Coord givenMin = Get2DCoordinateFromObjectState (outline[0]);
+                API_Coord givenMax = givenMin;
+                for (const GS::ObjectState& point : outline) {
+                    const API_Coord c = Get2DCoordinateFromObjectState (point);
+                    givenMin.x = GS::Min (givenMin.x, c.x);
+                    givenMin.y = GS::Min (givenMin.y, c.y);
+                    givenMax.x = GS::Max (givenMax.x, c.x);
+                    givenMax.y = GS::Max (givenMax.y, c.y);
+                }
+                API_Coord keptMin = polygons[0].coords[0];
+                API_Coord keptMax = keptMin;
+                for (const API_Coord& c : polygons[0].coords) {
+                    keptMin.x = GS::Min (keptMin.x, c.x);
+                    keptMin.y = GS::Min (keptMin.y, c.y);
+                    keptMax.x = GS::Max (keptMax.x, c.x);
+                    keptMax.y = GS::Max (keptMax.y, c.y);
+                }
+                polygonKept = std::abs (keptMin.x - givenMin.x) < PolygonReadBackTolerance && std::abs (keptMin.y - givenMin.y) < PolygonReadBackTolerance &&
+                              std::abs (keptMax.x - givenMax.x) < PolygonReadBackTolerance && std::abs (keptMax.y - givenMax.y) < PolygonReadBackTolerance;
+            }
+        }
+        if (!polygonKept) {
+            notApplied += " coordinates";
+            if (hasArcs) {
+                notApplied += " arcs";
+            }
+            if (hasHoles) {
+                notApplied += " holes";
+            }
+        }
+    }
+    if (!notApplied.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + ".");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+GS::ObjectState ModifyHatchesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("hatchesWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    const GS::Optional<GS::ObjectState> databaseError = CallUndoableModifyInDatabase (parameters, "ModifyHatches", [&] () {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState result = ModifyOneHatch (item);
+            changeReporter.MarkChangedIfSucceeded (item, result);
+            executionResults (result);
+        }
+    });
+    if (databaseError.HasValue ()) {
+        return databaseError.Get ();
+    }
+
+    changeReporter.Report ();
+
+    return response;
 }
 
 CreateSplinesCommand::CreateSplinesCommand () :
