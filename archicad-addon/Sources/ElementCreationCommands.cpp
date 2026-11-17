@@ -4108,6 +4108,10 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                             "$ref": "#/Coordinate3D",
                             "description": "The new placement position. As in CreateTexts, the z value selects the floor when floorIndex is omitted."
                         },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new placement position as GetDetailsOfElements reads it (position), so a text read can be sent back: the same as coordinate without z, so the text stays on its floor (floorIndex still moves it). Ignored when coordinate is given."
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
@@ -4122,7 +4126,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                         "width": {
                             "type": "number",
                             "minimum": 0.0,
-                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements with the same key (width, 0 when word wrap is off), and as style.boxWidth with style.nonBreaking false."
                         }
                     },
                     "additionalProperties": false,
@@ -4210,8 +4214,17 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 // Same floor resolution as CreateTexts: an explicit floorIndex wins, otherwise z picks the floor.
                 element.header.floorInd = ResolveFloorIndexAndOffset (item, "floorIndex", apiCoordinate.z, stories).first;
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-            } else if (item.Get ("floorIndex", element.header.floorInd)) {
-                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            } else {
+                // The placement as GetDetailsOfElements reads it (x and y), so a text read can be sent
+                // back; it keeps the floor. coordinate wins when both are given.
+                const GS::ObjectState* positionOS = item.Get ("position");
+                if (positionOS != nullptr) {
+                    element.text.loc = Get2DCoordinateFromObjectState (*positionOS);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, loc);
+                }
+                if (item.Get ("floorIndex", element.header.floorInd)) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                }
             }
 
             const GS::ObjectState* styleOS = item.Get ("style");
@@ -7510,7 +7523,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     "width": {
                         "type": "number",
                         "exclusiveMinimum": 0.0,
-                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements with the same key (width), and as style.boxWidth with style.nonBreaking false."
                     },
                     "floorIndex": {
                         "type": "integer",

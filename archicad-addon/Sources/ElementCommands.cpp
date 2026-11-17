@@ -3555,6 +3555,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("pen", (Int32) elem.text.pen);
                 typeSpecificDetails.Add ("justification", JustificationToString (static_cast<API_JustID> (elem.text.just)));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+                // The wrap width as CreateTexts and ModifyTexts write it with "width": the box width
+                // while word wrap is on, 0 for an auto-width text, so it can be sent back as it is read.
+                typeSpecificDetails.Add ("width", (!elem.text.nonBreaking && elem.text.width > 0.0) ? elem.text.width : 0.0);
                 GS::ObjectState styleOS;
                 TextLabelDetails::AddTextStyleDetails (styleOS, elem.text, true);
                 // Whether boxWidth is the wrap width CreateTexts/ModifyTexts set with "width".

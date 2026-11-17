@@ -80,6 +80,74 @@
         { "path": "detailsOfElements[0].details.veneer.type", "eq": "Finish", "name": "round trip: veneer type" },
         { "path": "detailsOfElements[0].details.veneer.thickness", "approx": 0.03, "tol": 0.0001, "name": "round trip: veneer thickness" }
       ]
+    },
+    {
+      "id": "a wrapped text",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          { "coordinate": { "x": 1010.0, "y": 1000.0, "z": 0.0 }, "text": "A long line of text that does not fit into a narrow text box", "height": 2.5, "justification": "Left", "width": 30.0 }
+        ]
+      },
+      "save": { "txt": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "text created" }
+      ]
+    },
+    {
+      "id": "read the text's position and width",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${txt}" } } ] },
+      "save": { "txtPosition": "detailsOfElements[0].details.position", "txtWidth": "detailsOfElements[0].details.width" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 30.0, "tol": 0.01, "name": "wrap width read with the key CreateTexts and ModifyTexts write" },
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1010.0, "name": "position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "position y" }
+      ]
+    },
+    {
+      "id": "move the text by its position, word wrap off",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": { "textsWithDetails": [ { "elementId": { "guid": "${txt}" }, "position": { "x": 1012.0, "y": 1003.0 }, "width": 0.0 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "position (the key GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "read the moved auto-width text",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${txt}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1012.0, "name": "moved in x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1003.0, "name": "moved in y" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "position keeps the floor" },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.0, "tol": 0.000001, "name": "width 0 for an auto-width text" },
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": true, "name": "word wrap off" }
+      ]
+    },
+    {
+      "id": "send the position and width back as they were read",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": { "textsWithDetails": [ { "elementId": { "guid": "${txt}" }, "position": "${txtPosition}", "width": "${txtWidth}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the position and width read are accepted" }
+      ]
+    },
+    {
+      "id": "the text as it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${txt}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1010.0, "name": "round trip: position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "round trip: position y" },
+        { "path": "detailsOfElements[0].details.width", "approx": 30.0, "tol": 0.01, "name": "round trip: wrap width" },
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "round trip: word wrap on" }
+      ]
     }
   ]
 }

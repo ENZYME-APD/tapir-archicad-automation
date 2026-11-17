@@ -15447,7 +15447,7 @@
             },
             "position": {
                 "$ref": "#/Coordinate2D",
-                "description": "The placement position of the text."
+                "description": "The placement position of the text. ModifyTexts takes it back with the same key (and as coordinate with a z)."
             },
             "angle": {
                 "type": "number",
@@ -15468,6 +15468,10 @@
             "zCoordinate": {
                 "type": "number",
                 "description": "The level of the text's floor."
+            },
+            "width": {
+                "type": "number",
+                "description": "The wrap width in mm, as CreateTexts and ModifyTexts write it with the same key: the box width (style.boxWidth) while word wrap is on (style.nonBreaking false), 0 for an auto-width text."
             },
             "style": {
                 "$ref": "#/TextStyleDetails",
