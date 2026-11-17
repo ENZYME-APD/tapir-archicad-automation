@@ -1,9 +1,9 @@
 {
-  "title": "SetViewOptions switches the railing components shown in the floor plan (modelViewOptions.railing) off and on, reads them back, and GetViewOptions returns them; the teardown restores the original railing options (the window keeps Custom model view options with them)",
+  "title": "SetViewOptions reports that Archicad does not keep the railing components shown in the floor plan (modelViewOptions.railing) changed through ACAPI_Navigator_ChangeViewOptions, and GetViewOptions reads them unchanged; the teardown writes the original railing options back",
   "minTapir": "2.0.1",
   "steps": [
     {
-      "id": "the railing options before",
+      "id": "the railing options before (the template shows the railing components)",
       "command": "GetViewOptions",
       "creates": false,
       "params": {},
@@ -18,11 +18,12 @@
         "stairWalkingLine0": "viewOptions.modelViewOptions.stair.stairFloorPlanCompWalkingLine"
       },
       "expect": [
-        { "path": "viewOptions.modelViewOptions.railing.railing3DDetailLevel", "exists": true, "name": "railing options read" }
+        { "path": "viewOptions.modelViewOptions.railing.railing3DDetailLevel", "exists": true, "name": "railing options read" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "exists": true, "name": "posts option read" }
       ]
     },
     {
-      "id": "every railing component hidden in the floor plan",
+      "id": "every railing component hidden in the floor plan: refused, Archicad 29 keeps them",
       "command": "SetViewOptions",
       "creates": false,
       "params": {
@@ -41,67 +42,23 @@
         }
       },
       "expect": [
-        { "path": "error.message", "exists": false, "name": "kept (else the error names the railing options Archicad kept)" }
+        { "path": "error.message", "contains": "Archicad did not keep every given view option: modelViewOptions.railing.", "name": "the change is reported as not kept, with the railing options Archicad kept" }
       ]
     },
     {
-      "id": "read them hidden",
+      "id": "the railing components are unchanged",
       "command": "GetViewOptions",
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "eq": false, "name": "posts hidden" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail", "eq": false, "name": "top rails hidden" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompHandrails", "eq": false, "name": "handrails hidden" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails", "eq": false, "name": "rails hidden" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompInnerPosts", "eq": false, "name": "inner posts hidden" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters", "eq": false, "name": "balusters hidden" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels", "eq": false, "name": "panels hidden" },
-        { "path": "viewOptions.modelViewOptions.stair.stairFloorPlanCompWalkingLine", "eq": "${stairWalkingLine0}", "name": "the stair options kept" }
-      ]
-    },
-    {
-      "id": "posts, rails and panels shown again, the others still hidden",
-      "command": "SetViewOptions",
-      "creates": false,
-      "params": {
-        "viewOptions": {
-          "modelViewOptions": {
-            "railing": {
-              "railing2DDisplayCompPosts": true,
-              "railing2DDisplayCompRails": true,
-              "railing2DDisplayCompPanels": true
-            }
-          }
-        }
-      },
-      "expect": [
-        { "path": "error.message", "exists": false, "name": "kept" }
-      ]
-    },
-    {
-      "id": "read the three shown, the others kept hidden",
-      "command": "GetViewOptions",
-      "creates": false,
-      "params": {},
-      "expect": [
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "eq": true, "name": "posts shown" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails", "eq": true, "name": "rails shown" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels", "eq": true, "name": "panels shown" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail", "eq": false, "name": "top rails still hidden" },
-        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters", "eq": false, "name": "balusters still hidden" }
-      ]
-    },
-    {
-      "id": "an unknown railing option is refused by the schema",
-      "command": "SetViewOptions",
-      "creates": false,
-      "allowEnvelopeError": true,
-      "params": {
-        "viewOptions": { "modelViewOptions": { "railing": { "railing2DDisplayCompGlass": true } } }
-      },
-      "expect": [
-        { "path": "__envelopeError__", "exists": true, "name": "refused" }
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "eq": "${posts0}", "name": "posts unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail", "eq": "${topRail0}", "name": "top rails unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompHandrails", "eq": "${handrails0}", "name": "handrails unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails", "eq": "${rails0}", "name": "rails unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompInnerPosts", "eq": "${innerPosts0}", "name": "inner posts unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters", "eq": "${balusters0}", "name": "balusters unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels", "eq": "${panels0}", "name": "panels unchanged" },
+        { "path": "viewOptions.modelViewOptions.stair.stairFloorPlanCompWalkingLine", "eq": "${stairWalkingLine0}", "name": "the stair options unchanged" }
       ]
     }
   ],

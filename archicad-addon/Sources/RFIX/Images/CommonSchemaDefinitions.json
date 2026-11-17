@@ -1276,7 +1276,7 @@
                 "properties": {
                     "railing": {
                         "$ref": "#/RailingModelViewOptions",
-                        "description": "The railing options to change; the ones left out keep their value."
+                        "description": "The railing options to change; the ones left out keep their value. Archicad 29 does not keep the railing2DDisplayComp* fields, which SetViewOptions then reports."
                     }
                 },
                 "additionalProperties": true
@@ -1290,7 +1290,7 @@
     },
     "RailingModelViewOptions": {
         "type": "object",
-        "description": "The railing options of the model view options (API_RailingModelViewOptions; Model View Options > Railing Options), every field by its API name: the railing components shown in the floor plan and the schematic 3D display. GetViewOptions and GetModelViewOptionDetails return all of them; SetViewOptions takes any of them.",
+        "description": "The railing options of the model view options (API_RailingModelViewOptions; Model View Options > Railing Options), every field by its API name: the railing components shown in the floor plan and the schematic 3D display. GetViewOptions and GetModelViewOptionDetails return all of them; SetViewOptions takes any of them and reads them back. Archicad 29 does not keep the railing2DDisplayComp* fields changed through ACAPI_Navigator_ChangeViewOptions, so SetViewOptions reports such a change as not kept.",
         "properties": {
             "railing3DDetailLevel": { "type": "integer", "description": "The detail level of railings in the 3D display, the numeric API constant." },
             "railing2DDisplayCompPosts": { "type": "boolean", "description": "Whether the posts are shown in the floor plan." },
