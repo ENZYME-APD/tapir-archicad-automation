@@ -1,60 +1,45 @@
 {
-  "title": "CreateRadialDimensions: a radial dimension of a curved wall, linked to the wall and measuring about its radius (the record steps show the wall's snap points and which side of the chord Archicad puts the wall's centre), a straight wall refused",
+  "title": "CreateRadialDimensions: a radial dimension of a curved wall, linked to the wall's line with inIndex -1 (what Archicad 29 stores for one placed by hand) and measuring its radius; a straight wall refused",
   "minTapir": "2.0.1",
-  "requiresEmpty": [ "Wall", "RadialDimension" ],
+  "requiresEmpty": [
+    "Wall",
+    "RadialDimension"
+  ],
   "steps": [
     {
       "id": "a quarter-circle wall of radius 3 m from (988, 900) to (985, 903), arc angle +90 degrees, its reference line in the middle",
       "command": "CreateWalls",
       "params": {
         "wallsData": [
-          { "begCoordinate": { "x": 988.0, "y": 900.0 }, "endCoordinate": { "x": 985.0, "y": 903.0 }, "arcAngle": 1.5707963267948966,
-            "floorIndex": 0, "zCoordinate": 0, "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+          {
+            "begCoordinate": {
+              "x": 988.0,
+              "y": 900.0
+            },
+            "endCoordinate": {
+              "x": 985.0,
+              "y": 903.0
+            },
+            "arcAngle": 1.5707963267948966,
+            "floorIndex": 0,
+            "zCoordinate": 0,
+            "height": 3.0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "referenceLineLocation": "Center",
+            "offset": 0.0
+          }
         ]
       },
-      "save": { "w": "elements[0].elementId.guid" },
-      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "curved wall created" } ]
-    },
-    {
-      "id": "record: the wall's snap points (CreateRadialDimensions picks the wall's centre with those near its ends)",
-      "command": "GetSnapPointsOfElements",
-      "creates": false,
-      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ] },
-      "expect": [
-        { "path": "snapPointsOfElements[0].snapPoints[0].coordinate", "ne": "-", "name": "record: snap point 0" },
-        { "path": "snapPointsOfElements[0].snapPoints[1].coordinate", "ne": "-", "name": "record: snap point 1" },
-        { "path": "snapPointsOfElements[0].snapPoints[2].coordinate", "ne": "-", "name": "record: snap point 2" },
-        { "path": "snapPointsOfElements[0].snapPoints[3].coordinate", "ne": "-", "name": "record: snap point 3" },
-        { "path": "snapPointsOfElements[0].snapPoints[4].coordinate", "ne": "-", "name": "record: snap point 4" },
-        { "path": "snapPointsOfElements[0].snapPoints[5].coordinate", "ne": "-", "name": "record: snap point 5" },
-        { "path": "snapPointsOfElements[0].snapPoints[6].coordinate", "ne": "-", "name": "record: snap point 6" },
-        { "path": "snapPointsOfElements[0].snapPoints[7].coordinate", "ne": "-", "name": "record: snap point 7" }
-      ]
-    },
-    {
-      "id": "record: the base point on the reference line if the centre is (985, 900), on the left of the chord",
-      "command": "CreateRadialDimensions",
-      "params": {
-        "radialDimensionsData": [
-          { "elementId": { "guid": "${w}" }, "basePoint": { "x": 987.1213203, "y": 902.1213203 }, "dimensionLineEnd": { "x": 987.8284271, "y": 902.8284271 } }
-        ]
+      "save": {
+        "w": "elements[0].elementId.guid"
       },
       "expect": [
-        { "path": "elements[0].elementId.guid", "ne": "-", "name": "record: created with the centre on the left (a guid), or not (null)" },
-        { "path": "elements[0].error.message", "ne": "-", "name": "record: why not" }
-      ]
-    },
-    {
-      "id": "record: the base point on the reference line if the centre is (988, 903), on the right of the chord",
-      "command": "CreateRadialDimensions",
-      "params": {
-        "radialDimensionsData": [
-          { "elementId": { "guid": "${w}" }, "basePoint": { "x": 985.8786797, "y": 900.8786797 }, "dimensionLineEnd": { "x": 985.1715729, "y": 900.1715729 } }
-        ]
-      },
-      "expect": [
-        { "path": "elements[0].elementId.guid", "ne": "-", "name": "record: created with the centre on the right (a guid), or not (null)" },
-        { "path": "elements[0].error.message", "ne": "-", "name": "record: why not" }
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "curved wall created"
+        }
       ]
     },
     {
@@ -62,26 +47,83 @@
       "command": "CreateRadialDimensions",
       "params": {
         "radialDimensionsData": [
-          { "elementId": { "guid": "${w}" }, "dimensionLineEnd": { "x": 987.8284271, "y": 902.8284271 } }
+          {
+            "elementId": {
+              "guid": "${w}"
+            },
+            "dimensionLineEnd": {
+              "x": 987.8284271,
+              "y": 902.8284271
+            }
+          }
         ]
       },
-      "save": { "d": "elements[0].elementId.guid" },
+      "save": {
+        "d": "elements[0].elementId.guid"
+      },
       "expect": [
-        { "path": "elements[0].elementId.guid", "exists": true, "name": "radial dimension of the wall created (else the error names the link and radius Archicad stored)" }
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "radial dimension of the wall created (else the error names the link and radius Archicad stored)"
+        }
       ]
     },
     {
       "id": "read the wall's dimension back",
       "command": "GetDetailsOfElements",
       "creates": false,
-      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${d}"
+            }
+          }
+        ]
+      },
       "expect": [
-        { "path": "detailsOfElements[0].type", "eq": "RadialDimension", "name": "a radial dimension" },
-        { "path": "detailsOfElements[0].details.radius", "approx": 3.0, "tol": 0.11, "name": "measures the wall's radius (reference line or a face)" },
-        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${w}", "name": "linked to the wall" },
-        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Wall", "name": "the owner is a wall" },
-        { "path": "detailsOfElements[0].details.basePoint", "ne": "-", "name": "record: the stored base point" },
-        { "path": "detailsOfElements[0].details.ownerElementInIndex", "ne": "-", "name": "record: the stored inIndex" }
+        {
+          "path": "detailsOfElements[0].type",
+          "eq": "RadialDimension",
+          "name": "a radial dimension"
+        },
+        {
+          "path": "detailsOfElements[0].details.radius",
+          "approx": 3.0,
+          "tol": 0.11,
+          "name": "measures the wall's radius (reference line or a face)"
+        },
+        {
+          "path": "detailsOfElements[0].details.ownerElementId.guid",
+          "eq": "${w}",
+          "name": "linked to the wall"
+        },
+        {
+          "path": "detailsOfElements[0].details.ownerElementType",
+          "eq": "Wall",
+          "name": "the owner is a wall"
+        },
+        {
+          "path": "detailsOfElements[0].details.basePoint",
+          "ne": "-",
+          "name": "record: the stored base point"
+        },
+        {
+          "path": "detailsOfElements[0].details.ownerElementInIndex",
+          "ne": "-",
+          "name": "record: the stored inIndex"
+        },
+        {
+          "path": "detailsOfElements[0].details.ownerElementInIndex",
+          "eq": -1,
+          "name": "linked with inIndex -1, the default for a wall"
+        },
+        {
+          "path": "detailsOfElements[0].details.ownerElementLine",
+          "eq": true,
+          "name": "linked to the wall's line"
+        }
       ]
     },
     {
@@ -89,21 +131,60 @@
       "command": "CreateWalls",
       "params": {
         "wallsData": [
-          { "begCoordinate": { "x": 990.0, "y": 900.0 }, "endCoordinate": { "x": 994.0, "y": 900.0 }, "floorIndex": 0, "zCoordinate": 0, "height": 3.0, "thickness": 0.2 }
+          {
+            "begCoordinate": {
+              "x": 990.0,
+              "y": 900.0
+            },
+            "endCoordinate": {
+              "x": 994.0,
+              "y": 900.0
+            },
+            "floorIndex": 0,
+            "zCoordinate": 0,
+            "height": 3.0,
+            "thickness": 0.2
+          }
         ]
       },
-      "save": { "s": "elements[0].elementId.guid" },
-      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "straight wall created" } ]
+      "save": {
+        "s": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "straight wall created"
+        }
+      ]
     },
     {
       "id": "a straight wall has no radius: refused",
       "command": "CreateRadialDimensions",
       "params": {
-        "radialDimensionsData": [ { "elementId": { "guid": "${s}" }, "dimensionLineEnd": { "x": 992.0, "y": 901.0 } } ]
+        "radialDimensionsData": [
+          {
+            "elementId": {
+              "guid": "${s}"
+            },
+            "dimensionLineEnd": {
+              "x": 992.0,
+              "y": 901.0
+            }
+          }
+        ]
       },
       "expect": [
-        { "path": "elements[0].error.code", "exists": true, "name": "refused" },
-        { "path": "elements[0].elementId", "exists": false, "name": "nothing created" }
+        {
+          "path": "elements[0].error.code",
+          "exists": true,
+          "name": "refused"
+        },
+        {
+          "path": "elements[0].elementId",
+          "exists": false,
+          "name": "nothing created"
+        }
       ]
     }
   ]

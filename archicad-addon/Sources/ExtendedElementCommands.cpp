@@ -1633,7 +1633,7 @@ GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSch
                     },
                     "ownerElementInIndex": {
                         "type": "integer",
-                        "description": "Optional. The index of the measured part of the element (base.base.inIndex), as GetDetailsOfElements returns it for a radial dimension placed by hand. The Archicad API does not document it for radial dimensions; 1 when not given."
+                        "description": "Optional. The index of the measured part of the element (base.base.inIndex), as GetDetailsOfElements returns it for a radial dimension placed by hand. The Archicad API does not document it for radial dimensions. When not given: -1 for a curved wall (what Archicad 29 stores for a dimension placed by hand on one, and the only value it takes), 1 for an arc or a circle."
                     },
                     "ownerElementLine": {
                         "type": "boolean",
@@ -1743,7 +1743,10 @@ GS::Optional<GS::ObjectState> CreateRadialDimensionsCommand::SetTypeSpecificPara
     radial.base.base.guid = owner.header.guid;
     radial.base.base.line = true;
     parameters.Get ("ownerElementLine", radial.base.base.line);
-    Int32 inIndex = 1;
+    // A radial dimension placed by hand on a curved wall in Archicad 29 stores inIndex -1, and
+    // ACAPI_Element_Create refuses a wall with any other value tried (1, 2, 10, 11, 20, 21 and the
+    // inIndex of every wall hotspot). Arcs and circles take 1.
+    Int32 inIndex = GetElemTypeId (owner.header) == API_WallID ? -1 : 1;
     parameters.Get ("ownerElementInIndex", inIndex);
     radial.base.base.inIndex = inIndex;
     radial.base.base.special = 0;
