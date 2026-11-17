@@ -1778,6 +1778,103 @@ static GSErrCode RestoreStairFlightWidth (const API_Element& elementBefore)
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
+// Marks a whole member of the mask, every byte of it, the way ACAPI_ELEMENT_MASK_SETFULL marks
+// the whole element: ACAPI_ELEMENT_MASK_SET only marks the first byte, which for a struct member
+// (a story visibility, a cover fill transformation, an overridden pen) is only its first field.
+template <typename T>
+static void MaskWholeMember (T& maskMember)
+{
+    memset (&maskMember, 0xFF, sizeof (T));
+}
+
+// The mask of the settings on the Floor Plan and Section panel of the element's settings dialog,
+// for the 'FloorPlanAndSection' setting group of ApplyFavoritesToElements (#2802): story
+// visibility, floor plan display and projection, the pens and line types of the cut, uncut,
+// overhead and hidden lines, the cut fill pens and the cover fill - the same fields
+// ModifyColumns and ModifyBeams write as the floor plan display. Nothing of the geometry, the
+// cross section (building material, profile, size, which live in the memo's segments), the
+// structural function or the layer is in it. Returns false for an element type it has no
+// field list for.
+static bool SetFloorPlanAndSectionMask (const API_Elem_Head& header, API_Element& mask)
+{
+    switch (GetElemTypeId (header)) {
+        case API_ColumnID: {
+            API_ColumnType& column = mask.column;
+            MaskWholeMember (column.visibility);
+            MaskWholeMember (column.isAutoOnStoryVisibility);
+            MaskWholeMember (column.displayOption);
+            MaskWholeMember (column.viewDepthLimitation);
+            MaskWholeMember (column.corePen);
+            MaskWholeMember (column.contLtype);
+            MaskWholeMember (column.venLinePen);
+            MaskWholeMember (column.venLineType);
+            MaskWholeMember (column.coreSymbolType);
+            MaskWholeMember (column.coreSymbolPen);
+            MaskWholeMember (column.coreSymbolPar1);
+            MaskWholeMember (column.coreSymbolPar2);
+            MaskWholeMember (column.belowViewLinePen);
+            MaskWholeMember (column.belowViewLineType);
+            MaskWholeMember (column.aboveViewLinePen);
+            MaskWholeMember (column.aboveViewLineType);
+            MaskWholeMember (column.hiddenLinePen);
+            MaskWholeMember (column.hiddenLineType);
+#ifdef ServerMainVers_2700
+            MaskWholeMember (column.cutFillPen);
+            MaskWholeMember (column.cutFillBackgroundPen);
+#else
+            MaskWholeMember (column.penOverride);
+#endif
+            MaskWholeMember (column.useCoverFill);
+            MaskWholeMember (column.useCoverFillFromSurface);
+            MaskWholeMember (column.coverFillOrientationComesFrom3D);
+            MaskWholeMember (column.coverFillType);
+            MaskWholeMember (column.coverFillForegroundPen);
+            MaskWholeMember (column.coverFillBackgroundPen);
+            MaskWholeMember (column.coverFillTransformationType);
+            MaskWholeMember (column.coverFillTransformation);
+            return true;
+        }
+        case API_BeamID: {
+            API_BeamType& beam = mask.beam;
+            MaskWholeMember (beam.visibility);
+            MaskWholeMember (beam.isAutoOnStoryVisibility);
+            MaskWholeMember (beam.displayOption);
+            MaskWholeMember (beam.viewDepthLimitation);
+            MaskWholeMember (beam.uncutProjectionMode);
+            MaskWholeMember (beam.overheadProjectionMode);
+            MaskWholeMember (beam.showContourLines);
+            MaskWholeMember (beam.showReferenceAxis);
+            MaskWholeMember (beam.cutContourLinePen);
+            MaskWholeMember (beam.cutContourLineType);
+            MaskWholeMember (beam.belowViewLinePen);
+            MaskWholeMember (beam.belowViewLineType);
+            MaskWholeMember (beam.aboveViewLinePen);
+            MaskWholeMember (beam.aboveViewLineType);
+            MaskWholeMember (beam.hiddenLinePen);
+            MaskWholeMember (beam.hiddenLineType);
+            MaskWholeMember (beam.refPen);
+            MaskWholeMember (beam.refLtype);
+#ifdef ServerMainVers_2700
+            MaskWholeMember (beam.cutFillPen);
+            MaskWholeMember (beam.cutFillBackgroundPen);
+#else
+            MaskWholeMember (beam.penOverride);
+#endif
+            MaskWholeMember (beam.useCoverFill);
+            MaskWholeMember (beam.useCoverFillFromSurface);
+            MaskWholeMember (beam.coverFillOrientationComesFrom3D);
+            MaskWholeMember (beam.coverFillType);
+            MaskWholeMember (beam.coverFillForegroundPen);
+            MaskWholeMember (beam.coverFillBackgroundPen);
+            MaskWholeMember (beam.coverFillTransformationType);
+            MaskWholeMember (beam.coverFillTransformation);
+            return true;
+        }
+        default:
+            return false;
+    }
+}
+
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1834,6 +1931,18 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                 "items": {
                     "$ref": "#/FavoriteKeepField"
                 }
+            },
+            "settingGroups": {
+                "type": "array",
+                "description": "Apply only these panels of the Favorite's settings dialog, and nothing else of it - a positive list instead of keepFields. 'FloorPlanAndSection' applies the Floor Plan and Section settings: story visibility (Show on Stories), floor plan display and projection, the pens and line types of the cut, uncut, overhead and hidden lines (a Beam's reference axis too), the cut fill pens and the cover fill; geometry, size, cross section, building material, profile, layer and the other panels stay the target's. It is supported for Column and Beam elements; another element type gets a failed execution result and is left unchanged. 'ClassificationAndProperties' applies the Favorite's classifications, element categories (e.g. structural function) and property values, each still only when its own apply flag is not false; without it in the list none of them is applied. applySettings false turns 'FloorPlanAndSection' off. keepFields still applies. Default: the whole Favorite is applied as described for applySettings.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "FloorPlanAndSection",
+                        "ClassificationAndProperties"
+                    ]
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false
@@ -1864,7 +1973,33 @@ struct FavoriteApplyOptions
     bool applyCategories = true;
     bool applyProperties = true;
     KeptFields keptFields;
+    // settingGroups (#2802): when given, only the listed panels of the Favorite are applied.
+    bool hasSettingGroups = false;
+    bool floorPlanAndSection = false;
+    bool classificationAndProperties = false;
 };
+
+static GS::Optional<GS::UniString> ParseSettingGroups (const GS::Array<GS::UniString>& names, FavoriteApplyOptions& options)
+{
+    options.hasSettingGroups = true;
+    for (const GS::UniString& name : names) {
+        if (name == "FloorPlanAndSection") {
+            options.floorPlanAndSection = true;
+        } else if (name == "ClassificationAndProperties") {
+            options.classificationAndProperties = true;
+        } else {
+            return GS::UniString::Printf ("Unknown settingGroups value '%T'.", name.ToPrintf ());
+        }
+    }
+    // The classifications, categories and properties of the Favorite are the Classification and
+    // Properties panel: without it in the list none of them is applied, whatever their own flags.
+    if (!options.classificationAndProperties) {
+        options.applyClassifications = false;
+        options.applyCategories = false;
+        options.applyProperties = false;
+    }
+    return {};
+}
 
 // Reads the Favorite of the given name for ApplyFavoritesToElements, with its memo, properties,
 // classifications and element category values. On an error the memo is disposed and errorMessage
@@ -1907,6 +2042,15 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
         return CreateFailedExecutionResult (APIERR_BADID, "The Favorite's element type does not match the target element's type.");
     }
 
+    // Checked before anything is applied, so an element of a type without the group's field list
+    // is left as it was instead of getting only the Favorite's classifications (#2802).
+    API_Element settingGroupsMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (settingGroupsMask);
+    const bool applySettingGroups = options.applySettings && options.hasSettingGroups && options.floorPlanAndSection;
+    if (applySettingGroups && !SetFloorPlanAndSectionMask (targetElement.header, settingGroupsMask)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "settingGroups: 'FloorPlanAndSection' is only supported for Column and Beam elements yet; nothing was applied to this element.");
+    }
+
     // The Element ID is read off the memo before anything is applied - see RestoreKeptFields.
     API_ElementMemo targetIdMemo = {};
     const GS::OnExit disposeTargetIdMemo ([&targetIdMemo] () { ACAPI_DisposeElemMemoHdls (&targetIdMemo); });
@@ -1934,7 +2078,15 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
     // always keeps the target's own guid - exactly the "apply favorite settings"
     // semantics we want here. The memo is the one part that can carry geometry, so
     // it is withheld for the types where it does (see MemoCarriesGeometry above).
-    if (options.applySettings) {
+    if (options.hasSettingGroups) {
+        // Only the masked fields of the listed panels, and no memo: the memo carries the cross
+        // section (building material, profile, size) and the geometry, none of which is on them.
+        if (applySettingGroups) {
+            GS::Array<API_Guid> targetGuids;
+            targetGuids.Push (targetGuid);
+            err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, nullptr, &settingGroupsMask);
+        }
+    } else if (options.applySettings) {
         if (IsWindowOrDoor (targetElement.header)) {
             err = ApplyFavoriteToOpening (targetElement, favorite);
         } else {
@@ -2010,6 +2162,14 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
     GS::Array<GS::UniString> keepFieldNames;
     if (parameters.Get ("keepFields", keepFieldNames)) {
         const auto parseError = ParseKeptFields (keepFieldNames, options.keptFields);
+        if (parseError.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, parseError.Get ());
+        }
+    }
+
+    GS::Array<GS::UniString> settingGroupNames;
+    if (parameters.Get ("settingGroups", settingGroupNames)) {
+        const auto parseError = ParseSettingGroups (settingGroupNames, options);
         if (parseError.HasValue ()) {
             return CreateErrorResponse (APIERR_BADPARS, parseError.Get ());
         }
