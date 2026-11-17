@@ -4,15 +4,18 @@
   "minArchicad": "27",
   "steps": [
     {
-      "id": "Layout Book before",
+      "id": "Layout Book before: the map root holds the Layout Book item, which holds the subsets",
       "command": "GetNavigatorItemTree",
       "creates": false,
       "stopOnFail": true,
       "params": { "navigatorMapId": "LayoutBook" },
       "save": {
-        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
-        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
-      }
+        "book": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.type", "eq": "BookItem", "name": "the Layout Book item" }
+      ]
     },
     {
       "id": "subset with its numbering",
@@ -39,13 +42,13 @@
       ]
     },
     {
-      "id": "subset second in the Layout Book",
+      "id": "subset second in the Layout Book item",
       "command": "MoveNavigatorItem",
       "creates": false,
       "stopOnFail": true,
       "params": {
         "navigatorItemIdToMove": { "guid": "${subset}" },
-        "parentNavigatorItemId": { "guid": "${bookRoot}" },
+        "parentNavigatorItemId": { "guid": "${book}" },
         "previousNavigatorItemId": { "guid": "${bookFirst}" }
       },
       "expect": [ { "path": "success", "eq": true } ]
@@ -75,20 +78,20 @@
       "save": { "master": "layoutSettings[0].masterNavigatorItemId.guid" }
     },
     {
-      "id": "the layouts are in the subset, in order",
+      "id": "the two layouts are in the subset (Archicad puts a new layout first, so the order is read, not assumed)",
       "command": "GetNavigatorItemTree",
       "creates": false,
       "stopOnFail": true,
       "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
       "save": {
-        "layout1": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid",
-        "layout2": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.navigatorItemId.guid"
+        "layout1": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid",
+        "layout2": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[1].navigatorItem.navigatorItemId.guid"
       },
       "expect": [
-        { "path": "navigatorItemTree.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "second item is the subset" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.childCount", "eq": 2, "name": "with the two layouts" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check change layout one", "name": "layout one first" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check change layout two", "name": "layout two second" }
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "second item is the subset" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.childCount", "eq": 2, "name": "with the two layouts" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check change layout", "name": "first item: one of the layouts" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check change layout", "name": "second item: the other layout" }
       ]
     },
     {
@@ -131,12 +134,12 @@
       "creates": false,
       "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
       "expect": [
-        { "path": "navigatorItemTree.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "the old subset stays second" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.childCount", "eq": 0, "name": "the old subset is empty" },
-        { "path": "navigatorItemTree.children[2].navigatorItem.navigatorItemId.guid", "eq": "${newSubset}", "name": "the new subset is third" },
-        { "path": "navigatorItemTree.children[2].navigatorItem.childCount", "eq": 2, "name": "the new subset holds the two layouts" },
-        { "path": "navigatorItemTree.children[2].navigatorItem.children[0].navigatorItem.navigatorItemId.guid", "eq": "${layout1}", "name": "layout one first" },
-        { "path": "navigatorItemTree.children[2].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${layout2}", "name": "layout two second" }
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "the old subset stays second" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.childCount", "eq": 0, "name": "the old subset is empty" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.navigatorItemId.guid", "eq": "${newSubset}", "name": "the new subset is third" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.childCount", "eq": 2, "name": "the new subset holds the two layouts" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.children[0].navigatorItem.navigatorItemId.guid", "eq": "${layout1}", "name": "the first layout still first" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${layout2}", "name": "the second layout still second" }
       ]
     },
     {
@@ -161,7 +164,7 @@
       "creates": false,
       "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
       "expect": [
-        { "path": "navigatorItemTree.children[2].navigatorItem.childCount", "eq": 2, "name": "the new subset still holds the two layouts" }
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.childCount", "eq": 2, "name": "the new subset still holds the two layouts" }
       ]
     }
   ],
