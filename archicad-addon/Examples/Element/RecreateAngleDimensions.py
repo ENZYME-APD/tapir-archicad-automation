@@ -2,8 +2,9 @@
 
 Archicad does not move the lines or the arc of an angle dimension through ACAPI_Element_Change, so
 RecreateAngleDimensions creates it again on the new lines and arc position (as CreateAngleDimensions takes
-them) with the old one's pens, text, markers and inner or outer arc, Element ID, classifications and
-property values, and deletes the old one. The result gives the new angle dimension.
+them) with the old one's pens, text, markers and inner or outer arc, classifications and property
+values, and deletes the old one. The result gives the new angle dimension. Archicad 29 gives angle
+dimensions no Element ID, so there is none to carry.
 """
 import math
 import aclib
@@ -20,8 +21,7 @@ dimension = aclib.RunTapirCommand ('CreateAngleDimensions', {'angleDimensionsDat
     'secondLine': Line (pitch),
     'arcPosition': ArcPosition (pitch),
     'smallArc': True,
-    'textPen': 3,
-    'id': 'ANGLE-01'
+    'textPen': 3
 }]})['elements'][0]
 
 newPitch = math.radians (45.0)

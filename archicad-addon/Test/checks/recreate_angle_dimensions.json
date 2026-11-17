@@ -1,10 +1,10 @@
 {
-  "title": "RecreateAngleDimensions puts an angle dimension on new lines and a new arc, keeping its pens, text, inner arc and Element ID",
+  "title": "RecreateAngleDimensions puts an angle dimension on new lines and a new arc, keeping its pens, text and inner arc (Archicad 29 gives angle dimensions no Element ID)",
   "minTapir": "2.0.1",
   "requiresEmpty": [ "AngleDimension" ],
   "steps": [
     {
-      "id": "a 30 degree inner angle dimension with pen 2, text pen 3, text height 2.5 and an Element ID",
+      "id": "a 30 degree inner angle dimension with pen 2, text pen 3 and text height 2.5 (no id: Archicad 29 refuses an Element ID on angle dimensions)",
       "command": "CreateAngleDimensions",
       "params": {
         "angleDimensionsData": [
@@ -16,8 +16,7 @@
             "floorIndex": 0,
             "pen": 2,
             "textHeight": 2.5,
-            "textPen": 3,
-            "id": "CHK-RECREATE-ANGLE"
+            "textPen": 3
           }
         ]
       },
@@ -51,7 +50,6 @@
       "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].type", "eq": "AngleDimension", "name": "an angle dimension" },
-        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-ANGLE", "name": "keeps the Element ID" },
         { "path": "detailsOfElements[0].details.measuredAngle", "approx": 0.7853982, "name": "measures the new 45 degrees" },
         { "path": "detailsOfElements[0].details.arcCenter.x", "approx": 920.0, "name": "arc centered on the new common point (x)" },
         { "path": "detailsOfElements[0].details.arcCenter.y", "approx": 950.0, "name": "arc centered on the new common point (y)" },
@@ -105,7 +103,7 @@
       "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].details.measuredAngle", "approx": 0.7853982, "name": "still 45 degrees" },
-        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-ANGLE", "name": "still with its Element ID" }
+        { "path": "detailsOfElements[0].details.arcCenter.x", "approx": 920.0, "name": "still centered at x 920" }
       ]
     }
   ],

@@ -1457,7 +1457,7 @@ GSErrCode Initialize (void)
             "Recreates Angle Dimension elements on new lines with a new arc position (firstLine, secondLine and arcPosition, as CreateAngleDimensions takes them), because Archicad does not move the lines or the arc of an angle dimension through ACAPI_Element_Change (seen in Archicad 29). "
             "The new angle dimension is static, as CreateAngleDimensions creates it, and is created in the current database, where the old one has to be. "
             "It gets the old one's settings (pen, inner or outer arc, markers, witness lines, text pen, size, font, style, position and direction, custom text and the rest of API_AngleDimensionType), layer, story and renovation status, "
-            "and its Element ID, classifications, element categories and property values; the text goes back to its automatic place on the new arc. The old angle dimension is then deleted. "
+            "and its classifications, element categories and property values, and its Element ID where Archicad gives angle dimensions one (Archicad 29 refuses an Element ID on them, so there is none to carry); the text goes back to its automatic place on the new arc. The old angle dimension is then deleted. "
             "Each angle dimension is recreated in its own undo step, and when any step fails nothing is changed for it. The new angle dimension has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (the group it was in)."
         );
         err |= RegisterCommand<ChangeTextContentCommand> (

@@ -10322,6 +10322,10 @@ struct StairTrim {
 struct StairDataToCarry {
     API_Element                                 element = {};
     GS::UniString                               elementId;
+    // Set by the caller for an element type that may have no Element ID on some Archicad versions
+    // (angle dimensions on Archicad 29 refuse one, as lines do): an ID that cannot be read or written
+    // is then left out instead of failing the whole recreate.
+    bool                                        elementIdOptional = false;
     GS::Array<GS::Pair<API_Guid, API_Guid>>     classifications;
     GS::Array<API_Property>                     properties;
     GS::Array<API_ElemCategoryValue>            categoryValues;
@@ -10357,7 +10361,10 @@ GS::Optional<GS::UniString> ReadElementDataToCarry (const API_Guid& stairGuid, A
 
     err = GetElementId (stairGuid, data.elementId);
     if (err != NoError) {
-        return "Failed to read the Element ID of the " + noun + ".";
+        if (!data.elementIdOptional) {
+            return "Failed to read the Element ID of the " + noun + ".";
+        }
+        data.elementId.Clear ();
     }
 
     err = ACAPI_Element_GetClassificationItems (stairGuid, data.classifications);
@@ -10630,7 +10637,8 @@ GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& dat
     // The Element ID last, once the old element is gone. ChangeElementId reads it back.
     if (!data.elementId.IsEmpty ()) {
         err = ChangeElementId (newGuid, data.elementId);
-        if (err != NoError) {
+        const bool refusedForTheType = err == APIERR_REFUSEDPAR || err == APIERR_BADELEMENTTYPE;
+        if (err != NoError && !(data.elementIdOptional && refusedForTheType)) {
             return failure ("Failed to give the new " + noun + " the Element ID of the old one", err);
         }
     }
@@ -12254,6 +12262,9 @@ GS::ObjectState RecreateAngleDimensionsCommand::Execute (const GS::ObjectState& 
         const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
 
         StairDataToCarry data;
+        // Archicad 29 gives an angle dimension no Element ID: ChangeElementId answers APIERR_REFUSEDPAR,
+        // as CreateAngleDimensions with id shows. An ID that cannot be read or written is left out.
+        data.elementIdOptional = true;
         GSErrCode err = NoError;
         const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_AngleDimensionID, "Angle Dimension", "angle dimension", data, err);
         if (readError.HasValue ()) {
