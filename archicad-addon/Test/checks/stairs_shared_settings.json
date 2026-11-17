@@ -119,13 +119,14 @@
       "id": "ModifyStairs: a bad walking line position is refused by the shared schema",
       "command": "ModifyStairs",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "stairsWithDetails": [
           { "elementId": { "guid": "${s}" }, "walkingLinePosition": "Middle" }
         ]
       },
       "expect": [
-        { "path": "error.code", "exists": true, "name": "refused" }
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" }
       ]
     },
     {
