@@ -1296,6 +1296,32 @@ static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& exist
 
 } // namespace
 
+// The overlap pre-check of CreateZones (#822) for the manual zone RecreateZones makes from the
+// polygon of an existing zone: the existing zone itself is left out, as RecreateZones deletes it
+// before it creates the new one. The project's zones are read for this call only.
+GS::Optional<GS::ObjectState> FindOverlapOfZonePolygon (const API_Guid& zoneGuid, short floorInd)
+{
+    std::vector<PolygonData> polygons = GetPolygonsFromMemoCoords (zoneGuid);
+    if (polygons.empty () || polygons[0].coords.size () < 3) {
+        return CreateErrorResponse (APIERR_GENERAL, "The polygon of the zone could not be read.");
+    }
+    ZoneArea area;
+    area.outline = std::move (polygons[0].coords);
+    for (size_t i = 1; i < polygons.size (); ++i) {
+        area.holes.push_back (std::move (polygons[i].coords));
+    }
+    API_ZoneType manualZone = {};
+    manualZone.manual = true;
+
+    zoneOverlapCache = ZoneOverlapCache {};
+    const GS::OnExit cacheGuard ([] () { zoneOverlapCache = ZoneOverlapCache {}; });
+    const ExistingZone* overlapped = FindOverlappingZone (manualZone, floorInd, area, zoneGuid);
+    if (overlapped != nullptr) {
+        return CreateZoneOverlapErrorResponse (*overlapped);
+    }
+    return {};
+}
+
 // The levels of a zone: its height, base offset, top link and floor (finish) thickness.
 // Applied by CreateZones (no mask) and, through ApplyZoneSettings, by ModifyZones and
 // SetDetailsOfElements. Same rule as for walls and columns: an explicit height unlinks

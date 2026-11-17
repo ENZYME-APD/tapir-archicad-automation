@@ -10480,7 +10480,7 @@ GS::Optional<GS::UniString> ReadElementDataToCarry (const API_Guid& stairGuid, A
     return {};
 }
 
-GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err);
+GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err, bool oldDeletedFirst = false);
 
 // Creates the new stair and moves everything over; runs inside the undoable command. Returns the
 // error response, with err set, when a step failed: the caller returns err from the command, which
@@ -10546,10 +10546,11 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
 }
 
 // Moves what ReadElementDataToCarry read from the old element onto the new one (newGuid), deletes
-// the old element and gives the new one its Element ID. Shared by RecreateStairs and
-// RecreateRailings; runs inside their undoable command. Returns the error response, with err set,
-// when a step failed.
-GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err)
+// the old element and gives the new one its Element ID. Shared by the Recreate commands; runs inside
+// their undoable command. oldDeletedFirst: the caller deleted the old element before it created the
+// new one (RecreateZones), so it is not deleted here. Returns the error response, with err set, when
+// a step failed.
+GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err, bool oldDeletedFirst)
 {
     const API_Guid oldGuid = data.element.header.guid;
     const auto failure = [] (const GS::UniString& step, GSErrCode stepErr) {
@@ -10617,11 +10618,13 @@ GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& dat
         }
     }
 
-    GS::Array<API_Guid> toDelete;
-    toDelete.Push (oldGuid);
-    err = ACAPI_Element_Delete (toDelete);
-    if (err != NoError) {
-        return failure ("Failed to delete the old " + noun, err);
+    if (!oldDeletedFirst) {
+        GS::Array<API_Guid> toDelete;
+        toDelete.Push (oldGuid);
+        err = ACAPI_Element_Delete (toDelete);
+        if (err != NoError) {
+            return failure ("Failed to delete the old " + noun, err);
+        }
     }
 
     // The Element ID last, once the old element is gone. ChangeElementId reads it back.
@@ -11890,6 +11893,242 @@ GS::Optional<GS::UniString> RecreateDoorsCommand::GetRawResponseSchema () const
 GS::ObjectState RecreateDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     return RecreateWindowsOrDoors (parameters, API_DoorID, "doors", "Door", "door");
+}
+
+// ============================================================================
+// RecreateZones
+// Archicad 29 does not turn an automatic zone into a manual one through ACAPI_Element_Change: it
+// keeps API_ZoneType::manual (tested 17/11/2026). So the zone is created again as a manual zone with
+// the polygon it has now (its memo's coords, pends and parcs, the polygon GetDetailsOfElements
+// returns) and with the old zone's settings and stamp parameters, and the old zone is deleted. The
+// old zone is deleted first: the new one has its very polygon, and Archicad answers a new zone that
+// overlaps another one with a modal warning that blocks the API (#822). One undoable command per
+// zone, which brings the old zone back when a later step fails.
+// ============================================================================
+
+RecreateZonesCommand::RecreateZonesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateZonesCommand::GetName () const
+{
+    return "RecreateZones";
+}
+
+GS::Optional<GS::UniString> RecreateZonesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zones": {
+                "type": "array",
+                "description": "The zones to recreate as manual zones.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The automatic zone to recreate."
+                        },
+                        "makeManual": {
+                            "type": "boolean",
+                            "description": "Must be true: the new zone is a manual zone (isManual in GetDetailsOfElements) with the polygon the old zone has now (its polygonOutline, polygonArcs and holes), so it no longer follows its boundaries when the zones are updated. Archicad does not turn an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). A zone that is manual already is refused, as there is nothing to change."
+                        },
+                        "allowOverlap": {
+                            "type": "boolean",
+                            "description": "Optional, defaults to false. As in CreateZones: a new zone that would overlap another zone of the same story (not the old zone, which is deleted first) fails with an error naming that zone, instead of risking Archicad's modal overlap warning, which blocks the API. Set it to true to create the zone anyway; the dialog may then appear."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "makeManual"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["zones"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateZonesCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input zone: the new manual zone, or an error. After an error nothing was changed for that zone. Labels of the old zone are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> zones;
+    parameters.Get ("zones", zones);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    // Zones live on the floor plan, where the old one is read and deleted and the new one created.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : zones) {
+        if (databaseErr != NoError) {
+            results (CreateErrorResponse (databaseErr, "Failed to activate the floor plan database, where the zone is recreated. Activate the floor plan in Archicad and run the command again. Nothing was changed."));
+            continue;
+        }
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        bool makeManual = false;
+        if (elementId == nullptr || !item.Get ("makeManual", makeManual)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId and makeManual are required. Nothing was changed."));
+            continue;
+        }
+        if (!makeManual) {
+            results (CreateErrorResponse (APIERR_BADPARS, "makeManual must be true: a zone is recreated to make it a manual zone. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_ZoneID, "Zone", "zone", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+        if (data.element.zone.manual) {
+            results (CreateErrorResponse (APIERR_BADPARS, "The zone is a manual zone already, so there is nothing to change. Nothing was changed."));
+            continue;
+        }
+
+        // The polygon the zone has now, and its stamp parameters.
+        API_ElementMemo oldMemo = {};
+        const GS::OnExit oldMemoGuard ([&oldMemo] () { ACAPI_DisposeElemMemoHdls (&oldMemo); });
+        err = ACAPI_Element_GetMemo (oldGuid, &oldMemo, APIMemoMask_Polygon | APIMemoMask_AddPars);
+        const Int32 nSubPolys = (err == NoError && oldMemo.pends != nullptr)
+            ? static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (oldMemo.pends)) / sizeof (Int32)) - 1
+            : 0;
+        const Int32 nStoredCoords = (err == NoError && oldMemo.coords != nullptr)
+            ? static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (oldMemo.coords)) / sizeof (API_Coord)) - 1
+            : 0;
+        const Int32 nCoords = nSubPolys >= 1 ? (*oldMemo.pends)[nSubPolys] : 0;
+        if (nSubPolys < 1 || nCoords < 4 || nCoords > nStoredCoords) {
+            results (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the zone. Nothing was changed."));
+            continue;
+        }
+        const Int32 nArcs = oldMemo.parcs != nullptr
+            ? static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (oldMemo.parcs)) / sizeof (API_PolyArc))
+            : 0;
+
+        bool allowOverlap = false;
+        item.Get ("allowOverlap", allowOverlap);
+        if (!allowOverlap) {
+            const GS::Optional<GS::ObjectState> overlapError = FindOverlapOfZonePolygon (oldGuid, data.element.header.floorInd);
+            if (overlapError.HasValue ()) {
+                results (*overlapError);
+                continue;
+            }
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Zone", [&] () -> GSErrCode {
+            GS::Array<API_Guid> toDelete;
+            toDelete.Push (oldGuid);
+            stepErr = ACAPI_Element_Delete (toDelete);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to delete the old zone. Nothing was changed.");
+                return stepErr;
+            }
+
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_ZoneID;
+#else
+            element.header.typeID = API_ZoneID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Zone defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // The old zone's whole API_ZoneType (category, name, number, stamp library part and
+            // position, levels, contour, fill, surface ...) with the defaults' header put back, as
+            // RecreateStairs does, and without the stamp element and the found polygon of the old
+            // zone, which belong to it.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_Guid defaultsStampGuid = element.zone.stampGuid;
+            const API_Polygon defaultsRefPoly = element.zone.refPoly;
+            element.zone = data.element.zone;
+            element.header = defaultsHeader;
+            element.zone.stampGuid = defaultsStampGuid;
+            element.zone.refPoly = defaultsRefPoly;
+            element.zone.manual = true;
+            element.zone.poly.nCoords = nCoords;
+            element.zone.poly.nSubPolys = nSubPolys;
+            element.zone.poly.nArcs = nArcs;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = data.element.header.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            // The polygon and the stamp parameters, moved from the old zone's memo.
+            if (memo.coords != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+            }
+            if (memo.pends != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.pends));
+            }
+            if (memo.parcs != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+            }
+            if (memo.vertexIDs != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.vertexIDs));
+            }
+            memo.coords = oldMemo.coords;
+            memo.pends = oldMemo.pends;
+            memo.parcs = oldMemo.parcs;
+            oldMemo.coords = nullptr;
+            oldMemo.pends = nullptr;
+            oldMemo.parcs = nullptr;
+            if (oldMemo.params != nullptr) {
+                if (memo.params != nullptr) {
+                    ACAPI_DisposeAddParHdl (&memo.params);
+                }
+                memo.params = oldMemo.params;
+                oldMemo.params = nullptr;
+            }
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a manual zone with the polygon and the settings of the old zone. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "zone", stepErr, true);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the zone."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
 }
 
 CreateOpeningsCommand::CreateOpeningsCommand () :

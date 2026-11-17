@@ -1437,6 +1437,14 @@ GSErrCode Initialize (void)
             "its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old door's Element ID, classifications, element categories and property values, and the old door is then deleted. "
             "Each door is recreated in its own undo step, and when any step fails nothing is changed for that door. The new door has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old door, group)."
         );
+        err |= RegisterCommand<RecreateZonesCommand> (
+            elementCommands, "2.0.1",
+            "Recreates automatic Zone elements as manual zones (makeManual), because Archicad does not turn an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). "
+            "The new manual zone has the polygon the old zone has now (with its arcs and holes, as GetDetailsOfElements returns it), so it no longer follows its boundaries when the zones are updated; "
+            "it gets the old zone's category, name, number, stamp library part, stamp position and stamp parameters, levels, contour, cover fill, surface and the rest of API_ZoneType, layer and renovation status, "
+            "and its Element ID, classifications, element categories and property values. The old zone is deleted first, since a new zone with its polygon would overlap it; a new zone that would overlap another zone of the story is refused, as CreateZones refuses it, unless allowOverlap is true. "
+            "Each zone is recreated in its own undo step, and when any step fails nothing is changed for that zone. The new zone has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old zone, group)."
+        );
         err |= RegisterCommand<ChangeTextContentCommand> (
             elementCommands, "1.8.0",
             "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content."
