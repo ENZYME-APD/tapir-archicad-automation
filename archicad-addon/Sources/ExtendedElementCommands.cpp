@@ -8084,6 +8084,7 @@ static const char* StairSettingsSchemaProperties = R"(
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
                         "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error." },
+                        "headroom": { "$ref": "#/StairHeadroom", "description": "The headroom of the stair (Stair Settings > Headroom): only the given fields are written, the others are kept. An unknown key is refused, and ModifyStairs reads the given fields back and reports one Archicad did not apply as an error." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -9554,6 +9555,29 @@ GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules)
     return os;
 }
 
+static const char* StairHeadroomMethodToString (API_HeadroomGenerationModeID method)
+{
+    switch (method) {
+        case APIHM_RightAngleToSlope:   return "RightAngleToSlope";
+        case APIHM_VerticallyToSlope:   return "VerticallyToSlope";
+        default:                        return "Unknown";
+    }
+}
+
+// The headroom of a stair (Stair Settings > Headroom), in the StairHeadroom definition (#2857).
+// GetDetailsOfElements returns it for a stair (declared in ExtendedElementCommands.hpp); CreateStairs
+// and ModifyStairs write the same fields. API_StairHeadroomData has these members in every DevKit
+// from AC25 on.
+GS::ObjectState CreateStairHeadroomObjectState (const API_StairHeadroomData& headroom)
+{
+    GS::ObjectState os;
+    os.Add ("method", StairHeadroomMethodToString (headroom.headroomMethod));
+    os.Add ("height", headroom.headroomHeight);
+    os.Add ("leftOffset", headroom.headroomLeftOffset);
+    os.Add ("rightOffset", headroom.headroomRightOffset);
+    return os;
+}
+
 #ifdef ServerMainVers_2700
 static GS::UniString StairSolutionToString (API_StairSolutionID solution)
 {
@@ -9805,6 +9829,74 @@ static GS::Optional<GS::UniString> ApplyStairRules (const GS::ObjectState& rules
     return {};
 }
 
+// The given headroom object (StairHeadroom) into the stair's headroom (#2857): each given field is
+// written, with its mask byte. As for the rules, Archicad's input validation does not refuse an
+// unknown key inside a definition the schema refers to, so an unknown key or a value of the wrong
+// type is refused here, before anything is written.
+static GS::Optional<GS::UniString> ApplyStairHeadroom (const GS::ObjectState& headroomOs, API_StairHeadroomData& headroom, API_StairHeadroomData& headroomMask)
+{
+    GS::Optional<GS::UniString> error;
+    headroomOs.EnumerateFields ([&] (const GS::String& key) {
+        if (error.HasValue ()) {
+            return;
+        }
+        if (key == "method" || key == "height" || key == "leftOffset" || key == "rightOffset") {
+            return;
+        }
+        error = GS::UniString ("Unknown key '") + GS::UniString (key.ToCStr ()) + "' in headroom.";
+    });
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    API_StairHeadroomData given = headroom;
+    if (headroomOs.Contains ("method")) {
+        GS::UniString method;
+        if (!headroomOs.Get ("method", method)) {
+            return GS::UniString ("headroom.method must be a string.");
+        }
+        if (method == "RightAngleToSlope") {
+            given.headroomMethod = APIHM_RightAngleToSlope;
+        } else if (method == "VerticallyToSlope") {
+            given.headroomMethod = APIHM_VerticallyToSlope;
+        } else {
+            return GS::UniString ("Invalid headroom.method: it must be RightAngleToSlope or VerticallyToSlope.");
+        }
+    }
+    if (headroomOs.Contains ("height")) {
+        if (!headroomOs.Get ("height", given.headroomHeight)) {
+            return GS::UniString ("headroom.height must be a number.");
+        }
+        if (given.headroomHeight <= 0.0) {
+            return GS::UniString ("headroom.height must be greater than 0.");
+        }
+    }
+    if (headroomOs.Contains ("leftOffset") && !headroomOs.Get ("leftOffset", given.headroomLeftOffset)) {
+        return GS::UniString ("headroom.leftOffset must be a number.");
+    }
+    if (headroomOs.Contains ("rightOffset") && !headroomOs.Get ("rightOffset", given.headroomRightOffset)) {
+        return GS::UniString ("headroom.rightOffset must be a number.");
+    }
+
+    if (headroomOs.Contains ("method")) {
+        headroom.headroomMethod = given.headroomMethod;
+        *reinterpret_cast<char*> (&headroomMask.headroomMethod) = -1;
+    }
+    if (headroomOs.Contains ("height")) {
+        headroom.headroomHeight = given.headroomHeight;
+        *reinterpret_cast<char*> (&headroomMask.headroomHeight) = -1;
+    }
+    if (headroomOs.Contains ("leftOffset")) {
+        headroom.headroomLeftOffset = given.headroomLeftOffset;
+        *reinterpret_cast<char*> (&headroomMask.headroomLeftOffset) = -1;
+    }
+    if (headroomOs.Contains ("rightOffset")) {
+        headroom.headroomRightOffset = given.headroomRightOffset;
+        *reinterpret_cast<char*> (&headroomMask.headroomRightOffset) = -1;
+    }
+    return {};
+}
+
 static bool StairStoryVisibilityFromString (const GS::UniString& str, API_StairStoryVisibilityID& visibility)
 {
     if (str == "HomeStoryOnly")              { visibility = APISSV_HomeStoryOnly;              return true; }
@@ -9941,6 +10033,14 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
         const GS::Optional<GS::UniString> rulesError = ApplyStairRules (*rulesOs, stair.rules, mask.stair.rules);
         if (rulesError.HasValue ()) {
             return rulesError;
+        }
+    }
+    // The headroom (#2857): only the given fields.
+    const GS::ObjectState* headroomOs = details.Get ("headroom");
+    if (headroomOs != nullptr) {
+        const GS::Optional<GS::UniString> headroomError = ApplyStairHeadroom (*headroomOs, stair.stairHeadroomData, mask.stair.stairHeadroomData);
+        if (headroomError.HasValue ()) {
+            return headroomError;
         }
     }
     if (details.Get ("finishVisible", stair.finishVisible)) {
@@ -10292,6 +10392,47 @@ static GS::UniString CheckStairRulesApplied (const API_Element& wanted, const AP
     return notApplied;
 }
 
+// Whether the mask marks any field of the stair's headroom (#2857).
+static bool IsAnyStairHeadroomFieldMasked (const API_StairHeadroomData& headroomMask)
+{
+    return *reinterpret_cast<const char*> (&headroomMask.headroomMethod) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomHeight) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomLeftOffset) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomRightOffset) != 0;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the headroom fields marked in
+// givenHeadroomMask that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairHeadroomApplied (const API_Element& wanted, const API_StairHeadroomData& givenHeadroomMask)
+{
+    if (!IsAnyStairHeadroomFieldMasked (givenHeadroomMask)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    const API_StairHeadroomData& want = wanted.stair.stairHeadroomData;
+    const API_StairHeadroomData& got = changed.stair.stairHeadroomData;
+    GS::UniString notApplied;
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomMethod) != 0 && got.headroomMethod != want.headroomMethod) {
+        notApplied += GS::UniString (" headroom.method is ") + StairHeadroomMethodToString (got.headroomMethod) + ".";
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomHeight) != 0 && std::fabs (got.headroomHeight - want.headroomHeight) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.height is %g.", got.headroomHeight);
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomLeftOffset) != 0 && std::fabs (got.headroomLeftOffset - want.headroomLeftOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.leftOffset is %g.", got.headroomLeftOffset);
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomRightOffset) != 0 && std::fabs (got.headroomRightOffset - want.headroomRightOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.rightOffset is %g.", got.headroomRightOffset);
+    }
+    return notApplied;
+}
+
 GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stairsWithDetails;
@@ -10377,6 +10518,16 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                     rulesMaskBytes[i] = -1;
                 }
             }
+            // The headroom is a member struct like the rules, so it is marked whole the same way
+            // (#2857): the fields not given are written back from ACAPI_Element_Get as they are, and
+            // the given ones are read back after the change.
+            const API_StairHeadroomData givenHeadroomMask = mask.stair.stairHeadroomData;
+            if (IsAnyStairHeadroomFieldMasked (givenHeadroomMask)) {
+                char* headroomMaskBytes = reinterpret_cast<char*> (&mask.stair.stairHeadroomData);
+                for (size_t i = 0; i < sizeof (API_StairHeadroomData); ++i) {
+                    headroomMaskBytes[i] = -1;
+                }
+            }
 
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -10397,6 +10548,12 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString rulesNotApplied = CheckStairRulesApplied (element, givenRulesMask);
             if (!rulesNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
+                continue;
+            }
+            // And for the headroom (#2857).
+            const GS::UniString headroomNotApplied = CheckStairHeadroomApplied (element, givenHeadroomMask);
+            if (!headroomNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every headroom setting:" + headroomNotApplied));
                 continue;
             }
 
