@@ -11032,9 +11032,10 @@ GS::ObjectState RecreateRailingsCommand::Execute (const GS::ObjectState& paramet
 // ============================================================================
 // RecreateCurtainWalls
 // ModifyCurtainWalls keeps the number of segments of a curtain wall (Archicad does not take more or
-// fewer reference line points through ACAPI_Element_Change), so a curtain wall gets a reference line
-// with more or fewer segments by being created again with itself as templateElementId, and deleted,
-// as RecreateRailings does for railings.
+// fewer reference line points through ACAPI_Element_Change), and Archicad 29 does not apply a new
+// height or slant to a slanted curtain wall through it either. So a curtain wall gets a reference
+// line with more or fewer segments, a new height or a new slant by being created again with itself
+// as templateElementId, and deleted, as RecreateRailings does for railings.
 // ============================================================================
 
 RecreateCurtainWallsCommand::RecreateCurtainWallsCommand () :
@@ -11054,7 +11055,7 @@ GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetInputParametersSchem
         "properties": {
             "curtainWalls": {
                 "type": "array",
-                "description": "The curtain walls to recreate on a new reference line.",
+                "description": "The curtain walls to recreate on a new reference line, with a new height or with a new slant. Give at least one of coordinates, height and angle.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -11064,13 +11065,24 @@ GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetInputParametersSchem
                         },
                         "coordinates": {
                             "type": "array",
-                            "description": "The new reference line on the floor plan, as CreateCurtainWalls takes it: one segment per pair of consecutive points, so more or fewer points than the old curtain wall has add or remove segments. A slanted curtain wall needs exactly 2 points.",
+                            "description": "Optional new reference line on the floor plan, as CreateCurtainWalls takes it: one segment per pair of consecutive points, so more or fewer points than the old curtain wall has add or remove segments. A slanted curtain wall needs exactly 2 points. When omitted, the old curtain wall's reference line is kept, the points GetDetailsOfElements returns as its referenceLine.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 2
+                        },
+                        "height": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Optional new height, as CreateCurtainWalls takes it: the vertical height, also of a slanted curtain wall. When omitted, the old curtain wall's height is kept. Archicad does not apply a new height to a slanted curtain wall through ACAPI_Element_Change (seen in Archicad 29), so it is given here."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "exclusiveMaximum": 180.0,
+                            "description": "Optional new slant angle in degrees, as CreateCurtainWalls takes it and GetDetailsOfElements returns it: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first point), more than 90 to the right. The vertical height and the elevation of the reference line are kept. A slanted curtain wall needs a reference line of exactly 2 points. When omitted, the old curtain wall's slant is kept. Archicad does not change the slant of an existing curtain wall through ACAPI_Element_Change, so it is given here."
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["elementId", "coordinates"]
+                    "required": ["elementId"]
                 }
             }
         },
@@ -11135,6 +11147,30 @@ GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetRawResponseSchema ()
     })";
 }
 
+// The reference line of an existing curtain wall on the floor plan, as CreateCurtainWalls takes its
+// coordinates, for a RecreateCurtainWalls item without coordinates: memo.coords from index 1, one
+// vertex more than the segments, as GetDetailsOfElements reads referenceLine. CreateCurtainWalls
+// passes a slanted curtain wall's points in its plane, but Archicad gives them back on the floor plan
+// (the check create_curtain_walls_angle reads the given points back on Archicad 29), so they are taken
+// as they are, for vertical and slanted curtain walls alike.
+static GS::Optional<GS::UniString> GetCurtainWallReferenceLine (const API_Element& curtainWall, GS::Array<GS::ObjectState>& coordinates)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (curtainWall.header.guid, &memo, APIMemoMask_Polygon) != NoError || memo.coords == nullptr) {
+        return GS::UniString ("Failed to read the reference line of the curtain wall; give coordinates.");
+    }
+    const Int32 nCoords = static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord)) - 1;
+    const Int32 nVertices = std::min<Int32> (nCoords, static_cast<Int32> (curtainWall.curtainWall.nSegments) + 1);
+    if (nVertices < 2) {
+        return GS::UniString ("The reference line of the curtain wall could not be read; give coordinates.");
+    }
+    for (Int32 i = 1; i <= nVertices; ++i) {
+        coordinates.Push (Create2DCoordinateObjectState ((*memo.coords)[i]));
+    }
+    return {};
+}
+
 GS::ObjectState RecreateCurtainWallsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> curtainWalls;
@@ -11151,9 +11187,26 @@ GS::ObjectState RecreateCurtainWallsCommand::Execute (const GS::ObjectState& par
 
     for (const GS::ObjectState& item : curtainWalls) {
         const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId is required. Nothing was changed."));
+            continue;
+        }
         GS::Array<GS::ObjectState> coordinates;
-        if (elementId == nullptr || !item.Get ("coordinates", coordinates)) {
-            results (CreateErrorResponse (APIERR_BADPARS, "elementId and coordinates are required. Nothing was changed."));
+        const bool hasCoordinates = item.Get ("coordinates", coordinates);
+        double height = 0.0;
+        const bool hasHeight = item.Get ("height", height);
+        double angle = 0.0;
+        const bool hasAngle = item.Get ("angle", angle);
+        if (!hasCoordinates && !hasHeight && !hasAngle) {
+            results (CreateErrorResponse (APIERR_BADPARS, "Give coordinates, height or angle: with none of them the curtain wall would be created again as it is. Nothing was changed."));
+            continue;
+        }
+        if (hasHeight && height <= 0.0) {
+            results (CreateErrorResponse (APIERR_BADPARS, "height must be greater than 0. Nothing was changed."));
+            continue;
+        }
+        if (hasAngle && (angle <= 0.0 || angle >= 180.0)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "angle must be between 0 and 180 degrees. Nothing was changed."));
             continue;
         }
         const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
@@ -11165,9 +11218,17 @@ GS::ObjectState RecreateCurtainWallsCommand::Execute (const GS::ObjectState& par
             results (CreateErrorResponse (err, *readError + " Nothing was changed."));
             continue;
         }
+        if (!hasCoordinates) {
+            const GS::Optional<GS::UniString> lineError = GetCurtainWallReferenceLine (data.element, coordinates);
+            if (lineError.HasValue ()) {
+                results (CreateErrorResponse (APIERR_GENERAL, *lineError + " Nothing was changed."));
+                continue;
+            }
+        }
 
-        // The item of CreateCurtainWalls: the new reference line, with the old curtain wall as
-        // template for everything else (its base, height, slant, frames, panels and pattern).
+        // The item of CreateCurtainWalls: the new (or the old) reference line, with the old curtain
+        // wall as template for everything else (its base, height, slant, frames, panels and
+        // pattern); a given height or angle overrides the template's, as in CreateCurtainWalls.
         GS::ObjectState createItem;
         createItem.Add ("templateElementId", CreateGuidObjectState (oldGuid));
         {
@@ -11175,6 +11236,12 @@ GS::ObjectState RecreateCurtainWallsCommand::Execute (const GS::ObjectState& par
             for (const GS::ObjectState& coordinate : coordinates) {
                 list (coordinate);
             }
+        }
+        if (hasHeight) {
+            createItem.Add ("height", height);
+        }
+        if (hasAngle) {
+            createItem.Add ("angle", angle);
         }
 
         API_Guid newGuid = APINULLGuid;
@@ -11205,7 +11272,7 @@ GS::ObjectState RecreateCurtainWallsCommand::Execute (const GS::ObjectState& par
 
             stepErr = ACAPI_Element_Create (&element, &memo);
             if (stepErr != NoError) {
-                stepError = CreateErrorResponse (stepErr, "Archicad could not create a curtain wall on the new reference line with the settings of the old one. Nothing was changed.");
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a curtain wall with the given reference line, height or slant and the settings of the old one. Nothing was changed.");
                 return stepErr;
             }
             newGuid = element.header.guid;
