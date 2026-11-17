@@ -30,7 +30,7 @@ static const FieldInfo Fields_API_WallID[] = {
     { "polyCanChange", TF_OFF (API_WallType, polyCanChange), TF_SIZE (API_WallType, polyCanChange), FieldKind::Bool, false, nullptr, 0, {  } },
     { "materialsChained", TF_OFF (API_WallType, materialsChained), TF_SIZE (API_WallType, materialsChained), FieldKind::Bool, false, nullptr, 0, {  } },
     { "flipped", TF_OFF (API_WallType, flipped), TF_SIZE (API_WallType, flipped), FieldKind::Bool, false, nullptr, 0, {  } },
-    { "type", TF_OFF (API_WallType, type), TF_SIZE (API_WallType, type), FieldKind::SignedInt, false, nullptr, 0, {  } },
+    { "type", TF_OFF (API_WallType, type), TF_SIZE (API_WallType, type), FieldKind::SignedInt, true, nullptr, 0, {  } },
     { "referenceLineLocation", TF_OFF (API_WallType, referenceLineLocation), TF_SIZE (API_WallType, referenceLineLocation), FieldKind::SignedInt, false, nullptr, 0, {  } },
     { "height", TF_OFF (API_WallType, height), TF_SIZE (API_WallType, height), FieldKind::Real, false, nullptr, 0, {  } },
     { "bottomOffset", TF_OFF (API_WallType, bottomOffset), TF_SIZE (API_WallType, bottomOffset), FieldKind::Real, false, nullptr, 0, {  } },
@@ -436,7 +436,7 @@ static const FieldInfo Fields_API_SlabID[] = {
 };
 
 static const FieldInfo Fields_API_RoofID[] = {
-    { "roofClass", TF_OFF (API_RoofType, roofClass), TF_SIZE (API_RoofType, roofClass), FieldKind::SignedInt, false, nullptr, 0, {  } },
+    { "roofClass", TF_OFF (API_RoofType, roofClass), TF_SIZE (API_RoofType, roofClass), FieldKind::SignedInt, true, nullptr, 0, {  } },
     { "shellBase.pen", TF_OFF (API_RoofType, shellBase.pen), TF_SIZE (API_RoofType, shellBase.pen), FieldKind::SignedInt, false, nullptr, 1, { TF_OFF (API_RoofType, shellBase) } },
     { "shellBase.ltypeInd", TF_OFF (API_RoofType, shellBase.ltypeInd), TF_SIZE (API_RoofType, shellBase.ltypeInd), FieldKind::AttributeIndex, false, nullptr, 1, { TF_OFF (API_RoofType, shellBase) } },
     { "shellBase.modelElemStructureType", TF_OFF (API_RoofType, shellBase.modelElemStructureType), TF_SIZE (API_RoofType, shellBase.modelElemStructureType), FieldKind::SignedInt, false, nullptr, 1, { TF_OFF (API_RoofType, shellBase) } },
@@ -1058,7 +1058,7 @@ static const FieldInfo Fields_API_LabelID[] = {
     { "u.symbol.pos.x", TF_OFF (API_LabelType, u.symbol.pos.x), TF_SIZE (API_LabelType, u.symbol.pos.x), FieldKind::Real, false, "u.symbol", 3, { TF_OFF (API_LabelType, u), TF_OFF (API_LabelType, u.symbol), TF_OFF (API_LabelType, u.symbol.pos) } },
     { "u.symbol.pos.y", TF_OFF (API_LabelType, u.symbol.pos.y), TF_SIZE (API_LabelType, u.symbol.pos.y), FieldKind::Real, false, "u.symbol", 3, { TF_OFF (API_LabelType, u), TF_OFF (API_LabelType, u.symbol), TF_OFF (API_LabelType, u.symbol.pos) } },
     { "u.symbol.lookId", TF_OFF (API_LabelType, u.symbol.lookId), TF_SIZE (API_LabelType, u.symbol.lookId), FieldKind::SignedInt, false, "u.symbol", 2, { TF_OFF (API_LabelType, u), TF_OFF (API_LabelType, u.symbol) } },
-    { "labelClass", TF_OFF (API_LabelType, labelClass), TF_SIZE (API_LabelType, labelClass), FieldKind::SignedInt, false, nullptr, 0, {  } },
+    { "labelClass", TF_OFF (API_LabelType, labelClass), TF_SIZE (API_LabelType, labelClass), FieldKind::SignedInt, true, nullptr, 0, {  } },
     { "textWay", TF_OFF (API_LabelType, textWay), TF_SIZE (API_LabelType, textWay), FieldKind::SignedInt, false, nullptr, 0, {  } },
     { "font", TF_OFF (API_LabelType, font), TF_SIZE (API_LabelType, font), FieldKind::SignedInt, false, nullptr, 0, {  } },
     { "faceBits", TF_OFF (API_LabelType, faceBits), TF_SIZE (API_LabelType, faceBits), FieldKind::UnsignedInt, false, nullptr, 0, {  } },
@@ -2169,7 +2169,7 @@ static const FieldInfo Fields_API_CurtainWallAccessoryID[] = {
 };
 
 static const FieldInfo Fields_API_ShellID[] = {
-    { "shellClass", TF_OFF (API_ShellType, shellClass), TF_SIZE (API_ShellType, shellClass), FieldKind::SignedInt, false, nullptr, 0, {  } },
+    { "shellClass", TF_OFF (API_ShellType, shellClass), TF_SIZE (API_ShellType, shellClass), FieldKind::SignedInt, true, nullptr, 0, {  } },
     { "shellBase.pen", TF_OFF (API_ShellType, shellBase.pen), TF_SIZE (API_ShellType, shellBase.pen), FieldKind::SignedInt, false, nullptr, 1, { TF_OFF (API_ShellType, shellBase) } },
     { "shellBase.ltypeInd", TF_OFF (API_ShellType, shellBase.ltypeInd), TF_SIZE (API_ShellType, shellBase.ltypeInd), FieldKind::AttributeIndex, false, nullptr, 1, { TF_OFF (API_ShellType, shellBase) } },
     { "shellBase.modelElemStructureType", TF_OFF (API_ShellType, shellBase.modelElemStructureType), TF_SIZE (API_ShellType, shellBase.modelElemStructureType), FieldKind::SignedInt, false, nullptr, 1, { TF_OFF (API_ShellType, shellBase) } },
@@ -2826,7 +2826,7 @@ static const FieldInfo Fields_API_StairStructureID[] = {
     { "subElemId", TF_OFF (API_StairStructureType, subElemId), TF_SIZE (API_StairStructureType, subElemId), FieldKind::UnsignedInt, false, nullptr, 0, {  } },
     { "visible", TF_OFF (API_StairStructureType, visible), TF_SIZE (API_StairStructureType, visible), FieldKind::Bool, false, nullptr, 0, {  } },
     { "isLanding", TF_OFF (API_StairStructureType, isLanding), TF_SIZE (API_StairStructureType, isLanding), FieldKind::Bool, false, nullptr, 0, {  } },
-    { "structType", TF_OFF (API_StairStructureType, structType), TF_SIZE (API_StairStructureType, structType), FieldKind::SignedInt, false, nullptr, 0, {  } },
+    { "structType", TF_OFF (API_StairStructureType, structType), TF_SIZE (API_StairStructureType, structType), FieldKind::SignedInt, true, nullptr, 0, {  } },
     { "bottomType", TF_OFF (API_StairStructureType, bottomType), TF_SIZE (API_StairStructureType, bottomType), FieldKind::SignedInt, false, nullptr, 0, {  } },
     { "horizontalThickness", TF_OFF (API_StairStructureType, horizontalThickness), TF_SIZE (API_StairStructureType, horizontalThickness), FieldKind::Real, false, nullptr, 0, {  } },
     { "thickness", TF_OFF (API_StairStructureType, thickness), TF_SIZE (API_StairStructureType, thickness), FieldKind::Real, false, nullptr, 0, {  } },

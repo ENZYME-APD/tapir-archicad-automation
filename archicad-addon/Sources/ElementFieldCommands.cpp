@@ -424,7 +424,7 @@ GS::Optional<GS::UniString> GetElementFieldDefinitionsCommand::GetRawResponseSch
                         },
                         "readOnly": {
                             "type": "boolean",
-                            "description": "True for the owners and counts that Archicad computes: SetElementFields refuses them."
+                            "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit): SetElementFields refuses them."
                         },
                         "variant": {
                             "type": "string",
@@ -766,7 +766,7 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
                 return;
             }
             if (field->readOnly) {
-                error = GS::UniString (key.ToCStr ()) + " is read-only: Archicad computes it.";
+                error = GS::UniString (key.ToCStr ()) + " is read-only: Archicad computes it, or it chooses the shape of the element (see GetElementFieldDefinitions).";
                 return;
             }
             GS::Optional<GS::UniString> writeError = WriteFieldValue (fields, key, *field, p.wanted, p.mask);
