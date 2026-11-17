@@ -11558,6 +11558,340 @@ GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, 
     return CreateWindowsOrDoors (parameters, API_DoorID, "doorsData", "Create Doors", "door");
 }
 
+// ============================================================================
+// RecreateWindows, RecreateDoors
+// Archicad 29 does not move a window or door into another wall through ACAPI_Element_Change: it
+// keeps API_WindowType::owner (tested 17/11/2026). So the window or door is created again in the new
+// wall, as CreateWindows and CreateDoors create one, with the old one's settings and GDL parameters,
+// and the old one is deleted, carrying over what RecreateStairs carries over. One undoable command
+// per element, which leaves the old one as it was when a step fails.
+// ============================================================================
+
+// The result of a Recreate command for one element, as RecreatedElement describes it; also tells the
+// element notification clients about the new element.
+static GS::ObjectState CreateRecreatedElementResult (const StairDataToCarry& data, const API_Guid& newGuid)
+{
+    API_Element newElement = {};
+    newElement.header.guid = newGuid;
+    if (ACAPI_Element_Get (&newElement) == NoError) {
+        API_NotifyElementType notification = {};
+        notification.notifID = APINotifyElement_New;
+        notification.elemHead = newElement.header;
+        AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+    }
+
+    GS::ObjectState result;
+    result.Add ("oldElementId", CreateGuidObjectState (data.element.header.guid));
+    result.Add ("elementId", CreateGuidObjectState (newGuid));
+    const auto& notCarriedOver = result.AddList<GS::ObjectState> ("notCarriedOver");
+    for (const GS::Pair<GS::UniString, API_Guid>& lost : data.notCarriedOver) {
+        GS::ObjectState lostOs ("relation", lost.first);
+        if (lost.second != APINULLGuid) {
+            lostOs.Add ("elementId", CreateGuidObjectState (lost.second));
+        }
+        notCarriedOver (lostOs);
+    }
+    return result;
+}
+
+namespace {
+
+// The begin and end events of the element notification clients around a Recreate command.
+class RecreateNotificationEvents {
+public:
+    RecreateNotificationEvents ()
+    {
+        API_NotifyElementType notification = {};
+        notification.notifID = APINotifyElement_BeginEvents;
+        AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+    }
+    ~RecreateNotificationEvents ()
+    {
+        API_NotifyElementType notification = {};
+        notification.notifID = APINotifyElement_EndEvents;
+        AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+    }
+};
+
+} // namespace
+
+// The input schema of RecreateWindows (arrayKey "windows", noun "window") and RecreateDoors.
+static GS::UniString RecreateWindowsOrDoorsInputSchema (const char* arrayKey, const GS::UniString& noun, const char* createCommand, const char* modifyCommand)
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            ")") + arrayKey + R"(": {
+                "type": "array",
+                "description": "The )" + noun + R"(s to recreate in another wall.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The )" + noun + R"( to recreate."
+                        },
+                        "ownerWallId": {
+                            "$ref": "#/ElementId",
+                            "description": "The wall to place the new )" + noun + R"( in, as )" + createCommand + R"( takes it: a wall that is not polygonal. It may also be the )" + noun + R"('s own wall."
+                        },
+                        "centerOffset": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "description": "Optional position of the center of the new )" + noun + R"( along the wall, from the wall's beginning (API_WindowType::objLoc), as )" + createCommand + R"( and )" + modifyCommand + R"( take it and GetDetailsOfElements returns it. When omitted, the old )" + noun + R"('s centerOffset is kept."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "ownerWallId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [")" + arrayKey + R"("]
+    })";
+}
+
+// The shared body of RecreateWindows and RecreateDoors, as CreateWindowsOrDoors is the one of
+// CreateWindows and CreateDoors: typeID is API_WindowID or API_DoorID, arrayKey the input array,
+// typeName and noun the element in the messages ("Window", "window"). Both write through
+// element.window, the door being the same struct.
+static GS::ObjectState RecreateWindowsOrDoors (const GS::ObjectState& parameters, API_ElemTypeID typeID, const char* arrayKey, const GS::UniString& typeName, const GS::UniString& noun)
+{
+    GS::Array<GS::ObjectState> items;
+    parameters.Get (arrayKey, items);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    // As in CreateWindowsOrDoors: the window or door is created with its marker, which lives on
+    // the floor plan, so the floor plan is made the current database (it is also where the old one
+    // is read and deleted), and the previous database is put back on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : items) {
+        if (databaseErr != NoError) {
+            results (CreateErrorResponse (databaseErr, "Failed to activate the floor plan database, where a " + noun + " is created. Activate the floor plan in Archicad and run the command again. Nothing was changed."));
+            continue;
+        }
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        const GS::ObjectState* ownerWallId = item.Get ("ownerWallId");
+        if (elementId == nullptr || ownerWallId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId and ownerWallId are required. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+        const API_Guid wallGuid = GetGuidFromObjectState (*ownerWallId);
+        // The owner wall is checked as CreateWindows checks it.
+        if (!DoesWallExist (wallGuid)) {
+            results (CreateErrorResponse (APIERR_BADID, "ownerWallId is not a wall of the project. Nothing was changed."));
+            continue;
+        }
+        if (IsPolygonalWall (wallGuid)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "The owner wall is polygonal, and Archicad cannot place a " + noun + " in one. Nothing was changed."));
+            continue;
+        }
+        const GS::Optional<double> centerOffset = GetOptionalDouble (item, "centerOffset");
+        if (centerOffset.HasValue () && centerOffset.Get () < 0.0) {
+            results (CreateErrorResponse (APIERR_BADPARS, "centerOffset must not be negative. Nothing was changed."));
+            continue;
+        }
+        API_Elem_Head wallHead = {};
+        wallHead.guid = wallGuid;
+        GSErrCode err = ACAPI_Element_GetHeader (&wallHead);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, "Failed to read the story of the owner wall. Nothing was changed."));
+            continue;
+        }
+
+        StairDataToCarry data;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, typeID, typeName, noun, data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        // The old element's GDL parameters (its memo's params), which the new one gets.
+        API_ElementMemo oldMemo = {};
+        const GS::OnExit oldMemoGuard ([&oldMemo] () { ACAPI_DisposeElemMemoHdls (&oldMemo); });
+        err = ACAPI_Element_GetMemo (oldGuid, &oldMemo, APIMemoMask_AddPars);
+        if (err != NoError || oldMemo.params == nullptr) {
+            results (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the GDL parameters of the " + noun + ". Nothing was changed."));
+            continue;
+        }
+
+        // The old marker (a separate element, see CaptureOpeningMarker in FavoritesCommands.cpp),
+        // whose parameters the new marker gets when both are of the same marker library part.
+        API_Element oldMarker = {};
+        API_ElementMemo oldMarkerMemo = {};
+        const GS::OnExit oldMarkerMemoGuard ([&oldMarkerMemo] () { ACAPI_DisposeElemMemoHdls (&oldMarkerMemo); });
+        bool hasOldMarker = false;
+        if (data.element.window.openingBase.markGuid != APINULLGuid) {
+            oldMarker.header.guid = data.element.window.openingBase.markGuid;
+            hasOldMarker = ACAPI_Element_Get (&oldMarker) == NoError &&
+                ACAPI_Element_GetMemo (oldMarker.header.guid, &oldMarkerMemo, APIMemoMask_AddPars) == NoError &&
+                oldMarkerMemo.params != nullptr;
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate " + typeName, [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            API_SubElement marker = {};
+            // The one of the two marker parameter lists (the tool default's, the old marker's) that
+            // is not in marker.memo.
+            API_AddParType** spareMarkerParams = nullptr;
+            const GS::OnExit cleanup ([&] () {
+                ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
+                if (spareMarkerParams != nullptr) {
+                    ACAPI_DisposeAddParHdl (&spareMarkerParams);
+                }
+            });
+
+            // The CreateWindows path: the tool defaults with their marker (or without one when the
+            // tool has no marker), then the old element's settings.
+            bool withMarker = true;
+            stepErr = PrepareWindowOrDoorDefaults (typeID, element, memo, marker, withMarker);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the " + typeName + " defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // API_WindowType begins with the element header, so the defaults' header is put back
+            // after the copy (the old element's guid, group and hotlink must not reach the create),
+            // and so are the members that point at the old wall or the old marker: the marker guid,
+            // and the position in a polygonal wall (startPoint, dirVector), which a straight wall,
+            // the only kind a window or door is recreated in, does not use.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_Guid defaultsMarkGuid = element.window.openingBase.markGuid;
+            const GS::Int64 defaultsLookId = element.window.openingBase.lookId;
+            const API_Coord defaultsStartPoint = element.window.startPoint;
+            const API_Coord defaultsDirVector = element.window.dirVector;
+            element.window = data.element.window;
+            element.header = defaultsHeader;
+            element.window.openingBase.markGuid = defaultsMarkGuid;
+            element.window.openingBase.lookId = defaultsLookId;
+            element.window.startPoint = defaultsStartPoint;
+            element.window.dirVector = defaultsDirVector;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = wallHead.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+            element.window.owner = wallGuid;
+            if (centerOffset.HasValue ()) {
+                element.window.objLoc = centerOffset.Get ();
+            }
+
+            // The old element's GDL parameters, of its library part (openingBase.libInd, copied above).
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = oldMemo.params;
+            oldMemo.params = nullptr;
+
+            bool markerCarried = false;
+            if (withMarker && hasOldMarker && marker.memo.params != nullptr &&
+                GetElemTypeId (oldMarker.header) == GetElemTypeId (marker.subElem.header) &&
+                oldMarker.object.libInd == marker.subElem.object.libInd) {
+                spareMarkerParams = marker.memo.params;
+                marker.memo.params = oldMarkerMemo.params;
+                oldMarkerMemo.params = nullptr;
+                markerCarried = true;
+            }
+
+            stepErr = withMarker
+                ? ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker)
+                : ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError && markerCarried) {
+                // The marker as CreateWindows places it, with the tool default's parameters.
+                std::swap (marker.memo.params, spareMarkerParams);
+                stepErr = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
+            }
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a " + noun + " in the given wall with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, noun, stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the " + noun + "."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
+}
+
+RecreateWindowsCommand::RecreateWindowsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateWindowsCommand::GetName () const
+{
+    return "RecreateWindows";
+}
+
+GS::Optional<GS::UniString> RecreateWindowsCommand::GetInputParametersSchema () const
+{
+    return RecreateWindowsOrDoorsInputSchema ("windows", "window", "CreateWindows", "ModifyWindows");
+}
+
+GS::Optional<GS::UniString> RecreateWindowsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input window: the new window, or an error. After an error nothing was changed for that window. Labels of the old window are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return RecreateWindowsOrDoors (parameters, API_WindowID, "windows", "Window", "window");
+}
+
+RecreateDoorsCommand::RecreateDoorsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateDoorsCommand::GetName () const
+{
+    return "RecreateDoors";
+}
+
+GS::Optional<GS::UniString> RecreateDoorsCommand::GetInputParametersSchema () const
+{
+    return RecreateWindowsOrDoorsInputSchema ("doors", "door", "CreateDoors", "ModifyDoors");
+}
+
+GS::Optional<GS::UniString> RecreateDoorsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input door: the new door, or an error. After an error nothing was changed for that door. Labels of the old door are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return RecreateWindowsOrDoors (parameters, API_DoorID, "doors", "Door", "door");
+}
+
 CreateOpeningsCommand::CreateOpeningsCommand () :
     CommandBase (CommonSchema::Used)
 {

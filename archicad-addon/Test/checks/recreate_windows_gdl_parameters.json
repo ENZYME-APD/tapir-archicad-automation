@@ -1,0 +1,109 @@
+{
+  "title": "RecreateWindows gives the new window the old window's GDL parameters, not the library part's defaults",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Wall", "Window" ],
+  "steps": [
+    {
+      "id": "a window part of the loaded library, as parent",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Window" },
+      "save": { "windowParent": "libraryParts[0].guid" },
+      "expect": [ { "path": "libraryParts[0].guid", "exists": true, "name": "the library has a window part" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "own window part with a string parameter tapirNote",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "Tapir Check Recreate Window 201",
+            "parentId": "${windowParent}",
+            "type": "Window",
+            "path": "TapirCheckRecreateWindow/Tapir Check Recreate Window 201.gsm",
+            "a": 1.0,
+            "b": 1.2,
+            "script2D": "LINE2 -A / 2, 0, A / 2, 0",
+            "script3D": "ADDX -A / 2\nBLOCK A, B, 0.05\nDEL 1",
+            "parameters": [
+              { "name": "tapirNote", "type": "String", "value": "default", "description": "Tapir Note" }
+            ]
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [ { "path": "libraryParts[0].path", "exists": true, "name": "library part created" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "reload the libraries, so the new part can be placed",
+      "command": "ReloadLibraries",
+      "creates": false,
+      "params": {},
+      "expect": [ { "path": "success", "eq": true, "name": "libraries reloaded" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "wall A along y 960 and wall B along y 970",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 990.0, "y": 960.0 }, "endCoordinate": { "x": 1000.0, "y": 960.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 },
+          { "begCoordinate": { "x": 990.0, "y": 970.0 }, "endCoordinate": { "x": 1000.0, "y": 970.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid", "b": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "the own window in wall A",
+      "command": "CreateWindows",
+      "params": { "windowsData": [ { "ownerWallId": { "guid": "${a}" }, "centerOffset": 2.0, "width": 1.0, "height": 1.2, "sillHeight": 0.9, "libraryPartName": "Tapir Check Recreate Window 201" } ] },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "own window placed" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "give tapirNote a value of its own",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elementsWithGDLParameters": [ { "elementId": { "guid": "${w}" }, "gdlParameters": [ { "name": "tapirNote", "value": "carried over" } ] } ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "tapirNote written" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "recreate the window in wall B, at its old position",
+      "command": "RecreateWindows",
+      "params": { "windows": [ { "elementId": { "guid": "${w}" }, "ownerWallId": { "guid": "${b}" } } ] },
+      "save": { "nw": "results[0].elementId.guid" },
+      "expect": [ { "path": "results[0].elementId.guid", "exists": true, "name": "new window created" } ]
+    },
+    {
+      "id": "the new window's part and position",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "Tapir Check Recreate Window 201", "name": "the own library part" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${b}", "name": "in wall B" },
+        { "path": "detailsOfElements[0].details.centerOffset", "approx": 2.0, "name": "keeps its 2 m along the wall" }
+      ]
+    },
+    {
+      "id": "the new window's GDL parameters",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nw}" } } ] },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters[2].name", "eq": "tapirNote", "name": "third parameter is tapirNote" },
+        { "path": "gdlParametersOfElements[0].parameters[2].value", "eq": "carried over", "name": "tapirNote has the old window's value, not the part's default" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${nw}" } } ] } },
+    { "command": "DeleteEmbeddedLibraryItems", "params": { "embeddedLibraryItems": [ { "path": "TapirCheckRecreateWindow" } ] } }
+  ]
+}

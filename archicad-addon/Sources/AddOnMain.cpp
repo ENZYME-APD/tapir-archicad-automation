@@ -1423,6 +1423,20 @@ GSErrCode Initialize (void)
             "and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. "
             "The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in)."
         );
+        err |= RegisterCommand<RecreateWindowsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Window elements in another wall (ownerWallId, optionally at a new centerOffset along it), because Archicad does not move a window into another wall through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). "
+            "The new window is created as CreateWindows creates one, from the Window tool defaults with the tool's marker, with the old window's settings (size, sill, anchor, reveal, sides, pens, line types, surfaces and the rest of API_WindowType), library part and GDL parameters, layer and renovation status; "
+            "its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old window's Element ID, classifications, element categories and property values, and the old window is then deleted. "
+            "Each window is recreated in its own undo step, and when any step fails nothing is changed for that window. The new window has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old window, group)."
+        );
+        err |= RegisterCommand<RecreateDoorsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Door elements in another wall (ownerWallId, optionally at a new centerOffset along it), because Archicad does not move a door into another wall through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). "
+            "The new door is created as CreateDoors creates one, from the Door tool defaults with the tool's marker, with the old door's settings (size, sill, anchor, reveal, sides, pens, line types, surfaces and the rest of API_DoorType), library part and GDL parameters, layer and renovation status; "
+            "its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old door's Element ID, classifications, element categories and property values, and the old door is then deleted. "
+            "Each door is recreated in its own undo step, and when any step fails nothing is changed for that door. The new door has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old door, group)."
+        );
         err |= RegisterCommand<ChangeTextContentCommand> (
             elementCommands, "1.8.0",
             "Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content."
