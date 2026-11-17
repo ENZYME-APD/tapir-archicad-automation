@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-17 01:58 UTC.
+Archicad 25–30 DevKits; updated 2026-11-17 02:37 UTC.
 
 | | Status |
 |---|---|
@@ -506,7 +506,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## General
 
 - ➖ `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. *(event handlers, not commands)*
-- ✅ `ACAPI_CallCommand` – Performs an operation without opening an undoable session.
+- ✅ `ACAPI_CallCommand` – Performs an operation without opening an undoable session. — [#2904](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2904 "ImportFavorites: run the import in a NotUndoable command scope (Archicad quit after it)")
 - ✅ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2843 "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step")
 - ✅ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
 - ✅ `ACAPI_DisposeAttrDefsHdls` – Frees the memory occupied by all of the attribute definition handles.

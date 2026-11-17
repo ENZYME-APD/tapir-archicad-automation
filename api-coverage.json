@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-17 01:58 UTC",
+ "generatedAt": "2026-11-17 02:37 UTC",
  "versions": [
   25,
   26,
@@ -4007,7 +4007,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2904,
+     "title": "ImportFavorites: run the import in a NotUndoable command scope (Archicad quit after it)"
+    }
+   ],
    "issues": []
   },
   {
