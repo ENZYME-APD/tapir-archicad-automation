@@ -326,6 +326,36 @@
       "subgroup": null
     },
     {
+      "get": "coreSymbolType",
+      "set": "coreSymbolType",
+      "apiMember": "API_ColumnType::coreSymbolType",
+      "apiDescription": "The floor plan symbol type of the column: Plain, Slash, X or CrossHair.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "coreSymbolPar1",
+      "set": "coreSymbolPar1",
+      "apiMember": "API_ColumnType::coreSymbolPar1",
+      "apiDescription": "The length of the crosshair outside the column's contour line.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "coreSymbolPar2",
+      "set": "coreSymbolPar2",
+      "apiMember": "API_ColumnType::coreSymbolPar2",
+      "apiDescription": "The distance of the crosshair from the column's center.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
       "get": "belowViewLinePen",
       "set": "belowViewLinePen",
       "apiMember": "API_ColumnType::belowViewLinePen",

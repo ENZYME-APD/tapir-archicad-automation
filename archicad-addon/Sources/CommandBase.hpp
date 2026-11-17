@@ -250,6 +250,11 @@ bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptio
 GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation);
 bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthLimitationsID& out);
 
+// API_ColumnType::coreSymbolType (1 Plain, 2 Slash, 3 X, 4 CrossHair) <-> its name (#2858).
+// ToString returns false for a value outside 1-4. Defined in ExtendedElementCommands.cpp.
+bool ColumnCoreSymbolTypeToString (short coreSymbolType, GS::UniString& out);
+bool ColumnCoreSymbolTypeFromString (const GS::UniString& str, short& out);
+
 // API_PolyLineType::drawSegmentMode (0: the line type's dashes restart on every segment,
 // 1: they run continuously over the whole polyline) <-> "SegmentBySegment" / "Continuous".
 // Shared by CreatePolylines and Get/SetDetailsOfElements.
@@ -282,12 +287,14 @@ LineArrows GetLineArrows (T& lineElem)
 #endif
 }
 
-// Adds "startArrow" and "endArrow" (visible, type, size, pen) to the details.
+// Adds "startArrow" and "endArrow" (visible, type, size, pen) to the details, and from Archicad 29
+// "linkedArrowAttributes".
 void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows);
 
-// Applies the optional "startArrow"/"endArrow" objects of the parameters. Sets changed when either
-// was given. Returns an error text for an unknown type, or, before Archicad 29, for two ends given
-// different types, sizes or pens.
+// Applies the optional "startArrow"/"endArrow" objects and "linkedArrowAttributes" flag of the
+// parameters. Sets changed when any was given. Returns an error text for an unknown type, for
+// linked ends given different sizes or pens, or, before Archicad 29, for two ends given different
+// types, sizes or pens or for linkedArrowAttributes false.
 GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, const LineArrows& arrows, bool& changed);
 
 // Marks every arrowhead member in the mask (pass GetLineArrows of the mask's union member).

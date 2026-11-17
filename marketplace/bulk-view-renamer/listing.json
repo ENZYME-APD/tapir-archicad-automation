@@ -9,6 +9,12 @@
     "entry": "BulkViewRenamer.py",
     "versions": [
         {
+            "version": "1.1.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Shows the views in the View Map's folders, which open and close, with a Type column, and a Type choice that lists only one type of view (floor plan, section, elevation, schedule, ...). Selecting a folder selects its views."
+        },
+        {
             "version": "1.0.0",
             "archicadVersions": [25, 26, 27, 28, 29, 30],
             "minTapirVersion": "1.8.0",

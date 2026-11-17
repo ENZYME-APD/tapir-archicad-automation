@@ -85,7 +85,7 @@ ul.items .pill.status { min-width: 6.4em }
 .scroll { overflow-x: auto }
 main table { border-collapse: collapse; width: 100% }
 main th, main td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle }
-main th { font: 700 .71875rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+main th { font: 700 .75rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums }
 td.barcell { width: 40%; min-width: 120px }
 td .sub { display: block; font-size: .75rem; color: var(--muted) }
@@ -126,8 +126,8 @@ details.group > summary .counts { font-size: .8125rem; color: var(--muted) }
 details.group > summary .bar { flex: 1 1 160px; max-width: 320px; margin-left: auto }
 ul.items { list-style: none; padding: 0 0 10px 0; margin: 0 }
 ul.items li { padding: 3px 0; overflow-wrap: anywhere }
-.tag { display: inline-flex; align-items: center; gap: 6px; font-size: .78125rem; color: var(--muted) }
-ul.items li .detail { display: block; padding-left: 1.6em; font-size: .84375rem; color: var(--muted) }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: .8125rem; color: var(--muted) }
+ul.items li .detail { display: block; padding-left: 1.6em; font-size: .875rem; color: var(--muted) }
 
 @media (max-width: 1100px) {
     .layout { display: block }
@@ -193,3 +193,11 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: .84375rem;
 /* All parameters is --done; the JSON and partial marks take the ramp's lighter step, so they still differ. */
 :root:not([data-style="legacy"]) .swatch.p-json { background: var(--merged) }
 :root:not([data-style="legacy"]) .swatch.p-partial { box-shadow: inset 0 0 0 1.5px var(--merged) }
+/* The phone filter sheet, drawn like its twin, the Display menu's sheet (see site.css): a 1 px line on
+   top, 12 px corners, and a Done button with a 1 px line and 8 px corners, 44 px high to tap. */
+@media (max-width: 640px) {
+    :root:not([data-style="legacy"]) .chip-filter { border-top: 1px solid var(--border-strong); border-radius: var(--radius-card) var(--radius-card) 0 0 }
+    :root:not([data-style="legacy"]) .sheet-done { min-height: 44px; padding: 7px 12px; background: transparent; color: var(--fg);
+        border: 1px solid var(--border-strong); border-radius: var(--radius-control); cursor: pointer }
+    :root:not([data-style="legacy"]) .sheet-done:hover { border-color: var(--link); color: var(--link) }
+}

@@ -1,0 +1,204 @@
+{
+  "title": "ModifyColumns writes the cross section, taper and length of one column segment, takes a segment GetDetailsOfElements returned, and refuses invalid ones (#2552)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Column" ],
+  "steps": [
+    {
+      "id": "a building material of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bmat": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a building material" }
+      ]
+    },
+    {
+      "id": "a rectangular column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 960.0, "y": 960.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.4,
+            "depth": 0.3
+          }
+        ]
+      },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "the column has one segment with a length scheme",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "one segment" },
+        { "path": "detailsOfElements[0].details.segments[0].length.lengthType", "exists": true, "name": "length scheme returned" }
+      ]
+    },
+    {
+      "id": "segment cross section and taper; refused items",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              {
+                "segmentIndex": 0,
+                "structureType": "Basic",
+                "buildingMaterialId": { "guid": "${bmat}" },
+                "width": 0.5,
+                "depth": 0.25,
+                "taper": { "isHomogeneous": false, "isEndWidthAndDepthLinked": false, "endWidth": 0.3, "endDepth": 0.2 }
+              }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 3, "width": 0.6 }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "width": 0.6, "buildingMaterialId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "width": 0.6, "profileId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "width": 0.6, "taper": { "isHomogeneous": false, "endWidth": 0.0 } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "width": 0.6, "length": { "lengthType": "Fixed", "fixedLength": 0.0 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 6, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "segment cross section and taper written" },
+        { "path": "executionResults[1].success", "eq": false, "name": "segment index past the last segment refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown building material refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "unknown profile refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "taper with endWidth 0 refused" },
+        { "path": "executionResults[5].success", "eq": false, "name": "fixed length 0 refused" }
+      ]
+    },
+    {
+      "id": "read the segment cross section and taper",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "save": { "segment": "detailsOfElements[0].details.segments[0]" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "still one segment" },
+        { "path": "detailsOfElements[0].details.segments[0].width", "approx": 0.5, "tol": 0.0001, "name": "segment width (refused items changed nothing)" },
+        { "path": "detailsOfElements[0].details.segments[0].depth", "approx": 0.25, "tol": 0.0001, "name": "segment depth" },
+        { "path": "detailsOfElements[0].details.segments[0].taper.isHomogeneous", "eq": false, "name": "segment tapered" },
+        { "path": "detailsOfElements[0].details.segments[0].taper.endWidth", "approx": 0.3, "tol": 0.0001, "name": "end width" },
+        { "path": "detailsOfElements[0].details.segments[0].taper.endDepth", "approx": 0.2, "tol": 0.0001, "name": "end depth" },
+        { "path": "detailsOfElements[0].details.segments[0].structureType", "eq": "Basic", "name": "segment structure Basic" },
+        { "path": "detailsOfElements[0].details.segments[0].buildingMaterialId.guid", "exists": true, "name": "segment building material" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "tol": 0.0001, "name": "column height kept" }
+      ]
+    },
+    {
+      "id": "structureType that does not match the cross section is refused",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "structureType": "Profile", "width": 0.6 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "Profile without profileId refused on a Basic segment" }
+      ]
+    },
+    {
+      "id": "write the length scheme of the only segment",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [
+              { "segmentIndex": 0, "length": { "lengthType": "Proportional", "lengthProportion": 1.0 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "length scheme written" }
+      ]
+    },
+    {
+      "id": "read after the length write",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "still one segment" },
+        { "path": "detailsOfElements[0].details.segments[0].length.lengthType", "eq": "Proportional", "name": "length type" },
+        { "path": "detailsOfElements[0].details.segments[0].length.lengthProportion", "gt": 0.0, "name": "length proportion set" },
+        { "path": "detailsOfElements[0].details.segments[0].width", "approx": 0.5, "tol": 0.0001, "name": "segment width kept by the length write" },
+        { "path": "detailsOfElements[0].details.segments[0].taper.isHomogeneous", "eq": false, "name": "taper kept by the length write" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "tol": 0.0001, "name": "column height kept" }
+      ]
+    },
+    {
+      "id": "send the segment back as GetDetailsOfElements returned it",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c}" },
+            "segments": [ "${segment}" ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "a returned segment is accepted as it is" }
+      ]
+    },
+    {
+      "id": "read after the round trip",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].width", "approx": 0.5, "tol": 0.0001, "name": "width unchanged" },
+        { "path": "detailsOfElements[0].details.segments[0].depth", "approx": 0.25, "tol": 0.0001, "name": "depth unchanged" },
+        { "path": "detailsOfElements[0].details.segments[0].taper.endWidth", "approx": 0.3, "tol": 0.0001, "name": "end width unchanged" }
+      ]
+    }
+  ]
+}

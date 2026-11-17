@@ -58,5 +58,17 @@
     'Roadmap': 'Feuille de route',
     'About Tapir': 'À propos de Tapir',
     'Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.':
-        'Non affilié à Graphisoft. Archicad est une marque de Graphisoft SE.'
+        'Non affilié à Graphisoft. Archicad est une marque de Graphisoft SE.',
+    'Search': 'Rechercher',
+    'Search the site': 'Rechercher sur le site',
+    'Search pages, commands and scripts': 'Rechercher des pages, des commandes et des scripts',
+    'Loading…': 'Chargement…',
+    'The search could not be loaded. Check your connection and try again.': 'La recherche n’a pas pu être chargée. Vérifiez votre connexion et réessayez.',
+    'Nothing found.': 'Aucun résultat.',
+    '1 result': '1 résultat',
+    'results': 'résultats',
+    'Page': 'Page',
+    'Section': 'Section',
+    'Command': 'Commande',
+    'Built-in script': 'Script intégré'
 });

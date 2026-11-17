@@ -2080,6 +2080,10 @@ static const char* LineArrowsSchemaProperties = R"(
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
                     },)";
 
 static GS::Optional<GS::ObjectState> SetLineArrowsParameters (const GS::ObjectState& parameters, const LineArrows& arrows)
@@ -3764,7 +3768,17 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
             vis.showRelBelow = (short) relBelow;
         }
         element.object.visibility = vis;
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility);
+        if (mask != nullptr) {
+            // ACAPI_ELEMENT_MASK_SET marks only the first byte of the member it names, so masking
+            // 'visibility' as a whole marked only showOnHome, and ModifyObjects/ModifyLamps reported
+            // success while Archicad kept the other fields (#2821). Mark each field, as the shell and
+            // mesh paths do.
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showOnHome);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showAllAbove);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showAllBelow);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showRelAbove);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showRelBelow);
+        }
     }
 
     const GS::ObjectState* linkOS = parameters.Get ("linkToSettings");
@@ -3776,7 +3790,11 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
         }
         linkOS->Get ("newCreationMode", link.newCreationMode);
         element.object.linkToSettings = link;
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, linkToSettings);
+        if (mask != nullptr) {
+            // Each field, for the same reason as visibility above.
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, linkToSettings.homeStoryDifference);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, linkToSettings.newCreationMode);
+        }
     }
 
     return {};

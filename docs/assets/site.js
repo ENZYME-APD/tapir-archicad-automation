@@ -1,8 +1,8 @@
 /* The shared behaviour of every page of Tapir's site: the language menu and the translations, the
-   Display menu, the header's menu on phones, a copy button on code blocks, and the live figures. The pages are complete
+   Display menu, the site search, the header's menu on phones, a copy button on code blocks, and the live figures. The pages are complete
    without it; it only adds to them. The texts it shows are in the page's HTML (the copy button's
    labels are data-copy and data-copied on the <html> element), or, for the menus it builds (the
-   phone menu's button and the Display panel), English here, translated by common.js like the rest.
+   phone menu's button, the Display panel and the search panel), English here, translated by common.js like the rest.
 
    Display: the visitor's look (Standard or Legacy), mode (System, Light, Dark or High contrast),
    accent (the look's own, Blue, Purple or Orange), text size (100, 115, 130 or 90 %), font (the
@@ -632,6 +632,453 @@
         button.hidden = false;
     }
 
+    // ---- Search (#2774) ----
+
+    // A search button at the start of the header's .right (on phones, next to the menu button) opens a
+    // panel that searches the whole site: every page and its headings, every command and every built-in
+    // script. The index is the site's own llms-full.txt (written by tools/generate_llm_files.py, which
+    // the weekly release runs), read the first time the panel opens, so nothing has to be kept in step
+    // by hand. A heading's result links to its page with a text fragment (#:~:text=), which scrolls to
+    // it in the browsers that have them and is ignored by the others. "/" or Ctrl+K (Cmd+K) opens it.
+    var SEARCH_SITE = 'https://archicad-api.com/';
+    var SEARCH_MAX_RESULTS = 40;
+
+    function searchPlainText (markdown) {
+        return markdown
+            .replace (/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+            .replace (/[*`]+/g, '')
+            .replace (/\s+/g, ' ')
+            .trim ();
+    }
+
+    // The entries of llms-full.txt: { title, kind, context, url, text }, kind 'Page', 'Section',
+    // 'Command' or 'Built-in script' (shown, translated); context is the page or the command group.
+    function parseSearchIndex (source, base) {
+        var entries = [];
+        var lines = source.split (/\r?\n/);
+        var mode = null;
+        var inFence = false;
+        var page = null;
+        var section = null;
+        var group = '';
+        function localUrl (url) {
+            return url.indexOf (SEARCH_SITE) === 0 ? base + url.substring (SEARCH_SITE.length) : url;
+        }
+        function fragment (text) {
+            return '#:~:text=' + encodeURIComponent (text).replace (/-/g, '%2D');
+        }
+        lines.forEach (function (line) {
+            if (/^```/.test (line)) {
+                inFence = !inFence;
+                return;
+            }
+            if (inFence) {
+                return;
+            }
+            var match;
+            if (line === '---') {
+                mode = null;
+                page = null;
+                section = null;
+                return;
+            }
+            if ((match = /^Source: (\S+)\s*$/.exec (line))) {
+                mode = 'page';
+                page = { url: localUrl (match[1]), title: null };
+                section = null;
+                return;
+            }
+            if (/^# Command reference/.test (line)) {
+                mode = 'commands';
+                return;
+            }
+            if (mode === null && /^## Scripts in the Tapir palette/.test (line)) {
+                mode = 'scripts';
+                return;
+            }
+            if (mode === 'page') {
+                if ((match = /^#{2,4} (.+)$/.exec (line))) {
+                    var title = searchPlainText (match[1]);
+                    if (!title) {
+                        return;
+                    }
+                    if (page.title === null) {
+                        page.title = title;
+                        section = { title: title, kind: 'Page', context: '', url: page.url, text: section ? section.text : '' };
+                    } else {
+                        section = { title: title, kind: 'Section', context: page.title, url: page.url + fragment (title), text: '' };
+                    }
+                    entries.push (section);
+                } else if (line.trim ()) {
+                    if (!section) {
+                        // The text above the page's first heading (e.g. its tagline) belongs to the page.
+                        section = { text: '' };
+                    }
+                    section.text += (section.text ? ' ' : '') + searchPlainText (line);
+                }
+            } else if (mode === 'commands') {
+                // The first group's heading ends the paragraph above it, on the same line.
+                if ((match = /(?:^|\s)## (.+)$/.exec (line))) {
+                    group = searchPlainText (match[1]);
+                } else if ((match = /^- \*\*(\w+)\*\* \(since [^)]*\): (.*)$/.exec (line))) {
+                    entries.push ({ title: match[1], kind: 'Command', context: group, url: base + 'archicad-addon/#' + match[1], text: searchPlainText (match[2]) });
+                }
+            } else if (mode === 'scripts') {
+                if ((match = /^- \*\*(.+?)\*\*: (.*)$/.exec (line))) {
+                    var link = /\(\[source\]\(([^)]+)\)\)\s*$/.exec (match[2]);
+                    entries.push ({
+                        title: searchPlainText (match[1]),
+                        kind: 'Built-in script',
+                        context: '',
+                        url: link ? link[1] : base + 'scripts/',
+                        text: searchPlainText (link ? match[2].substring (0, link.index) : match[2])
+                    });
+                }
+            }
+        });
+        entries.forEach (function (entry) {
+            entry.titleLower = entry.title.toLowerCase ();
+            entry.contextLower = entry.context.toLowerCase ();
+            entry.textLower = entry.text.toLowerCase ();
+        });
+        return entries;
+    }
+
+    // The entries that have every word of the query, best first: a title that is the query, then one
+    // that starts with it, then by where the words were found (title, page or group, text).
+    function searchEntries (entries, query) {
+        var phrase = query.toLowerCase ().replace (/\s+/g, ' ').trim ();
+        var words = phrase.split (' ').filter (function (word) {
+            return word;
+        });
+        if (!words.length) {
+            return [];
+        }
+        var squashed = phrase.replace (/ /g, '');
+        var found = [];
+        entries.forEach (function (entry, index) {
+            var score = 0;
+            for (var i = 0; i < words.length; i++) {
+                var word = words[i];
+                if (entry.titleLower.indexOf (word) !== -1) {
+                    score += 10;
+                } else if (entry.contextLower.indexOf (word) !== -1) {
+                    score += 3;
+                } else if (entry.textLower.indexOf (word) !== -1) {
+                    score += 1;
+                } else {
+                    return;
+                }
+            }
+            if (entry.titleLower === phrase || entry.titleLower === squashed) {
+                score += 100;
+            } else if (entry.titleLower.indexOf (phrase) === 0 || entry.titleLower.indexOf (squashed) === 0) {
+                score += 40;
+            } else if (entry.titleLower.indexOf (phrase) !== -1 || entry.titleLower.indexOf (squashed) !== -1) {
+                score += 20;
+            }
+            if (entry.kind === 'Page') {
+                score += 2;
+            }
+            found.push ({ entry: entry, score: score, index: index });
+        });
+        found.sort (function (a, b) {
+            return b.score - a.score || a.index - b.index;
+        });
+        return found;
+    }
+
+    // Appends text to an element with each word of the query in a <mark>, as text nodes only.
+    function appendHighlighted (element, text, words) {
+        var lower = text.toLowerCase ();
+        var position = 0;
+        while (position < text.length) {
+            var next = -1;
+            var length = 0;
+            words.forEach (function (word) {
+                var at = lower.indexOf (word, position);
+                if (at !== -1 && (next === -1 || at < next || (at === next && word.length > length))) {
+                    next = at;
+                    length = word.length;
+                }
+            });
+            if (next === -1) {
+                element.appendChild (document.createTextNode (text.substring (position)));
+                return;
+            }
+            if (next > position) {
+                element.appendChild (document.createTextNode (text.substring (position, next)));
+            }
+            var mark = document.createElement ('mark');
+            mark.textContent = text.substr (next, length);
+            element.appendChild (mark);
+            position = next + length;
+        }
+    }
+
+    // About 160 characters of the text around the first word of the query found in it.
+    function searchSnippet (entry, words) {
+        var text = entry.text;
+        if (text.length <= 160) {
+            return text;
+        }
+        var at = -1;
+        words.forEach (function (word) {
+            var found = entry.textLower.indexOf (word);
+            if (found !== -1 && (at === -1 || found < at)) {
+                at = found;
+            }
+        });
+        var start = at > 60 ? text.lastIndexOf (' ', at - 50) + 1 : 0;
+        var end = text.indexOf (' ', start + 160);
+        return (start > 0 ? '… ' : '') + text.substring (start, end === -1 ? text.length : end) + (end === -1 ? '' : ' …');
+    }
+
+    function setUpSearch () {
+        var right = document.querySelector ('.site-header .right');
+        if (!right || !siteRoot || !window.fetch) {
+            return;
+        }
+        function text (english) {
+            return translate (english) || english;
+        }
+
+        var button = document.createElement ('button');
+        button.type = 'button';
+        button.id = 'search-button';
+        button.className = 'toggle search-button';
+        button.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="4.75"/><path d="M10.5 10.5 14 14"/></g></svg>';
+        var buttonLabel = document.createElement ('span');
+        buttonLabel.className = 'visually-hidden';
+        buttonLabel.textContent = text ('Search');
+        button.appendChild (buttonLabel);
+        right.insertBefore (button, right.firstChild);
+
+        var panel = document.createElement ('div');
+        panel.className = 'search-panel';
+        panel.id = 'search-panel';
+        panel.hidden = true;
+        panel.setAttribute ('role', 'dialog');
+        panel.setAttribute ('aria-label', text ('Search the site'));
+        var form = document.createElement ('form');
+        form.className = 'search-form';
+        form.setAttribute ('role', 'search');
+        var input = document.createElement ('input');
+        input.type = 'search';
+        input.className = 'search-input';
+        input.setAttribute ('aria-label', text ('Search the site'));
+        input.placeholder = text ('Search pages, commands and scripts');
+        input.autocomplete = 'off';
+        input.spellcheck = false;
+        input.setAttribute ('aria-controls', 'search-results');
+        var done = document.createElement ('button');
+        done.type = 'button';
+        done.className = 'display-done search-done';
+        done.textContent = text ('Done');
+        form.appendChild (input);
+        form.appendChild (done);
+        panel.appendChild (form);
+        var status = document.createElement ('p');
+        status.className = 'search-status';
+        status.setAttribute ('role', 'status');
+        panel.appendChild (status);
+        var list = document.createElement ('ul');
+        list.className = 'search-results';
+        list.id = 'search-results';
+        panel.appendChild (list);
+        document.body.appendChild (panel);
+
+        var entries = null;
+        var loading = false;
+        var failed = false;
+
+        function load () {
+            if (entries || loading) {
+                return;
+            }
+            loading = true;
+            failed = false;
+            render ();
+            window.fetch (siteRoot + 'llms-full.txt').then (function (response) {
+                if (!response.ok) {
+                    throw new Error (String (response.status));
+                }
+                return response.text ();
+            }).then (function (source) {
+                entries = parseSearchIndex (source, siteRoot);
+                loading = false;
+                render ();
+            }, function () {
+                loading = false;
+                failed = true;
+                render ();
+            });
+        }
+
+        function render () {
+            list.textContent = '';
+            var query = input.value;
+            if (!query.trim ()) {
+                status.textContent = '';
+                return;
+            }
+            if (failed) {
+                status.textContent = text ('The search could not be loaded. Check your connection and try again.');
+                return;
+            }
+            if (!entries) {
+                status.textContent = text ('Loading…');
+                return;
+            }
+            var found = searchEntries (entries, query);
+            var words = query.toLowerCase ().split (/\s+/).filter (function (word) {
+                return word;
+            });
+            if (!found.length) {
+                status.textContent = text ('Nothing found.');
+                return;
+            }
+            status.textContent = found.length === 1 ? text ('1 result') : found.length + ' ' + text ('results');
+            found.slice (0, SEARCH_MAX_RESULTS).forEach (function (result) {
+                var entry = result.entry;
+                var item = document.createElement ('li');
+                var link = document.createElement ('a');
+                link.href = entry.url;
+                var title = document.createElement ('span');
+                title.className = 'search-title';
+                appendHighlighted (title, entry.title, words);
+                link.appendChild (title);
+                var meta = document.createElement ('span');
+                meta.className = 'search-meta';
+                meta.textContent = text (entry.kind) + (entry.context ? ' · ' + entry.context : '');
+                link.appendChild (meta);
+                var snippet = searchSnippet (entry, words);
+                if (snippet) {
+                    var body = document.createElement ('span');
+                    body.className = 'search-snippet';
+                    appendHighlighted (body, snippet, words);
+                    link.appendChild (body);
+                }
+                item.appendChild (link);
+                list.appendChild (item);
+            });
+        }
+
+        function isOpen () {
+            return !panel.hidden;
+        }
+
+        function open () {
+            panel.hidden = false;
+            button.setAttribute ('aria-expanded', 'true');
+            load ();
+            input.focus ();
+            input.select ();
+        }
+
+        function close (focusButton) {
+            if (!isOpen ()) {
+                return;
+            }
+            panel.hidden = true;
+            button.setAttribute ('aria-expanded', 'false');
+            if (focusButton) {
+                button.focus ();
+            }
+        }
+
+        function results () {
+            return Array.prototype.slice.call (list.querySelectorAll ('a'));
+        }
+
+        button.setAttribute ('aria-haspopup', 'dialog');
+        button.setAttribute ('aria-expanded', 'false');
+        button.setAttribute ('aria-controls', panel.id);
+        button.addEventListener ('click', function () {
+            if (isOpen ()) {
+                close (true);
+            } else {
+                open ();
+            }
+        });
+        done.addEventListener ('click', function () {
+            close (true);
+        });
+        input.addEventListener ('input', render);
+        // Enter opens the first result.
+        form.addEventListener ('submit', function (event) {
+            event.preventDefault ();
+            var first = results ()[0];
+            if (first) {
+                close (false);
+                window.location.href = first.href;
+            }
+        });
+        // The arrow keys move between the field and the results.
+        panel.addEventListener ('keydown', function (event) {
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'Down' && event.key !== 'Up') {
+                return;
+            }
+            var links = results ();
+            if (!links.length) {
+                return;
+            }
+            var down = event.key === 'ArrowDown' || event.key === 'Down';
+            var at = links.indexOf (document.activeElement);
+            event.preventDefault ();
+            if (at === -1) {
+                (down ? links[0] : input).focus ();
+            } else if (down) {
+                links[Math.min (at + 1, links.length - 1)].focus ();
+            } else if (at === 0) {
+                input.focus ();
+            } else {
+                links[at - 1].focus ();
+            }
+        });
+        // A result may only scroll this page, so following one closes the panel.
+        list.addEventListener ('click', function (event) {
+            var target = event.target;
+            while (target && target !== list) {
+                if (target.tagName === 'A') {
+                    close (false);
+                    return;
+                }
+                target = target.parentNode;
+            }
+        });
+        document.addEventListener ('keydown', function (event) {
+            if ((event.key === 'Escape' || event.key === 'Esc') && isOpen ()) {
+                close (true);
+                return;
+            }
+            if (isOpen () || event.altKey || event.defaultPrevented) {
+                return;
+            }
+            var typing = event.target && (event.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test (event.target.tagName));
+            if ((event.key === 'k' || event.key === 'K') && (event.ctrlKey || event.metaKey) && !event.shiftKey) {
+                event.preventDefault ();
+                open ();
+            } else if (event.key === '/' && !typing && !event.ctrlKey && !event.metaKey) {
+                event.preventDefault ();
+                open ();
+            }
+        });
+        // A tap on text sends no click on iOS, so outside the panel it listens to pointerdown.
+        document.addEventListener (window.PointerEvent ? 'pointerdown' : 'click', function (event) {
+            if (isOpen () && !panel.contains (event.target) && !button.contains (event.target)) {
+                close (false);
+            }
+        });
+        // Tabbing out of the panel closes it too, leaving the focus where it went.
+        panel.addEventListener ('focusout', function (event) {
+            var next = event.relatedTarget;
+            if (next && !panel.contains (next) && next !== button) {
+                close (false);
+            }
+        });
+    }
+
     // ---- The header's menu on phones ----
 
     // Below 640 px, and on short wide screens such as a phone in landscape (#2717), the nav, the
@@ -704,7 +1151,13 @@
             }
         }
 
+        // The search button stays in the header: next to the menu button on phones (#2774), first otherwise.
+        var search = document.getElementById ('search-button');
+
         function place () {
+            if (search && search.parentNode === right) {
+                right.insertBefore (search, narrow.matches ? button : right.firstChild);
+            }
             if (narrow.matches) {
                 moved.forEach (function (element) {
                     tools.appendChild (element);
@@ -1003,6 +1456,7 @@
             root.removeAttribute ('data-i18n-loading');
             setUpLanguageMenu (language);
             setUpDisplayMenu ();
+            setUpSearch ();
             setUpMenu ();
             setUpCopyButtons ();
             setUpLiveFigures ();

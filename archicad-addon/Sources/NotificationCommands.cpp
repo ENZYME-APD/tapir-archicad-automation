@@ -80,7 +80,9 @@ public:
 std::map<GS::UniString, AddElementNotificationClientCommand::Client> AddElementNotificationClientCommand::clients;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnNew = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnModification = false;
+bool AddElementNotificationClientCommand::observesEveryElement = false;
 std::set<API_ElemTypeID> AddElementNotificationClientCommand::observedElementTypes;
+GS::HashSet<API_Guid> AddElementNotificationClientCommand::observedElements;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacement = false;
@@ -135,14 +137,18 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {\"type\": ..., ...}, where type is \"Drag\" (with displacement: {\"x\", \"y\", \"z\"}), \"Elevate\" (with displacement, only z is not 0), \"Rotate\" (with origin: {\"x\", \"y\"} and angle, in radians, counterclockwise), \"Mirror\" (with origin, a point of the mirror axis, and axisDirection: {\"x\", \"y\"}, its unit vector), \"Resize\" (with origin and ratio), \"Stretch\", \"VerticalStretch\", \"PreservedHeightStretch\", \"PreservedDirectionStretch\" or \"General\"; the changes made by Tapir's own commands and by undo or redo have no transformation. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that, plus the elements listed in elementsToObserve. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {\"type\": ..., ...}, where type is \"Drag\" (with displacement: {\"x\", \"y\", \"z\"}), \"Elevate\" (with displacement, only z is not 0), \"Rotate\" (with origin: {\"x\", \"y\"} and angle, in radians, counterclockwise), \"Mirror\" (with origin, a point of the mirror axis, and axisDirection: {\"x\", \"y\"}, its unit vector), \"Resize\" (with origin and ratio), \"Stretch\", \"VerticalStretch\", \"PreservedHeightStretch\", \"PreservedDirectionStretch\" or \"General\"; the changes made by Tapir's own commands and by undo or redo have no transformation. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve and elementsToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: one element at a time (the Archicad API has no call for many elements or a whole type), about 10 elements per second on a large project, and the time grows faster than the number of elements. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types, or list the elements with elementsToObserve, on large projects."
             },
             "elementTypesToObserve": {
                 "type": "array",
-                "description": "Only modifications/deletions of elements of these types are observed and notified to this client. Optional parameter, by default every element (including the parts of curtain walls, stairs and railings, which are most of the elements of large projects). Registering the same client again with other types changes them; only the elements of types no client observed before get an observer then. Does not limit the other notifications.",
+                "description": "Only modifications/deletions of elements of these types are observed and notified to this client, together with the elements of elementsToObserve. Optional parameter, by default (when neither elementTypesToObserve nor elementsToObserve is given) every element (including the parts of curtain walls, stairs and railings, which are most of the elements of large projects). Registering the same client again with other types changes them; only the elements of types no client observed before get an observer then. Does not limit the other notifications.",
                 "items": {
                     "$ref": "#/ElementType"
                 }
+            },
+            "elementsToObserve": {
+                "$ref": "#/Elements",
+                "description": "Only modifications/deletions of these elements are observed and notified to this client, together with the elements of the types of elementTypesToObserve. Only these elements get an observer, so registering takes time in proportion to their number, not to the size of the project (#2493). Unlike elementTypesToObserve, it does not cover the elements created later: with elementsToObserve alone, the changes of a new element are not notified (notifyOnNewElement still reports its creation); register the client again with the new element in the list to observe it. A listed element that does not exist fails the command, and the client is then not registered or changed. Registering the same client again with another list changes it; only the elements no client observed before get an observer then, and the ones no client needs any more lose theirs. Optional parameter, by default every element (see elementTypesToObserve). Does not limit the other notifications."
             },
             "notifyOnReservationChanges": {
                 "type": "boolean",
@@ -317,9 +323,30 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         }
     }
 
+    // Read and checked before the client is registered or changed, so a failed call changes nothing.
+    GS::HashSet<API_Guid> elementsToObserve;
+    GS::Array<GS::ObjectState> elementsToObserveItems;
+    if (parameters.Get ("elementsToObserve", elementsToObserveItems)) {
+        if (elementsToObserveItems.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "elementsToObserve is empty; leave it out to observe every element.");
+        }
+        for (const GS::ObjectState& item : elementsToObserveItems) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                return CreateFailedExecutionResult (APIERR_BADPARS, "An item of elementsToObserve has no elementId.");
+            }
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+            API_Elem_Head elemHead = {};
+            if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+                return CreateFailedExecutionResult (APIERR_BADID, GS::UniString ("The element of elementsToObserve does not exist: ") + APIGuidToString (elemGuid));
+            }
+            elementsToObserve.Add (elemGuid);
+        }
+    }
+
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, notifyOnLockableReservationChanges, notifyOnToolDefaultChanges, notifyOnAttributeChanges, notifyOnClassificationChanges, notifyOnPropertyDefinitionChanges, notifyOnMarqueeChange, notifyOn3DSettingsChanges, elementTypesToObserve));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, notifyOnLockableReservationChanges, notifyOnToolDefaultChanges, notifyOnAttributeChanges, notifyOnClassificationChanges, notifyOnPropertyDefinitionChanges, notifyOnMarqueeChange, notifyOn3DSettingsChanges, elementTypesToObserve, elementsToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
@@ -338,6 +365,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnMarqueeChange = notifyOnMarqueeChange;
         result.first->second.notifyOn3DSettingsChanges = notifyOn3DSettingsChanges;
         result.first->second.elementTypesToObserve = elementTypesToObserve;
+        result.first->second.elementsToObserve = elementsToObserve;
         // A client registered again without these notifications may have been the
         // last one that wanted them; uninstall the handlers in that case, as
         // RemoveElementNotificationClient does. The element observers are updated
@@ -356,7 +384,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     }
 
     // Attaches the observers this client needs and, when it was registered again
-    // with fewer types or without modification notifications, detaches the ones no
+    // with fewer types or elements or without modification notifications, detaches the ones no
     // client needs any more, as RemoveElementNotificationClient does.
     UpdateElementObservers ();
 
@@ -407,14 +435,19 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     return CreateSuccessfulExecutionResult ();
 }
 
-// The elements of the given types; every element when the set is empty.
-static GS::Array<API_Guid>
-GetElementsOfTypes (const std::set<API_ElemTypeID>& elementTypes)
+// The elements to observe: every element, or the elements of the given types and the given
+// elements that exist (a listed element may have been deleted since).
+static GS::HashSet<API_Guid>
+GetElementsToObserve (bool everyElement, const std::set<API_ElemTypeID>& elementTypes, const GS::HashSet<API_Guid>& elements)
 {
-    GS::Array<API_Guid> elementIds;
-    if (elementTypes.empty ()) {
+    GS::HashSet<API_Guid> elementIdSet;
+    if (everyElement) {
+        GS::Array<API_Guid> elementIds;
         ACAPI_Element_GetElemList (API_ZombieElemID, &elementIds);
-        return elementIds;
+        for (const API_Guid& elemId : elementIds) {
+            elementIdSet.Add (elemId);
+        }
+        return elementIdSet;
     }
 
     for (const API_ElemTypeID elementType : elementTypes) {
@@ -422,77 +455,88 @@ GetElementsOfTypes (const std::set<API_ElemTypeID>& elementTypes)
         if (ACAPI_Element_GetElemList (elementType, &elementIdsOfType) != NoError) {
             continue;
         }
-        elementIds.Append (elementIdsOfType);
+        for (const API_Guid& elemId : elementIdsOfType) {
+            elementIdSet.Add (elemId);
+        }
     }
-    return elementIds;
+    for (const API_Guid& elemId : elements) {
+        API_Elem_Head elemHead = {};
+        if (!elementIdSet.Contains (elemId) && LoadElementHeaderByGuid (elemId, elemHead)) {
+            elementIdSet.Add (elemId);
+        }
+    }
+    return elementIdSet;
 }
 
 bool
-AddElementNotificationClientCommand::IsObservedElementType (API_ElemTypeID typeID)
+AddElementNotificationClientCommand::IsObservedElement (const API_Elem_Head& elemHead)
 {
-    return hasClientToNotifyOnModification && (observedElementTypes.empty () || observedElementTypes.count (typeID) > 0);
+    return hasClientToNotifyOnModification &&
+           (observesEveryElement || observedElementTypes.count (GetElemTypeId (elemHead)) > 0 || observedElements.Contains (elemHead.guid));
 }
 
 void
 AddElementNotificationClientCommand::UpdateElementObservers ()
 {
-    // The types the clients need now: empty means every element.
+    // What the clients need now.
     bool needed = false;
-    bool neededForEveryType = false;
+    bool neededForEveryElement = false;
     std::set<API_ElemTypeID> neededTypes;
+    GS::HashSet<API_Guid> neededElements;
     for (const auto& kv : clients) {
         const Client& client = kv.second;
         if (!client.notifyOnModification) {
             continue;
         }
         needed = true;
-        if (client.elementTypesToObserve.empty ()) {
-            neededForEveryType = true;
+        if (client.observesEveryElement ()) {
+            neededForEveryElement = true;
         } else {
             neededTypes.insert (client.elementTypesToObserve.begin (), client.elementTypesToObserve.end ());
+            for (const API_Guid& elemId : client.elementsToObserve) {
+                neededElements.Add (elemId);
+            }
         }
     }
-    if (neededForEveryType) {
+    if (neededForEveryElement || !needed) {
         neededTypes.clear ();
+        neededElements.Clear ();
     }
 
-    if (needed == hasClientToNotifyOnModification && (!needed || neededTypes == observedElementTypes)) {
+    if (needed == hasClientToNotifyOnModification &&
+        (!needed || (neededForEveryElement == observesEveryElement && neededTypes == observedElementTypes && neededElements == observedElements))) {
         return;
     }
 
     // ACAPI_Element_AttachObserver and ACAPI_Element_DetachObserver are slow on
-    // many elements, and Archicad is blocked meanwhile (see issue #1840), so only
-    // the elements whose observer changes are touched.
-    GS::Array<API_Guid> attachedIds;
+    // many elements, and Archicad is blocked meanwhile (see issues #1840 and #2493),
+    // so only the elements whose observer changes are touched.
+    GS::HashSet<API_Guid> attachedIdSet;
     if (hasClientToNotifyOnModification) {
-        attachedIds = GetElementsOfTypes (observedElementTypes);
+        attachedIdSet = GetElementsToObserve (observesEveryElement, observedElementTypes, observedElements);
     }
-    GS::Array<API_Guid> neededIds;
+    GS::HashSet<API_Guid> neededIdSet;
     if (needed) {
-        neededIds = GetElementsOfTypes (neededTypes);
+        neededIdSet = GetElementsToObserve (neededForEveryElement, neededTypes, neededElements);
     }
 
-    GS::HashSet<API_Guid> neededIdSet;
-    for (const API_Guid& elemId : neededIds) {
-        neededIdSet.Add (elemId);
-    }
-    GS::HashSet<API_Guid> attachedIdSet;
-    for (const API_Guid& elemId : attachedIds) {
-        attachedIdSet.Add (elemId);
+    for (const API_Guid& elemId : attachedIdSet) {
         if (!neededIdSet.Contains (elemId)) {
             // Without this the observer stays attached for the rest of the session
             // after the last client was removed (see issue #762).
             ACAPI_Element_DetachObserver (elemId);
         }
     }
-    for (const API_Guid& elemId : neededIds) {
+    for (const API_Guid& elemId : neededIdSet) {
         if (!attachedIdSet.Contains (elemId)) {
             ACAPI_Element_AttachObserver (elemId);
         }
     }
 
     hasClientToNotifyOnModification = needed;
-    observedElementTypes = needed ? neededTypes : std::set<API_ElemTypeID> ();
+    observesEveryElement = needed && neededForEveryElement;
+    observedElementTypes = neededTypes;
+    observedElements = neededElements;
 }
 
 void
@@ -1336,7 +1380,7 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
             case APINotifyElement_Undo_Deleted:
             case APINotifyElement_Redo_Created:
                 SendEventToNotificationClient (ElementEventType::New, message);
-                if (IsObservedElementType (GetElemTypeId (elemType->elemHead))) {
+                if (IsObservedElement (elemType->elemHead)) {
                     ACAPI_Element_AttachObserver (elemType->elemHead.guid);
                 }
                 break;

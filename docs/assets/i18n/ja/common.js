@@ -58,5 +58,17 @@
     'Roadmap': 'ロードマップ',
     'About Tapir': 'Tapir について',
     'Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.':
-        'Graphisoft とは提携していません。Archicad は Graphisoft SE の商標です。'
+        'Graphisoft とは提携していません。Archicad は Graphisoft SE の商標です。',
+    'Search': '検索',
+    'Search the site': 'サイト内を検索',
+    'Search pages, commands and scripts': 'ページ、コマンド、スクリプトを検索',
+    'Loading…': '読み込み中…',
+    'The search could not be loaded. Check your connection and try again.': '検索を読み込めませんでした。接続を確認して、もう一度お試しください。',
+    'Nothing found.': '見つかりませんでした。',
+    '1 result': '1 件',
+    'results': '件',
+    'Page': 'ページ',
+    'Section': 'セクション',
+    'Command': 'コマンド',
+    'Built-in script': '組み込みスクリプト'
 });

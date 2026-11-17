@@ -1,6 +1,7 @@
 #include "LibraryPartCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
+#include "LibraryPartEditing.hpp"
 #include "Folder.hpp"
 #include "File.hpp"
 #include "FileSystem.hpp"
@@ -39,8 +40,11 @@ using LibraryPartChange = std::pair<GS::UniString, std::function<ACAPI::Result<v
 
 // Calls function with the GSM object of the loaded library part, or returns the error.
 // asExecutionResult selects the error shape: an execution result for the Set commands, an error response otherwise.
+// forModify gets the object the Set commands modify (GetGSMObjectToModify): a part of a local library folder
+// whose library object is not editable is loaded from its file, and the libraries are reloaded after a
+// successful change, so the loaded library reads the changed file.
 template <typename Function>
-static GS::ObjectState WithGSMObject (const GS::UniString& name, bool asExecutionResult, const Function& function)
+static GS::ObjectState WithGSMObject (const GS::UniString& name, bool asExecutionResult, const Function& function, bool forModify = false)
 {
     const auto Fail = [&] (GSErrCode errorCode, const GS::UniString& errorMessage) {
         return asExecutionResult ? CreateFailedExecutionResult (errorCode, errorMessage) : CreateErrorResponse (errorCode, errorMessage);
@@ -56,12 +60,18 @@ static GS::ObjectState WithGSMObject (const GS::UniString& name, bool asExecutio
         return Fail (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
     }
 
-    auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+    bool loadedFromFile = false;
+    auto gsmObject = forModify ? GetGSMObjectToModify (libraryManager, libPart.Unwrap (), loadedFromFile) : libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
     if (gsmObject.IsErr ()) {
         return Fail (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'.");
     }
 
-    return function (gsmObject);
+    GS::ObjectState result = function (gsmObject);
+    bool success = false;
+    if (loadedFromFile && result.Get ("success", success) && success) {
+        ACAPI_ProjectOperation_ReloadLibraries ();
+    }
+    return result;
 }
 
 // Makes the changes in one GSMObject::Modify, in an undoable command, and returns the execution result.
@@ -69,7 +79,7 @@ template <typename GSMObjectResult>
 static GS::ObjectState ModifyLibraryPart (GSMObjectResult& gsmObject, const GS::UniString& name, const GS::UniString& undoString, const std::vector<LibraryPartChange>& changes)
 {
     if (!gsmObject->IsEditable ()) {
-        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified; a part of a library package or a read-only library must first be copied into a writable library.");
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The library part '" + name + "' is not editable, nothing was changed. Only a library part loaded from a writable file can be modified: a part of a local library folder whose file is writable, or a part of the embedded library when Archicad reports it editable (in a saved project it may not). A part of a library package, a BIMcloud, built-in or read-only library must first be copied into a local library folder (CopyLibraryParts with targetFolder).");
     }
 
     GS::ObjectState result = CreateSuccessfulExecutionResult ();
@@ -451,7 +461,7 @@ GS::ObjectState SetLibraryPartPicturesCommand::Execute (const GS::ObjectState& p
             changes.push_back ({ "copy2DSymbolFrom", [&] (GSMObject::Modifier& modifier) { return modifier.Set2DVectorImage (vectorImage.Unwrap ()); } });
             return ModifyLibraryPart (gsmObject, name, "Set Library Part Pictures", changes);
         });
-    });
+    }, true);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
@@ -666,7 +676,7 @@ GS::ObjectState SetLibraryPartCustomSectionCommand::Execute (const GS::ObjectSta
             changes.push_back ({ "data", [&] (GSMObject::Modifier& modifier) { return modifier.SetCustomSection (sectionId, index, sectionData); } });
         }
         return ModifyLibraryPart (gsmObject, name, "Set Library Part Custom Section", changes);
-    });
+    }, true);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");

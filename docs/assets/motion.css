@@ -40,7 +40,7 @@
 @keyframes m-grid { to { background-position: 240px 240px } }
 
 /* 4. Cursor coordinates in the page head, like a CAD crosshair (mouse only) */
-.m-coords { position: absolute; pointer-events: none; font: 500 .6875rem var(--mono); color: var(--ochre-light); opacity: 0; transition: opacity .2s; white-space: nowrap; transform: translate(14px, 14px); z-index: 2 }
+.m-coords { position: absolute; pointer-events: none; font: 500 .75rem var(--mono); color: var(--ochre-light); opacity: 0; transition: opacity .2s; white-space: nowrap; transform: translate(14px, 14px); z-index: 2 }
 .m-cross-x, .m-cross-y { position: absolute; pointer-events: none; background: var(--ochre-light-28); opacity: 0; transition: opacity .2s; z-index: 1 }
 .m-cross-x { left: 0; right: 0; height: 1px } .m-cross-y { top: 0; bottom: 0; width: 1px }
 .page-head.m-hover .m-coords, .page-head.m-hover .m-cross-x, .page-head.m-hover .m-cross-y { opacity: 1 }
