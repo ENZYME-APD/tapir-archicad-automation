@@ -10282,61 +10282,27 @@ GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> RecreateStairsCommand::GetRawResponseSchema () const
+// The response of every Recreate command (RecreateStairs, RecreateRailings, ...): one
+// RecreatedElement or error per input element. resultsDescription says what the command recreates
+// and what it cannot carry over.
+static GS::UniString RecreateCommandResponseSchema (const GS::UniString& resultsDescription)
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "results": {
-                "type": "array",
-                "description": "One item per input stair: the new stair, or an error. After an error nothing was changed for that stair.",
-                "items": {
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "oldElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The stair that was deleted."
-                                },
-                                "elementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The new stair."
-                                },
-                                "notCarriedOver": {
-                                    "type": "array",
-                                    "description": "What was linked to the old stair and could not be moved to the new one. Labels of the stair are deleted with it; dimensions measuring it lose those witness points or are deleted. Only the dimensions of the current database (the active window) are listed.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "relation": {
-                                                "type": "string",
-                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"],
-                                                "description": "Label: an associative label of the old stair. Dimension, LevelDimension: a dimension that measured the old stair. Group: the old stair was in a group; the new one is not."
-                                            },
-                                            "elementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The label or dimension, as it was before the old stair was deleted. Not given for Group."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["relation"]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["oldElementId", "elementId", "notCarriedOver"]
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": ")") + resultsDescription + R"("
             }
         },
         "additionalProperties": false,
         "required": ["results"]
     })";
+}
+
+GS::Optional<GS::UniString> RecreateStairsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input stair: the new stair, or an error. After an error nothing was changed for that stair. Labels of the old stair are deleted with it; dimensions measuring it lose those witness points or are deleted.");
 }
 
 namespace {
@@ -10814,58 +10780,7 @@ GS::Optional<GS::UniString> RecreateRailingsCommand::GetInputParametersSchema ()
 
 GS::Optional<GS::UniString> RecreateRailingsCommand::GetRawResponseSchema () const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "results": {
-                "type": "array",
-                "description": "One item per input railing: the new railing, or an error. After an error nothing was changed for that railing.",
-                "items": {
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "oldElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The railing that was deleted."
-                                },
-                                "elementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The new railing."
-                                },
-                                "notCarriedOver": {
-                                    "type": "array",
-                                    "description": "What was linked to the old railing and could not be moved to the new one: its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group. Only the dimensions of the current database (the active window) are listed. The link of a railing to the slab or stair it was placed on cannot be read through the Archicad API, so it is not listed: the new railing has none.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "relation": {
-                                                "type": "string",
-                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"]
-                                            },
-                                            "elementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The label or dimension, as it was before the old railing was deleted. Not given for Group."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["relation"]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["oldElementId", "elementId", "notCarriedOver"]
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": ["results"]
-    })";
+    return RecreateCommandResponseSchema ("One item per input railing: the new railing, or an error. After an error nothing was changed for that railing. Its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group. The link of a railing to the slab or stair it was placed on cannot be read through the Archicad API, so it is not listed in notCarriedOver: the new railing has none.");
 }
 
 GS::ObjectState RecreateRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -11093,58 +11008,7 @@ GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetInputParametersSchem
 
 GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetRawResponseSchema () const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "results": {
-                "type": "array",
-                "description": "One item per input curtain wall: the new curtain wall, or an error. After an error nothing was changed for that curtain wall.",
-                "items": {
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "oldElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The curtain wall that was deleted."
-                                },
-                                "elementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The new curtain wall."
-                                },
-                                "notCarriedOver": {
-                                    "type": "array",
-                                    "description": "What was linked to the old curtain wall and could not be moved to the new one: its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group. Only the dimensions of the current database (the active window) are listed.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "relation": {
-                                                "type": "string",
-                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"]
-                                            },
-                                            "elementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The label or dimension, as it was before the old curtain wall was deleted. Not given for Group."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["relation"]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["oldElementId", "elementId", "notCarriedOver"]
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": ["results"]
-    })";
+    return RecreateCommandResponseSchema ("One item per input curtain wall: the new curtain wall, or an error. After an error nothing was changed for that curtain wall. Its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
 }
 
 // The reference line of an existing curtain wall on the floor plan, as CreateCurtainWalls takes its
