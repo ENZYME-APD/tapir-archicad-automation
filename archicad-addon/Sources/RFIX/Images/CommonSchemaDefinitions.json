@@ -16066,11 +16066,11 @@
             "monolithThickness": {
                 "type": "number",
                 "minimum": 0.0,
-                "description": "The thickness of the monolith."
+                "description": "The thickness of the monolith. Archicad 26 and 28 were seen to keep 0 here for a Smooth structure, whose thickness is the structure's thickness; ModifyStairs then reports it as not applied."
             },
             "bottomOversize": {
                 "type": "number",
-                "description": "The size of the horizontal bottom."
+                "description": "The size of the horizontal bottom. Archicad 26 and 28 were seen to keep 0 here for a Smooth structure; ModifyStairs then reports it as not applied."
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId",
@@ -16082,7 +16082,7 @@
             },
             "materialsChained": {
                 "type": "boolean",
-                "description": "Whether the surfaces of the structure are chained."
+                "description": "Whether the surfaces of the structure are chained. While they are, Archicad was seen to give the top the surface of another side, so give false with a surface of one side."
             },
             "topMaterial": {
                 "$ref": "#/OverriddenMaterial",

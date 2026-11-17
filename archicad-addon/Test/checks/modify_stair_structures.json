@@ -40,8 +40,8 @@
               {
                 "role": "Run", "side": "UnderSide", "visible": true, "structureType": "Monolith", "bottomType": "Smooth", "thickness": 0.18,
                 "monolith": {
-                  "monolithThickness": 0.2,
                   "buildingMaterialId": { "guid": "${bm}" },
+                  "materialsChained": false,
                   "topMaterial": { "overridden": true, "attributeId": { "guid": "${surf}" } }
                 }
               }
@@ -61,14 +61,15 @@
       "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].details.structures[2].structureType", "eq": "Monolith", "name": "run under side is monolithic" },
-        { "path": "detailsOfElements[0].details.structures[2].monolith.monolithThickness", "approx": 0.2, "tol": 0.0001, "name": "monolith thickness as created" },
+        { "path": "detailsOfElements[0].details.structures[2].thickness", "approx": 0.18, "tol": 0.0001, "name": "structure thickness as created" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.materialsChained", "eq": false, "name": "surfaces not chained as created" },
         { "path": "detailsOfElements[0].details.structures[2].monolith.buildingMaterialId.guid", "eq": "${bm}", "name": "building material as created" },
         { "path": "detailsOfElements[0].details.structures[2].monolith.topMaterial.overridden", "eq": true, "name": "top surface overridden" },
         { "path": "detailsOfElements[0].details.structures[2].monolith.topMaterial.attributeId.guid", "eq": "${surf}", "name": "top surface as created" }
       ]
     },
     {
-      "id": "ModifyStairs changes the monolith thickness, bottom oversize, pen, cut fill pen and bottom surface",
+      "id": "ModifyStairs changes the structure thickness, the monolith pen, cut fill pen and bottom surface",
       "command": "ModifyStairs",
       "creates": false,
       "params": {
@@ -77,10 +78,8 @@
             "elementId": { "guid": "${s}" },
             "structures": [
               {
-                "role": "Run", "side": "UnderSide",
+                "role": "Run", "side": "UnderSide", "thickness": 0.25,
                 "monolith": {
-                  "monolithThickness": 0.25,
-                  "bottomOversize": 0.1,
                   "pen": 5,
                   "cutFillPen": { "overridden": true, "penIndex": 7 },
                   "bottomMaterial": { "overridden": true, "attributeId": { "guid": "${surf}" } }
@@ -100,8 +99,8 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.structures[2].monolith.monolithThickness", "approx": 0.25, "tol": 0.0001, "name": "monolith thickness changed" },
-        { "path": "detailsOfElements[0].details.structures[2].monolith.bottomOversize", "approx": 0.1, "tol": 0.0001, "name": "bottom oversize changed" },
+        { "path": "detailsOfElements[0].details.structures[2].thickness", "approx": 0.25, "tol": 0.0001, "name": "structure thickness changed" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.cutFillPen.penIndex", "eq": 7, "name": "cut fill pen changed" },
         { "path": "detailsOfElements[0].details.structures[2].monolith.pen", "eq": 5, "name": "pen changed" },
         { "path": "detailsOfElements[0].details.structures[2].monolith.bottomMaterial.attributeId.guid", "eq": "${surf}", "name": "bottom surface changed" },
         { "path": "detailsOfElements[0].details.structures[2].monolith.buildingMaterialId.guid", "eq": "${bm}", "name": "building material kept" },
