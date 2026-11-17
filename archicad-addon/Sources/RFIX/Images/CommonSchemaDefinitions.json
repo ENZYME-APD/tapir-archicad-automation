@@ -3724,7 +3724,7 @@
             },
             "polygonArcs": {
                 "type": "array",
-                "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates.",
+                "description": "Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates and must be the two ends of one edge (consecutive vertices, either direction); the closing edge is n-1 -> 0 (n-1 -> n is also accepted). An arc that is not on an edge is refused with an error.",
                 "items": {
                     "$ref": "#/PolyArc"
                 }
@@ -6253,6 +6253,10 @@
                 "type": "boolean",
                 "description": "Whether the dimension text has a frame."
             },
+            "textStyle": {
+                "$ref": "#/DimensionTextStyle",
+                "description": "The font and style of the dimension text."
+            },
             "content": {
                 "type": "string",
                 "enum": ["MeasuredValue", "CustomText"],
@@ -6268,7 +6272,11 @@
             },
             "textPositionFixed": {
                 "type": "boolean",
-                "description": "Whether the text was moved by hand from its automatic position (API note fixPos); ModifyAssociativeDimensions' resetTextPosition sets it back to false."
+                "description": "Whether the text was moved by hand from its automatic position (API note fixPos); ModifyAssociativeDimensions' resetTextPosition sets it back to false, its textPosition to true."
+            },
+            "textPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Where the text is (API note pos, its left bottom as Archicad keeps it), in the coordinates of the witness points; ModifyAssociativeDimensions' witnessPointTexts[].textPosition takes the same coordinates. Compare them across dimensions to find texts that overlap."
             }
         }
     },
@@ -6514,7 +6522,7 @@
             },
             "floorIndex": {
                 "type": "integer",
-                "description": "The story to place the interior elevation on. Defaults to the current story."
+                "description": "The story to place the interior elevation on. Defaults to the current story. Archicad places an interior elevation on the active story, so for another story that story is activated while the interior elevation is created, and the previously active one is put back afterwards."
             }
         },
         "additionalProperties": false,
@@ -10136,7 +10144,7 @@
         "properties": {
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "The current zoom parameters."
+                "description": "The current zoom parameters. In a rotated window (rotation is not 0) the box is in the window's own rotated frame, as Archicad stores it, not in model coordinates."
             },
             "rotation": {
                 "type": "number",
@@ -11029,11 +11037,61 @@
             },
             "basePlane": {
                 "$ref": "#/CoordinateSystem3D",
-                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profile, the extrusion start and the extrusion vector are given in it."
+                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profiles, the extrusion start and vector, the axis and the profile planes are given in it."
             },
             "profile": {
                 "$ref": "#/ShellProfile",
-                "description": "Extruded only: the profile polyline, in the plane across the extrusion (x horizontal, y up), as CreateShells takes it. Only the first polyline of the profile is returned."
+                "description": "The profile polyline, as CreateShells takes it. Extruded: in the plane across the extrusion (x horizontal, y up). Revolved: in the base plane's XY plane. Ruled: the first profile, in the XY plane of profilePlane. Only the first polyline of the profile is returned."
+            },
+            "axis": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Revolved only: the coordinate system whose Z axis the profile is turned around, in base plane coordinates (API_RevolvedShellData::axisBase), as CreateShells takes it."
+            },
+            "revolutionAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the profile is turned through, in radians."
+            },
+            "beginAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the revolution starts at, in radians (API_RevolvedShellData::begAngle)."
+            },
+            "distortionAngle": {
+                "type": "number",
+                "description": "Revolved only: shear of the revolution, in radians; pi/2 is no shear."
+            },
+            "segmentType": {
+                "type": "string",
+                "enum": [ "ByCircle", "ByArc" ],
+                "description": "Revolved only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+            },
+            "segmentsByCircle": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments a full circle is resolved into, used when segmentType is ByCircle."
+            },
+            "segmentsByArc": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments the revolution arc is resolved into, used when segmentType is ByArc."
+            },
+            "segmentedSurfaces": {
+                "type": "boolean",
+                "description": "Revolved only: whether the revolved surface is broken into planes along the revolution arc."
+            },
+            "profilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of profile, in base plane coordinates (API_RuledShellData::plane1), as CreateShells takes it."
+            },
+            "secondProfile": {
+                "$ref": "#/ShellProfile",
+                "description": "Ruled only: the second profile polyline, in the XY plane of secondProfilePlane, as CreateShells takes it. Only the first polyline of the profile is returned."
+            },
+            "secondProfilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of secondProfile, in base plane coordinates (API_RuledShellData::plane2), as CreateShells takes it."
+            },
+            "morphingRule": {
+                "type": "string",
+                "enum": [ "Paired", "Smooth" ],
+                "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
             },
             "extrusionStart": {
                 "$ref": "#/Coordinate3D",
@@ -11061,7 +11119,7 @@
             },
             "slantAngle": {
                 "type": "number",
-                "description": "Extruded only: slant of the extrusion vector, in radians."
+                "description": "Extruded and Revolved: slant of the extrusion vector or of the profile, in radians."
             }
         },
         "additionalProperties": false,
@@ -15036,21 +15094,12 @@
                 "description": "The pen of the dimension and witness lines."
             },
             "marker": {
-                "type": "object",
-                "description": "The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The marker type, named after API_MarkerID.",
-                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "The pen of the marker."
-                    }
-                },
-                "additionalProperties": false,
-                "required": ["type", "pen"]
+                "$ref": "#/DimensionMarker",
+                "description": "The marker at the witness points, always with its type, pen and size."
+            },
+            "textPlacement": {
+                "$ref": "#/DimensionTextPlacement",
+                "description": "The text placement method of the dimension texts, always with all of its fields."
             },
             "textHeight": {
                 "type": "number",
@@ -15063,6 +15112,10 @@
             "textFrame": {
                 "type": "boolean",
                 "description": "The text frame of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
+            "textStyle": {
+                "$ref": "#/DimensionTextStyle",
+                "description": "The font and style of the texts of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
             },
             "defaultWitnessForm": {
                 "type": "string",
@@ -15102,9 +15155,11 @@
             "witnessPointCount",
             "linePen",
             "marker",
+            "textPlacement",
             "textHeight",
             "textPen",
             "textFrame",
+            "textStyle",
             "defaultWitnessForm",
             "defaultWitnessVal",
             "staticDimension",
@@ -15184,6 +15239,83 @@
             "angle",
             "horizontalMarker"
         ]
+    },
+    "DimensionTextStyle": {
+        "type": "object",
+        "description": "The font and style of the texts of a linear dimension, as in the Dimension Settings' text panel (API_NoteType noteFont, faceBits, widthFactor, spacingFactor). Taken as textStyle by CreateAssociativeDimensions, CreateAssociativeDimensionsOnSection, CreateWallThicknessDimensions and ModifyAssociativeDimensions, where only the fields given are changed, and returned by GetDetailsOfElements and, per witness point, by GetDimensionData.",
+        "properties": {
+            "fontIndex": {
+                "type": "integer",
+                "description": "Font attribute index, as GetFontsByName reports it. On input it must be the index of a loaded font; fontName wins when both are given."
+            },
+            "fontName": {
+                "type": "string",
+                "description": "Name of the font, as the Font attributes carry it, e.g. 'Arial'. On input resolved to the font's index like a Text style's fontName, taking precedence over fontIndex, and failing when no loaded font has the name; on read-back the name of the font fontIndex refers to, absent when no loaded font has that index."
+            },
+            "bold": {
+                "type": "boolean"
+            },
+            "italic": {
+                "type": "boolean"
+            },
+            "underline": {
+                "type": "boolean"
+            },
+            "widthFactor": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Width scale of the characters (1 is 100 %)."
+            },
+            "spacingFactor": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Spacing scale between the characters (1 is 100 %)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "DimensionMarker": {
+        "type": "object",
+        "description": "The marker at the witness points of a linear dimension (API_MarkerData). CreateAssociativeDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The marker type, named after API_MarkerID.",
+                "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
+            },
+            "pen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen of the marker."
+            },
+            "size": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "The marker size, the API's markerData.markerSize, which the DevKit calls the size in millimeters at the drawing scale. Compare it with the marker size of the Dimension Settings before relying on it: on Archicad 29 a linear dimension whose dialog showed 1.0 read 2.5 here."
+            }
+        },
+        "additionalProperties": false
+    },
+    "DimensionTextPlacement": {
+        "type": "object",
+        "description": "The text placement method of a linear dimension's texts, as in the Dimension Settings (API dimLayout, placeUnderEnabled, pushNeighborEnabled). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
+        "properties": {
+            "method": {
+                "type": "string",
+                "enum": ["Classic", "Flexible", "Centered", "Off", "Unknown"],
+                "description": "Classic (the API's API_Legacy, the placement of Archicad 18 and before), Flexible, Centered, or Off (every text in the middle of its segment, without collision detection). Unknown is only returned, for a value this version of Tapir does not know."
+            },
+            "placeBelowLine": {
+                "type": "boolean",
+                "description": "Flexible method: a text that does not fit may be placed below the dimension line (API placeUnderEnabled)."
+            },
+            "pushNeighbors": {
+                "type": "boolean",
+                "description": "Flexible method: a text may push its neighbouring texts aside (API pushNeighborEnabled)."
+            }
+        },
+        "additionalProperties": false
     },
     "RadialDimensionDetails": {
         "type": "object",
@@ -15399,6 +15531,10 @@
             "rules": {
                 "$ref": "#/StairRules",
                 "description": "The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied."
+            },
+            "headroom": {
+                "$ref": "#/StairHeadroom",
+                "description": "The headroom of the stair (Stair Settings > Headroom), as stored in the stair. Whether the headroom body is shown is a Model View Option, not part of the stair."
             },
             "level": {
                 "type": "number",
@@ -15761,6 +15897,17 @@
             "walkingLineOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing offset is applied." },
             "winderTurnOffsetMinValue": { "type": "number", "description": "Minimum winder width." },
             "winderTurnOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum winder width is applied." }
+        },
+        "additionalProperties": false
+    },
+    "StairHeadroom": {
+        "type": "object",
+        "description": "The headroom of a Stair (API_StairHeadroomData, Stair Settings > Headroom): the clear space above the flights that Archicad checks against the elements above the stair. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
+        "properties": {
+            "method": { "type": "string", "enum": ["RightAngleToSlope", "VerticallyToSlope", "Unknown"], "description": "How the headroom is generated: at right angle to the slope of the stair (APIHM_RightAngleToSlope) or vertically to it (APIHM_VerticallyToSlope). GetDetailsOfElements returns Unknown for a value it does not know; CreateStairs and ModifyStairs refuse Unknown." },
+            "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the headroom." },
+            "leftOffset": { "type": "number", "description": "The offset of the headroom from the left side of the stair." },
+            "rightOffset": { "type": "number", "description": "The offset of the headroom from the right side of the stair." }
         },
         "additionalProperties": false
     },
@@ -18749,21 +18896,12 @@
                 "description": "The pen of the dimension and witness lines."
             },
             "marker": {
-                "type": "object",
-                "description": "The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The marker type, named after API_MarkerID.",
-                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "The pen of the marker."
-                    }
-                },
-                "additionalProperties": false,
-                "required": ["type", "pen"]
+                "$ref": "#/DimensionMarker",
+                "description": "The marker at the witness points, always with its type, pen and size."
+            },
+            "textPlacement": {
+                "$ref": "#/DimensionTextPlacement",
+                "description": "The text placement method of the dimension texts, always with all of its fields."
             },
             "defaultWitnessForm": {
                 "type": "string",
@@ -29134,6 +29272,10 @@
             "charSpaceFactor": {
                 "type": "number"
             },
+            "content": {
+                "type": "string",
+                "description": "Text: the text the primitive draws, as Archicad displays it (for example a line of a zone stamp or a label, with its values already filled in)."
+            },
             "drawSegmentMode": {
                 "type": "integer"
             },
@@ -29295,11 +29437,19 @@
                 "items": {
                     "$ref": "#/DrawingPrimitive"
                 }
+            },
+            "texts": {
+                "type": "array",
+                "description": "The content of every Text primitive of the element, in the order Archicad draws them: the text as Archicad displays it, for example the lines of a zone stamp.",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "additionalProperties": false,
         "required": [
-            "primitives"
+            "primitives",
+            "texts"
         ]
     },
     "NavigatorParentItem": {

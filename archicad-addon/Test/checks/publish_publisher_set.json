@@ -49,9 +49,9 @@
       },
       "expect": [
         {
-          "path": "__envelopeError__",
-          "exists": true,
-          "name": "refused by the input schema (items must be {navigatorItemId: {guid}})"
+          "path": "error.message",
+          "contains": "navigatorItemId",
+          "name": "the error says items must be {navigatorItemId: {guid}}"
         }
       ]
     }

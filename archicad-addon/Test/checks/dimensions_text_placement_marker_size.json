@@ -1,0 +1,134 @@
+{
+  "title": "Linear dimensions: textPlacement and marker.size written and read back (#2663 part 3)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "Flexible dimension with both options and a 2.0 marker",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 850.0, "y": 849.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 850.0, "y": 850.0 } },
+              { "coordinate": { "x": 850.3, "y": 850.0 } },
+              { "coordinate": { "x": 853.0, "y": 850.0 } }
+            ],
+            "marker": { "type": "FullArrow30", "pen": 3, "size": 2.0 },
+            "textPlacement": { "method": "Flexible", "placeBelowLine": true, "pushNeighbors": true }
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "Flexible dimension created" }
+      ]
+    },
+    {
+      "id": "Centered dimension with a 1.5 marker",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 850.0, "y": 854.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 850.0, "y": 855.0 } },
+              { "coordinate": { "x": 852.0, "y": 855.0 } }
+            ],
+            "marker": { "size": 1.5 },
+            "textPlacement": { "method": "Centered" }
+          }
+        ]
+      },
+      "save": { "d2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "Centered dimension created" }
+      ]
+    },
+    {
+      "id": "the settings read back by GetDetailsOfElements",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textPlacement.method", "eq": "Flexible", "name": "Flexible as created" },
+        { "path": "detailsOfElements[0].details.textPlacement.placeBelowLine", "eq": true, "name": "place below the line as created" },
+        { "path": "detailsOfElements[0].details.textPlacement.pushNeighbors", "eq": true, "name": "push neighbours as created" },
+        { "path": "detailsOfElements[0].details.marker.size", "approx": 2.0, "tol": 0.0001, "name": "marker size 2.0 as created" },
+        { "path": "detailsOfElements[0].details.marker.type", "eq": "FullArrow30", "name": "marker type kept beside the size" },
+        { "path": "detailsOfElements[0].details.marker.pen", "eq": 3, "name": "marker pen kept beside the size" },
+        { "path": "detailsOfElements[1].details.textPlacement.method", "eq": "Centered", "name": "Centered as created" },
+        { "path": "detailsOfElements[1].details.marker.size", "approx": 1.5, "tol": 0.0001, "name": "marker size 1.5 as created" }
+      ]
+    },
+    {
+      "id": "the settings read back by GetDimensionData",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].textPlacement.method", "eq": "Flexible", "name": "Flexible in GetDimensionData" },
+        { "path": "dimensionsData[0].textPlacement.placeBelowLine", "eq": true, "name": "place below the line in GetDimensionData" },
+        { "path": "dimensionsData[0].textPlacement.pushNeighbors", "eq": true, "name": "push neighbours in GetDimensionData" },
+        { "path": "dimensionsData[0].marker.size", "approx": 2.0, "tol": 0.0001, "name": "marker size in GetDimensionData" },
+        { "path": "dimensionsData[0].witnessPoints", "len": 3, "name": "three witness points" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions changes the placement and the marker size",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textPlacement": { "method": "Off" }, "marker": { "size": 3.0 } },
+          { "elementId": { "guid": "${d2}" }, "textPlacement": { "method": "Classic" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "first change accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "second change accepted" }
+      ]
+    },
+    {
+      "id": "the settings after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textPlacement.method", "eq": "Off", "name": "placement off" },
+        { "path": "detailsOfElements[0].details.marker.size", "approx": 3.0, "tol": 0.0001, "name": "marker size 3.0" },
+        { "path": "detailsOfElements[0].details.marker.type", "eq": "FullArrow30", "name": "marker type unchanged" },
+        { "path": "detailsOfElements[0].details.witnessPointCount", "eq": 3, "name": "witness points kept" },
+        { "path": "detailsOfElements[1].details.textPlacement.method", "eq": "Classic", "name": "second now Classic" },
+        { "path": "detailsOfElements[1].details.marker.size", "approx": 1.5, "tol": 0.0001, "name": "second marker size unchanged" }
+      ]
+    },
+    {
+      "id": "an Unknown placement method is refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textPlacement": { "method": "Unknown" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "Unknown method refused" }
+      ]
+    }
+  ]
+}

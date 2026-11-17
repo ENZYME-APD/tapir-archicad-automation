@@ -671,6 +671,49 @@ static bool ParseDimensionMarkerName (const GS::UniString& markerName, API_Marke
     return false;
 }
 
+// The text placement methods of the Dimension Settings, named as the dialog names them; Classic is
+// the API's API_Legacy (#2663).
+static GS::UniString DimensionTextPlacementMethodName (API_DimLayoutID method)
+{
+    switch (method) {
+        case API_Legacy:    return "Classic";
+        case API_Flexible:  return "Flexible";
+        case API_Centered:  return "Centered";
+        case API_LayoutOff: return "Off";
+        default:            return "Unknown";
+    }
+}
+
+static bool ParseDimensionTextPlacementMethod (const GS::UniString& methodName, API_DimLayoutID& result)
+{
+    const API_DimLayoutID methods[] = { API_Legacy, API_Flexible, API_Centered, API_LayoutOff };
+    for (API_DimLayoutID method : methods) {
+        if (DimensionTextPlacementMethodName (method) == methodName) {
+            result = method;
+            return true;
+        }
+    }
+    return false;
+}
+
+// The marker and the text placement of a linear dimension as GetDetailsOfElements and
+// GetDimensionData return them (DimensionMarker, DimensionTextPlacement).
+static GS::ObjectState CreateDimensionMarkerObjectState (const API_Element& element)
+{
+    return GS::ObjectState (
+        "type", DimensionMarkerName (element.dimension.markerData.markerType),
+        "pen", static_cast<Int32> (element.dimension.markerData.markerPen),
+        "size", element.dimension.markerData.markerSize);
+}
+
+static GS::ObjectState CreateDimensionTextPlacementObjectState (const API_Element& element)
+{
+    return GS::ObjectState (
+        "method", DimensionTextPlacementMethodName (element.dimension.dimLayout),
+        "placeBelowLine", element.dimension.placeUnderEnabled,
+        "pushNeighbors", element.dimension.pushNeighborEnabled);
+}
+
 // The settings of a linear dimension that CreateAssociativeDimensions,
 // CreateAssociativeDimensionsOnSection, CreateWallThicknessDimensions and
 // ModifyAssociativeDimensions all take, written by ApplyDimensionSettings (#2220). The names are
@@ -691,6 +734,10 @@ static const char* DimensionSettingsSchemaProperties = R"(
                             "type": "boolean",
                             "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
                         },
+                        "textStyle": {
+                            "$ref": "#/DimensionTextStyle",
+                            "description": "Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed."
+                        },
                         "appearance": {
                             "type": "string",
                             "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
@@ -707,22 +754,12 @@ static const char* DimensionSettingsSchemaProperties = R"(
                             "description": "Optional pen of the dimension and witness lines."
                         },
                         "marker": {
-                            "type": "object",
-                            "description": "Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "description": "The marker type, named after API_MarkerID.",
-                                    "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                                },
-                                "pen": {
-                                    "type": "integer",
-                                    "minimum": 1,
-                                    "maximum": 255,
-                                    "description": "The pen of the marker."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/DimensionMarker",
+                            "description": "Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "textPlacement": {
+                            "$ref": "#/DimensionTextPlacement",
+                            "description": "Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
                         },
                         "defaultWitnessForm": {
                             "type": "string",
@@ -754,6 +791,92 @@ static const char* DimensionSettingsSchemaProperties = R"(
                             "$ref": "#/LayeredElementDimensions",
                             "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
                         })";
+
+static const unsigned short DimensionTextFaceBits = APIFace_Bold | APIFace_Italic | APIFace_Underline;
+
+// Writes the fields of a DimensionTextStyle given in style (the font, bold/italic/underline, width
+// and spacing factor of the dimension texts) to note, the dimension's defNote, and sets their bits
+// in mask when it is not nullptr (#2663). The face bits other than bold, italic and underline are
+// kept. Returns the error response of an invalid value.
+static GS::Optional<GS::ObjectState> ApplyDimensionTextStyle (const GS::ObjectState& style, API_NoteType& note, API_Element* mask)
+{
+    GS::UniString fontName;
+    Int32 fontIndex = 0;
+    if (style.Get ("fontName", fontName)) {
+        const GS::Optional<short> foundIndex = GetFontIndexFromName (fontName);
+        if (!foundIndex.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADNAME, "No loaded font is named '" + fontName + "'. textStyle.fontName takes the name of a Font attribute, as GetDetailsOfElements reports it in fontName; use fontIndex to give the font by its index instead.");
+        }
+        note.noteFont = *foundIndex;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.noteFont);
+        }
+    } else if (style.Get ("fontIndex", fontIndex)) {
+        if (fontIndex < 1 || fontIndex > 32767 || !GetFontNameFromIndex (static_cast<short> (fontIndex)).HasValue ()) {
+            return CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("No loaded font has the index %d given in textStyle.fontIndex.", fontIndex));
+        }
+        note.noteFont = static_cast<short> (fontIndex);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.noteFont);
+        }
+    }
+
+    bool bold = (note.faceBits & APIFace_Bold) != 0;
+    bool italic = (note.faceBits & APIFace_Italic) != 0;
+    bool underline = (note.faceBits & APIFace_Underline) != 0;
+    bool faceChanged = false;
+    faceChanged |= style.Get ("bold", bold);
+    faceChanged |= style.Get ("italic", italic);
+    faceChanged |= style.Get ("underline", underline);
+    if (faceChanged) {
+        note.faceBits = static_cast<unsigned short> ((note.faceBits & ~DimensionTextFaceBits) |
+            (bold ? APIFace_Bold : 0) | (italic ? APIFace_Italic : 0) | (underline ? APIFace_Underline : 0));
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.faceBits);
+        }
+    }
+
+    double widthFactor = 0.0;
+    if (style.Get ("widthFactor", widthFactor)) {
+        if (widthFactor <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textStyle.widthFactor' must be greater than 0.");
+        }
+        note.widthFactor = widthFactor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.widthFactor);
+        }
+    }
+
+    double spacingFactor = 0.0;
+    if (style.Get ("spacingFactor", spacingFactor)) {
+        if (spacingFactor <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textStyle.spacingFactor' must be greater than 0.");
+        }
+        note.spacingFactor = spacingFactor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defNote.spacingFactor);
+        }
+    }
+
+    return {};
+}
+
+// The DimensionTextStyle of a dimension text (the dimension's defNote or a witness point's note).
+static GS::ObjectState CreateDimensionTextStyleObjectState (const API_NoteType& note)
+{
+    GS::ObjectState style;
+    style.Add ("fontIndex", static_cast<Int32> (note.noteFont));
+    const GS::Optional<GS::UniString> fontName = GetFontNameFromIndex (note.noteFont);
+    if (fontName.HasValue ()) {
+        style.Add ("fontName", *fontName);
+    }
+    style.Add ("bold", (note.faceBits & APIFace_Bold) != 0);
+    style.Add ("italic", (note.faceBits & APIFace_Italic) != 0);
+    style.Add ("underline", (note.faceBits & APIFace_Underline) != 0);
+    style.Add ("widthFactor", note.widthFactor);
+    style.Add ("spacingFactor", note.spacingFactor);
+    return style;
+}
 
 // The bits of API_DimensionType::compAutoThick (APIdefs_Elements.h: totalBit = 1, coreBit = 2,
 // refLineBit = 4, manualBit = 16). The DevKit names no constants for them.
@@ -836,6 +959,14 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         }
     }
 
+    const GS::ObjectState* textStyle = data.Get ("textStyle");
+    if (textStyle != nullptr) {
+        auto textStyleError = ApplyDimensionTextStyle (*textStyle, element.dimension.defNote, mask);
+        if (textStyleError.HasValue ()) {
+            return textStyleError;
+        }
+    }
+
     Int32 linePen = 0;
     if (data.Get ("linePen", linePen)) {
         if (linePen < 1 || linePen > 255) {
@@ -868,6 +999,47 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
             element.dimension.markerData.markerPen = static_cast<short> (markerPen);
             if (mask != nullptr) {
                 ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, markerData.markerPen);
+            }
+        }
+        double markerSize = 0.0;
+        if (marker->Get ("size", markerSize)) {
+            if (markerSize <= 0.0) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'size' must be greater than 0.");
+            }
+            element.dimension.markerData.markerSize = markerSize;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, markerData.markerSize);
+            }
+        }
+    }
+
+    // The text placement method of the Dimension Settings (#2663): dimLayout, with the two
+    // options the API gives for the Flexible method.
+    const GS::ObjectState* textPlacement = data.Get ("textPlacement");
+    if (textPlacement != nullptr) {
+        GS::UniString methodName;
+        if (textPlacement->Get ("method", methodName)) {
+            API_DimLayoutID method = API_Legacy;
+            if (!ParseDimensionTextPlacementMethod (methodName, method)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown textPlacement 'method' value: " + methodName);
+            }
+            element.dimension.dimLayout = method;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, dimLayout);
+            }
+        }
+        bool placeBelowLine = false;
+        if (textPlacement->Get ("placeBelowLine", placeBelowLine)) {
+            element.dimension.placeUnderEnabled = placeBelowLine;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, placeUnderEnabled);
+            }
+        }
+        bool pushNeighbors = false;
+        if (textPlacement->Get ("pushNeighbors", pushNeighbors)) {
+            element.dimension.pushNeighborEnabled = pushNeighbors;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, pushNeighborEnabled);
             }
         }
     }
@@ -956,9 +1128,15 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
     const bool hasTextHeight = data.Contains ("textHeight");
     const bool hasTextPen = data.Contains ("textPen");
     const bool hasTextFrame = data.Contains ("textFrame");
+    const GS::ObjectState* textStyle = data.Get ("textStyle");
+    const bool hasFont = textStyle != nullptr && (textStyle->Contains ("fontName") || textStyle->Contains ("fontIndex"));
+    const bool hasFace = textStyle != nullptr && (textStyle->Contains ("bold") || textStyle->Contains ("italic") || textStyle->Contains ("underline"));
+    const bool hasWidthFactor = textStyle != nullptr && textStyle->Contains ("widthFactor");
+    const bool hasSpacingFactor = textStyle != nullptr && textStyle->Contains ("spacingFactor");
+    const bool hasTextStyle = hasFont || hasFace || hasWidthFactor || hasSpacingFactor;
     const bool hasWitnessForm = data.Contains ("defaultWitnessForm");
     const bool hasWitnessVal = data.Contains ("defaultWitnessVal");
-    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasWitnessForm && !hasWitnessVal) {
+    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasTextStyle && !hasWitnessForm && !hasWitnessVal) {
         return false;
     }
     if (memo.dimElems == nullptr || *memo.dimElems == nullptr) {
@@ -975,6 +1153,20 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
         }
         if (hasTextFrame) {
             dimElem.note.frame = element.dimension.defNote.frame;
+        }
+        if (hasFont) {
+            dimElem.note.noteFont = element.dimension.defNote.noteFont;
+        }
+        if (hasFace) {
+            // Only bold, italic and underline; the point's other face bits stay.
+            dimElem.note.faceBits = static_cast<unsigned short> ((dimElem.note.faceBits & ~DimensionTextFaceBits) |
+                (element.dimension.defNote.faceBits & DimensionTextFaceBits));
+        }
+        if (hasWidthFactor) {
+            dimElem.note.widthFactor = element.dimension.defNote.widthFactor;
+        }
+        if (hasSpacingFactor) {
+            dimElem.note.spacingFactor = element.dimension.defNote.spacingFactor;
         }
         if (hasWitnessForm) {
             dimElem.witnessForm = element.dimension.defWitnessForm;
@@ -1038,6 +1230,7 @@ struct WitnessPointText {
     GS::Optional<GS::UniString> customText;    // with Archicad's keyword in place of the placeholder
     GS::Optional<bool> superscript;
     bool resetTextPosition = false;
+    GS::Optional<API_Coord> textPosition;      // the note's pos, fixed there as a drag by hand does (#2792)
 };
 
 // Reads ModifyAssociativeDimensions' witnessPointTexts. A customText without content makes the
@@ -1097,7 +1290,18 @@ static GS::Optional<GS::ObjectState> ParseWitnessPointTexts (const GS::ObjectSta
         }
         item.Get ("resetTextPosition", text.resetTextPosition);
 
-        if (!text.contentType.HasValue () && !text.customText.HasValue () && !text.superscript.HasValue () && !text.resetTextPosition) {
+        const GS::ObjectState* textPosition = item.Get ("textPosition");
+        if (textPosition != nullptr) {
+            if (!textPosition->Contains ("x") || !textPosition->Contains ("y")) {
+                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The 'textPosition' of the item of 'witnessPointTexts' with index %d needs 'x' and 'y'.", text.index));
+            }
+            if (text.resetTextPosition) {
+                return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The item of 'witnessPointTexts' with index %d gives both 'textPosition' and 'resetTextPosition'.", text.index));
+            }
+            text.textPosition = Get2DCoordinateFromObjectState (*textPosition);
+        }
+
+        if (!text.contentType.HasValue () && !text.customText.HasValue () && !text.superscript.HasValue () && !text.resetTextPosition && !text.textPosition.HasValue ()) {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("The item of 'witnessPointTexts' with index %d changes nothing.", text.index));
         }
         result.Push (text);
@@ -1137,6 +1341,10 @@ static bool ApplyWitnessPointTexts (const GS::Array<WitnessPointText>& texts, co
         if (text.resetTextPosition) {
             note.fixPos = false;
         }
+        if (text.textPosition.HasValue ()) {
+            note.pos = text.textPosition.Get ();
+            note.fixPos = true;
+        }
     }
     return true;
 }
@@ -1171,6 +1379,13 @@ static void CheckWitnessPointTexts (const GS::Array<WitnessPointText>& texts, co
         if (text.resetTextPosition && note.fixPos) {
             notApplied += prefix + "resetTextPosition";
         }
+        if (text.textPosition.HasValue ()) {
+            const double tolerance = 1e-6;
+            const API_Coord& wanted = text.textPosition.Get ();
+            if (!note.fixPos || std::abs (note.pos.x - wanted.x) > tolerance || std::abs (note.pos.y - wanted.y) > tolerance) {
+                notApplied += prefix + "textPosition";
+            }
+        }
     }
 }
 
@@ -1186,12 +1401,12 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("direction", Create2DCoordinateObjectState (element.dimension.direction));
     details.Add ("witnessPointCount", static_cast<Int32> (element.dimension.nDimElem));
     details.Add ("linePen", static_cast<Int32> (element.dimension.linPen));
-    details.Add ("marker", GS::ObjectState (
-        "type", DimensionMarkerName (element.dimension.markerData.markerType),
-        "pen", static_cast<Int32> (element.dimension.markerData.markerPen)));
+    details.Add ("marker", CreateDimensionMarkerObjectState (element));
+    details.Add ("textPlacement", CreateDimensionTextPlacementObjectState (element));
     details.Add ("textHeight", element.dimension.defNote.noteSize);
     details.Add ("textPen", static_cast<Int32> (element.dimension.defNote.notePen));
     details.Add ("textFrame", element.dimension.defNote.frame);
+    details.Add ("textStyle", CreateDimensionTextStyleObjectState (element.dimension.defNote));
     details.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
     details.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
     details.Add ("staticDimension", element.dimension.defStaticDim);
@@ -2105,6 +2320,7 @@ static Int32 GetMemoCoordsHandleCount (const API_ElementMemo& memo)
 // intermediate polygon keeps a real area. An arc on such a temporary edge could cross another edge, so the arcs are
 // dropped; the final coordinates and arcs are written after the resize, as before. This is what the client-side
 // workaround in #2504 does (the same point count on a circle first), which works on both reproductions.
+// Growing calls it with desiredOutlineCount == outlineCount, which puts every point on a regular polygon (#2818).
 static void MoveOutlineOntoCircle (API_ElementMemo& memo, Int32 outlineCount, Int32 desiredOutlineCount)
 {
     API_Coord minCoord = (*memo.coords)[1];
@@ -2249,15 +2465,39 @@ static GS::Optional<GS::UniString> ApplySlabPolygonChange (
         }
         --outlineCount;
     }
+    // Growing (#2818): every placeholder used to be inserted in the middle of the edge between nodes 1
+    // and 2, so that edge was halved by each insert. After about 20-30 inserts (depending on how long
+    // the first edge was) its points coincided within Archicad's tolerance, and Archicad answered
+    // APIERR_BADPOLY or left the memo with fewer points than requested. Now the outline is first put
+    // on a regular polygon on a circle (MoveOutlineOntoCircle with the same point count, which also
+    // drops the arcs, so no placeholder lands on an arc edge), and each placeholder goes in the middle
+    // of the longest edge. The polygon stays convex, and the edges are split evenly, so none gets
+    // much shorter than an edge of a regular polygon with the requested point count.
+    if (outlineCount < desiredOutlineCount) {
+        MoveOutlineOntoCircle (memo, outlineCount, outlineCount);
+    }
     while (outlineCount < desiredOutlineCount) {
+        // The longest edge between node i and node i + 1, i < outlineCount: the closing edge (from
+        // the last node back to node 1) is never split, so the new node never goes after the last one.
+        Int32 longestEdgeBegin = 1;
+        double longestEdgeLength = -1.0;
+        for (Int32 i = 1; i < outlineCount; ++i) {
+            const API_Coord& p = (*memo.coords)[i];
+            const API_Coord& q = (*memo.coords)[i + 1];
+            const double length = std::sqrt ((q.x - p.x) * (q.x - p.x) + (q.y - p.y) * (q.y - p.y));
+            if (length > longestEdgeLength) {
+                longestEdgeLength = length;
+                longestEdgeBegin = i;
+            }
+        }
         // Per Graphisoft's own DevKit reference example (Do_Poly_InsertNode), nodeIndex is set to
         // the clicked edge's begin-node index + 1 - i.e. the position the NEW node will occupy
         // (shifting what was there up by one), not "insert after this existing node" as the header
-        // doc's wording alone suggests. To insert between existing nodes 1 and 2, that means
-        // nodeIndex = 2, not 1.
-        Int32 idx = 2;
-        const API_Coord& p1 = (*memo.coords)[1];
-        const API_Coord& p2 = (*memo.coords)[2];
+        // doc's wording alone suggests. To insert between existing nodes i and i + 1, that means
+        // nodeIndex = i + 1, not i.
+        Int32 idx = longestEdgeBegin + 1;
+        const API_Coord p1 = (*memo.coords)[longestEdgeBegin];
+        const API_Coord p2 = (*memo.coords)[longestEdgeBegin + 1];
         API_Coord placeholder = {(p1.x + p2.x) / 2.0, (p1.y + p2.y) / 2.0};
         GSErrCode err = TAPIR_Polygon_InsertPolyNode (&memo, &idx, &placeholder);
         if (err != NoError) {
@@ -7844,6 +8084,7 @@ static const char* StairSettingsSchemaProperties = R"(
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
                         "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error." },
+                        "headroom": { "$ref": "#/StairHeadroom", "description": "The headroom of the stair (Stair Settings > Headroom): only the given fields are written, the others are kept. An unknown key is refused, and ModifyStairs reads the given fields back and reports one Archicad did not apply as an error." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -8676,12 +8917,13 @@ void KillShellShapeHandles (API_ShellShapeData& shapeData, bool withIds)
     }
 }
 
-// A new profile for an existing extruded shell (#2453), in the format CreateShells takes. The
-// shell's polygon memo is read and only its first profile polyline is replaced, so written back
-// with the element the GUID, the base plane, the extrusion start and vector, the thickness and the
-// cut contours stay. The vertex and edge ids are kept when the number of points stays the same.
-// memo is filled here, unless memoLoaded says it already is, and must be disposed by the caller;
-// memoLoaded tells whether to write it.
+// New profiles for an existing shell, in the format CreateShells takes: 'profile' of every shell
+// class (#2453, revolved and ruled #2859) and 'secondProfile' of a ruled shell (#2859). The shell's
+// polygon memo is read and only the profile polylines given are replaced, so written back with the
+// element the GUID, the base plane, the extrusion, axis or profile planes, the thickness and the
+// cut contours stay. The vertex and edge ids of a profile are kept when its number of points stays
+// the same. memo is filled here, unless memoLoaded says it already is, and must be disposed by the
+// caller; memoLoaded tells whether to write it. Changes nothing on an error.
 GS::Optional<GS::UniString> ApplyShellProfile (
     API_Element& element,
     API_Element& mask,
@@ -8690,39 +8932,227 @@ GS::Optional<GS::UniString> ApplyShellProfile (
     bool& memoLoaded,
     bool& changed)
 {
-    const GS::ObjectState* profile = details.Get ("profile");
-    if (profile == nullptr) {
+    const GS::ObjectState* profiles[2] = { details.Get ("profile"), details.Get ("secondProfile") };
+    if (profiles[0] == nullptr && profiles[1] == nullptr) {
         return {};
     }
-    if (element.shell.shellClass != API_ExtrudedShellID) {
-        return GS::UniString ("'profile' can only be changed on an Extruded shell.");
+    if (profiles[1] != nullptr && element.shell.shellClass != API_RuledShellID) {
+        return GS::UniString ("'secondProfile' can only be changed on a Ruled shell.");
     }
 
-    API_Polygon newShape = {};
-    API_ShellShapeData newShapeData = {};
-    auto error = FillShellShape (*profile, newShape, newShapeData);
-    if (error.HasValue ()) {
-        KillShellShapeHandles (newShapeData, true);
-        return error;
+    // The profile polylines in the element, in the order of the memo's shellShapes.
+    API_Polygon* shapes[2] = { nullptr, nullptr };
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID: shapes[0] = &element.shell.u.extrudedShell.shellShape; break;
+        case API_RevolvedShellID: shapes[0] = &element.shell.u.revolvedShell.shellShape; break;
+        case API_RuledShellID:
+            shapes[0] = &element.shell.u.ruledShell.shellShape1;
+            shapes[1] = &element.shell.u.ruledShell.shellShape2;
+            break;
+        default:
+            return GS::UniString ("The profile of this shell class cannot be changed.");
+    }
+
+    API_Polygon newShapes[2] = {};
+    API_ShellShapeData newShapeData[2] = {};
+    const auto killNewShapes = [&newShapeData] () {
+        KillShellShapeHandles (newShapeData[0], true);
+        KillShellShapeHandles (newShapeData[1], true);
+    };
+    for (UIndex i = 0; i < 2; ++i) {
+        if (profiles[i] == nullptr) {
+            continue;
+        }
+        auto error = FillShellShape (*profiles[i], newShapes[i], newShapeData[i]);
+        if (error.HasValue ()) {
+            killNewShapes ();
+            return error;
+        }
     }
 
     if (!memoLoaded && ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
-        KillShellShapeHandles (newShapeData, true);
+        killNewShapes ();
         return GS::UniString ("Failed to load the profile of the shell.");
     }
     memoLoaded = true;
 
-    API_Polygon& shape = element.shell.u.extrudedShell.shellShape;
-    API_ShellShapeData& shapeData = memo.shellShapes[0];
-    KillShellShapeHandles (shapeData, newShape.nCoords != shape.nCoords);
-    shapeData.coords = newShapeData.coords;
-    shapeData.pends = newShapeData.pends;
-    shapeData.parcs = newShapeData.parcs;
-    shapeData.bodyFlags = newShapeData.bodyFlags;
-    shape = newShape;
+    for (UIndex i = 0; i < 2; ++i) {
+        if (profiles[i] == nullptr) {
+            continue;
+        }
+        API_Polygon& shape = *shapes[i];
+        API_ShellShapeData& shapeData = memo.shellShapes[i];
+        KillShellShapeHandles (shapeData, newShapes[i].nCoords != shape.nCoords);
+        shapeData.coords = newShapeData[i].coords;
+        shapeData.pends = newShapeData[i].pends;
+        shapeData.parcs = newShapeData[i].parcs;
+        shapeData.bodyFlags = newShapeData[i].bodyFlags;
+        shape = newShapes[i];
+    }
 
-    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape);
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID:
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape);
+            break;
+        case API_RevolvedShellID:
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.shellShape);
+            break;
+        default:
+            if (profiles[0] != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape1);
+            }
+            if (profiles[1] != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape2);
+            }
+            break;
+    }
     changed = true;
+    return {};
+}
+
+// The axis, the angles and the curve resolution of an existing revolved shell, and the profile
+// planes and morphing rule of an existing ruled shell (#2859), with the keys CreateShells takes and
+// GetDetailsOfElements returns. Only the keys given are written; a coordinate system given in part
+// changes only that part. Changes nothing on an error.
+GS::Optional<GS::UniString> ApplyShellClassGeometry (
+    API_Element& element,
+    API_Element& mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    static const char* const revolvedKeys[] = { "axis", "revolutionAngle", "beginAngle", "slantAngle", "distortionAngle", "segmentType", "segmentsByCircle", "segmentsByArc", "segmentedSurfaces" };
+    static const char* const ruledKeys[] = { "profilePlane", "secondProfilePlane", "morphingRule" };
+    if (element.shell.shellClass != API_RevolvedShellID) {
+        for (const char* key : revolvedKeys) {
+            if (details.Contains (key)) {
+                return GS::UniString::Printf ("'%s' can only be changed on a Revolved shell.", key);
+            }
+        }
+    }
+    if (element.shell.shellClass != API_RuledShellID) {
+        for (const char* key : ruledKeys) {
+            if (details.Contains (key)) {
+                return GS::UniString::Printf ("'%s' can only be changed on a Ruled shell.", key);
+            }
+        }
+    }
+
+    if (element.shell.shellClass == API_RevolvedShellID) {
+        API_RevolvedShellData& revolved = element.shell.u.revolvedShell;
+        API_Tranmat axisBase = revolved.axisBase;
+        auto axisError = ApplyCoordinateSystem3D (details, "axis", axisBase);
+        if (axisError.HasValue ()) {
+            return axisError;
+        }
+        const auto revolutionAngle = GetOptionalDouble (details, "revolutionAngle");
+        if (revolutionAngle.HasValue () && (revolutionAngle.Get () <= 0.0 || revolutionAngle.Get () > 2.0 * HalfTurn + 1e-9)) {
+            return GS::UniString ("'revolutionAngle' must be greater than 0 and at most 2*pi.");
+        }
+        const auto beginAngle = GetOptionalDouble (details, "beginAngle");
+        const auto slantAngle = GetOptionalDouble (details, "slantAngle");
+        const auto distortionAngle = GetOptionalDouble (details, "distortionAngle");
+        if (distortionAngle.HasValue () && (distortionAngle.Get () <= 0.0 || distortionAngle.Get () >= HalfTurn)) {
+            return GS::UniString ("'distortionAngle' must be between 0 and pi (pi/2 is no shear).");
+        }
+        GS::UniString segmentType;
+        const bool hasSegmentType = details.Get ("segmentType", segmentType);
+        if (hasSegmentType && segmentType != "ByCircle" && segmentType != "ByArc") {
+            return "Unknown segmentType '" + segmentType + "': use ByCircle or ByArc.";
+        }
+        Int32 segmentsByCircle = 0;
+        const bool hasSegmentsByCircle = details.Get ("segmentsByCircle", segmentsByCircle);
+        if (hasSegmentsByCircle && segmentsByCircle < 3) {
+            return GS::UniString ("'segmentsByCircle' must be at least 3.");
+        }
+        Int32 segmentsByArc = 0;
+        const bool hasSegmentsByArc = details.Get ("segmentsByArc", segmentsByArc);
+        if (hasSegmentsByArc && segmentsByArc < 1) {
+            return GS::UniString ("'segmentsByArc' must be at least 1.");
+        }
+        bool segmentedSurfaces = false;
+        const bool hasSegmentedSurfaces = details.Get ("segmentedSurfaces", segmentedSurfaces);
+
+        if (details.Contains ("axis")) {
+            revolved.axisBase = axisBase;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.axisBase);
+            changed = true;
+        }
+        if (revolutionAngle.HasValue ()) {
+            revolved.revolutionAngle = revolutionAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolutionAngle);
+            changed = true;
+        }
+        if (beginAngle.HasValue ()) {
+            revolved.begAngle = beginAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begAngle);
+            changed = true;
+        }
+        if (slantAngle.HasValue ()) {
+            revolved.slantAngle = slantAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.slantAngle);
+            changed = true;
+        }
+        if (distortionAngle.HasValue ()) {
+            revolved.distortionAngle = distortionAngle.Get ();
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.distortionAngle);
+            changed = true;
+        }
+        if (hasSegmentType) {
+            revolved.segmentType = segmentType == "ByArc" ? APIShellBase_SegmentsByArc : APIShellBase_SegmentsByCircle;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentType);
+            changed = true;
+        }
+        if (hasSegmentsByCircle) {
+            revolved.segmentsByCircle = segmentsByCircle;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentsByCircle);
+            changed = true;
+        }
+        if (hasSegmentsByArc) {
+            revolved.segmentsByArc = segmentsByArc;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentsByArc);
+            changed = true;
+        }
+        if (hasSegmentedSurfaces) {
+            revolved.segmentedSurfaces = segmentedSurfaces;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentedSurfaces);
+            changed = true;
+        }
+        return {};
+    }
+
+    if (element.shell.shellClass == API_RuledShellID) {
+        API_RuledShellData& ruled = element.shell.u.ruledShell;
+        API_Tranmat plane1 = ruled.plane1;
+        API_Tranmat plane2 = ruled.plane2;
+        auto planeError = ApplyCoordinateSystem3D (details, "profilePlane", plane1);
+        if (!planeError.HasValue ()) {
+            planeError = ApplyCoordinateSystem3D (details, "secondProfilePlane", plane2);
+        }
+        if (planeError.HasValue ()) {
+            return planeError;
+        }
+        GS::UniString morphingRule;
+        const bool hasMorphingRule = details.Get ("morphingRule", morphingRule);
+        if (hasMorphingRule && morphingRule != "Paired" && morphingRule != "Smooth") {
+            return "Unknown morphingRule '" + morphingRule + "': use Paired or Smooth.";
+        }
+
+        if (details.Contains ("profilePlane")) {
+            ruled.plane1 = plane1;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.plane1);
+            changed = true;
+        }
+        if (details.Contains ("secondProfilePlane")) {
+            ruled.plane2 = plane2;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.plane2);
+            changed = true;
+        }
+        if (hasMorphingRule) {
+            ruled.morphingRule = morphingRule == "Smooth" ? APIMorphingRule_Smooth : APIMorphingRule_Paired;
+            ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.morphingRule);
+            changed = true;
+        }
+    }
     return {};
 }
 
@@ -9125,6 +9555,29 @@ GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules)
     return os;
 }
 
+static const char* StairHeadroomMethodToString (API_HeadroomGenerationModeID method)
+{
+    switch (method) {
+        case APIHM_RightAngleToSlope:   return "RightAngleToSlope";
+        case APIHM_VerticallyToSlope:   return "VerticallyToSlope";
+        default:                        return "Unknown";
+    }
+}
+
+// The headroom of a stair (Stair Settings > Headroom), in the StairHeadroom definition (#2857).
+// GetDetailsOfElements returns it for a stair (declared in ExtendedElementCommands.hpp); CreateStairs
+// and ModifyStairs write the same fields. API_StairHeadroomData has these members in every DevKit
+// from AC25 on.
+GS::ObjectState CreateStairHeadroomObjectState (const API_StairHeadroomData& headroom)
+{
+    GS::ObjectState os;
+    os.Add ("method", StairHeadroomMethodToString (headroom.headroomMethod));
+    os.Add ("height", headroom.headroomHeight);
+    os.Add ("leftOffset", headroom.headroomLeftOffset);
+    os.Add ("rightOffset", headroom.headroomRightOffset);
+    return os;
+}
+
 #ifdef ServerMainVers_2700
 static GS::UniString StairSolutionToString (API_StairSolutionID solution)
 {
@@ -9376,6 +9829,74 @@ static GS::Optional<GS::UniString> ApplyStairRules (const GS::ObjectState& rules
     return {};
 }
 
+// The given headroom object (StairHeadroom) into the stair's headroom (#2857): each given field is
+// written, with its mask byte. As for the rules, Archicad's input validation does not refuse an
+// unknown key inside a definition the schema refers to, so an unknown key or a value of the wrong
+// type is refused here, before anything is written.
+static GS::Optional<GS::UniString> ApplyStairHeadroom (const GS::ObjectState& headroomOs, API_StairHeadroomData& headroom, API_StairHeadroomData& headroomMask)
+{
+    GS::Optional<GS::UniString> error;
+    headroomOs.EnumerateFields ([&] (const GS::String& key) {
+        if (error.HasValue ()) {
+            return;
+        }
+        if (key == "method" || key == "height" || key == "leftOffset" || key == "rightOffset") {
+            return;
+        }
+        error = GS::UniString ("Unknown key '") + GS::UniString (key.ToCStr ()) + "' in headroom.";
+    });
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    API_StairHeadroomData given = headroom;
+    if (headroomOs.Contains ("method")) {
+        GS::UniString method;
+        if (!headroomOs.Get ("method", method)) {
+            return GS::UniString ("headroom.method must be a string.");
+        }
+        if (method == "RightAngleToSlope") {
+            given.headroomMethod = APIHM_RightAngleToSlope;
+        } else if (method == "VerticallyToSlope") {
+            given.headroomMethod = APIHM_VerticallyToSlope;
+        } else {
+            return GS::UniString ("Invalid headroom.method: it must be RightAngleToSlope or VerticallyToSlope.");
+        }
+    }
+    if (headroomOs.Contains ("height")) {
+        if (!headroomOs.Get ("height", given.headroomHeight)) {
+            return GS::UniString ("headroom.height must be a number.");
+        }
+        if (given.headroomHeight <= 0.0) {
+            return GS::UniString ("headroom.height must be greater than 0.");
+        }
+    }
+    if (headroomOs.Contains ("leftOffset") && !headroomOs.Get ("leftOffset", given.headroomLeftOffset)) {
+        return GS::UniString ("headroom.leftOffset must be a number.");
+    }
+    if (headroomOs.Contains ("rightOffset") && !headroomOs.Get ("rightOffset", given.headroomRightOffset)) {
+        return GS::UniString ("headroom.rightOffset must be a number.");
+    }
+
+    if (headroomOs.Contains ("method")) {
+        headroom.headroomMethod = given.headroomMethod;
+        *reinterpret_cast<char*> (&headroomMask.headroomMethod) = -1;
+    }
+    if (headroomOs.Contains ("height")) {
+        headroom.headroomHeight = given.headroomHeight;
+        *reinterpret_cast<char*> (&headroomMask.headroomHeight) = -1;
+    }
+    if (headroomOs.Contains ("leftOffset")) {
+        headroom.headroomLeftOffset = given.headroomLeftOffset;
+        *reinterpret_cast<char*> (&headroomMask.headroomLeftOffset) = -1;
+    }
+    if (headroomOs.Contains ("rightOffset")) {
+        headroom.headroomRightOffset = given.headroomRightOffset;
+        *reinterpret_cast<char*> (&headroomMask.headroomRightOffset) = -1;
+    }
+    return {};
+}
+
 static bool StairStoryVisibilityFromString (const GS::UniString& str, API_StairStoryVisibilityID& visibility)
 {
     if (str == "HomeStoryOnly")              { visibility = APISSV_HomeStoryOnly;              return true; }
@@ -9512,6 +10033,14 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
         const GS::Optional<GS::UniString> rulesError = ApplyStairRules (*rulesOs, stair.rules, mask.stair.rules);
         if (rulesError.HasValue ()) {
             return rulesError;
+        }
+    }
+    // The headroom (#2857): only the given fields.
+    const GS::ObjectState* headroomOs = details.Get ("headroom");
+    if (headroomOs != nullptr) {
+        const GS::Optional<GS::UniString> headroomError = ApplyStairHeadroom (*headroomOs, stair.stairHeadroomData, mask.stair.stairHeadroomData);
+        if (headroomError.HasValue ()) {
+            return headroomError;
         }
     }
     if (details.Get ("finishVisible", stair.finishVisible)) {
@@ -9863,6 +10392,47 @@ static GS::UniString CheckStairRulesApplied (const API_Element& wanted, const AP
     return notApplied;
 }
 
+// Whether the mask marks any field of the stair's headroom (#2857).
+static bool IsAnyStairHeadroomFieldMasked (const API_StairHeadroomData& headroomMask)
+{
+    return *reinterpret_cast<const char*> (&headroomMask.headroomMethod) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomHeight) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomLeftOffset) != 0 ||
+           *reinterpret_cast<const char*> (&headroomMask.headroomRightOffset) != 0;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the headroom fields marked in
+// givenHeadroomMask that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairHeadroomApplied (const API_Element& wanted, const API_StairHeadroomData& givenHeadroomMask)
+{
+    if (!IsAnyStairHeadroomFieldMasked (givenHeadroomMask)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    const API_StairHeadroomData& want = wanted.stair.stairHeadroomData;
+    const API_StairHeadroomData& got = changed.stair.stairHeadroomData;
+    GS::UniString notApplied;
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomMethod) != 0 && got.headroomMethod != want.headroomMethod) {
+        notApplied += GS::UniString (" headroom.method is ") + StairHeadroomMethodToString (got.headroomMethod) + ".";
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomHeight) != 0 && std::fabs (got.headroomHeight - want.headroomHeight) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.height is %g.", got.headroomHeight);
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomLeftOffset) != 0 && std::fabs (got.headroomLeftOffset - want.headroomLeftOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.leftOffset is %g.", got.headroomLeftOffset);
+    }
+    if (*reinterpret_cast<const char*> (&givenHeadroomMask.headroomRightOffset) != 0 && std::fabs (got.headroomRightOffset - want.headroomRightOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" headroom.rightOffset is %g.", got.headroomRightOffset);
+    }
+    return notApplied;
+}
+
 GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stairsWithDetails;
@@ -9948,6 +10518,16 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                     rulesMaskBytes[i] = -1;
                 }
             }
+            // The headroom is a member struct like the rules, so it is marked whole the same way
+            // (#2857): the fields not given are written back from ACAPI_Element_Get as they are, and
+            // the given ones are read back after the change.
+            const API_StairHeadroomData givenHeadroomMask = mask.stair.stairHeadroomData;
+            if (IsAnyStairHeadroomFieldMasked (givenHeadroomMask)) {
+                char* headroomMaskBytes = reinterpret_cast<char*> (&mask.stair.stairHeadroomData);
+                for (size_t i = 0; i < sizeof (API_StairHeadroomData); ++i) {
+                    headroomMaskBytes[i] = -1;
+                }
+            }
 
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -9968,6 +10548,12 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString rulesNotApplied = CheckStairRulesApplied (element, givenRulesMask);
             if (!rulesNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
+                continue;
+            }
+            // And for the headroom (#2857).
+            const GS::UniString headroomNotApplied = CheckStairHeadroomApplied (element, givenHeadroomMask);
+            if (!headroomNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every headroom setting:" + headroomNotApplied));
                 continue;
             }
 
@@ -13266,7 +13852,7 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                         "witnessPointTexts": {
                             "type": "array",
                             "minItems": 1,
-                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the reset to the automatic position. Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.",
+                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position (moved and fixed, or reset to the automatic position). Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -13290,7 +13876,11 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                                     },
                                     "resetTextPosition": {
                                         "type": "boolean",
-                                        "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing."
+                                        "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing. Cannot be given with textPosition."
+                                    },
+                                    "textPosition": {
+                                        "$ref": "#/Coordinate2D",
+                                        "description": "Optional: moves the text there and fixes it, as dragging it by hand does (API note pos, fixPos true). In the coordinates GetDimensionData returns the witness points and the textPosition of each text in, so a text can be moved relative to where it is."
                                     }
                                 },
                                 "additionalProperties": false,
@@ -13424,6 +14014,22 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             if (item.Contains ("defaultWitnessForm") && changed.dimension.defWitnessForm != element.dimension.defWitnessForm) {
                 notApplied += " defaultWitnessForm";
             }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, markerData.markerSize) &&
+                std::abs (changed.dimension.markerData.markerSize - element.dimension.markerData.markerSize) > tolerance) {
+                notApplied += " marker.size";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, dimLayout) &&
+                changed.dimension.dimLayout != element.dimension.dimLayout) {
+                notApplied += " textPlacement.method";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, placeUnderEnabled) &&
+                changed.dimension.placeUnderEnabled != element.dimension.placeUnderEnabled) {
+                notApplied += " textPlacement.placeBelowLine";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, pushNeighborEnabled) &&
+                changed.dimension.pushNeighborEnabled != element.dimension.pushNeighborEnabled) {
+                notApplied += " textPlacement.pushNeighbors";
+            }
             if (item.Contains ("staticDimension") && changed.dimension.defStaticDim != element.dimension.defStaticDim) {
                 notApplied += " staticDimension";
             }
@@ -13456,6 +14062,23 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                     }
                     if (item.Contains ("textFrame") && firstPoint.note.frame != element.dimension.defNote.frame) {
                         notApplied += " textFrame";
+                    }
+                    const GS::ObjectState* textStyle = item.Get ("textStyle");
+                    if (textStyle != nullptr) {
+                        const API_NoteType& wanted = element.dimension.defNote;
+                        if ((textStyle->Contains ("fontName") || textStyle->Contains ("fontIndex")) && firstPoint.note.noteFont != wanted.noteFont) {
+                            notApplied += " textStyle.font";
+                        }
+                        if ((textStyle->Contains ("bold") || textStyle->Contains ("italic") || textStyle->Contains ("underline")) &&
+                            (firstPoint.note.faceBits & DimensionTextFaceBits) != (wanted.faceBits & DimensionTextFaceBits)) {
+                            notApplied += " textStyle.bold/italic/underline";
+                        }
+                        if (textStyle->Contains ("widthFactor") && std::abs (firstPoint.note.widthFactor - wanted.widthFactor) > tolerance) {
+                            notApplied += " textStyle.widthFactor";
+                        }
+                        if (textStyle->Contains ("spacingFactor") && std::abs (firstPoint.note.spacingFactor - wanted.spacingFactor) > tolerance) {
+                            notApplied += " textStyle.spacingFactor";
+                        }
                     }
                     if (item.Contains ("defaultWitnessForm") && firstPoint.witnessForm != element.dimension.defWitnessForm) {
                         notApplied += " witnessForm of the witness points";
@@ -17118,7 +17741,67 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "profile": {
                             "$ref": "#/ShellProfile",
-                            "description": "Extruded shells only: the new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns (the plane across the extrusion, x horizontal, y up). It replaces the first profile polyline; the GUID, the base plane, the extrusion start and vector, the thickness and the cut contours are kept."
+                            "description": "The new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns. Extruded: in the plane across the extrusion (x horizontal, y up). Revolved: in the base plane's XY plane. Ruled: the first profile, in the XY plane of profilePlane. It replaces the first profile polyline; the GUID, the base plane, the extrusion, the axis, the profile planes, the thickness and the cut contours are kept."
+                        },
+                        "secondProfile": {
+                            "$ref": "#/ShellProfile",
+                            "description": "Ruled shells only: the new second profile polyline, in the XY plane of secondProfilePlane, as CreateShells takes it and GetDetailsOfElements returns it. The first profile and both planes are kept unless given too."
+                        },
+                        "profilePlane": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Ruled shells only: the new plane of the first profile, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change: 'origin' alone moves the plane, the three axes (all together) turn it. The profile keeps its coordinates in the plane."
+                        },
+                        "secondProfilePlane": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Ruled shells only: the new plane of the second profile, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change, as for profilePlane."
+                        },
+                        "morphingRule": {
+                            "type": "string",
+                            "enum": [ "Paired", "Smooth" ],
+                            "description": "Ruled shells only: how the two profiles are joined, segment by segment (Paired) or smoothly."
+                        },
+                        "axis": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Revolved shells only: the new coordinate system whose Z axis the profile is turned around, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change: 'origin' alone moves the axis, the three axes (all together) turn it. The profile is kept."
+                        },
+                        "revolutionAngle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "maximum": 6.283185307179587,
+                            "description": "Revolved shells only: the new angle the profile is turned through, in radians, at most 2*pi (a full turn)."
+                        },
+                        "beginAngle": {
+                            "type": "number",
+                            "description": "Revolved shells only: the new angle the revolution starts at, in radians."
+                        },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Revolved shells only: the new slant of the profile, in radians."
+                        },
+                        "distortionAngle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "exclusiveMaximum": 3.141592653589793,
+                            "description": "Revolved shells only: the new shear of the revolution, in radians, between 0 and pi; pi/2 is no shear."
+                        },
+                        "segmentType": {
+                            "type": "string",
+                            "enum": [ "ByCircle", "ByArc" ],
+                            "description": "Revolved shells only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+                        },
+                        "segmentsByCircle": {
+                            "type": "integer",
+                            "minimum": 3,
+                            "description": "Revolved shells only: the number of segments a full circle is resolved into, used when segmentType is ByCircle."
+                        },
+                        "segmentsByArc": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Revolved shells only: the number of segments the revolution arc is resolved into, used when segmentType is ByArc."
+                        },
+                        "segmentedSurfaces": {
+                            "type": "boolean",
+                            "description": "Revolved shells only: whether the revolved surface is broken into planes along the revolution arc."
                         },
                         "cutBodyType": {
                             "type": "string",
@@ -17174,8 +17857,11 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (!error.HasValue ()) {
                 error = ApplyShellExtrusion (element, mask, item, changed);
             }
-            // The contour and holes (#2431) and the profile (#2453) share one polygon memo: the cut
-            // polygons load it with the edge data, and the profile then reuses it.
+            if (!error.HasValue ()) {
+                error = ApplyShellClassGeometry (element, mask, item, changed);
+            }
+            // The contour and holes (#2431) and the profiles (#2453, #2859) share one polygon memo:
+            // the cut polygons load it with the edge data, and the profiles then reuse it.
             API_ElementMemo memo = {};
             const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
             bool cutPolygonsChanged = false;
@@ -17373,10 +18059,12 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
                 witnessPoint.Add ("textHeight", dimElem.note.noteSize);
                 witnessPoint.Add ("textPen", static_cast<Int32> (dimElem.note.notePen));
                 witnessPoint.Add ("textFrame", dimElem.note.frame);
+                witnessPoint.Add ("textStyle", CreateDimensionTextStyleObjectState (dimElem.note));
                 witnessPoint.Add ("content", GS::UniString (dimElem.note.contentType == API_NoteContent_Custom ? "CustomText" : "MeasuredValue"));
                 witnessPoint.Add ("customText", GetDimensionNoteTextWithPlaceholder (dimElem.note));
                 witnessPoint.Add ("superscript", (dimElem.note.effectBits & APIEffect_SuperScript) != 0);
                 witnessPoint.Add ("textPositionFixed", dimElem.note.fixPos);
+                witnessPoint.Add ("textPosition", Create2DCoordinateObjectState (dimElem.note.pos));
 
                 // The witness parameters, as CreateAssociativeDimensions takes them, so a dimension
                 // placed by hand can be read back to learn what an element type needs (#633).
@@ -17397,13 +18085,13 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         }
 
         // The look of the dimension line, so a dimension can be redrawn or recreated as it is.
-        // markerData.markerSize is left out on purpose: on Archicad 29 it read 2.5 mm for linear
-        // dimensions whose settings dialog shows a marker size of 1.0 mm (it only matched for an
-        // elevation dimension), so it is not the size a user sets.
+        // The marker size is the API's markerData.markerSize as it is: on Archicad 29 it once read
+        // 2.5 mm for a linear dimension whose settings dialog showed 1.0 mm, and the DevKit only
+        // calls it the size at the drawing scale, so the schema says to compare it with the
+        // dialog (#2663).
         dimensionData.Add ("linePen", static_cast<Int32> (element.dimension.linPen));
-        dimensionData.Add ("marker", GS::ObjectState (
-            "type", DimensionMarkerName (element.dimension.markerData.markerType),
-            "pen", static_cast<Int32> (element.dimension.markerData.markerPen)));
+        dimensionData.Add ("marker", CreateDimensionMarkerObjectState (element));
+        dimensionData.Add ("textPlacement", CreateDimensionTextPlacementObjectState (element));
         dimensionData.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
         dimensionData.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
         dimensionData.Add ("staticDimension", element.dimension.defStaticDim);
@@ -19714,14 +20402,9 @@ GS::Optional<GS::UniString> CreateInteriorElevationsCommand::GetRawResponseSchem
     })";
 }
 
-GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+// Creates the given interior elevations in one undoable command, on the story that is active.
+static GS::ObjectState CreateInteriorElevationsOnActiveStory (const GS::Array<GS::ObjectState>& interiorElevationsData)
 {
-    GS::Array<GS::ObjectState> interiorElevationsData;
-    auto error = GetElementArray (parameters, "interiorElevationsData", interiorElevationsData);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
     return ExecuteCreateWithElements ("Create Interior Elevations", [&](GS::Array<GS::ObjectState>& elements) {
         for (const auto& data : interiorElevationsData) {
             GS::Array<GS::ObjectState> nodeCoordinates;
@@ -19848,6 +20531,104 @@ GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState&
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
+}
+
+// ACAPI_Element_CreateExt puts a new interior elevation on the story that is active in the
+// floor plan, whatever header.floorInd says (#2849: with story 1 active, floorIndex 0 and 2
+// both gave an interior elevation on story 1). As CreateRailings and CreateZones do (#853),
+// the items are created in groups of one story each, with that story made active
+// (APIStory_GoTo), and the previously active story is put back afterwards. The story is
+// switched outside the undoable command, so each group is one undoable command. The
+// responses keep the order of the request. A call whose items all stay on the active story
+// runs exactly as before.
+GS::ObjectState CreateInteriorElevationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> interiorElevationsData;
+    auto error = GetElementArray (parameters, "interiorElevationsData", interiorElevationsData);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    if (storyErr != NoError) {
+        return CreateInteriorElevationsOnActiveStory (interiorElevationsData);
+    }
+    const short originalActStory = storyInfo.actStory;
+
+    std::vector<short> itemStories;
+    std::vector<short> storiesInOrder;
+    itemStories.reserve (interiorElevationsData.GetSize ());
+    for (const GS::ObjectState& data : interiorElevationsData) {
+        short story = originalActStory;
+        data.Get ("floorIndex", story);
+        itemStories.push_back (story);
+        if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
+            storiesInOrder.push_back (story);
+        }
+    }
+
+    const bool needsStorySwitch = std::any_of (itemStories.begin (), itemStories.end (),
+        [&] (short story) { return story != originalActStory; });
+    if (!needsStorySwitch) {
+        return CreateInteriorElevationsOnActiveStory (interiorElevationsData);
+    }
+
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    std::vector<GS::ObjectState> results (interiorElevationsData.GetSize ());
+    for (const short story : storiesInOrder) {
+        GS::Array<GS::ObjectState> groupItems;
+        std::vector<size_t> groupIndices;
+        for (size_t i = 0; i < itemStories.size (); ++i) {
+            if (itemStories[i] == story) {
+                groupItems.Push (interiorElevationsData[static_cast<GS::UIndex> (i)]);
+                groupIndices.push_back (i);
+            }
+        }
+
+        if (story != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = story;
+            const GSErrCode err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                const GS::UniString message = GS::UniString::Printf (
+                    "Failed to activate story %d in the floor plan, where the interior elevation is created; see GetStories for the valid story indices.",
+                    static_cast<int> (story));
+                for (const size_t i : groupIndices) {
+                    results[i] = CreateErrorResponse (err, message);
+                }
+                continue;
+            }
+            activeStory = story;
+        }
+
+        const GS::ObjectState groupResponse = CreateInteriorElevationsOnActiveStory (groupItems);
+        GS::Array<GS::ObjectState> groupElements;
+        groupResponse.Get ("elements", groupElements);
+        for (size_t k = 0; k < groupIndices.size (); ++k) {
+            results[groupIndices[k]] = k < groupElements.GetSize ()
+                ? groupElements[static_cast<GS::UIndex> (k)]
+                : CreateErrorResponse (APIERR_GENERAL, "Failed to create interior elevation.");
+        }
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const GS::ObjectState& result : results) {
+        elements (result);
+    }
+    return response;
 }
 
 GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (

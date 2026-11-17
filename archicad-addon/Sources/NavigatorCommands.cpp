@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -170,6 +171,27 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
     GS::UniString publisherSetName;
     parameters.Get("publisherSetName", publisherSetName);
 
+    // Archicad does not refuse items of the wrong shape by the input schema, so they are checked
+    // here, before the name, and the error says what is wrong with them.
+    GS::Array<API_Guid> selectedLinks;
+    const GS::Array<API_Guid>* selectedLinksPtr = nullptr;
+    if (parameters.Contains("selectedNavigatorItemIds")) {
+        GS::Array<GS::ObjectState> selectedNavigatorItemIds;
+        parameters.Get("selectedNavigatorItemIds", selectedNavigatorItemIds);
+
+        for (const GS::ObjectState& navigatorItemIdArrayItem : selectedNavigatorItemIds) {
+            const API_Guid selectedGuid = GetGuidFromNavigatorItemIdArrayItem(navigatorItemIdArrayItem);
+            if (selectedGuid == APINULLGuid) {
+                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing. Each item must be {\"navigatorItemId\": {\"guid\": \"...\"}}.");
+            }
+            selectedLinks.Push(selectedGuid);
+        }
+
+        if (!selectedLinks.IsEmpty()) {
+            selectedLinksPtr = &selectedLinks;
+        }
+    }
+
     const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
     if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
         return CreateErrorResponse(Error, GS::UniString("Not valid publisher set name: no publisher set is named \"") + publisherSetName + "\". GetPublisherSets lists the names.");
@@ -186,26 +208,6 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         outputFolder = *publishPars.path;
     } else {
         outputFolder = GetPublisherSetPath(publishPars.guid);
-    }
-
-    GS::Array<API_Guid> selectedLinks;
-    const GS::Array<API_Guid>* selectedLinksPtr = nullptr;
-    if (parameters.Contains("selectedNavigatorItemIds")) {
-        GS::Array<GS::ObjectState> selectedNavigatorItemIds;
-        parameters.Get("selectedNavigatorItemIds", selectedNavigatorItemIds);
-
-        for (const GS::ObjectState& navigatorItemIdArrayItem : selectedNavigatorItemIds) {
-            const API_Guid selectedGuid = GetGuidFromNavigatorItemIdArrayItem(navigatorItemIdArrayItem);
-            if (selectedGuid == APINULLGuid) {
-                delete publishPars.path;
-                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing. Each item must be {\"navigatorItemId\": {\"guid\": \"...\"}}.");
-            }
-            selectedLinks.Push(selectedGuid);
-        }
-
-        if (!selectedLinks.IsEmpty()) {
-            selectedLinksPtr = &selectedLinks;
-        }
     }
 
     // The API reports neither the files it writes nor a later end of publishing, so the files
@@ -3281,7 +3283,7 @@ GS::Optional<GS::UniString> SetZoomCommand::GetInputParametersSchema () const
         "properties": {
             "zoomBox": {
                 "$ref": "#/Zoom",
-                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is."
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is; in a rotated window the whole box is shown, so the shown area is larger than the box."
             }
         },
         "additionalProperties": false,
@@ -3296,6 +3298,39 @@ GS::Optional<GS::UniString> SetZoomCommand::GetRawResponseSchema () const
     return R"({
         "$ref": "#/ExecutionResult"
     })";
+}
+
+static bool IsUnrotatedWindowTransformation (const API_Tranmat& tranmat)
+{
+    const double eps = 1e-9;
+    return std::abs (tranmat.tmx[0] - 1.0) < eps && std::abs (tranmat.tmx[1]) < eps &&
+           std::abs (tranmat.tmx[4]) < eps && std::abs (tranmat.tmx[5] - 1.0) < eps;
+}
+
+static API_Box GetZoomBoxInWindowFrame (const API_Box& modelBox, const API_Tranmat& tranmat)
+{
+    if (IsUnrotatedWindowTransformation (tranmat)) {
+        return modelBox;
+    }
+
+    const double cornerX[4] = { modelBox.xMin, modelBox.xMax, modelBox.xMax, modelBox.xMin };
+    const double cornerY[4] = { modelBox.yMin, modelBox.yMin, modelBox.yMax, modelBox.yMax };
+
+    API_Box frameBox = {};
+    for (UInt32 i = 0; i < 4; ++i) {
+        const double x = tranmat.tmx[0] * cornerX[i] + tranmat.tmx[1] * cornerY[i] + tranmat.tmx[3];
+        const double y = tranmat.tmx[4] * cornerX[i] + tranmat.tmx[5] * cornerY[i] + tranmat.tmx[7];
+        if (i == 0) {
+            frameBox.xMin = frameBox.xMax = x;
+            frameBox.yMin = frameBox.yMax = y;
+        } else {
+            frameBox.xMin = GS::Min (frameBox.xMin, x);
+            frameBox.xMax = GS::Max (frameBox.xMax, x);
+            frameBox.yMin = GS::Min (frameBox.yMin, y);
+            frameBox.yMax = GS::Max (frameBox.yMax, y);
+        }
+    }
+    return frameBox;
 }
 
 GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -3332,7 +3367,14 @@ GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::
         return CreateFailedExecutionResult (err, "Failed to get the current zoom and rotation of the current window.");
     }
 
-    err = ACAPI_View_SetZoom (&zoomBox, &currentTranmat);
+    // ACAPI_View_SetZoom takes the box in the window's own frame, which on a rotated
+    // window is the model rotated by the window's transformation (the same frame
+    // ACAPI_View_GetZoom reports the box in), not in model coordinates (issue #2846).
+    // So the four corners of the model box are transformed into that frame and
+    // their bounding box is set, which shows the whole model box. An unrotated
+    // window is left as before, its frame is the model's.
+    API_Box windowFrameBox = GetZoomBoxInWindowFrame (zoomBox, currentTranmat);
+    err = ACAPI_View_SetZoom (&windowFrameBox, &currentTranmat);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the zoom of the current window.");
     }

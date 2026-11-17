@@ -1,0 +1,139 @@
+{
+  "title": "SetDetailsOfElements refuses a layerIndex on a Curtain Wall frame or panel, which keep the layer of their Curtain Wall, instead of answering success (#2824)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "target layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check curtain wall part layer", "isHidden": false, "isLocked": false }
+        ]
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "index of the layer",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ],
+        "fields": [ "isHidden" ]
+      },
+      "save": { "layerIndex": "layers[0].index" },
+      "expect": [
+        { "expr": "${layerIndex}", "gt": 1, "name": "a layer of its own" }
+      ]
+    },
+    {
+      "id": "a one-segment curtain wall",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [
+              { "x": 960.0, "y": 960.0 },
+              { "x": 966.0, "y": 960.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0
+          }
+        ]
+      },
+      "save": { "cw": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall created" }
+      ]
+    },
+    {
+      "id": "its frames and panels",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "save": {
+        "frame": "subelements[0].cWallFrames[0].elementId.guid",
+        "panel": "subelements[0].cWallPanels[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "subelements[0].cWallFrames[0].elementId.guid", "exists": true, "name": "the curtain wall has frames" },
+        { "path": "subelements[0].cWallPanels[0].elementId.guid", "exists": true, "name": "the curtain wall has panels" }
+      ]
+    },
+    {
+      "id": "the layer on a frame and on a panel",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${frame}" }, "details": { "layerIndex": "${layerIndex}" } },
+          { "elementId": { "guid": "${panel}" }, "details": { "layerIndex": "${layerIndex}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the frame keeps its curtain wall's layer, so it is not a success" },
+        { "path": "executionResults[0].error.message", "contains": "layerIndex", "name": "the error names layerIndex" },
+        { "path": "executionResults[0].error.message", "contains": "Curtain Wall", "name": "and says to set it on the Curtain Wall" },
+        { "path": "executionResults[1].success", "eq": false, "name": "the panel neither" },
+        { "path": "executionResults[1].error.message", "contains": "layerIndex", "name": "the panel's error names layerIndex" }
+      ]
+    },
+    {
+      "id": "the layer on the curtain wall",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${cw}" }, "details": { "layerIndex": "${layerIndex}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the curtain wall takes the layer" }
+      ]
+    },
+    {
+      "id": "the curtain wall and its parts after it",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${cw}" } },
+          { "elementId": { "guid": "${frame}" } },
+          { "elementId": { "guid": "${panel}" } }
+        ]
+      },
+      "save": {
+        "cwLayer": "detailsOfElements[0].layerIndex",
+        "frameLayer": "detailsOfElements[1].layerIndex",
+        "panelLayer": "detailsOfElements[2].layerIndex"
+      },
+      "expect": [
+        { "expr": "${cwLayer} - ${layerIndex}", "approx": 0, "name": "the curtain wall is on the layer" },
+        { "expr": "${frameLayer} - ${layerIndex}", "approx": 0, "name": "its frame followed it" },
+        { "expr": "${panelLayer} - ${layerIndex}", "approx": 0, "name": "its panel followed it" }
+      ]
+    },
+    {
+      "id": "the frame is given the layer it already has",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${frame}" }, "details": { "layerIndex": "${layerIndex}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the layer it has is a success" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ]
+      }
+    }
+  ]
+}
