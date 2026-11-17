@@ -4530,6 +4530,31 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     return changed;
 }
 
+} // namespace
+
+// Declared in CommandBase.hpp and used by GetDetailsOfElements, so outside the anonymous namespace.
+bool ColumnCoreSymbolTypeToString (short coreSymbolType, GS::UniString& out)
+{
+    switch (coreSymbolType) {
+        case 1: out = "Plain";     return true;
+        case 2: out = "Slash";     return true;
+        case 3: out = "X";         return true;
+        case 4: out = "CrossHair"; return true;
+        default:                   return false;
+    }
+}
+
+bool ColumnCoreSymbolTypeFromString (const GS::UniString& str, short& out)
+{
+    if (str == "Plain")     { out = 1; return true; }
+    if (str == "Slash")     { out = 2; return true; }
+    if (str == "X")         { out = 3; return true; }
+    if (str == "CrossHair") { out = 4; return true; }
+    return false;
+}
+
+namespace {
+
 namespace {
 
 // The floor plan display settings of a column that ModifyColumns writes (#2529), under the names
@@ -4544,6 +4569,9 @@ const char* ColumnDisplaySchemaProperties = R"(
                         "veneerLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the veneer lines of the column." },
                         "veneerLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the veneer lines of the column." },
                         "coreSymbolPen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the core symbol lines (slash, X or crosshair) of the column." },
+                        "coreSymbolType": { "$ref": "#/ColumnCoreSymbolType" },
+                        "coreSymbolPar1": { "type": "number", "description": "Length of the crosshair outside the column's contour line, used by the CrossHair core symbol. A negative value fails the item and changes nothing." },
+                        "coreSymbolPar2": { "type": "number", "description": "Distance of the crosshair from the column's centre, used by the CrossHair core symbol. A negative value fails the item and changes nothing." },
                         "belowViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the uncut lines of the column." },
                         "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines of the column." },
                         "aboveViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the overhead lines of the column." },
@@ -4554,6 +4582,7 @@ const char* ColumnDisplaySchemaProperties = R"(
 const char* ColumnDisplayKeys[] = {
     "visibility", "isAutoOnStoryVisibility", "displayOption", "viewDepthLimitation",
     "contourPen", "contourLineTypeId", "veneerLinePen", "veneerLineTypeId", "coreSymbolPen",
+    "coreSymbolType", "coreSymbolPar1", "coreSymbolPar2",
     "belowViewLinePen", "belowViewLineTypeId", "aboveViewLinePen", "aboveViewLineTypeId",
     "hiddenLinePen", "hiddenLineTypeId"
 };
@@ -4611,6 +4640,21 @@ GS::Optional<GS::UniString> ApplyColumnDisplaySettings (API_Element& element, AP
     if (hasViewDepthLimitation && !ViewDepthLimitationFromString (str, column.viewDepthLimitation)) {
         return GS::UniString ("Invalid 'viewDepthLimitation'.");
     }
+    const bool hasCoreSymbolType = details.Get ("coreSymbolType", str);
+    if (hasCoreSymbolType && !ColumnCoreSymbolTypeFromString (str, column.coreSymbolType)) {
+        return GS::UniString ("Invalid 'coreSymbolType'.");
+    }
+    const GS::Optional<double> coreSymbolPar1 = GetOptionalDouble (details, "coreSymbolPar1");
+    const GS::Optional<double> coreSymbolPar2 = GetOptionalDouble (details, "coreSymbolPar2");
+    if ((coreSymbolPar1.HasValue () && coreSymbolPar1.Get () < 0.0) || (coreSymbolPar2.HasValue () && coreSymbolPar2.Get () < 0.0)) {
+        return GS::UniString ("'coreSymbolPar1' and 'coreSymbolPar2' must not be negative.");
+    }
+    if (coreSymbolPar1.HasValue ()) {
+        column.coreSymbolPar1 = coreSymbolPar1.Get ();
+    }
+    if (coreSymbolPar2.HasValue ()) {
+        column.coreSymbolPar2 = coreSymbolPar2.Get ();
+    }
 
     bool hasCorePen = false, hasVenLinePen = false, hasCoreSymbolPen = false, hasBelowViewLinePen = false, hasAboveViewLinePen = false, hasHiddenLinePen = false;
     bool hasContLtype = false, hasVenLineType = false, hasBelowViewLineType = false, hasAboveViewLineType = false, hasHiddenLineType = false;
@@ -4659,6 +4703,9 @@ GS::Optional<GS::UniString> ApplyColumnDisplaySettings (API_Element& element, AP
     if (hasVenLinePen)                                  ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, venLinePen);
     if (hasVenLineType)                                 ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, venLineType);
     if (hasCoreSymbolPen)                               ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coreSymbolPen);
+    if (hasCoreSymbolType)                              ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coreSymbolType);
+    if (coreSymbolPar1.HasValue ())                     ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coreSymbolPar1);
+    if (coreSymbolPar2.HasValue ())                     ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, coreSymbolPar2);
     if (hasBelowViewLinePen)                            ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, belowViewLinePen);
     if (hasBelowViewLineType)                           ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, belowViewLineType);
     if (hasAboveViewLinePen)                            ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, aboveViewLinePen);
@@ -4713,6 +4760,14 @@ GS::UniString GetColumnDisplaySettingsNotApplied (const API_ColumnType& wanted, 
     checkPen ("contourPen", wanted.corePen, got.corePen);
     checkPen ("veneerLinePen", wanted.venLinePen, got.venLinePen);
     checkPen ("coreSymbolPen", wanted.coreSymbolPen, got.coreSymbolPen);
+    checkEnum ("coreSymbolType", wanted.coreSymbolType, got.coreSymbolType);
+    const auto checkLength = [&] (const char* key, double wantedLength, double gotLength) {
+        if (details.Contains (key) && std::abs (wantedLength - gotLength) > 1e-6) {
+            notApplied += GS::UniString::Printf (" %s is %g.", key, gotLength);
+        }
+    };
+    checkLength ("coreSymbolPar1", wanted.coreSymbolPar1, got.coreSymbolPar1);
+    checkLength ("coreSymbolPar2", wanted.coreSymbolPar2, got.coreSymbolPar2);
     checkPen ("belowViewLinePen", wanted.belowViewLinePen, got.belowViewLinePen);
     checkPen ("aboveViewLinePen", wanted.aboveViewLinePen, got.aboveViewLinePen);
     checkPen ("hiddenLinePen", wanted.hiddenLinePen, got.hiddenLinePen);

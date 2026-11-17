@@ -250,6 +250,11 @@ bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptio
 GS::UniString ViewDepthLimitationToString (API_ElemViewDepthLimitationsID viewDepthLimitation);
 bool ViewDepthLimitationFromString (const GS::UniString& str, API_ElemViewDepthLimitationsID& out);
 
+// API_ColumnType::coreSymbolType (1 Plain, 2 Slash, 3 X, 4 CrossHair) <-> its name (#2858).
+// ToString returns false for a value outside 1-4. Defined in ExtendedElementCommands.cpp.
+bool ColumnCoreSymbolTypeToString (short coreSymbolType, GS::UniString& out);
+bool ColumnCoreSymbolTypeFromString (const GS::UniString& str, short& out);
+
 // API_PolyLineType::drawSegmentMode (0: the line type's dashes restart on every segment,
 // 1: they run continuously over the whole polyline) <-> "SegmentBySegment" / "Continuous".
 // Shared by CreatePolylines and Get/SetDetailsOfElements.
