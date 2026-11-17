@@ -6,7 +6,7 @@ Automation for Archicad
 
 Number every door along a line. Colour the model by any property. Check a project before it goes out. Tapir adds hundreds of commands to Archicad and a palette that runs scripts in one click.
 
-[Download WINDOWS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download MACOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
+[Download Windows](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe) [Download macOS](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip)
 
 100% free Open source (MIT) [Watch the tutorials](https://archicad-api.com/tutorials/) [All downloads](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest)
 
@@ -184,7 +184,7 @@ def run_tapir_command(command, parameters=None):
 
 print(run_tapir_command('GetAddOnVersion'))
 walls = run_tapir_command('GetElementsByType', {'elementType': 'Wall'})['elements']
-print(len(walls), 'walls')
+print(len(walls),'walls')
 ```
 
 ## Where to go *next.*

@@ -1,0 +1,90 @@
+{
+  "title": "CreateInteriorElevations: floorIndex is the home story, the active story is put back (#2849)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "CutPlane", "InteriorElevation" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "interior elevations on story 1 and story 0, story 0 active",
+      "command": "CreateInteriorElevations",
+      "params": {
+        "interiorElevationsData": [
+          {
+            "nodeCoordinates": [ { "x": 900.0, "y": 900.0 }, { "x": 906.0, "y": 900.0 } ],
+            "depth": 1.0,
+            "name": "TapirCheck IE story 1",
+            "id": "TC-IE1",
+            "floorIndex": 1
+          },
+          {
+            "nodeCoordinates": [ { "x": 900.0, "y": 910.0 }, { "x": 906.0, "y": 910.0 } ],
+            "depth": 1.0,
+            "name": "TapirCheck IE story 0",
+            "id": "TC-IE0",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": {
+        "ie1": "elements[0].elementId.guid",
+        "ie0": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "story 1 interior elevation created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "story 0 interior elevation created" }
+      ]
+    },
+    {
+      "id": "without floorIndex: on the active story, which must be story 0 again",
+      "command": "CreateInteriorElevations",
+      "params": {
+        "interiorElevationsData": [
+          {
+            "nodeCoordinates": [ { "x": 900.0, "y": 920.0 }, { "x": 906.0, "y": 920.0 } ],
+            "depth": 1.0,
+            "name": "TapirCheck IE active story",
+            "id": "TC-IEA"
+          }
+        ]
+      },
+      "save": { "ieA": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "interior elevation created" }
+      ]
+    },
+    {
+      "id": "read their home stories back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${ie1}" } },
+          { "elementId": { "guid": "${ie0}" } },
+          { "elementId": { "guid": "${ieA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 1, "name": "floorIndex 1 gives story 1, not the active story" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 0, "name": "floorIndex 0 gives story 0" },
+        { "path": "detailsOfElements[2].floorIndex", "eq": 0, "name": "the active story was put back to story 0" }
+      ]
+    },
+    {
+      "id": "three interior elevation elements",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "InteriorElevation" },
+      "expect": [
+        { "path": "elements", "len": 3 }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 # Tapir commands
 
-All 789 commands Tapir adds to Archicad, by group.
+All 804 commands Tapir adds to Archicad, by group.
 
 ## How a Tapir command is sent
 
@@ -1524,13 +1524,13 @@ Example: [archicad-addon/Examples/Project/SetCurrentRenderingScene.py](https://g
 
 ### PhotoRender
 
-Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed. With overwrite false it refuses to replace an existing file.
+Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed. With overwrite false it refuses to replace an existing file; a folder that does not exist is refused before rendering.
 
 Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#PhotoRender
 
 Parameters:
 
-- `imageFilePath` (string, required): Absolute path of the image file to write. An existing file is overwritten, unless overwrite is false.
+- `imageFilePath` (string, required): Absolute path of the image file to write. Its folder must exist: a missing folder is refused before anything is rendered. An existing file is overwritten, unless overwrite is false.
 - `overwrite` (boolean): Optional, true by default. false refuses to render when a file already exists at imageFilePath, and writes nothing.
 - `format` (string ("png", "jpg", "bmp", "tiff", "gif")): Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).
 - `sceneName` (string): Optional. The rendering scene to render with, one of the names GetRenderingScenes returns. It is made the current scene first, as SetCurrentRenderingScene does, and stays current afterwards. Omitted, the current scene is used.
@@ -2434,7 +2434,7 @@ Example: [archicad-addon/Examples/Element/GetElementsByCriteria.py](https://gith
 
 ### GetDetailsOfElements
 
-Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.
+Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.
 
 Group: Element Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archicad-addon/#GetDetailsOfElements
 
@@ -2455,7 +2455,7 @@ Example: [archicad-addon/Examples/Element/GetDetailsOfElements.py](https://githu
 
 ### SetDetailsOfElements
 
-Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special and fill orientation; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.
+Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special, fill orientation, fill category and contour line type; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.
 
 Group: Element Commands. Added in Tapir 1.0.7. Docs: https://archicad-api.com/archicad-addon/#SetDetailsOfElements
 
@@ -2544,6 +2544,27 @@ Returns:
 Grasshopper: `GetCategoryValuesOfDefaultsComponent`
 
 Example: [archicad-addon/Examples/Element/GetCategoryValuesOfDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetCategoryValuesOfDefaults.py): Reads the category values new walls, slabs and columns get from their tool defaults, with GetCategoryValuesOfDefaults.
+
+### SetCategoryValuesOfDefaults
+
+Sets the category values (Structural Function, Position, Renovation Status ...) of the tool defaults of the given element types: the values new elements of the type get, as the Renovation palette does for the Renovation Status. Every given category value is set for every given element type, in a single undoable step, and read back. The value must belong to the given category, as GetElementCategories lists them. The executionResults have one item per element type and category value: for each element type, in the order of the input, one per item of categoryValues, in their order. An element type without that category, or a value Archicad did not keep, gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the default's value in the category now (oldValue) and the value a real run would set (newValue).
+
+Group: Element Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#SetCategoryValuesOfDefaults
+
+Parameters:
+
+- `elementTypes` (array of ElementType, required): The element types whose tool defaults (the settings new elements get) are set.
+- `categoryValues` (array of object, required): The category values to set for every element type: one category per item.
+  - `type` (ElementCategoryType, required)
+  - `categoryValueId` (ElementCategoryValueId, required): A value of the category given by type, as GetElementCategories lists them.
+- `dryRun` (DryRun)
+
+Returns:
+
+- `dryRun` (DryRunFlag)
+- `executionResults` (ChangeExecutionResults, required): One result per element type and category value: for each element type, in the order of the input, one result per item of categoryValues, in their order. A real run reads each value back after setting it, and a value Archicad did not keep gets a failed execution result. On a dry run an item that passes every check made before writing (the element type is valid, the category and the value exist, and the tool defaults of the type have the category) gets wouldChange: oldValue is the default's value in the category now and newValue the value a real run would set, both as GetCategoryValuesOfDefaults gives them (type, categoryId, categoryValueId and name; oldValue has only type and categoryId when the default has no value in the category). Archicad can still refuse an item that passes them.
+
+Example: [archicad-addon/Examples/Element/SetCategoryValuesOfDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetCategoryValuesOfDefaults.py): Sets the Renovation Status new walls, slabs and windows get, like the Renovation palette, with SetCategoryValuesOfDefaults, reads it back, then restores it. A dry run first shows what would change. The values are identified by their categoryValueId, never by their localized names.
 
 ### SetCategoryValuesOfElements
 
@@ -2746,7 +2767,7 @@ Parameters:
 
 - `elementType` (ElementType, required): The type of the element to look for. Only polygonal element types can be searched, for example Slab, Roof, Mesh, Zone or Hatch.
 - `coordinate` (Coordinate2D, required): The point to search at, in the project's coordinates, on the floor plan of the current database.
-- `z` (number): Optional. The elevation of the search point, handed to Archicad together with the coordinate. Default is 0; without z a point 1 mm higher is also tried, so an element whose top is at 0 (for example a slab at the story level) is found.
+- `z` (number): Optional. The elevation of the search point, handed to Archicad together with the coordinate. Archicad finds the highest element whose top is below z. Default is 0; without z a point 1 mm higher is also tried, so an element whose top is at 0 (for example a slab at the story level) is found, and then the topmost element on the active story, so an element whose top is above the story level is found too, like a click on the floor plan.
 - `filters` (array of ElementFilter): Optional. Only an element passing every given filter is found (the same values as FilterElements accepts).
 
 Returns:
@@ -2833,15 +2854,15 @@ Example: [archicad-addon/Examples/Element/GetCurtainWallAbsoluteBottoms.py](http
 
 ### GetQuantitiesOfElements
 
-Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate all the elements in one Archicad call.
+Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call.
 
 Group: Element Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archicad-addon/#GetQuantitiesOfElements
 
 Parameters:
 
 - `elements` (Elements, required)
-- `minOpeningSize` (number): Optional minimum opening size in square meters. Openings smaller than this are not subtracted when the conditional values (for example volumeConditional of a Wall) are calculated. Archicad only uses it for walls. Default value is 0, so every opening is subtracted.
-- `calculateInOneCall` (boolean): Optional. When true, Archicad calculates the quantities of all the supported elements in one call instead of one call per element, which can be faster for many elements. The output has the same format. If that one call fails, every supported element gets the same error. Default value is false.
+- `minOpeningSize` (number): Optional minimum opening size in square meters. Openings smaller than this are not subtracted from the conditional surfaces of a Wall (referenceSideSurfaceConditional and oppositeSideSurfaceConditional). Archicad only uses it for walls; the conditional volume follows the project's calculation rules instead. Default value is 0, so every opening is subtracted.
+- `calculateInOneCall` (boolean): Optional. When true, Archicad calculates the quantities of all the supported elements of one type in one call (one call per element type, because Archicad only calculates elements of the same type together) instead of one call per element, which can be faster for many elements. The output has the same format. If the call of a type fails, every element of that type gets the same error. Default value is false.
 
 Returns:
 
@@ -3074,7 +3095,7 @@ Example: [archicad-addon/Examples/Element/GetConnectedElements.py](https://githu
 
 ### GetElementsInDrawOrder
 
-Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.
+Returns the identifier of every element of the current database, or of the given databases, in Archicad's drawing order (the order set by Bring to Front and Send to Back), as ACAPI_DrawOrder_DrawOrderGetNext walks it. Use the optional elementType and filters parameters for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Items of the drawing order whose element Archicad cannot read are left out too, so every returned identifier can be used with the other commands.
 
 Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#GetElementsInDrawOrder
 
@@ -3091,7 +3112,7 @@ Example: [archicad-addon/Examples/Element/GetElementsInDrawOrder.py](https://git
 
 ### GetDrawingPrimitivesOfElements
 
-Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. Texts are returned without their content and polylines without their vertices. A Ctrl_ElementRef item names the element it refers to: the drawing of a Wall ends with one for each Window and Door in it, while Windows and Doors give no primitives of their own. The floor plan must be the current database. The output is aligned with the input array of elements.
+Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. Texts are returned with their content, the text as Archicad displays it (for example the lines of a zone stamp with their values filled in), which each element's texts list also collects in drawing order; polylines are returned without their vertices. A Ctrl_ElementRef item names the element it refers to: the drawing of a Wall ends with one for each Window and Door in it, while Windows and Doors give no primitives of their own. The floor plan must be the current database. The output is aligned with the input array of elements.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetDrawingPrimitivesOfElements
 
@@ -3651,7 +3672,7 @@ Example: [archicad-addon/Examples/Element/RotateCopyElements.py](https://github.
 
 ### ScaleElements
 
-Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled.
+Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Elevations are kept: a beam, whose absolute elevation Resize would scale too, gets its story and level back after the resize. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled.
 
 Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ScaleElements
 
@@ -3763,7 +3784,7 @@ Example: [archicad-addon/Examples/Element/RefreshElements.py](https://github.com
 
 ### GetGDLParametersOfElements
 
-Gets all the GDL parameters (name, type, value) of the given elements.
+Gets all the GDL parameters (name, type, value) of the given elements. For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), which have no parameter session in the Archicad API, the parameters are read from the component itself: isLocked is then always false and possibleValues is not given.
 
 Group: Element Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archicad-addon/#GetGDLParametersOfElements
 
@@ -3781,7 +3802,7 @@ Example: [archicad-addon/Examples/Element/GetGDLParametersOfElements.py](https:/
 
 ### SetGDLParametersOfElements
 
-Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it. With dryRun true no element is changed and no undo step is created: the parameters are written to the element's parameter list and its Parameter Script runs as in a real run, the response has dryRun set to true, and each element that passes the checks made before changing it gets wouldChange, listing the parameters a real run would change (the given ones and the ones the Parameter Script changes with them) with their old and new values.
+Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label, or one the object's Parameter Script sets back) gives a failed execution result naming it: each given value (a whole array too, but not A, B or a single array item) is compared with the value read back. With dryRun true no element is changed and no undo step is created: the parameters are written to the element's parameter list and its Parameter Script runs as in a real run, the response has dryRun set to true, and each element that passes the checks made before changing it gets wouldChange, listing the parameters a real run would change (the given ones and the ones the Parameter Script changes with them) with their old and new values. The railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...) have no parameter session in the Archicad API: their parameters are written to the component itself, no Parameter Script runs (a dry run lists only the given parameters), array parameters are not supported, and a value Archicad does not keep (one the railing's settings set) gives a failed execution result naming it.
 
 Group: Element Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archicad-addon/#SetGDLParametersOfElements
 
@@ -3880,7 +3901,7 @@ Example: [archicad-addon/Examples/Element/SetURLReferencesOfElements.py](https:/
 
 ### ChangeLibraryPartOfElements
 
-Changes the library part of the given Object, Lamp, Window, Door, Skylight, Zone and symbol Label elements to another library part of the same type, given by name, index or guid, e.g. to replace missing library parts with ones from the loaded libraries. The elements themselves (guid, properties, classifications) are kept. Components of stairs and railings are not supported, even when they are reported as Objects. Optionally keeps the values of the GDL parameters with the same name and type, and the size (A and B).
+Changes the library part of the given Object, Lamp, Window, Door, Skylight, Zone and symbol Label elements to another library part of the same type (Wall End parts for wall ends), given by name, index or guid, e.g. to replace missing library parts with ones from the loaded libraries. The elements themselves (guid, properties, classifications) are kept. Components of stairs and railings are not supported, even when they are reported as Objects. Optionally keeps the values of the GDL parameters with the same name and type, and the size (A and B).
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ChangeLibraryPartOfElements
 
@@ -3888,7 +3909,7 @@ Parameters:
 
 - `elementsWithLibraryPart` (array of object, required): The elements with the library part to change them to. Components of stairs and railings are not supported, even when they are reported as Objects.
   - `elementId` (ElementId, required)
-  - `libraryPart` (object or object or object, required): The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries.
+  - `libraryPart` (object or object or object, required): The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries; a wall end (a Window whose library part is a Wall End part) only takes another Wall End part.
   - `keepParameters` (boolean): Copies the values of the element's GDL parameters to the parameters of the new library part that have the same name, type and array dimensions; the other parameters get the new part's defaults. Default: true.
   - `keepSize` (boolean): Keeps the size (A and B) of the element; when false, the element gets the new part's default size. Default: true.
 
@@ -3920,7 +3941,7 @@ Example: [archicad-addon/Examples/Element/GetCalculatedParametersOfCurtainWallSu
 
 ### GetHotspotsOfElements
 
-Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), e.g. to dimension to them.
+Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), in the library part's own coordinate system. For their positions in the project use GetSnapPointsOfElements.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetHotspotsOfElements
 
@@ -3976,7 +3997,7 @@ Example: [archicad-addon/Examples/Element/RunParameterScriptOfElements.py](https
 
 ### CreateColumns
 
-Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. Not written by either command: the surfaces of the column segments, and the cut fill pens before Archicad 27.
+Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, top link (relativeTopStory, topOffset), slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. ModifyColumns writes single column segments (its segments list). Not written by either command: the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.0.3. Docs: https://archicad-api.com/archicad-addon/#CreateColumns
 
@@ -3987,16 +4008,18 @@ Parameters:
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
   - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
   - `coordinates` (object, required): 3D coordinate.
-  - `height` (number): Optional column height.
+  - `height` (number): Optional explicit column height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or of the tool defaults. Cannot be combined with a non-zero relativeTopStory.
+  - `relativeTopStory` (integer): Optional link of the column's top to another story, relative to its home story (1 is the story above); 0 means an explicit height. With a non-zero value Archicad computes the height from the story levels and topOffset. The linked story must exist. Cannot be combined with height. When omitted, the top link of the favorite or of the tool defaults is kept.
+  - `topOffset` (number): Optional offset of the column's top from the level of the linked top story (negative is below it). Only has an effect when the top is linked (relativeTopStory non-zero, given here or kept from the favorite or the tool defaults).
   - `axisRotationAngle` (number): Optional column rotation angle in radians.
   - `slantAngle` (number): Optional slant angle in radians. A non-zero value also makes the column slanted, unless isSlanted is given explicitly.
   - `isSlanted` (boolean): Optional explicit slanted state. By default it is derived from slantAngle.
   - `slantDirectionAngle` (number): Optional rotation angle of the slanted column on the horizontal plane in radians.
-  - `width` (number): Cross section width of the column. Applied to all segments.
-  - `depth` (number): Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns.
+  - `width` (number): Cross section width of the column, the diameter of a round one. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.
+  - `depth` (number): Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the depth; give buildingMaterialId to make a basic cross section of this size.
   - `coreAnchor` (ColumnCoreAnchor)
   - `circleBased` (boolean): True for a round column cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments.
-  - `isWidthAndHeightLinked` (boolean): When true (the default), Archicad keeps width and depth equal and setting one changes the other - set to false to give width/depth independent values. Applied to all segments.
+  - `isWidthAndHeightLinked` (boolean): When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the tool default (or favoriteName) is used. Applied to all segments.
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
   - `veneer` (ColumnVeneer): Veneer of the column (type, thickness, building material); the fields not given come from the tool defaults or favoriteName, thickness 0 creates the column without veneer. Applied to all segments.
@@ -4011,11 +4034,11 @@ Returns:
 
 Grasshopper: `ColumnsComponent`, `CreateColumnsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateColumns.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateColumns.py): Creates two columns with CreateColumns: one with the Column tool defaults and one round, 3 m high column with its own cut fill pens. Coordinates are in meters; z is the elevation of the column base. CreateColumns takes the same cut fill pens (written from Archicad 27) and cover fill as ModifyColumns.
+Example: [archicad-addon/Examples/Element/CreateColumns.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateColumns.py): Creates three columns with CreateColumns: one with the Column tool defaults, one round, 3 m high column with its own cut fill pens, and one whose top is linked to the story above, 15 cm below its level. Coordinates are in meters; z is the elevation of the column base. CreateColumns takes the same cut fill pens (written from Archicad 27), cover fill and top link (relativeTopStory, topOffset) as ModifyColumns. A linked column gets its height from the story levels, so it is not given a height; the story above must exist.
 
 ### CreateWalls
 
-Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, except geometryType and profileType, which the new wall takes from the favorite or the Wall tool defaults (its plan outline is always Straight), and bottomOffset, which comes from zCoordinate. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.
+Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, including geometryType (Straight or Trapezoid, with begThickness and endThickness), profileType (Normal, Slanted or Trapez) and the slant angles, so a trapezoid or slanted wall is made in one call; only bottomOffset differs, which comes from zCoordinate. A slantAlpha or slantBeta that the wall's profileType cannot take fails the item instead of being dropped. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateWalls
 
@@ -4035,8 +4058,12 @@ Parameters:
   - `arcAngle` (number): Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints).
   - `referenceLineLocation` (WallReferenceLineLocation): Optional. When omitted, the favorite's or the Wall tool default's reference line location is kept. The Core* values only have an effect on a Composite or Profile wall.
   - `flipped` (boolean): Optional. True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped). When omitted, the favorite's or the Wall tool default's side is kept, which for a Profile wall mirrors its whole cross section.
-  - `slantAlpha` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
-  - `slantBeta` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
+  - `geometryType` (WallModificationGeometryType): Plan outline of the wall. Trapezoid makes begThickness and endThickness the wall's thickness at its begin and end point. Polygonal is not settable here; it is read-only via GetDetailsOfElements. CreateWalls makes a Straight wall when this is omitted. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on.
+  - `begThickness` (number): Thickness at begCoordinate, the same value as thickness (applied after it, so it wins when both are given). Together with endThickness it shapes a Trapezoid wall (geometryType). Like thickness, it only takes effect on a Basic wall.
+  - `endThickness` (number): Thickness at endCoordinate. Only takes effect on a Trapezoid wall (geometryType); a Straight wall has one thickness. Like thickness, it only takes effect on a Basic wall.
+  - `profileType` (WallModificationProfileType): Cross section shape of the wall. slantAlpha needs Slanted or Trapez, slantBeta needs Trapez. When omitted, CreateWalls keeps the favorite's or the Wall tool default's and ModifyWalls the wall's own.
+  - `slantAlpha` (number): Angle of the slanted face in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Slanted or Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped.
+  - `slantBeta` (number): Angle of the second slanted face of a double slanted wall, in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped.
   - `topOffset` (number): Only has an effect when relativeTopStory is non-zero.
   - `relativeTopStory` (number): Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' for the same wall: whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero.
   - `zoneRel` (WallZoneRelation)
@@ -4066,6 +4093,7 @@ Parameters:
   - `polyCanChange` (boolean): The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType).
   - `materialsChained` (boolean): Whether the surface materials are chained.
   - `logHeight` (number): Height of the log for log walls. 0 means a normal (non-log) wall.
+  - `logDetails` (WallLogDetails)
 
 Returns:
 
@@ -4077,7 +4105,7 @@ Example: [archicad-addon/Examples/Element/CreateWalls.py](https://github.com/ENZ
 
 ### CreateBeams
 
-Creates Beam elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.
+Creates Beam elements based on the given parameters. Takes the same cut fill pens, cover fill and holes as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Both commands take the same segments array, which sets the cross section, taper and length of single segments. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateBeams
 
@@ -4097,13 +4125,16 @@ Parameters:
   - `profileAngle` (number): Rotation angle of the profile around the beam's center line, in radians.
   - `arcAngle` (number): Optional arc angle in radians. A non-zero value makes a horizontally curved beam.
   - `verticalCurveHeight` (number): Optional rise of a vertically curved beam. A non-zero value makes a vertically curved beam; it wins over arcAngle.
-  - `width` (number): Cross section width of the beam. Applied to all segments.
-  - `height` (number): Cross section height of the beam. Applied to all segments.
+  - `width` (number): Cross section width of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.
+  - `height` (number): Cross section height of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the height; give buildingMaterialId to make a basic cross section of this size.
   - `anchorPoint` (BeamAnchorPoint): The point of the cross section that lies on the reference line (begCoordinate to endCoordinate at zCoordinate). Top anchors hang the beam below zCoordinate, Bottom anchors stand it on top, MiddleLeft, Center and MiddleRight center it. Left and Right anchors put the line on the beam's left or right edge, looking from begCoordinate to endCoordinate; TopCenter, Center and BottomCenter keep it on the beam's axis.
   - `circleBased` (boolean): True for a round beam cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments.
-  - `isWidthAndHeightLinked` (boolean): When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments.
+  - `isWidthAndHeightLinked` (boolean): When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the tool default (or favoriteName) is used. Applied to all segments.
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
+  - `segmentCount` (integer): Optional number of segments of the new beam, e.g. one per beam when beams with different cross sections are merged into one (segments then gives each its cross section and length). Added segments copy the last segment of the Beam tool defaults or the favorite, with a Basic structure; the joints between segments are vertical cuts. When the number changes, every segment gets the same proportional length unless segments sets its length. The beam is read back, and when Archicad did not keep the number it is deleted again and the item fails. Not taken by ModifyBeams: an existing beam keeps its number of segments.
+  - `segments` (array of BeamSegmentModification): Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite, or segmentCount segments: their cross section, taper and length. Applied after segmentCount and the cross section given for all segments, so a segment given here keeps its own values. A segmentIndex the beam does not have is an error and the beam is not created.
+  - `holes` (array of BeamHoleModification): Optional holes of the new beam, in the shape ModifyBeams takes and GetDetailsOfElements returns them (centerX along the beam from begCoordinate). They are written right after the beam is created; a hole Archicad refuses fails the item and the beam is not created. When omitted, no holes are written.
   - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
   - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
   - `coverFill` (CoverFill): The cover fill of the beam in the floor plan, as GetDetailsOfElements returns it.
@@ -4114,11 +4145,11 @@ Returns:
 
 Grasshopper: `BeamsComponent`, `CreateBeamsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateBeams.py): Creates a 6 m long beam at 3 m height with its own cut fill pen with CreateBeams. With the TopCenter anchor the beam hangs below its reference line at zCoordinate. CreateBeams takes the same cut fill pens (written from Archicad 27) and cover fill as ModifyBeams.
+Example: [archicad-addon/Examples/Element/CreateBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateBeams.py): Creates a 6 m long beam at 3 m height with its own cut fill pen and two holes with CreateBeams. With the TopCenter anchor the beam hangs below its reference line at zCoordinate. CreateBeams takes the same cut fill pens (written from Archicad 27), cover fill and holes as ModifyBeams; centerX of a hole is measured along the beam from begCoordinate.
 
 ### CreateStairs
 
-Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings; settings not given come from the Stair tool defaults or the favorite.
+Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.
 
 Group: Element Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/archicad-addon/#CreateStairs
 
@@ -4137,8 +4168,11 @@ Parameters:
   - `stepNum` (integer): Number of risers (steps). Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not have this many risers.
   - `riserHeight` (number): Height of each riser. Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not use this riser height.
   - `treadDepth` (number): Depth (going) of each tread. Pinned as a fixed going in the stair rules, so the run length follows from the number of treads; the standard's combined riser/going rules (2R+G, R+G, R/G) are not applied to this stair.
-  - `baseLineEdges` (array of object): Optional. The segment type of each baseline edge, one item per edge (baseLinePoints.length - 1 items; edge i runs from point i to point i + 1). A U-shaped stair with a half landing is Flight, Landing, Flight with landing turns at both inner points. When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineVertices is given, every edge is a flight. Combinations Archicad cannot build fail like any other invalid stair.
-  - `baseLineVertices` (array of object): Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.
+  - `baseLineEdges` (array of StairBaseLineEdge): Optional. The segment type of each baseline edge, one item per edge (baseLinePoints.length - 1 items; edge i runs from point i to point i + 1). A U-shaped stair with a half landing is Flight, Landing, Flight with landing turns at both inner points. When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineVertices is given, every edge is a flight. Combinations Archicad cannot build fail like any other invalid stair.
+  - `baseLineVertices` (array of StairBaseLineVertex): Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.
+  - `relativeTopStory` (integer): Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead.
+  - `topOffset` (number): The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0).
+  - `rules` (StairRules): The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error.
   - `treadDepthLocked` (boolean): Whether the going lengths are locked.
   - `totalHeightLocked` (boolean): Whether the total height is locked.
   - `finishVisible` (boolean): Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers.
@@ -4152,6 +4186,9 @@ Parameters:
   - `uniformMonolithAttributes` (boolean): Whether the monolithic structures of the flights and the landings share one set of attributes.
   - `uniformDrainings` (boolean): Whether the flights and the landings share one draining setting.
   - `structureVisibility` (boolean): Whether the structure of the stair is shown.
+  - `stairDisplayType` (string ("Custom", "ByModelViewOptions")): Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them.
+  - `floorPlanLayout` (StairLayoutSettings): The floor plan display of the stair: the stories it is shown on and its visible components. Independent of reflectedCeilingPlanLayout.
+  - `reflectedCeilingPlanLayout` (StairLayoutSettings): The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout.
   - `treads` (array of object): The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
   - `risers` (array of object): The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
   - `structures` (array of object): The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.
@@ -4166,7 +4203,7 @@ Example: [archicad-addon/Examples/Element/CreateStairs.py](https://github.com/EN
 
 ### SolveStairBaseline
 
-Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving. Available from Archicad 27.
+Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, 2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. The solver checks the baseline only: it does not lay out the steps, so stepNum, riserHeight and treadDepth are the given values or the tool defaults, and CreateStairs picks the riser count and height for totalHeight within the rules. Available from Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#SolveStairBaseline
 
@@ -4184,7 +4221,7 @@ Example: [archicad-addon/Examples/Element/SolveStairBaseline.py](https://github.
 
 ### CreateSlabs
 
-Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. Not written by either command: the surface of a single edge, and the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.
+Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens, floor fill and floor plan and section display (contour, section contour and hidden contour pens and line types, the story visibility of the contour and the fill, materialsChained, linkToSettings) as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. The Edge Angle and the surface of single edges are written afterwards with ModifySlabs (edgeTrim, edgeTrims, edgeSideMaterials). Not written by either command: the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.
 
 Group: Element Commands. Added in Tapir 1.0.3. Docs: https://archicad-api.com/archicad-addon/#CreateSlabs
 
@@ -4210,6 +4247,17 @@ Parameters:
   - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
   - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
   - `floorFill` (FloorFill): The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements.
+  - `materialsChained` (boolean): Whether the surface materials are chained.
+  - `contourPen` (integer): Pen of the slab's contour in the floor plan.
+  - `contourLineTypeId` (AttributeId): Line type of the slab's contour in the floor plan.
+  - `sectionContourPen` (integer): Pen of the slab's contour where it is cut in sections.
+  - `sectionContourLineTypeId` (AttributeId): Line type of the slab's contour where it is cut in sections.
+  - `hiddenContourLinePen` (integer): Pen of the slab's hidden contour lines in the floor plan.
+  - `hiddenContourLineTypeId` (AttributeId): Line type of the slab's hidden contour lines in the floor plan.
+  - `isAutoOnStoryVisibility` (boolean): Archicad 29 and later: when true, Archicad recomputes visibility and fillVisibility from the slab's elevation and ignores the values given for them. Giving visibility or fillVisibility without this key turns it off. Before Archicad 29 a slab has no such setting, and the item fails when this key is given.
+  - `visibility` (StoryVisibility): The stories the slab's contour is shown on. Only the given fields change.
+  - `fillVisibility` (StoryVisibility): The stories the slab's cover fill is shown on. Only the given fields change.
+  - `linkToSettings` (LinkToSettings): How the slab is linked to its home story.
 
 Returns:
 
@@ -4228,6 +4276,8 @@ Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/ar
 Parameters:
 
 - `windowsData` (array of object, required)
+  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
   - `ownerWallId` (ElementId, required)
   - `width` (number)
   - `height` (number)
@@ -4253,6 +4303,14 @@ Parameters:
   - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
   - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
   - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+  - `verticalLink` (WindowDoorVerticalLink)
+  - `verticalLinkStoryIndex` (integer): The index of the story the opening is anchored to when verticalLink is 'SillToStory' or 'HeaderToStory' (API_VerticalLink::linkValue). When a story anchor is given without it, the opening keeps the story it is anchored to, or else its home story.
+  - `subFloorThickness` (number): Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness).
+  - `revealDepthLocation` (WindowDoorRevealDepthLocation)
+  - `surfaceId` (AttributeId): The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true.
+  - `useObjectMaterials` (boolean): Use the surfaces defined in the library part instead of 'surfaceId'.
+  - `directionType` (WindowDoorDirectionType)
+  - `fixPoint` (WindowDoorFixPoint)
   - `libraryPartName` (string): Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Set on the created window only, with its A and B from `width` and `height` (or the tool default's width and height); the Window tool defaults are not changed.
   - `favoriteName` (string): Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create.
 
@@ -4262,7 +4320,7 @@ Returns:
 
 Grasshopper: `CreateWindowsComponent`, `WindowsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateWindows.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateWindows.py): Creates a wall and places a 1 m x 1.5 m window in it with CreateWindows. centerOffset is measured along the wall from its begin point. The library part comes from the Window tool defaults, or from libraryPartName or favoriteName.
+Example: [archicad-addon/Examples/Element/CreateWindows.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateWindows.py): Creates a wall and places a 1 m x 1.5 m window in it with CreateWindows. centerOffset is measured along the wall from its begin point. The library part comes from the Window tool defaults, or from libraryPartName or favoriteName. id sets the window's Element ID and layerIndex its layer; without them it gets the next automatic ID and the layer of the tool defaults.
 
 ### CreateDoors
 
@@ -4273,6 +4331,8 @@ Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/ar
 Parameters:
 
 - `doorsData` (array of object, required)
+  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
   - `ownerWallId` (ElementId, required)
   - `width` (number)
   - `height` (number)
@@ -4298,6 +4358,14 @@ Parameters:
   - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
   - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
   - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+  - `verticalLink` (WindowDoorVerticalLink)
+  - `verticalLinkStoryIndex` (integer): The index of the story the opening is anchored to when verticalLink is 'SillToStory' or 'HeaderToStory' (API_VerticalLink::linkValue). When a story anchor is given without it, the opening keeps the story it is anchored to, or else its home story.
+  - `subFloorThickness` (number): Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness).
+  - `revealDepthLocation` (WindowDoorRevealDepthLocation)
+  - `surfaceId` (AttributeId): The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true.
+  - `useObjectMaterials` (boolean): Use the surfaces defined in the library part instead of 'surfaceId'.
+  - `directionType` (WindowDoorDirectionType)
+  - `fixPoint` (WindowDoorFixPoint)
   - `libraryPartName` (string): Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Set on the created door only, with its A and B from `width` and `height` (or the tool default's width and height); the Door tool defaults are not changed.
   - `favoriteName` (string): Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create.
 
@@ -4601,7 +4669,7 @@ Parameters:
   - `favoriteName` (string): Optional name of a Morph favorite to base the new morph on. Its settings are applied first, then the explicitly given fields override them. The geometry (basePoint, size or body, axes) and the floor always come from this item, not from the favorite.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
   - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
-  - `basePoint` (Coordinate3D, required)
+  - `basePoint` (Coordinate3D, required): Origin of the morph (the corner of a size box, the (0, 0, 0) of a body). Its z is absolute, measured from the project zero, unless level is given, which then decides the height instead.
   - `size` (Dimensions3D): Builds a simple axis-aligned box of this size. Mutually exclusive with `body` - give exactly one of the two.
   - `body` (MorphBody): Builds arbitrary geometry instead of a simple box. Mutually exclusive with `size` - give exactly one of the two.
   - `buildingMaterialId` (AttributeId)
@@ -4636,8 +4704,8 @@ Parameters:
   - `useDistortedCoverFill` (boolean)
   - `textureProjectionType` (TextureProjectionType)
   - `textureProjectionCoords` (array of Coordinate3D)
-  - `level` (number)
-  - `floorIndex` (integer): Optional floor index. If omitted, derived from the basePoint's z value.
+  - `level` (number): Optional height of the base point above the home story (floorIndex, or the story derived from basePoint's z when floorIndex is omitted), the same value GetDetailsOfElements reports as level. When given, it replaces basePoint's z.
+  - `floorIndex` (integer): Optional home story. If omitted, derived from the basePoint's z value.
 
 Returns:
 
@@ -4649,13 +4717,15 @@ Example: [archicad-addon/Examples/Element/CreateMorphs.py](https://github.com/EN
 
 ### CreateRoofs
 
-Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead.
+Creates Roof elements based on footprint, level and roof profile data. Creates a multi-plane roof by default; pass 'pivotLine' (and optionally 'angle') to create a single-plane roof instead. Each item may give a layer (layerIndex) and an Element ID (id), and a multi-plane roof the planes of its edges (pivotEdges, e.g. gables), as ModifyRoofs takes them.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateRoofs
 
 Parameters:
 
 - `roofsData` (array of object, required)
+  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the tool defaults.
   - `level` (number, required)
   - `floorIndex` (integer): Optional floor index. If omitted, derived from level.
   - `thickness` (number): Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Without structureType the new roof keeps the structure of the roof tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply.
@@ -4666,6 +4736,7 @@ Parameters:
   - `angle` (number): Slope angle of the single-plane roof in radians. Only valid together with 'pivotLine'.
   - `eavesOverhang` (number)
   - `levels` (array of RoofLevel)
+  - `pivotEdges` (array of RoofPivotEdgeChange): Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (item i is the edge from vertex i to vertex i + 1 of polygonCoordinates, the last one closing the polygon; the edges of each hole follow), as ModifyRoofs takes them. They are written right after the roof is made from levels and eavesOverhang, and only the given fields change those planes; an item without levels keeps its edge. angleType Gable makes a gable roof in one call. If they cannot be written, the roof is not created.
   - `structureType` (RoofStructureType)
   - `buildingMaterialId` (AttributeId)
   - `compositeId` (AttributeId)
@@ -4676,7 +4747,7 @@ Returns:
 
 Grasshopper: `CreateRoofsComponent`, `RoofsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateRoofs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateRoofs.py): Creates a multi-plane roof and a single-plane roof with CreateRoofs. A pivotLine makes a single-plane roof that rises on the left of the line; angles are in radians.
+Example: [archicad-addon/Examples/Element/CreateRoofs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateRoofs.py): Creates a multi-plane roof, a single-plane roof and a gable roof with CreateRoofs. A pivotLine makes a single-plane roof that rises on the left of the line; angles are in radians. pivotEdges sets the planes of the edges of a multi-plane roof (one item per edge, in the order of polygonCoordinates): angleType Gable makes a gable on that edge. id and layerIndex set the Element ID and the layer of the new roof.
 
 ### CreateShells
 
@@ -4905,15 +4976,23 @@ Parameters:
 
 - `dimensionsData` (array of object, required)
   - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were.
+  - `layerIndex` (integer): Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults.
   - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
   - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
   - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `textStyle` (DimensionTextStyle): Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed.
   - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
   - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
   - `linePen` (integer): Optional pen of the dimension and witness lines.
-  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `marker` (DimensionMarker): Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
+  - `textPlacement` (DimensionTextPlacement): Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
   - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
   - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
+  - `staticDimension` (boolean): Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate).
+  - `onlyDimensionText` (boolean): Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsInChain` (boolean): Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsNominal` (boolean): Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `layeredElementDimensions` (LayeredElementDimensions): Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
   - `referencePoint` (Coordinate2D, required)
   - `direction` (Coordinate2D, required)
   - `floorIndex` (number)
@@ -4937,15 +5016,23 @@ Parameters:
 
 - `dimensionsData` (array of object, required)
   - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were.
+  - `layerIndex` (integer): Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults.
   - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
   - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
   - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `textStyle` (DimensionTextStyle): Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed.
   - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
   - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
   - `linePen` (integer): Optional pen of the dimension and witness lines.
-  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `marker` (DimensionMarker): Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
+  - `textPlacement` (DimensionTextPlacement): Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
   - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
   - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
+  - `staticDimension` (boolean): Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate).
+  - `onlyDimensionText` (boolean): Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsInChain` (boolean): Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsNominal` (boolean): Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `layeredElementDimensions` (LayeredElementDimensions): Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
   - `sectionElementId` (ElementId): The identifier of a single section element. Only one of sectionElementId and sectionElementIds can be given.
   - `sectionElementIds` (array of ElementId): A list of section elements whose preset points are merged into one continuous dimension chain. Only one of sectionElementId and sectionElementIds can be given.
   - `referencePoint` (Coordinate2D, required)
@@ -4974,15 +5061,23 @@ Parameters:
 
 - `dimensionsData` (array of object, required)
   - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were.
+  - `layerIndex` (integer): Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults.
   - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
   - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
   - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `textStyle` (DimensionTextStyle): Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed.
   - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
   - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
   - `linePen` (integer): Optional pen of the dimension and witness lines.
-  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `marker` (DimensionMarker): Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
+  - `textPlacement` (DimensionTextPlacement): Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
   - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
   - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
+  - `staticDimension` (boolean): Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate).
+  - `onlyDimensionText` (boolean): Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsInChain` (boolean): Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsNominal` (boolean): Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `layeredElementDimensions` (LayeredElementDimensions): Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
   - `wallId` (ElementId, required)
   - `referencePoint` (Coordinate2D, required)
   - `direction` (Coordinate2D, required)
@@ -4997,7 +5092,7 @@ Example: [archicad-addon/Examples/Element/CreateWallThicknessDimensions.py](http
 
 ### ModifyAssociativeDimensions
 
-Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type and pen, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. Not written: the witness points, the dimension line position and direction (use MoveElements), the marker size, the text content and position, the witness extension line, the layout and the hole and composite wall dimensioning settings.
+Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.
 
 Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyAssociativeDimensions
 
@@ -5005,15 +5100,23 @@ Parameters:
 
 - `dimensionsWithDetails` (array of object, required): The linear dimensions to change (the Dimension tool's elements, also those placed in sections), each with the settings to change. Only the given settings are changed.
   - `elementId` (ElementId, required)
+  - `witnessPointTexts` (array of object): Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position (moved and fixed, or reset to the automatic position). Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.
   - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
   - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
   - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `textStyle` (DimensionTextStyle): Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed.
   - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
   - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
   - `linePen` (integer): Optional pen of the dimension and witness lines.
-  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `marker` (DimensionMarker): Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
+  - `textPlacement` (DimensionTextPlacement): Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them).
   - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
   - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
+  - `staticDimension` (boolean): Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate).
+  - `onlyDimensionText` (boolean): Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsInChain` (boolean): Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `openingHeightsNominal` (boolean): Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
+  - `layeredElementDimensions` (LayeredElementDimensions): Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults.
 
 Returns:
 
@@ -5021,11 +5124,11 @@ Returns:
 
 Grasshopper: `ModifyAssociativeDimensionsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyAssociativeDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyAssociativeDimensions.py): Creates a linear dimension, then changes its pens, marker, texts and witness lines with ModifyAssociativeDimensions. The keys are the ones the dimension creation commands take, and GetDetailsOfElements returns them, so the settings read from one dimension can be written to others. The text and witness line settings are applied to every witness point. Run it with a floor plan window active.
+Example: [archicad-addon/Examples/Element/ModifyAssociativeDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyAssociativeDimensions.py): Creates a linear dimension, then changes its pens, marker, texts and witness lines with ModifyAssociativeDimensions. The keys are the ones the dimension creation commands take, and GetDetailsOfElements returns them, so the settings read from one dimension can be written to others. The text and witness line settings are applied to every witness point; witnessPointTexts changes the text of single witness points (here the second one gets a custom text, which GetDimensionData reads back). In a custom text, {MeasuredValue} stands for the measured value (Archicad 26 and later). Run it with a floor plan window active.
 
 ### GetDimensionData
 
-Gets the data of existing dimension chains: the line pen, the marker type and pen and the default witness line, and per witness point the coordinates, measured value, witness line and the text height, pen and frame.
+Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen and frame, and the text content (measured value or custom text), superscript and whether the text was moved by hand.
 
 Group: Element Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/archicad-addon/#GetDimensionData
 
@@ -5062,7 +5165,7 @@ Example: [archicad-addon/Examples/Element/GetOpeningTransformations.py](https://
 
 ### CreateZones
 
-Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, levels, contour line and cover fill), applied by the same helpers; the polygon or reference point is only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.
+Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, stamp pen, levels, contour line, cover fill, 3D surface, polygon display and area reduction), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.
 
 Group: Element Commands. Added in Tapir 1.1.8. Docs: https://archicad-api.com/archicad-addon/#CreateZones
 
@@ -5072,6 +5175,7 @@ Parameters:
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
   - `floorIndex` (number): Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
   - `name` (string, required): Name of the zone.
   - `numberStr` (string, required): Zone number.
   - `categoryAttributeId` (AttributeId): The identifier of the zone category attribute.
@@ -5080,6 +5184,10 @@ Parameters:
   - `fixedStampAngle` (boolean): If true, the zone stamp angle remains fixed when the element is rotated.
   - `contourLine` (ZoneContourLine): Optional contour line of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults.
   - `coverFill` (ZoneCoverFill): Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults.
+  - `surface` (ZoneSurface): Optional 3D surface of the zone (the Model panel). Fields that are left out keep the value of the favorite or of the Zone tool defaults.
+  - `polygonDisplay` (ZonePolygonDisplay): Optional zone polygon display: Gross uses the reference line of the bounding walls, Net their inner edges. Only has an effect for a zone whose boundary is the reference line of the walls. When omitted, the value of the favorite or of the Zone tool defaults is kept.
+  - `stampPen` (ZoneStampPen): Optional pen of the zone stamp. Fields that are left out keep the value of the favorite or of the Zone tool defaults.
+  - `reducePercent` (ZoneReducePercent): Optional percentage the calculated area of the zone is reduced by; 0 means no reduction. When omitted, the value of the favorite or of the Zone tool defaults is kept.
   - `allowOverlap` (boolean): Optional, defaults to false. Archicad answers a new zone whose area overlaps an existing zone on the same story with a modal warning dialog that blocks the API until it is dismissed, so by default such an item fails with an error naming the overlapping zone and no element is created for it. Set it to true to skip this check and create the zone anyway; the dialog may then appear. Zones that only touch (a shared edge or corner) do not overlap; curved edges are checked by their chords, and an automatic zone counts as overlapping when its referencePosition lies inside an existing zone.
   - `height` (number): Optional height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height); when omitted, the height and top link of the favorite or of the Zone tool defaults are kept. Do not combine with relativeTopStory.
   - `bottomOffset` (number): Optional base level of the zone relative to its home story level.
@@ -5106,13 +5214,17 @@ Parameters:
 
 - `polylinesData` (array of object, required): Array of data to create Polylines.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
-  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `id` (string): Optional Element ID of the new polyline. Polylines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no polyline. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id).
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the polyline on. Optional parameter, by default the current layer is used.
   - `linePenIndex` (integer): Pen index of the polyline contour. Optional parameter, by default the current pen is used.
-  - `lineTypeIndex` (integer): Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used.
+  - `lineTypeIndex` (integer): Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used. Ignored when lineTypeId is given.
+  - `lineTypeId` (AttributeId): Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it. Takes precedence over lineTypeIndex. By default the current line type is used.
   - `penWeightMm` (number): Optional pen weight override in mm.
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
+  - `drawSegmentMode` (PolylineDrawSegmentMode)
+  - `startArrow` (LineArrowhead): Optional arrowhead at the start. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
+  - `endArrow` (LineArrowhead): Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
   - `coordinates` (array of Coordinate2D, required): The 2D coordinates of the polyline.
   - `arcs` (array of PolyArc): The arcs of the polyline.
 - `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
@@ -5123,7 +5235,7 @@ Returns:
 
 Grasshopper: `CreatePolylinesComponent`, `PolylinesComponent`
 
-Example: [archicad-addon/Examples/Element/CreatePolylines.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreatePolylines.py): Creates a polyline of two straight segments and one arc segment with CreatePolylines. arcAngle is in radians; arcs refer to the indices of the coordinates.
+Example: [archicad-addon/Examples/Element/CreatePolylines.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreatePolylines.py): Creates a polyline of two straight segments and one arc segment with CreatePolylines. arcAngle is in radians; arcs refer to the indices of the coordinates. drawSegmentMode Continuous runs the line type's dashes over the whole polyline instead of restarting them on every segment (SegmentBySegment).
 
 ### CreateLineElements
 
@@ -5135,11 +5247,13 @@ Parameters:
 
 - `linesData` (array of object, required): Array of data to create Lines.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
-  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `id` (string): Optional Element ID of the new line. Lines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no line. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id).
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the line on. Optional parameter, by default the current layer is used.
   - `begCoordinate` (Coordinate2D, required)
   - `endCoordinate` (Coordinate2D, required)
+  - `startArrow` (LineArrowhead): Optional arrowhead at the start. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
+  - `endArrow` (LineArrowhead): Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `linePenIndex` (integer): Optional pen index. By default the current pen is used.
   - `lineTypeId` (AttributeId): Optional line type attribute. By default the current line type is used.
@@ -5151,7 +5265,7 @@ Returns:
 
 Grasshopper: `CreateLineElementsComponent`, `LinesComponent`
 
-Example: [archicad-addon/Examples/Element/CreateLineElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLineElements.py): Creates a 6 m long line with CreateLineElements. The pen, line type and layer come from the Line tool defaults unless given.
+Example: [archicad-addon/Examples/Element/CreateLineElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLineElements.py): Creates a 6 m long line with a filled arrowhead at its end with CreateLineElements. The pen, line type, layer and arrowheads come from the Line tool defaults unless given. An arrowhead given is shown unless its 'visible' is False; its size is in mm. Before Archicad 29 both ends share one arrowhead type, size and pen.
 
 ### CreateArcs
 
@@ -5163,13 +5277,18 @@ Parameters:
 
 - `arcsData` (array of object, required): Array of data to create Arcs.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
-  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `id` (string): Optional Element ID of the new arc. Arcs have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no arc. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id).
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the arc on. Optional parameter, by default the current layer is used.
   - `origin` (Coordinate2D, required)
   - `radius` (number, required)
   - `begAngle` (number, required): Beginning angle of the arc in radians.
   - `endAngle` (number, required): End angle of the arc in radians.
+  - `angle` (number): Optional angle of the ellipse's 'a' axis in radians. Defaults to 0.0.
+  - `ratio` (number): Optional 'a/b' ratio of the ellipse, as GetDetailsOfElements returns it. Defaults to 1.0, a circular arc.
+  - `reflected` (boolean): Optional: is the ellipse reflected onto its smaller axis? By default the tool's (or the favorite's) setting is kept.
+  - `startArrow` (LineArrowhead): Optional arrowhead at the start. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
+  - `endArrow` (LineArrowhead): Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `linePenIndex` (integer): Optional pen index. By default the current pen is used.
   - `lineTypeId` (AttributeId): Optional line type attribute. By default the current line type is used.
@@ -5181,7 +5300,7 @@ Returns:
 
 Grasshopper: `ArcsComponent`, `CreateArcsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateArcs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateArcs.py): Creates a half circle arc with a 2 m radius with CreateArcs. Angles are in radians, counterclockwise from the X axis.
+Example: [archicad-addon/Examples/Element/CreateArcs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateArcs.py): Creates a half elliptic arc with a 2 m radius and an a/b ratio of 2 with CreateArcs. Angles are in radians, counterclockwise from the X axis. Leave out ratio (or give 1.0) for a circular arc; angle turns the ellipse's 'a' axis.
 
 ### CreateCircles
 
@@ -5193,7 +5312,7 @@ Parameters:
 
 - `circlesData` (array of object, required): Array of data to create Circles.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
-  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `id` (string): Optional Element ID of the new circle. Circles have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no circle. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id).
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the circle on. Optional parameter, by default the current layer is used.
   - `origin` (Coordinate2D, required)
@@ -5221,7 +5340,7 @@ Parameters:
 
 - `hotspotsData` (array of object, required): Array of data to create Hotspots.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
-  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `id` (string): Optional Element ID of the new hotspot. Hotspots have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no hotspot. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id).
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the hotspot on. Optional parameter, by default the current layer is used.
   - `position` (Coordinate2D, required)
@@ -5237,9 +5356,38 @@ Grasshopper: `CreateHotspotsComponent`, `HotspotsComponent`
 
 Example: [archicad-addon/Examples/Element/CreateHotspots.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateHotspots.py): Creates two hotspots with CreateHotspots, the second at 1.5 m height.
 
+### CreatePictures
+
+Creates Picture elements from PNG, JPEG, GIF, TIFF or BMP images, given as a file path or as base64 text, at an exact size in model units: give the width, the height or both (one of them keeps the image's proportions). The image is placed by its anchor point at position, and can be rotated, mirrored and drawn with transparent white pixels. With databaseId the pictures are placed in that database, e.g. a worksheet, a detail or a layout, instead of the current one. GetDetailsOfElements reads the settings of a placed picture.
+
+Group: Element Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#CreatePictures
+
+Parameters:
+
+- `picturesData` (array of object, required): Array of data to create Pictures.
+  - `path` (string): The full path of a PNG, JPEG, GIF, TIFF or BMP image file. The image is copied into the project: the picture does not change when the file changes or is deleted later.
+  - `imageData` (string): The PNG, JPEG, GIF, TIFF or BMP image file as base64 text, instead of path.
+  - `name` (string): Optional name of the picture. By default the file name of path, or empty for imageData.
+  - `position` (Coordinate2D, required): Where the anchor point of the picture is placed, in model units (on a layout in layout units).
+  - `anchorPoint` (PictureAnchorPoint): The point of the picture's box that is placed at position and that the picture is rotated around. BottomLeft by default.
+  - `width` (number): The width of the picture in model units. When only height is given, the width keeps the proportions of the image.
+  - `height` (number): The height of the picture in model units. When only width is given, the height keeps the proportions of the image.
+  - `angle` (number): The rotation angle of the picture in radians, around its anchor point. 0 by default.
+  - `mirrored` (boolean): Mirror the picture to its local vertical axis. false by default.
+  - `transparent` (boolean): Draw the white pixels of the picture transparent. false by default.
+  - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
+  - `layerIndex` (integer): Layer attribute index to place the picture on. Optional parameter, by default the layer of the Picture tool defaults is used.
+- `databaseId` (DatabaseId): Optional database to create the pictures in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the pictures are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Example: [archicad-addon/Examples/Element/CreatePictures.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreatePictures.py): Places a picture 4 m wide with CreatePictures (the height keeps the image's proportions) and reads its settings back with GetDetailsOfElements. A scanned plan is placed the same way from its file: {'path': 'C:/Scans/site_plan.png', ...}.
+
 ### CreateHatches
 
-Creates Hatch elements based on the given parameters. A hatch can have holes, in the same format SetDetailsOfElements accepts for hatches.
+Creates Hatch elements based on the given parameters. A hatch can have holes, in the same format SetDetailsOfElements accepts for hatches, and takes its fill orientation, fill category (drafting, cut or cover), contour pen and line type, background (a pen, transparent or the window background) and the percentage it subtracts from the zone area in the same call.
 
 Group: Element Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#CreateHatches
 
@@ -5250,18 +5398,21 @@ Parameters:
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the hatch on. Optional parameter, by default the current layer is used.
-  - `coordinates` (array of Coordinate2D, required): The 2D coordinates of the hatch outline. Do not repeat the first point at the end.
+  - `coordinates` (array of Coordinate2D, required): The 2D coordinates of the hatch outline. The first point may be repeated at the end, as in the closed outline GetDetailsOfElements returns; that last point is then ignored.
   - `arcs` (array of PolyArc): The arcs of the hatch outline.
   - `holes` (Holes2D): Optional holes of the hatch, each with its polygonOutline and optional polygonArcs (arc indices are relative to the hole's own outline). The same format SetDetailsOfElements accepts and GetDetailsOfElements returns for hatches.
-  - `contourPenIndex` (integer): Optional pen index for the contour. By default the current pen is used.
+  - `contourPenIndex` (integer): Optional pen index for the contour; 0 switches the contour off. By default the current pen is used.
+  - `contourLineTypeId` (AttributeId): Optional line type of the contour. By default the current line type is used.
   - `fillPenIndex` (integer): Optional pen index for the fill. By default the current pen is used.
-  - `fillBackgroundPenIndex` (integer)
+  - `fillBackgroundPenIndex` (integer): Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color.
   - `foregroundColor` (ColorRGB): Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables.
   - `backgroundColor` (ColorRGB): Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given.
   - `fillId` (AttributeId): Optional fill attribute. By default the current fill is used.
   - `buildingMaterialId` (AttributeId)
-  - `roomSpecial` (integer): Special area percent in a room (negative means OFF).
+  - `roomSpecial` (integer): The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off.
   - `showArea` (boolean)
+  - `fillOrientation` (HatchOrientation): Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the default ones. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills.
+  - `fillCategory` (HatchFillCategory): Optional fill category: Drafting, Cut or Cover. By default the current one is used.
 - `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
@@ -5270,7 +5421,7 @@ Returns:
 
 Grasshopper: `CreateHatchesComponent`, `FillsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateHatches.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateHatches.py): Creates a 4 m x 4 m hatch with a 1 m x 1 m hole and a red foreground with CreateHatches. Don't repeat the first point at the end of the outline. Colors are RGB values between 0 and 1.
+Example: [archicad-addon/Examples/Element/CreateHatches.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateHatches.py): Creates a 4 m x 4 m hatch with a 1 m x 1 m hole and a red foreground with CreateHatches. Don't repeat the first point at the end of the outline. Colors are RGB values between 0 and 1. The fill pattern is rotated by 45 degrees in the same call, the hatch is a cut fill, and its background is transparent (background pen 0; -1 is the window background color).
 
 ### CreateSplines
 
@@ -5282,11 +5433,13 @@ Parameters:
 
 - `splinesData` (array of object, required): Array of data to create Splines. Only auto-smoothed curves are supported (bezier handle positions are calculated automatically by Archicad from the point positions).
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
-  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `id` (string): Optional Element ID of the new spline. Splines have no Element ID in Archicad 29: Archicad refuses it with error -2130313103 (APIERR_BADELEMENTTYPE, element has no info string), and the item then answers with that error and creates no spline. Leave it out unless your Archicad version keeps it (GetDetailsOfElements returns it as id).
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the spline on. Optional parameter, by default the current layer is used.
   - `coordinates` (array of Coordinate2D, required): The 2D coordinates of the spline points. Do not repeat the first point at the end even for a closed spline.
   - `closed` (boolean): Is this a closed curve? Optional, defaults to false.
+  - `startArrow` (LineArrowhead): Optional arrowhead at the start. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
+  - `endArrow` (LineArrowhead): Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept.
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `linePenIndex` (integer): Optional pen index. By default the current pen is used.
   - `lineTypeId` (AttributeId): Optional line type attribute. By default the current line type is used.
@@ -5327,7 +5480,7 @@ Parameters:
   - `reflected` (boolean)
   - `useFixSize` (boolean)
   - `fixPoint` (integer): 0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based).
-  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level.
+  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType.
   - `useFixedAngle` (boolean): Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify.
   - `isAutoOnStoryVisibility` (boolean)
   - `visibility` (StoryVisibility)
@@ -5374,7 +5527,7 @@ Parameters:
   - `reflected` (boolean)
   - `useFixSize` (boolean)
   - `fixPoint` (integer): 0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based).
-  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level.
+  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType.
   - `useFixedAngle` (boolean): Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify.
   - `isAutoOnStoryVisibility` (boolean)
   - `visibility` (StoryVisibility)
@@ -5499,11 +5652,22 @@ Parameters:
 - `meshesData` (array of object, required): Array of data to create Meshes.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
   - `floorIndex` (integer)
   - `level` (number): The Z reference level of coordinates.
   - `skirtType` (MeshSkirtType)
   - `skirtLevel` (number): The height of the skirt.
-  - `buildingMaterialId` (AttributeId): Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface.
+  - `buildingMaterialId` (AttributeId): Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface; topMaterial, sideMaterial and bottomMaterial given in the same item are applied after that.
+  - `topMaterial` (OverriddenMaterial): Optional override of the surface of the top of the mesh; overridden false clears the override.
+  - `sideMaterial` (OverriddenMaterial): Optional override of the surface of the sides (skirt) of the mesh; overridden false clears the override.
+  - `bottomMaterial` (OverriddenMaterial): Optional override of the surface of the bottom of the mesh; overridden false clears the override.
+  - `materialsChained` (boolean): Optional: whether the surface overrides are chained (the chain button of the Model panel).
+  - `visibility` (StoryVisibility): Optional: the stories the contour of the mesh is shown on. Only the given fields change.
+  - `fillVisibility` (StoryVisibility): Optional: the stories the cover fill of the mesh is shown on. Only the given fields change.
+  - `cutFillPen` (OverriddenPen): Optional override of the pen of the cut fill (shown on solid meshes); overridden false clears the override.
+  - `cutFillBackgroundPen` (OverriddenPen): Optional override of the background pen of the cut fill (shown on solid meshes); overridden false clears the override.
+  - `sectionContourPen` (integer): Optional pen of the contour of the mesh where it is cut in sections.
+  - `floorFill` (MeshFloorFill): Optional cover fill of the mesh in the floor plan. Only the given fields change.
   - `ridges` (MeshRidges)
   - `showLines` (boolean): Whether to show secondary mesh lines (level lines other than the user-defined ones) on plan.
   - `contourPen` (integer): Optional pen attribute index for the mesh's contour line.
@@ -5524,7 +5688,7 @@ Example: [archicad-addon/Examples/Element/CreateMeshes.py](https://github.com/EN
 
 ### CreateLabels
 
-Creates Label elements based on the given parameters.
+Creates Label elements based on the given parameters, optionally on a given layer. A Symbol label can name its label library part in libraryPartName; it starts from the Symbol label settings of the Label tool default or of the favorite in favoriteName.
 
 Group: Element Commands. Added in Tapir 1.2.5. Docs: https://archicad-api.com/archicad-addon/#CreateLabels
 
@@ -5533,13 +5697,16 @@ Parameters:
 - `labelsData` (array of object, required): Array of data to create Labels.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
   - `parentElementId` (ElementId): The parent element if the label is an associative label.
-  - `labelClass` (LabelClass): Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity). 'Symbol' needs a symbol library part, which only the Label tool default or the favorite given in favoriteName can provide: when those are a Text label, the item fails instead of placing a label without content.
+  - `labelClass` (LabelClass): Optional; if omitted, inherits the current Label tool default (which may silently resolve to either class - explicitly setting this avoids ambiguity), or is 'Symbol' when libraryPartName is given. 'Symbol' starts from the Symbol label settings of the Label tool default or of the favorite given in favoriteName: when those are a Text label, the item fails instead of placing a label without content.
+  - `libraryPartName` (string): Optional name of the label library part of a Symbol label, as shown in the library (e.g. 'Flexi_Zone_Label'); without it the part of the Label tool default or of the favorite is used. The label gets the part's own default GDL parameters. It makes a Symbol label, so labelClass must be omitted or 'Symbol', and the Label tool default or the favorite must be a Symbol label (its other settings are kept). To switch the part of an existing label, use ChangeLibraryPartOfElements.
   - `text` (string): The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given.
   - `runs` (array of TextRunDetails): Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.
   - `style` (TextStyleSettableDetails): Ignored for symbol labels.
   - `symbolStyle` (LabelSymbolStyleSettableDetails): Ignored for text labels.
   - `leaderLine` (LabelLeaderLineSettableDetails)
+  - `textWay` (LabelTextDirection): Optional text direction, for a Text or a Symbol label; when omitted the Label tool default (or the favorite) is kept. Refused together with symbolStyle.textWay.
   - `begCoordinate` (Coordinate2D): The begin coordinate of leader line. Optional parameter, but either begCoordinate or parentElementId must be provided. Unless midCoordinate and endCoordinate are both given too, the label is created at its default position relative to the parent element (Archicad's 'createAtDefaultPosition'), so the label may not end up at begCoordinate - read it back with GetDetailsOfElements after creation.
   - `midCoordinate` (Coordinate2D): The mid coordinate of leader line. Optional parameter; give it together with endCoordinate to place the label exactly where the coordinates say.
   - `endCoordinate` (Coordinate2D): The end coordinate of leader line. Optional parameter; give it together with midCoordinate to place the label exactly where the coordinates say.
@@ -5552,7 +5719,7 @@ Returns:
 
 Grasshopper: `LabelElementsComponent`, `LabelsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateLabels.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLabels.py): Labels the first wall with a text label with CreateLabels. Needs at least one Wall. Without parentElementId the label stands on its own at begCoordinate.
+Example: [archicad-addon/Examples/Element/CreateLabels.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLabels.py): Labels the first wall with a text label with CreateLabels. Needs at least one Wall. Without parentElementId the label stands on its own at begCoordinate. textWay sets the text direction: Parallel, Horizontal, Vertical or General (a custom angle).
 
 ### CreateTexts
 
@@ -5610,6 +5777,16 @@ Parameters:
   - `markerSize` (number): Size of the marker in millimeters (paper size). Optional parameter.
   - `angle` (number): Rotation angle of the marker in radians. Optional parameter.
   - `origin` (DimensionOrigin): The origin the level is measured from. Optional parameter.
+  - `fontName` (string): Font of the dimension text (Text Style of the Level Dimension settings), applied to both texts of the marker: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given. Optional parameter.
+  - `fontIndex` (integer): Font of the dimension text given by its Font attribute index, applied to both texts of the marker. Optional parameter.
+  - `bold` (boolean): Bold dimension text. Optional parameter, the other styles are kept.
+  - `italic` (boolean): Italic dimension text. Optional parameter, the other styles are kept.
+  - `underline` (boolean): Underlined dimension text. Optional parameter, the other styles are kept.
+  - `hideWithBaseElem` (boolean): Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter.
+  - `textContent` (string ("Measured", "Custom")): Content of the dimension text: 'Measured' shows the level value, 'Custom' shows customText. Optional parameter; giving customText alone also switches to 'Custom'.
+  - `customText` (string): The custom content of the dimension text, own text and Autotext keys, e.g. 'FBOK <MEASUREDVALUE>'. Write the Autotext keys as GetDetailsOfElements returns them in customText for a level dimension set up in Archicad with the wanted Autotext (they are read with the autotext flag off). Sets textContent to 'Custom'; fails together with textContent 'Measured'. Optional parameter.
+  - `secondTextContent` (string ("Measured", "Custom")): Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText). Optional parameter; giving secondCustomText alone also switches to 'Custom'.
+  - `secondCustomText` (string): The custom content of the second text, own text and Autotext keys as for customText. Sets secondTextContent to 'Custom'; fails together with secondTextContent 'Measured'. Optional parameter.
 
 Returns:
 
@@ -5619,9 +5796,37 @@ Grasshopper: `LevelDimensionsComponent`
 
 Example: [archicad-addon/Examples/Element/CreateLevelDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLevelDimensions.py): Creates a slab and puts an associative level dimension on it with CreateLevelDimensions, plus one showing a fixed level. The associative one shows the slab's level at its position and follows the slab when it changes; level (in meters, from the project zero) is only used without parentElementId.
 
+### CreateAngleDimensions
+
+Creates Angle Dimension elements (the Angle Dimension tool) measuring the angle between two lines, each given by two points, with the dimension arc through the given arcPosition, optionally based on an Angle Dimension favorite. The dimensions are static (not associated with elements) and are created in the current database - the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active - or in the one given by databaseId. GetDetailsOfElements returns their lines, arc and measured angle.
+
+Group: Element Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#CreateAngleDimensions
+
+Parameters:
+
+- `angleDimensionsData` (array of object, required): Array of data to create Angle Dimensions (the Angle Dimension tool). They are created in the current database (the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active), or in the one given by databaseId.
+  - `favoriteName` (string): Optional name of an Angle Dimension favorite to base the new element on. Its settings (layer, pens, markers, text style) are applied first, then the explicitly given fields override them.
+  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `firstLine` (AngleDimensionLine, required): The first measured line.
+  - `secondLine` (AngleDimensionLine, required): The second measured line. It must not be parallel to the first one.
+  - `arcPosition` (Coordinate2D, required): A point the dimension arc passes through. Its distance from the intersection of the two lines is the radius of the arc, and the side it lies on chooses which of the angles between the lines is measured, as clicking the arc's position does with the Angle Dimension tool.
+  - `smallArc` (boolean): Measure the smaller angle between the lines (inner dimension) rather than the larger one (outer dimension). Optional parameter, by default the favorite's or the tool default's setting.
+  - `floorIndex` (integer): The index of the floor to place the dimension on, when it is created on the floor plan. Optional parameter, by default the current floor is used.
+  - `layerIndex` (integer): Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Angle Dimension tool default is used.
+  - `pen` (integer): Pen index of the dimension and witness lines. Optional parameter.
+  - `textHeight` (number): Height of the dimension text in millimeters (paper size). Optional parameter.
+  - `textPen` (integer): Pen index of the dimension text. Optional parameter.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a section, an elevation, a worksheet or a detail (see GetDatabases). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Example: [archicad-addon/Examples/Element/CreateAngleDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateAngleDimensions.py): Draws a roof pitch line and dimensions its 30 degree angle to the horizontal with CreateAngleDimensions, then reads the measured angle back. Each line is given by two points; the dimension arc goes through arcPosition, whose side of the lines chooses the measured angle. The dimension is created in the current window (the floor plan, or a section or elevation), or in the database given by databaseId; favoriteName applies an Angle Dimension favorite.
+
 ### ModifyLevelDimensions
 
-Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height and pen, marker type and size, plus sign, angle, origin), with the same keys. Not written: the parent element and the static level (delete and recreate the dimension to change them), the text content and the hide-with-base-element setting.
+Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId).
 
 Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyLevelDimensions
 
@@ -5630,6 +5835,9 @@ Parameters:
 - `levelDimensionsWithDetails` (array of object, required): The Level Dimensions to change, each with the settings to change. Only the given settings are changed.
   - `elementId` (ElementId, required)
   - `position` (Coordinate2D): The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter.
+  - `level` (number): New fixed level value in meters (absolute, from the project zero), as CreateLevelDimensions takes it. The dimension becomes static (the Static checkbox on) and shows this value; an owner element is kept, so staticLevel false later shows its height again. Cannot be given with parentElementId or with staticLevel false. Optional parameter.
+  - `staticLevel` (boolean): The Static checkbox. true fixes the value the dimension shows now; false makes it associative again, so it shows the height of its owner element at the position, or the floor level when it has none. Optional parameter.
+  - `parentElementId` (ElementId): The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter.
   - `pen` (integer): Pen index of the marker. Optional parameter.
   - `textHeight` (number): Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter.
   - `textPen` (integer): Pen index of the dimension text, applied to both texts of the marker. Optional parameter.
@@ -5638,6 +5846,16 @@ Parameters:
   - `markerSize` (number): Size of the marker in millimeters (paper size). Optional parameter.
   - `angle` (number): Rotation angle of the marker in radians. Optional parameter.
   - `origin` (DimensionOrigin): The origin the level is measured from. Optional parameter.
+  - `fontName` (string): Font of the dimension text (Text Style of the Level Dimension settings), applied to both texts of the marker: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given. Optional parameter.
+  - `fontIndex` (integer): Font of the dimension text given by its Font attribute index, applied to both texts of the marker. Optional parameter.
+  - `bold` (boolean): Bold dimension text. Optional parameter, the other styles are kept.
+  - `italic` (boolean): Italic dimension text. Optional parameter, the other styles are kept.
+  - `underline` (boolean): Underlined dimension text. Optional parameter, the other styles are kept.
+  - `hideWithBaseElem` (boolean): Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter.
+  - `textContent` (string ("Measured", "Custom")): Content of the dimension text: 'Measured' shows the level value, 'Custom' shows customText. Optional parameter; giving customText alone also switches to 'Custom'.
+  - `customText` (string): The custom content of the dimension text, own text and Autotext keys, e.g. 'FBOK <MEASUREDVALUE>'. Write the Autotext keys as GetDetailsOfElements returns them in customText for a level dimension set up in Archicad with the wanted Autotext (they are read with the autotext flag off). Sets textContent to 'Custom'; fails together with textContent 'Measured'. Optional parameter.
+  - `secondTextContent` (string ("Measured", "Custom")): Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText). Optional parameter; giving secondCustomText alone also switches to 'Custom'.
+  - `secondCustomText` (string): The custom content of the second text, own text and Autotext keys as for customText. Sets secondTextContent to 'Custom'; fails together with secondTextContent 'Measured'. Optional parameter.
 
 Returns:
 
@@ -5645,11 +5863,11 @@ Returns:
 
 Grasshopper: `LevelDimensionsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyLevelDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyLevelDimensions.py): Creates a level dimension showing a fixed level, then moves it and changes its marker and texts with ModifyLevelDimensions. The settings have the keys CreateLevelDimensions takes and GetDetailsOfElements returns; only the given ones are changed.
+Example: [archicad-addon/Examples/Element/ModifyLevelDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyLevelDimensions.py): Creates a level dimension showing a fixed level, then moves it and changes its marker and texts with ModifyLevelDimensions. The settings have the keys CreateLevelDimensions takes and GetDetailsOfElements returns; only the given ones are changed. The text height, pen, font and style apply to both texts of the marker. customText replaces the measured value by own text (with Autotext keys, as GetDetailsOfElements reads them in customText); textContent 'Measured' shows the value again. level gives a static dimension a new value; staticLevel switches the Static checkbox and parentElementId sets a new owner element.
 
 ### ModifyWalls
 
-Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, plus geometryType (Straight or Trapezoid), profileType and bottomOffset. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.
+Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, including geometryType (Straight or Trapezoid, with begThickness and endThickness), profileType and the slant angles, plus bottomOffset. A slantAlpha or slantBeta that the wall's profileType cannot take fails the item instead of being dropped. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyWalls
 
@@ -5657,7 +5875,6 @@ Parameters:
 
 - `wallsWithDetails` (array of object, required)
   - `elementId` (ElementId, required)
-  - `geometryType` (WallModificationGeometryType): Polygonal is not settable here; it is read-only via GetDetailsOfElements. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on.
   - `begCoordinate` (Coordinate2D)
   - `endCoordinate` (Coordinate2D)
   - `arcAngle` (number): Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints).
@@ -5671,9 +5888,12 @@ Parameters:
   - `profileId` (AttributeId)
   - `referenceLineLocation` (WallReferenceLineLocation)
   - `flipped` (boolean): True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped).
-  - `profileType` (WallModificationProfileType): slantAlpha/slantBeta only have an effect once this is set to Slanted.
-  - `slantAlpha` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
-  - `slantBeta` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
+  - `geometryType` (WallModificationGeometryType): Plan outline of the wall. Trapezoid makes begThickness and endThickness the wall's thickness at its begin and end point. Polygonal is not settable here; it is read-only via GetDetailsOfElements. CreateWalls makes a Straight wall when this is omitted. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on.
+  - `begThickness` (number): Thickness at begCoordinate, the same value as thickness (applied after it, so it wins when both are given). Together with endThickness it shapes a Trapezoid wall (geometryType). Like thickness, it only takes effect on a Basic wall.
+  - `endThickness` (number): Thickness at endCoordinate. Only takes effect on a Trapezoid wall (geometryType); a Straight wall has one thickness. Like thickness, it only takes effect on a Basic wall.
+  - `profileType` (WallModificationProfileType): Cross section shape of the wall. slantAlpha needs Slanted or Trapez, slantBeta needs Trapez. When omitted, CreateWalls keeps the favorite's or the Wall tool default's and ModifyWalls the wall's own.
+  - `slantAlpha` (number): Angle of the slanted face in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Slanted or Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped.
+  - `slantBeta` (number): Angle of the second slanted face of a double slanted wall, in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped.
   - `topOffset` (number): Only has an effect when relativeTopStory is non-zero.
   - `relativeTopStory` (number): Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' for the same wall: whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero.
   - `zoneRel` (WallZoneRelation)
@@ -5699,6 +5919,7 @@ Parameters:
   - `polyCanChange` (boolean): The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType).
   - `materialsChained` (boolean): Whether the surface materials are chained.
   - `logHeight` (number): Height of the log for log walls. 0 means a normal (non-log) wall.
+  - `logDetails` (WallLogDetails)
 
 Returns:
 
@@ -5710,7 +5931,7 @@ Example: [archicad-addon/Examples/Element/ModifyWalls.py](https://github.com/ENZ
 
 ### ModifyBeams
 
-Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex). Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.
+Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens, cover fill and holes, and the same absolute zCoordinate of the reference line (with an optional floorIndex), and the same segments array, which changes the cross section, taper and length of single segments and leaves the others as they are. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, uncut and overhead projection modes, whether the contour lines and the reference axis are shown, and the pens and line types of the cut contour, uncut, overhead, hidden and reference lines; each is read back after the change, and one Archicad did not take fails the item. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyBeams
 
@@ -5732,13 +5953,32 @@ Parameters:
   - `isFlipped` (boolean)
   - `profileAngle` (number)
   - `anchorPoint` (BeamAnchorPoint)
-  - `width` (number): Cross section width of the beam. Applied to all segments.
-  - `height` (number): Cross section height of the beam. Applied to all segments.
-  - `isWidthAndHeightLinked` (boolean): When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments.
+  - `width` (number): Cross section width of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first.
+  - `height` (number): Cross section height of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the height: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first.
+  - `isWidthAndHeightLinked` (boolean): When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments.
   - `circleBased` (boolean): True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments.
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
   - `holes` (array of BeamHoleModification): Replaces all holes currently placed on the beam.
+  - `segments` (array of BeamSegmentModification): Optional changes to single segments of the beam: their cross section, taper and length. Only the segments and keys given change, so the neighbouring segments stay as they are. Applied after the cross section given for all segments. Segments are not added or removed; a segmentIndex the beam does not have fails the item before anything of it is written.
+  - `visibility` (StoryVisibility): The stories the beam is shown on (Show On Stories), for example { "showOnHome": true } for the home story only. Setting it without isAutoOnStoryVisibility turns the automatic story visibility off, which Archicad would otherwise recompute it from. The item fails when Archicad does not take the given combination.
+  - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes visibility automatically from the actual elevation of the beam and ignores a visibility given together with it.
+  - `displayOption` (DisplayOption)
+  - `viewDepthLimitation` (ViewDepthLimitation)
+  - `uncutProjectionMode` (ElemProjectionMode): Projection mode of the uncut part of the beam on the floor plan.
+  - `overheadProjectionMode` (ElemProjectionMode): Projection mode of the overhead part of the beam on the floor plan.
+  - `showContourLines` (BeamVisibleLines): Whether the contour lines of the beam are shown on the floor plan.
+  - `showReferenceAxis` (BeamVisibleLines): Whether the reference axis of the beam is shown on the floor plan.
+  - `cutContourLinePen` (integer): Pen of the cut contour lines of the beam.
+  - `cutContourLineTypeId` (AttributeId): Line type of the cut contour lines of the beam.
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the beam.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines of the beam.
+  - `aboveViewLinePen` (integer): Pen of the overhead lines of the beam.
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines of the beam.
+  - `hiddenLinePen` (integer): Pen of the hidden lines of the beam (the beam below a slab).
+  - `hiddenLineTypeId` (AttributeId): Line type of the hidden lines of the beam, for example a dashed line.
+  - `referenceLinePen` (integer): Pen of the reference axis of the beam.
+  - `referenceLineTypeId` (AttributeId): Line type of the reference axis of the beam.
   - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
   - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
   - `coverFill` (CoverFill): The cover fill of the beam in the floor plan, as GetDetailsOfElements returns it.
@@ -5749,11 +5989,11 @@ Returns:
 
 Grasshopper: `BeamsComponent`, `ModifyBeamsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyBeams.py): Creates a beam, then changes its cross section and adds a round hole with ModifyBeams, and moves it: a new reference line and its absolute elevation (zCoordinate, as in CreateBeams). Only the given fields change; holes replaces every hole of the beam.
+Example: [archicad-addon/Examples/Element/ModifyBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyBeams.py): Creates a beam, then changes its cross section and adds a round hole with ModifyBeams, moves it: a new reference line and its absolute elevation (zCoordinate, as in CreateBeams), changes its floor plan display: home story only, cut contour pen 21 and dashed hidden lines, and tapers one segment of the beam with segments. Only the given fields change; holes replaces every hole of the beam. The display settings have the names GetDetailsOfElements reads them under, so what it returns can be sent back.
 
 ### ModifySlabs
 
-Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied.
+Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens, floor fill and floor plan and section display, with the keys GetDetailsOfElements reads (contourPen, contourLineTypeId, sectionContourPen, sectionContourLineTypeId, hiddenContourLinePen, hiddenContourLineTypeId, visibility, fillVisibility, isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Each slab is read back after the change: a given display setting Archicad did not apply gets a failed execution result naming it, and so does a given cover fill origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab through the API; the other details are applied.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifySlabs
 
@@ -5771,12 +6011,26 @@ Parameters:
   - `polygonOutline` (array of Coordinate2D): Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed.
   - `polygonArcs` (array of PolyArc)
   - `holes` (Holes2D): Can be given on its own, without polygonOutline, to add/remove/clear holes in place (an empty array clears all holes) - the slab's current outline is reused unchanged.
+  - `edgeTrim` (SlabEdgeTrim): The Edge Angle of the whole slab (Geometry and Positioning panel of Slab Settings): sets every edge of the slab's polygon, the outline and the holes, to this trim. Cannot be combined with edgeTrims, polygonOutline or holes.
+  - `edgeTrims` (array of SlabEdgeTrim): The Edge Angle of each edge of the slab's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with edgeTrim, polygonOutline or holes, which make new edges.
+  - `edgeSideMaterials` (array of OverriddenMaterial): The custom surface of each edge of the slab's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the slab's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline or holes, which make new edges.
   - `topMaterial` (OverriddenMaterial): Overrides the surface of the top of the slab.
   - `sideMaterial` (OverriddenMaterial): Overrides the surface of the sides of the slab.
   - `bottomMaterial` (OverriddenMaterial): Overrides the surface of the bottom of the slab.
   - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
   - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
   - `floorFill` (FloorFill): The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements.
+  - `materialsChained` (boolean): Whether the surface materials are chained.
+  - `contourPen` (integer): Pen of the slab's contour in the floor plan.
+  - `contourLineTypeId` (AttributeId): Line type of the slab's contour in the floor plan.
+  - `sectionContourPen` (integer): Pen of the slab's contour where it is cut in sections.
+  - `sectionContourLineTypeId` (AttributeId): Line type of the slab's contour where it is cut in sections.
+  - `hiddenContourLinePen` (integer): Pen of the slab's hidden contour lines in the floor plan.
+  - `hiddenContourLineTypeId` (AttributeId): Line type of the slab's hidden contour lines in the floor plan.
+  - `isAutoOnStoryVisibility` (boolean): Archicad 29 and later: when true, Archicad recomputes visibility and fillVisibility from the slab's elevation and ignores the values given for them. Giving visibility or fillVisibility without this key turns it off. Before Archicad 29 a slab has no such setting, and the item fails when this key is given.
+  - `visibility` (StoryVisibility): The stories the slab's contour is shown on. Only the given fields change.
+  - `fillVisibility` (StoryVisibility): The stories the slab's cover fill is shown on. Only the given fields change.
+  - `linkToSettings` (LinkToSettings): How the slab is linked to its home story.
 
 Returns:
 
@@ -5788,7 +6042,7 @@ Example: [archicad-addon/Examples/Element/ModifySlabs.py](https://github.com/ENZ
 
 ### ModifyColumns
 
-Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Not written: the surfaces of the column segments, and the cut fill pens before Archicad 27.
+Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list writes a given column segment in the shape GetDetailsOfElements returns it: its extrusion and ends surfaces, veneer, cross section, taper and length. Not written: the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyColumns
 
@@ -5810,13 +6064,29 @@ Parameters:
   - `wrapping` (boolean)
   - `topOffset` (number)
   - `relativeTopStory` (number): Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above.
-  - `width` (number): Cross section width of the column. Applied to all segments.
-  - `depth` (number): Cross section depth (height) of the column. Applied to all segments.
-  - `isWidthAndHeightLinked` (boolean): When true, Archicad keeps width and depth equal and setting one changes the other - set to false first to give width/depth independent values. Applied to all segments.
+  - `width` (number): Cross section width of the column, the diameter of a round one. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first.
+  - `depth` (number): Cross section depth (height) of the column. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the depth: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first.
+  - `isWidthAndHeightLinked` (boolean): When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments.
   - `circleBased` (boolean): True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments.
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
   - `veneer` (ColumnVeneer): Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments.
+  - `segments` (array of ColumnSegmentSurfacesModification): Writes single segments of the column: their surfaces, veneer, cross section, taper and length. Each item writes the segment given by its segmentIndex, else the segment at its position in this list, so the segments GetDetailsOfElements returns can be sent back as they are; segments not listed stay as they are. Applied after the fields above, so a segment's own values win over the ones applied to all segments.
+  - `visibility` (StoryVisibility): The stories the column is shown on (Show On Stories), for example { "showOnHome": true } for the home story only. Setting it without isAutoOnStoryVisibility turns the automatic story visibility off, which Archicad would otherwise recompute it from. The item fails when Archicad does not take the given combination.
+  - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes visibility automatically from the actual elevation of the column and ignores a visibility given together with it.
+  - `displayOption` (DisplayOption)
+  - `viewDepthLimitation` (ViewDepthLimitation)
+  - `contourPen` (integer): Pen of the cut contour lines of the column core.
+  - `contourLineTypeId` (AttributeId): Line type of the cut contour lines of the column core.
+  - `veneerLinePen` (integer): Pen of the veneer lines of the column.
+  - `veneerLineTypeId` (AttributeId): Line type of the veneer lines of the column.
+  - `coreSymbolPen` (integer): Pen of the core symbol lines (slash, X or crosshair) of the column.
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the column.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines of the column.
+  - `aboveViewLinePen` (integer): Pen of the overhead lines of the column.
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines of the column.
+  - `hiddenLinePen` (integer): Pen of the hidden lines of the column.
+  - `hiddenLineTypeId` (AttributeId): Line type of the hidden lines of the column, for example a dashed line.
   - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
   - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
   - `coverFill` (CoverFill): The cover fill of the column in the floor plan, as GetDetailsOfElements returns it.
@@ -5827,11 +6097,11 @@ Returns:
 
 Grasshopper: `ColumnsComponent`, `ModifyColumnsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyColumns.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyColumns.py): Creates a column, then moves it, rotates it by 45 degrees and makes it 0.5 m x 0.3 m with ModifyColumns. Only the given fields change. Angles are in radians.
+Example: [archicad-addon/Examples/Element/ModifyColumns.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyColumns.py): Creates a column, then moves it, rotates it by 45 degrees and makes it 0.5 m x 0.3 m with ModifyColumns, gives its segment its own side and end surfaces, tapers that segment to 0.3 m x 0.2 m at its top, and changes its floor plan display: home story only, contour pen 21 and dashed hidden lines. Only the given fields change. Angles are in radians. segments writes the segment given by segmentIndex (0 for a column of one segment): its surfaces, veneer, cross section, taper and length, in the shape GetDetailsOfElements returns them, without touching the other segments. The display settings have the names GetDetailsOfElements reads them under, so what it returns can be sent back.
 
 ### ModifyWindows
 
-Modifies Window elements based on the given parameters.
+Modifies Window elements based on the given parameters: size, position, sill anchor (verticalLink), sub-floor thickness, reveal and its anchor, surface, plane in slanted walls, fix point and floor plan and section settings. The display option and these settings are read back, and an item fails when Archicad did not apply one.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyWindows
 
@@ -5863,6 +6133,14 @@ Parameters:
   - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
   - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
   - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+  - `verticalLink` (WindowDoorVerticalLink)
+  - `verticalLinkStoryIndex` (integer): The index of the story the opening is anchored to when verticalLink is 'SillToStory' or 'HeaderToStory' (API_VerticalLink::linkValue). When a story anchor is given without it, the opening keeps the story it is anchored to, or else its home story.
+  - `subFloorThickness` (number): Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness).
+  - `revealDepthLocation` (WindowDoorRevealDepthLocation)
+  - `surfaceId` (AttributeId): The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true.
+  - `useObjectMaterials` (boolean): Use the surfaces defined in the library part instead of 'surfaceId'.
+  - `directionType` (WindowDoorDirectionType)
+  - `fixPoint` (WindowDoorFixPoint)
 
 Returns:
 
@@ -5870,11 +6148,11 @@ Returns:
 
 Grasshopper: `ModifyWindowsComponent`, `WindowsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyWindows.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyWindows.py): Creates a wall with a window, then makes the window wider and moves it along the wall with ModifyWindows. Only the given fields change. centerOffset is measured along the wall from its begin point.
+Example: [archicad-addon/Examples/Element/ModifyWindows.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyWindows.py): Creates a wall with a window, then makes the window wider and moves it along the wall with ModifyWindows. Only the given fields change. centerOffset is measured along the wall from its begin point. verticalLink anchors the sill (or the header) to the wall bottom or top or to a story, and subFloorThickness is the floor build-up the sill height is given from. The settings without a size are read back, and the item fails if Archicad did not apply one.
 
 ### ModifyDoors
 
-Modifies Door elements based on the given parameters.
+Modifies Door elements based on the given parameters: size, position, sill anchor (verticalLink), sub-floor thickness, reveal and its anchor, surface, plane in slanted walls, fix point and floor plan and section settings. The display option and these settings are read back, and an item fails when Archicad did not apply one.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyDoors
 
@@ -5906,6 +6184,14 @@ Parameters:
   - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
   - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
   - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+  - `verticalLink` (WindowDoorVerticalLink)
+  - `verticalLinkStoryIndex` (integer): The index of the story the opening is anchored to when verticalLink is 'SillToStory' or 'HeaderToStory' (API_VerticalLink::linkValue). When a story anchor is given without it, the opening keeps the story it is anchored to, or else its home story.
+  - `subFloorThickness` (number): Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness).
+  - `revealDepthLocation` (WindowDoorRevealDepthLocation)
+  - `surfaceId` (AttributeId): The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true.
+  - `useObjectMaterials` (boolean): Use the surfaces defined in the library part instead of 'surfaceId'.
+  - `directionType` (WindowDoorDirectionType)
+  - `fixPoint` (WindowDoorFixPoint)
 
 Returns:
 
@@ -5981,7 +6267,7 @@ Parameters:
   - `useDistortedCoverFill` (boolean)
   - `textureProjectionType` (TextureProjectionType)
   - `textureProjectionCoords` (array of Coordinate3D)
-  - `level` (number)
+  - `level` (number): Moves the morph vertically so that its origin is this high above its home story, the same value GetDetailsOfElements reports as level. Applied after translation, so it decides the height when both are given.
 
 Returns:
 
@@ -5993,7 +6279,7 @@ Example: [archicad-addon/Examples/Element/ModifyMorphs.py](https://github.com/EN
 
 ### ModifyRoofs
 
-Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle, pivotLine and edgeTrims (the cut of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.
+Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyRoofs
 
@@ -6001,21 +6287,46 @@ Parameters:
 
 - `roofsWithDetails` (array of object, required)
   - `elementId` (ElementId, required)
-  - `level` (number): Absolute elevation of the roof's pivot line (the zCoordinate GetDetailsOfElements returns). The roof is put on the story floorIndex when given, else on the story at this elevation.
-  - `floorIndex` (integer): Home story of the roof. With level, the roof gets this home story at the absolute elevation level; without level, it moves to this story and keeps its offset from the story.
+  - `level` (number): Absolute elevation (from the project zero) of the roof's pivot line (single-plane) or pivot polygon (multi-plane): the value GetDetailsOfElements returns as zCoordinate, not its story-relative level. GetDetailsOfElements then returns level = this value minus the elevation of the roof's home story. Without floorIndex the home story is recomputed from this value: the highest story whose elevation is at or below it (the lowest story when it is below every story), so an elevation at or above the next story's moves the roof to that story. To keep the home story, send the roof's current floorIndex (from GetDetailsOfElements) with level.
+  - `floorIndex` (integer): Home story of the roof. With level, the roof gets this home story and level stays an absolute elevation (the offset from the story is worked out from it); without level, it moves to this story and keeps its offset from the story.
   - `thickness` (number): Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first.
-  - `eavesOverhang` (number)
+  - `eavesOverhang` (number): Multi-plane roofs only: one eaves overhang for the whole roof, the distance of the roof's contour outside the pivot polygon. Switches the roof to an overhang offset from the pivot polygon (overhangType Offset), which replaces a manual contour. Per-edge overhangs are set with pivotEdges. Cannot be combined with contourPolygon.
+  - `contourPolygon` (object): Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, holes (the holes of the pivot polygon), pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).
   - `levels` (array of RoofLevel)
+  - `segmentType` (string ("SegmentsByCircle", "SegmentsByArc")): Multi-plane roofs only: how the curved edges of the pivot polygon (polygonArcs) are resolved into planes, as GetDetailsOfElements reports it. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments. Written to the roof and to every edge of its pivot polygon; the roof is read back and the item fails when Archicad did not apply it. Cannot be combined with contourPolygon, as none of segmentsByArc and segmentsByCircle can.
+  - `segmentsByArc` (integer): Multi-plane roofs only: the number of segments of each arc with segmentType SegmentsByArc. Written as segmentType is.
+  - `segmentsByCircle` (integer): Multi-plane roofs only: the number of segments of a whole circle with segmentType SegmentsByCircle. Written as segmentType is.
   - `structureType` (RoofStructureType)
   - `buildingMaterialId` (AttributeId)
   - `compositeId` (AttributeId)
-  - `polygonOutline` (array of Coordinate2D)
+  - `polygonOutline` (array of Coordinate2D): Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. A multi-plane roof's contour follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline), or is written on its own with contourPolygon. The coordinates are plan (x, y) coordinates; the elevation is set with level. The roof gets the given 'holes', or none without them.
   - `polygonArcs` (array of PolyArc)
-  - `holes` (Holes2D)
+  - `holes` (Holes2D): The holes of the roof: of a single-plane roof in its polygon, of a multi-plane roof in its pivot polygon. Replaces the roof's holes; given without 'polygonOutline' the roof keeps its outline, and an empty array removes every hole. On a multi-plane roof the edges of an outline that keeps its number of points keep their roof planes; every other edge (a new hole's, or each edge of an outline with another number of points) gets the roof planes of the first edge of the old outline.
+  - `topMaterial` (OverriddenMaterial): Overrides the surface of the top of the roof; overridden false clears the override.
+  - `sideMaterial` (OverriddenMaterial): Overrides the surface of the sides of the roof; overridden false clears the override. Edges with a custom surface (edgeSideMaterials) keep theirs.
+  - `bottomMaterial` (OverriddenMaterial): Overrides the surface of the bottom of the roof; overridden false clears the override.
+  - `materialsChained` (boolean): Whether the surface materials are chained, as GetDetailsOfElements reports it.
+  - `edgeSideMaterials` (array of OverriddenMaterial): Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline or holes.
+  - `cutBodyType` (string ("ContoursDown", "PivotLinesDown")): The Trimming Body of the roof (Model panel of Roof Settings): Contours Down or Pivot Lines Down. GetDetailsOfElements reports it as cutBodyType.
   - `angle` (number): Single-plane roofs only: the angle of the plane to the XY plane.
   - `pivotLine` (object): Single-plane roofs only: the line the plane rises from. The ends are named begCoordinate and endCoordinate as in CreateRoofs, or begin and end as GetDetailsOfElements reports them.
-  - `edgeTrims` (array of object): Single-plane roofs only: the cut of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with polygonOutline.
-  - `pivotEdges` (array of object): Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.
+  - `edgeTrims` (array of object): The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with pivotEdges, eavesOverhang, segmentType, segmentsByArc or segmentsByCircle, which move the contour.
+  - `edgeTypes` (array of RoofEdgeType): Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline or holes.
+  - `pivotEdges` (array of RoofPivotEdgeChange): Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline or holes.
+  - `displayOption` (DisplayOption): Floor Plan Display of the element.
+  - `viewDepthLimitation` (ViewDepthLimitation): Show Projection: how far the element is shown on the floor plan.
+  - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes 'visibility' and 'fillVisibility' from the element's vertical extent and ignores values set for them. Setting 'visibility' or 'fillVisibility' without this field turns it off.
+  - `visibility` (StoryVisibility): The stories the element's contour is shown on. Only the given fields change.
+  - `fillVisibility` (StoryVisibility): The stories the element's cover fill is shown on. Only the given fields change.
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill.
+  - `sectionContourPen` (integer): Pen of the element's contour where it is cut.
+  - `sectionContourLineTypeId` (AttributeId): Line type of the element's contour where it is cut.
+  - `contourPen` (integer): Pen of the element's uncut contour.
+  - `contourLineTypeId` (AttributeId): Line type of the element's uncut contour.
+  - `aboveViewLinePen` (integer): Pen used when "Overhead All" is selected from the "Floor Plan Display" popup.
+  - `aboveViewLineTypeId` (AttributeId): Line type used when "Overhead All" is selected from the "Floor Plan Display" popup.
+  - `floorFill` (ShellBaseFloorFill): The cover fill of the element in the floor plan. Only the given fields change; read the orientation back with GetDetailsOfElements, Archicad may not apply all of it.
 
 Returns:
 
@@ -6023,11 +6334,11 @@ Returns:
 
 Grasshopper: `ModifyRoofsComponent`, `RoofsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyRoofs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyRoofs.py): Creates a multi-plane and a single-plane roof, then changes both with ModifyRoofs. The multi-plane roof is raised and gets a new slope and eaves overhang. The single-plane roof gets a steeper angle, a new pivot line and a wider outline. Only the given fields change. Angles are in radians.
+Example: [archicad-addon/Examples/Element/ModifyRoofs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyRoofs.py): Creates a multi-plane and a single-plane roof, then changes both with ModifyRoofs. The multi-plane roof is raised and gets a new slope and eaves overhang. The single-plane roof gets a steeper angle, a new pivot line and a wider outline, and then the Edge Type of each of its edges (edgeTypes, which schedules use, e.g. for the eaves length), one item per edge in the order GetDetailsOfElements reports them. Only the given fields change. Angles are in radians.
 
 ### ModifyShells
 
-Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters.
+Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides, the custom surface of individual edges (edgeMaterials) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ModifyShells
 
@@ -6038,6 +6349,34 @@ Parameters:
   - `structureType` (ShellStructureType)
   - `buildingMaterialId` (AttributeId)
   - `compositeId` (AttributeId)
+  - `thickness` (number): The new thickness of a Basic shell, in meters (or of a shell this item makes Basic with 'structureType'). The shell's reference surface (the surface its profile and base plane define) stays in place and the thickness is measured from it to the side 'isFlipped' selects, so only the opposite face moves. A Composite shell takes its thickness from its composite: the item fails, and nothing of it is written; change the skins of the composite attribute, or make the shell Basic in the same item.
+  - `isFlipped` (boolean): The side of the reference surface the thickness is applied to, as CreateShells takes it and GetDetailsOfElements returns it. Changing it keeps the reference surface in place and moves the body to its other side.
+  - `contour` (ShellCutPolygon): Replaces the clipping contour (or adds one): only the part of the shell inside this polygon, seen along the Z axis of its plane, is kept. Its 'depth' is ignored. The polygon and its plane are in the coordinates of the shell's base plane, as GetDetailsOfElements returns them. The holes and the profile are kept.
+  - `removeContour` (boolean): True removes the clipping contour, so the whole shell is shown again. Not together with 'contour'.
+  - `holes` (array of ShellCutPolygon): Replaces all holes of the shell, each requiring 'depth' to extrude its cutting polygon along the Z axis of its plane; an empty array removes every hole. To change one hole, send all holes as GetDetailsOfElements returns them with that one changed. The contour and the profile are kept.
+  - `topMaterial` (OverriddenMaterial): Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override.
+  - `sideMaterial` (OverriddenMaterial): Overrides the surface of the edges of the shell; overridden false clears the override.
+  - `bottomMaterial` (OverriddenMaterial): Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override.
+  - `materialsChained` (boolean): Whether the surface materials are chained, as GetDetailsOfElements reports it.
+  - `edgeMaterials` (ShellEdgeMaterials): The custom surface of individual edges of the shell, as GetDetailsOfElements reports them. Only the edges given are written; overridden false clears an edge's custom surface.
+  - `extrusionVector` (Coordinate3D): Extruded shells only: the new direction and length of the extrusion, in base plane coordinates (as GetDetailsOfElements returns it). The profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionLength.
+  - `extrusionLength` (number): Extruded shells only: the new length of the extrusion. The extrusion vector keeps its direction and is scaled to this length; the profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionVector.
+  - `profile` (ShellProfile): Extruded shells only: the new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns (the plane across the extrusion, x horizontal, y up). It replaces the first profile polyline; the GUID, the base plane, the extrusion start and vector, the thickness and the cut contours are kept.
+  - `cutBodyType` (string ("UpwardsExtrusion", "DownwardsExtrusion")): The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet.
+  - `displayOption` (DisplayOption): Floor Plan Display of the element.
+  - `viewDepthLimitation` (ViewDepthLimitation): Show Projection: how far the element is shown on the floor plan.
+  - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes 'visibility' and 'fillVisibility' from the element's vertical extent and ignores values set for them. Setting 'visibility' or 'fillVisibility' without this field turns it off.
+  - `visibility` (StoryVisibility): The stories the element's contour is shown on. Only the given fields change.
+  - `fillVisibility` (StoryVisibility): The stories the element's cover fill is shown on. Only the given fields change.
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill.
+  - `sectionContourPen` (integer): Pen of the element's contour where it is cut.
+  - `sectionContourLineTypeId` (AttributeId): Line type of the element's contour where it is cut.
+  - `contourPen` (integer): Pen of the element's uncut contour.
+  - `contourLineTypeId` (AttributeId): Line type of the element's uncut contour.
+  - `aboveViewLinePen` (integer): Pen used when "Overhead All" is selected from the "Floor Plan Display" popup.
+  - `aboveViewLineTypeId` (AttributeId): Line type used when "Overhead All" is selected from the "Floor Plan Display" popup.
+  - `floorFill` (ShellBaseFloorFill): The cover fill of the element in the floor plan. Only the given fields change; read the orientation back with GetDetailsOfElements, Archicad may not apply all of it.
 
 Returns:
 
@@ -6045,7 +6384,7 @@ Returns:
 
 Grasshopper: `ModifyShellsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyShells.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyShells.py): Makes the first shell a Basic shell of the first building material with ModifyShells, reads it back, then restores its structure. Needs at least one Shell.
+Example: [archicad-addon/Examples/Element/ModifyShells.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyShells.py): Makes the first shell a 0.24 m thick Basic shell of the first building material, shown in outlines with its cover fill, with ModifyShells, reads it back, then restores its structure, thickness and floor plan display. On an extruded shell it also sets the extrusion length to 1 m, keeping its profile and start, and then restores its extrusion vector. It then moves the last point of the extruded shell's profile up by 0.5 m, keeping the shell's GUID, base plane and extrusion, and restores the profile. The shell's reference surface stays in place when the thickness changes; 'isFlipped' chooses the side the thickness goes to. A Composite shell takes its thickness from its composite, so a 'thickness' alone is refused on it. Needs at least one Shell.
 
 ### ModifyMeshes
 
@@ -6065,11 +6404,11 @@ Returns:
 
 Grasshopper: `MeshesComponent`, `ModifyMeshesComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyMeshes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyMeshes.py): Creates a flat mesh, then gives it a skirt and a raised corner with ModifyMeshes. Only the fields given in meshData change; polygonCoordinates replaces the whole outline, z being the height of each point above level.
+Example: [archicad-addon/Examples/Element/ModifyMeshes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyMeshes.py): Creates a flat mesh, then gives it a skirt, a raised corner and its own top surface with ModifyMeshes. Only the fields given in meshData change; polygonCoordinates replaces the whole outline, z being the height of each point above level. topMaterial overrides the surface the building material gives the top of the mesh; {'overridden': False} removes the override again.
 
 ### ModifyRailings
 
-Modifies Railing elements in place: the height of their segments, the bottom offset and the home story. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result.
+Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the inner posts (double post offset, post count, vertical and horizontal position), panels (visible, frame) and baluster sets (frame, distribution) of a segment by their index among that segment's components of the kind, and the posts of a node (vertical position) by their index among that node's posts. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.
 
 Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyRailings
 
@@ -6080,6 +6419,12 @@ Parameters:
   - `height` (number): The new height of the railing segments (the height GetDetailsOfElements returns), applied to every segment of the railing.
   - `bottomOffset` (number): The new base height of the railing relative to its home story.
   - `floorIndex` (integer): The new home story index (as returned by GetStories). The bottom offset is kept, or set from bottomOffset when that is given too, so the railing moves with the story.
+  - `visibility` (StoryVisibility): The stories the railing is shown on (API_RailingType::visibility), as GetDetailsOfElements returns it. Archicad only keeps it while isAutoOnStoryVisibility is false, so setting it without isAutoOnStoryVisibility also asks for that to be turned off. Confirmed on Archicad 29: Archicad keeps isAutoOnStoryVisibility true when the API turns it off (also through ACAPI_Element_ChangeParameters and with the railing's memo), so on a railing whose automatic visibility is on, as it is on a new one, the visibility is not changed and the item is reported as a failure. The fields not given are false or 0. A combination Archicad does not take is reported as a failure.
+  - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility) and ignores a visibility given together with it. Turning it on works; Archicad 29 does not take false and the item is reported as a failure (see visibility).
+  - `referenceLinePen` (integer): The new pen index of the railing's reference line (API_RailingType::referenceLinePen).
+  - `contourPen` (integer): The new pen index of the railing's contour line (API_RailingType::contourPen).
+  - `segments` (array of object): Changes to single segments of the railing and to the top rail, rails, handrails, inner posts, panels and baluster sets of a segment, applied after height. Only the given fields of the given segments and components change; the other segments, the nodes and the railing's GUID stay as they are.
+  - `nodes` (array of object): Changes to single nodes of the railing and to the posts of a node, applied after the segments. Only the given fields of the given nodes and posts change.
 
 Returns:
 
@@ -6087,7 +6432,7 @@ Returns:
 
 Grasshopper: `RailingsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyRailings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyRailings.py): Creates a railing, then makes it 1.2 m high and raises it by 0.15 m with ModifyRailings. Only the given fields change; the reference line, posts, rails and panels stay as they are. GetDetailsOfElements reads the new height, bottomOffset and segmentHeights back.
+Example: [archicad-addon/Examples/Element/ModifyRailings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyRailings.py): Creates a railing, makes it 1.2 m high and raises it by 0.15 m, then changes its second segment and the node between the two segments, hides the top rail and moves the first rail of the first segment, and changes the first baluster set and panel of the first segment and the post of the first node, with ModifyRailings. Only the given fields change; the reference line, the other components, the first segment and the railing's GUID stay as they are. A segment or node is given by its index in the segments and nodes lists GetDetailsOfElements returns; a rail, handrail, inner post, panel or baluster set by its index among the components of that kind GetSubelementsOfHierarchicalElements lists for that segment, and a post by its index among the posts of that node (their ownerElementId; inner posts and baluster sets may belong to the segment's railingPattern). A lateral offset only takes effect on a segment left or right of the reference line. GetDetailsOfElements reads the new values back.
 
 ### ModifyObjects
 
@@ -6116,7 +6461,7 @@ Parameters:
   - `reflected` (boolean)
   - `useFixSize` (boolean)
   - `fixPoint` (integer): 0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based).
-  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level.
+  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType.
   - `useFixedAngle` (boolean): Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify.
   - `isAutoOnStoryVisibility` (boolean)
   - `visibility` (StoryVisibility)
@@ -6157,7 +6502,7 @@ Parameters:
   - `reflected` (boolean)
   - `useFixSize` (boolean)
   - `fixPoint` (integer): 0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based).
-  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level.
+  - `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType.
   - `useFixedAngle` (boolean): Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify.
   - `isAutoOnStoryVisibility` (boolean)
   - `visibility` (StoryVisibility)
@@ -6198,9 +6543,35 @@ Grasshopper: `ModifyTextsComponent`, `TextsComponent`
 
 Example: [archicad-addon/Examples/Element/ModifyTexts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyTexts.py): Creates a text, then replaces its content, makes it bold and 5 mm high, and moves it with ModifyTexts. Then it gives the text a fixed width of 20 mm, so it wraps, without changing its content. Only the given fields change; text replaces the whole content (see ChangeTextContent to change a part). A text that wraps keeps its wrap width when its content or style is rebuilt; width 0 turns word wrap off.
 
+### ModifyPictures
+
+Modifies Picture elements: moves them to a new position, resizes them to a width and height in model units (one of them keeps the picture's proportions), changes the anchor point, the angle, mirrored, transparent and the name. Only the given settings are changed and the image stays as it is. Archicad cannot change a picture in place, so a changed picture is replaced by a new one with the same image, layer, story and ID, and the new elementId is returned; labels, dimensions, properties and classifications of the original are not carried over. With databaseId the pictures are looked for in that database, e.g. a worksheet, a detail or a layout. GetDetailsOfElements reads the settings back.
+
+Group: Element Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#ModifyPictures
+
+Parameters:
+
+- `picturesWithDetails` (array of object, required): Array of Picture elements to modify, with the settings to change. Only the given settings are changed; the others are left as they are. The image itself is not changed. Archicad cannot change a picture in place, so a picture with a change is replaced by a new picture with the same image, layer, story and ID, and the original is deleted: the new picture has a new elementId (returned in elements), and labels, dimensions, properties and classifications of the original are not carried over.
+  - `elementId` (ElementId, required)
+  - `position` (Coordinate2D): Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is.
+  - `anchorPoint` (PictureAnchorPoint): The new anchor point: the point of the picture's box that is placed at position, that stays in place when the size changes, and that the picture is rotated around. When given without position, the picture's box stays where it is and only the anchor point changes; on a rotated picture the rotation is then around the new anchor point, which can move the picture. When omitted, the anchor point is kept.
+  - `width` (number): The new width of the picture in model units. When only width is given, the height changes in proportion, so the picture keeps its current proportions.
+  - `height` (number): The new height of the picture in model units. When only height is given, the width changes in proportion, so the picture keeps its current proportions.
+  - `angle` (number): The new rotation angle of the picture in radians, around its anchor point.
+  - `mirrored` (boolean): Mirror the picture to its local vertical axis. The picture's box stays where it is drawn.
+  - `transparent` (boolean): Draw the white pixels of the picture transparent.
+  - `name` (string): The new name of the picture.
+- `databaseId` (DatabaseId): Optional database the pictures are in, e.g. a worksheet, a detail or a layout (see GetDatabases). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the pictures are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails.
+
+Returns:
+
+- `elements` (array of ElementIdOrError, required): One result per item of picturesWithDetails, in the same order. On success elementId is the picture's identifier after the change: a new one when a setting was changed (the picture is replaced), the given one when nothing was to change.
+
+Example: [archicad-addon/Examples/Element/ModifyPictures.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyPictures.py): Places a picture with CreatePictures, then with ModifyPictures scales it to 6 m wide around its center (the height keeps the proportions), rotates it by 90 degrees and makes its white pixels transparent, and reads its settings back with GetDetailsOfElements. Archicad cannot change a picture in place, so ModifyPictures replaces it and returns the new elementId.
+
 ### ModifyLabels
 
-Modifies Label elements based on the given parameters.
+Modifies Label elements based on the given parameters: the text and its style, the symbol label's style, the leader line, and the leader line's coordinates, which move or re-point the label.
 
 Group: Element Commands. Added in Tapir 1.5.9. Docs: https://archicad-api.com/archicad-addon/#ModifyLabels
 
@@ -6213,6 +6584,10 @@ Parameters:
   - `style` (TextStyleSettableDetails)
   - `symbolStyle` (LabelSymbolStyleSettableDetails)
   - `leaderLine` (LabelLeaderLineSettableDetails)
+  - `textWay` (LabelTextDirection): The new text direction, for a Text or a Symbol label. Refused together with symbolStyle.textWay.
+  - `begCoordinate` (Coordinate2D): The new begin coordinate of the leader line: the point the label points at (where the arrow is). Only the leader line's begin moves; the label's text or symbol stays where it is.
+  - `midCoordinate` (Coordinate2D): The new mid coordinate of the leader line (its break point).
+  - `endCoordinate` (Coordinate2D): The new end coordinate of the leader line, where the label's text or symbol sits: the text or symbol moves by as much as this point moves. To move the whole label, give all three coordinates moved by the same offset. GetDetailsOfElements returns the current ones.
 
 Returns:
 
@@ -6220,25 +6595,46 @@ Returns:
 
 Grasshopper: `LabelsComponent`, `ModifyLabelsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyLabels.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyLabels.py): Creates a wall with a text label, then changes the label's text, frame and arrow with ModifyLabels. Only the given fields change.
+Example: [archicad-addon/Examples/Element/ModifyLabels.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyLabels.py): Creates a wall with a text label, then changes the label's text, frame and arrow with ModifyLabels, and moves it. Only the given fields change. begCoordinate re-points the leader line; endCoordinate moves the text with the end of the leader line.
 
 ### ModifyCurtainWalls
 
-Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls.
+Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls; the side of the reference line (flipped), the panel offset from the reference line and the nominal width; and the floor plan display settings GetDetailsOfElements reads: story visibility, display option, view depth, cut, uncut and overhead projection modes, and the pens and line types of the frame and panel cut lines and of the uncut and overhead lines.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ModifyCurtainWalls
 
 Parameters:
 
-- `curtainWallsWithDetails` (array of object, required): Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications.
+- `curtainWallsWithDetails` (array of object, required): Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, plus flipped, offset and nominalWidth, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications, and the floor plan display fields GetDetailsOfElements returns for a curtain wall, under the same names. Every given field is read back, and one Archicad did not apply fails the item.
   - `elementId` (ElementId, required)
   - `coordinates` (array of Coordinate2D): The new 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates is one straight segment, so the number of coordinates must be the current number of segments plus one: the segments can be moved and resized, but not added or removed (a curved segment becomes straight).
   - `zCoordinate` (number): The new Z coordinate (absolute elevation) of the bottom of the curtain wall. The home story is derived from it unless floorIndex is given too.
   - `floorIndex` (integer): The new home story index. On its own it moves the curtain wall to that story, keeping its bottom offset from the story; with zCoordinate it pins the story the bottom elevation is measured from.
-  - `height` (number): The new height of the curtain wall. It is applied before the other fields and read back: when Archicad does not apply it, the item fails and the curtain wall is left unchanged.
+  - `height` (number): The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed.
+  - `flipped` (boolean): The new side of the reference line the curtain wall is on (API_CurtainWallType::flipped, the flipped value GetDetailsOfElements returns). Changing it mirrors the curtain wall to the other side of its reference line; the reference line itself stays where it is.
+  - `offset` (number): The new offset of the panels from the reference line (API_CurtainWallType::offset, the offset value GetDetailsOfElements returns), e.g. 0.1 for 10 cm.
+  - `nominalWidth` (number): The new nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth, the nominalWidth value GetDetailsOfElements returns).
   - `primaryPattern` (CurtainWallPattern): The new column pattern: the sizes of the columns along the segments (the primary grid). Applied to every segment of the curtain wall; the frames and panels are regenerated from it.
   - `secondaryPattern` (CurtainWallPattern): The new row pattern: the sizes of the rows from the bottom up (the secondary grid). Applied to every segment of the curtain wall; the frames and panels are regenerated from it.
   - `cells` (array of CurtainWallPatternCell): Assignment of panel and frame classes to the cells of the pattern unit of every segment, as in CreateCurtainWalls. Without a pattern change, a cell not listed here keeps its current assignment; with one, it takes the assignment of the first current cell.
+  - `visibility` (StoryVisibility): The stories the curtain wall is shown on (API_CurtainWallType::visibility), as GetDetailsOfElements returns it; for example only showOnHome true shows it on its home story only. Archicad only keeps it while isAutoOnStoryVisibility is false, so setting it without isAutoOnStoryVisibility also turns that off. The fields not given are false or 0. Confirmed live on Archicad 26 and 28 (#2529): showRelAbove 1 on a curtain wall in an empty project read back as 0, and the command then fails and names the visibility Archicad kept.
+  - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes 'visibility' automatically from the vertical extent of the curtain wall and ignores a visibility given together with it.
+  - `displayOption` (DisplayOption): The floor plan display of the curtain wall (API_CurtainWallType::displayOption).
+  - `viewDepthLimitation` (ViewDepthLimitation): How far the curtain wall is shown on the floor plan (API_CurtainWallType::viewDepthLimitation).
+  - `cutProjectionMode` (ElemProjectionMode): Projection mode of the cut part of the curtain wall on the floor plan (API_CurtainWallType::cutProjectionMode).
+  - `uncutProjectionMode` (ElemProjectionMode): Projection mode of the uncut part (below the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::uncutProjectionMode).
+  - `overheadProjectionMode` (ElemProjectionMode): Projection mode of the overhead part (above the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::overheadProjectionMode).
+  - `pen` (integer): The pen index of the curtain wall (API_CurtainWallType::pen).
+  - `frameCutLinePen` (integer): Pen index of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLinePen). The frames only use it while useFrameTypesAttributes is false.
+  - `frameCutLineTypeId` (AttributeId): Line type of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLineType). The frames only use it while useFrameTypesAttributes is false.
+  - `panelCutLinePen` (integer): Pen index of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLinePen). The panels only use it while usePanelTypesAttributes is false.
+  - `panelCutLineTypeId` (AttributeId): Line type of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLineType). The panels only use it while usePanelTypesAttributes is false.
+  - `useFrameTypesAttributes` (boolean): True makes the frames use the attributes of their frame types instead of frameCutLinePen and frameCutLineTypeId. Confirmed live on Archicad 26 and 28 (#2529): false written on a new curtain wall read back as true, and the command then fails with useFrameTypesAttributes not applied.
+  - `usePanelTypesAttributes` (boolean): True makes the panels use the attributes of their panel types instead of panelCutLinePen and panelCutLineTypeId.
+  - `belowViewLinePen` (integer): Pen index of the uncut lines, the curtain wall's view below the cut plane on the floor plan (API_CurtainWallType::uncutLinePen).
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines, the curtain wall's view below the cut plane on the floor plan (API_CurtainWallType::uncutLineType).
+  - `aboveViewLinePen` (integer): Pen index of the overhead lines, the curtain wall's view above the cut plane on the floor plan (API_CurtainWallType::overheadLinePen).
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines, the curtain wall's view above the cut plane on the floor plan (API_CurtainWallType::overheadLineType), for example a dashed one.
 
 Returns:
 
@@ -6246,11 +6642,11 @@ Returns:
 
 Grasshopper: `CurtainWallsComponent`, `ModifyCurtainWallsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyCurtainWalls.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyCurtainWalls.py): Creates a curtain wall, then makes it 4 m high with 1 m wide columns with ModifyCurtainWalls. The curtain wall keeps its GUID, properties and classifications.
+Example: [archicad-addon/Examples/Element/ModifyCurtainWalls.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyCurtainWalls.py): Creates a curtain wall, then makes it 4 m high with 1 m wide columns, flips it to the other side of its reference line and sets a 0.10 m panel offset with ModifyCurtainWalls. The curtain wall keeps its GUID, properties and classifications.
 
 ### ModifyCurtainWallFrames
 
-EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.
+EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. The frame element itself is changed, and read back to check that Archicad applied the change. A frame given its own contour or type without a classIndex is made a customized frame (GetDetailsOfElements reports its type as Custom) when Archicad does not keep the change on a frame of a class.
 
 Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyCurtainWallFrames
 
@@ -6270,9 +6666,27 @@ Grasshopper: `ModifyCurtainWallFramesComponent`
 
 Example: [archicad-addon/Examples/Element/ModifyCurtainWallFrames.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyCurtainWallFrames.py): EXPERIMENTAL: changes the contour and the type of the first frame of a new curtain wall with ModifyCurtainWallFrames. The frame is found by its GUID, which GetSubelementsOfHierarchicalElements returns.
 
+### ModifyCurtainWallPanels
+
+Assigns a panel class to single Curtain Wall Panels by their GUID; the panel takes the settings of the class (thickness, surfaces, building material, cut line, panel type). ACAPI_Element_Change does not take a panel on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.
+
+Group: Element Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#ModifyCurtainWallPanels
+
+Parameters:
+
+- `panelsWithDetails` (array of object, required): Curtain Wall Panels to modify (the GUIDs from GetSubelementsOfHierarchicalElements), with the fields to change. Only the given fields are changed.
+  - `panelId` (ElementId, required)
+  - `classIndex` (integer): The panel class to assign, numbered as Archicad numbers them (as in the cells of CreateCurtainWalls): 1 is the first panel class of the owner curtain wall (as listed in its Curtain Wall Settings), 2 the second and so on. The panel takes the settings of the class: its thickness, surfaces, building material, cut line and panel type (generic or GDL object). GetDetailsOfElements returns the classIndex and className of a panel.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Example: [archicad-addon/Examples/Element/ModifyCurtainWallPanels.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyCurtainWallPanels.py): Assigns a panel class to the first panel of a new curtain wall with ModifyCurtainWallPanels, then reads its class back. The panel is found by its GUID, which GetSubelementsOfHierarchicalElements returns. classIndex 1 is the first panel class of the curtain wall, 2 the second and so on, as listed in its Curtain Wall Settings.
+
 ### ModifyStairs
 
-Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. Not written by this command: the baseline with its landings and winders, the top link, the floor plan display (symbol and marker layout), the headroom and the stair rules; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.
+Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders, the break marks, lines and fills of the floor plan symbol, and the headroom; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.
 
 Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyStairs
 
@@ -6284,7 +6698,10 @@ Parameters:
   - `totalHeight` (number): The height of the stair relative to its bottom.
   - `stepNum` (integer): The number of steps (risers).
   - `riserHeight` (number): The height of each riser.
-  - `treadDepth` (number): The length of each going.
+  - `treadDepth` (number): The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525).
+  - `relativeTopStory` (integer): Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead.
+  - `topOffset` (number): The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0).
+  - `rules` (StairRules): The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error.
   - `treadDepthLocked` (boolean): Whether the going lengths are locked.
   - `totalHeightLocked` (boolean): Whether the total height is locked.
   - `finishVisible` (boolean): Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers.
@@ -6298,6 +6715,9 @@ Parameters:
   - `uniformMonolithAttributes` (boolean): Whether the monolithic structures of the flights and the landings share one set of attributes.
   - `uniformDrainings` (boolean): Whether the flights and the landings share one draining setting.
   - `structureVisibility` (boolean): Whether the structure of the stair is shown.
+  - `stairDisplayType` (string ("Custom", "ByModelViewOptions")): Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them.
+  - `floorPlanLayout` (StairLayoutSettings): The floor plan display of the stair: the stories it is shown on and its visible components. Independent of reflectedCeilingPlanLayout.
+  - `reflectedCeilingPlanLayout` (StairLayoutSettings): The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout.
   - `treads` (array of object): The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
   - `risers` (array of object): The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
   - `structures` (array of object): The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.
@@ -6308,7 +6728,27 @@ Returns:
 
 Grasshopper: `ModifyStairsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyStairs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyStairs.py): Creates a straight stair, then changes its width, its walking line, its tread thickness and its structure with ModifyStairs. Makes the flights monolithic with a smooth underside and numbers the steps on the risers, reads the stair back with GetDetailsOfElements, then deletes the stair it created.
+Example: [archicad-addon/Examples/Element/ModifyStairs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyStairs.py): Creates a straight stair, then changes its width, its walking line, its tread thickness, its structure and its floor plan display with ModifyStairs. Makes the flights monolithic with a smooth underside, numbers the steps on the risers, shows the stair on its home story only in the floor plan without the walking line, and on its home story and one story up in the reflected ceiling plan without the structure. Reads the stair back with GetDetailsOfElements, then deletes the stair it created.
+
+### RecreateStairs
+
+Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).
+
+Group: Element Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#RecreateStairs
+
+Parameters:
+
+- `stairs` (array of object, required): The stairs to recreate on a new baseline.
+  - `elementId` (ElementId, required): The stair to recreate.
+  - `baseLinePoints` (array of Coordinate2D, required): The new baseline, as CreateStairs takes it and GetDetailsOfElements returns it. The old stair's baseline position and offset are kept.
+  - `baseLineEdges` (array of StairBaseLineEdge): Optional. The segment type of each edge of the new baseline (baseLinePoints.length - 1 items), as in CreateStairs. Give it, with baseLineVertices, to keep the landings of an L or U stair.
+  - `baseLineVertices` (array of StairBaseLineVertex): Optional. The turn at each point of the new baseline (baseLinePoints.length items), as in CreateStairs.
+
+Returns:
+
+- `results` (array of object or ErrorItem, required): One item per input stair: the new stair, or an error. After an error nothing was changed for that stair.
+
+Example: [archicad-addon/Examples/Element/RecreateStairs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/RecreateStairs.py): Creates a U-shaped stair, then moves the end of its second flight with RecreateStairs. The Archicad API cannot change the baseline of an existing stair, so RecreateStairs creates the stair again on the new baseline with the settings, Element ID, classifications, categories and properties of the old one, and deletes the old one. The result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions). The new stair is read back, then deleted.
 
 ### ChangeTextContent
 
@@ -6330,13 +6770,13 @@ Example: [archicad-addon/Examples/Element/ChangeTextContent.py](https://github.c
 
 ### ModifyZones
 
-Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link, floor thickness, contour line and cover fill - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. The polygon of a manual zone cannot be changed here (the change takes no polygon memo), nor the reference point of an automatic one (SetDetailsOfElements moves it).
+Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top link, floor thickness, contour line, cover fill, 3D surface (one surface on all sides, or the surfaces of the bounding walls), polygon display (gross or net) and area reduction - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ModifyZones
 
 Parameters:
 
-- `zonesWithDetails` (array of object, required): Array of Zone elements to modify, with the fields to change. Only the given fields are changed; the polygon and the omitted fields are kept. The same fields as the ZoneSettings of SetDetailsOfElements.
+- `zonesWithDetails` (array of object, required): Array of Zone elements to modify, with the fields to change. Only the given fields are changed and the omitted fields are kept; the polygon is kept unless geometry is given. The same fields as the ZoneSettings of SetDetailsOfElements, plus geometry and allowOverlap.
   - `elementId` (ElementId, required)
   - `name` (string): Name of the zone.
   - `numberStr` (string): Zone number.
@@ -6351,6 +6791,12 @@ Parameters:
   - `floorThickness` (number): Thickness of the floor finish (subfloor thickness) of the zone.
   - `contourLine` (ZoneContourLine): Contour line of the zone. Only the given fields are changed.
   - `coverFill` (ZoneCoverFill): Cover fill of the zone. Only the given fields are changed.
+  - `surface` (ZoneSurface): 3D surface of the zone (the Model panel). Only the given fields are changed.
+  - `polygonDisplay` (ZonePolygonDisplay)
+  - `stampPen` (ZoneStampPen): Pen of the zone stamp. Only the given fields are changed.
+  - `reducePercent` (ZoneReducePercent)
+  - `geometry` (ManualZoneGeometry): Optional new polygon of a manual zone (isManual true in GetDetailsOfElements): its outline, arcs and holes, the same geometry as a manual zone of CreateZones. The whole polygon is replaced and the zone keeps its GUID, properties and other settings; the stamp stays where it is unless stampPosition is given too. Refused for an automatic zone, whose polygon Archicad computes from its boundaries (see UpdateZones).
+  - `allowOverlap` (boolean): Optional, defaults to false, only used with geometry. As in CreateZones: a new polygon that would overlap another zone on the same story fails with an error naming that zone instead of risking Archicad's modal overlap warning, which blocks the API. Set it to true to change the polygon anyway.
 
 Returns:
 
@@ -6358,7 +6804,7 @@ Returns:
 
 Grasshopper: `ModifyZonesComponent`, `ZonesComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyZones.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyZones.py): Renames and renumbers the first zone and changes its contour line pen with ModifyZones, reads it back, then restores them. Needs at least one Zone. Only the given fields change; the polygon is kept. ModifyZones takes the same settings as CreateZones, contourLine and coverFill included.
+Example: [archicad-addon/Examples/Element/ModifyZones.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyZones.py): Renames and renumbers the first zone and changes its contour line pen with ModifyZones, reads it back, then restores them. Needs at least one Zone. Only the given fields change; the polygon is kept unless geometry is given (the new polygonCoordinates, polygonArcs and holes of a manual zone, as in CreateZones). ModifyZones takes the same settings as CreateZones, contourLine and coverFill included.
 
 ### MeasureTexts
 
@@ -6457,8 +6903,9 @@ Parameters:
 - `host` (string): The host address of the notification client. If not provided, localhost is used.
 - `port` (integer, required): The port number of the notification client.
 - `notifyOnNewElement` (boolean): Notify on creation of a new element. Optional parameter, by default true.
-- `notifyOnModificationOfAnElement` (boolean): Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {"type": ..., ...}, where type is "Drag" (with displacement: {"x", "y", "z"}), "Elevate" (with displacement, only z is not 0), "Rotate" (with origin: {"x", "y"} and angle, in radians, counterclockwise), "Mirror" (with origin, a point of the mirror axis, and axisDirection: {"x", "y"}, its unit vector), "Resize" (with origin and ratio), "Stretch", "VerticalStretch", "PreservedHeightStretch", "PreservedDirectionStretch" or "General"; the changes made by Tapir's own commands and by undo or redo have no transformation. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects.
-- `elementTypesToObserve` (array of ElementType): Only modifications/deletions of elements of these types are observed and notified to this client. Optional parameter, by default every element (including the parts of curtain walls, stairs and railings, which are most of the elements of large projects). Registering the same client again with other types changes them; only the elements of types no client observed before get an observer then. Does not limit the other notifications.
+- `notifyOnModificationOfAnElement` (boolean): Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that, plus the elements listed in elementsToObserve. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {"type": ..., ...}, where type is "Drag" (with displacement: {"x", "y", "z"}), "Elevate" (with displacement, only z is not 0), "Rotate" (with origin: {"x", "y"} and angle, in radians, counterclockwise), "Mirror" (with origin, a point of the mirror axis, and axisDirection: {"x", "y"}, its unit vector), "Resize" (with origin and ratio), "Stretch", "VerticalStretch", "PreservedHeightStretch", "PreservedDirectionStretch" or "General"; the changes made by Tapir's own commands and by undo or redo have no transformation. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve and elementsToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: one element at a time (the Archicad API has no call for many elements or a whole type), about 10 elements per second on a large project, and the time grows faster than the number of elements. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types, or list the elements with elementsToObserve, on large projects.
+- `elementTypesToObserve` (array of ElementType): Only modifications/deletions of elements of these types are observed and notified to this client, together with the elements of elementsToObserve. Optional parameter, by default (when neither elementTypesToObserve nor elementsToObserve is given) every element (including the parts of curtain walls, stairs and railings, which are most of the elements of large projects). Registering the same client again with other types changes them; only the elements of types no client observed before get an observer then. Does not limit the other notifications.
+- `elementsToObserve` (Elements): Only modifications/deletions of these elements are observed and notified to this client, together with the elements of the types of elementTypesToObserve. Only these elements get an observer, so registering takes time in proportion to their number, not to the size of the project (#2493). Unlike elementTypesToObserve, it does not cover the elements created later: with elementsToObserve alone, the changes of a new element are not notified (notifyOnNewElement still reports its creation); register the client again with the new element in the list to observe it. A listed element that does not exist fails the command, and the client is then not registered or changed. Registering the same client again with another list changes it; only the elements no client observed before get an observer then, and the ones no client needs any more lose theirs. Optional parameter, by default every element (see elementTypesToObserve). Does not limit the other notifications.
 - `notifyOnReservationChanges` (boolean): Notify on reservation changes of an element. Optional parameter, by default true.
 - `notifyOnSelectionChange` (boolean): Notify when the selection changes. The message is {"selectedElements": [...]}: the whole current selection, each item an elementId as in the response of GetSelectedElements, an empty list when nothing is selected. Optional parameter, by default false.
 - `notifyOnWindowChange` (boolean): Notify when the current (active) window changes or the user switches to another story. The message is {"windowChanged": {"event": "Window" or "Floor", "windowType": ..., "databaseId": ..., "storyIndex": ...}}: windowType and databaseId describe the new current window as in the response of GetCurrentWindowType (databaseId is missing when that response has none), storyIndex is the active story, missing when it cannot be read. Optional parameter, by default false.
@@ -6477,7 +6924,7 @@ Parameters:
 
 Grasshopper: `SetElementNotificationClientComponent`
 
-Example: [archicad-addon/Examples/Element/SetElementNotificationClient.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetElementNotificationClient.py): Prints the element events Archicad sends to a local HTTP server registered with SetElementNotificationClient. Creates a column to trigger a notification, then removes the client again. Archicad posts each event as JSON to http://<host>:<port>/element_notification. Modifications are observed only for columns here (elementTypesToObserve): attaching an observer to every element blocks Archicad for minutes on a project with thousands of elements.
+Example: [archicad-addon/Examples/Element/SetElementNotificationClient.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetElementNotificationClient.py): Prints the element events Archicad sends to a local HTTP server registered with SetElementNotificationClient. Creates a column to trigger a notification, moves it to trigger a change notification, then removes the client again. Archicad posts each event as JSON to http://<host>:<port>/element_notification. Modifications are observed only for the columns (elementTypesToObserve) and for the listed elements (elementsToObserve, here the first wall of the project, if there is one): attaching an observer to every element blocks Archicad for minutes on a project with thousands of elements, while a list of elements takes time only for the listed ones.
 
 ### RemoveElementNotificationClient
 
@@ -6553,6 +7000,22 @@ Returns:
 Grasshopper: `GetSplineMaxDistancesComponent`
 
 Example: [archicad-addon/Examples/Element/GetSplineMaxDistances.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetSplineMaxDistances.py): GetSplineMaxDistances measures how far coordinates are from a segment of a Spline element (between its fit points segmentIndex and segmentIndex + 1), with the spline's own Bezier handles, and returns the largest distance. Here a spline is created and the midpoint of the straight line between its first two fit points is measured from its first segment.
+
+### GetProfileValuesOfElements
+
+Returns the custom profiles walls, beams and columns use, with the values the element gives them: the width and height of the stretched profile and the value of each profile modifier, measured on the stretched profile of the element (one per Profile wall, one per Profile segment of a beam or column). Read only: the Archicad API has no function that writes an element's modifier values or stretch.
+
+Group: Element Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#GetProfileValuesOfElements
+
+Parameters:
+
+- `elements` (array of ElementIdArrayItem, required)
+
+Returns:
+
+- `profileValuesOfElements` (array of ElementProfileValuesOrError, required)
+
+Example: [archicad-addon/Examples/Element/GetProfileValuesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetProfileValuesOfElements.py): Reads the profile values of every wall, beam and column with a custom profile: the size of the stretched profile and the value of each profile modifier on that element. The values are measured on the stretched profile each element uses, so a profile stretched by the element, or a modifier the element changed, reads with the element's own value. Writing them is not possible: the Archicad API has no function for an element's modifier values or stretch.
 
 
 ## Element grouping Commands
@@ -6985,7 +7448,7 @@ Example: [archicad-addon/Examples/Favorites/ExportFavorites.py](https://github.c
 
 ### ApplyFavoritesToElements
 
-Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes. With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, or to every element of its type that matches the filter.
+Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. The cross section of a Column or Beam is a Favorite setting and is applied too. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link, a Column's height, top link and cross section width and depth, a Beam's cross section width and height) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes. settingGroups is the positive list instead: e.g. only FloorPlanAndSection applies just the pens, line types, story visibility and cut and cover fills of a Column or Beam, and nothing else of the Favorite. With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, or to every element of its type that matches the filter.
 
 Group: Favorites Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#ApplyFavoritesToElements
 
@@ -6995,11 +7458,12 @@ Parameters:
 - `favorite` (string): The name of one Favorite to apply to many elements, instead of favoritesToApply: to the given elements, or without elements to every element of the Favorite's type that matches the filter. The Favorite is read only once. Needs elements or filter.
 - `elements` (Elements): The elements to apply the single favorite to, one execution result each, in the same order. Only with favorite.
 - `filter` (ElementTypeFloorLayerFilter): Server-side element filter for the single favorite. Without elements the favorite is applied to every element of its type that matches it; an element of elements that does not match it gets a failed execution result. Only with favorite.
-- `applySettings` (boolean): Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true.
+- `applySettings` (boolean): Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. A Stair keeps its own baseline and flight width. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true.
 - `applyClassifications` (boolean): Whether to apply the Favorite's classifications. Default is true.
 - `applyCategories` (boolean): Whether to apply the Favorite's element categories (e.g. IFC categories). Default is true.
 - `applyProperties` (boolean): Whether to apply the Favorite's property values. Default is true.
-- `keepFields` (array of FavoriteKeepField): Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.
+- `keepFields` (array of FavoriteKeepField): Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall; 'width' and 'depth' (the cross section) to a Column, and 'width' and 'height' (the cross section) to a Beam. The cross section of a Column or Beam is a Favorite setting and is applied unless it is kept. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.
+- `settingGroups` (array of string ("FloorPlanAndSection", "ClassificationAndProperties")): Apply only these panels of the Favorite's settings dialog, and nothing else of it - a positive list instead of keepFields. 'FloorPlanAndSection' applies the Floor Plan and Section settings: story visibility (Show on Stories), floor plan display and projection, the pens and line types of the cut, uncut, overhead and hidden lines (a Beam's reference axis too), the cut fill pens and the cover fill; geometry, size, cross section, building material, profile, layer and the other panels stay the target's. It is supported for Column and Beam elements; another element type gets a failed execution result and is left unchanged. 'ClassificationAndProperties' applies the Favorite's classifications, element categories (e.g. structural function) and property values, each still only when its own apply flag is not false; without it in the list none of them is applied. applySettings false turns 'FloorPlanAndSection' off. keepFields still applies. Default: the whole Favorite is applied as described for applySettings.
 
 Returns:
 
@@ -8567,13 +9031,13 @@ Example: [archicad-addon/Examples/Attribute/ReindexAttributes.py](https://github
 
 ### DeleteAndReplaceAttributes
 
-Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. The whole call is one undo step. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each attribute that passes the checks gets wouldDelete and lists every reference a real run would rewrite (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules). Available from Archicad 27.
+Deletes fills, line types, surfaces, building materials, profiles, zone categories or layers and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. A profile is replaced where a wall or a column or beam segment uses the profile structure, and in the Profile parameters of library part based elements; a zone category in zones. A layer is emptied instead, since deleting a layer deletes its elements: every element on it, in the floor plan and in every view and layout, is moved to the replacement layer (as ReindexLayers moves them), then the tool defaults and Favorites on it, and the layer is deleted only once it is empty. The Archicad Layer cannot be deleted, a layer with elements from a hotlinked module is not deleted, and if an element cannot be moved or Archicad does not delete the layer, everything is put back. The sections, elevations, interior elevations and 3D documents that show elements of the deleted layer are listed in viewsToRebuild. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. The whole call is one undo step. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each attribute that passes the checks gets wouldDelete and lists every reference a real run would rewrite (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules). Available from Archicad 27.
 
 Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#DeleteAndReplaceAttributes
 
 Parameters:
 
-- `attributeType` (string ("Fill", "Line", "Surface", "BuildingMaterial"), required): The type of the attributes to delete and of their replacements.
+- `attributeType` (string ("Fill", "Line", "Surface", "BuildingMaterial", "Profile", "ZoneCategory", "Layer"), required): The type of the attributes to delete and of their replacements.
 - `attributes` (array of object, required): The attributes to delete, each with the attribute that takes its place, handled in the given order.
   - `attributeId` (AttributeId, required): The attribute to delete.
   - `replacementAttributeId` (AttributeId, required): The attribute of the same type that replaces it wherever it is used. It must be another attribute than the one to delete.
@@ -8910,6 +9374,12 @@ Parameters:
   - `moveVertices` (array of object): Moves vertices of the copied (or, when overwriting, the preserved existing) geometry in place, e.g. to change the height of a wall profile by moving its top band, without rebuilding its skins: the skins keep their skinIds, edges and edge settings, so the profileModifiers, the stretch zones and every edge flag are kept. Applied in order, after skinOverrides and before newSkins. Hotspots and fixed modifier anchors inside the region are moved too, and so is a stretch zone limit inside it: a vertical stretch zone limit (a height) when the region has no xMin/xMax, a horizontal one when it has no yMin/yMax.
   - `newSkins` (array of ProfileSkinData): AC27+ only. Adds brand-new skins built from caller-supplied polygon geometry, instead of (or in addition to) whatever was copied from sourceAttributeId. Combine with sourceAttributeId to add skins to a copied Profile, or omit sourceAttributeId to build a Profile's geometry entirely from newSkins.
   - `replaceSkins` (boolean): AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet).
+  - `openingReferenceLines` (array of ProfileOpeningReferenceLine): Replaces every opening reference line of the Profile (Profile Editor, "Opening Reference"; read them with GetProfiles' openingReferenceLines) with these lines; an empty array removes them all, so doors and windows in walls with this Profile are placed by its bounding box again. Omit to keep the lines the copied or overwritten Profile has. A wall profile normally has two, one on each side. Applied after skinOverrides, moveVertices and newSkins, in their final coordinates; the new lines take the pen and line type of the Profile's existing opening reference lines.
+  - `newProfileModifiers` (array of object): Adds offset modifiers (Profile Manager, Modifiers) to the Profile, read back with GetProfiles' profileModifiers. Applied after skinOverrides, moveVertices and newSkins, so edges and anchors refer to the final shape; their skinIds come from GetProfiles, so a Profile built from newSkins gets its modifiers in a second CreateProfiles call with overwriteExisting. A modifier's value is the distance its dimension measures on the shape: draw the shape so it measures the default value you want. Archicad has no function to delete one modifier: to remove modifiers, rebuild the Profile with replaceSkins (which drops them all) and add the ones to keep again.
+  - `renameProfileModifiers` (array of object): Renames offset modifiers of the Profile. Applied before newProfileModifiers.
+  - `stretchZones` (object): Sets or removes the stretch zones of the Profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), so a wall, beam or column using it can change its width or height. A Profile with a horizontal zone is widthStretchable, one with a vertical zone heightStretchable. Applied last, so the coordinates are those of the final geometry, as GetProfiles reports them in skins[].outlineCoords and stretchZones. A zone that is neither given nor removed is kept as it is (copied from sourceAttributeId, or preserved when overwriting).
+  - `nominalSize` (ProfileNominalSize): Sets the nominal width and height lines of the Profile (Profile Editor; read them with GetProfiles' nominalSize) at these positions, replacing the ones it has. right must be greater than left and top greater than bottom. Applied after skinOverrides, moveVertices and newSkins, in their final coordinates. Omit to keep the Profile's nominal size lines.
+  - `addHotspots` (array of Coordinate2D): Adds hotspots to the Profile at these positions (Profile Editor; read them with GetProfiles' hotspots), in the final coordinates after skinOverrides, moveVertices and newSkins. The Profile's existing hotspots are kept: Archicad ties a hotspot on a skin vertex to that vertex, and the Archicad API cannot tie it again once removed, so hotspots cannot be removed or moved here. New hotspots take the settings of the Profile's first hotspot.
 - `overwriteExisting` (boolean): Overwrite the Profile if exists with the same name, or if index is given with the same index. The default is false.
 
 Returns:
@@ -9144,6 +9614,28 @@ Grasshopper: `RenameAttributesComponent`
 
 Example: [archicad-addon/Examples/Attribute/RenameAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/RenameAttributes.py): Renames the last Layer of the project with RenameAttributes, then gives it back its old name. The Layer keeps its index, its id and its settings.
 
+### ModifyLayers
+
+Changes the given settings of existing layers: shown or hidden, locked, wireframe, the intersection group and the name. Only the given fields of a layer are changed; every other setting is kept, so unlike CreateLayers with overwriteExisting the whole layer need not be given. Archicad keeps the shown, locked and wireframe state of a layer per open window; like CreateLayers, this changes it in the current window. A name must not be empty or used by another layer, and the built-in Archicad Layer cannot be renamed. Each layer gets its own execution result. In a Teamwork project the LayerSettingsDialog lockable object set must be reserved first (see ReserveLockableObjectSet).
+
+Group: Attribute Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#ModifyLayers
+
+Parameters:
+
+- `layers` (array of object, required): The layers to change. Only the given fields of a layer are changed; every other setting of it is kept.
+  - `attributeId` (AttributeId, required): Identifier of the existing Layer to change.
+  - `name` (string): New name. It must not be empty, and no other Layer may have it.
+  - `isHidden` (boolean): Hide/Show.
+  - `isLocked` (boolean): Lock/Unlock.
+  - `isWireframe` (boolean): Force the model to wireframe.
+  - `intersectionGroupNr` (integer): Intersection group. Elements on layers having the same group will be intersected.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required): One result per layer, in the input order.
+
+Example: [archicad-addon/Examples/Attribute/ModifyLayers.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/ModifyLayers.py): Locks the last Layer of the project with ModifyLayers and puts it in wireframe, then sets both back. Only the given fields are changed: the Layer keeps its name, its shown state and its intersection group.
+
 ### GetLines
 
 Returns the details of the given Line attributes.
@@ -9304,7 +9796,7 @@ Group: Attribute Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/
 Parameters:
 
 - `attributeIds` (AttributeIds, required)
-- `fields` (array of ProfileAttributeField): Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.
+- `fields` (array of ProfileAttributeField): Names of the fields to return for each Profile. If omitted, every field is returned. Note the raw cross-section vector geometry itself is not exposed; width/height/minimumWidth/minimumHeight/widthStretchable/heightStretchable/stretchZones/hasCoreSkin/profileModifiers are derived measurements matching what the Profile Editor shows, computed from the profile's internal stretch/parameter data.
 
 Returns:
 
@@ -10141,7 +10633,7 @@ Returns:
 
 Grasshopper: `CreateLibraryPartsComponent`
 
-Example: [archicad-addon/Examples/Library/CreateLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/CreateLibraryParts.py): Creates a GDL box object in the embedded library with CreateLibraryParts, then deletes it again. The parent subtype is the 'General GDL Object' of the loaded Archicad Library. Deleting the part at the end requires Archicad 27 or later.
+Example: [archicad-addon/Examples/Library/CreateLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/CreateLibraryParts.py): Creates a GDL box object in the embedded library with CreateLibraryParts, then deletes it again. The parent subtype is the 'Model Element' (the General GDL Object, the root subtype, cannot be a parent). Deleting the part at the end requires Archicad 27 or later.
 
 ### CreateFolderInEmbeddedLibrary
 
@@ -10213,7 +10705,7 @@ Group: Library Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `filterByTypeId` (LibraryPartType): Optional. Filter by libpart type (matches the value returned by LibPartTypeIdToString).
+- `filterByTypeId` (LibraryPartType): Optional. Only list the library parts of this type, the typeId of the response. 'Pict' and 'Picture' both list the pictures.
 
 Returns:
 
@@ -10330,7 +10822,7 @@ Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/ar
 Parameters:
 
 - `libraryParts` (array of object, required): The library parts to read the default GDL parameters of.
-  - `libraryPartName` (string, required): The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName.
+  - `libraryPartName` (string, required): The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName. The file name with its .gsm extension, as GetAvailableLibraryParts returns it and SetLibraryPartParameters takes it, is accepted too.
 
 Returns:
 
@@ -10507,8 +10999,8 @@ Returns:
 
 - `date` (object, required): The date GDL scripts see.
   - `year` (integer, required)
-  - `month` (integer, required)
-  - `day` (integer, required)
+  - `month` (integer, required): 1 to 12. Archicad can also report 0, which SetGDLDate accepts back.
+  - `day` (integer, required): 1 to 31. Archicad can also report 0, which SetGDLDate accepts back.
   - `hour` (integer, required)
   - `minute` (integer, required)
   - `second` (integer, required)
@@ -10527,8 +11019,8 @@ Parameters:
 
 - `date` (object, required): The date GDL scripts should see, in the format GetGDLDate returns.
   - `year` (integer, required)
-  - `month` (integer, required)
-  - `day` (integer, required)
+  - `month` (integer, required): 1 to 12. Archicad can also report 0, which SetGDLDate accepts back.
+  - `day` (integer, required): 1 to 31. Archicad can also report 0, which SetGDLDate accepts back.
   - `hour` (integer, required)
   - `minute` (integer, required)
   - `second` (integer, required)
@@ -10808,7 +11300,7 @@ Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/ar
 Parameters:
 
 - `libraryParts` (array of object, required): The library parts to modify and the parameter values to set in each.
-  - `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
+  - `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file, not from a library package, a BIMcloud or read-only library. A part of a local library folder is changed in its file, and the libraries are reloaded after the call; a part of the embedded library only when Archicad reports it editable. When a part of the same name is in more than one library, the one Archicad finds by that name is changed.
   - `parameters` (array of object, required): The GDL parameters to change, by name, in the format SetGDLParametersOfElements uses. The parameters left out are not changed.
   - `descriptions` (array of string): The new descriptions of all parameters of the library part, one for each parameter in the order of its parameter list. Defaults to the current descriptions.
   - `merge` (boolean): When true, the changed parameter list is merged into the parameters of the library part (MergeParameters of the Archicad API) instead of replacing them (SetParameters). Defaults to false.
@@ -10980,7 +11472,7 @@ Parameters:
 
 - `name` (string, required): The name of the new library part, as shown in the library and used by CreateObjects as libraryPartName.
 - `elements` (array of ElementIdArrayItem, required): The 2D drawing elements (lines, polylines, arcs, circles, splines, fills, texts and hotspots) whose copies make up the 2D symbol of the new library part. They keep their plan coordinates, so the project origin becomes the origin of the symbol. The elements themselves are not changed.
-- `parentId` (string): The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required.
+- `parentId` (string): The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required. The General GDL Object (the root subtype) cannot be the parent: use the Model Element or one of its subtypes.
 - `parentName` (string): The document name of the parent subtype, e.g. 'General Object' or 'Model Element'; used when parentId is not given.
 - `folder` (string): Optional. The folder of the new .gsm file, relative to the embedded library (or to libraryFolder), created when missing. By default the embedded library (or libraryFolder) itself.
 - `libraryFolder` (string): Optional. The absolute path of a local library folder to create the library part in instead of the embedded library. A folder that is not one of the loaded libraries yet is added to them first, and stays added.
@@ -11521,6 +12013,24 @@ Grasshopper: `CreateWorksheetsComponent`
 
 Example: [archicad-addon/Examples/Navigator/CreateWorksheets.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateWorksheets.py): Creates an independent Worksheet with CreateWorksheets, then deletes it again.
 
+### Create3DDocuments
+
+Creates 3D Documents with the given names and reference IDs, in the Project Map's 3D Documents folder. Archicad gives each its starting settings; Get3DDocumentSettings reads them and Set3DDocumentSettings changes its view, cut and filter. Returns the databaseId and the Project Map navigatorItemId of each new 3D Document.
+
+Group: Navigator Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#Create3DDocuments
+
+Parameters:
+
+- `documentsData` (array of object, required): One item per new 3D Document.
+  - `name` (string, required): The name of the new 3D Document.
+  - `referenceId` (string, required): The reference ID of the new 3D Document.
+
+Returns:
+
+- `databases` (array of CreatedDatabase or ErrorItem, required): One item per input item, in the same order.
+
+Example: [archicad-addon/Examples/Navigator/Create3DDocuments.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/Create3DDocuments.py): Creates a 3D Document with Create3DDocuments, prints its settings with Get3DDocumentSettings, then deletes it again.
+
 ### CreateDetailMarkers
 
 Places Detail markers with their clip polygon in the current floor plan, section or elevation, each with a new Detail viewpoint, like the Detail tool. GetDetailsOfElements reads them back.
@@ -11691,6 +12201,8 @@ Parameters:
   - `angle` (number): Rotation angle of the drawing in radians. Defaults to the Drawing tool's current default.
   - `drawingScale` (number): Ignored: Archicad takes the scale from the source view (API_DrawingType::drawingScale is output only). GetDetailsOfElements returns the scale the Drawing got.
   - `modelOffset` (Coordinate2D): Offset of the model origin within the drawing, in model meters. Archicad uses it only with clipPolygon and then adds modelOffset * drawing scale (times scale, rotated by angle) to the new Drawing's pos; without clipPolygon it is ignored. Defaults to the Drawing tool's current default.
+  - `anchorPoint` (DrawingAnchorPoint): The node of the drawing's bounding box the drawing is placed by. Used only when useOwnOriginAsAnchor is false; giving anchorPoint makes useOwnOriginAsAnchor default to false. Defaults to Center.
+  - `useOwnOriginAsAnchor` (boolean): Whether the drawing is placed by its own origin instead of anchorPoint. Defaults to false when anchorPoint is given, otherwise to the Drawing tool's current default.
   - `clipPolygon` (array of Coordinate2D): Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it, and it does not move the content (see position).
 
 Returns:
@@ -12201,13 +12713,16 @@ Example: [archicad-addon/Examples/Navigator/CreateViewMapFolder.py](https://gith
 
 ### Set3DCutPlanes
 
-Sets the 3D cut planes. An empty cutPlanes array switches the 3D cut off.
+Sets the 3D cut planes (pa*x + pb*y + pc*z = pd, cutting away the side the normal points to), with the pen and surface of their cut faces, and turns 3D Cutaway on. An empty cutPlanes array switches the 3D cut off.
 
 Group: Navigator Commands. Added in Tapir 1.3.1. Docs: https://archicad-api.com/archicad-addon/#Set3DCutPlanes
 
 Parameters:
 
-- `cutPlanes` (array of CutPlane): The cut planes. An empty array switches the 3D cut off. The side of a plane its normal vector points to is cut away and the other side is kept (to be confirmed in Archicad). pd is in meters.
+- `cutPlanes` (array of CutPlane, required): The cut planes, replacing the current ones. Each cuts away the side of its plane that its normal vector (pa, pb, pc) points to; several planes cut away the union of those sides. Setting planes also turns 3D Cutaway on (off and on again when it is on), which puts them in force in the 3D window. An empty array switches the 3D cut off. A plane without cutPen or cutSurfaceId keeps those of the current plane in its place, or of the last current plane; where there is none, or it is pen 0 or no surface (which draws black), it takes customPen and customSurfaceId.
+- `useCustom` (boolean): The Custom setting of the cut faces, kept for the 3D Cutting Planes settings; in the Archicad 29 3D window the cut faces take each plane's cutSurfaceId either way. Left unchanged when omitted.
+- `customPen` (integer): The pen of the cut edges when useCustom is true. Left unchanged when omitted.
+- `customSurfaceId` (AttributeId): The surface of the cut faces when useCustom is true. Left unchanged when omitted.
 
 
 Grasshopper: `Set3DCutPlanesComponent`
@@ -12216,7 +12731,7 @@ Example: [archicad-addon/Examples/Navigator/Set3DCutPlanes.py](https://github.co
 
 ### Get3DCutPlanes
 
-Gets whether the 3D cut planes are on and the cut planes (pa, pb, pc, pd) of the 3D window, in the form accepted by Set3DCutPlanes.
+Gets whether the 3D cut planes are on, the cut planes (pa, pb, pc, pd) of the 3D window with the pen and surface of their cut faces, and the custom cut pen and surface, in the form accepted by Set3DCutPlanes.
 
 Group: Navigator Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#Get3DCutPlanes
 
@@ -12225,8 +12740,10 @@ Parameters: none.
 Returns:
 
 - `isCutPlanes` (boolean, required): Whether the 3D cut planes are switched on.
-- `useCustom` (boolean, required): Whether the custom cut settings are used.
-- `cutPlanes` (array of CutPlane, required): The cut planes, in the form accepted by Set3DCutPlanes: pa*x + pb*y + pc*z + pd = 0, pd in meters.
+- `useCustom` (boolean, required): Whether the cut faces of the elements take customPen and customSurfaceId.
+- `customPen` (integer): The pen of the cut edges when useCustom is true. Missing when it is no valid pen (0).
+- `customSurfaceId` (AttributeId): The surface of the cut faces when useCustom is true. Missing when it is no surface attribute.
+- `cutPlanes` (array of CutPlane, required): The cut planes, in the form accepted by Set3DCutPlanes: pa*x + pb*y + pc*z = pd, pd in meters.
 
 Grasshopper: `Get3DCutPlanesComponent`
 
@@ -12332,7 +12849,7 @@ Example: [archicad-addon/Examples/Navigator/Set3DProjectionSettings.py](https://
 
 ### GetCameras
 
-Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own.
+Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, its pen, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own.
 
 Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetCameras
 
@@ -12350,6 +12867,91 @@ Returns:
 Grasshopper: `GetCamerasComponent`
 
 Example: [archicad-addon/Examples/Navigator/GetCameras.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/GetCameras.py): Prints the Camera Sets of the project with their cameras with GetCameras, then shows the first camera's view in the 3D window with Set3DProjectionSettings.
+
+### CreateCameraSets
+
+Creates empty Camera Sets (camera paths) with the given names, and makes one the active Camera Set when isActive is true. Returns their element ids, which GetCameras lists as cameraSetElementId. Delete them with DeleteElements.
+
+Group: Navigator Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#CreateCameraSets
+
+Parameters:
+
+- `cameraSets` (array of object, required): The Camera Sets (camera paths) to create, each empty: cameras are added to them later.
+  - `name` (string, required): The name of the new Camera Set, as the navigator shows it.
+  - `isActive` (boolean): If true, the new set becomes the active Camera Set, and the one active before is no longer active. Default is false.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required): The element ids of the new Camera Sets, in the order of the input, or an error for each one that could not be created. GetCameras lists them as cameraSetElementId.
+
+Example: [archicad-addon/Examples/Navigator/CreateCameraSets.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateCameraSets.py): Creates an empty Camera Set (camera path) named "Viewpoints" with CreateCameraSets, makes it the active set, and lists the Camera Sets with GetCameras.
+
+### ModifyCameraSets
+
+Renames Camera Sets (camera paths) and makes one of them the active Camera Set (isActive true); the set active before is then no longer active. Values not given are kept.
+
+Group: Navigator Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#ModifyCameraSets
+
+Parameters:
+
+- `cameraSets` (array of object, required): The Camera Sets to change, each with the values to change; the values not given are kept.
+  - `cameraSetElementId` (ElementId, required): The Camera Set, as GetCameras or CreateCameraSets returns it.
+  - `name` (string): The new name of the Camera Set, as the navigator shows it.
+  - `isActive` (boolean): true makes the set the active Camera Set, and the one active before is no longer active. false is refused: one set is always the active one, so make another set active instead.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required): One result for each Camera Set of the input, in its order.
+
+Example: [archicad-addon/Examples/Navigator/ModifyCameraSets.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/ModifyCameraSets.py): Renames the first Camera Set GetCameras lists to "Renderer views" and makes it the active Camera Set with ModifyCameraSets.
+
+### CreateCameras
+
+Creates perspective cameras, each added at the end of the path of the given Camera Set, from the camera and target positions (with their heights) and optionally the view cone, roll angle, two-point perspective, sun (by angles or by date and time) and pen; the rest comes from the Camera tool defaults. Returns their element ids, which GetCameras lists. Delete them with DeleteElements.
+
+Group: Navigator Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#CreateCameras
+
+Parameters:
+
+- `cameras` (array of object, required): The perspective cameras to create. Each is added at the end of the path of its Camera Set, in the order of this list. The values not given come from the Camera tool defaults.
+  - `cameraSetElementId` (ElementId, required): The Camera Set (camera path) the camera is added to, as GetCameras or CreateCameraSets returns it.
+  - `cameraPosition` (Coordinate3D, required): The position of the camera; z is its height.
+  - `targetPosition` (Coordinate3D, required): The position of the target point the camera looks at; z is its height. Archicad works out the distance and the azimuth of the camera from the two positions.
+  - `viewCone` (number): The view cone angle of the camera, in the units GetCameras returns it.
+  - `rollAngle` (number): The roll angle of the camera, in the units GetCameras returns it.
+  - `isTwoPointPersp` (boolean): True for a two-point perspective (vertical edges stay vertical).
+  - `sun` (ProjectionSunSettings): The sun position of the camera's perspective, by angles or by date and time. Only the values given change; the others come from the Camera tool defaults.
+  - `pen` (integer): The pen index of the camera's symbol on the floor plan.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required): The element ids of the new cameras, in the order of the input, or an error for each one that could not be created. GetCameras lists them as cameraElementId.
+
+Example: [archicad-addon/Examples/Navigator/CreateCameras.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateCameras.py): Creates a Camera Set named "Viewpoints" with CreateCameraSets and adds two perspective cameras to its path with CreateCameras, the second one a two-point perspective with the sun given by date and time; then lists the cameras with GetCameras.
+
+### ModifyCameras
+
+Changes perspective cameras: the camera and target positions (with their heights), view cone, roll angle, two-point perspective, sun (by angles or by date and time) and pen. Values not given are kept; each camera keeps its element id, its Camera Set and its place in the path. View cone and roll angle are in the units GetCameras returns them.
+
+Group: Navigator Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#ModifyCameras
+
+Parameters:
+
+- `cameras` (array of object, required): The perspective cameras to change, each with the values to change; the values not given are kept. A camera keeps its element id, its Camera Set and its place in the path.
+  - `cameraElementId` (ElementId, required): The camera, as GetCameras or CreateCameras returns it.
+  - `cameraPosition` (Coordinate3D): The new position of the camera; z is its height.
+  - `targetPosition` (Coordinate3D): The new position of the target point the camera looks at; z is its height. Archicad works out the distance and the azimuth of the camera from the two positions.
+  - `viewCone` (number): The view cone angle of the camera, in the units GetCameras returns it.
+  - `rollAngle` (number): The roll angle of the camera, in the units GetCameras returns it.
+  - `isTwoPointPersp` (boolean): True for a two-point perspective (vertical edges stay vertical).
+  - `sun` (ProjectionSunSettings): The sun position of the camera's perspective, by angles or by date and time. Only the values given change; the others are kept.
+  - `pen` (integer): The pen index of the camera's symbol on the floor plan.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required): One result for each camera of the input, in its order.
+
+Example: [archicad-addon/Examples/Navigator/ModifyCameras.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/ModifyCameras.py): Creates a Camera Set with a camera using CreateCameraSets and CreateCameras, then moves the camera and its target, makes it a two-point perspective with a new sun and pen using ModifyCameras; the camera keeps its element id. Lists the cameras with GetCameras.
 
 ### Get3DStyles
 
@@ -13114,7 +13716,7 @@ Example: [archicad-addon/Examples/Navigator/ChangeAddOnViewpoints.py](https://gi
 
 ### ReorderNavigatorItems
 
-Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling.
+Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling folder, or through the parent's own parent when no sibling can host it (for example a folder with only views and clone folders).
 
 Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ReorderNavigatorItems
 
@@ -13562,6 +14164,30 @@ Grasshopper: `GetRevisionChangesOfElementsComponent`
 
 Example: [archicad-addon/Examples/RevisionManagement/GetRevisionChangesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/RevisionManagement/GetRevisionChangesOfElements.py): Lists the revision changes of the change markers on the floor plan with GetRevisionChangesOfElements. Needs at least one Change Marker on the floor plan.
 
+### CreateChangeMarkers
+
+Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults. GetDetailsOfElements reads the markers back.
+
+Group: Revision Management Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#CreateChangeMarkers
+
+Parameters:
+
+- `changeMarkersData` (array of object, required): The Change Markers to create, in the database of the active window (the floor plan story, a section, a detail, a worksheet or a layout).
+  - `polygon` (array of Coordinate2D, required): The outline of the cloud: at least 3 points, straight edges only. A closing point that repeats the first one may be given. Needed for every marker component: a head-only marker keeps it as the area it marks, as Archicad's own example does.
+  - `markerComponent` (ChangeMarkerComponent): Which parts the marker shows. Default: HeadAndCloud.
+  - `position` (Coordinate2D): The point the Change Marker points to. Default: the centre of the polygon's bounding box.
+  - `markerPosition` (Coordinate2D): The position of the marker head. Default: position.
+  - `changeId` (string): The ID of the Change the marker is linked to. Without createChange it must be the ID of an existing Change (GetRevisionChanges). When omitted, the marker is not linked to any Change.
+  - `createChange` (boolean): True: Archicad creates a new Change with changeId and changeDescription, and links the marker to it. A Change with the same ID must not exist yet. Default: false.
+  - `changeDescription` (string): The description (short name) of the new Change. Only with createChange.
+  - `layerIndex` (integer): Optional layer attribute index to place the marker on. It must be an existing, unlocked layer. When omitted the marker gets the layer of the Change Marker tool defaults.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Example: [archicad-addon/Examples/RevisionManagement/CreateChangeMarkers.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/RevisionManagement/CreateChangeMarkers.py): Clouds an area with CreateChangeMarkers, creating a new Change for it, and links a second cloud to the same Change. The markers are placed in the active window (the floor plan story, a section, a detail, a worksheet or a layout). The Change ID must not exist yet in the project.
+
 
 ## Design Options Commands
 
@@ -13873,7 +14499,7 @@ Example: [archicad-addon/Examples/DesignOptions/RenameDesignOptionCombinations.p
 
 ### DeleteDesignOptions
 
-Deletes the given design options. Available from Archicad 29.
+Deletes the given design options. An option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29.
 
 Group: Design Options Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archicad-addon/#DeleteDesignOptions
 
@@ -13891,7 +14517,7 @@ Example: [archicad-addon/Examples/DesignOptions/DeleteDesignOptions.py](https://
 
 ### DeleteDesignOptionSets
 
-Deletes the given design option sets. Available from Archicad 29.
+Deletes the given design option sets. A set with an option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29.
 
 Group: Design Options Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archicad-addon/#DeleteDesignOptionSets
 
@@ -14629,9 +15255,29 @@ Grasshopper: `ModifyMEPRoutingElementsComponent`
 
 Example: [archicad-addon/Examples/MEP/ModifyMEPRoutingElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/ModifyMEPRoutingElements.py): Changes the cross section and insulation of a duct route with ModifyMEPRoutingElements. Creates a temporary duct route, modifies it, reads it back and deletes it. Requires Archicad 28 or later.
 
+### RebuildMEPRoutingElements
+
+Rebuilds the given MEP routing elements along new node coordinates or along their current polyline: this adds or removes nodes (bend points), leaves out with removeCollinearNodes the nodes where the route goes straight on (as Purge Unused MEP Nodes does), and with resetCustomSegments resets customized segments and nodes (as Reset Custom Segments does). Each route is deleted and placed again from its own settings, under its own guid when Archicad allows it and else under a new one, which the response gives. Every segment, node and fitting gets a new guid (see guidMap); labels, dimensions and other things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node count stays the same: it keeps every guid. Kept: each new segment gets the size (shape, width, height, reference id) and the preference table, anchor, reference line offsets, wall thickness, connection style, flange size and rigid segment settings (insulation) of the old segment it lies along most, and each new node the transition placement and elbow and transition settings of the old node at its position (a new segment along old segments of different sizes gets those of the one it overlaps most, with a warning; a segment along no old segment, such as a new end, those of its nearest neighbour along the route); the route's layer, home story, renovation status (given to every part), element ID, classifications and the property values set on it; and its connections at both ends. Not kept: the guids of the segments, rigid segments, nodes, elbows and transitions; the element IDs, classifications, property values and own renovation status of single parts; and the route's design option, which is not set. Refused, with nothing changed: a route that ends at a tee (Branch) or has a take-off on a segment, which Archicad deletes with the route. What could not be carried over is listed in the item's warnings. Nothing is changed when the nodes make a segment without length or the route cannot be deleted. Available from Archicad 28.
+
+Group: MEP Commands. Added in Tapir 2.0.1. Docs: https://archicad-api.com/archicad-addon/#RebuildMEPRoutingElements
+
+Parameters:
+
+- `routingElements` (array of object, required): The routing elements to rebuild. Each is deleted and placed again. Every segment, node and fitting gets a new guid (see guidMap); labels, dimensions and other things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node count stays the same: it keeps every guid.
+  - `routingElementId` (ElementId, required): The routing element (duct, pipe or cable carrier route) to rebuild.
+  - `nodeCoordinates` (array of Coordinate3D): The new corner points of the route, at least 2, absolute like the polyline GetMEPRoutingElements returns. Fewer or more points than the route has nodes remove or add nodes. Omitted: the route's current polyline.
+  - `removeCollinearNodes` (boolean): Leaves out every inner node that lies on the straight line between its neighbours (within 1 mm), as Purge Unused MEP Nodes does, and every node on top of the previous one. Default false.
+  - `resetCustomSegments` (boolean): True gives every segment and node the route's uncustomized settings, as Reset Custom Segments does. False (default) gives each new segment the size and settings of the old segment it lies along most (within 1 mm), and each new node those of the old node at its position; a segment along no old segment takes the settings of its nearest neighbour along the route (the one before it first), and nodes without an old counterpart take the route's uncustomized settings.
+
+Returns:
+
+- `elements` (array of object or ErrorItem, required): One item for each given routing element, in order.
+
+Example: [archicad-addon/Examples/MEP/RebuildMEPRoutingElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/RebuildMEPRoutingElements.py): Adds a node to a pipe route, then leaves out a node where it goes straight on, with RebuildMEPRoutingElements. Creates a temporary pipe route, rebuilds it twice, reads it back and deletes it. Requires Archicad 28 or later. Every segment, node and fitting gets a new guid (see guidMap in the response); labels, dimensions and other things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node count stays the same: it keeps every guid. The route keeps its guid when Archicad allows it (else the response gives the new one), and each new segment keeps the size and settings of the old segment it lies along. Not kept: the element IDs, classifications, property values and own renovation status of single parts, and the route's design option; the item's warnings list anything else not carried over. A route that ends at a tee or has a take-off is refused, since Archicad deletes those with the route.
+
 ### ModifyMEPPorts
 
-Modifies the given MEP ports (as returned by GetMEPPorts): shape, connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28.
+Modifies the given MEP ports (as returned by GetMEPPorts): shape, width, height (not of piping ports), connection style (from Archicad 30), the flow direction of piping and ventilation ports, and the outer diameter and nominal size (from Archicad 30) of piping ports. Only the given fields are changed. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ModifyMEPPorts
 
@@ -14645,7 +15291,7 @@ Returns:
 
 Grasshopper: `ModifyMEPPortsComponent`
 
-Example: [archicad-addon/Examples/MEP/ModifyMEPPorts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/ModifyMEPPorts.py): Changes the flow direction and outer diameter of a pipe port with ModifyMEPPorts. Creates a temporary pipe route, modifies the port at its start, reads it back and deletes the route. Requires Archicad 28 or later.
+Example: [archicad-addon/Examples/MEP/ModifyMEPPorts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/ModifyMEPPorts.py): Changes MEP ports with ModifyMEPPorts: the flow direction and outer diameter of a piping terminal's port, and the connection size (width and height) of an air terminal. Creates a temporary piping terminal and a ventilation terminal, modifies their ports, reads them back and deletes them. GetMEPPorts reads the ports of MEP elements such as terminals, not of routes. Requires Archicad 28 or later.
 
 ### ConnectMEPElements
 
@@ -14939,7 +15585,7 @@ Example: [archicad-addon/Examples/MEP/CreateMEPTakeOffs.py](https://github.com/E
 
 ### ModifyMEPElements
 
-Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find only after the item's other changes were made, so that item's error says which changes stayed. Available from Archicad 27.
+Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, their size along the local x and y axes (from Archicad 30), the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find, or a library part that keeps its own size, only after the item's other changes were made, so that item's error says which changes stayed. The size of the connections is set with ModifyMEPPorts. Available from Archicad 27.
 
 Group: MEP Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyMEPElements
 
@@ -15523,15 +16169,17 @@ Example: [archicad-addon/Examples/Analytical/GetAnalyticalMemberTypesOfElements.
 
 ### GetAnalyticalLoadGroups
 
-Retrieves the structural analysis load groups of the project with all their fields.
+Retrieves the structural analysis load groups of the project, or the ones given by their ids, with all their fields.
 
 Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetAnalyticalLoadGroups
 
-Parameters: none.
+Parameters:
+
+- `loadGroupIds` (array of AnalyticalLoadGroupIdArrayItem): The load groups to read, answered in this order, an error object for one that does not exist. Every load group of the project is listed when it is omitted.
 
 Returns:
 
-- `loadGroups` (array of AnalyticalLoadGroup or ErrorItem, required): The load groups of the project. A load group that cannot be read is represented by an error object.
+- `loadGroups` (array of AnalyticalLoadGroup or ErrorItem, required): The load groups of the project, or the ones given in loadGroupIds. A load group that cannot be read is represented by an error object.
 
 Grasshopper: `GetAnalyticalLoadGroupsComponent`
 
@@ -15557,15 +16205,17 @@ Example: [archicad-addon/Examples/Analytical/GetAnalyticalLoadCases.py](https://
 
 ### GetAnalyticalLoadCombinations
 
-Retrieves the structural analysis load combinations of the project with all their fields and load factors.
+Retrieves the structural analysis load combinations of the project, or the ones given by their ids, with all their fields and load factors.
 
 Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetAnalyticalLoadCombinations
 
-Parameters: none.
+Parameters:
+
+- `loadCombinationIds` (array of AnalyticalLoadCombinationIdArrayItem): The load combinations to read, answered in this order, an error object for one that does not exist. Every load combination of the project is listed when it is omitted.
 
 Returns:
 
-- `loadCombinations` (array of AnalyticalLoadCombination or ErrorItem, required): The load combinations of the project. A load combination that cannot be read is represented by an error object.
+- `loadCombinations` (array of AnalyticalLoadCombination or ErrorItem, required): The load combinations of the project, or the ones given in loadCombinationIds. A load combination that cannot be read is represented by an error object.
 
 Grasshopper: `GetAnalyticalLoadCombinationsComponent`
 
@@ -17201,15 +17851,95 @@ object: A profile attribute.
 - `minimumHeight` (number)
 - `widthStretchable` (boolean)
 - `heightStretchable` (boolean)
+- `stretchZones` (ProfileStretchZones)
 - `hasCoreSkin` (boolean)
 - `profileModifiers` (array of ProfileModifier)
 - `skins` (array of ProfileSkin): The profile's skins (hatches), each with its building material/surface/fill, contour and cut-end line settings, and per-edge line data.
+- `openingReferenceLines` (array of ProfileOpeningReferenceLine): The profile's opening reference lines (Profile Editor, "Opening Reference"): doors and windows in a wall with this profile are placed by them instead of by the profile's bounding box. Empty when the profile has none.
+- `nominalSize` (ProfileNominalSize): The positions of the profile's nominal width and height lines (Profile Editor), in the coordinates of skins[].outlineCoords. A profile without nominal size lines reports the bounds Archicad uses instead.
+- `hotspots` (array of Coordinate2D): The hotspots of the profile (Profile Editor), in the coordinates of skins[].outlineCoords.
+
+### ProfileOpeningReferenceLine
+
+object: An opening reference line of a profile, in the coordinates GetProfiles reports in skins[].outlineCoords (x across the wall, y up). Openings are placed between the lines, at the heights where they cross the opening.
+- `begin` (Coordinate2D, required): The start point of the line.
+- `end` (Coordinate2D, required): The end point of the line.
+
+### ProfileStretchZones
+
+object: The stretch zones of a profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), in the coordinates of skins[].outlineCoords. A zone the profile does not have is omitted.
+- `horizontal` (ProfileStretchZone): The horizontal stretch zone (width), an x range. Present only when the profile is widthStretchable.
+- `vertical` (ProfileStretchZone): The vertical stretch zone (height), a y range. Present only when the profile is heightStretchable.
+
+### ProfileStretchZone
+
+object: One stretch zone of a profile: the range between min and max is the part of the profile that stretches.
+- `min` (number, required): The lower limit of the zone (the left one for a horizontal zone, the bottom one for a vertical zone).
+- `max` (number, required): The upper limit of the zone (the right one for a horizontal zone, the top one for a vertical zone). Must be greater than min.
+
+### ProfileNominalSize
+
+object: The nominal width and height lines of a profile (Profile Editor): the x of the left and right nominal width lines and the y of the bottom and top nominal height lines, in the coordinates of GetProfiles' skins[].outlineCoords. The nominal width is right - left, the nominal height top - bottom.
+- `left` (number, required)
+- `right` (number, required)
+- `bottom` (number, required)
+- `top` (number, required)
+
+### ProfileAreaMethod
+
+object: The component area method of a profile skin (Profile Manager): the line or circle the skin's area is projected onto. None: no projection shape. Line: the line from lineBegin to lineEnd. Circle: the circle with center and radius. Coordinates are those of GetProfiles' skins[].outlineCoords.
+- `type` (string ("None", "Line", "Circle"), required)
+- `lineBegin` (Coordinate2D): Start of the line. Needed for Line.
+- `lineEnd` (Coordinate2D): End of the line. Needed for Line.
+- `center` (Coordinate2D): Center of the circle. Needed for Circle.
+- `radius` (number): Radius of the circle, greater than 0. Needed for Circle.
 
 ### ProfileModifier
 
-object: A stretchable edge-offset parameter of the profile, as named by the profile's author in the Profile Editor. Its value is a live geometric measurement matching what the Profile Editor's dimension shows.
+object: An offset modifier of the profile (Profile Manager, Modifiers): it moves edges of the profile's skins by the distance its dimension measures between two anchors. Its value is a live geometric measurement matching what the Profile Editor's dimension shows.
+- `modifierId` (string): Identifier of the modifier, stable for the lifetime of the profile. Pass it to CreateProfiles' renameProfileModifiers to rename the modifier.
 - `name` (string): User-authored label, e.g. 'Largeur support'. Present only if the profile's author assigned one.
 - `value` (number): Present only when the parameter's dimension anchors could be resolved to concrete positions.
+- `edges` (array of ProfileModifierEdge): The edges the modifier moves.
+- `begin` (ProfileModifierAnchor): The anchor the modifier's dimension starts at.
+- `end` (ProfileModifierAnchor): The anchor the modifier's dimension ends at.
+- `projectionAngle` (number): The direction, in radians from the x axis, the dimension is measured along. Present only when the dimension has one; otherwise it is measured along its nominal direction.
+
+### ProfileModifierEdge
+
+object: An edge of a profile skin that an offset modifier moves. Edge i of a skin runs from its outlineCoords[i] to outlineCoords[i + 1] (GetProfiles' skins[].outlineCoords, field skinOutlines); 0 and the last index are not edges of the drawn shape.
+- `skinId` (string, required): The skin, from GetProfiles' skins[].skinId.
+- `edgeIndex` (integer, required): The edge of the skin, the same position as in GetProfiles' skins[].edges.
+- `direction` (string ("Left", "Right")): Which way Archicad moves the edge for a growing value, as it stores it. CreateProfiles works it out from the shape when it is omitted.
+
+### ProfileModifierAnchor
+
+object: One end of an offset modifier's dimension. Fixed: a point (position). Vertex: a vertex of a skin (skinId, vertexIndex: a position in GetProfiles' skins[].outlineCoords, 1 or more). Edge: an edge of a skin (skinId, edgeIndex, as in ProfileModifierEdge), measured perpendicular to it. The other types follow the profile's bounding box corners or stretch zone limits and need nothing else.
+- `type` (string ("Fixed", "Vertex", "Edge", "BoundingBoxUpperLeft", "BoundingBoxUpperRight", "BoundingBoxLowerLeft", "BoundingBoxLowerRight", "StretchZoneLeft", "StretchZoneRight", "StretchZoneBottom", "StretchZoneTop", "Undefined"), required)
+- `position` (Coordinate2D): The point of a Fixed anchor, in the coordinates of skins[].outlineCoords.
+- `skinId` (string): The skin of a Vertex or Edge anchor, from GetProfiles' skins[].skinId.
+- `vertexIndex` (integer): The vertex of a Vertex anchor: its position in the skin's outlineCoords.
+- `edgeIndex` (integer): The edge of an Edge anchor: edge i runs from outlineCoords[i] to outlineCoords[i + 1].
+- `positiveSideOnRight` (boolean): Edge anchor: whether the dimension grows to the right of the edge, seen from its start to its end. CreateProfiles sets it so the value grows as the edge moves away from the other anchor when it is omitted.
+
+### ElementProfileValues
+
+object: The profile values of one wall, beam or column, measured on the stretched profile the element uses: the profile after the element's own stretch and modifier values.
+- `elementId` (ElementId, required)
+- `profiles` (array of ElementProfileValue, required): One item per custom profile of the element: one for a Profile wall, one per Profile segment of a beam or column. Empty when the element uses no custom profile.
+
+### ElementProfileValue
+
+object: A custom profile as one element, or one segment of a beam or column, uses it.
+- `segmentIndex` (integer): The segment of the beam or column, 0-based in the order GetDetailsOfElements lists the segments. Absent for a wall.
+- `profileId` (AttributeIdArrayItem): The profile attribute. Absent when it could not be resolved.
+- `width` (number, required): Width of the stretched profile (its bounding box): the element's own width where the profile stretches horizontally.
+- `height` (number, required): Height of the stretched profile (its bounding box): the element's own height where the profile stretches vertically.
+- `profileModifiers` (array of ProfileModifier, required): The offset modifiers of the profile with the values this element has, measured on its stretched profile the way GetProfiles measures them on the profile attribute. Empty when the stretched profile Archicad returns carries no modifiers. A modifier whose dimension crosses a stretch zone includes the stretch.
+
+### ElementProfileValuesOrError
+
+ElementProfileValues or ErrorItem: The profile values of one element, or an error.
 
 ### ProfileSkin
 
@@ -17225,6 +17955,7 @@ object: One skin (hatch) of the profile's cross-section.
 - `visibleCutEndLines` (boolean)
 - `cutEndLinePen` (integer)
 - `cutEndLineTypeId` (AttributeIdArrayItem)
+- `areaMethod` (ProfileAreaMethod)
 - `edges` (array of ProfileEdge)
 - `outlineCoords` (array of Coordinate2D): The skin's outline polygon vertices, present only when the skinOutlines field is requested alongside skins.
 - `outlineSubPolyEnds` (array of integer): Index (into outlineCoords) of the last vertex of each contour, for skins whose outline has holes or multiple contours.
@@ -17236,7 +17967,8 @@ object: One skin (hatch) of the profile's cross-section.
 ### ProfileEdge
 
 object: One edge of a profile skin's outline.
-- `buildingMaterialId` (AttributeIdArrayItem)
+- `surfaceFromBuildingMaterial` (boolean): Whether the edge takes the surface of the skin's building material. False when the edge has a custom surface (surfaceId).
+- `surfaceId` (AttributeIdArrayItem): The custom surface of the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Only when surfaceFromBuildingMaterial is false and a surface is set.
 - `pen` (integer)
 - `lineTypeId` (AttributeIdArrayItem)
 - `isVisibleLine` (boolean)
@@ -17480,7 +18212,7 @@ object
 - `vertexIds` (array of integer, required): Counterclockwise outer-loop vertex indices for this face.
 - `filled` (boolean): Defaults to true. Set to false to create only this loop's edges (a wireframe outline, e.g. a bare rectangle with no surface fill) without an actual face - holes/surfaceId are ignored in that case, since there is no fill for them to apply to.
 - `holes` (array of MorphPolygonHole): Optional hole loops cut out of this face, each a clockwise list of vertex indices.
-- `surfaceId` (AttributeId): Optional per-face surface (render material) override. Uses the Morph's default surface when omitted. Ignored during creation in Archicad 25.
+- `surfaceId` (AttributeId): Optional per-face surface (render material) override. Uses the Morph's default surface (the morph's own surfaceId) when omitted, and takes precedence over it when given. Ignored in Archicad 25 and 26.
 
 ### MeshSubline
 
@@ -17554,13 +18286,15 @@ object
 - `isInnerLine` (boolean): Whether the edge is an inner line of the profile (GetProfiles' edges[].isInnerLine).
 - `isCutEndLine` (boolean): Whether the edge is a cut end line of the profile (GetProfiles' edges[].isCutEndLine).
 - `lineTypeId` (AttributeIdArrayItem)
-- `buildingMaterialId` (AttributeIdArrayItem)
+- `buildingMaterialId` (AttributeIdArrayItem): Kept for compatibility: makes the edge take the surface of the skin's building material, like surfaceFromBuildingMaterial true. The building material itself is not stored on the edge.
+- `surfaceId` (AttributeIdArrayItem): A custom surface for the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Sets surfaceFromBuildingMaterial to false.
+- `surfaceFromBuildingMaterial` (boolean): True: the edge takes the surface of the skin's building material, its custom surface is no longer used. False: the edge uses its custom surface (give surfaceId if it has none yet). Applied after buildingMaterialId and surfaceId.
 
 ### ProfileSkinContour
 
 object
 - `polygonCoordinates` (array of Coordinate2D, required): The 2D coordinates of this contour.
-- `polygonArcs` (array of PolyArc): Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates.
+- `polygonArcs` (array of PolyArc): Optional arcs along this contour's edges. begIndex/endIndex are 0-based positions within this contour's own polygonCoordinates and must be the two ends of one edge (consecutive vertices, either direction); the closing edge is n-1 -> 0 (n-1 -> n is also accepted). An arc that is not on an edge is refused with an error.
 
 ### LineSymbolItemData
 
@@ -17596,6 +18330,7 @@ object: One new skin (hatch). Its shape is one or more closed polygon contours: 
 - `visibleCutEndLines` (boolean)
 - `cutEndLinePen` (integer)
 - `cutEndLineTypeId` (AttributeIdArrayItem)
+- `areaMethod` (ProfileAreaMethod)
 - `edgeOverrides` (array of ProfileEdgeOverride): Per-edge pen/visibility/line type, targeted by 0-based edge index. Edge indices follow the same order as this skin's contours/polygonCoordinates: the outer contour's edges first (one edge per vertex, wrapping around), then each hole's, in the order the contours were given. Verify exact indices for a created skin via a follow-up GetProfiles call's skins[].edges before relying on them.
 
 ### PolyArc
@@ -17652,9 +18387,19 @@ object: How a shell edge is cut.
 
 ### RoofEdgeTrim
 
-object: How an edge of a single-plane roof's polygon is cut (the edge's cut in the roof's settings).
+object: How an edge of a roof's polygon (a single-plane roof's outline or a multi-plane roof's contour) is cut (the edge's cut in the roof's Custom Edge Settings).
 - `trimType` (string ("Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut")): Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle). AlignWithCut is only reported, for shell edges; it cannot be written to a roof.
 - `angle` (number): The angle of the edge cut in radians, as Archicad stores it. Only CustomAngle uses it.
+
+### SlabEdgeTrim
+
+object: The Edge Angle of a slab edge (Geometry and Positioning panel of Slab Settings): vertical, or at a custom angle.
+- `trimType` (string ("Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut")): Vertical (the default, perpendicular to the slab), or at 'angle' (CustomAngle). ModifySlabs writes only these two; the others are only reported, should Archicad store one on a slab.
+- `angle` (number): The angle of the edge in radians, as Archicad stores it (the dialog shows it in degrees). Only CustomAngle uses it.
+
+### RoofEdgeType
+
+string ("Undefined", "Ridge", "Valley", "Gable", "Hip", "Eaves", "Peak", "SideWall", "EndWall", "RoofTransitionDome", "RoofTransitionHollow"): The Edge Type of an edge of a single-plane roof (its Custom Edge Settings), used only for listing: Undefined (not set, the default), Ridge, Valley, Gable, Hip, Eaves, Peak, SideWall, EndWall, RoofTransitionDome or RoofTransitionHollow.
 
 ### ShellProfile
 
@@ -17933,6 +18678,10 @@ string ("ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"): Floor plan view
 
 string ("Symbolic", "Projected", "Hybrid"): Floor plan projection mode of an element part (API_ElemProjectionModesID).
 
+### BeamVisibleLines
+
+string ("ShowAlways", "HideAlways", "ByMVO"): When a line of a beam is shown on the floor plan (API_BeamVisibleLinesID): always, never, or as the Model View Options set it.
+
 ### TextureProjectionType
 
 string ("Invalid", "Planar", "Default", "Cylindric", "Spheric", "Box"): Projection type of the 3D texture.
@@ -18118,9 +18867,9 @@ object: The current settings of the MEP tools of one domain. A tool whose defaul
   - `routingSegment` (object, required): The segment default of the routing tool.
   - `routingNode` (object, required): The node default of the routing tool.
 - `rigidSegment` (object): The rigid segment default of the routing tool.
-  - `shape` (MEPCrossSectionShape): Archicad 27 and 28.
-  - `width` (number): Archicad 27 and 28.
-  - `height` (number): Archicad 27 and 28.
+  - `shape` (MEPCrossSectionShape): Archicad 27 only. Later versions give the size in routingElement.routingSegment.
+  - `width` (number): Archicad 27 only. Later versions give the size in routingElement.routingSegment.
+  - `height` (number): Archicad 27 only. Later versions give the size in routingElement.routingSegment.
   - `insulationThickness` (number): The insulation thickness, when the default has insulation.
 - `branch` (MEPElementDefaultDetails): The branch default of the routing tool.
 - `flexibleSegment` (object): The flexible segment tool default. Archicad 27 has it in the Ventilation domain only.
@@ -18215,9 +18964,9 @@ string ("LeftTop", "MiddleTop", "RightTop", "LeftMiddle", "MiddleMiddle", "Right
 
 string ("Middle", "Top", "Bottom", "Underlined"): How the leader line connects to the label text.
 
-### SymbolLabelTextDirection
+### LabelTextDirection
 
-string ("Parallel", "Horizontal", "Vertical", "General"): Direction of the symbol label's text.
+string ("Parallel", "Horizontal", "Vertical", "General"): Direction of a label's text (API_LabelType textWay), the same for Text and Symbol labels: 'Parallel' follows the labelled element, 'Horizontal' and 'Vertical' are fixed, 'General' is a custom angle (for a Text label style.angle, with style.fixedAngle keeping it when the element is rotated). The Archicad API offers no other direction for labels (it documents only these four), so there is no 'Perpendicular'.
 
 ### LengthType
 
@@ -18263,9 +19012,9 @@ string ("Error", "Warning", "Info", "Unknown"): The status of an issue comment.
 
 ### AssociativeWitnessPoint
 
-object: A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element.
+object: A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element. Points on wall faces (line true) only work on a dimension whose direction is perpendicular to the faces: Archicad rejects or removes a dimension that is even slightly oblique to them (#2505).
 - `elementId` (ElementId)
-- `coordinate` (Coordinate2D): Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Whether Archicad keeps this location for every kind of base (edges with line true, or only hotspots) is not verified.
+- `coordinate` (Coordinate2D): Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Archicad does not keep it on wall faces (line true): it moves the point to the middle of the face (reported in Archicad 30, #2505). Whether it is kept on other kinds of base is not verified.
 - `line` (boolean)
 - `inIndex` (integer)
 - `special` (integer)
@@ -18298,6 +19047,12 @@ object
 - `textHeight` (number): Character height of the dimension text in mm, as the creation commands take it.
 - `textPen` (integer): Pen index of the dimension text.
 - `textFrame` (boolean): Whether the dimension text has a frame.
+- `textStyle` (DimensionTextStyle): The font and style of the dimension text.
+- `content` (string ("MeasuredValue", "CustomText")): Whether the witness point shows the measured value or its custom text (API note contentType), as ModifyAssociativeDimensions' witnessPointTexts takes it.
+- `customText` (string): The custom text of the witness point (API note contentUStr), with {MeasuredValue} where the measured value autotext is (Archicad 26 and later). Kept, but not shown, while content is MeasuredValue.
+- `superscript` (boolean): Whether the text is superscript (API note effectBits, APIEffect_SuperScript).
+- `textPositionFixed` (boolean): Whether the text was moved by hand from its automatic position (API note fixPos); ModifyAssociativeDimensions' resetTextPosition sets it back to false, its textPosition to true.
+- `textPosition` (Coordinate2D): Where the text is (API note pos, its left bottom as Archicad keeps it), in the coordinates of the witness points; ModifyAssociativeDimensions' witnessPointTexts[].textPosition takes the same coordinates. Compare them across dimensions to find texts that overlap.
 
 ### FavoriteRename
 
@@ -19438,6 +20193,7 @@ object: A navigator item and the subtree below it.
 - `navigatorItemId` (NavigatorItemId, required)
 - `type` (NavigatorItemType, required)
 - `name` (string, required): The name of the navigator item.
+- `autoTextedName` (string): The name of the navigator item as it was given, with its autotext tokens (e.g. <PROJECTNUMBER>_<SourceID>_<SourceItemName>), while name holds it with the tokens resolved. Only present when the two differ, that is when the name contains autotext.
 - `prefix` (string, required): The floor number for story items, an empty string for every other item type.
 - `uiId` (string, required): The identifier shown next to the name on the navigator.
 - `customUiId` (boolean, required): True when the identifier was typed by hand instead of being inherited from the Project Map source - the View Settings ID "Custom" radio button.
@@ -19493,7 +20249,7 @@ object: The settings of a navigator view
   - `y` (number, required)
 - `structureDisplay` (string ("EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly")): Structure display mode. One of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.
 - `renovationFilterGuid` (GuidId): Identifier of the renovation filter applied to the view.
-- `renovationFilterName` (string): Name of the renovation filter applied to the view. Read-only (GetViewSettings): present together with renovationFilterGuid when the name could be resolved; set the filter via renovationFilterGuid.
+- `renovationFilterName` (string): Name of the renovation filter applied to the view (GetRenovationFilters lists them). GetViewSettings returns it together with renovationFilterGuid when the name could be resolved. SetViewSettings sets the filter by this name (an exact match first, else a case-insensitive one); a name the project has no filter for, or one that names another filter than a renovationFilterGuid given with it, fails the item and nothing of it is written.
 - `d3styleName` (string): Name of the 3D style. Empty if not set.
 - `renderingSceneName` (string): Name of the rendering scene. Empty if not set.
 - `usePhotoRendering` (boolean): Whether photo rendering is used for this view.
@@ -19585,8 +20341,20 @@ object
 - `polyCanChange` (boolean): The polygonal wall's corners can be changed in case of L and T connections. Only meaningful for a Polygonal wall (geometryType).
 - `materialsChained` (boolean): Whether the surface materials are chained.
 - `logHeight` (number): Height of the log for log walls. 0 means a normal (non-log) wall.
+- `logDetails` (WallLogDetails)
 - `hasWindow` (boolean): Whether the wall has at least one Window. Output only.
 - `hasDoor` (boolean): Whether the wall has at least one Door. Output only.
+
+### WallLogDetails
+
+object: The settings of the Log Details dialog (Wall Settings > Model) other than the log height (logHeight), one boolean per flag of API_WallType::beamFlags. They only have an effect on a log wall (logHeight greater than 0). GetDetailsOfElements returns every field; CreateWalls and ModifyWalls change only the fields given and keep the others.
+- `startWithHalfLog` (boolean): The wall starts with a half log at the bottom (APIWBeam_HalfLog).
+- `squareLogs` (boolean): The logs are square (rectangular) instead of rounded (APIWBeam_QuadricLog).
+- `roundedOnRightSide` (boolean): The logs are curved on the right side of the wall, looking from its start point to its end point (APIWBeam_RightLog). Together with roundedOnLeftSide this is the log shape's outside/inside/both choice; which side is the outside depends on the wall's direction and 'flipped'.
+- `roundedOnLeftSide` (boolean): The logs are curved on the left side of the wall, looking from its start point to its end point (APIWBeam_LeftLog).
+- `radiusFromOppositeSide` (boolean): The log radius is measured from the opposite side of the wall (APIWBeam_Stretched).
+- `referenceSideSurfaceOnHorizontalEdges` (boolean): The horizontal edges of the logs get the reference side surface instead of the one of the Wall Settings (APIWBeam_RefMater). Set at most one of this and oppositeSideSurfaceOnHorizontalEdges; both false means the surface of the Wall Settings.
+- `oppositeSideSurfaceOnHorizontalEdges` (boolean): The horizontal edges of the logs get the opposite side surface instead of the one of the Wall Settings (APIWBeam_OppMater).
 
 ### BeamDetails
 
@@ -19604,6 +20372,24 @@ object
 - `isFlipped` (boolean)
 - `profileAngle` (number)
 - `anchorPoint` (BeamAnchorPoint)
+- `visibility` (StoryVisibility): The stories the beam is shown on (Show On Stories). While isAutoOnStoryVisibility is true, Archicad computes it from the beam's elevation.
+- `isAutoOnStoryVisibility` (boolean): True when Archicad recomputes visibility automatically from the actual elevation of the beam.
+- `displayOption` (DisplayOption)
+- `viewDepthLimitation` (ViewDepthLimitation)
+- `uncutProjectionMode` (ElemProjectionMode): Projection mode of the uncut part of the beam on the floor plan.
+- `overheadProjectionMode` (ElemProjectionMode): Projection mode of the overhead part of the beam on the floor plan.
+- `showContourLines` (BeamVisibleLines): Whether the contour lines of the beam are shown on the floor plan.
+- `showReferenceAxis` (BeamVisibleLines): Whether the reference axis of the beam is shown on the floor plan.
+- `cutContourLinePen` (integer): Pen of the cut contour lines of the beam.
+- `cutContourLineTypeId` (AttributeId): Line type of the cut contour lines of the beam.
+- `belowViewLinePen` (integer): Pen of the uncut lines of the beam.
+- `belowViewLineTypeId` (AttributeId): Line type of the uncut lines of the beam.
+- `aboveViewLinePen` (integer): Pen of the overhead lines of the beam.
+- `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines of the beam.
+- `hiddenLinePen` (integer): Pen of the hidden lines of the beam (the beam below a slab, usually dashed).
+- `hiddenLineTypeId` (AttributeId): Line type of the hidden lines of the beam, for example a dashed line.
+- `referenceLinePen` (integer): Pen of the reference axis of the beam.
+- `referenceLineTypeId` (AttributeId): Line type of the reference axis of the beam.
 - `cutFillPen` (OverriddenPen)
 - `cutFillBackgroundPen` (OverriddenPen)
 - `coverFill` (CoverFill)
@@ -19614,7 +20400,7 @@ object
 - `isWidthAndHeightLinked` (boolean): When true, Archicad keeps width and height equal - set to false via ModifyBeams/CreateBeams to give them independent values.
 - `buildingMaterialId` (AttributeId): Present when the cross section uses a building material rather than a custom profile.
 - `profileId` (AttributeId): Present when the cross section uses a custom extruded profile rather than a building material.
-- `segments` (array of BeamSegmentSurfaces): The surfaces of each segment of the beam.
+- `segments` (array of BeamSegmentSurfaces): The surfaces and the geometry (cross section, taper and length) of each segment of the beam, in the order of the beam's segments (segmentIndex of a BeamSegment).
 
 ### RoofDetails
 
@@ -19622,8 +20408,8 @@ object
 - `roofClass` (string ("SinglePlane", "MultiPlane"), required)
 - `structureType` (RoofStructureType, required)
 - `thickness` (number, required)
-- `level` (number, required): Height of the pivot line (single-plane) or the pivot polygon (multi-plane) above the floor level.
-- `zCoordinate` (number, required)
+- `level` (number, required): Height of the pivot line (single-plane) or the pivot polygon (multi-plane) above the level of the roof's home story (story-relative). ModifyRoofs and CreateRoofs take the absolute zCoordinate as their 'level' instead.
+- `zCoordinate` (number, required): Absolute elevation (from the project zero) of the pivot line (single-plane) or the pivot polygon (multi-plane): level plus the elevation of the home story. This is the value ModifyRoofs and CreateRoofs take as 'level'.
 - `buildingMaterialId` (AttributeId)
 - `compositeId` (AttributeId)
 - `topMaterial` (OverriddenMaterial)
@@ -19635,7 +20421,7 @@ object
 - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes 'visibility' and 'fillVisibility' automatically from the roof's vertical extent.
 - `visibility` (StoryVisibility): The stories the roof's contour is shown on (API_ShellBaseType::visibilityCont).
 - `fillVisibility` (StoryVisibility): The stories the roof's cover fill is shown on (API_ShellBaseType::visibilityFill).
-- `cutBodyType` (string ("Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion")): How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, on the Model panel of Roof Settings).
+- `cutBodyType` (string ("Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion")): How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, the Trimming Body on the Model panel of Roof Settings). A roof uses ContoursDown or PivotLinesDown, which ModifyRoofs sets.
 - `cutFillPen` (OverriddenPen)
 - `cutFillBackgroundPen` (OverriddenPen)
 - `sectionContourPen` (integer): Pen of the roof's contour where it is cut (API_ShellBaseType::sectContPen).
@@ -19648,15 +20434,29 @@ object
 - `angle` (number): Single-plane: the slope in radians.
 - `pivotLine` (RoofDetailsPivotLine): For single-plane roofs.
 - `eavesOverhang` (number): Multi-plane: the eaves overhang beyond the pivot polygon.
+- `overhangType` (string ("Offset", "Manual")): Multi-plane: how the roof's contour is made (API_PolyRoofData::overHangType, the Overhang of Roof Settings). Offset: from the pivot polygon and the eaves overhangs, which ModifyRoofs' eavesOverhang sets. Manual: the contour was edited on its own (Edit Roof Contour in Archicad, or ModifyRoofs' contourPolygon), and polygonOutline is that contour.
 - `levels` (array of RoofDetailsLevel): Multi-plane: the roof levels, each with its height above the previous and its slope in radians.
-- `pivotPolygonOutline` (array of Coordinate2D): Multi-plane: the pivot polygon the planes rise from. Arcs are not carried; a curved pivot edge comes back as its end points.
-- `polygonOutline` (array of Coordinate2D, required): The roof's polygon: the plane roof's outline, the multi-plane roof's contour.
+- `pivotPolygonOutline` (array of Coordinate2D): Multi-plane: the pivot polygon the planes rise from. This is the polygon ModifyRoofs' polygonOutline writes for a multi-plane roof. Its curved edges are in pivotPolygonArcs.
+- `pivotPolygonArcs` (array of PolyArc): Multi-plane: the arcs of pivotPolygonOutline, indexed into it from 0 as polygonArcs are; missing when every pivot edge is straight. This is the list ModifyRoofs' polygonArcs writes with the pivot polygon of a multi-plane roof.
+- `segmentType` (string ("SegmentsByCircle", "SegmentsByArc")): Multi-plane: how the curved edges of the pivot polygon are resolved into planes. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments.
+- `segmentsByArc` (integer): Multi-plane: the number of segments of each arc when segmentType is SegmentsByArc.
+- `segmentsByCircle` (integer): Multi-plane: the number of segments of a whole circle when segmentType is SegmentsByCircle.
+- `polygonOutline` (array of Coordinate2D, required): The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.
 - `polygonArcs` (array of PolyArc)
 - `holes` (Holes2D)
-- `edgeSideMaterials` (array of OverriddenMaterial): The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1.
-- `edgeTrims` (array of RoofEdgeTrim): Single-plane roofs only: the cut of each edge of the roof's polygon, in the order of edgeSideMaterials. ModifyRoofs takes the same list.
+- `edgeSideMaterials` (array of OverriddenMaterial): The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. ModifyRoofs takes the same list for single-plane roofs.
+- `edgeTrims` (array of RoofEdgeTrim): The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), in the order of edgeSideMaterials: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. ModifyRoofs takes the same list.
+- `edgeTypes` (array of RoofEdgeType): Single-plane roofs only: the Edge Type of each edge of the roof's polygon (Custom Edge Settings), which schedules use, e.g. to list the length of the Eaves or Gable edges. In the order of edgeSideMaterials and edgeTrims: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. It does not change the geometry of the roof. ModifyRoofs takes the same list.
 - `pivotEdges` (array of object): Multi-plane roofs only: the roof planes of each edge of the pivot polygon. Item i belongs to the edge from vertex i to vertex i + 1 of pivotPolygonOutline; for a pivot polygon with holes, the edges of each hole follow, contour by contour.
   - `levels` (array of object, required): The roof plane of the edge on each level, from the pivot polygon upwards.
+
+### ShellEdgeMaterials
+
+object: The custom surface of the edges of a shell (API_ContourEdgeData::sideMaterial of the shell class's edge data). An overridden edge shows its own surface; one that is not overridden shows the shell's side surface (sideMaterial).
+- `begShapeEdge` (OverriddenMaterial): The edges of the profile at the begin of the shell: the start of the extrusion or revolution, or the first profile of a ruled shell (begShapeEdgeData).
+- `endShapeEdge` (OverriddenMaterial): The edges of the profile at the end of the shell: the end of the extrusion or revolution, or the second profile of a ruled shell (endShapeEdgeData).
+- `begSideEdge` (OverriddenMaterial): The edge along the shell's surface from the first point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [0]).
+- `endSideEdge` (OverriddenMaterial): The edge along the shell's surface from the last point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [1]).
 
 ### ShellDetails
 
@@ -19664,14 +20464,20 @@ object
 - `shellClass` (string ("Extruded", "Revolved", "Ruled"), required)
 - `structureType` (ShellStructureType, required)
 - `thickness` (number, required)
+- `isFlipped` (boolean): The side of the shell's reference surface the thickness is applied to (API_ShellType::isFlipped), as CreateShells and ModifyShells take it.
 - `buildingMaterialId` (AttributeId)
 - `compositeId` (AttributeId)
+- `topMaterial` (OverriddenMaterial): The surface override of one face of the shell (API_ShellBaseType::topMat). ModifyShells takes the same key.
+- `sideMaterial` (OverriddenMaterial): The surface override of the edges of the shell (API_ShellBaseType::sidMat). ModifyShells takes the same key.
+- `bottomMaterial` (OverriddenMaterial): The surface override of the other face of the shell (API_ShellBaseType::botMat). ModifyShells takes the same key.
+- `materialsChained` (boolean): Whether the surface materials are chained. ModifyShells takes the same key.
+- `edgeMaterials` (ShellEdgeMaterials): The custom surface of each edge of the shell. ModifyShells takes the same key.
 - `displayOption` (DisplayOption)
 - `viewDepthLimitation` (ViewDepthLimitation)
 - `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes the story visibility automatically from the shell's vertical extent.
 - `visibility` (StoryVisibility): The stories the shell's contour is shown on (API_ShellBaseType::visibilityCont).
 - `fillVisibility` (StoryVisibility): The stories the shell's cover fill is shown on (API_ShellBaseType::visibilityFill).
-- `cutBodyType` (string ("Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion")): How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion.
+- `cutBodyType` (string ("Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion")): How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion; ModifyShells sets UpwardsExtrusion or DownwardsExtrusion.
 - `cutFillPen` (OverriddenPen)
 - `cutFillBackgroundPen` (OverriddenPen)
 - `sectionContourPen` (integer): Pen of the contour of the cut surfaces (API_ShellBaseType::sectContPen).
@@ -19681,6 +20487,17 @@ object
 - `aboveViewLinePen` (integer): Pen used when "Overhead All" is selected from the "Floor Plan Display" popup.
 - `aboveViewLineTypeId` (AttributeId): Line type used when "Overhead All" is selected from the "Floor Plan Display" popup - pairs with aboveViewLinePen.
 - `floorFill` (ShellBaseFloorFill)
+- `contour` (ShellCutPolygon): The clipping contour of the shell, when it has one: only the part inside this polygon, seen along the Z axis of its plane, is kept. The polygon and its plane are in the coordinates of the shell's base plane, as CreateShells and ModifyShells take them.
+- `holes` (array of ShellCutPolygon): The holes of the shell, each with its polygon, its plane (in the coordinates of the shell's base plane) and the depth its cutting body is extruded along the Z axis of that plane. Empty when the shell has no hole.
+- `basePlane` (CoordinateSystem3D): Base plane of the shell, in project coordinates, as CreateShells takes it: the profile, the extrusion start and the extrusion vector are given in it.
+- `profile` (ShellProfile): Extruded only: the profile polyline, in the plane across the extrusion (x horizontal, y up), as CreateShells takes it. Only the first polyline of the profile is returned.
+- `extrusionStart` (Coordinate3D): Extruded only: the point the extrusion starts from, in base plane coordinates.
+- `extrusionVector` (Coordinate3D): Extruded only: the direction and length of the extrusion, in base plane coordinates. The end of the extrusion is extrusionStart + extrusionVector.
+- `extrusionLength` (number): Extruded only: the length of extrusionVector.
+- `shapePlaneTilt` (number): Extruded only: tilt of the profile's plane, in radians.
+- `begPlaneTilt` (number): Extruded only: tilt of the start plane of the extrusion, in radians.
+- `endPlaneTilt` (number): Extruded only: tilt of the end plane of the extrusion, in radians.
+- `slantAngle` (number): Extruded only: slant of the extrusion vector, in radians.
 
 ### SlabDetails
 
@@ -19692,6 +20509,8 @@ object
 - `polygonOutline` (array of Coordinate2D, required): Polygon outline of the slab.
 - `polygonArcs` (array of PolyArc): Polygon outline arcs of the slab.
 - `holes` (Holes2D, required)
+- `edgeSideMaterials` (array of OverriddenMaterial): The custom side surface of each edge of the slab's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. ModifySlabs takes the same list.
+- `edgeTrims` (array of SlabEdgeTrim): The Edge Angle of each edge of the slab's polygon, in the order of edgeSideMaterials. Missing when the slab stores no edge trims, in which case every edge is Vertical. ModifySlabs takes the same list, or one edgeTrim for every edge.
 - `structureType` (SlabStructureType)
 - `buildingMaterialId` (AttributeId)
 - `compositeId` (AttributeId)
@@ -19702,6 +20521,17 @@ object
 - `cutFillPen` (OverriddenPen)
 - `cutFillBackgroundPen` (OverriddenPen)
 - `floorFill` (FloorFill)
+- `materialsChained` (boolean): Whether the surface materials are chained (API_SlabType::materialsChained).
+- `contourPen` (integer): Pen of the slab's contour in the floor plan (API_SlabType::pen).
+- `contourLineTypeId` (AttributeId): Line type of the slab's contour in the floor plan (API_SlabType::ltypeInd) - pairs with contourPen.
+- `sectionContourPen` (integer): Pen of the slab's contour where it is cut in sections (API_SlabType::sectContPen).
+- `sectionContourLineTypeId` (AttributeId): Line type of the slab's contour where it is cut in sections (API_SlabType::sectContLtype) - pairs with sectionContourPen.
+- `hiddenContourLinePen` (integer): Pen of the slab's hidden contour lines in the floor plan (API_SlabType::hiddenContourLinePen).
+- `hiddenContourLineTypeId` (AttributeId): Line type of the slab's hidden contour lines in the floor plan (API_SlabType::hiddenContourLineType) - pairs with hiddenContourLinePen.
+- `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes 'visibility' and 'fillVisibility' automatically from the slab's elevation. Only in Archicad 29 and later; older versions have no such setting on a slab and leave it out.
+- `visibility` (StoryVisibility): The stories the slab's contour is shown on (API_SlabType::visibilityCont).
+- `fillVisibility` (StoryVisibility): The stories the slab's cover fill is shown on (API_SlabType::visibilityFill).
+- `linkToSettings` (LinkToSettings)
 
 ### ColumnDetails
 
@@ -19719,6 +20549,21 @@ object
 - `wrapping` (boolean)
 - `topOffset` (number)
 - `relativeTopStory` (number): Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' via ModifyColumns in the same call.
+- `visibility` (StoryVisibility): The stories the column is shown on (Show On Stories). While isAutoOnStoryVisibility is true, Archicad computes it from the column's elevation.
+- `isAutoOnStoryVisibility` (boolean): True when Archicad recomputes visibility automatically from the actual elevation of the column.
+- `displayOption` (DisplayOption)
+- `viewDepthLimitation` (ViewDepthLimitation)
+- `contourPen` (integer): Pen of the cut contour lines of the column core.
+- `contourLineTypeId` (AttributeId): Line type of the cut contour lines of the column core.
+- `veneerLinePen` (integer): Pen of the veneer lines of the column.
+- `veneerLineTypeId` (AttributeId): Line type of the veneer lines of the column.
+- `coreSymbolPen` (integer): Pen of the core symbol lines (slash, X or crosshair) of the column.
+- `belowViewLinePen` (integer): Pen of the uncut lines of the column.
+- `belowViewLineTypeId` (AttributeId): Line type of the uncut lines of the column.
+- `aboveViewLinePen` (integer): Pen of the overhead lines of the column.
+- `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines of the column.
+- `hiddenLinePen` (integer): Pen of the hidden lines of the column.
+- `hiddenLineTypeId` (AttributeId): Line type of the hidden lines of the column, for example a dashed line.
 - `cutFillPen` (OverriddenPen)
 - `cutFillBackgroundPen` (OverriddenPen)
 - `coverFill` (CoverFill)
@@ -19728,11 +20573,12 @@ object
 - `isWidthAndHeightLinked` (boolean): When true, Archicad keeps width and depth equal - set to false via ModifyColumns/CreateColumns to give them independent values.
 - `buildingMaterialId` (AttributeId): Present when the cross section uses a building material rather than a custom profile.
 - `profileId` (AttributeId): Present when the cross section uses a custom extruded profile rather than a building material.
-- `segments` (array of ColumnSegmentSurfaces): The surfaces of each segment of the column.
+- `segments` (array of ColumnSegmentSurfaces): The segments of the column, in the order Archicad keeps them: the surfaces, the cross section, the taper and the length of each.
 
 ### BeamSegmentSurfaces
 
-object: The surfaces of a beam segment.
+object: The surfaces of a beam segment, and its geometry when read.
+- `geometry` (BeamSegmentGeometry): The cross section, taper and length of the segment. CreateBeams and ModifyBeams write it with their segments array.
 - `leftMaterial` (OverriddenMaterial, required)
 - `topMaterial` (OverriddenMaterial, required)
 - `rightMaterial` (OverriddenMaterial, required)
@@ -19748,13 +20594,70 @@ object: The veneer of a column segment. A thickness of 0 means no veneer. When w
 - `thickness` (number): Thickness of the veneer; 0 removes it.
 - `buildingMaterialId` (AttributeId): Building material of the veneer. Archicad uses it only for a segment whose cross section is a building material, not a profile; read back only for such segments.
 
+### AssemblySegmentLength
+
+object: How the length of a segment of a beam or column is set (its segment scheme): a fixed length, or a proportion of the length the fixed segments leave. Both values are returned; Archicad uses the one of the lengthType.
+- `lengthType` (string ("Fixed", "Proportional", "Unknown"), required): Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave. Unknown is only returned, for a scheme Archicad reports as neither; the commands that write a length (AssemblySegmentLengthModification) accept only Fixed or Proportional.
+- `fixedLength` (number, required): The length of the segment, used when lengthType is Fixed.
+- `lengthProportion` (number, required): The proportion of the segment, used when lengthType is Proportional, as Archicad stores it.
+
+### ColumnSegmentTaper
+
+object: The taper of a column segment: a segment that is not homogeneous changes its cross section from width and depth at its start to endWidth and endDepth at its end.
+- `isHomogeneous` (boolean, required): True when the cross section is the same at both ends of the segment (no taper).
+- `endWidth` (number, required): Cross section width at the end of the segment. Used only when isHomogeneous is false.
+- `endDepth` (number, required): Cross section depth (height) at the end of the segment. Used only when isHomogeneous is false.
+- `isEndWidthAndDepthLinked` (boolean, required): Whether Archicad keeps endWidth and endDepth linked. Used only when isHomogeneous is false.
+
 ### ColumnSegmentSurfaces
 
-object: The surfaces of a column segment.
+object: A segment of a column: its surfaces and veneer, its own cross section, its taper and its length.
 - `extrusionSurfaceMaterial` (OverriddenMaterial, required)
 - `endsMaterial` (OverriddenMaterial, required)
 - `materialsChained` (boolean, required): Whether the surface materials are chained.
 - `veneer` (ColumnVeneer)
+- `structureType` (SegmentStructureType)
+- `width` (number): Cross section width of the segment (at its start when it is tapered).
+- `depth` (number): Cross section depth (height) of the segment (at its start when it is tapered).
+- `isWidthAndHeightLinked` (boolean)
+- `circleBased` (boolean): True for a round cross section, false for rectangular.
+- `buildingMaterialId` (AttributeId): Present when the cross section of the segment uses a building material rather than a custom profile.
+- `profileId` (AttributeId): Present when the cross section of the segment uses a custom extruded profile rather than a building material.
+- `taper` (ColumnSegmentTaper)
+- `length` (AssemblySegmentLength): The length scheme of the segment. Absent when Archicad does not return the column's segment schemes.
+
+### ColumnSegmentTaperModification
+
+object: The taper to write to a column segment, in the shape of ColumnSegmentTaper. Only the given fields change.
+- `isHomogeneous` (boolean): True for the same cross section at both ends of the segment (no taper), false to taper it to endWidth and endDepth.
+- `endWidth` (number): Cross section width at the end of the segment. Used only when isHomogeneous is false; it must then be greater than 0.
+- `endDepth` (number): Cross section depth (height) at the end of the segment. Used only when isHomogeneous is false; it must then be greater than 0.
+- `isEndWidthAndDepthLinked` (boolean): Whether Archicad keeps endWidth and endDepth linked. Set it to false first to give them independent values.
+
+### AssemblySegmentLengthModification
+
+object: The length scheme to write to a segment of a beam or column, in the shape of AssemblySegmentLength. Only the given fields change; Archicad uses the value of the lengthType.
+- `lengthType` (string ("Fixed", "Proportional")): Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave.
+- `fixedLength` (number): The length of the segment, used when lengthType is Fixed; it must then be greater than 0.
+- `lengthProportion` (number): The proportion of the segment, used when lengthType is Proportional, as Archicad stores it and GetDetailsOfElements returns it; it must then be greater than 0.
+
+### ColumnSegmentSurfacesModification
+
+object: What to write to one segment of a column, in the shape of ColumnSegmentSurfaces: its surfaces and veneer, its own cross section, its taper and its length. Only the given fields change. Send overridden false to make a surface come from the cross section again.
+- `segmentIndex` (integer): The 0-based index of the segment, in the order GetDetailsOfElements lists the column's segments. Defaults to the item's position in the segments list.
+- `extrusionSurfaceMaterial` (OverriddenMaterial): Overrides the surface of the sides (the extrusion) of the segment.
+- `endsMaterial` (OverriddenMaterial): Overrides the surface of the top and bottom ends of the segment.
+- `materialsChained` (boolean): Whether the surface materials are chained. Send false with surfaces that should differ from each other.
+- `veneer` (ColumnVeneer): The veneer of this segment only; only the given fields change, thickness 0 removes it.
+- `structureType` (SegmentStructureType): Taken so the segments GetDetailsOfElements returns can be sent back. The structure follows buildingMaterialId (Basic) or profileId (Profile), so this must agree with them, or, when neither is given, with the structure the column-wide buildingMaterialId or profileId gives the segment, else its current one; otherwise the item is refused.
+- `width` (number): Cross section width of this segment (at its start when it is tapered).
+- `depth` (number): Cross section depth (height) of this segment (at its start when it is tapered).
+- `isWidthAndHeightLinked` (boolean): When true, Archicad keeps width and depth of this segment equal - set to false to give them independent values.
+- `circleBased` (boolean): True for a round cross section of this segment, false for rectangular. Ignored once profileId switches the segment to a custom profile.
+- `buildingMaterialId` (AttributeId): Makes the cross section of this segment a building material (round or rectangular, per circleBased).
+- `profileId` (AttributeId): Switches the cross section of this segment to this custom extruded profile (circleBased becomes false).
+- `taper` (ColumnSegmentTaperModification): The taper of this segment.
+- `length` (AssemblySegmentLengthModification): The length scheme of this segment. Refused when Archicad returns no scheme for the segment.
 
 ### ColumnSegmentDetails
 
@@ -19768,6 +20671,8 @@ object: Details of a ColumnSegment subelement of a Column.
 - `buildingMaterialId` (AttributeId): Present when the cross section uses a building material rather than a custom profile.
 - `profileId` (AttributeId): Present when the cross section uses a custom extruded profile rather than a building material.
 - `veneer` (ColumnVeneer)
+- `taper` (ColumnSegmentTaper)
+- `length` (AssemblySegmentLength): The length scheme of the segment, from its Column. Absent when Archicad does not return the Column's segment schemes.
 
 ### BeamSegmentDetails
 
@@ -19780,6 +20685,50 @@ object: Details of a BeamSegment subelement of a Beam.
 - `circleBased` (boolean, required): True for a round cross section, false for rectangular.
 - `buildingMaterialId` (AttributeId): Present when the cross section uses a building material rather than a custom profile.
 - `profileId` (AttributeId): Present when the cross section uses a custom extruded profile rather than a building material.
+- `isHomogeneous` (boolean): True when the cross section is the same at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight.
+- `endWidth` (number): Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false.
+- `endHeight` (number): Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false.
+- `isEndWidthAndHeightLinked` (boolean): Whether the end width and end height of a tapered segment are linked.
+- `segmentIndex` (integer): The index of the segment in its beam, the same as its position in the beam's segments list.
+- `length` (AssemblySegmentLength)
+
+### BeamSegmentGeometry
+
+object: The cross section, taper and length of a segment of a beam.
+- `structureType` (SegmentStructureType, required)
+- `width` (number, required): Cross section width of the segment (at its start, for a tapered segment).
+- `height` (number, required): Cross section height of the segment (at its start, for a tapered segment).
+- `isWidthAndHeightLinked` (boolean, required)
+- `circleBased` (boolean, required): True for a round cross section, false for rectangular.
+- `buildingMaterialId` (AttributeId): Present when the cross section uses a building material rather than a custom profile.
+- `profileId` (AttributeId): Present when the cross section uses a custom extruded profile rather than a building material.
+- `isHomogeneous` (boolean, required): True when the cross section is the same at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight.
+- `endWidth` (number, required): Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false.
+- `endHeight` (number, required): Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false.
+- `isEndWidthAndHeightLinked` (boolean, required): Whether the end width and end height of a tapered segment are linked.
+- `length` (AssemblySegmentLength)
+
+### BeamSegmentGeometryModification
+
+object: The cross section, taper and length of a segment of a beam, in the shape GetDetailsOfElements returns them (BeamSegmentGeometry). Only the keys given are written; the other values of the segment stay as they are.
+- `structureType` (SegmentStructureType): Basic: a round or rectangular cross section of a building material (buildingMaterialId, or the segment's current one). Profile: a custom extruded profile, which needs profileId.
+- `width` (number): Cross section width of the segment (at its start, for a tapered segment).
+- `height` (number): Cross section height of the segment (at its start, for a tapered segment).
+- `isWidthAndHeightLinked` (boolean): When true, Archicad keeps width and height equal - set to false to give them independent values.
+- `circleBased` (boolean): True for a round cross section, false for rectangular. Ignored when profileId is given.
+- `buildingMaterialId` (AttributeId): Switches the segment to a basic cross section of this building material. Not together with profileId.
+- `profileId` (AttributeId): Switches the segment to this custom extruded profile (circleBased becomes false). Not together with buildingMaterialId.
+- `isHomogeneous` (boolean): True for the same cross section at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight.
+- `endWidth` (number): Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false.
+- `endHeight` (number): Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false.
+- `isEndWidthAndHeightLinked` (boolean): Whether the end width and end height of a tapered segment are linked.
+- `length` (AssemblySegmentLengthModification)
+
+### BeamSegmentModification
+
+object: Changes one existing segment of a beam.
+- `segmentIndex` (integer): The segment to change, 0-based, in the order GetDetailsOfElements lists the beam's segments. Without it, the item's position in the segments array is used, so an empty item {} leaves its segment as it is.
+- `geometry` (BeamSegmentGeometryModification)
 
 ### DetailWorksheetDetails
 
@@ -19827,7 +20776,7 @@ object: Shared shape for Object and Lamp elements (both use the same API_ObjectT
 - `reflected` (boolean)
 - `useFixSize` (boolean): Use the A/B (dimensions.x/dimensions.y) values as fixed sizes.
 - `fixPoint` (integer): 0-based index of the hotspot to keep fixed when the object is resized (raw API_ObjectType.fixPoint value, not 1-based).
-- `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType/level.
+- `offset` (Coordinate2D): Offset of the symbol's origin from the insertion point. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType.
 - `useFixedAngle` (boolean): Use a fixed rotation angle (API_ObjectType.fixedAngle - stored as Int32 in the API despite being boolean in practice). Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify.
 - `isAutoOnStoryVisibility` (boolean): Recalculate per-story visibility automatically from the object's vertical extent ('All Relevant Stories').
 - `lightColor` (ColorRGB): Lamp only. Reported accurately here, but confirmed live that Archicad silently discards this value through both Create and Modify (always reports the library part's own default light color). lightIsOn (the on/off state) does not have this problem.
@@ -19865,6 +20814,38 @@ object
 - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
 - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
 - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'.
+- `verticalLink` (WindowDoorVerticalLink)
+- `verticalLinkStoryIndex` (integer): The index of the story the opening is anchored to (API_VerticalLink::linkValue); only returned when verticalLink is 'SillToStory' or 'HeaderToStory'.
+- `subFloorThickness` (number): Sub-floor thickness: the floor build-up the sill height is given from (API_OpeningBaseType::subFloorThickness).
+- `revealDepthLocation` (WindowDoorRevealDepthLocation)
+- `surfaceId` (AttributeId): The one surface of the whole window or door (API_OpeningBaseType::mat); used unless useObjectMaterials is true.
+- `useObjectMaterials` (boolean): Use the surfaces defined in the library part instead of 'surfaceId'.
+- `directionType` (WindowDoorDirectionType)
+- `fixPoint` (WindowDoorFixPoint)
+- `revealDepthFromSide` (number): Read only. The reveal depth measured from the clicked side of the wall, computed by Archicad from revealDepthLocation and revealDepthOffset (API_WindowType::revealDepthFromSide).
+- `jambDepthHead` (number): Read only. Inset on top (API_WindowType::jambDepthHead).
+- `jambDepthSill` (number): Read only. Inset on bottom (API_WindowType::jambDepthSill).
+- `jambDepthLeft` (number): Read only. Inset on the left (API_WindowType::jambDepth).
+- `jambDepthRight` (number): Read only. Inset on the right (API_WindowType::jambDepth2).
+- `wallCutUsing` (boolean): Read only. Whether the opening inherits the gables of its owner wall (API_OpeningBaseType::wallCutUsing).
+- `startPoint` (Coordinate2D): Read only. The center point of the opening, measured from the beginning corner of the wall and rotated into the direction of the wall reference edge (API_WindowType::startPoint).
+- `dirVector` (Coordinate2D): Read only. The direction vector of the opening in a polygonal wall, relative to the wall reference edge (API_WindowType::dirVector).
+
+### WindowDoorVerticalLink
+
+string ("SillToWallBottom", "SillToStory", "HeaderToWallBottom", "HeaderToStory", "SillToWallTop", "HeaderToWallTop"): What the vertical position of a window or door is anchored to, as the anchor in "Preview and Positioning" (API_OpeningBaseType::verticalLink): its sill or its header, to the bottom or the top of the owner wall, or to a story (verticalLinkStoryIndex). The DevKit has no anchor to the project zero or to a reference level.
+
+### WindowDoorRevealDepthLocation
+
+string ("Side", "Core"): What revealDepthOffset of a window or door is measured from (API_WindowType::revealDepthLocation): 'Side' the clicked face of the wall, 'Core' the core skin (clicked side) of a composite wall.
+
+### WindowDoorDirectionType
+
+string ("AssociativeToWall", "Vertical"): The plane of a window or door in a slanted wall (API_WindowType::directionType): 'AssociativeToWall' follows the plane of the wall, 'Vertical' stays vertical.
+
+### WindowDoorFixPoint
+
+string ("Beginning", "Center", "End"): The fixed (placement) point of a window or door, relative to the owner wall's reference line (API_WindowType::fixPoint).
 
 ### SkylightDetails
 
@@ -19907,7 +20888,22 @@ object
 - `roomSeparator` (boolean): Is this a zone boundary line?
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `drawSegmentMode` (PolylineDrawSegmentMode)
+- `startArrow` (LineArrowhead): The arrowhead at the start.
+- `endArrow` (LineArrowhead): The arrowhead at the end.
 - `zCoordinate` (number, required)
+
+### PolylineDrawSegmentMode
+
+string ("SegmentBySegment", "Continuous"): How the dashes of the polyline's line type are drawn: SegmentBySegment restarts the pattern on every segment, Continuous runs it over the whole polyline.
+
+### LineArrowhead
+
+object: An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.
+- `visible` (boolean): Is the arrowhead shown? When the object is given without it, the arrowhead is shown.
+- `type` (string ("EmptyCircle", "CrossCircle", "FullCircle", "SlashLine15", "OpenArrow15", "ClosedArrow15", "FullArrow15", "SlashLine30", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", ...)): The arrowhead type: circles, slash lines, open, closed (outline) and full (filled) arrows of 15, 30, 45, 60 or 90 degrees, the pepita circle, BandArrow (the double line) and the half arrows (harpoons; Ccw: barb up, Cw: barb down).
+- `size` (number): The arrowhead size in mm.
+- `pen` (integer): The pen index of the arrowhead.
 
 ### LineDetails
 
@@ -19917,11 +20913,13 @@ object
 - `roomSeparator` (boolean): Is this a zone boundary line?
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `startArrow` (LineArrowhead): The arrowhead at the start.
+- `endArrow` (LineArrowhead): The arrowhead at the end.
 - `zCoordinate` (number, required)
 
 ### ArcDetails
 
-object: Geometry of an Arc or Circle element. begAngle/endAngle are only present for Arc (a Circle spans the full 0-2*PI range implicitly).
+object: Geometry of an Arc or Circle element. begAngle/endAngle and startArrow/endArrow are only present for Arc (a Circle spans the full 0-2*PI range implicitly and has no ends).
 - `origin` (Coordinate2D, required)
 - `radius` (number, required)
 - `angle` (number, required): 0.0, or the angle of the 'a' axis in radians.
@@ -19932,6 +20930,8 @@ object: Geometry of an Arc or Circle element. begAngle/endAngle are only present
 - `roomSeparator` (boolean): Is this a zone boundary line?
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `startArrow` (LineArrowhead): The arrowhead at the start. Only present for Arc, not Circle.
+- `endArrow` (LineArrowhead): The arrowhead at the end. Only present for Arc, not Circle.
 - `zCoordinate` (number, required)
 
 ### HotspotDetails
@@ -19943,12 +20943,14 @@ object
 
 ### SplineDetails
 
-object: Geometry of a Spline element. Geometry is read-only: Archicad's own API does not support modifying Spline geometry via ACAPI_Element_Change. The settings fields (roomSeparator/linePenIndex/lineTypeId) ARE modifiable via SET.
+object: Geometry of a Spline element. Geometry is read-only: Archicad's own API does not support modifying Spline geometry via ACAPI_Element_Change. The settings fields (roomSeparator/linePenIndex/lineTypeId/startArrow/endArrow) ARE modifiable via SET.
 - `coordinates` (array of Coordinate2D, required)
 - `closed` (boolean, required): Is this a closed curve?
 - `roomSeparator` (boolean): Is this a zone boundary line?
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `startArrow` (LineArrowhead): The arrowhead at the start.
+- `endArrow` (LineArrowhead): The arrowhead at the end.
 - `zCoordinate` (number, required)
 
 ### HatchDetails
@@ -19957,16 +20959,18 @@ object
 - `coordinates` (array of Coordinate2D, required)
 - `arcs` (array of PolyArc): The arcs of the hatch outline.
 - `holes` (Holes2D)
-- `contourPenIndex` (integer)
+- `contourPenIndex` (integer): Pen of the contour; 0 means the contour is switched off.
+- `contourLineTypeId` (AttributeId): The line type of the contour.
 - `fillPenIndex` (integer)
-- `fillBackgroundPenIndex` (integer)
+- `fillBackgroundPenIndex` (integer): Pen of the fill background; 0 means a transparent background and -1 the window background color.
 - `foregroundColor` (ColorRGB): RGB color of the fill foreground. Only present when it overrides fillPenIndex.
 - `backgroundColor` (ColorRGB): RGB color of the fill background. Only present when it overrides fillBackgroundPenIndex.
 - `fillId` (AttributeId): The fill attribute used, if the hatch's type is a plain fill hatch.
 - `buildingMaterialId` (AttributeId): The building material attribute used, if the hatch's type is a building material hatch.
-- `roomSpecial` (integer): Special area percent in a room (negative means OFF).
+- `roomSpecial` (integer): The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); negative means off.
 - `showArea` (boolean): True if the area text is shown.
 - `fillOrientation` (HatchOrientation): Orientation, origin and distortion of the fill pattern.
+- `fillCategory` (HatchFillCategory)
 - `zCoordinate` (number, required)
 
 ### ZoneDetails
@@ -19991,6 +20995,10 @@ object
 - `floorThickness` (number, required): Thickness of the floor finish (subfloor thickness) of the zone.
 - `contourLine` (ZoneContourLine, required)
 - `coverFill` (ZoneCoverFill, required)
+- `surface` (ZoneSurface, required)
+- `polygonDisplay` (ZonePolygonDisplay, required)
+- `stampPen` (ZoneStampPen, required)
+- `reducePercent` (ZoneReducePercent, required)
 
 ### RailingDetails
 
@@ -20000,10 +21008,224 @@ object
 - `zCoordinate` (number, required): The absolute elevation of the base of the railing.
 - `height` (number, required): The segment height new segments of the railing are made with (the default segment).
 - `segmentHeights` (array of number, required): The height of each segment of the railing, in the order of the reference line.
+- `segments` (array of RailingSegmentDetails, required): The segments of the railing, in the order of the reference line: segment i runs from node i to node i + 1. ModifyRailings changes one of them by its index in this list.
+- `nodes` (array of RailingNodeDetails, required): The nodes of the railing, one per vertex of the reference line, in its order. ModifyRailings changes one of them by its index in this list.
 - `visibility` (StoryVisibility, required): The stories the railing is shown on (API_RailingType::visibility).
 - `isAutoOnStoryVisibility` (boolean, required): When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility).
 - `referenceLinePen` (integer, required): Pen index of the railing's reference line (API_RailingType::referenceLinePen).
 - `contourPen` (integer, required): Pen index of the railing's contour line (API_RailingType::contourPen).
+
+### RailingSegmentDetails
+
+object: The settings of one segment of a railing.
+- `elementId` (ElementId, required): The identifier of the segment subelement (RailingSegment).
+- `height` (number, required): The height of the segment (API_RailingSegmentType::height).
+- `lateralOffset` (number, required): The offset of the segment from the reference line of the railing, sideways (API_RailingSegmentType::yOffset). Archicad only applies it while referenceLineLocation is Left or Right.
+- `referenceLineLocation` (RailingReferenceLineLocation, required)
+
+### RailingReferenceLineLocation
+
+string ("Left", "Center", "Right"): Where the segment lies relative to the reference line of the railing (API_RailingSegmentType::refLineLocation): Center on the line, Left or Right of it. A lateralOffset only takes effect with Left or Right. Switching between Left and Right turns the sign of lateralOffset (Archicad 29), so the segment moves to the other side of the line by the same distance.
+
+### RailingNodeDetails
+
+object: The settings of one node of a railing.
+- `elementId` (ElementId, required): The identifier of the node subelement (RailingNode).
+- `postOffset` (number, required): The offset of the node's post from the node (API_RailingNodeType::postOffset).
+- `elevation` (number, required): The vertical offset of the node (API_RailingNodeType::elevation).
+- `unifyPatterns` (boolean, required): True when the pattern of the segments continues across the node, false when the segments are cropped at it (API_RailingNodeType::unifyPatterns).
+
+### RailingComponentOwnerElementId
+
+ElementId: The element that owns this railing component (the owner field of its API_Railing*Type struct), for example the RailingNode of a post, the RailingSegment of a top rail or the RailingBalusterSet of a baluster; ownerElementType gives its type. Left out when the component has no owner.
+
+### RailingComponentSymbolId
+
+Guid: Archicad's identifier of the symbol the component is drawn with (symbID of its API_Railing*Type struct), as Archicad stores it. Left out when it is empty.
+
+### RailingComponentLibPart
+
+LibPartDetails: The library part the component is placed from: its name and unique IDs. Left out when Archicad reports no library part for the component or the library part is not in the loaded libraries.
+
+### RailingVerticalPosition
+
+object: Between which rails of the segment a railing component stands (API_RailingVerticalPosData).
+- `bottomRailIndex` (integer, required): The index of the rail at the bottom of the component (API_RailingVerticalPosData::bottomRailIndex).
+- `topRailIndex` (integer, required): The index of the rail at the top of the component (API_RailingVerticalPosData::topRailIndex).
+
+### RailingHorizontalPosition
+
+object: Where along its pattern a railing component stands (API_RailingHorizontalPosData).
+- `position` (number, required): The position of the component along the pattern (API_RailingHorizontalPosData::position).
+- `isStretchable` (boolean, required): True when the position stretches with the length of the pattern (API_RailingHorizontalPosData::isStretchable).
+
+### RailingFrame
+
+object: The boundaries of a railing panel or baluster set within its pattern (API_RailingFrameData).
+- `lateralOffset` (number, required): The sideways offset of the frame from the segment (API_RailingFrameData::yOffset).
+- `topOffset` (number, required): The offset of the top of the frame (API_RailingFrameData::zTopOffset).
+- `bottomOffset` (number, required): The offset of the bottom of the frame (API_RailingFrameData::zBottomOffset).
+- `beginOffset` (number, required): The offset of the beginning of the frame (API_RailingFrameData::xBeginOffset).
+- `endOffset` (number, required): The offset of the end of the frame (API_RailingFrameData::xEndOffset).
+- `placeIndex` (integer, required): The index of the place of the frame in its pattern (API_RailingFrameData::placeIndex).
+- `verticalPosition` (RailingVerticalPosition, required)
+
+### RailingDistribution
+
+object: How a railing pattern or baluster set is repeated along its segment (API_RailingDistributionData).
+- `type` (string ("Divisions", "PatternLength", "BestDivisionByLength"), required): The distribution method (API_DistribTypeID): a number of Divisions, a fixed PatternLength, or the BestDivisionByLength (equal divisions no longer than length).
+- `alignment` (string ("StartWithPattern", "StartFromCenter", "CenterAligned", "EndWithPattern"), required): How the repetitions are aligned (API_PatternAlignID).
+- `length` (number, required): The length of one repetition (API_RailingDistributionData::length).
+- `patternAmount` (integer, required): The number of repetitions (API_RailingDistributionData::patternAmount).
+
+### RailingVerticalPositionChange
+
+object: Changes to the rails a railing component stands between (API_RailingVerticalPosData), with the fields GetDetailsOfElements returns in verticalPosition. Only the given fields change.
+- `bottomRailIndex` (integer): The index of the rail at the bottom of the component (API_RailingVerticalPosData::bottomRailIndex).
+- `topRailIndex` (integer): The index of the rail at the top of the component (API_RailingVerticalPosData::topRailIndex).
+
+### RailingHorizontalPositionChange
+
+object: Changes to where along its pattern a railing component stands (API_RailingHorizontalPosData), with the fields GetDetailsOfElements returns in horizontalPosition. Only the given fields change.
+- `position` (number): The position of the component along the pattern (API_RailingHorizontalPosData::position).
+- `isStretchable` (boolean): True when the position stretches with the length of the pattern (API_RailingHorizontalPosData::isStretchable).
+
+### RailingFrameChange
+
+object: Changes to the boundaries of a railing panel or baluster set within its pattern (API_RailingFrameData), with the fields GetDetailsOfElements returns in frame. Only the given fields change; placeIndex cannot be changed.
+- `lateralOffset` (number): The sideways offset of the frame from the segment (API_RailingFrameData::yOffset).
+- `topOffset` (number): The offset of the top of the frame (API_RailingFrameData::zTopOffset).
+- `bottomOffset` (number): The offset of the bottom of the frame (API_RailingFrameData::zBottomOffset).
+- `beginOffset` (number): The offset of the beginning of the frame (API_RailingFrameData::xBeginOffset).
+- `endOffset` (number): The offset of the end of the frame (API_RailingFrameData::xEndOffset).
+- `verticalPosition` (RailingVerticalPositionChange)
+
+### RailingDistributionChange
+
+object: Changes to how a baluster set is repeated (API_RailingDistributionData), with the fields GetDetailsOfElements returns in distribution. Only the given fields change.
+- `type` (string ("Divisions", "PatternLength", "BestDivisionByLength")): The distribution method (API_DistribTypeID): a number of Divisions, a fixed PatternLength, or the BestDivisionByLength (equal divisions no longer than length).
+- `alignment` (string ("StartWithPattern", "StartFromCenter", "CenterAligned", "EndWithPattern")): How the repetitions are aligned (API_PatternAlignID).
+- `length` (number): The length of one repetition (API_RailingDistributionData::length).
+- `patternAmount` (integer): The number of repetitions (API_RailingDistributionData::patternAmount).
+
+### RailingPostDetails
+
+object: The details of a railing post (RailingPost, API_RailingPostType).
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
+- `verticalPosition` (RailingVerticalPosition, required)
+
+### RailingInnerPostDetails
+
+object: The details of an inner post of a railing pattern (RailingInnerPost, API_RailingInnerPostType).
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
+- `doublePostOffset` (number, required): The offset between the two posts of a double inner post (API_RailingInnerPostType::doublePostOffset).
+- `postCount` (integer, required): The number of posts in this inner post, 1 or 2 (API_RailingInnerPostType::postNum).
+- `verticalPosition` (RailingVerticalPosition, required)
+- `horizontalPosition` (RailingHorizontalPosition, required)
+
+### RailingRailDetails
+
+object: The details of a rail, top rail or handrail of a railing segment (RailingRail, RailingToprail, RailingHandrail: API_RailingRailType, API_RailingToprailType, API_RailingHandrailType). A top rail has only visible; relative is only given for rails and doubleHandrail only for handrails.
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
+- `visible` (boolean, required): True when the rail is shown (visible of its struct).
+- `relative` (boolean): Rails only: true when the height of the rail is relative (API_RailingRailType::relative).
+- `doubleHandrail` (boolean): Handrails only: true for a double handrail (API_RailingHandrailType::doubleHandrail).
+- `horizontalOffset` (number): Rails and handrails only: the horizontal offset of the rail from the segment (horizontalOffset of its struct).
+- `height` (number): Rails and handrails only: the height of the rail (height of its struct).
+
+### RailingBalusterDetails
+
+object: The details of a baluster of a baluster set (RailingBaluster, API_RailingBalusterType).
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
+- `horizontalPosition` (RailingHorizontalPosition, required)
+
+### RailingBalusterSetDetails
+
+object: The details of a baluster set of a railing pattern (RailingBalusterSet, API_RailingBalusterSetType). Its balusters are separate subelements (RailingBaluster).
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `frame` (RailingFrame, required)
+- `distribution` (RailingDistribution, required)
+- `balusterCount` (integer, required): The number of balusters in the set (API_RailingBalusterSetType::nBalusters).
+
+### RailingPanelDetails
+
+object: The details of a railing panel (RailingPanel, API_RailingPanelType).
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
+- `visible` (boolean, required): True when the panel is shown (API_RailingPanelType::visible).
+- `frame` (RailingFrame, required)
+
+### RailingPatternDetails
+
+object: The details of the pattern of a railing segment (RailingPattern, API_RailingPatternType). Its panels, baluster sets and inner posts are separate subelements.
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `distribution` (RailingDistribution, required)
+- `panelCount` (integer, required): The number of panels in the pattern (API_RailingPatternType::nPanels).
+- `balusterSetCount` (integer, required): The number of baluster sets in the pattern (API_RailingPatternType::nBalusterSets).
+- `innerPostCount` (integer, required): The number of inner posts in the pattern (API_RailingPatternType::nInnerPosts).
+
+### RailingRailEndDetails
+
+object: The details of the end of a rail, top rail or handrail (RailingRailEnd, RailingToprailEnd, RailingHandrailEnd: API_RailingRailEndType).
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
+- `endType` (string ("Extension", "Curve", "FullReturn", "ConnectWithDuplicate"), required): The shape of the end (API_RailEndTypeID).
+- `baseConnection` (string ("Horizontal", "Tangential"), required): How the end connects to the rail (API_RailEndBaseConnectionID).
+- `firstExtrusionOffset` (number, required): API_RailingRailEndType::firstExtrusionOffset.
+- `firstExtrusionLength` (number, required): API_RailingRailEndType::firstExtrusionLength.
+- `filletRadius` (number, required): API_RailingRailEndType::filletRadius.
+- `fixtureConnection` (string ("SegmentPlane", "HorizontalRight", "HorizontalLeft"), required): The direction the end curves in (API_RailEndFixtureConnectionID).
+- `arcAngleMode` (string ("SetToVertical", "CustomAngle"), required): Whether the arc of the end is set to vertical or has a custom angle (API_RailEndArcAngleModeID).
+- `arcAngle` (number, required): API_RailingRailEndType::arcAngle.
+- `arcRadius` (number, required): API_RailingRailEndType::arcRadius.
+- `secondExtrusionLength` (number, required): API_RailingRailEndType::secondExtrusionLength.
+- `thirdExtrusionLength` (number, required): API_RailingRailEndType::thirdExtrusionLength.
+- `secondExtrusionMode` (string ("CustomLength", "ToReferenceLine", "ToHandrailSibling"), required): How the length of the second extrusion is set (API_RailEndExtrusionModeID).
+
+### RailingRailConnectionDetails
+
+object: The details of the connection of a rail, top rail or handrail at a node (RailingRailConnection, RailingToprailConnection, RailingHandrailConnection: API_RailingRailConnectionType).
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
+- `connectionType` (string ("NoRailConnection", "GooseneckRailConnection", "DirectRailConnection"), required): The kind of connection (API_RailConnectionTypeID).
+- `baseConnection` (string ("Horizontal", "Tangential"), required): How the connection meets the rail (API_RailBaseBaseConnectionID).
+- `railEndOffset` (number, required): API_RailingRailConnectionType::railEndOffset.
+- `railEndFillet` (number, required): API_RailingRailConnectionType::railEndFillet.
+- `firstExtrusionLength` (number, required): API_RailingRailConnectionType::firstExtrusionLength.
+- `secondExtrusionLength` (number, required): API_RailingRailConnectionType::secondExtrusionLength.
+- `horizontalFillet` (number, required): API_RailingRailConnectionType::horizontalFillet.
+- `gooseneckFillet` (number, required): API_RailingRailConnectionType::gooseneckFillet.
+- `gooseneckOffset` (number, required): API_RailingRailConnectionType::gooseneckOffset.
+- `verticalBottomFillet` (number, required): API_RailingRailConnectionType::verticalBottomFillet.
+- `directFillet` (number, required): API_RailingRailConnectionType::directFillet.
+
+### RailingEndFinishDetails
+
+object: The details of the finish at the end of a rail (RailingEndFinish, API_RailingFinishType): its owner and library part only.
+- `ownerElementId` (RailingComponentOwnerElementId)
+- `ownerElementType` (ElementType)
+- `symbolId` (RailingComponentSymbolId)
+- `libPart` (RailingComponentLibPart)
 
 ### CurtainWallDetails
 
@@ -20012,7 +21234,9 @@ object
 - `actualHeight` (number): The height of the curtain wall as calculated by Archicad (ACAPI_CurtainWall_GetCWHeight). Omitted when Archicad cannot calculate it.
 - `zCoordinate` (number, required): The absolute elevation of the bottom of the curtain wall: its home story's level plus its offset from it (API_CurtainWallType::planeOffset), as CreateCurtainWalls and ModifyCurtainWalls take it.
 - `referenceLine` (array of Coordinate2D, required): The 2D coordinates of the reference line of the curtain wall on the floor plan, one more than its segments (each pair of consecutive coordinates is one segment), as CreateCurtainWalls and ModifyCurtainWalls take them in coordinates. Empty when Archicad cannot return it.
-- `flipped` (boolean, required)
+- `flipped` (boolean, required): The side of the reference line the curtain wall is on (API_CurtainWallType::flipped), as ModifyCurtainWalls takes it.
+- `offset` (number): The offset of the panels from the reference line (API_CurtainWallType::offset), as ModifyCurtainWalls takes it.
+- `nominalWidth` (number): The nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth), as ModifyCurtainWalls takes it.
 - `angle` (number, required): The rotation angle of the curtain wall in radians.
 - `displayOption` (DisplayOption, required)
 - `viewDepthLimitation` (ViewDepthLimitation, required)
@@ -20056,6 +21280,7 @@ object
 - `isDegenerate` (boolean): Indicates if the panel is degenerate. Omitted when Archicad cannot tell.
 - `segmentIndex` (number, required): The index of the curtain wall segment to which this panel belongs.
 - `className` (string, required)
+- `classIndex` (integer): The panel class of the panel, numbered as in the cells of CreateCurtainWalls and in ModifyCurtainWallPanels: 0 is a deleted panel, 1 the first panel class of the curtain wall, 2 the second and so on. -1 is a panel whose settings were customized apart from its class.
 - `frames` (array of ElementIdArrayItem, required): The surrounding frames.
 
 ### CurtainWallFrameType
@@ -20097,6 +21322,17 @@ object: The fields to modify on the Mesh. Only provided fields are changed; omit
 - `contourPen` (integer): Pen attribute index for the mesh contour line.
 - `levelPen` (integer): Pen attribute index for the mesh level lines.
 - `lineTypeIndex` (integer): Line type attribute index for the mesh contour.
+- `buildingMaterialId` (AttributeId): The building material of the mesh. The surface overrides are kept; send topMaterial, sideMaterial and bottomMaterial with overridden false to show the building material's own surfaces.
+- `topMaterial` (OverriddenMaterial): Overrides the surface of the top of the mesh; overridden false clears the override.
+- `sideMaterial` (OverriddenMaterial): Overrides the surface of the sides (skirt) of the mesh; overridden false clears the override.
+- `bottomMaterial` (OverriddenMaterial): Overrides the surface of the bottom of the mesh; overridden false clears the override.
+- `materialsChained` (boolean): Whether the surface overrides are chained (the chain button of the Model panel).
+- `visibility` (StoryVisibility): The stories the contour of the mesh is shown on. Only the given fields change.
+- `fillVisibility` (StoryVisibility): The stories the cover fill of the mesh is shown on. Only the given fields change.
+- `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill (shown on solid meshes); overridden false clears the override.
+- `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill (shown on solid meshes); overridden false clears the override.
+- `sectionContourPen` (integer): Pen of the contour of the mesh where it is cut in sections.
+- `floorFill` (MeshFloorFill): The cover fill of the mesh in the floor plan. Only the given fields change.
 - `polygonCoordinates` (array of Coordinate3D): The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.
 - `polygonArcs` (array of PolyArc): Polygon outline arcs of the mesh. Replaces the existing outline arcs; when given without polygonCoordinates, they apply to the existing outline.
 - `holes` (array of Hole3D): The 3D holes of the mesh. Replaces all existing holes; an empty array removes them. When given without polygonCoordinates, the existing outline is kept.
@@ -20114,6 +21350,17 @@ object
 - `contourPen` (integer): Pen attribute index for the mesh contour line.
 - `levelPen` (integer): Pen attribute index for the mesh level lines.
 - `lineTypeIndex` (integer): Line type attribute index for the mesh contour.
+- `buildingMaterialId` (AttributeId): The building material of the mesh.
+- `topMaterial` (OverriddenMaterial): The surface override of the top of the mesh.
+- `sideMaterial` (OverriddenMaterial): The surface override of the sides (skirt) of the mesh.
+- `bottomMaterial` (OverriddenMaterial): The surface override of the bottom of the mesh.
+- `materialsChained` (boolean): Whether the surface overrides are chained (the chain button of the Model panel).
+- `visibility` (StoryVisibility): The stories the contour of the mesh is shown on.
+- `fillVisibility` (StoryVisibility): The stories the cover fill of the mesh is shown on.
+- `cutFillPen` (OverriddenPen): The override of the pen of the cut fill.
+- `cutFillBackgroundPen` (OverriddenPen): The override of the background pen of the cut fill.
+- `sectionContourPen` (integer): Pen of the contour of the mesh where it is cut in sections.
+- `floorFill` (MeshFloorFill): The cover fill of the mesh in the floor plan.
 - `polygonCoordinates` (array of Coordinate3D, required): The 3D coordinates of the outline polygon of the mesh.
 - `polygonArcs` (array of PolyArc): Polygon outline arcs of the mesh.
 - `holes` (Holes3D)
@@ -20132,7 +21379,7 @@ object: Per-story visibility settings (API_StoryVisibility): the home story, plu
 
 object: A Morph's full body geometry: an indexed vertex list plus one entry per face (polygon). Shared shape between GetDetailsOfElements' output and CreateMorphs/ModifyMorphs' input - what Get reports is what Create/Modify accept back. There is no fillet/chamfer operation in the Archicad API - a caller wanting rounded geometry must supply the already-tessellated facets here; edgeOverrides only controls how an existing straight edge is DISPLAYED (hidden/visible/smooth-shaded), not its shape.
 - `bodyType` (string ("Solid", "Surface")): Whether the body is a closed solid or an open surface shell. Reported accurately on Get; on Create/Modify this is set on the element but a confirmed Archicad SDK bug means it may not take effect (bodyType has been observed always coming back Solid regardless of what was requested - see edgeOverrides' note).
-- `isClosed` (boolean): READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed (Modeler::MeshBody::IsClosedBody): true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing.
+- `isClosed` (boolean): READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed from the body's edges: true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing.
 - `edgeDefault` (string ("HardVisible", "HardHidden", "SoftHidden")): Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get. On Create/Modify it takes effect from Archicad 29 on, where it is applied to every edge of the element with ACAPI_Element_ChangeMorphEdgeType right after the element is created or changed (e.g. 'HardHidden' hides all edges of a triangulated body). The Morph's layer must be shown and unlocked: on a hidden or locked layer CreateMorphs creates no Morph and returns an error. On Archicad 28 and earlier it is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).
 - `vertices` (array of Coordinate3D, required): Flat, indexed vertex list, local to the Morph's own placement (not world coordinates). A Solid body needs at least 4 (a tetrahedron, the minimum closed volume); a Surface body has no closedness requirement at all - the minimum is 2 vertices joined by a single wireEdge (a lone vertex with no edge at all is rejected by Archicad itself, confirmed live) - enforced with a bodyType-aware error message, not by this minItems floor alone.
 - `polygons` (array of MorphPolygon): One entry per face loop (into `vertices`), counterclockwise as seen from outside the body. Optional - a body made entirely of wireEdges (see below) needs none. Set "filled": false on an entry to create only that loop's edges (e.g. the outline of a pyramid's side faces) without an actual filled face.
@@ -20157,7 +21404,7 @@ object
 - `castShadow` (boolean): Whether the body casts shadow in 3D.
 - `receiveShadow` (boolean): Whether the body receives shadow in 3D.
 - `isAutoOnStoryVisibility` (boolean): When true, the per-story visibility (showContour/showFill) is calculated automatically from the Morph's vertical extent instead of using the explicit values.
-- `showContour` (StoryVisibility): Which stories display this Morph's contour. Reported accurately on Get, but confirmed live that Create/Modify do not reliably apply it (showAllBelow/showRelAbove/showRelBelow silently come back reset even when explicitly set and isAutoOnStoryVisibility is false) - the same class of confirmed Archicad SDK write bug as bodyType/edgeType/level (see MorphBody's notes). Set on the element regardless since doing so is harmless and forward-compatible.
+- `showContour` (StoryVisibility): Which stories display this Morph's contour. Reported accurately on Get, but confirmed live that Create/Modify do not reliably apply it (showAllBelow/showRelAbove/showRelBelow silently come back reset even when explicitly set and isAutoOnStoryVisibility is false) - the same class of confirmed Archicad SDK write bug as bodyType/edgeType (see MorphBody's notes). Set on the element regardless since doing so is harmless and forward-compatible.
 - `showFill` (StoryVisibility): Which stories display this Morph's floor plan fill. Same write-reliability caveat as showContour.
 - `linkToSettings` (LinkToSettings)
 - `displayOption` (DisplayOption)
@@ -20180,12 +21427,13 @@ object
 - `useDistortedCoverFill` (boolean): Show the floor plan hatching as if projected onto a plane.
 - `textureProjectionType` (TextureProjectionType)
 - `textureProjectionCoords` (array of Coordinate3D): Texture projection coordinate system: origin, then 3 axis endpoints.
-- `level` (number): Z position of the free shape relative to the floor level. Reported accurately on Get, but a confirmed Archicad SDK bug means it may not take effect on Create/Modify (same class of bug as bodyType/edgeType - see MorphBody's notes).
+- `level` (number): Height of the Morph's origin (the z of its placement transform) above its home story. Archicad works it out from the placement; CreateMorphs and ModifyMorphs take it and place the Morph's origin at this height.
 
 ### DrawingDetails
 
 object
 - `pos` (Coordinate2D, required): Position of the drawing on the layout, in meters. Without a clip polygon it is the lower left corner of the drawing (before rotation); with one it is where the origin of the source view lands (a modelOffset can move it by modelOffset * drawingScale).
+- `offset` (Coordinate2D): Output only (API_DrawingType::offset). Equal to pos when isCutWithFrame is true; otherwise the subvector of pos and the anchorPoint's coordinate on the drawing's bounding box. Unlike pos, this is always where the source view's model origin lands on the layout, regardless of anchorPoint/useOwnOriginAsAnchor.
 - `angle` (number, required): Rotation angle of the drawing in radians.
 - `ratio` (number, required): Scale ratio applied to the drawing relative to its source view.
 - `drawingScale` (number, required): The scale of the drawing, taken from its source view (e.g. 0.01 for 1:100).
@@ -20231,6 +21479,7 @@ object
 - `hasLeaderLine` (boolean, required)
 - `labelClass` (LabelClass, required)
 - `leaderLine` (LabelLeaderLineDetails, required)
+- `textWay` (LabelTextDirection): The label's text direction, for a Text or a Symbol label (a Symbol label also reports it in symbolStyle.textWay).
 - `style` (TextStyleDetails): Present only when labelClass is 'Text'.
 - `symbolStyle` (LabelSymbolStyleSettableDetails): Present only when labelClass is 'Symbol'.
 - `text` (string): Present only when labelClass is 'Text'.
@@ -20242,12 +21491,19 @@ object
 
 string ("ProjectZero", "ReferenceLevel1", "ReferenceLevel2", "StoredOrigin", "Altitude"): The origin a level dimension measures from.
 
+### LayeredElementDimensions
+
+object: The automatic dimensioning of layered (composite) elements, from the Dimension Details panel of the Dimension Settings (API compAutoThick).
+- `total` (boolean): Dimension the total thickness.
+- `core` (boolean): Dimension the core.
+- `referenceLine` (boolean): Dimension the reference line.
+
 ### LevelDimensionDetails
 
 object
 - `position` (Coordinate2D, required): The location of the marker.
 - `level` (number, required): The level the dimension shows in meters: the height of the owner element at the position for an associative level dimension, the floor level or the static value otherwise.
-- `staticLevel` (boolean, required): The static flag as Archicad reports it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad reads this flag as false.
+- `staticLevel` (boolean, required): The Static checkbox as Archicad reports it; ModifyLevelDimensions switches it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad has been seen to read this flag as false for it.
 - `ownerElementId` (ElementId): Present only for an associative level dimension: the element it measures.
 - `ownerElementType` (ElementType): Present only for an associative level dimension.
 - `dimForm` (integer, required): Marker type 0-19.
@@ -20258,6 +21514,36 @@ object
 - `markerSize` (number, required): Size of the marker in millimeters.
 - `angle` (number, required): Rotation angle of the marker in radians.
 - `origin` (DimensionOrigin, required)
+- `fontIndex` (integer, required): Font attribute index of the dimension text.
+- `fontName` (string): The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index.
+- `bold` (boolean, required): Bold dimension text.
+- `italic` (boolean, required): Italic dimension text.
+- `underline` (boolean, required): Underlined dimension text.
+- `hideWithBaseElem` (boolean): Hide the dimension together with its associated element. Read from Archicad 29; absent on earlier versions.
+- `textContent` (string ("Measured", "Custom"), required): Content of the dimension text: 'Measured' (the level value) or 'Custom' (customText).
+- `customText` (string): The custom content of the dimension text, with its Autotext keys as keys (read with the autotext flag off), in the form CreateLevelDimensions and ModifyLevelDimensions take. Present when textContent is 'Custom'.
+- `secondTextContent` (string ("Measured", "Custom"), required): Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText).
+- `secondCustomText` (string): The custom content of the second text, as customText. Present when secondTextContent is 'Custom'.
+
+### AngleDimensionLine
+
+object: A line measured by an angle dimension, given by two of its points. The angle is measured between the two lines (they are extended to their intersection, the center of the dimension arc).
+- `begCoordinate` (Coordinate2D, required)
+- `endCoordinate` (Coordinate2D, required)
+
+### AngleDimensionDetails
+
+object
+- `firstLine` (AngleDimensionLine, required): The first measured line: its first two reference points.
+- `secondLine` (AngleDimensionLine, required): The second measured line: its last two reference points.
+- `arcPosition` (Coordinate2D, required): The point the dimension arc was fitted to.
+- `arcCenter` (Coordinate2D, required): The center of the dimension arc, the intersection of the two lines.
+- `radius` (number, required): The radius of the dimension arc.
+- `measuredAngle` (number, required): The angle the dimension measures, in radians.
+- `smallArc` (boolean, required): Whether the smaller angle between the lines is measured (inner dimension) rather than the larger one.
+- `pen` (integer, required): Pen index of the dimension and witness lines.
+- `textHeight` (number, required): Height of the dimension text in millimeters.
+- `textPen` (integer, required): Pen index of the dimension text.
 
 ### DimensionDetails
 
@@ -20268,14 +21554,87 @@ object: The settings of a linear dimension (the Dimension tool), with the names 
 - `direction` (Coordinate2D, required): The direction of the dimension line.
 - `witnessPointCount` (integer, required): The number of witness points.
 - `linePen` (integer, required): The pen of the dimension and witness lines.
-- `marker` (object, required): The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.
-  - `type` (string ("CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", ...), required): The marker type, named after API_MarkerID.
-  - `pen` (integer, required): The pen of the marker.
+- `marker` (DimensionMarker, required): The marker at the witness points, always with its type, pen and size.
+- `textPlacement` (DimensionTextPlacement, required): The text placement method of the dimension texts, always with all of its fields.
 - `textHeight` (number, required): The text height of the dimension's settings in millimeters. Each witness point keeps its own (GetDimensionData).
 - `textPen` (integer, required): The text pen of the dimension's settings. Each witness point keeps its own (GetDimensionData).
 - `textFrame` (boolean, required): The text frame of the dimension's settings. Each witness point keeps its own (GetDimensionData).
+- `textStyle` (DimensionTextStyle, required): The font and style of the texts of the dimension's settings. Each witness point keeps its own (GetDimensionData).
 - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix", "Unknown"), required): The witness line form of the dimension's settings; each witness point has its own witnessForm.
 - `defaultWitnessVal` (number, required): The value that goes with defaultWitnessForm, in meters. Each witness point has its own witnessVal.
+- `staticDimension` (boolean, required): The Static dimension checkbox of the Dimension Settings (API defStaticDim).
+- `onlyDimensionText` (boolean, required): Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText).
+- `openingHeightsInChain` (boolean, required): Whether the opening heights are shown in the dimension chain (Dimension Details panel, API detailedHoleDim).
+- `openingHeightsNominal` (boolean, required): Whether the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize).
+- `layeredElementDimensions` (LayeredElementDimensions, required)
+
+### ChangeMarkerComponent
+
+string ("HeadOnly", "CloudOnly", "HeadAndCloud"): Which parts a Change Marker shows: only the marker head, only the cloud, or both.
+
+### ChangeMarkerDetails
+
+object: A Change Marker: the revision Change it is linked to, the parts it shows and its geometry.
+- `linkType` (string ("Linked", "Unlinked", "NewChange", "Unknown"), required): Whether the marker is linked to a Change. NewChange is the value a marker is created with to make a new Change.
+- `markerComponent` (ChangeMarkerComponent, required)
+- `changeId` (string, required): The ID of the linked Change (empty when not linked).
+- `changeDescription` (string, required): The description (short name) of the linked Change.
+- `position` (Coordinate2D, required): The point the Change Marker points to.
+- `polygon` (array of Coordinate2D): The outline of the cloud, with the closing point. Present only when the marker has a polygon.
+- `polygonArcs` (array of PolyArc): The curved edges of polygon. Present only when it has any.
+- `markerId` (ElementId): The GUID of the marker head's library part element. Present only when the marker has one.
+- `angle` (number, required): The rotation angle of the marker head in radians.
+- `horizontalMarker` (boolean, required): Whether the marker head is always horizontal.
+
+### DimensionTextStyle
+
+object: The font and style of the texts of a linear dimension, as in the Dimension Settings' text panel (API_NoteType noteFont, faceBits, widthFactor, spacingFactor). Taken as textStyle by CreateAssociativeDimensions, CreateAssociativeDimensionsOnSection, CreateWallThicknessDimensions and ModifyAssociativeDimensions, where only the fields given are changed, and returned by GetDetailsOfElements and, per witness point, by GetDimensionData.
+- `fontIndex` (integer): Font attribute index, as GetFontsByName reports it. On input it must be the index of a loaded font; fontName wins when both are given.
+- `fontName` (string): Name of the font, as the Font attributes carry it, e.g. 'Arial'. On input resolved to the font's index like a Text style's fontName, taking precedence over fontIndex, and failing when no loaded font has the name; on read-back the name of the font fontIndex refers to, absent when no loaded font has that index.
+- `bold` (boolean)
+- `italic` (boolean)
+- `underline` (boolean)
+- `widthFactor` (number): Width scale of the characters (1 is 100 %).
+- `spacingFactor` (number): Spacing scale between the characters (1 is 100 %).
+
+### DimensionMarker
+
+object: The marker at the witness points of a linear dimension (API_MarkerData). CreateAssociativeDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.
+- `type` (string ("CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", ...)): The marker type, named after API_MarkerID.
+- `pen` (integer): The pen of the marker.
+- `size` (number): The marker size, the API's markerData.markerSize, which the DevKit calls the size in millimeters at the drawing scale. Compare it with the marker size of the Dimension Settings before relying on it: on Archicad 29 a linear dimension whose dialog showed 1.0 read 2.5 here.
+
+### DimensionTextPlacement
+
+object: The text placement method of a linear dimension's texts, as in the Dimension Settings (API dimLayout, placeUnderEnabled, pushNeighborEnabled). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.
+- `method` (string ("Classic", "Flexible", "Centered", "Off", "Unknown")): Classic (the API's API_Legacy, the placement of Archicad 18 and before), Flexible, Centered, or Off (every text in the middle of its segment, without collision detection). Unknown is only returned, for a value this version of Tapir does not know.
+- `placeBelowLine` (boolean): Flexible method: a text that does not fit may be placed below the dimension line (API placeUnderEnabled).
+- `pushNeighbors` (boolean): Flexible method: a text may push its neighbouring texts aside (API pushNeighborEnabled).
+
+### RadialDimensionDetails
+
+object: A radial dimension, as Archicad stores it. The Archicad API does not document how the measured arc is stored (the meaning of basePoint and ownerElementInIndex), so these are the raw values; ownerArcCenter is read from the measured arc or circle.
+- `basePoint` (Coordinate2D, required): The base point of the dimension as Archicad stores it (API_RadialDimensionType base.loc).
+- `dimensionLineEnd` (Coordinate2D, required): The end of the radial dimension line.
+- `radius` (number, required): The radius the dimension measures, in meters.
+- `ownerElementId` (ElementId): Present only when the dimension is linked to an element: the element it measures.
+- `ownerElementType` (ElementType): Present only when the dimension is linked to an element.
+- `ownerElementInIndex` (integer): Present only when the dimension is linked to an element: the index of the measured part of that element, as Archicad stores it.
+- `ownerElementLine` (boolean): Present only when the dimension is linked to an element: whether the dimension is linked to a line or arc of that element rather than to a node, as Archicad stores it.
+- `ownerArcCenter` (Coordinate2D): Present only when the measured element is an arc or a circle: its centre.
+- `ownerArcRadius` (number): Present only when the measured element is an arc or a circle: its radius in meters.
+- `linePen` (integer, required): The pen of the dimension line.
+- `marker` (object, required): The marker at the end of the dimension line.
+  - `type` (string ("CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", ...), required): The marker type, named after API_MarkerID.
+  - `pen` (integer, required): The pen of the marker.
+  - `size` (number, required): The size of the marker as Archicad stores it, in millimeters.
+- `textHeight` (number, required): The height of the dimension text in millimeters.
+- `textPen` (integer, required): The pen of the dimension text.
+- `textPosition` (string ("Above", "In", "Below", "Unknown"), required): Where the text is, relative to the dimension line.
+- `textDirection` (string ("Horizontal", "Vertical", "Radial", "Unknown"), required): The direction of the text.
+- `textContent` (string ("Measured", "Custom"), required): Whether the text shows the measured radius or a custom text.
+- `showOrigin` (boolean, required): Whether the centre of the arc is marked.
+- `onlyDimensionText` (boolean, required): Whether only the dimension text is shown, without the dimension line.
 
 ### TextDetails
 
@@ -20294,12 +21653,16 @@ object
 
 ### StairDetails
 
-object: The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), which no command writes yet. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.
+object: The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.
 - `stepNum` (integer, required): Number of risers (steps).
 - `riserHeight` (number, required): Height of each riser.
-- `treadDepth` (number, required): The tread depth (going) stored in the Stair's settings. Archicad does not keep it in step with the modeled treads: a placed stair can read 0 or 1 here, so take the modeled going from the geometry of its treads or risers (Get3DGeometryOfElements) instead.
+- `treadDepth` (number): The going (the length of each tread), measured along the walking line: its length divided by the number of treads. The going stored in the Stair's settings (API_StairType::treadDepth) is not used, since Archicad does not keep it in step with the modeled treads (a placed stair reads 0 or 1 there). Not given for a stair with a landing, whose walking line runs across the landing too; take its going from the geometry of its treads or risers (Get3DGeometryOfElements).
 - `flightWidth` (number, required): Width of the stair flight.
-- `totalHeight` (number, required): Total height of the stair.
+- `totalHeight` (number, required): Total height of the stair. With a top link (set by relativeTopStory in CreateStairs and ModifyStairs) Archicad computes it from the story levels and topOffset. Archicad does not return the top link itself when the stair is read, so it is not reported here.
+- `topOffset` (number, required): The offset of the top of the stair from the level of the linked top story (for example -0.15); only used when the top is linked.
+- `treadDepthLocked` (boolean, required): Whether the going lengths are locked.
+- `totalHeightLocked` (boolean, required): Whether the total height is locked.
+- `rules` (StairRules, required): The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied.
 - `level` (number, required): Height of the stair base above the home story level.
 - `zCoordinate` (number, required): Absolute elevation of the stair base.
 - `finishVisible` (boolean, required): Whether the tread/riser finishes are modeled. If false only the stair structure (e.g. a monolith) is.
@@ -20359,6 +21722,50 @@ string ("FloorPlan", "CeilingPlan", "Unknown"): The view a stair structure symbo
 
 string ("Visible", "Hidden", "Unknown"): Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).
 
+### StairRules
+
+object: The Rules and Standards of a Stair (API_StairRulesData): each limit as a value and whether it is applied (the check box of the rule). Archicad lays the steps out within the applied limits, so a stair can get another riser count and going than the ones given. GetDetailsOfElements and SolveStairBaseline return every field; CreateStairs and ModifyStairs write only the given ones.
+- `riserHeightMinValue` (number): Minimum riser height.
+- `riserHeightMinApplied` (boolean): Whether the minimum riser height is applied.
+- `riserHeightMaxValue` (number): Maximum riser height.
+- `riserHeightMaxApplied` (boolean): Whether the maximum riser height is applied.
+- `treadDepthMinValue` (number): Minimum going length.
+- `treadDepthMinApplied` (boolean): Whether the minimum going length is applied.
+- `treadDepthMaxValue` (number): Maximum going length.
+- `treadDepthMaxApplied` (boolean): Whether the maximum going length is applied.
+- `ruleMinValue` (number): Minimum of 2 risers + going (2R+G).
+- `ruleMinApplied` (boolean): Whether the minimum 2R+G is applied.
+- `ruleMaxValue` (number): Maximum of 2 risers + going (2R+G).
+- `ruleMaxApplied` (boolean): Whether the maximum 2R+G is applied.
+- `riserPlusGoingMinValue` (number): Minimum of riser height + going (R+G).
+- `riserPlusGoingMinApplied` (boolean): Whether the minimum R+G is applied.
+- `riserPlusGoingMaxValue` (number): Maximum of riser height + going (R+G).
+- `riserPlusGoingMaxApplied` (boolean): Whether the maximum R+G is applied.
+- `riserGoingRatioMinValue` (number): Minimum ratio of riser height to going (R/G).
+- `riserGoingRatioMinApplied` (boolean): Whether the minimum R/G is applied.
+- `riserGoingRatioMaxValue` (number): Maximum ratio of riser height to going (R/G).
+- `riserGoingRatioMaxApplied` (boolean): Whether the maximum R/G is applied.
+- `stairPitchMinValue` (number): Minimum stair pitch, as Archicad stores it.
+- `stairPitchMinApplied` (boolean): Whether the minimum stair pitch is applied.
+- `stairPitchMaxValue` (number): Maximum stair pitch, as Archicad stores it.
+- `stairPitchMaxApplied` (boolean): Whether the maximum stair pitch is applied.
+- `landingLengthMinValue` (number): Minimum length of an automatic landing.
+- `landingLengthMinApplied` (boolean): Whether the minimum automatic landing length is applied.
+- `walkingLineOffsetMinValue` (number): Minimum offset of an automatic landing (API_StairRulesData::walkingLineOffsetMinValue).
+- `walkingLineOffsetMinApplied` (boolean): Whether the minimum automatic landing offset is applied.
+- `winderTurnOffsetMinValue` (number): Minimum winder width.
+- `winderTurnOffsetMinApplied` (boolean): Whether the minimum winder width is applied.
+
+### StairLayoutSettings
+
+object: The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (part of API_StairLayoutData). Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout.
+- `storyVisibility` (string ("HomeStoryOnly", "HomeAndOneStoryUp", "HomeAndOneStoryDown", "HomeAndOneStoryUpAndDown", "OneStoryUp", "OneStoryDown", "AllStories", "AllRelevantStories", "AllRelevantAndOneStoryUp", "AllRelevantAndOneStoryDown")): The stories the stair is shown on. The AllRelevant... values let Archicad work out the relevant stories from the stair's height (isAutoOnStoryVisibility true); the others set the shown stories (visibility) to match and isAutoOnStoryVisibility false.
+- `showWalkingLine` (boolean): Whether the walking line is shown.
+- `showNumbering` (boolean): Whether the step numbering is shown.
+- `showUpDownText` (boolean): Whether the up/down text (walking direction label) is shown.
+- `showDescription` (boolean): Whether the stair description is shown.
+- `showStructure` (boolean): Whether the stair structures are shown.
+
 ### StairLayout
 
 object: The floor plan or reflected ceiling plan display of a Stair's components (API_StairLayoutData).
@@ -20409,6 +21816,25 @@ object: The geometry of a Section (CutPlane) or Elevation marker on the floor pl
 - `depth` (number): The distance of the first depth point from the first segment of the section or elevation line (depth of CreateSections).
 - `viewDirection` (Coordinate2D): The unit vector perpendicular to the first segment of the section or elevation line, pointing to the side of the depth line: the direction the section or elevation looks in. CreateSections puts it to the left of the start to end direction.
 
+### PictureAnchorPoint
+
+string ("TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"): The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).
+
+### PictureDetails
+
+object: The settings of a Picture element (an image placed with the Picture tool on a floor plan, worksheet, detail or layout).
+- `name` (string, required): The name of the picture (API_PictureType::pictName), usually the name of the image file it was placed from.
+- `mimeType` (string, required): The MIME type of the image, e.g. image/png or image/jpeg. Empty when Archicad does not report it.
+- `box` (BoundingBox2D, required): The box the picture is drawn in, in model units, before its rotation by angle. For an unmirrored picture this is API_PictureType::destBox; a mirrored picture is drawn one width away from its stored destBox (along the rotated x axis), and this box is the drawn one, so a mirrored and an unmirrored picture drawn at the same place report the same box.
+- `width` (number, required): The width of the picture in model units: box.xMax - box.xMin.
+- `height` (number, required): The height of the picture in model units: box.yMax - box.yMin.
+- `pixelWidth` (integer, required): The width of the image in pixels.
+- `pixelHeight` (integer, required): The height of the image in pixels.
+- `angle` (number, required): The rotation angle of the picture in radians.
+- `mirrored` (boolean, required): Whether the picture is mirrored to its local vertical axis.
+- `transparent` (boolean, required): Whether the white pixels of the picture are drawn transparent.
+- `anchorPoint` (PictureAnchorPoint, required)
+
 ### NotYetSupportedElementTypeDetails
 
 object
@@ -20416,7 +21842,7 @@ object
 
 ### TypeSpecificDetails
 
-HotlinkDetails or WallDetails or BeamDetails or SlabDetails or RoofDetails or ShellDetails or ColumnDetails or ColumnSegmentDetails or BeamSegmentDetails or DetailWorksheetDetails or WindowDoorDetails or SkylightDetails or LibPartBasedElementDetails or ObjectDetails or PolylineDetails or ZoneDetails or RailingDetails or CurtainWallDetails or CurtainWallSegmentDetails or CurtainWallPanelDetails or CurtainWallFrameDetails or MeshDetails or MorphDetails or DrawingDetails or LabelDetails or TextDetails or LevelDimensionDetails or DimensionDetails or StairDetails or SectionDetails or NotYetSupportedElementTypeDetails: Represents the complete type-specific details of an element. Used as output from GET requests
+HotlinkDetails or WallDetails or BeamDetails or SlabDetails or RoofDetails or ShellDetails or ColumnDetails or ColumnSegmentDetails or BeamSegmentDetails or DetailWorksheetDetails or WindowDoorDetails or SkylightDetails or LibPartBasedElementDetails or ObjectDetails or PolylineDetails or ZoneDetails or RailingDetails or RailingPostDetails or RailingInnerPostDetails or RailingRailDetails or RailingBalusterDetails or RailingBalusterSetDetails or RailingPanelDetails or RailingPatternDetails or RailingRailEndDetails or RailingRailConnectionDetails or RailingEndFinishDetails or CurtainWallDetails or CurtainWallSegmentDetails or CurtainWallPanelDetails or CurtainWallFrameDetails or MeshDetails or MorphDetails or DrawingDetails or LabelDetails or TextDetails or LevelDimensionDetails or AngleDimensionDetails or DimensionDetails or RadialDimensionDetails or ChangeMarkerDetails or StairDetails or SectionDetails or PictureDetails or NotYetSupportedElementTypeDetails: Represents the complete type-specific details of an element. Used as output from GET requests
 
 ### ElementDetailsField
 
@@ -20507,6 +21933,17 @@ object
 object: A directed pivot line defined by its beginning and end coordinates. The roof plane rises on the left side of the line direction (begCoordinate towards endCoordinate); reverse the direction to tilt towards the other side.
 - `begCoordinate` (Coordinate2D, required)
 - `endCoordinate` (Coordinate2D, required)
+
+### RoofPivotEdgeChange
+
+object
+- `levels` (array of object): The roof plane of the edge on each level, from the pivot polygon upwards; at most as many as the roof has levels.
+  - `angle` (number): Angle of the plane to the XY plane.
+  - `eavesOverhang` (number): Extension of the eaves outside the pivot polygon.
+  - `angleType` (string ("Sloped", "Gable")): Gable for a vertical gable plane, Sloped otherwise.
+  - `topMaterialId` (AttributeId): The plane's own top surface (Custom Plane Settings). The roof is read back after the change, and the item fails if Archicad did not apply it (CreateRoofs then does not create the roof).
+  - `bottomMaterialId` (AttributeId): The plane's own bottom surface (Custom Plane Settings). Read back like topMaterialId.
+  - `coverFillId` (AttributeId): The plane's own cover fill (Custom Plane Settings). Read back like topMaterialId.
 
 ### DesignOptionData
 
@@ -20764,6 +22201,10 @@ object: Settings for modifying a zone. Only the given fields are changed, the po
 - `referencePosition` (Coordinate2D): Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true).
 - `contourLine` (ZoneContourLine)
 - `coverFill` (ZoneCoverFill)
+- `surface` (ZoneSurface)
+- `polygonDisplay` (ZonePolygonDisplay)
+- `stampPen` (ZoneStampPen)
+- `reducePercent` (ZoneReducePercent)
 
 ### ZoneContourLine
 
@@ -20779,6 +22220,30 @@ object: The cover fill of a zone on the floor plan. GetDetailsOfElements returns
 - `fillId` (AttributeId): The fill attribute of the cover fill.
 - `foregroundPen` (integer): The pen index of the fill pattern.
 - `backgroundPen` (integer): The pen index of the fill background. 0 is a transparent background; -1 also occurs in projects and is accepted, so a value read with GetDetailsOfElements can always be written back.
+- `use3DHatching` (boolean): "Use the fill of the surface": true draws the cover fill with the vectorial 3D hatch of the zone's top surface instead of fillId.
+- `useLocalOrigo` (boolean): The orientation of the cover fill. true: the fill is linked to the zone (rotated), starting at locOrigo in the direction of fillAngle. false: the fill is linked to the project origin and is not rotated.
+- `locOrigo` (Coordinate2D): The origin of the cover fill when useLocalOrigo is true.
+- `fillAngle` (number): The angle of the cover fill when useLocalOrigo is true, in radians.
+
+### ZoneSurface
+
+object: The 3D surface of a zone (the Model panel of the Zone Settings dialog). GetDetailsOfElements returns every field; when setting, only the given fields are changed.
+- `surfaceId` (AttributeId): The surface attribute of the zone's 3D body: of all its sides when useOnAllSides is true, otherwise of the sides that do not inherit a surface from a bounding element.
+- `useOnAllSides` (boolean): true: surfaceId is used on all sides of the zone. false: the sides inherit the surfaces of the bounding walls and trimming elements.
+
+### ZonePolygonDisplay
+
+string ("Gross", "Net"): The zone polygon display of the Zone settings: Gross uses the reference line of the bounding walls, Net their inner edges. Archicad only uses it for a zone whose boundary is the reference line of the walls; for other zones it is stored but has no effect.
+
+### ZoneStampPen
+
+object: The pen of the zone stamp. GetDetailsOfElements returns every field; when setting, only the given fields are changed.
+- `uniform` (boolean): Uniform stamp pen: true draws the whole stamp with pen, false uses the pens defined in the zone stamp (category) library part.
+- `pen` (integer): The pen index of the zone stamp. Only used when uniform is true.
+
+### ZoneReducePercent
+
+number: Reduces the calculated area of the zone by this percentage ("reduce area by %" of the Zone settings). 0 means no reduction.
 
 ### LineSettings
 
@@ -20788,10 +22253,12 @@ object: Settings for modifying a Line.
 - `roomSeparator` (boolean)
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `startArrow` (LineArrowhead): Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed.
+- `endArrow` (LineArrowhead): Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed.
 
 ### ArcSettings
 
-object: Settings for modifying an Arc or Circle. begAngle/endAngle are only applied to Arc, ignored for Circle.
+object: Settings for modifying an Arc or Circle. begAngle/endAngle are only applied to Arc, ignored for Circle. startArrow/endArrow are only for Arc: a Circle has no ends and refuses them.
 - `origin` (Coordinate2D)
 - `radius` (number)
 - `angle` (number)
@@ -20802,6 +22269,8 @@ object: Settings for modifying an Arc or Circle. begAngle/endAngle are only appl
 - `roomSeparator` (boolean)
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `startArrow` (LineArrowhead): Optional arrowhead at the start of an Arc. Given, it is shown unless its visible is false; only the keys given are changed.
+- `endArrow` (LineArrowhead): Optional arrowhead at the end of an Arc. Given, it is shown unless its visible is false; only the keys given are changed.
 
 ### HotspotSettings
 
@@ -20812,10 +22281,12 @@ object: Settings for modifying a Hotspot.
 
 ### SplineSettings
 
-object: Settings for modifying a Spline. Only these settings fields are modifiable - Archicad's own API does not support changing Spline geometry (coordinates/closed) via ACAPI_Element_Change.
+object: Settings for modifying a Spline. Only these settings fields are modifiable - Archicad's own API does not support changing Spline geometry (coordinates/closed) via ACAPI_Element_Change. Any other field (such as coordinates) fails the item with an error and changes nothing of it; delete the spline and create it again with CreateSplines to change its geometry.
 - `roomSeparator` (boolean)
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `startArrow` (LineArrowhead): Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed.
+- `endArrow` (LineArrowhead): Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed.
 
 ### PolylineSettings
 
@@ -20825,6 +22296,9 @@ object: Settings for modifying a Polyline. Setting coordinates replaces the enti
 - `roomSeparator` (boolean)
 - `linePenIndex` (integer)
 - `lineTypeId` (AttributeId)
+- `drawSegmentMode` (PolylineDrawSegmentMode)
+- `startArrow` (LineArrowhead): Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed.
+- `endArrow` (LineArrowhead): Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed.
 
 ### HatchSettings
 
@@ -20832,16 +22306,18 @@ object: Settings for modifying a Hatch. Setting coordinates replaces the entire 
 - `coordinates` (array of Coordinate2D)
 - `arcs` (array of PolyArc)
 - `holes` (Holes2D)
-- `contourPenIndex` (integer)
+- `contourPenIndex` (integer): Pen of the contour; 0 switches the contour off, a pen switches it on.
+- `contourLineTypeId` (AttributeId): The line type of the contour.
 - `fillPenIndex` (integer): Setting a pen removes the foregroundColor override, so the pen shows.
-- `fillBackgroundPenIndex` (integer): Setting a pen removes the backgroundColor override, so the pen shows.
+- `fillBackgroundPenIndex` (integer): Pen of the fill background; 0 makes the background transparent and -1 gives it the window background color. Setting a pen removes the backgroundColor override, so the pen shows.
 - `foregroundColor` (ColorRGB): RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given.
 - `backgroundColor` (ColorRGB): RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given.
 - `fillId` (AttributeId)
 - `buildingMaterialId` (AttributeId)
-- `roomSpecial` (integer)
+- `roomSpecial` (integer): The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off.
 - `showArea` (boolean)
 - `fillOrientation` (HatchOrientation): Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills (there is no pattern to orient).
+- `fillCategory` (HatchFillCategory)
 
 ### DrawingSettings
 
@@ -21146,11 +22622,15 @@ object: Dimension element data including witness points and geometry.
 - `elevationOrigin` (DimensionOrigin): The level an Elevation dimension measures from (kept for the other types too).
 - `witnessPoints` (array of CoordinateWitnessPoint): The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.
 - `linePen` (integer): The pen of the dimension and witness lines.
-- `marker` (object): The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.
-  - `type` (string ("CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", ...), required): The marker type, named after API_MarkerID.
-  - `pen` (integer, required): The pen of the marker.
+- `marker` (DimensionMarker): The marker at the witness points, always with its type, pen and size.
+- `textPlacement` (DimensionTextPlacement): The text placement method of the dimension texts, always with all of its fields.
 - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix", "Unknown")): The witness line form of the dimension's settings (None, Small, Large or Fix); each witness point has its own witnessForm.
 - `defaultWitnessVal` (number): The value that goes with defaultWitnessForm, in meters. For Fix it is the length of the witness lines (the custom witness line length of the Dimension Settings). Each witness point has its own witnessVal.
+- `staticDimension` (boolean): The Static dimension checkbox of the Dimension Settings (API defStaticDim).
+- `onlyDimensionText` (boolean): Whether only the dimension texts are shown, without the dimension and witness lines (API onlyDimensionText).
+- `openingHeightsInChain` (boolean): Whether the opening heights are shown in the dimension chain (Dimension Details panel, API detailedHoleDim).
+- `openingHeightsNominal` (boolean): Whether the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize).
+- `layeredElementDimensions` (LayeredElementDimensions)
 
 ### DimensionDataOrError
 
@@ -21279,6 +22759,21 @@ object: Floor plan cover fill settings of a Roof or Shell (API_ShellBaseType).
 - `useFillLocBaseLine` (boolean): Align the cover fill with the pivot line instead of the fill handle.
 - `useSlantedFill` (boolean): Distort the cover fill to show the slope as seen from above.
 - `orientation` (HatchOrientation)
+
+### MeshFloorFill
+
+object: Floor plan cover fill settings of a Mesh (API_MeshType). When modifying a mesh, omitted properties keep their current values.
+- `use` (boolean): Whether the cover fill is shown on the floor plan.
+- `foregroundPen` (integer)
+- `backgroundPen` (integer)
+- `fillId` (AttributeId)
+- `useLocalOrigin` (boolean): Whether the cover fill is drawn from the mesh's own reference vector (localOrigin and angle) instead of the project origin.
+- `localOrigin` (Coordinate2D): Base point of the cover fill's reference vector, used when useLocalOrigin is true.
+- `angle` (number): Angle of the cover fill's reference vector in radians, used when useLocalOrigin is true.
+
+### HatchFillCategory
+
+string ("Drafting", "Cut", "Cover"): The fill category of a hatch (Fill Category of the Hatch Settings), which decides which Display Options settings the fill follows: Drafting fills, Cut fills or Cover fills.
 
 ### HatchOrientationType
 
@@ -21437,7 +22932,7 @@ string ("EmptyCircle", "CrossCircle", "FullCircle", "SlashLine15", "OpenArrow15"
 ### LabelSymbolStyleSettableDetails
 
 object: Every user-configurable style setting specific to a Symbol-class Label (top-level API_LabelType fields documented as 'for symbol labels only'). Shared by CreateLabels ('symbolStyle'), ModifyLabels ('symbolStyle'), and the Get response.
-- `textWay` (SymbolLabelTextDirection)
+- `textWay` (LabelTextDirection): The same setting as the label's own textWay, kept here for a Symbol label. Give it in one of the two places only.
 - `fontIndex` (integer): Font attribute index.
 - `fontName` (string): Name of the font, as the Font attributes carry it. On input resolved to the font's index like a Text style's fontName, taking precedence over fontIndex, and failing when no loaded font has the name; on read-back the name of the font fontIndex refers to, absent when no loaded font has that index.
 - `bold` (boolean)
@@ -21933,6 +23428,8 @@ object
 object
 - `portId` (Guid, required): The port to modify, as returned by GetMEPPorts.
 - `shape` (MEPCrossSectionShape): New shape of the port.
+- `width` (number): New width of the port (the connection size of a terminal, accessory, equipment or fitting), in meters. The ports of routes and branches take their size from the route instead.
+- `height` (number): New height of a ventilation or cable carrier port, in meters. A piping port's size is its 'outerDiameter'.
 - `connectionStyle` (MEPConnectionStyle): New connection style of the port. Available from Archicad 30.
 - `flowDirection` (MEPFlowDirection): New flow direction of a piping or ventilation port.
 - `outerDiameter` (number): New outer diameter of a piping port.
@@ -22139,6 +23636,8 @@ object
 - `polyline` (MEPFlexibleSegmentPolyline): The new geometry of a Piping flexible segment as alternating line and spline parts that connect at their ends. Not together with 'controlPoints'. Available from Archicad 28.
 - `width` (number): The new width of a flexible segment.
 - `height` (number): The new height of a flexible segment.
+- `xSize` (number): The new size of a terminal, accessory, equipment or fitting along its local x axis, in meters. Some library parts calculate their own size and keep it, then the item fails after its other changes were made. The size of its connections is set with ModifyMEPPorts. Available from Archicad 30.
+- `ySize` (number): The new size of a terminal, accessory, equipment or fitting along its local y axis, in meters. Some library parts calculate their own size and keep it, then the item fails after its other changes were made. Available from Archicad 30.
 
 ### MEPRoutingSegmentParameters
 
@@ -22159,7 +23658,7 @@ object: The routing segment default parameters of the routing element (RoutingEl
 
 object: Elbow parameters. Archicad 29 or newer.
 - `factorRadius` (number)
-- `preferenceTableId` (Guid)
+- `preferenceTableId` (Guid): An elbow preference table, as returned by GetMEPPreferenceTables.
 
 ### MEPTransitionParameters
 
@@ -22502,7 +24001,7 @@ object
 
 object
 - `name` (string, required): The name of the new library part, as shown in the library and used by CreateObjects as libraryPartName.
-- `parentId` (string): The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required.
+- `parentId` (string): The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required. The General GDL Object (the root subtype) cannot be the parent: use the Model Element or one of its subtypes.
 - `parentName` (string): The document name of the parent subtype, e.g. 'General Object' or 'General Label' from the Archicad Library; used when parentId is not given.
 - `type` (LibraryPartType): Optional. The type of the new library part. By default the type of the parent found by parentName or by a parentId GUID, and Object otherwise.
 - `path` (string): Optional. The relative path of the .gsm file inside the embedded library, the same kind of path AddFilesToEmbeddedLibrary takes as outputPath. By default '<name>.gsm'.
@@ -22537,8 +24036,8 @@ object
 - `index` (integer)
 - `documentName` (string)
 - `fileName` (string)
-- `typeId` (LibraryPartType)
-- `type` (string ("Object", "Image", "Text", "BinaryListCrit", "Other")): The kind of the library part file: a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when it cannot be read.
+- `typeId` (LibraryPartType): The type of the library part. For GDL objects it is the type of the tool that places it: 'Window', 'Door', 'Skylight', 'Lamp', 'Room', 'Label' or 'Object' (wall ends are placed by the Window or Door tool, so they are 'Window' or 'Door').
+- `type` (string ("Object", "Image", "Text", "BinaryListCrit", "Other")): The kind of the library part file, not its type (see typeId): a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when Archicad cannot find the file by its fileName.
 
 ### SkippedLibraryPart
 
@@ -22982,6 +24481,8 @@ object: Structured conditions of a graphic override rule, turned into Archicad's
 - `layerNameEndsWith` (string): Matches elements whose layer name ends with this substring.
 - `compositeStructure` (string): Matches elements built with this Composite Structure attribute (by name).
 - `compositeStructureNot` (string): Matches elements NOT built with this Composite Structure attribute (by name).
+- `zoneCategory` (string): Matches zones of this Zone Category attribute (by name), the criteria editor's "Zone Category" condition (ID and Categories).
+- `zoneCategoryNot` (string): Matches elements whose Zone Category is NOT this attribute (by name).
 - `complexProfile` (string): Matches elements built with this Complex Profile attribute (by name).
 - `complexProfileNot` (string): Matches elements NOT built with this Complex Profile attribute (by name).
 - `compositeStructureNameIs` (string): Matches elements whose Composite Structure attribute name equals this string exactly.
@@ -23707,11 +25208,15 @@ object: Structured conditions of a graphic override rule, turned into Archicad's
   - `isNotAvailable` (boolean): If true, matches elements where this property is not available.
   - `isUndefined` (boolean): If true, matches elements where this property is undefined.
   - `isNotUndefined` (boolean): If true, matches elements where this property is not undefined.
-- `customPropertyString` (object): Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.
+- `customPropertyString` (object): Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator. The value is written in the form the criteria editor uses for the property: wrapped for a free text property, bare for a single choice option set, as a list of one option for a multiple choice option set, which takes equals only. contains, notContains, startsWith and endsWith are available for a free text property only.
   - `name` (string, required): The custom property's name, exactly as defined.
   - `group` (string, required): The custom property group's name, exactly as defined.
   - `equals` (string): Matches if the property's value equals this string exactly.
   - `notEquals` (string): Matches if the property's value does not equal this string.
+  - `contains` (string): Matches if the property's value contains this text (free text properties only).
+  - `notContains` (string): Matches if the property's value does not contain this text (free text properties only).
+  - `startsWith` (string): Matches if the property's value starts with this text (free text properties only).
+  - `endsWith` (string): Matches if the property's value ends with this text (free text properties only).
   - `hasDefaultValue` (boolean)
   - `hasCustomValue` (boolean)
   - `isAvailable` (boolean)
@@ -24133,7 +25638,7 @@ object: Maps the edges and vertices of the given surface member to the parts of 
 
 ### FavoriteKeepField
 
-string ("id", "layerIndex", "width", "height", "sillHeight", "referenceLineLocation", "topOffset", "relativeTopStory")
+string ("id", "layerIndex", "width", "height", "depth", "sillHeight", "referenceLineLocation", "topOffset", "relativeTopStory")
 
 ### AttributeCreationMethod
 
@@ -24225,11 +25730,13 @@ object: Details of an element. When the optional fields filter is given in the i
 
 ### CutPlane
 
-object: Defines a 3D cut plane using the plane equation: pa*x + pb*y + pc*z + pd = 0
+object: A 3D cut plane: the points where pa*x + pb*y + pc*z = pd. The side its normal vector (pa, pb, pc) points to is cut away.
 - `pa` (number, required): Coefficient of x in the plane equation. The x coordinate of the normal vector of the plane.
 - `pb` (number, required): Coefficient of y in the plane equation. The y coordinate of the normal vector of the plane.
 - `pc` (number, required): Coefficient of z in the plane equation. The z coordinate of the normal vector of the plane.
-- `pd` (number, required): Constant term in the plane equation, in meters. The distance of the plane from the origin along the normal vector.
+- `pd` (number, required): The right-hand side of the plane equation, in meters: with a unit normal vector, the distance of the plane from the origin along the normal vector. A plane at y = 2 cutting away y > 2 is pa 0, pb 1, pc 0, pd 2.
+- `cutPen` (integer): The pen of the edges cut by this plane, from 1 to 255. Get3DCutPlanes leaves it out when the plane has no valid pen (pen 0, set by earlier versions of Set3DCutPlanes).
+- `cutSurfaceId` (AttributeId): The surface the 3D window draws the faces cut by this plane with. Get3DCutPlanes leaves it out when the plane has no surface attribute (surface 0 draws them black).
 
 ### OpeningRevealOffsetData
 
@@ -24570,6 +26077,7 @@ object
 - `widthMM` (number)
 - `widthFactor` (number)
 - `charSpaceFactor` (number)
+- `content` (string): Text: the text the primitive draws, as Archicad displays it (for example a line of a zone stamp or a label, with its values already filled in).
 - `drawSegmentMode` (integer)
 - `nCoords` (integer)
 - `nSubPolys` (integer)
@@ -24604,6 +26112,7 @@ object
 
 object
 - `primitives` (array of DrawingPrimitive, required): The primitives in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (hatch borders, hatch lines, texts, curtain wall panels, ...).
+- `texts` (array of string, required): The content of every Text primitive of the element, in the order Archicad draws them: the text as Archicad displays it, for example the lines of a zone stamp.
 
 ### NavigatorParentItem
 
@@ -24673,9 +26182,10 @@ object
 - `baseLineArcs` (array of PolyArc): The arcs of the baseline after the solver ran, indexing baseLinePoints. Present only when the baseline has arcs.
 - `totalHeight` (number, required): Total height of the stair after the solver ran.
 - `flightWidth` (number, required): Width of the stair flight after the solver ran.
-- `stepNum` (integer, required): Number of risers after the solver ran.
-- `riserHeight` (number, required): Height of each riser after the solver ran.
-- `treadDepth` (number, required): Depth (going) of each tread after the solver ran.
+- `stepNum` (integer, required): The number of risers as given, else the Stair tool default's. Not laid out: the solver checks the baseline only, and CreateStairs picks the riser count for totalHeight within rules (#2526).
+- `riserHeight` (number, required): The riser height as given, else the Stair tool default's. Not laid out, like stepNum: CreateStairs picks it within rules.
+- `treadDepth` (number, required): The going as given, else the Stair tool default's stored going (which can read 0 or 1, #2525). Not laid out: the solver does not lay out the steps.
+- `rules` (StairRules, required): The Rules and Standards CreateStairs would create this stair with: the Stair tool defaults' rules, with the going pinned (treadDepthMinValue = treadDepthMaxValue = treadDepth, both applied, and the 2R+G, R+G and R/G rules released) when treadDepth is given, as CreateStairs pins it. Archicad lays the steps out within the applied limits when it creates the stair, so the riser count and riser height it picks for totalHeight must be within riserHeightMinValue..riserHeightMaxValue and the going within treadDepthMinValue..treadDepthMaxValue (each when applied); the stepNum, riserHeight and treadDepth above are only the given values or the tool defaults (#2526).
 
 ### ElementTriangulation
 
@@ -24812,7 +26322,7 @@ string ("Rest", "Wall", "Column", "Hatch", "Gable", "Unknown"): What reduces the
 
 ### StairBaselineSolutionState
 
-string ("Correct", "Solved", "NotSolved"): Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input.
+string ("Correct", "Solved", "NotSolved"): Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input. It is about the baseline only: Correct does not mean that the riser count, riser height and going given fit totalHeight and the rules (#2526).
 
 ### FavoriteSubelementType
 
@@ -25109,3 +26619,15 @@ object: Full readable state of a Section or Elevation element: every field of Se
 ### SectionElevationDetailsOrError
 
 SectionElevationDetails or ErrorItem
+
+### StairBaseLineEdge
+
+object
+- `segmentType` (string ("Flight", "Landing", "DividedLanding"), required): Flight: steps. Landing: a landing segment, the edge between two landing turns of a U-shaped stair. DividedLanding: a divided landing segment.
+
+### StairBaseLineVertex
+
+object
+- `turnType` (string ("None", "Landing", "Winder", "DividedLanding"), required): The turn at this point. The first and last points take None.
+- `minLandingStartEdgeOffset` (number): Optional, 0 by default. The minimal lead edge offset of a landing turn: makes the landing longer before the turn. Archicad calculates the actual offset, at least this much, to fit the steps (GetDetailsOfElements returns it as landingStartEdgeOffset).
+- `minLandingEndEdgeOffset` (number): Optional, 0 by default. The minimal trail edge offset of a landing turn: makes the landing longer after the turn. Archicad calculates the actual offset, at least this much (GetDetailsOfElements returns it as landingEndEdgeOffset).

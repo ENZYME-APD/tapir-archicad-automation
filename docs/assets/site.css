@@ -322,7 +322,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .flow.flow-4 { grid-template-columns: repeat(4, 1fr) }
 .flow > div { padding: 20px; border-right: 1px solid var(--line); display: grid; gap: 8px; align-content: start; position: relative; min-width: 0 }
 .flow > div:last-child { border-right: 0 }
-.flow b { font: 700 .75rem var(--mono); color: var(--link) } .flow strong { font: 700 1.0625rem/1.2 var(--display) } .flow span { color: var(--muted); font-size: .875rem }
+.flow b { font: 700 .75rem var(--mono); text-transform: uppercase; color: var(--link) } .flow strong { font: 700 1.0625rem/1.2 var(--display) } .flow span { color: var(--muted); font-size: .875rem }
 /* "How it works": the clients, the add-on and Archicad, stacked as in a section drawing. */
 .stack { display: grid; gap: 10px; max-width: 760px; margin-inline: auto; text-align: center }
 .stack .clients { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }

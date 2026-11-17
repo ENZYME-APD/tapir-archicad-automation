@@ -1,0 +1,152 @@
+{
+  "title": "ModifyLayers changes only the given layer settings (#2800)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "create layer M",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check ModifyLayers M", "isHidden": false, "isLocked": false, "isWireframe": false, "intersectionGroupNr": 5 }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "layerM": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "layer created" }
+      ]
+    },
+    {
+      "id": "create layer N",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check ModifyLayers N", "isHidden": false, "isLocked": false, "isWireframe": false, "intersectionGroupNr": 6 }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "layerN": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "layer created" }
+      ]
+    },
+    {
+      "id": "lock M and make it wireframe, nothing else given",
+      "command": "ModifyLayers",
+      "creates": false,
+      "params": {
+        "layers": [
+          { "attributeId": { "guid": "${layerM}" }, "isLocked": true, "isWireframe": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per layer" },
+        { "path": "executionResults[0].success", "eq": true, "name": "changed" }
+      ]
+    },
+    {
+      "id": "M is locked and wireframe, the rest kept",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerM}" } } ]
+      },
+      "expect": [
+        { "path": "layers[0].isLocked", "eq": true, "name": "locked" },
+        { "path": "layers[0].isWireframe", "eq": true, "name": "wireframe" },
+        { "path": "layers[0].isHidden", "eq": false, "name": "still shown" },
+        { "path": "layers[0].intersectionGroupNr", "eq": 5, "name": "intersection group kept" },
+        { "path": "layers[0].name", "eq": "Tapir check ModifyLayers M", "name": "name kept" }
+      ]
+    },
+    {
+      "id": "change the intersection group and rename M, hide N, a bogus guid, a duplicate name",
+      "command": "ModifyLayers",
+      "creates": false,
+      "params": {
+        "layers": [
+          { "attributeId": { "guid": "${layerM}" }, "intersectionGroupNr": 9, "name": "Tapir check ModifyLayers M renamed" },
+          { "attributeId": { "guid": "${layerN}" }, "isHidden": true },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "isHidden": true },
+          { "attributeId": { "guid": "${layerN}" }, "name": "Tapir check ModifyLayers M renamed" },
+          { "attributeId": { "guid": "${layerN}" }, "name": "" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 5, "name": "one result per layer" },
+        { "path": "executionResults[0].success", "eq": true, "name": "M changed" },
+        { "path": "executionResults[1].success", "eq": true, "name": "N hidden" },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown guid fails" },
+        { "path": "executionResults[3].success", "eq": false, "name": "name of another layer refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "empty name refused" }
+      ]
+    },
+    {
+      "id": "read M and N",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${layerM}" } },
+          { "attributeId": { "guid": "${layerN}" } }
+        ]
+      },
+      "expect": [
+        { "path": "layers[0].name", "eq": "Tapir check ModifyLayers M renamed", "name": "M renamed" },
+        { "path": "layers[0].intersectionGroupNr", "eq": 9, "name": "M intersection group changed" },
+        { "path": "layers[0].isLocked", "eq": true, "name": "M still locked" },
+        { "path": "layers[0].isWireframe", "eq": true, "name": "M still wireframe" },
+        { "path": "layers[0].isHidden", "eq": false, "name": "M still shown" },
+        { "path": "layers[1].name", "eq": "Tapir check ModifyLayers N", "name": "N name kept (refused renames)" },
+        { "path": "layers[1].isHidden", "eq": true, "name": "N hidden" },
+        { "path": "layers[1].isLocked", "eq": false, "name": "N still unlocked" },
+        { "path": "layers[1].intersectionGroupNr", "eq": 6, "name": "N intersection group kept" }
+      ]
+    },
+    {
+      "id": "show N and unlock M again",
+      "command": "ModifyLayers",
+      "creates": false,
+      "params": {
+        "layers": [
+          { "attributeId": { "guid": "${layerM}" }, "isLocked": false, "isWireframe": false },
+          { "attributeId": { "guid": "${layerN}" }, "isHidden": false }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "M unlocked" },
+        { "path": "executionResults[1].success", "eq": true, "name": "N shown" }
+      ]
+    },
+    {
+      "id": "M unlocked, N shown",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${layerM}" } },
+          { "attributeId": { "guid": "${layerN}" } }
+        ]
+      },
+      "expect": [
+        { "path": "layers[0].isLocked", "eq": false, "name": "M unlocked" },
+        { "path": "layers[0].isWireframe", "eq": false, "name": "M not wireframe" },
+        { "path": "layers[0].intersectionGroupNr", "eq": 9, "name": "M intersection group kept" },
+        { "path": "layers[1].isHidden", "eq": false, "name": "N shown" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerM}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerN}" } } } ] }
+    }
+  ]
+}
