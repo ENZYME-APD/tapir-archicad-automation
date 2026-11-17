@@ -75,6 +75,17 @@
     'Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Archicad で一度だけ一覧表をパブリッシャーセットに入れておき、そのセットを <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> でパブリッシュします。',
 
+    // Library parts and GDL
+    'Library parts and GDL': 'ライブラリパーツとGDL',
+    'Run a 2D GDL script given as text, as <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> does with a 3D script':
+        '<a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> が3Dスクリプトで行うように、テキストで渡した2D GDLスクリプトを実行する',
+    'Save the script in a library part with <a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a> (or <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>), then draw its 2D symbol with <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a>.':
+        '<a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a>（または <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>）でスクリプトをライブラリパーツに保存し、<a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> でその2Dシンボルを描画します。',
+    'Get the error message and the line number when a GDL script fails':
+        'GDLスクリプトが失敗したときに、エラーメッセージと行番号を取得する',
+    'Check whether the script runs with <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> (3D) or <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> (2D). To see the error, open the library part in Archicad’s GDL editor with <a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> (from Archicad 27).':
+        '<a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a>（3D）または <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a>（2D）でスクリプトが実行できるか確認します。エラーを見るには、<a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> でライブラリパーツをArchicadのGDLエディタで開きます（Archicad 27以降）。',
+
     // Archicad's interface
     'Archicad\'s interface': 'Archicad のインターフェース',
     'Read the text of the Session Report window': 'Session Report ウィンドウのテキストを読み取る',

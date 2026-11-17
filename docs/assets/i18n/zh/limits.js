@@ -75,6 +75,17 @@
     'Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         '先在 Archicad 中把该清单放进一个发布集（只需一次），然后用 <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> 发布该集。',
 
+    // Library parts and GDL
+    'Library parts and GDL': '库部件与 GDL',
+    'Run a 2D GDL script given as text, as <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> does with a 3D script':
+        '运行以文本给出的 2D GDL 脚本，就像 <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> 对 3D 脚本所做的那样',
+    'Save the script in a library part with <a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a> (or <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>), then draw its 2D symbol with <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a>.':
+        '用 <a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a>（或 <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>）把脚本保存到库部件中，再用 <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> 绘制它的 2D 符号。',
+    'Get the error message and the line number when a GDL script fails':
+        'GDL 脚本失败时获取错误信息和行号',
+    'Check whether the script runs with <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> (3D) or <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> (2D). To see the error, open the library part in Archicad’s GDL editor with <a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> (from Archicad 27).':
+        '用 <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a>（3D）或 <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a>（2D）检查脚本能否运行。要查看错误，用 <a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> 在 Archicad 的 GDL 编辑器中打开该库部件（Archicad 27 起）。',
+
     // Archicad's interface
     'Archicad\'s interface': 'Archicad 的界面',
     'Read the text of the Session Report window': '读取 Session Report 窗口中的文本',

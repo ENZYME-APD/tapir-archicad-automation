@@ -75,6 +75,17 @@
     'Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Archicad में schedule को एक बार किसी publisher set में डालें, फिर उस set को <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> से publish करें।',
 
+    // Library parts and GDL
+    'Library parts and GDL': 'Library parts और GDL',
+    'Run a 2D GDL script given as text, as <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> does with a 3D script':
+        'Text के रूप में दी गई 2D GDL script चलाना, जैसे <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> 3D script के साथ करता है',
+    'Save the script in a library part with <a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a> (or <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>), then draw its 2D symbol with <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a>.':
+        'Script को <a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a> (या <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>) से एक library part में save करें, फिर <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> से उसका 2D symbol बनाएँ।',
+    'Get the error message and the line number when a GDL script fails':
+        'GDL script fail होने पर error message और line number पाना',
+    'Check whether the script runs with <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> (3D) or <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> (2D). To see the error, open the library part in Archicad’s GDL editor with <a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> (from Archicad 27).':
+        '<a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> (3D) या <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> (2D) से जाँचें कि script चलती है या नहीं। Error देखने के लिए <a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> से library part को Archicad के GDL editor में खोलें (Archicad 27 से)।',
+
     // Archicad's interface
     'Archicad\'s interface': 'Archicad का interface',
     'Read the text of the Session Report window': 'Session Report window का text पढ़ना',
