@@ -112,5 +112,9 @@
       "params": { "elements": [ { "elementId": { "guid": "${climbing}" } } ] },
       "expect": [ { "path": "detailsOfElements[0].details.referenceLine", "len": 2, "name": "the climbing railing is still there, unchanged" } ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${climbing}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${new}" } } ] } }
   ]
 }
