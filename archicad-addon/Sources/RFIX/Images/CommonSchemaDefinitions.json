@@ -11991,6 +11991,10 @@
                 "type": "boolean",
                 "description": "Side (detail/worksheet) window is opened?"
             },
+            "constructionElementsOnly": {
+                "type": "boolean",
+                "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the detail/worksheet (API_DetailType::constructionElementsOnly)."
+            },
             "clipPolygon": {
                 "type": "array",
                 "description": "The clip polygon of the detail/worksheet",
@@ -12028,6 +12032,7 @@
             "detailIdStr",
             "isHorizontalMarker",
             "isWindowOpened",
+            "constructionElementsOnly",
             "clipPolygon",
             "linkData"
         ]
