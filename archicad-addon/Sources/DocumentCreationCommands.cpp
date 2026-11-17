@@ -1270,8 +1270,8 @@ static GSErrCode MoveLayoutBookItemsInto (const GS::Array<API_Guid>& itemGuids, 
 
 // ChangeLayoutSubsetSettings for one subset. The Archicad API has no function that changes the settings
 // of an existing subset (only ACAPI_Navigator_CreateSubSet and ACAPI_Navigator_GetSubSet), nor one that
-// deletes a subset, so a new subset is created with the old one's settings changed as asked, right after
-// the old one, and the old one's layouts and subsets are moved into it in their order. These are
+// deletes a subset, so a new subset is created with the old one's settings changed as asked, put right
+// after the old one, and the old one's layouts and subsets are moved into it in their order. These are
 // non-undoable functions: when a move fails, the items moved before are moved back.
 static GS::ObjectState ChangeOneLayoutSubset (const GS::ObjectState& item)
 {
@@ -1308,66 +1308,81 @@ static GS::ObjectState ChangeOneLayoutSubset (const GS::ObjectState& item)
 
     ApplyLayoutSubsetSettings (*settingsOS, subSet);
 
-    // 1. The new subset, under the same parent, found as CreateLayoutSubset finds it.
+    // 1. The new subset, found as CreateLayoutSubset finds it. It is created inside the old subset and
+    // then moved out next to it: ACAPI_Navigator_SetNavigatorItemPosition answers NoError and leaves an
+    // item where it is when it is moved within its own parent (see MoveNavigatorItem), which is what
+    // happened in Archicad 29 to a new subset created under the old one's parent.
     const GS::Array<API_Guid> subsetsBefore = GetLayoutSubsetGuids ();
-    err = ACAPI_Navigator_CreateSubSet (&subSet, &parentItem.guid);
+    err = ACAPI_Navigator_CreateSubSet (&subSet, &oldGuid);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to create the subset with the new settings. Nothing was changed.");
     }
     const GS::Optional<API_Guid> newGuid = FindNewLayoutSubsetGuid (subsetsBefore);
     if (!newGuid.HasValue ()) {
-        return CreateErrorResponse (APIERR_GENERAL, "The subset with the new settings was created but could not be found, so nothing was moved into it. Delete the new, empty subset in Archicad: the Archicad API cannot delete a subset.");
+        return CreateErrorResponse (APIERR_GENERAL, "The subset with the new settings was created in the old one but could not be found, so nothing was moved into it. Delete the new, empty subset in Archicad: the Archicad API cannot delete a subset.");
     }
     const GS::UniString newLeftMessage = " The new, empty subset (navigatorItemId " + APIGuidToString (newGuid.Get ()) +
         ") was left in the Layout Book: the Archicad API cannot delete a subset, delete it in Archicad.";
 
-    // 2. Right after the old one, so the layout numbering goes on as before.
-    const GS::Guid newSource = APIGuid2GSGuid (newGuid.Get ());
-    const GS::Guid parent = APIGuid2GSGuid (parentItem.guid);
-    const GS::Guid oldPrevious = APIGuid2GSGuid (oldGuid);
-    err = ACAPI_Navigator_SetNavigatorItemPosition (&newSource, &parent, &oldPrevious);
-    GS::Array<API_Guid> siblings;
-    if (err == NoError) {
-        err = GetLayoutBookChildGuids (parentItem.guid, siblings);
-    }
-    const UIndex newIndex = siblings.FindFirst (newGuid.Get ());
-    if (err == NoError && (newIndex == MaxUIndex || newIndex == 0 || siblings[newIndex - 1] != oldGuid)) {
-        err = APIERR_REFUSEDPAR;
-    }
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to place the subset with the new settings right after the old one, so nothing was moved into it." + newLeftMessage);
-    }
-
-    // 3. The layouts and subsets of the old one, in their order.
-    USize movedCount = 0;
-    err = MoveLayoutBookItemsInto (children, newGuid.Get (), movedCount);
-    if (err != NoError) {
-        GS::Array<API_Guid> movedItems;
-        for (UIndex i = 0; i < movedCount; ++i) {
-            movedItems.Push (children[i]);
+    // The moves run in a command scope, as MoveNavigatorItem runs them.
+    GS::Optional<GS::ObjectState> result;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Change Layout Subset Settings", [&] () -> GSErrCode {
+        // 2. Out of the old subset, right after it, so the layout numbering goes on as before.
+        const GS::Guid newSource = APIGuid2GSGuid (newGuid.Get ());
+        const GS::Guid parent = APIGuid2GSGuid (parentItem.guid);
+        const GS::Guid oldPrevious = APIGuid2GSGuid (oldGuid);
+        GSErrCode moveErr = ACAPI_Navigator_SetNavigatorItemPosition (&newSource, &parent, &oldPrevious);
+        GS::Array<API_Guid> siblings;
+        if (moveErr == NoError) {
+            moveErr = GetLayoutBookChildGuids (parentItem.guid, siblings);
         }
-        USize movedBackCount = 0;
-        const GSErrCode backErr = MoveLayoutBookItemsInto (movedItems, oldGuid, movedBackCount);
-        GS::UniString message = "Failed to move the layouts into the subset with the new settings.";
-        message += backErr == NoError
-            ? GS::UniString (" The ones moved before are back in the old subset, in their order.")
-            : GS::UniString (" Some of the ones moved before could not be moved back into the old subset: check the Layout Book.");
-        message += newLeftMessage;
-        return CreateErrorResponse (err, message);
-    }
+        const UIndex newIndex = siblings.FindFirst (newGuid.Get ());
+        if (moveErr == NoError && (newIndex == MaxUIndex || newIndex == 0 || siblings[newIndex - 1] != oldGuid)) {
+            moveErr = APIERR_REFUSEDPAR;
+        }
+        if (moveErr != NoError) {
+            result = CreateErrorResponse (moveErr, "Failed to place the subset with the new settings right after the old one, so nothing was moved into it." + newLeftMessage);
+            return NoError;
+        }
 
-    // 4. Read back: the old subset is empty.
-    GS::Array<API_Guid> oldChildren;
-    err = GetLayoutBookChildGuids (oldGuid, oldChildren);
-    if (err != NoError || !oldChildren.IsEmpty ()) {
-        return CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "The layouts were moved into the subset with the new settings (navigatorItemId " + APIGuidToString (newGuid.Get ()) +
-            "), but the old subset is not empty: check the Layout Book.");
-    }
+        // 3. The layouts and subsets of the old one, in their order.
+        USize movedCount = 0;
+        moveErr = MoveLayoutBookItemsInto (children, newGuid.Get (), movedCount);
+        if (moveErr != NoError) {
+            GS::Array<API_Guid> movedItems;
+            for (UIndex i = 0; i < movedCount; ++i) {
+                movedItems.Push (children[i]);
+            }
+            USize movedBackCount = 0;
+            const GSErrCode backErr = MoveLayoutBookItemsInto (movedItems, oldGuid, movedBackCount);
+            GS::UniString message = "Failed to move the layouts into the subset with the new settings.";
+            message += backErr == NoError
+                ? GS::UniString (" The ones moved before are back in the old subset, in their order.")
+                : GS::UniString (" Some of the ones moved before could not be moved back into the old subset: check the Layout Book.");
+            message += newLeftMessage;
+            result = CreateErrorResponse (moveErr, message);
+            return NoError;
+        }
 
-    GS::ObjectState result;
-    result.Add ("navigatorItemId", CreateGuidObjectState (newGuid.Get ()));
-    result.Add ("oldNavigatorItemId", CreateGuidObjectState (oldGuid));
-    return result;
+        // 4. Read back: the old subset is empty.
+        GS::Array<API_Guid> oldChildren;
+        moveErr = GetLayoutBookChildGuids (oldGuid, oldChildren);
+        if (moveErr != NoError || !oldChildren.IsEmpty ()) {
+            result = CreateErrorResponse (moveErr != NoError ? moveErr : APIERR_GENERAL, "The layouts were moved into the subset with the new settings (navigatorItemId " + APIGuidToString (newGuid.Get ()) +
+                "), but the old subset is not empty: check the Layout Book.");
+            return NoError;
+        }
+
+        GS::ObjectState success;
+        success.Add ("navigatorItemId", CreateGuidObjectState (newGuid.Get ()));
+        success.Add ("oldNavigatorItemId", CreateGuidObjectState (oldGuid));
+        result = success;
+        return NoError;
+    });
+    if (!result.HasValue ()) {
+        return CreateErrorResponse (undoErr != NoError ? undoErr : APIERR_GENERAL, "Failed to open a command to move the layouts, so nothing was moved." + newLeftMessage);
+    }
+    return *result;
 }
 
 GS::ObjectState ChangeLayoutSubsetSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
