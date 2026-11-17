@@ -1349,6 +1349,52 @@ static bool ApplyWitnessPointTexts (const GS::Array<WitnessPointText>& texts, co
     return true;
 }
 
+// Whether the text Archicad kept in a note is the custom text written. Archicad gives the note back
+// with the measured value autotext resolved ("A 1,200" for "A <keyword>", AC30), so each keyword
+// written matches any text there: the parts around the keywords must be the note's text, in order.
+static bool DimensionNoteTextMatches (const GS::UniString& kept, const GS::UniString& written)
+{
+    if (kept == written) {
+        return true;
+    }
+    const GS::Optional<GS::UniString> keyword = GetMeasuredValueKeyword ();
+    if (!keyword.HasValue () || !written.Contains (keyword.Get ())) {
+        return false;
+    }
+
+    GS::Array<GS::UniString> parts;
+    GS::UniString rest = written;
+    for (;;) {
+        const UIndex at = rest.FindFirst (keyword.Get ());
+        if (at == MaxUIndex) {
+            parts.Push (rest);
+            break;
+        }
+        parts.Push (GS::UniString (rest.GetSubstring (0, at)));
+        const UIndex after = at + keyword.Get ().GetLength ();
+        rest = GS::UniString (rest.GetSubstring (after, rest.GetLength () - after));
+    }
+
+    const GS::UniString& first = parts.GetFirst ();
+    const GS::UniString& last = parts.GetLast ();
+    if (kept.GetLength () < first.GetLength () + last.GetLength () || !kept.BeginsWith (first) || !kept.EndsWith (last)) {
+        return false;
+    }
+    UIndex position = first.GetLength ();
+    const UIndex end = kept.GetLength () - last.GetLength ();
+    for (UIndex i = 1; i + 1 < parts.GetSize (); ++i) {
+        if (parts[i].IsEmpty ()) {
+            continue;
+        }
+        const UIndex at = kept.FindFirst (parts[i], position);
+        if (at == MaxUIndex || at + parts[i].GetLength () > end) {
+            return false;
+        }
+        position = at + parts[i].GetLength ();
+    }
+    return position <= end;
+}
+
 // Compares the witness point texts Archicad kept (changedMemo) with the ones written, and adds the
 // names of those it did not take to notApplied.
 static void CheckWitnessPointTexts (const GS::Array<WitnessPointText>& texts, const API_ElementMemo& changedMemo, Int32 witnessPointCount, GS::UniString& notApplied)
@@ -1370,7 +1416,7 @@ static void CheckWitnessPointTexts (const GS::Array<WitnessPointText>& texts, co
         if (text.contentType.HasValue () && note.contentType != text.contentType.Get ()) {
             notApplied += prefix + "content";
         }
-        if (text.customText.HasValue () && GetDimensionNoteText (note) != text.customText.Get ()) {
+        if (text.customText.HasValue () && !DimensionNoteTextMatches (GetDimensionNoteText (note), text.customText.Get ())) {
             notApplied += prefix + "customText";
         }
         if (text.superscript.HasValue () && ((note.effectBits & APIEffect_SuperScript) != 0) != text.superscript.Get ()) {
@@ -13931,7 +13977,7 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                                     },
                                     "customText": {
                                         "type": "string",
-                                        "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). Without content the witness point shows the custom text."
+                                        "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). A line break is \\r (Archicad shows \\n on one line). Without content the witness point shows the custom text."
                                     },
                                     "superscript": {
                                         "type": "boolean",
