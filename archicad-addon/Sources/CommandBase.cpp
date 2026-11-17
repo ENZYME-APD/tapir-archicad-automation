@@ -2220,12 +2220,14 @@ GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id)
     return NoError;
 }
 
-GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+static GSErrCode WriteElementId (const API_Guid& elementGuid, const GS::UniString& id)
 {
     // Not the elemInfoString memo part: writing it answers NoError on polylines and
     // splines and leaves their ID empty (#2470). Before Archicad 27 MigrationHelper.hpp
     // calls APIDb_ChangeElementInfoStringID.
     GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elementGuid, &id);
+    // That call's refusal, kept when the memo part below is tried instead.
+    GSErrCode infoStringRefusal = NoError;
     if (err == APIERR_BADID || err == APIERR_BADELEMENTTYPE) {
         // Some element types are not handled by that call although they have an ID: it answers
         // APIERR_BADID for an Opening (#2629). Their ID is written through the elemInfoString
@@ -2238,6 +2240,7 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
         if (memoErr != NoError) {
             return err;
         }
+        infoStringRefusal = err;
         err = NoError;
     }
     if (err != NoError) {
@@ -2245,12 +2248,44 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
     }
 
     // Read back: an ID Archicad answered NoError for but did not keep is a failure, so a
-    // caller never reports an ID the element does not have.
+    // caller never reports an ID the element does not have. When the memo part was only the
+    // second try, the first call's refusal says why: lines, arcs, circles, polylines, splines
+    // and hotspots have no Element ID in Archicad 29 (APIERR_BADELEMENTTYPE, #2762), and the memo
+    // write answers NoError on them and keeps nothing.
     GS::UniString written;
     if (GetElementId (elementGuid, written) != NoError || written != id) {
-        return APIERR_REFUSEDPAR;
+        return infoStringRefusal != NoError ? infoStringRefusal : APIERR_REFUSEDPAR;
     }
     return NoError;
+}
+
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+{
+    const GSErrCode err = WriteElementId (elementGuid, id);
+#ifdef ServerMainVers_2900
+    // Lines, arcs, circles, polylines, splines and hotspots have no Element ID in Archicad 29, and
+    // the Create* commands document that an id on them is refused with APIERR_BADELEMENTTYPE
+    // (#2762). On Archicad 29.0.0 5101 the write answered APIERR_REFUSEDPAR instead (the read back's
+    // code: the memo write answered NoError and kept nothing), so any failed write on these types
+    // answers the documented code, whichever step refused it.
+    if (err != NoError && err != APIERR_BADELEMENTTYPE) {
+        API_Elem_Head head = {};
+        if (LoadElementHeaderByGuid (elementGuid, head)) {
+            switch (GetElemTypeId (head)) {
+                case API_LineID:
+                case API_ArcID:
+                case API_CircleID:
+                case API_PolyLineID:
+                case API_SplineID:
+                case API_HotspotID:
+                    return APIERR_BADELEMENTTYPE;
+                default:
+                    break;
+            }
+        }
+    }
+#endif
+    return err;
 }
 
 GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid)
