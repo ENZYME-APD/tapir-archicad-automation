@@ -981,7 +981,7 @@ GS::ObjectState RemoveElementTrimDirectionCommand::Execute (const GS::ObjectStat
     if (failedPair.HasValue ()) {
         // Every pair changed before the failing one was undone with it.
         for (UIndex i : changedPairs) {
-            results[i] = CreateFailedExecutionResult (APIERR_GENERAL, "Undone: the pair at index " + GS::ValueToUniString (static_cast<Int64> (*failedPair)) + " failed, so the whole call was undone.");
+            results[i] = CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("Undone: the pair at index %u failed, so the whole call was undone.", static_cast<unsigned int> (*failedPair)));
         }
     } else if (undoErr != NoError) {
         // The undo scope did not open (nested undoable command, teamwork state): no pair was tried.
