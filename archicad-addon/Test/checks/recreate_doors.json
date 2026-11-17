@@ -30,6 +30,16 @@
       "save": { "part": "detailsOfElements[0].details.libPart.name", "reflected": "detailsOfElements[0].details.reflected", "oSide": "detailsOfElements[0].details.oSide" }
     },
     {
+      "id": "where the door is in wall A (its 3D box takes in the leaf, which opens to one side of the wall)",
+      "command": "API.Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": {
+        "oyMin": "boundingBoxes3D[0].boundingBox3D.yMin", "oyMax": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "oxMin": "boundingBoxes3D[0].boundingBox3D.xMin", "oxMax": "boundingBoxes3D[0].boundingBox3D.xMax"
+      }
+    },
+    {
       "id": "a text label of the door",
       "command": "CreateLabels",
       "params": { "labelsData": [ { "labelClass": "Text", "text": "Tapir recreate door", "parentElementId": { "guid": "${d}" }, "begCoordinate": { "x": 996.0, "y": 978.0 } } ] },
@@ -75,8 +85,10 @@
         "xMin": "boundingBoxes3D[0].boundingBox3D.xMin", "xMax": "boundingBoxes3D[0].boundingBox3D.xMax"
       },
       "expect": [
-        { "expr": "(${yMin} + ${yMax}) / 2 - 990", "approx": 0.0, "tol": 0.3, "name": "the door is in wall B (y 990)" },
-        { "expr": "(${xMin} + ${xMax}) / 2 - 996", "approx": 0.0, "tol": 0.05, "name": "the door kept its 6 m along the wall" }
+        { "expr": "${yMin} - 990", "lt": 0.0, "name": "the door reaches across wall B (below y 990)" },
+        { "expr": "${yMax} - 990", "gt": 0.0, "name": "the door reaches across wall B (above y 990)" },
+        { "expr": "(${yMin} + ${yMax}) / 2 - 990 - ((${oyMin} + ${oyMax}) / 2 - 980)", "approx": 0.0, "tol": 0.05, "name": "the door sits in wall B as it sat in wall A, 10 m further, its leaf on the same side" },
+        { "expr": "(${xMin} + ${xMax}) / 2 - (${oxMin} + ${oxMax}) / 2", "approx": 0.0, "tol": 0.05, "name": "the door kept its 6 m along the wall" }
       ]
     },
     {
