@@ -6522,7 +6522,7 @@
             },
             "floorIndex": {
                 "type": "integer",
-                "description": "The story to place the interior elevation on. Defaults to the current story."
+                "description": "The story to place the interior elevation on. Defaults to the current story. Archicad places an interior elevation on the active story, so for another story that story is activated while the interior elevation is created, and the previously active one is put back afterwards."
             }
         },
         "additionalProperties": false,
@@ -10144,7 +10144,7 @@
         "properties": {
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "The current zoom parameters."
+                "description": "The current zoom parameters. In a rotated window (rotation is not 0) the box is in the window's own rotated frame, as Archicad stores it, not in model coordinates."
             },
             "rotation": {
                 "type": "number",
@@ -11037,11 +11037,61 @@
             },
             "basePlane": {
                 "$ref": "#/CoordinateSystem3D",
-                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profile, the extrusion start and the extrusion vector are given in it."
+                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profiles, the extrusion start and vector, the axis and the profile planes are given in it."
             },
             "profile": {
                 "$ref": "#/ShellProfile",
-                "description": "Extruded only: the profile polyline, in the plane across the extrusion (x horizontal, y up), as CreateShells takes it. Only the first polyline of the profile is returned."
+                "description": "The profile polyline, as CreateShells takes it. Extruded: in the plane across the extrusion (x horizontal, y up). Revolved: in the base plane's XY plane. Ruled: the first profile, in the XY plane of profilePlane. Only the first polyline of the profile is returned."
+            },
+            "axis": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Revolved only: the coordinate system whose Z axis the profile is turned around, in base plane coordinates (API_RevolvedShellData::axisBase), as CreateShells takes it."
+            },
+            "revolutionAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the profile is turned through, in radians."
+            },
+            "beginAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the revolution starts at, in radians (API_RevolvedShellData::begAngle)."
+            },
+            "distortionAngle": {
+                "type": "number",
+                "description": "Revolved only: shear of the revolution, in radians; pi/2 is no shear."
+            },
+            "segmentType": {
+                "type": "string",
+                "enum": [ "ByCircle", "ByArc" ],
+                "description": "Revolved only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+            },
+            "segmentsByCircle": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments a full circle is resolved into, used when segmentType is ByCircle."
+            },
+            "segmentsByArc": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments the revolution arc is resolved into, used when segmentType is ByArc."
+            },
+            "segmentedSurfaces": {
+                "type": "boolean",
+                "description": "Revolved only: whether the revolved surface is broken into planes along the revolution arc."
+            },
+            "profilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of profile, in base plane coordinates (API_RuledShellData::plane1), as CreateShells takes it."
+            },
+            "secondProfile": {
+                "$ref": "#/ShellProfile",
+                "description": "Ruled only: the second profile polyline, in the XY plane of secondProfilePlane, as CreateShells takes it. Only the first polyline of the profile is returned."
+            },
+            "secondProfilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of secondProfile, in base plane coordinates (API_RuledShellData::plane2), as CreateShells takes it."
+            },
+            "morphingRule": {
+                "type": "string",
+                "enum": [ "Paired", "Smooth" ],
+                "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
             },
             "extrusionStart": {
                 "$ref": "#/Coordinate3D",
@@ -11069,7 +11119,7 @@
             },
             "slantAngle": {
                 "type": "number",
-                "description": "Extruded only: slant of the extrusion vector, in radians."
+                "description": "Extruded and Revolved: slant of the extrusion vector or of the profile, in radians."
             }
         },
         "additionalProperties": false,
@@ -15535,6 +15585,10 @@
                     "$ref": "#/StairRiserPartSettings"
                 }
             },
+            "headroom": {
+                "$ref": "#/StairHeadroom",
+                "description": "The headroom of the stair (Stair Settings > Headroom), as stored in the stair. Whether the headroom body is shown is a Model View Option, not part of the stair."
+            },
             "level": {
                 "type": "number",
                 "description": "Height of the stair base above the home story level."
@@ -15926,6 +15980,17 @@
             "walkingLineOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing offset is applied." },
             "winderTurnOffsetMinValue": { "type": "number", "description": "Minimum winder width." },
             "winderTurnOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum winder width is applied." }
+        },
+        "additionalProperties": false
+    },
+    "StairHeadroom": {
+        "type": "object",
+        "description": "The headroom of a Stair (API_StairHeadroomData, Stair Settings > Headroom): the clear space above the flights that Archicad checks against the elements above the stair. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
+        "properties": {
+            "method": { "type": "string", "enum": ["RightAngleToSlope", "VerticallyToSlope", "Unknown"], "description": "How the headroom is generated: at right angle to the slope of the stair (APIHM_RightAngleToSlope) or vertically to it (APIHM_VerticallyToSlope). GetDetailsOfElements returns Unknown for a value it does not know; CreateStairs and ModifyStairs refuse Unknown." },
+            "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the headroom." },
+            "leftOffset": { "type": "number", "description": "The offset of the headroom from the left side of the stair." },
+            "rightOffset": { "type": "number", "description": "The offset of the headroom from the right side of the stair." }
         },
         "additionalProperties": false
     },

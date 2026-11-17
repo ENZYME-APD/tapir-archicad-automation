@@ -2637,11 +2637,70 @@ static bool CreateShellProfileObjectState (const API_Polygon& shape, const API_S
     return true;
 }
 
+// The axis, the angles, the segments and the profile of a revolved shell (#2859), with the keys
+// CreateShells takes. The profile is the first shell shape of the polygon memo.
+static void AddRevolvedShellGeometry (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    const API_RevolvedShellData& revolved = elem.shell.u.revolvedShell;
+    typeSpecificDetails.Add ("axis", CreateCoordinateSystem3DObjectState (revolved.axisBase));
+    typeSpecificDetails.Add ("revolutionAngle", revolved.revolutionAngle);
+    typeSpecificDetails.Add ("beginAngle", revolved.begAngle);
+    typeSpecificDetails.Add ("slantAngle", revolved.slantAngle);
+    typeSpecificDetails.Add ("distortionAngle", revolved.distortionAngle);
+    typeSpecificDetails.Add ("segmentType", revolved.segmentType == APIShellBase_SegmentsByArc ? "ByArc" : "ByCircle");
+    typeSpecificDetails.Add ("segmentsByCircle", revolved.segmentsByCircle);
+    typeSpecificDetails.Add ("segmentsByArc", revolved.segmentsByArc);
+    typeSpecificDetails.Add ("segmentedSurfaces", revolved.segmentedSurfaces);
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
+        return;
+    }
+    GS::ObjectState profile;
+    if (CreateShellProfileObjectState (revolved.shellShape, memo.shellShapes[0], profile)) {
+        typeSpecificDetails.Add ("profile", profile);
+    }
+}
+
+// The two profiles of a ruled shell, each with its plane, and how they are joined (#2859), with
+// the keys CreateShells takes. The profiles are the first and the second shell shape of the memo.
+static void AddRuledShellGeometry (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    const API_RuledShellData& ruled = elem.shell.u.ruledShell;
+    typeSpecificDetails.Add ("profilePlane", CreateCoordinateSystem3DObjectState (ruled.plane1));
+    typeSpecificDetails.Add ("secondProfilePlane", CreateCoordinateSystem3DObjectState (ruled.plane2));
+    typeSpecificDetails.Add ("morphingRule", ruled.morphingRule == APIMorphingRule_Smooth ? "Smooth" : "Paired");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
+        return;
+    }
+    GS::ObjectState profile;
+    if (CreateShellProfileObjectState (ruled.shellShape1, memo.shellShapes[0], profile)) {
+        typeSpecificDetails.Add ("profile", profile);
+    }
+    GS::ObjectState secondProfile;
+    if (CreateShellProfileObjectState (ruled.shellShape2, memo.shellShapes[1], secondProfile)) {
+        typeSpecificDetails.Add ("secondProfile", secondProfile);
+    }
+}
+
 // The geometry of a shell in the fields CreateShells takes, so it can be read, changed and fed back:
-// the base plane of every shell, and the profile and extrusion of an extruded shell (#2425).
+// the base plane of every shell, the profile and extrusion of an extruded shell (#2425), and the
+// profiles, axis and angles of revolved and ruled shells (#2859).
 static void AddShellGeometry (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
 {
     typeSpecificDetails.Add ("basePlane", CreateCoordinateSystem3DObjectState (elem.shell.basePlane));
+    if (elem.shell.shellClass == API_RevolvedShellID) {
+        AddRevolvedShellGeometry (elem, typeSpecificDetails);
+        return;
+    }
+    if (elem.shell.shellClass == API_RuledShellID) {
+        AddRuledShellGeometry (elem, typeSpecificDetails);
+        return;
+    }
     if (elem.shell.shellClass != API_ExtrudedShellID) {
         return;
     }
@@ -4252,6 +4311,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("treadDepthLocked", elem.stair.treadDepthLocked);
                 typeSpecificDetails.Add ("totalHeightLocked", elem.stair.totalHeightLocked);
                 typeSpecificDetails.Add ("rules", CreateStairRulesObjectState (elem.stair.rules));
+                typeSpecificDetails.Add ("headroom", CreateStairHeadroomObjectState (elem.stair.stairHeadroomData));
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
