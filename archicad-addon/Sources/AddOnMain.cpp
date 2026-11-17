@@ -1299,6 +1299,14 @@ GSErrCode Initialize (void)
             elementCommands, "2.0.1",
             "Creates Angle Dimension elements (the Angle Dimension tool) measuring the angle between two lines, each given by two points, with the dimension arc through the given arcPosition, optionally based on an Angle Dimension favorite. The dimensions are static (not associated with elements) and are created in the current database - the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active - or in the one given by databaseId. GetDetailsOfElements returns their lines, arc and measured angle."
         );
+        err |= RegisterCommand<CreateRadialDimensionsCommand> (
+            elementCommands, "2.0.1",
+            "Creates Radial Dimension elements (the Radial Dimension tool) measuring the radius of an arc, a circle or a curved wall, linked to that element, with the dimension line ending at dimensionLineEnd, "
+            "optionally based on a Radial Dimension favorite, with the line pen, marker, text height, pen, position and direction, a custom text and the centre mark. "
+            "The Archicad API does not document how a radial dimension stores the measured element, so the link is written as GetDetailsOfElements reads it from dimensions placed by hand (ownerElementInIndex and ownerElementLine can be given), "
+            "and each new dimension is read back: one Archicad did not link to the element, whose radius is not the element's, or that did not keep a given setting fails with the values Archicad stored and is deleted again. "
+            "The dimensions are created in the current database or in the one given by databaseId; GetDetailsOfElements returns their radius, base point and owner element."
+        );
         err |= RegisterCommand<ModifyLevelDimensionsCommand> (
             elementCommands, "2.0.0",
             "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId)."

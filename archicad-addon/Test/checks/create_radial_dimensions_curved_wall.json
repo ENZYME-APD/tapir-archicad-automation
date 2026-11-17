@@ -1,0 +1,67 @@
+{
+  "title": "CreateRadialDimensions: a radial dimension of a curved wall, linked to the wall and measuring about its radius (GetDetailsOfElements shows how Archicad stored the link), a straight wall refused",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "RadialDimension" ],
+  "steps": [
+    {
+      "id": "a quarter-circle wall of radius 3 m around (985, 900), its reference line in the middle",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 988.0, "y": 900.0 }, "endCoordinate": { "x": 985.0, "y": 903.0 }, "arcAngle": 1.5707963267948966,
+            "floorIndex": 0, "zCoordinate": 0, "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+        ]
+      },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "curved wall created" } ]
+    },
+    {
+      "id": "dimension the wall at 45 degrees",
+      "command": "CreateRadialDimensions",
+      "params": {
+        "radialDimensionsData": [
+          { "elementId": { "guid": "${w}" }, "dimensionLineEnd": { "x": 987.8284271, "y": 902.8284271 } }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "radial dimension of the wall created (else the error names the link and radius Archicad stored)" }
+      ]
+    },
+    {
+      "id": "read the wall's dimension back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "RadialDimension", "name": "a radial dimension" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 3.0, "tol": 0.11, "name": "measures the wall's radius (reference line or a face)" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${w}", "name": "linked to the wall" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Wall", "name": "the owner is a wall" },
+        { "path": "detailsOfElements[0].details.ownerElementInIndex", "exists": true, "name": "stored inIndex (shown for the record)" }
+      ]
+    },
+    {
+      "id": "a straight wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 990.0, "y": 900.0 }, "endCoordinate": { "x": 994.0, "y": 900.0 }, "floorIndex": 0, "zCoordinate": 0, "height": 3.0, "thickness": 0.2 }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "straight wall created" } ]
+    },
+    {
+      "id": "a straight wall has no radius: refused",
+      "command": "CreateRadialDimensions",
+      "params": {
+        "radialDimensionsData": [ { "elementId": { "guid": "${s}" }, "dimensionLineEnd": { "x": 992.0, "y": 901.0 } } ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "refused" },
+        { "path": "elements[0].elementId", "exists": false, "name": "nothing created" }
+      ]
+    }
+  ]
+}
