@@ -1,7 +1,7 @@
 {
   "title": "Read back what the Modify commands write: GetDetailsOfElements reads each key with the same name and shape, and the value read is taken back unchanged by the Modify command (round trip)",
   "minTapir": "2.0.1",
-  "minArchicad": "27",
+  "minArchicad": "28",
   "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Column", "Picture" ],
   "steps": [
     {
@@ -571,6 +571,214 @@
       "expect": [
         { "path": "detailsOfElements[0].details.origin.x", "approx": 1060.0, "name": "round trip: origin x" },
         { "path": "detailsOfElements[0].details.origin.y", "approx": 1000.0, "name": "round trip: origin y" }
+      ]
+    },
+    {
+      "id": "an air terminal",
+      "command": "CreateMEPElements",
+      "params": { "elementsData": [ { "type": "Terminal", "domain": "Ventilation", "position": { "x": 1070.0, "y": 1000.0, "z": 2.5 } } ] },
+      "save": { "term": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "terminal created" }
+      ]
+    },
+    {
+      "id": "read the placement of the terminal",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" } } ] },
+      "save": {
+        "termAnchor": "elementDetails[0].anchorPoint",
+        "termOrientation": "elementDetails[0].orientation",
+        "termLibrary": "elementDetails[0].libraryPartId",
+        "termLibraryGuid": "elementDetails[0].libraryPartId.guid",
+        "termX": "elementDetails[0].anchorPoint.x",
+        "termY": "elementDetails[0].anchorPoint.y",
+        "termZ": "elementDetails[0].anchorPoint.z"
+      },
+      "expect": [
+        { "path": "elementDetails[0].anchorPoint.x", "approx": 1070.0, "tol": 0.5, "name": "anchor point read with the key ModifyMEPElements writes" },
+        { "path": "elementDetails[0].orientation.direction", "exists": true, "name": "orientation read" },
+        { "path": "elementDetails[0].orientation.rotation", "exists": true, "name": "orientation rotation read" },
+        { "path": "elementDetails[0].libraryPartId.guid", "exists": true, "name": "library part read" }
+      ]
+    },
+    {
+      "id": "move the terminal",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" }, "anchorPoint": { "x": 1072.0, "y": 1003.0, "z": 2.0 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "terminal moved" }
+      ]
+    },
+    {
+      "id": "read the moved terminal",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].anchorPoint.x", "approx": 1072.0, "name": "moved anchor point x" },
+        { "path": "elementDetails[0].anchorPoint.y", "approx": 1003.0, "name": "moved anchor point y" },
+        { "path": "elementDetails[0].anchorPoint.z", "approx": 2.0, "name": "moved anchor point z" }
+      ]
+    },
+    {
+      "id": "send the placement back as it was read",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" }, "anchorPoint": "${termAnchor}", "orientation": "${termOrientation}", "libraryPartId": "${termLibrary}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the anchor point, orientation and library part read are accepted" }
+      ]
+    },
+    {
+      "id": "the terminal where it was",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].anchorPoint.x", "approx": "${termX}", "name": "round trip: anchor point x" },
+        { "path": "elementDetails[0].anchorPoint.y", "approx": "${termY}", "name": "round trip: anchor point y" },
+        { "path": "elementDetails[0].anchorPoint.z", "approx": "${termZ}", "name": "round trip: anchor point z" },
+        { "path": "elementDetails[0].libraryPartId.guid", "eq": "${termLibraryGuid}", "name": "round trip: same library part" }
+      ]
+    },
+    {
+      "id": "a flexible duct",
+      "command": "CreateMEPFlexibleSegments",
+      "params": {
+        "flexibleSegmentsData": [
+          {
+            "domain": "Ventilation",
+            "controlPoints": [ { "x": 1080.0, "y": 1000.0, "z": 3.0 }, { "x": 1081.0, "y": 1000.5, "z": 3.0 }, { "x": 1082.0, "y": 1000.0, "z": 3.0 } ],
+            "startOrientation": { "direction": { "x": 1.0, "y": 0.0, "z": 0.0 }, "rotation": { "x": 0.0, "y": 1.0, "z": 0.0 } },
+            "endOrientation": { "direction": { "x": 1.0, "y": 0.0, "z": 0.0 }, "rotation": { "x": 0.0, "y": 1.0, "z": 0.0 } }
+          }
+        ]
+      },
+      "save": { "flex": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "flexible segment created" }
+      ]
+    },
+    {
+      "id": "flexible duct size A",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": 0.3, "height": 0.2 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "size written" }
+      ]
+    },
+    {
+      "id": "read flexible duct size A",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "save": { "flexWidth": "elementDetails[0].width", "flexHeight": "elementDetails[0].height" },
+      "expect": [
+        { "path": "elementDetails[0].width", "approx": 0.3, "name": "width read with the key ModifyMEPElements writes" },
+        { "path": "elementDetails[0].height", "approx": 0.2, "name": "height read with the key ModifyMEPElements writes" }
+      ]
+    },
+    {
+      "id": "flexible duct size B",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": 0.35, "height": 0.25 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "other size written" }
+      ]
+    },
+    {
+      "id": "read flexible duct size B",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].width", "approx": 0.35, "name": "width changed" },
+        { "path": "elementDetails[0].height", "approx": 0.25, "name": "height changed" }
+      ]
+    },
+    {
+      "id": "send the size back as it was read",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": "${flexWidth}", "height": "${flexHeight}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the size read is accepted" }
+      ]
+    },
+    {
+      "id": "flexible duct size A again",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].width", "approx": 0.3, "name": "round trip: width" },
+        { "path": "elementDetails[0].height", "approx": 0.2, "name": "round trip: height" }
+      ]
+    },
+    {
+      "id": "a pipe route with three nodes",
+      "command": "CreateMEPRoutingElements",
+      "params": { "routingElementsData": [ { "domain": "Piping", "nodeCoordinates": [ { "x": 1090.0, "y": 1000.0, "z": 3.0 }, { "x": 1094.0, "y": 1000.0, "z": 3.0 }, { "x": 1094.0, "y": 1003.0, "z": 3.0 } ] } ] },
+      "save": { "route": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "route created" }
+      ]
+    },
+    {
+      "id": "read the node positions",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${route}" } } ] },
+      "save": { "routeNodes": "routingElements[0].nodePositions" },
+      "expect": [
+        { "path": "routingElements[0].nodePositions", "len": 3, "name": "node positions read with the key ModifyMEPRoutingElements writes" },
+        { "path": "routingElements[0].nodePositions[1].x", "approx": 1094.0, "name": "middle node x" },
+        { "path": "routingElements[0].nodePositions[2].y", "approx": 1003.0, "name": "end node y" }
+      ]
+    },
+    {
+      "id": "move the middle and end nodes",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": { "routingElementsData": [ { "elementId": { "guid": "${route}" }, "nodePositions": [ { "x": 1090.0, "y": 1000.0, "z": 3.0 }, { "x": 1095.0, "y": 1000.0, "z": 3.0 }, { "x": 1095.0, "y": 1003.0, "z": 3.0 } ] } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "nodes moved" }
+      ]
+    },
+    {
+      "id": "read the moved nodes",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${route}" } } ] },
+      "expect": [
+        { "path": "routingElements[0].nodePositions[1].x", "approx": 1095.0, "name": "middle node moved" },
+        { "path": "routingElements[0].nodePositions[2].x", "approx": 1095.0, "name": "end node moved" }
+      ]
+    },
+    {
+      "id": "send the node positions back as they were read",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": { "routingElementsData": [ { "elementId": { "guid": "${route}" }, "nodePositions": "${routeNodes}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the node positions read are accepted" }
+      ]
+    },
+    {
+      "id": "the nodes where they were",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${route}" } } ] },
+      "expect": [
+        { "path": "routingElements[0].nodePositions", "len": 3, "name": "round trip: three nodes" },
+        { "path": "routingElements[0].nodePositions[1].x", "approx": 1094.0, "name": "round trip: middle node x" },
+        { "path": "routingElements[0].nodePositions[2].x", "approx": 1094.0, "name": "round trip: end node x" },
+        { "path": "routingElements[0].nodePositions[2].y", "approx": 1003.0, "name": "round trip: end node y" }
       ]
     }
   ],

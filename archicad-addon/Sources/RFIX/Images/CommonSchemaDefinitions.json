@@ -372,6 +372,13 @@
                 "items": {
                     "$ref": "#/MEPRoutingNodeDetails"
                 }
+            },
+            "nodePositions": {
+                "type": "array",
+                "description": "The position of every node, in the order of nodes: the key ModifyMEPRoutingElements writes the node positions with, so they can be sent back. The other settings ModifyMEPRoutingElements applies to all segments or all nodes are read per segment (segments) and per node (nodes), with the same keys.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
             }
         },
         "additionalProperties": false,
@@ -21416,6 +21423,34 @@
             "isControlledByPreference": {
                 "type": "boolean",
                 "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the flexible segment, as ModifyMEPElements writes it. FlexibleSegment."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the flexible segment, as ModifyMEPElements writes it. FlexibleSegment."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point, as ModifyMEPElements writes it. The elements ModifyMEPElements can place: Terminal, Accessory, Equipment, Fitting, FlexibleSegment and the other modifiable MEP elements."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation",
+                "description": "The orientation, as ModifyMEPElements writes it. Present with anchorPoint."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part the element uses (its main guid), as ModifyMEPElements writes it. Present with anchorPoint."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the library part along the element's local x axis in meters, as ModifyMEPElements writes it. Present with anchorPoint, from Archicad 30."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the library part along the element's local y axis in meters, as ModifyMEPElements writes it. Present with anchorPoint, from Archicad 30."
             }
         },
         "additionalProperties": false,
@@ -21703,7 +21738,7 @@
             },
             "nodePositions": {
                 "type": "array",
-                "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
+                "description": "New positions of the routing nodes. The size must match the number of nodes of the route. GetMEPRoutingElements reads them back with the same key.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 }
