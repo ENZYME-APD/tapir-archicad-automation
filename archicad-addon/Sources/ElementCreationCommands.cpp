@@ -2455,19 +2455,30 @@ static GS::Optional<GS::UniString> CheckOutlineArcs (const GS::Array<GS::ObjectS
     return {};
 }
 
-// Whether two Line-family elements have the same arrowheads (visibility, type, size and pen of both ends).
-static bool IsSameLineArrows (const LineArrows& arrows1, const LineArrows& arrows2)
+// Whether the arrowheads read back (kept) are those written (given): the same visibility of both ends,
+// and the same type, size and pen of a shown arrowhead. Archicad 29 (29.0.0 5101) normalizes a hidden
+// arrowhead (a hidden start arrowhead that the change did not touch read back EmptyCircle, size 0 and
+// pen 1), so its type, size and pen are not compared while it is hidden.
+static bool IsSameLineArrows (const LineArrows& kept, const LineArrows& given)
 {
 #ifdef ServerMainVers_2900
-    const auto isSame = [] (const API_ArrowData& data1, const API_ArrowData& data2) {
-        return data1.arrowVisibility == data2.arrowVisibility && data1.arrowType == data2.arrowType &&
-               data1.arrowPen == data2.arrowPen && std::abs (data1.arrowSize - data2.arrowSize) < 1e-6;
+    const auto isSame = [] (const API_ArrowData& keptData, const API_ArrowData& givenData) {
+        if (keptData.arrowVisibility != givenData.arrowVisibility) {
+            return false;
+        }
+        return !givenData.arrowVisibility ||
+               (keptData.arrowType == givenData.arrowType && keptData.arrowPen == givenData.arrowPen &&
+                std::abs (keptData.arrowSize - givenData.arrowSize) < 1e-6);
     };
-    return isSame (arrows1.start, arrows2.start) && isSame (arrows1.end, arrows2.end);
+    return isSame (kept.start, given.start) && isSame (kept.end, given.end);
 #else
-    return arrows1.data.begArrow == arrows2.data.begArrow && arrows1.data.endArrow == arrows2.data.endArrow &&
-           arrows1.data.arrowType == arrows2.data.arrowType && arrows1.data.arrowPen == arrows2.data.arrowPen &&
-           std::abs (arrows1.data.arrowSize - arrows2.data.arrowSize) < 1e-6;
+    // Before Archicad 29 both ends share one type, size and pen: compared when either end is shown.
+    if (kept.data.begArrow != given.data.begArrow || kept.data.endArrow != given.data.endArrow) {
+        return false;
+    }
+    return (!given.data.begArrow && !given.data.endArrow) ||
+           (kept.data.arrowType == given.data.arrowType && kept.data.arrowPen == given.data.arrowPen &&
+            std::abs (kept.data.arrowSize - given.data.arrowSize) < 1e-6);
 #endif
 }
 

@@ -179,10 +179,11 @@
       ]
     },
     {
-      "id": "read the fill and background",
+      "id": "read the fill and background (Archicad gives the hatch a fill pen of its own when it goes back from a building material to a fill)",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
+      "save": { "fillPen": "detailsOfElements[0].details.fillPenIndex" },
       "expect": [
         { "path": "detailsOfElements[0].details.fillId.guid", "eq": "${fill}", "name": "fill set again" },
         { "path": "detailsOfElements[0].details.fillBackgroundPenIndex", "eq": 0, "name": "transparent background" },
@@ -254,7 +255,7 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.fillPenIndex", "eq": 4, "name": "fill pen still 4" },
+        { "path": "detailsOfElements[0].details.fillPenIndex", "eq": "${fillPen}", "name": "fill pen still the one read before the refused items" },
         { "path": "detailsOfElements[0].details.fillId.guid", "eq": "${fill}", "name": "fill still the same" },
         { "path": "detailsOfElements[0].details.coordinates[2].x", "approx": 1046.0, "name": "outline still the same" },
         { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "still one hole" }
