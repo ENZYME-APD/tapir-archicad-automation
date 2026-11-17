@@ -8507,6 +8507,11 @@ GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, 
 // the two describe differently, and ApplyStairSettings (defined with ModifyStairs below) writes
 // them all into the Stair element. The tread, riser and structure settings are the Stair's own
 // per-part defaults (tread[role], riser[role], structure[role][side]), not its subelements.
+// The items of treads and risers are written out here, as the same shape as the
+// StairTreadPartSettings and StairRiserPartSettings definitions GetDetailsOfElements returns:
+// Archicad (tested on 29.0.0 5101) does not check anything behind a "$ref": "#/<Name>" of an input
+// schema, so through the $ref a bad role or nosing type reached ApplyStairSettings instead of being
+// refused by the schema, as it was before the definitions existed. Change both together.
 static const char* StairSettingsSchemaProperties = R"(
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
@@ -8532,12 +8537,40 @@ static const char* StairSettingsSchemaProperties = R"(
                         "treads": {
                             "type": "array",
                             "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in treads.",
-                            "items": { "$ref": "#/StairTreadPartSettings" }
+                            "items": {
+                                "type": "object",
+                                "description": "The tread settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::tread[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "visible": { "type": "boolean", "description": "Whether the treads are present." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the treads." },
+                                    "offset": { "type": "number", "description": "The offset of the treads." },
+                                    "nosingType": { "type": "string", "enum": ["ByValue", "BySlanting"], "description": "Whether the nosing is given by its length (nosingValue) or by the slant of the riser (nosingSlant)." },
+                                    "nosingValue": { "type": "number", "description": "The length of the nosing." },
+                                    "nosingSlant": { "type": "number", "description": "The slant of the nosing in radians." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role"]
+                            }
                         },
                         "risers": {
                             "type": "array",
                             "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in risers.",
-                            "items": { "$ref": "#/StairRiserPartSettings" }
+                            "items": {
+                                "type": "object",
+                                "description": "The riser settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::riser[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
+                                "properties": {
+                                    "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+                                    "visible": { "type": "boolean", "description": "Whether the risers are present." },
+                                    "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the risers." },
+                                    "offset": { "type": "number", "description": "The offset of the risers." },
+                                    "crossSection": { "type": "string", "enum": ["Simple", "Slanted"], "description": "The cross section of the risers." },
+                                    "angle": { "type": "number", "description": "The angle of a slanted riser in radians." },
+                                    "position": { "type": "string", "enum": ["OnTread", "BehindTread"], "description": "Whether the risers stand on the treads or behind them." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["role"]
+                            }
                         },
                         "structures": {
                             "type": "array",
