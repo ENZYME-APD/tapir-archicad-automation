@@ -1,5 +1,5 @@
 {
-  "title": "Read back what the Modify commands write: GetDetailsOfElements reads each key with the same name and shape, and the value read is taken back unchanged by the Modify command (round trip)",
+  "title": "Read back what the Modify commands write: GetDetailsOfElements (GetMEPElementDetails and GetMEPRoutingElements for MEP elements) reads each key with the same name and shape, and the value read is taken back unchanged by the Modify command (round trip)",
   "minTapir": "2.0.1",
   "minArchicad": "28",
   "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Column", "Picture" ],
