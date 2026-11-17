@@ -3350,7 +3350,13 @@ GS::ObjectState GetDefaultDesignOptionCommand::Execute (const GS::ObjectState& /
     // The Archicad API has no function that returns the default (DesignOptionManager only has
     // SetDesignOptionAsDefault, DesignOption no default flag). So a temporary slab is created, which
     // Archicad puts into the default, its design option is read, and it is moved to the Main Model (an
-    // element in an option that is not shown cannot be deleted) and deleted again, in one undo step.
+    // element in an option that is not shown cannot be deleted) and deleted again.
+    //
+    // Archicad links a new element to the default design option when the undoable command that created
+    // it ends, not in ACAPI_Element_Create: in Archicad 29, a slab created and read in one undoable
+    // command was in the Main Model while a design option was the default, and a slab created by
+    // CreateSlabs and read afterwards was in the default option. So the slab is created in an undo step
+    // of its own, read after it, and removed in a second undo step: the two leave the project as it was.
     const GS::Optional<GS::ObjectState> windowError = CheckDesignOptionProjectAndWindow ();
     if (windowError.HasValue ()) {
         return *windowError;
@@ -3370,18 +3376,25 @@ GS::ObjectState GetDefaultDesignOptionCommand::Execute (const GS::ObjectState& /
     });
 
     API_Guid probeGuid = APINULLGuid;
-    bool isMainModel = false;
-    GS::Optional<GS::ObjectState> defaultOptionDetails;
     GSErrCode stepErr = NoError;
     GS::UniString failure;
-    // A step that fails returns its error from the command, which undoes the steps before it.
-    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Get Default Design Option", [&] () -> GSErrCode {
-        const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) -> GSErrCode {
-            stepErr = failErr != NoError ? failErr : APIERR_GENERAL;
-            failure = message;
-            return stepErr;
-        };
+    const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) -> GSErrCode {
+        stepErr = failErr != NoError ? failErr : APIERR_GENERAL;
+        failure = message;
+        return stepErr;
+    };
+    // The end of an error message: whether the slab is still in the project.
+    const auto probeLeftMessage = [&] () -> GS::UniString {
+        API_Elem_Head probeHead = {};
+        if (probeGuid != APINULLGuid && LoadElementHeaderByGuid (probeGuid, probeHead)) {
+            return " The temporary slab was left in the project, with elementId " + APIGuidToString (probeGuid) + "; delete it.";
+        }
+        return " Nothing was left in the project.";
+    };
 
+    // 1. The slab, in an undo step of its own. A step that fails returns its error from the command,
+    // which undoes the steps before it.
+    GSErrCode undoErr = ACAPI_CallUndoableCommand ("Get Default Design Option: Temporary Slab", [&] () -> GSErrCode {
         API_Element slab = {};
         slab.header.type = API_SlabID;
         API_ElementMemo memo = {};
@@ -3418,40 +3431,50 @@ GS::ObjectState GetDefaultDesignOptionCommand::Execute (const GS::ObjectState& /
             return fail (createErr, "Failed to create the temporary slab.");
         }
         probeGuid = slab.header.guid;
+        return NoError;
+    });
+    if (stepErr != NoError || undoErr != NoError) {
+        const GS::UniString message = stepErr != NoError ? failure : GS::UniString ("Failed to open an undoable command.");
+        return CreateErrorResponse (stepErr != NoError ? stepErr : undoErr, message + probeLeftMessage ());
+    }
 
-        const auto status = manager->GetDesignOptionStatusOf (probeGuid);
-        if (status.IsErr ()) {
-            return fail (status.UnwrapErr ().kind, "Failed to read the design option of the temporary slab.");
-        }
-        if (std::holds_alternative<DesignOption> (*status)) {
-            defaultOptionDetails = CreateDesignOptionDetails (std::get<DesignOption> (*status));
+    // 2. Its design option, now that the command that created it has ended.
+    bool isMainModel = false;
+    bool inDesignOption = false;
+    GS::Optional<GS::ObjectState> defaultOptionDetails;
+    GS::Optional<GS::ObjectState> readError;
+    const auto status = manager->GetDesignOptionStatusOf (probeGuid);
+    if (status.IsErr ()) {
+        readError = CreateErrorResponse (status.UnwrapErr ().kind, "Failed to read the design option of the temporary slab.");
+    } else if (std::holds_alternative<DesignOption> (*status)) {
+        inDesignOption = true;
+        defaultOptionDetails = CreateDesignOptionDetails (std::get<DesignOption> (*status));
+    } else if (std::holds_alternative<MainModelDesignOption> (*status)) {
+        isMainModel = true;
+    } else {
+        readError = CreateErrorResponse (APIERR_GENERAL, "Archicad put the temporary slab into a design option that is missing, so the default could not be read.");
+    }
+
+    // 3. The slab goes again, in a second undo step: to the Main Model first, then deleted.
+    undoErr = ACAPI_CallUndoableCommand ("Get Default Design Option: Remove Temporary Slab", [&] () -> GSErrCode {
+        if (inDesignOption) {
             const auto relinked = manager->RelinkElementToDesignOption (probeGuid, std::nullopt);
             if (relinked.IsErr ()) {
                 return fail (relinked.UnwrapErr ().kind, "Failed to move the temporary slab to the Main Model before deleting it.");
             }
-        } else if (std::holds_alternative<MainModelDesignOption> (*status)) {
-            isMainModel = true;
-        } else {
-            return fail (APIERR_GENERAL, "Archicad put the temporary slab into a design option that is missing, so the default could not be read.");
         }
-
-        createErr = ACAPI_Element_Delete ({ probeGuid });
-        if (createErr != NoError) {
-            return fail (createErr, "Failed to delete the temporary slab.");
+        const GSErrCode deleteErr = ACAPI_Element_Delete ({ probeGuid });
+        if (deleteErr != NoError) {
+            return fail (deleteErr, "Failed to delete the temporary slab.");
         }
         return NoError;
     });
-
     if (stepErr != NoError || undoErr != NoError) {
-        GS::UniString message = stepErr != NoError ? failure : GS::UniString ("Failed to open an undoable command.");
-        // The command was undone; the slab is named when Archicad kept it all the same.
-        API_Elem_Head probeHead = {};
-        if (probeGuid != APINULLGuid && LoadElementHeaderByGuid (probeGuid, probeHead)) {
-            message += " The temporary slab was left in the project, with elementId " + APIGuidToString (probeGuid) + "; delete it.";
-        } else {
-            message += " Nothing was left in the project.";
-        }
-        return CreateErrorResponse (stepErr != NoError ? stepErr : undoErr, message);
+        const GS::UniString message = stepErr != NoError ? failure : GS::UniString ("Failed to open an undoable command to delete the temporary slab.");
+        return CreateErrorResponse (stepErr != NoError ? stepErr : undoErr, message + probeLeftMessage ());
+    }
+    if (readError.HasValue ()) {
+        return *readError;
     }
 
     response.Add ("isMainModel", isMainModel);
