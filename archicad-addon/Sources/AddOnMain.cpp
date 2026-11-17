@@ -893,7 +893,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetFieldsOfElementDefaultsCommand> (
             elementCommands, "2.0.1",
-            "Writes fields of the tool defaults of element types by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_ChangeDefaults and a mask of exactly the given fields: the elements created afterwards get them. Like the settings dialogs of the tools, it is not undoable. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept."
+            "Writes fields of the tool defaults of element types by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_ChangeDefaults and a mask of exactly the given fields: the elements created afterwards get them. Like the settings dialogs of the tools, it is not undoable. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept. A change Archicad refuses can still have written some of the given fields (seen with libInd, the library part, which Archicad refuses in the tool defaults): the failure names them."
         );
         err |= RegisterCommand<EditHierarchicalElementCommand> (
             elementCommands, "1.8.0",

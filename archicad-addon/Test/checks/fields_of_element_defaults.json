@@ -1,5 +1,5 @@
 {
-  "title": "GetFieldsOfElementDefaults and SetFieldsOfElementDefaults read and write the fields of a tool's defaults, a new element gets them, a dry run changes nothing, and bad fields are refused",
+  "title": "GetFieldsOfElementDefaults and SetFieldsOfElementDefaults read and write the fields of a tool's defaults, a new element gets them, a dry run changes nothing, bad fields are refused, and a change Archicad refuses names the fields it changed all the same",
   "minTapir": "2.0.1",
   "minArchicad": "29",
   "steps": [
@@ -111,12 +111,50 @@
       "expect": [
         { "path": "fieldsOfElementDefaults[0].fields.contPen", "eq": 77, "name": "still pen 77" }
       ]
+    },
+    {
+      "id": "the pen and the library part of the Object defaults",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Object" ], "fields": [ "pen", "libInd" ] },
+      "save": {
+        "objectPen0": "fieldsOfElementDefaults[0].fields.pen",
+        "objectLib0": "fieldsOfElementDefaults[0].fields.libInd"
+      },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].structName", "eq": "API_ObjectType", "name": "read from the object struct" }
+      ]
+    },
+    {
+      "id": "SetFieldsOfElementDefaults: the Object pen with its unchanged library part",
+      "command": "SetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "fieldsOfElementDefaults": [ { "elementType": "Object", "fields": { "pen": 77, "libInd": "${objectLib0}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "Archicad refuses libInd in the tool defaults, even unchanged" },
+        { "path": "executionResults[0].error.message", "contains": "changed these given fields all the same: pen", "name": "the failure names the field Archicad changed all the same" },
+        { "path": "executionResults[0].error.message", "contains": "ApplyFavoriteToToolDefault", "name": "the failure says how to change the library part" }
+      ]
+    },
+    {
+      "id": "the Object pen was changed all the same, and the library part was kept",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Object" ], "fields": [ "pen", "libInd" ] },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].fields.pen", "eq": 77, "name": "pen 77" },
+        { "path": "fieldsOfElementDefaults[0].fields.libInd", "eq": "${objectLib0}", "name": "the same library part" }
+      ]
     }
   ],
   "teardown": [
     {
       "command": "SetFieldsOfElementDefaults",
       "params": { "fieldsOfElementDefaults": [ { "elementType": "Wall", "fields": { "contPen": "${pen0}", "offset": "${offset0}" } } ] }
+    },
+    {
+      "command": "SetFieldsOfElementDefaults",
+      "params": { "fieldsOfElementDefaults": [ { "elementType": "Object", "fields": { "pen": "${objectPen0}" } } ] }
     }
   ]
 }

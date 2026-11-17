@@ -359,6 +359,34 @@ GS::Optional<API_ElemTypeID> GetElementTypeId (const API_Guid& guid, API_Element
     return GetElemTypeId (element.header);
 }
 
+// The components of a railing, whose tool defaults Archicad 29 and 30 do not change.
+bool IsRailingComponentType (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_RailingToprailID:
+        case API_RailingHandrailID:
+        case API_RailingRailID:
+        case API_RailingPostID:
+        case API_RailingInnerPostID:
+        case API_RailingBalusterID:
+        case API_RailingPanelID:
+        case API_RailingSegmentID:
+        case API_RailingNodeID:
+        case API_RailingBalusterSetID:
+        case API_RailingPatternID:
+        case API_RailingToprailEndID:
+        case API_RailingHandrailEndID:
+        case API_RailingRailEndID:
+        case API_RailingToprailConnectionID:
+        case API_RailingHandrailConnectionID:
+        case API_RailingRailConnectionID:
+        case API_RailingEndFinishID:
+            return true;
+        default:
+            return false;
+    }
+}
+
 // Reads the tool defaults of an element type (its generic variation), without the memo.
 GSErrCode GetDefaultsOfType (API_ElemTypeID typeId, API_Element& defaults)
 {
@@ -1136,6 +1164,7 @@ GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
             results (CreateFailedExecutionResult (err, GS::UniString ("Failed to read the tool defaults of ") + typeName + "."));
             continue;
         }
+        const API_Element before = wanted;
         API_Element mask = {};
         GS::Array<const FieldInfo*> written;
         GS::ObjectState oldValues;
@@ -1150,18 +1179,41 @@ GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
             continue;
         }
         // The tool defaults are not part of the undo history, as in the settings dialogs of the tools.
-        err = ACAPI_Element_ChangeDefaults (&wanted, nullptr, &mask);
-        if (err != NoError) {
-            results (CreateFailedExecutionResult (err, GS::UniString ("Archicad refused the change of the tool defaults of ") + typeName + "."));
-            continue;
-        }
+        const GSErrCode changeErr = ACAPI_Element_ChangeDefaults (&wanted, nullptr, &mask);
         API_Element got = {};
         err = GetDefaultsOfType (typeId, got);
+        if (changeErr != NoError) {
+            GS::UniString message = GS::UniString ("Archicad refused the change of the tool defaults of ") + typeName + ".";
+            // Seen on Archicad 30: a refused change can still have written the other given fields.
+            if (err == NoError) {
+                GS::UniString changedAnyway;
+                for (const FieldInfo* field : written) {
+                    if (IsSameFieldValue (*field, wanted, got) && !IsSameFieldValue (*field, before, got)) {
+                        changedAnyway += GS::UniString (" ") + field->path;
+                    }
+                }
+                message += changedAnyway.IsEmpty () ? GS::UniString (" None of the given fields was changed.") :
+                    GS::UniString (" It changed these given fields all the same:") + changedAnyway + ".";
+            }
+            for (const FieldInfo* field : written) {
+                const size_t length = std::strlen (field->path);
+                if (length >= 6 && std::strcmp (field->path + length - 6, "libInd") == 0) {
+                    // Seen on Archicad 29 and 30 for doors, windows, skylights, objects, lamps and zones, even with the same value.
+                    message += " Archicad does not take libInd (the library part) in the tool defaults, even unchanged: leave it out, or give the tool another library part by applying a favorite (ApplyFavoriteToToolDefault).";
+                    break;
+                }
+            }
+            results (CreateFailedExecutionResult (changeErr, message));
+            continue;
+        }
         if (err != NoError) {
             results (CreateFailedExecutionResult (err, GS::UniString ("The tool defaults of ") + typeName + " were changed but could not be read back."));
             continue;
         }
-        const GS::UniString notKept = DescribeNotKept (written, wanted, got);
+        GS::UniString notKept = DescribeNotKept (written, wanted, got);
+        if (!notKept.IsEmpty () && IsRailingComponentType (typeId)) {
+            notKept += " Archicad 29 and 30 keep no change in the tool defaults of railing components: the Railing defaults hold the segment and node models (defSegment, defNode).";
+        }
         results (notKept.IsEmpty () ? CreateSuccessfulExecutionResult () :
             CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not keep every value:") + notKept + " The other given fields were changed."));
     }
