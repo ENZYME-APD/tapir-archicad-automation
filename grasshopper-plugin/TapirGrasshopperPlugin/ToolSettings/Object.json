@@ -62,6 +62,16 @@
       "subgroup": null
     },
     {
+      "get": null,
+      "set": "origin",
+      "apiMember": "API_ObjectType::pos",
+      "apiDescription": "Position of the origin of the object. ModifyObjects and ModifyLamps take it with the key GetDetailsOfElements reads (origin, the same as coordinates); the field above maps the read origin to coordinates, which the create commands take too.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "floorIndex",
       "set": "floorIndex",
       "getFrom": "element",
