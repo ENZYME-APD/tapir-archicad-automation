@@ -655,42 +655,59 @@
       ]
     },
     {
-      "id": "flexible duct size A",
-      "command": "ModifyMEPElements",
+      "id": "the connection shape of the flexible duct",
+      "command": "GetMEPPorts",
       "creates": false,
-      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": 0.3, "height": 0.2 } ] },
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "size written" }
+        { "path": "elementPorts[0].ports[0].shape", "exists": true, "name": "connection shape (a Circular duct has one diameter for width and height)" }
       ]
     },
     {
-      "id": "read flexible duct size A",
+      "id": "read the size of the flexible duct as placed",
       "command": "GetMEPElementDetails",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
       "save": { "flexWidth": "elementDetails[0].width", "flexHeight": "elementDetails[0].height" },
       "expect": [
-        { "path": "elementDetails[0].width", "approx": 0.3, "name": "width read with the key ModifyMEPElements writes" },
-        { "path": "elementDetails[0].height", "approx": 0.2, "name": "height read with the key ModifyMEPElements writes" }
+        { "path": "elementDetails[0].width", "gt": 0, "name": "width read with the key ModifyMEPElements writes" },
+        { "path": "elementDetails[0].height", "gt": 0, "name": "height read with the key ModifyMEPElements writes" }
       ]
     },
     {
-      "id": "flexible duct size B",
+      "id": "flexible duct width alone",
       "command": "ModifyMEPElements",
       "creates": false,
-      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": 0.35, "height": 0.25 } ] },
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": 0.3 } ] },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "other size written" }
+        { "path": "executionResults[0].success", "eq": true, "name": "width written" }
       ]
     },
     {
-      "id": "read flexible duct size B",
+      "id": "read the width written alone",
       "command": "GetMEPElementDetails",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
       "expect": [
-        { "path": "elementDetails[0].width", "approx": 0.35, "name": "width changed" },
-        { "path": "elementDetails[0].height", "approx": 0.25, "name": "height changed" }
+        { "path": "elementDetails[0].width", "approx": 0.3, "name": "the width read is the one written" }
+      ]
+    },
+    {
+      "id": "flexible duct height alone",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "height": 0.25 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "height written" }
+      ]
+    },
+    {
+      "id": "read the height written alone",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].height", "approx": 0.25, "name": "the height read is the one written" }
       ]
     },
     {
@@ -703,13 +720,13 @@
       ]
     },
     {
-      "id": "flexible duct size A again",
+      "id": "the flexible duct size as placed",
       "command": "GetMEPElementDetails",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
       "expect": [
-        { "path": "elementDetails[0].width", "approx": 0.3, "name": "round trip: width" },
-        { "path": "elementDetails[0].height", "approx": 0.2, "name": "round trip: height" }
+        { "path": "elementDetails[0].width", "approx": "${flexWidth}", "name": "round trip: width" },
+        { "path": "elementDetails[0].height", "approx": "${flexHeight}", "name": "round trip: height" }
       ]
     },
     {

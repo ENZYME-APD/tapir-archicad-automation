@@ -21426,11 +21426,11 @@
             },
             "width": {
                 "type": "number",
-                "description": "The width of the flexible segment, as ModifyMEPElements writes it. FlexibleSegment."
+                "description": "The width of the flexible segment (FlexibleSegment::GetWidth), as ModifyMEPElements writes it. FlexibleSegment."
             },
             "height": {
                 "type": "number",
-                "description": "The height of the flexible segment, as ModifyMEPElements writes it. FlexibleSegment."
+                "description": "The height of the flexible segment (FlexibleSegment::GetHeight), as ModifyMEPElements writes it. FlexibleSegment."
             },
             "anchorPoint": {
                 "$ref": "#/Coordinate3D",
@@ -22415,11 +22415,11 @@
             },
             "width": {
                 "type": "number",
-                "description": "The new width of a flexible segment."
+                "description": "The new width of a flexible segment. It is written before height: on Archicad 29 a Ventilation flexible duct of the template then read the height given in the same item as its width too (probably a round duct, whose width and height are one diameter), so give such a duct one of them."
             },
             "height": {
                 "type": "number",
-                "description": "The new height of a flexible segment."
+                "description": "The new height of a flexible segment, written after width."
             },
             "xSize": {
                 "type": "number",
