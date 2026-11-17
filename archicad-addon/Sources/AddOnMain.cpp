@@ -3469,7 +3469,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetAnalyticalVisibilitySettingsCommand> (
             analyticalCommands, "1.8.0",
-            "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26."
+            "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. The settings are read back, and a given field Archicad did not keep is reported as an error with the value it kept. Available from Archicad 26."
         );
         err |= RegisterCommand<GetAnalyticalMemberTypesOfElementsCommand> (
             analyticalCommands, "1.8.0",

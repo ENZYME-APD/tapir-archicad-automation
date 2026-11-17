@@ -2666,6 +2666,30 @@ GS::ObjectState SetAnalyticalVisibilitySettingsCommand::Execute (const GS::Objec
         return CreateFailedExecutionResult (err, "Failed to set the Structural Analytical Model visibility settings.");
     }
 
+    // Read back, so a given field Archicad did not keep is reported instead of a success.
+    API_AM_VisibilitySettings kept;
+    err = TAPIR_GetAnalyticalVisibilitySettings (kept);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the Structural Analytical Model visibility settings back after the change.");
+    }
+    GS::UniString notKept;
+    if (settingsOS->Contains ("visibilityMode") && kept.visibilityMode != settings.visibilityMode) {
+        const char* keptName = EnumToString (AnalyticalVisibilityModeNames, kept.visibilityMode);
+        notKept += GS::UniString (" visibilityMode is ") + (keptName != nullptr ? keptName : "unknown") + ".";
+    }
+    for (const VisibilityFlag& flag : AnalyticalVisibilityFlags) {
+        if (settingsOS->Contains (flag.name) && kept.*(flag.field) != settings.*(flag.field)) {
+            notKept += GS::UniString (" ") + flag.name + (kept.*(flag.field) ? " is true." : " is false.");
+        }
+    }
+    if (settingsOS->Contains ("loadVisibilityMode") && kept.loadVisibilityMode != settings.loadVisibilityMode) {
+        const char* keptName = EnumToString (AnalyticalLoadVisibilityModeNames, kept.loadVisibilityMode);
+        notKept += GS::UniString (" loadVisibilityMode is ") + (keptName != nullptr ? keptName : "unknown") + ".";
+    }
+    if (!notKept.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not keep every given visibility setting:" + notKept);
+    }
+
     return CreateSuccessfulExecutionResult ();
 #else
     UNUSED_VARIABLE (parameters);
