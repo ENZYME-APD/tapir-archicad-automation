@@ -5,12 +5,38 @@
   "requiresEmpty": [ "Wall", "Window" ],
   "steps": [
     {
-      "id": "a window part of the loaded library, as parent",
-      "command": "GetAvailableLibraryParts",
+      "id": "wall A along y 960 and wall B along y 970",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 990.0, "y": 960.0 }, "endCoordinate": { "x": 1000.0, "y": 960.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 },
+          { "begCoordinate": { "x": 990.0, "y": 970.0 }, "endCoordinate": { "x": 1000.0, "y": 970.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid", "b": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "a window of the tool defaults at the end of wall A, to find the window subtype",
+      "command": "CreateWindows",
+      "params": { "windowsData": [ { "ownerWallId": { "guid": "${a}" }, "centerOffset": 8.0, "width": 1.0, "height": 1.2, "sillHeight": 0.9 } ] },
+      "save": { "dw": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "default window created" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "its library part",
+      "command": "GetDetailsOfElements",
       "creates": false,
-      "params": { "filterByTypeId": "Window" },
-      "save": { "windowParent": "libraryParts[0].guid" },
-      "expect": [ { "path": "libraryParts[0].guid", "exists": true, "name": "the library has a window part" } ],
+      "params": { "elements": [ { "elementId": { "guid": "${dw}" } } ] },
+      "save": { "defaultPart": "detailsOfElements[0].details.libPart.name" }
+    },
+    {
+      "id": "the subtype that part belongs to, as parent of the own part (with a placeable window part as parent, CreateWindows did not find the own part by name on Archicad 29)",
+      "command": "GetLibraryPartTypeDetails",
+      "creates": false,
+      "params": { "libraryParts": [ { "name": "${defaultPart}" } ] },
+      "save": { "windowSubtype": "libraryParts[0].parentUnId" },
+      "expect": [ { "path": "libraryParts[0].typeId", "eq": "Window", "name": "the default part is a window" } ],
       "stopOnFail": true
     },
     {
@@ -21,7 +47,7 @@
         "libraryParts": [
           {
             "name": "Tapir Check Recreate Window 201",
-            "parentId": "${windowParent}",
+            "parentId": "${windowSubtype}",
             "type": "Window",
             "path": "TapirCheckRecreateWindow/Tapir Check Recreate Window 201.gsm",
             "a": 1.0,
@@ -45,17 +71,6 @@
       "params": {},
       "expect": [ { "path": "success", "eq": true, "name": "libraries reloaded" } ],
       "stopOnFail": true
-    },
-    {
-      "id": "wall A along y 960 and wall B along y 970",
-      "command": "CreateWalls",
-      "params": {
-        "wallsData": [
-          { "begCoordinate": { "x": 990.0, "y": 960.0 }, "endCoordinate": { "x": 1000.0, "y": 960.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 },
-          { "begCoordinate": { "x": 990.0, "y": 970.0 }, "endCoordinate": { "x": 1000.0, "y": 970.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
-        ]
-      },
-      "save": { "a": "elements[0].elementId.guid", "b": "elements[1].elementId.guid" }
     },
     {
       "id": "the own window in wall A",
