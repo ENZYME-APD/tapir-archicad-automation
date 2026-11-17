@@ -12131,6 +12131,246 @@ GS::ObjectState RecreateZonesCommand::Execute (const GS::ObjectState& parameters
     return response;
 }
 
+// ============================================================================
+// RecreateAngleDimensions
+// Archicad 29 does not move the lines or the arc of an angle dimension through ACAPI_Element_Change:
+// it keeps base[].loc, pos and radius (tested 17/11/2026). So the angle dimension is created again
+// on the new lines and arc position, as CreateAngleDimensions creates one (static), with the old
+// one's settings, and the old one is deleted. One undoable command per angle dimension, which leaves
+// the old one as it was when a step fails.
+// ============================================================================
+
+RecreateAngleDimensionsCommand::RecreateAngleDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateAngleDimensionsCommand::GetName () const
+{
+    return "RecreateAngleDimensions";
+}
+
+GS::Optional<GS::UniString> RecreateAngleDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "angleDimensions": {
+                "type": "array",
+                "description": "The angle dimensions to recreate on new lines, with a new arc position.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The angle dimension to recreate. It has to be in the current database (the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active), where the new one is created."
+                        },
+                        "firstLine": {
+                            "$ref": "#/AngleDimensionLine",
+                            "description": "The new first measured line, as CreateAngleDimensions takes it."
+                        },
+                        "secondLine": {
+                            "$ref": "#/AngleDimensionLine",
+                            "description": "The new second measured line, as CreateAngleDimensions takes it. It must not be parallel to the first one."
+                        },
+                        "arcPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "A point the new dimension arc passes through, as CreateAngleDimensions takes it: its distance from the intersection of the two lines is the radius of the arc, and the side it lies on chooses which of the angles between the lines is measured."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "firstLine", "secondLine", "arcPosition"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["angleDimensions"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateAngleDimensionsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input angle dimension: the new angle dimension, or an error. After an error nothing was changed for that angle dimension. The old one leaves its group.");
+}
+
+// The custom text of an angle dimension's note as stored, autotexts as their keys: read again with the
+// autotext flag off and the content asked for through contentUStr, as GetLevelDimensionTexts reads the
+// notes of a level dimension. Empty when it cannot be read.
+static GS::UniString GetAngleDimensionCustomText (const API_Guid& guid)
+{
+    bool savedAutoTextFlag = false;
+    if (ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag) != NoError) {
+        return {};
+    }
+    if (savedAutoTextFlag) {
+        bool keysAutoTextFlag = false;
+        if (ACAPI_AutoText_ChangeAutoTextFlag (&keysAutoTextFlag) != NoError) {
+            return {};
+        }
+    }
+    const GS::OnExit flagGuard ([&savedAutoTextFlag] () {
+        if (savedAutoTextFlag) {
+            ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
+        }
+    });
+
+    GS::UniString content;
+    API_Element reread = {};
+    reread.header.guid = guid;
+    reread.angleDimension.note.contentUStr = &content;
+    if (ACAPI_Element_Get (&reread) != NoError) {
+        return {};
+    }
+    if (reread.angleDimension.note.contentUStr != nullptr && reread.angleDimension.note.contentUStr != &content) {
+        return *reread.angleDimension.note.contentUStr;
+    }
+    if (!content.IsEmpty ()) {
+        return content;
+    }
+    USize length = 0;
+    while (length < sizeof (reread.angleDimension.note.content) && reread.angleDimension.note.content[length] != '\0') {
+        ++length;
+    }
+    return GS::UniString (reread.angleDimension.note.content, length, CC_UTF8);
+}
+
+GS::ObjectState RecreateAngleDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> angleDimensions;
+    parameters.Get ("angleDimensions", angleDimensions);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const Stories stories = GetStories ();
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : angleDimensions) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId is required. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_AngleDimensionID, "Angle Dimension", "angle dimension", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+        GS::UniString customText;
+        if (data.element.angleDimension.note.contentType == API_NoteContent_Custom) {
+            customText = GetAngleDimensionCustomText (oldGuid);
+        }
+
+        // The item of CreateAngleDimensions with only the geometry: the lines and the arc position.
+        GS::ObjectState createItem;
+        for (const char* key : { "firstLine", "secondLine", "arcPosition" }) {
+            const GS::ObjectState* value = item.Get (key);
+            if (value != nullptr) {
+                createItem.Add (key, *value);
+            }
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Angle Dimension", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_AngleDimensionID;
+#else
+            element.header.typeID = API_AngleDimensionID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Angle Dimension defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // The old angle dimension's whole API_AngleDimensionType (pens, markers, witness lines,
+            // text style, text position and direction, smallArc ...) with the defaults' header put
+            // back, as RecreateStairs does. The reference points come from the defaults, so the new
+            // dimension is static like one of CreateAngleDimensions and not tied to the elements the
+            // old one measured; the text goes back to its automatic place on the new arc.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_AngleDimensionType defaults = element.angleDimension;
+            element.angleDimension = data.element.angleDimension;
+            element.header = defaultsHeader;
+            for (UIndex i = 0; i < 4; ++i) {
+                element.angleDimension.base[i] = defaults.base[i];
+            }
+            element.angleDimension.dimVal = defaults.dimVal;
+            element.angleDimension.note.contentUStr = nullptr;
+            element.angleDimension.note.pos = defaults.note.pos;
+            element.angleDimension.note.fixPos = defaults.note.fixPos;
+            element.angleDimension.note.useLeaderLine = defaults.note.useLeaderLine;
+            element.angleDimension.note.begC = defaults.note.begC;
+            element.angleDimension.note.midC = defaults.note.midC;
+            element.angleDimension.note.endC = defaults.note.endC;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = data.element.header.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            // The lines, the arc position and its center, checked as CreateAngleDimensions checks them.
+            stepError = CreateAngleDimensionsCommand ().SetTypeSpecificParameters (element, memo, stories, createItem);
+            if (stepError.HasValue ()) {
+                stepErr = APIERR_BADPARS;
+                return stepErr;
+            }
+            element.angleDimension.radius = std::hypot (element.angleDimension.pos.x - element.angleDimension.origo.x, element.angleDimension.pos.y - element.angleDimension.origo.y);
+            if (!customText.IsEmpty ()) {
+                element.angleDimension.note.contentUStr = &customText;
+            }
+
+            // Created with the autotext flag off, as CreateAngleDimensions creates it, so an autotext
+            // of the custom text stays an autotext.
+            bool savedAutoTextFlag = true;
+            const bool flagRead = ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag) == NoError;
+            bool offAutoTextFlag = false;
+            if (flagRead) {
+                ACAPI_AutoText_ChangeAutoTextFlag (&offAutoTextFlag);
+            }
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (flagRead) {
+                ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
+            }
+            // As CreateAngleDimensions' AfterCreate: Archicad can report success with a GUID of no
+            // element in some databases (#510).
+            API_Element created = {};
+            created.header.guid = element.header.guid;
+            if (stepErr == NoError && ACAPI_Element_Get (&created) != NoError) {
+                stepErr = APIERR_GENERAL;
+            }
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create an angle dimension on the new lines with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "angle dimension", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the angle dimension."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
+}
+
 CreateOpeningsCommand::CreateOpeningsCommand () :
     CommandBase (CommonSchema::Used)
 {
