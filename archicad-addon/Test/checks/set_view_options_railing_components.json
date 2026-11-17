@@ -1,0 +1,128 @@
+{
+  "title": "SetViewOptions switches the railing components shown in the floor plan (modelViewOptions.railing) off and on, reads them back, and GetViewOptions returns them; the teardown restores the original railing options (the window keeps Custom model view options with them)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the railing options before",
+      "command": "GetViewOptions",
+      "creates": false,
+      "params": {},
+      "save": {
+        "posts0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts",
+        "topRail0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail",
+        "handrails0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompHandrails",
+        "rails0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails",
+        "innerPosts0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompInnerPosts",
+        "balusters0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters",
+        "panels0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels",
+        "stairWalkingLine0": "viewOptions.modelViewOptions.stair.stairFloorPlanCompWalkingLine"
+      },
+      "expect": [
+        { "path": "viewOptions.modelViewOptions.railing.railing3DDetailLevel", "exists": true, "name": "railing options read" }
+      ]
+    },
+    {
+      "id": "every railing component hidden in the floor plan",
+      "command": "SetViewOptions",
+      "creates": false,
+      "params": {
+        "viewOptions": {
+          "modelViewOptions": {
+            "railing": {
+              "railing2DDisplayCompPosts": false,
+              "railing2DDisplayCompTopRail": false,
+              "railing2DDisplayCompHandrails": false,
+              "railing2DDisplayCompRails": false,
+              "railing2DDisplayCompInnerPosts": false,
+              "railing2DDisplayCompBalusters": false,
+              "railing2DDisplayCompPanels": false
+            }
+          }
+        }
+      },
+      "expect": [
+        { "path": "error.message", "exists": false, "name": "kept (else the error names the railing options Archicad kept)" }
+      ]
+    },
+    {
+      "id": "read them hidden",
+      "command": "GetViewOptions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "eq": false, "name": "posts hidden" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail", "eq": false, "name": "top rails hidden" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompHandrails", "eq": false, "name": "handrails hidden" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails", "eq": false, "name": "rails hidden" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompInnerPosts", "eq": false, "name": "inner posts hidden" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters", "eq": false, "name": "balusters hidden" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels", "eq": false, "name": "panels hidden" },
+        { "path": "viewOptions.modelViewOptions.stair.stairFloorPlanCompWalkingLine", "eq": "${stairWalkingLine0}", "name": "the stair options kept" }
+      ]
+    },
+    {
+      "id": "posts, rails and panels shown again, the others still hidden",
+      "command": "SetViewOptions",
+      "creates": false,
+      "params": {
+        "viewOptions": {
+          "modelViewOptions": {
+            "railing": {
+              "railing2DDisplayCompPosts": true,
+              "railing2DDisplayCompRails": true,
+              "railing2DDisplayCompPanels": true
+            }
+          }
+        }
+      },
+      "expect": [
+        { "path": "error.message", "exists": false, "name": "kept" }
+      ]
+    },
+    {
+      "id": "read the three shown, the others kept hidden",
+      "command": "GetViewOptions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "eq": true, "name": "posts shown" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails", "eq": true, "name": "rails shown" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels", "eq": true, "name": "panels shown" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail", "eq": false, "name": "top rails still hidden" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters", "eq": false, "name": "balusters still hidden" }
+      ]
+    },
+    {
+      "id": "an unknown railing option is refused by the schema",
+      "command": "SetViewOptions",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "viewOptions": { "modelViewOptions": { "railing": { "railing2DDisplayCompGlass": true } } }
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetViewOptions",
+      "params": {
+        "viewOptions": {
+          "modelViewOptions": {
+            "railing": {
+              "railing2DDisplayCompPosts": "${posts0}",
+              "railing2DDisplayCompTopRail": "${topRail0}",
+              "railing2DDisplayCompHandrails": "${handrails0}",
+              "railing2DDisplayCompRails": "${rails0}",
+              "railing2DDisplayCompInnerPosts": "${innerPosts0}",
+              "railing2DDisplayCompBalusters": "${balusters0}",
+              "railing2DDisplayCompPanels": "${panels0}"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

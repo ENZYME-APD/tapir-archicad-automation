@@ -2659,7 +2659,8 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetViewOptionsCommand> (
             navigatorCommands, "1.8.0",
-            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply."
+            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options (among them the railing components shown in the floor plan, modelViewOptions.railing) and on-screen view options. With an index, the model view options stored in the combination apply. "
+            "The options are read back, and a given field Archicad did not keep (with an index, a given on-screen view option) fails the call with the value it kept."
         );
         err |= RegisterCommand<GetViewSettingsCommand> (
             navigatorCommands, "1.1.4",
