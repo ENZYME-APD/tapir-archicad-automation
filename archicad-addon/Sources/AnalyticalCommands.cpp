@@ -2587,7 +2587,7 @@ GS::Optional<GS::UniString> GetAnalyticalVisibilitySettingsCommand::GetRawRespon
 GS::ObjectState GetAnalyticalVisibilitySettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
-    API_AM_VisibilitySettings settings;
+    API_AM_VisibilitySettings settings {};
     const GSErrCode err = TAPIR_GetAnalyticalVisibilitySettings (settings);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the Structural Analytical Model visibility settings.");
@@ -2641,7 +2641,7 @@ GS::ObjectState SetAnalyticalVisibilitySettingsCommand::Execute (const GS::Objec
         return CreateFailedExecutionResult (APIERR_BADPARS, "visibilitySettings is missing.");
     }
 
-    API_AM_VisibilitySettings settings;
+    API_AM_VisibilitySettings settings {};
     GSErrCode err = TAPIR_GetAnalyticalVisibilitySettings (settings);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get the Structural Analytical Model visibility settings.");
