@@ -75,7 +75,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 "this component created before (kept in the .gh file) instead of creating new ones; their " +
                 "reference line can move, but keeps its number of vertices, and a curtain wall deleted since " +
                 "then is reported in Errors, not created again. Switch this off or forget the curtain walls in " +
-                "the component menu.")
+                "the component menu. Slant Angle only applies when a curtain wall is created: Archicad cannot " +
+                "change the slant of an existing curtain wall, so Create leaves the slant of the curtain walls " +
+                "it updates as it is (forget them in the component menu to create them again with the new " +
+                "Slant Angle).")
         {
         }
 
