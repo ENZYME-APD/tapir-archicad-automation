@@ -2788,6 +2788,19 @@ static API_Coord GetPictureAnchorOffset (API_AnchorID anchorPoint, double width,
     return offset;
 }
 
+API_Coord GetPicturePosition (const API_PictureType& picture)
+{
+    // The inverse of ModifyPictures' placement: the anchor point on the drawn box, which for a
+    // mirrored picture is one width left of the stored destBox (see ModifyPicturesCommand::Execute).
+    const double width = picture.destBox.xMax - picture.destBox.xMin;
+    const double height = picture.destBox.yMax - picture.destBox.yMin;
+    const API_Coord anchorOffset = GetPictureAnchorOffset (picture.anchorPoint, width, height);
+    API_Coord position;
+    position.x = picture.destBox.xMin - (picture.mirrored ? width : 0.0) + anchorOffset.x;
+    position.y = picture.destBox.yMin + anchorOffset.y;
+    return position;
+}
+
 CreatePicturesCommand::CreatePicturesCommand () :
     CreateElementsCommandBase ("CreatePictures", API_PictureID, "picturesData")
 {
@@ -4355,7 +4368,7 @@ GS::Optional<GS::UniString> ModifyPicturesCommand::GetInputParametersSchema () c
                         "elementId": { "$ref": "#/ElementId" },
                         "position": {
                             "$ref": "#/Coordinate2D",
-                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is."
+                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is. GetDetailsOfElements reads it back with the same key, so the position read can be sent back."
                         },
                         "anchorPoint": {
                             "$ref": "#/PictureAnchorPoint",

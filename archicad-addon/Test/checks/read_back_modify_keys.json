@@ -1,7 +1,7 @@
 {
   "title": "Read back what the Modify commands write: GetDetailsOfElements reads each key with the same name and shape, and the value read is taken back unchanged by the Modify command (round trip)",
   "minTapir": "2.0.1",
-  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Column" ],
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Column", "Picture" ],
   "steps": [
     {
       "id": "floor plan",
@@ -348,6 +348,71 @@
       "expect": [
         { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s1}", "name": "round trip: owner is the lower slab" },
         { "path": "detailsOfElements[0].details.staticLevel", "eq": true, "name": "ownerElementId keeps the Static checkbox" }
+      ]
+    },
+    {
+      "id": "a picture anchored at its center",
+      "command": "CreatePictures",
+      "params": {
+        "picturesData": [
+          { "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "name": "CHK-READ-BACK-PICTURE", "position": { "x": 1040.0, "y": 1000.0 }, "anchorPoint": "Center", "width": 4.0, "floorInd": 0 }
+        ]
+      },
+      "save": { "pic": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "picture created" }
+      ]
+    },
+    {
+      "id": "read the picture's position",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pic}" } } ] },
+      "save": { "picPosition": "detailsOfElements[0].details.position" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1040.0, "name": "position read with the key CreatePictures and ModifyPictures write, x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "position y" },
+        { "path": "detailsOfElements[0].details.box.xMin", "approx": 1038.0, "name": "the position is the center of the box" }
+      ]
+    },
+    {
+      "id": "move the picture",
+      "command": "ModifyPictures",
+      "params": { "picturesWithDetails": [ { "elementId": { "guid": "${pic}" }, "position": { "x": 1045.0, "y": 1003.0 } } ] },
+      "save": { "pic2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "picture moved (replaced)" }
+      ]
+    },
+    {
+      "id": "read the moved picture",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pic2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1045.0, "name": "moved position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1003.0, "name": "moved position y" }
+      ]
+    },
+    {
+      "id": "send the position back as it was read",
+      "command": "ModifyPictures",
+      "params": { "picturesWithDetails": [ { "elementId": { "guid": "${pic2}" }, "position": "${picPosition}" } ] },
+      "save": { "pic3": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "the position read is accepted" }
+      ]
+    },
+    {
+      "id": "the picture where it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pic3}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1040.0, "name": "round trip: position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "round trip: position y" },
+        { "path": "detailsOfElements[0].details.box.xMin", "approx": 1038.0, "name": "round trip: box where it was, xMin" },
+        { "path": "detailsOfElements[0].details.box.yMin", "approx": 999.0, "name": "round trip: box where it was, yMin" }
       ]
     }
   ]

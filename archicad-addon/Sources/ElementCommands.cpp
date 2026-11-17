@@ -3788,6 +3788,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 boxOS.Add ("xMax", picture.destBox.xMax + boxShiftX);
                 boxOS.Add ("yMax", picture.destBox.yMax + boxShiftY);
                 typeSpecificDetails.Add ("box", boxOS);
+                // The point ModifyPictures places the anchor point at, with the same key.
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (GetPicturePosition (picture)));
                 typeSpecificDetails.Add ("width", pictureWidth);
                 typeSpecificDetails.Add ("height", pictureHeight);
                 typeSpecificDetails.Add ("pixelWidth", static_cast<Int32> (picture.pixelSizeX));
