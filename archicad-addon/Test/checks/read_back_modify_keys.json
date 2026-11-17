@@ -148,6 +148,121 @@
         { "path": "detailsOfElements[0].details.width", "approx": 30.0, "tol": 0.01, "name": "round trip: wrap width" },
         { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "round trip: word wrap on" }
       ]
+    },
+    {
+      "id": "a linear dimension with three witness points",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 1020.0, "y": 999.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 1020.0, "y": 1000.0 } },
+              { "coordinate": { "x": 1023.0, "y": 1000.0 } },
+              { "coordinate": { "x": 1027.0, "y": 1000.0 } }
+            ],
+            "textHeight": 2.5
+          }
+        ]
+      },
+      "save": { "dim": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "witness point texts A",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${dim}" },
+            "witnessPointTexts": [
+              { "index": 1, "customText": "Tapir A" },
+              { "index": 2, "superscript": true, "textPosition": { "x": 1024.5, "y": 997.75 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "witness point texts written" }
+      ]
+    },
+    {
+      "id": "read witness point texts A",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dim}" } } ] },
+      "save": { "dimTexts": "detailsOfElements[0].details.witnessPointTexts" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.witnessPointTexts", "len": 3, "name": "one text per witness point, read with the key ModifyAssociativeDimensions writes" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].index", "eq": 0, "name": "first index" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].content", "eq": "MeasuredValue", "name": "first shows the measured value" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].textPosition", "exists": false, "name": "no position for a text at its automatic position" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].content", "eq": "CustomText", "name": "second shows its custom text" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].customText", "eq": "Tapir A", "name": "second custom text" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].superscript", "eq": true, "name": "third superscript" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.x", "approx": 1024.5, "tol": 0.001, "name": "third moved text, x" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.y", "approx": 997.75, "tol": 0.001, "name": "third moved text, y" }
+      ]
+    },
+    {
+      "id": "witness point texts B",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${dim}" },
+            "witnessPointTexts": [
+              { "index": 1, "content": "MeasuredValue" },
+              { "index": 2, "superscript": false, "resetTextPosition": true }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "other witness point texts written" }
+      ]
+    },
+    {
+      "id": "read witness point texts B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dim}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].content", "eq": "MeasuredValue", "name": "second back to the measured value" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].customText", "exists": false, "name": "a custom text not shown is not read" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].superscript", "eq": false, "name": "third not superscript" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition", "exists": false, "name": "third back at its automatic position" }
+      ]
+    },
+    {
+      "id": "send the witness point texts back as they were read",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": { "dimensionsWithDetails": [ { "elementId": { "guid": "${dim}" }, "witnessPointTexts": "${dimTexts}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the texts read are accepted and applied" }
+      ]
+    },
+    {
+      "id": "witness point texts A again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dim}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].content", "eq": "MeasuredValue", "name": "round trip: first still the measured value" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].textPosition", "exists": false, "name": "round trip: first still at its automatic position" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].content", "eq": "CustomText", "name": "round trip: second custom text shown" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].customText", "eq": "Tapir A", "name": "round trip: second custom text" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].superscript", "eq": true, "name": "round trip: third superscript" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.x", "approx": 1024.5, "tol": 0.001, "name": "round trip: third text position x" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.y", "approx": 997.75, "tol": 0.001, "name": "round trip: third text position y" }
+      ]
     }
   ]
 }

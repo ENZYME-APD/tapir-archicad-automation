@@ -1414,6 +1414,33 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("openingHeightsInChain", element.dimension.detailedHoleDim);
     details.Add ("openingHeightsNominal", element.dimension.nominalHoleDim != 0);
     details.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
+
+    // The texts of the witness points with the keys ModifyAssociativeDimensions' witnessPointTexts
+    // writes, so the list read can be sent back. The custom text only while it is shown, and the
+    // text position only for a text moved by hand: sending it fixes the text there. Left out when
+    // the witness points cannot be read, as ModifyAssociativeDimensions refuses an empty list.
+    if (element.header.hasMemo && element.dimension.nDimElem > 0) {
+        API_ElementMemo memo = {};
+        const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        if (ACAPI_Element_GetMemo (element.header.guid, &memo) == NoError && memo.dimElems != nullptr && *memo.dimElems != nullptr) {
+            const auto& witnessPointTexts = details.AddList<GS::ObjectState> ("witnessPointTexts");
+            for (Int32 i = 0; i < element.dimension.nDimElem; ++i) {
+                const API_NoteType& note = (*memo.dimElems)[i].note;
+                const bool isCustomText = note.contentType == API_NoteContent_Custom;
+                GS::ObjectState witnessPointText;
+                witnessPointText.Add ("index", i);
+                witnessPointText.Add ("content", GS::UniString (isCustomText ? "CustomText" : "MeasuredValue"));
+                if (isCustomText) {
+                    witnessPointText.Add ("customText", GetDimensionNoteTextWithPlaceholder (note));
+                }
+                witnessPointText.Add ("superscript", (note.effectBits & APIEffect_SuperScript) != 0);
+                if (note.fixPos) {
+                    witnessPointText.Add ("textPosition", Create2DCoordinateObjectState (note.pos));
+                }
+                witnessPointTexts (witnessPointText);
+            }
+        }
+    }
 }
 
 static GS::UniString RadialDimensionTextPositionName (API_TextPosID textPos)
@@ -13852,39 +13879,9 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                         "witnessPointTexts": {
                             "type": "array",
                             "minItems": 1,
-                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position (moved and fixed, or reset to the automatic position). Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.",
+                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position (moved and fixed, or reset to the automatic position). Only the given fields of the given witness points are changed. GetDetailsOfElements reads them back for every witness point with the same keys (witnessPointTexts), so the list read can be sent back; GetDimensionData reads them too.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "index": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "description": "The witness point whose text is changed, counted from 0 in the order GetDimensionData returns them."
-                                    },
-                                    "content": {
-                                        "type": "string",
-                                        "enum": ["MeasuredValue", "CustomText"],
-                                        "description": "Optional: show the measured value or the custom text (API note contentType)."
-                                    },
-                                    "customText": {
-                                        "type": "string",
-                                        "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). Without content the witness point shows the custom text."
-                                    },
-                                    "superscript": {
-                                        "type": "boolean",
-                                        "description": "Optional: show the text superscript (API note effectBits, APIEffect_SuperScript)."
-                                    },
-                                    "resetTextPosition": {
-                                        "type": "boolean",
-                                        "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing. Cannot be given with textPosition."
-                                    },
-                                    "textPosition": {
-                                        "$ref": "#/Coordinate2D",
-                                        "description": "Optional: moves the text there and fixes it, as dragging it by hand does (API note pos, fixPos true). In the coordinates GetDimensionData returns the witness points and the textPosition of each text in, so a text can be moved relative to where it is."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["index"]
+                                "$ref": "#/DimensionWitnessPointText"
                             }
                         },)") + DimensionSettingsSchemaProperties + R"(
                     },

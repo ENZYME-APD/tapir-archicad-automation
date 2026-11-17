@@ -15070,7 +15070,7 @@
     },
     "DimensionDetails": {
         "type": "object",
-        "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes. The witness points are read with GetDimensionData.",
+        "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes, and the texts of its witness points. The witness points themselves are read with GetDimensionData.",
         "properties": {
             "appearance": {
                 "type": "string",
@@ -15148,6 +15148,13 @@
             },
             "layeredElementDimensions": {
                 "$ref": "#/LayeredElementDimensions"
+            },
+            "witnessPointTexts": {
+                "type": "array",
+                "description": "The text of every witness point, in the order GetDimensionData returns them, with the keys ModifyAssociativeDimensions' witnessPointTexts takes, so the list read can be sent back as it is. Missing when the witness points cannot be read.",
+                "items": {
+                    "$ref": "#/DimensionWitnessPointText"
+                }
             }
         },
         "additionalProperties": false,
@@ -15172,6 +15179,40 @@
             "openingHeightsNominal",
             "layeredElementDimensions"
         ]
+    },
+    "DimensionWitnessPointText": {
+        "type": "object",
+        "description": "The text of one witness point of a linear dimension, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position. ModifyAssociativeDimensions writes the given fields of the given witness points (witnessPointTexts); GetDetailsOfElements reads it for every witness point with the same keys (index, content, superscript, customText for a custom text and textPosition for a text moved by hand).",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The witness point whose text is changed, counted from 0 in the order GetDimensionData returns them."
+            },
+            "content": {
+                "type": "string",
+                "enum": ["MeasuredValue", "CustomText"],
+                "description": "Optional: show the measured value or the custom text (API note contentType)."
+            },
+            "customText": {
+                "type": "string",
+                "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). Without content the witness point shows the custom text. GetDetailsOfElements reads it only while content is CustomText; GetDimensionData also reads the custom text a witness point keeps while it shows the measured value."
+            },
+            "superscript": {
+                "type": "boolean",
+                "description": "Optional: show the text superscript (API note effectBits, APIEffect_SuperScript)."
+            },
+            "resetTextPosition": {
+                "type": "boolean",
+                "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing. Cannot be given with textPosition. Only written: GetDetailsOfElements leaves out textPosition for a text at its automatic position instead."
+            },
+            "textPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Optional: moves the text there and fixes it, as dragging it by hand does (API note pos, fixPos true). In the coordinates GetDimensionData returns the witness points and the textPosition of each text in, so a text can be moved relative to where it is. GetDetailsOfElements reads it only for a text that was moved by hand (fixed), so the texts read can be sent back without fixing the automatic ones."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["index"]
     },
     "ChangeMarkerComponent": {
         "type": "string",
