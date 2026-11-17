@@ -8485,9 +8485,18 @@ GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& pa
                     executionResults (CreateFailedExecutionResult (geometryError.Get ()));
                     continue;
                 }
-                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, base);
+                // Archicad reads a member's mask on its first byte only, and ACAPI_ELEMENT_MASK_SET
+                // (mask, ..., base) marks base[0] alone: each of the four points is marked, with its loc.
+                for (UIndex i = 0; i < 4; ++i) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, base[i]);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, base[i].loc);
+                }
                 ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, pos);
                 ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, origo);
+                // The stored radius is not derived from pos by ACAPI_Element_Change: it is given too.
+                element.angleDimension.radius = std::hypot (element.angleDimension.pos.x - element.angleDimension.origo.x,
+                                                            element.angleDimension.pos.y - element.angleDimension.origo.y);
+                ACAPI_ELEMENT_MASK_SET (mask, API_AngleDimensionType, radius);
             }
 
             const auto settingsError = ApplyAngleDimensionSettings (item, element, &mask);
@@ -8525,6 +8534,10 @@ GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& pa
                 }
                 if (!sameCoord (changed.angleDimension.origo, element.angleDimension.origo)) {
                     notApplied += " arcCenter";
+                }
+                // Archicad may move pos along the arc, so the arc position is checked by its radius.
+                if (std::abs (changed.angleDimension.radius - element.angleDimension.radius) > tolerance) {
+                    notApplied += " arcPosition";
                 }
             }
             if (item.Contains ("smallArc") && changed.angleDimension.smallArc != element.angleDimension.smallArc) {
