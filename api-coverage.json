@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-16 18:54 UTC",
+ "generatedAt": "2026-11-17 01:58 UTC",
  "versions": [
   25,
   26,
@@ -5810,16 +5810,12 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    },
+    {
      "number": 2894,
      "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
-    },
-    {
-     "number": 2863,
-     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
-    },
-    {
-     "number": 2862,
-     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
     },
     {
      "number": 2855,
@@ -6811,6 +6807,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2900,
+     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
+    },
+    {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    },
+    {
      "number": 2888,
      "title": "CreateCurtainWalls: create slanted curtain walls from angle"
     },
@@ -7144,17 +7148,9 @@
     {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2850,
-     "title": "CreateInteriorElevations: place each item on its floorIndex story"
     }
    ],
    "issues": [
-    {
-     "number": 2849,
-     "title": "CreateInteriorElevations: floorIndex is ignored, the interior elevation is placed on the current story (success)"
-    },
     {
      "number": 1377,
      "title": "Place Detail and Worksheet markers, and change their settings"
@@ -7407,6 +7403,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2900,
+     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
+    },
+    {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    },
+    {
      "number": 2879,
      "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
     },
@@ -7417,10 +7421,6 @@
     {
      "number": 2869,
      "title": "[1/4] Roofs: read and write fitSkylightToCurve"
-    },
-    {
-     "number": 2860,
-     "title": "Stairs: read and write the headroom"
     },
     {
      "number": 2856,
@@ -7993,6 +7993,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    },
+    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -8056,16 +8060,12 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    },
+    {
      "number": 2898,
      "title": "ModifyRoofs: don't crash when a hole grows a multi-plane roof's pivot memo"
-    },
-    {
-     "number": 2863,
-     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
-    },
-    {
-     "number": 2862,
-     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
     },
     {
      "number": 2855,
@@ -10910,7 +10910,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    }
+   ],
    "issues": []
   },
   {
@@ -16396,10 +16401,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2850,
-     "title": "CreateInteriorElevations: place each item on its floorIndex story"
-    },
-    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -16570,10 +16571,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2850,
-     "title": "CreateInteriorElevations: place each item on its floorIndex story"
-    },
     {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
@@ -19878,18 +19875,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2847,
-     "title": "SetZoom: show the whole model box in a rotated floor plan window"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2846,
-     "title": "SetZoom on a rotated floor plan: the zoomBox is not shown (it seems to be applied in the window's rotated frame, not in model coordinates)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_GoToView",
@@ -20131,18 +20118,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2847,
-     "title": "SetZoom: show the whole model box in a rotated floor plan window"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2846,
-     "title": "SetZoom on a rotated floor plan: the zoomBox is not shown (it seems to be applied in the window's rotated frame, not in model coordinates)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_View_ShowAllIn3D",
@@ -25719,6 +25696,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    },
+    {
      "number": 2894,
      "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
@@ -25743,16 +25724,8 @@
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
     {
-     "number": 2863,
-     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
-    },
-    {
      "number": 2861,
      "title": "Columns: read and write the core symbol type and its crosshair sizes"
-    },
-    {
-     "number": 2860,
-     "title": "Stairs: read and write the headroom"
     },
     {
      "number": 2856,
@@ -25769,10 +25742,6 @@
     {
      "number": 2852,
      "title": "[1/3] ModifyStairs/CreateStairs: write the stair symbol, break line and overrides of the floor plan and RCP"
-    },
-    {
-     "number": 2850,
-     "title": "CreateInteriorElevations: place each item on its floorIndex story"
     },
     {
      "number": 2841,
@@ -31503,20 +31472,8 @@
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
     {
-     "number": 2863,
-     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
-    },
-    {
-     "number": 2862,
-     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
-    },
-    {
      "number": 2861,
      "title": "Columns: read and write the core symbol type and its crosshair sizes"
-    },
-    {
-     "number": 2860,
-     "title": "Stairs: read and write the headroom"
     },
     {
      "number": 2855,
@@ -37990,6 +37947,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2899,
+     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
+    },
+    {
      "number": 2894,
      "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
@@ -38026,16 +37987,8 @@
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
     {
-     "number": 2863,
-     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
-    },
-    {
      "number": 2861,
      "title": "Columns: read and write the core symbol type and its crosshair sizes"
-    },
-    {
-     "number": 2860,
-     "title": "Stairs: read and write the headroom"
     },
     {
      "number": 2856,
@@ -38052,10 +38005,6 @@
     {
      "number": 2852,
      "title": "[1/3] ModifyStairs/CreateStairs: write the stair symbol, break line and overrides of the floor plan and RCP"
-    },
-    {
-     "number": 2850,
-     "title": "CreateInteriorElevations: place each item on its floorIndex story"
     },
     {
      "number": 2845,
@@ -44774,20 +44723,8 @@
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
     {
-     "number": 2863,
-     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
-    },
-    {
-     "number": 2862,
-     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
-    },
-    {
      "number": 2861,
      "title": "Columns: read and write the core symbol type and its crosshair sizes"
-    },
-    {
-     "number": 2860,
-     "title": "Stairs: read and write the headroom"
     },
     {
      "number": 2855,
@@ -47966,20 +47903,8 @@
      "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
     {
-     "number": 2863,
-     "title": "[2/2] ModifyShells: write the geometry of revolved and ruled shells"
-    },
-    {
-     "number": 2862,
-     "title": "[1/2] GetDetailsOfElements: read the geometry of revolved and ruled shells"
-    },
-    {
      "number": 2861,
      "title": "Columns: read and write the core symbol type and its crosshair sizes"
-    },
-    {
-     "number": 2860,
-     "title": "Stairs: read and write the headroom"
     },
     {
      "number": 2855,
