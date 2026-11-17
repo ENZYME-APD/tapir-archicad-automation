@@ -2583,6 +2583,139 @@ static void AddCurtainWallReferenceLine (const API_Element& elem, GS::ObjectStat
     }
 }
 
+// A column (primary) or row (secondary) pattern of a curtain wall as a CurtainWallPattern, the inverse
+// of ApplyCurtainWallPattern (ElementCreationCommands.cpp), so CreateCurtainWalls and ModifyCurtainWalls
+// take it back as it is. Returns false for a pattern they cannot write: one without sizes, with a size
+// that is not positive, or with the number-of-divisions logic, which their logic field does not take.
+static bool CreateCurtainWallPatternObjectState (const API_CWSegmentPatternData& pattern, GS::ObjectState& patternOS)
+{
+    if (pattern.nPattern == 0 || pattern.pattern == nullptr ||
+        static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSConstPtr> (pattern.pattern)) / sizeof (double)) < pattern.nPattern) {
+        return false;
+    }
+    if (pattern.logic != APICWSePL_FixedSizes && pattern.logic != APICWSePL_BestDivision) {
+        return false;
+    }
+    for (UInt32 i = 0; i < pattern.nPattern; ++i) {
+        if (pattern.pattern[i] <= 0.0) {
+            return false;
+        }
+    }
+
+    const auto& sizes = patternOS.AddList<double> ("sizes");
+    for (UInt32 i = 0; i < pattern.nPattern; ++i) {
+        sizes (pattern.pattern[i]);
+    }
+    patternOS.Add ("logic", pattern.logic == APICWSePL_FixedSizes ? "FixedSizes" : "BestDivision");
+    // An origin the write does not know is left out, and writing the pattern back keeps it.
+    switch (pattern.gridOriginType) {
+        case APICWSeGridOrigin_StartWithPattern:    patternOS.Add ("origin", "StartWithPattern"); break;
+        case APICWSeGridOrigin_StartFromCenter:     patternOS.Add ("origin", "StartFromCenter"); break;
+        case APICWSeGridOrigin_AlignToCenter:       patternOS.Add ("origin", "AlignToCenter"); break;
+        case APICWSeGridOrigin_EndWithPattern:      patternOS.Add ("origin", "EndWithPattern"); break;
+        default: break;
+    }
+    // Always given, because the write rewrites them every time (all of them when omitted); an index
+    // outside the pattern, which the write refuses, is left out.
+    const UInt32 nStoredFlexibleIDs = pattern.flexibleIDs != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSConstPtr> (pattern.flexibleIDs)) / sizeof (UInt32))
+        : 0;
+    const UInt32 nFlexibleIDs = std::min (pattern.nFlexibleIDs, nStoredFlexibleIDs);
+    GS::Array<UInt32> flexibleIDs;
+    for (UInt32 i = 0; i < nFlexibleIDs; ++i) {
+        const UInt32 id = pattern.flexibleIDs[i];
+        if (id < pattern.nPattern && !flexibleIDs.Contains (id)) {
+            flexibleIDs.Push (id);
+        }
+    }
+    const auto& flexibleIndices = patternOS.AddList<Int32> ("flexibleIndices");
+    for (UInt32 id : flexibleIDs) {
+        flexibleIndices (static_cast<Int32> (id));
+    }
+    return true;
+}
+
+// The cells of the pattern unit of a curtain wall as CurtainWallPatternCell items, the inverse of
+// ApplyCurtainWallPatternCells (ElementCreationCommands.cpp): stored row by row from the bottom row,
+// each row from the start of the segment. A class index that the write refuses (outside the panel and
+// frame classes of the curtain wall, e.g. a customized cell) is left out of its item, so writing the
+// cells back keeps it. Nothing is added when Archicad returns fewer cells than the pattern unit has.
+static void AddCurtainWallPatternCells (const API_Element& elem, const API_ElementMemo& memo, GS::ObjectState& typeSpecificDetails)
+{
+    const UInt32 nColumns = memo.cWSegPrimaryPattern.nPattern;
+    const UInt32 nRows = memo.cWSegSecondaryPattern.nPattern;
+    const UInt32 nCells = nColumns * nRows;
+    const UInt32 nStoredCells = memo.cWSegPatternCells != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSConstPtr> (memo.cWSegPatternCells)) / sizeof (API_CWSegmentPatternCellData))
+        : 0;
+    if (nCells == 0 || nStoredCells < nCells) {
+        return;
+    }
+
+    // The class counts ModifyCurtainWalls bounds the indices by.
+    const UInt32 nPanelClasses = elem.curtainWall.nPanelDefaults;
+    const UInt32 nFrameClasses = elem.curtainWall.nFrameDefaults;
+    const auto isValidPanelClass = [&] (UInt32 index) {
+        return index == APICWPanelClass_Deleted ||
+               (index >= APICWPanelClass_FirstCustomClass && index - APICWPanelClass_FirstCustomClass < nPanelClasses);
+    };
+    const auto isValidFrameClass = [&] (UInt32 index) {
+        return index < APICWFrameClass_FirstCustomClass || index - APICWFrameClass_FirstCustomClass < nFrameClasses;
+    };
+
+    const auto& cells = typeSpecificDetails.AddList<GS::ObjectState> ("cells");
+    for (UInt32 i = 0; i < nCells; ++i) {
+        const API_CWSegmentPatternCellData& cell = memo.cWSegPatternCells[i];
+        GS::ObjectState cellOS;
+        cellOS.Add ("columnIndex", static_cast<Int32> (i % nColumns));
+        cellOS.Add ("rowIndex", static_cast<Int32> (i / nColumns));
+        if (isValidPanelClass (cell.leftPanelID)) {
+            cellOS.Add ("panelClassIndex", static_cast<Int32> (cell.leftPanelID));
+        }
+        if (isValidPanelClass (cell.rightPanelID)) {
+            cellOS.Add ("rightPanelClassIndex", static_cast<Int32> (cell.rightPanelID));
+        }
+        if (isValidFrameClass (cell.leftFrameID)) {
+            cellOS.Add ("leftFrameClassIndex", static_cast<Int32> (cell.leftFrameID));
+        }
+        if (isValidFrameClass (cell.bottomFrameID)) {
+            cellOS.Add ("bottomFrameClassIndex", static_cast<Int32> (cell.bottomFrameID));
+        }
+        switch (cell.crossingFrameType) {
+            case APICWCFT_NoCrossingFrame:              cellOS.Add ("crossingFrameType", "None"); break;
+            case APICWCFT_FromBottomLeftToTopRight:     cellOS.Add ("crossingFrameType", "FromBottomLeftToTopRight"); break;
+            case APICWCFT_FromTopLeftToBottomRight:     cellOS.Add ("crossingFrameType", "FromTopLeftToBottomRight"); break;
+            default: break;
+        }
+        if (isValidFrameClass (cell.crossingFrameID)) {
+            cellOS.Add ("crossingFrameClassIndex", static_cast<Int32> (cell.crossingFrameID));
+        }
+        cells (cellOS);
+    }
+}
+
+// The column and row patterns and the cells of a curtain wall, as CreateCurtainWalls and
+// ModifyCurtainWalls take them in primaryPattern, secondaryPattern and cells. Those commands write the
+// curtain wall's own cWSeg* memo, from which Archicad builds every segment (as the DevKit's
+// Element_Test changes it), so that memo is read here, not the memo of the segments.
+static void AddCurtainWallPatterns (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_CWSegPrimaryPattern | APIMemoMask_CWSegSecPattern | APIMemoMask_CWSegPanelPattern) != NoError) {
+        return;
+    }
+    GS::ObjectState primaryPattern;
+    if (CreateCurtainWallPatternObjectState (memo.cWSegPrimaryPattern, primaryPattern)) {
+        typeSpecificDetails.Add ("primaryPattern", primaryPattern);
+    }
+    GS::ObjectState secondaryPattern;
+    if (CreateCurtainWallPatternObjectState (memo.cWSegSecondaryPattern, secondaryPattern)) {
+        typeSpecificDetails.Add ("secondaryPattern", secondaryPattern);
+    }
+    AddCurtainWallPatternCells (elem, memo, typeSpecificDetails);
+}
+
 // A CoordinateSystem3D as CreateShells reads it: the axes are the columns of the 3x4 row-major
 // tmx and the origin is its translation column.
 static GS::ObjectState CreateCoordinateSystem3DObjectState (const API_Tranmat& tranmat)
@@ -3929,6 +4062,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
                 typeSpecificDetails.Add ("offset", elem.curtainWall.offset);
                 typeSpecificDetails.Add ("nominalWidth", elem.curtainWall.nominalWidth);
+                AddCurtainWallPatterns (elem, typeSpecificDetails);
                 typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.curtainWall.displayOption));
                 typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.curtainWall.viewDepthLimitation));
                 typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.curtainWall.visibility));
