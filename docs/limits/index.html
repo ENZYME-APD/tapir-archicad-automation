@@ -181,6 +181,48 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_WallType</code>, <code>API_BeamSegmentType</code>, <code>API_ColumnSegmentType</code> and <code>API_AssemblySegmentData</code> have no field for an element&rsquo;s modifier values or a wall&rsquo;s stretch (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). <code>API_ElementMemo</code> holds only the profile geometry (<code>customOrigProfile</code>, <code>stretchedProfile</code>, <code>assemblySegmentProfiles</code>) and <code>customParams</code>, &ldquo;reserved for internal use&rdquo;; no <code>ACAPI_*</code> function reads or sets the values. The only table of modifier values is the analytical model&rsquo;s <code>API_AnalyticalCrossSection::profileParameters</code> (<code>APIdefs_AnalyticalModel.h</code>).</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2587">#2587</a></td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Move a window or door into another wall</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Delete it and create it in the other wall with <a href="../archicad-addon/#CreateWindows">CreateWindows</a> or <a href="../archicad-addon/#CreateDoors">CreateDoors</a>; a favorite (<code>favoriteName</code>) gives it the same settings.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_WindowType</code> (also <code>API_DoorType</code>) has <code>owner</code>, &ldquo;Reference to the container wall&rdquo; (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30), but the <code>API_WindowID</code>/<code>API_DoorID</code> row of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>) lists only <code>objLoc</code>, <code>reflected</code>, <code>oSide</code>, <code>refSide</code>, <code>wallCutUsing</code> and <code>libInd</code> as editable fields. Archicad 29 keeps <code>owner</code> after <code>ACAPI_Element_Change</code> with it set in the mask, and no function moves an opening into another wall. Archicad 30 is untested.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Move a skylight onto another roof or shell</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Delete it and create it on the other roof or shell with <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_SkylightType::owner</code> is the &ldquo;Reference to the container roof or shell&rdquo; (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30), but <code>API_SkylightID</code> has no row in the supported types of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>), and Archicad 29 keeps <code>owner</code> after the change.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Turn an automatic zone into a manual one</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Delete the zone and create it again as a manual zone, from its polygon, with <a href="../archicad-addon/#CreateZones">CreateZones</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_ZoneType::manual</code> is documented &ldquo;Manually created zone; all edges static, no reference point (refPos)&rdquo; (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30), but the <code>API_ZoneID</code> row of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>) lists only <code>libInd</code>, <code>pos</code> and the polygon of the zone. On Archicad 29 a change that sets <code>manual</code> (with a new polygon) fails, and the zone stays automatic.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change the height of a slanted curtain wall</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Create it again with <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a>, with its <code>angle</code> and the new <code>height</code>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_CurtainWallType::angle</code> and <code>height</code> are documented &ldquo;(input only)&rdquo; (<code>APIdefs_Elements.h</code>, AC29 and AC30), and <code>API_CurtainWallID</code> has no row in the supported types of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>). On Archicad 29 neither <code>ACAPI_Element_Change</code> nor changed segment contours (<code>cWSegContour</code>, <code>APIMemoMask_CWSegContour</code>) change the height of a slanted curtain wall.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Move the lines or the arc of an angle dimension</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Delete it and create it again with <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The <code>API_AngleDimensionID</code> row of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>) says the note and base fields can be modified, but Archicad 29 keeps <code>base[].loc</code>, <code>pos</code> and <code>radius</code> of <code>API_AngleDimensionType</code> as they were, also with each point marked in the mask, while the pen and the text change.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Set the position or the offset of a stair's walking line</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_StairType</code> has <code>walkingLinePosition</code> (<code>API_LinePositionID</code>: <code>APILP_Left</code>, <code>APILP_Right</code>, <code>APILP_Center</code>, <code>APILP_Auto</code>) and <code>walkingLineOffset</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30), but <code>API_StairID</code> has no row in the supported types of <code>ACAPI_Element_Change</code> (<code>ACAPinc.h</code>), and Archicad 29 keeps a default straight stair at Center, 0.6 m after <a href="../archicad-addon/#ModifyStairs">ModifyStairs</a> asks for Left 0.35 m or Right, although ModifyStairs reports success. The position of the walking line symbol (<code>walkLineSymbPos</code>), on the other hand, is changed.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Design options</th></tr>
                         <tr>
@@ -247,6 +289,13 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Database.h</code> has only <code>ACAPI_Navigator_GetSubSetDefault</code>, <code>ACAPI_Navigator_CreateSubSet</code> and <code>ACAPI_Navigator_GetSubSet</code> for <code>API_SubSet</code> (AC27&ndash;AC30; <code>APIDb_GetSubSetDefaultID</code>, <code>APIDb_CreateSubSetID</code> and <code>APIDb_GetSubSetID</code> in AC25&ndash;AC26). No function changes the settings of an existing subset.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2702">#2702</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Make a 3D style the current one</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Give a view the 3D style with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) and open that view with <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, from Archicad 27).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_View_SetCurrent3DStyle</code> (<code>ACAPI_Environment.h</code>, AC29 and AC30; <code>APIEnv_SetCurrent3DStyleID</code> in AC25) stops Archicad 29 with the ODB assertion &ldquo;can't open modification scope inside transaction&rdquo; when it is called from a JSON command, inside <code>ACAPI_CallUndoableCommand</code> or from <code>ACAPI_AddOnAddOnCommunication_CallFromEventLoop</code>, and an add-on menu command hits the same assertion. <code>API_NavigatorView::d3styleName</code> holds a view&rsquo;s 3D style: on Archicad 29, a view given a style with SetViewSettings and opened with ChangeWindow makes that style the current one. Archicad 30 is untested.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Project and files</th></tr>

@@ -44,6 +44,22 @@
         'Das Grundrisssymbol eines Geländers lesen oder einstellen: seine Bruchlinie, welche Symbolkomponenten es zeigt, deren 2D-Attribute und die Symbolüberschreibungen',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lesen Sie den Umriss der Decke mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus und erstellen Sie mit <a href="../archicad-addon/#CreateRailings">CreateRailings</a> ein statisches Geländer entlang der Kante. Wenn sich die Decke ändert, löschen Sie das Geländer und erstellen Sie es neu.',
+    'Move a window or door into another wall': 'Ein Fenster oder eine Tür in eine andere Wand verschieben',
+    'Delete it and create it in the other wall with <a href="../archicad-addon/#CreateWindows">CreateWindows</a> or <a href="../archicad-addon/#CreateDoors">CreateDoors</a>; a favorite (<code>favoriteName</code>) gives it the same settings.':
+        'Löschen Sie das Element und erstellen Sie es mit <a href="../archicad-addon/#CreateWindows">CreateWindows</a> oder <a href="../archicad-addon/#CreateDoors">CreateDoors</a> in der anderen Wand neu; ein Favorit (<code>favoriteName</code>) gibt ihm dieselben Einstellungen.',
+    'Move a skylight onto another roof or shell': 'Ein Dachfenster auf ein anderes Dach oder eine andere Schale verschieben',
+    'Delete it and create it on the other roof or shell with <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a>.':
+        'Löschen Sie es und erstellen Sie es mit <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a> auf dem anderen Dach oder der anderen Schale neu.',
+    'Turn an automatic zone into a manual one': 'Eine automatische Zone in eine manuelle umwandeln',
+    'Delete the zone and create it again as a manual zone, from its polygon, with <a href="../archicad-addon/#CreateZones">CreateZones</a>.':
+        'Löschen Sie die Zone und erstellen Sie sie mit <a href="../archicad-addon/#CreateZones">CreateZones</a> aus ihrem Polygon als manuelle Zone neu.',
+    'Change the height of a slanted curtain wall': 'Die Höhe einer geneigten Vorhangfassade ändern',
+    'Create it again with <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a>, with its <code>angle</code> and the new <code>height</code>.':
+        'Erstellen Sie sie mit <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a> neu, mit ihrem <code>angle</code> und der neuen <code>height</code>.',
+    'Move the lines or the arc of an angle dimension': 'Die Linien oder den Bogen einer Winkelbemaßung verschieben',
+    'Delete it and create it again with <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a>.':
+        'Löschen Sie sie und erstellen Sie sie mit <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a> neu.',
+    'Set the position or the offset of a stair\'s walking line': 'Die Lage oder den Versatz der Lauflinie einer Treppe festlegen',
 
     // Design options
     'Design options': 'Varianten',
@@ -74,6 +90,9 @@
     'Change, rename or create a stored Model View Options combination':'Eine gespeicherte Kombination der Model View Options ändern, umbenennen oder anlegen',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Lesen Sie die Kombinationen mit <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; ändern Sie die Optionen des aktuellen Fensters mit <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.',
+    'Make a 3D style the current one': 'Einen 3D-Stil zum aktuellen machen',
+    'Give a view the 3D style with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) and open that view with <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, from Archicad 27).':
+        'Geben Sie einem Ausschnitt den 3D-Stil mit <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) und öffnen Sie diesen Ausschnitt mit <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, ab Archicad 27).',
 
     // Project and files
     'Project and files': 'Projekt und Dateien',

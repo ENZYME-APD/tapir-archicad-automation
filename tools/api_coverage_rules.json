@@ -183,7 +183,9 @@
             "ACAPI::MEP::PhysicalSystem::Create": "has no id getter for the new system; CreateMEPPhysicalSystems uses SystemGroup::Modifier::Add, which returns the new id directly",
             "ACAPI::MEP::Bend::Modify": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
             "ACAPI_ElemComponent_GetPropertyValue": "Archicad 25/26 only; returns the same component property values as ACAPI_ElemComponent_GetPropertyValuesByGuid, which GetPropertyValuesOfElementComponents uses (#1019)",
-            "ACAPI_ElemComponent_GetPropertyValues": "Archicad 25/26 only; returns the same component property values as ACAPI_ElemComponent_GetPropertyValuesByGuid, which GetPropertyValuesOfElementComponents uses (#1019)"
+            "ACAPI_ElemComponent_GetPropertyValues": "Archicad 25/26 only; returns the same component property values as ACAPI_ElemComponent_GetPropertyValuesByGuid, which GetPropertyValuesOfElementComponents uses (#1019)",
+            "ACAPI_Grouping_GetMainGroupGuid": "answers APIERR_BADID for every group guid and NoError with a null guid for an element on Archicad 29 (29.0.0 5101; #2643); GetMainGroups finds the top level group with ACAPI_Grouping_GetRootGroup of a member instead (fc0c3016)",
+            "ACAPI_View_SetCurrent3DStyle": "stops Archicad 29 with the ODB assertion 'can't open modification scope inside transaction' from a JSON command, inside ACAPI_CallUndoableCommand and from ACAPI_AddOnAddOnCommunication_CallFromEventLoop (154b83aa); an add-on menu command hits the same assertion (29.0.0 5101). SetCurrent3DStyle refuses instead; a view's 3D style is set with SetViewSettings"
         },
         "patterns": {}
     }
