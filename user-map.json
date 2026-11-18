@@ -1,9 +1,9 @@
 {
  "version": 1,
- "generatedAt": "2026-11-17T12:02:58Z",
+ "generatedAt": "2026-11-18T11:52:38Z",
  "totals": {
-  "people": 45,
-  "places": 43,
+  "people": 46,
+  "places": 44,
   "countries": 29
  },
  "places": [
@@ -94,6 +94,15 @@
    "lat": 60.17,
    "lon": 24.94,
    "people": 1
+  },
+  {
+   "name": "Hungary",
+   "country": "Hungary",
+   "countryCode": "HU",
+   "lat": 47.18,
+   "lon": 19.51,
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "Italy",
@@ -379,6 +388,11 @@
    "people": 3
   },
   {
+   "name": "Hungary",
+   "code": "HU",
+   "people": 3
+  },
+  {
    "name": "Spain",
    "code": "ES",
    "people": 3
@@ -391,11 +405,6 @@
   {
    "name": "Finland",
    "code": "FI",
-   "people": 2
-  },
-  {
-   "name": "Hungary",
-   "code": "HU",
    "people": 2
   },
   {
@@ -512,6 +521,7 @@
  "geocodeVersion": 2,
  "geocode": {
   "a spanish fella in hong kong": null,
+  "architect from dortmund/germany says 'hallo'": null,
   "austria, klagenfurt": {
    "name": "Klagenfurt am Wörthersee",
    "country": "Austria",
@@ -579,6 +589,7 @@
    "lon": 77.22,
    "kind": "settlement"
   },
+  "dortmund/germany says 'hallo'": null,
   "espoo, finland": {
    "name": "Espoo",
    "country": "Finland",
@@ -619,8 +630,17 @@
    "lon": 24.94,
    "kind": "settlement"
   },
+  "hi, architect from prague, cz here": null,
   "hi, singapore. / student": null,
   "hi. argentina - la plata capital": null,
+  "hungary": {
+   "name": "Hungary",
+   "country": "Hungary",
+   "countryCode": "HU",
+   "lat": 47.18,
+   "lon": 19.51,
+   "kind": "country"
+  },
   "italy": {
    "name": "Italy",
    "country": "Italy",
@@ -751,6 +771,7 @@
    "lon": 16.93,
    "kind": "settlement"
   },
+  "prague, cz here": null,
   "prishtina, kosovo": {
    "name": "Prishtinë",
    "country": "Kosovo",

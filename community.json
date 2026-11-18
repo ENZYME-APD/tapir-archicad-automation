@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-17T11:48:21Z",
+ "generatedAt": "2026-11-18T11:37:17Z",
  "months": [
   {
    "month": "2022-07",
@@ -421,13 +421,13 @@
  ],
  "totals": {
   "commits": 1355,
-  "discordMessages": 12194,
-  "discordMembers": 670,
+  "discordMessages": 12267,
+  "discordMembers": 676,
   "discordMembersChange": {
-   "diff": 30,
-   "days": 11
+   "diff": 36,
+   "days": 12
   },
-  "participants": 506
+  "participants": 512
  },
  "topContributors": [
   {
@@ -440,8 +440,8 @@
   {
    "name": "archispatialist",
    "login": "archispatialist",
-   "commits": 115,
-   "reports": 181,
+   "commits": 120,
+   "reports": 182,
    "tests": 0
   },
   {
@@ -673,6 +673,13 @@
    "tests": 0
   },
   {
+   "name": "akakaiju",
+   "login": "akakaiju",
+   "commits": 2,
+   "reports": 2,
+   "tests": 0
+  },
+  {
    "name": "ChrisCatd",
    "login": "chriscatd",
    "commits": 2,
@@ -696,13 +703,6 @@
   {
    "name": "gustavodazarq-blip",
    "login": "gustavodazarq-blip",
-   "commits": 0,
-   "reports": 4,
-   "tests": 0
-  },
-  {
-   "name": "LuisaRaadius",
-   "login": "LuisaRaadius",
    "commits": 0,
    "reports": 4,
    "tests": 0
@@ -756,6 +756,10 @@
   {
    "date": "2026-11-17",
    "members": 670
+  },
+  {
+   "date": "2026-11-18",
+   "members": 676
   }
  ]
 }
