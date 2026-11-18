@@ -1638,6 +1638,45 @@ private:
     GS::HashSet<API_Guid> zoneStampGuids;
 };
 
+// The owners of elemType of the section elements of the current database. A section, elevation or
+// interior elevation database holds no model elements, only the section elements drawn from them, so
+// listing a model element type there finds nothing, while a listing of every type (GetAllElements)
+// reports the owner of each section element (#2948). This gives the listings of one type the same
+// owners. Empty in a database without section elements (the floor plan, a layout, a worksheet).
+static GS::Array<API_Guid> GetOwnersOfSectionElementsOfType (API_ElemTypeID elemType, API_ElemFilterFlags filterFlags)
+{
+    GS::Array<API_Guid> owners;
+    if (elemType == API_ZombieElemID || elemType == API_SectElemID) {
+        return owners;
+    }
+
+    GS::Array<API_Guid> sectionElements;
+    if (ACAPI_Element_GetElemList (API_SectElemID, &sectionElements, filterFlags) != NoError) {
+        return owners;
+    }
+
+    GS::HashSet<API_Guid> ownerSet;
+    for (const API_Guid& sectionElementGuid : sectionElements) {
+        API_Element element = {};
+        element.header.guid = sectionElementGuid;
+        if (ACAPI_Element_Get (&element) != NoError) {
+            continue;
+        }
+#ifdef ServerMainVers_2600
+        const API_ElemTypeID ownerType = GetElemTypeId (element.sectElem.parentType);
+#else
+        const API_ElemTypeID ownerType = element.sectElem.parentID;
+#endif
+        const API_Guid ownerGuid = element.sectElem.parentGuid;
+        if (ownerType != elemType || ownerGuid == APINULLGuid || ownerSet.Contains (ownerGuid)) {
+            continue;
+        }
+        ownerSet.Add (ownerGuid);
+        owners.Push (ownerGuid);
+    }
+    return owners;
+}
+
 template <typename ListProxyType>
 static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& parameters, ListProxyType& elementsListProxy)
 {
@@ -1672,12 +1711,25 @@ static GSErrCode GetElementsFromCurrentDatabase (const GS::ObjectState& paramete
     if (skipSubElemObjects) {
         subElemObjectChecker.ReadZoneStamps ();
     }
+    GS::HashSet<API_Guid> listedGuids;
     for (const API_Guid& elemGuid : elemList) {
         const API_Guid parentGuid = GetParentElemOfSectElem (elemGuid);
         if (skipSubElemObjects && subElemObjectChecker.IsSubElemObject (parentGuid)) {
             continue;
         }
+        if (!listedGuids.Contains (parentGuid)) {
+            listedGuids.Add (parentGuid);
+        }
         elementsListProxy (CreateElementIdObjectState (parentGuid));
+    }
+
+    // In a section or elevation database the elements of the type are found through their section elements.
+    for (const API_Guid& ownerGuid : GetOwnersOfSectionElementsOfType (elemType, filterFlags)) {
+        if (listedGuids.Contains (ownerGuid) || (skipSubElemObjects && subElemObjectChecker.IsSubElemObject (ownerGuid))) {
+            continue;
+        }
+        listedGuids.Add (ownerGuid);
+        elementsListProxy (CreateElementIdObjectState (ownerGuid));
     }
     return NoError;
 }
@@ -15102,6 +15154,10 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetInputParametersSche
                 "type": "integer",
                 "description": "Maximum number of matching elements to list. The count is still the total number of matches.",
                 "minimum": 1
+            },
+            "databases": {
+                "$ref": "#/Databases",
+                "description": "Optional. The databases to search, as GetDatabases lists them; an element found in more than one is counted once. If omitted, the current database is searched: the floor plan, or in a section or elevation window the model elements it shows."
             }
         },
         "additionalProperties": false
@@ -15120,6 +15176,10 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetRawResponseSchema (
             "elements": {
                 "$ref": "#/Elements",
                 "description": "List of matching elements."
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults",
+                "description": "Only when databases is given: whether each database could be searched, in the order of databases."
             }
         },
         "additionalProperties": false,
@@ -15329,20 +15389,9 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
         }
     }
 
-    GS::Array<API_Guid> candidateGuids;
-    if (elementFilter.types.GetSize () == 1) {
-        ACAPI_Element_GetElemList (elementFilter.types[0], &candidateGuids, filterFlags);
-    } else {
-        ACAPI_Element_GetElemList (API_ZombieElemID, &candidateGuids, filterFlags);
-    }
-
     // Only a listing that can contain Objects can contain sub-element objects.
     const bool skipSubElemObjects = !includeSubElemObjects &&
         (elementFilter.types.IsEmpty () || elementFilter.types.Contains (API_ObjectID));
-    SubElemObjectChecker subElemObjectChecker;
-    if (skipSubElemObjects) {
-        subElemObjectChecker.ReadZoneStamps ();
-    }
 
     GS::Array<API_Guid> propGuidsToFetch;
     for (const auto& crit : criteriaList) {
@@ -15354,97 +15403,146 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
     GS::ObjectState response;
     auto elementsAdder = response.AddList<GS::ObjectState> ("elements");
     Int32 matchCount = 0;
+    // An element found in more than one of the given databases is counted once.
+    GS::HashSet<API_Guid> evaluatedGuids;
 
-    for (const API_Guid& elemGuid : candidateGuids) {
-        API_Elem_Head head = {};
-        head.guid = elemGuid;
-        if (ACAPI_Element_GetHeader (&head) != NoError) {
-            continue;
+    const auto evaluateCurrentDatabase = [&] () -> GSErrCode {
+        // As in GetAllElements, a section element of a section or elevation database stands for the
+        // model element it was drawn from, so the criteria are evaluated on that owner (#2948).
+        GS::Array<API_Guid> candidateGuids;
+        if (elementFilter.types.GetSize () == 1) {
+            ACAPI_Element_GetElemList (elementFilter.types[0], &candidateGuids, filterFlags);
+            candidateGuids.Append (GetOwnersOfSectionElementsOfType (elementFilter.types[0], filterFlags));
+        } else {
+            GS::Array<API_Guid> elemList;
+            ACAPI_Element_GetElemList (API_ZombieElemID, &elemList, filterFlags);
+            for (const API_Guid& elemGuid : elemList) {
+                candidateGuids.Push (GetParentElemOfSectElem (elemGuid));
+            }
         }
 
-        if (!elementFilter.Matches (head)) {
-            continue;
+        SubElemObjectChecker subElemObjectChecker;
+        if (skipSubElemObjects) {
+            subElemObjectChecker.ReadZoneStamps ();
         }
 
-        if (skipSubElemObjects && subElemObjectChecker.IsSubElemObject (elemGuid)) {
-            continue;
-        }
+        for (const API_Guid& elemGuid : candidateGuids) {
+            if (evaluatedGuids.Contains (elemGuid)) {
+                continue;
+            }
+            evaluatedGuids.Add (elemGuid);
 
-        if (!criteriaList.IsEmpty ()) {
-            GS::Array<API_Property> fetchedProperties;
-            GSErrCode propErr = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, propGuidsToFetch, fetchedProperties);
-            if (propErr != NoError) {
+            API_Elem_Head head = {};
+            head.guid = elemGuid;
+            if (ACAPI_Element_GetHeader (&head) != NoError) {
                 continue;
             }
 
-            GS::HashTable<API_Guid, const API_Property*> propMap;
-            for (const API_Property& fp : fetchedProperties) {
-                propMap.Add (fp.definition.guid, &fp);
+            if (!elementFilter.Matches (head)) {
+                continue;
             }
 
-            bool allCriteriaPassed = true;
-            for (const auto& crit : criteriaList) {
-                const API_Property* prop = propMap.ContainsKey (crit.propertyGuid) ? propMap[crit.propertyGuid] : nullptr;
+            if (skipSubElemObjects && subElemObjectChecker.IsSubElemObject (elemGuid)) {
+                continue;
+            }
 
-                // Not available: the property does not apply to this element.
-                const bool isNotAvailable = (prop == nullptr || prop->status == API_Property_NotAvailable);
-                // Not evaluated is neither a value nor user undefined.
-                const bool isNotEvaluated = (!isNotAvailable && prop->status == API_Property_NotEvaluated);
-                const bool isUserUndefined = (!isNotAvailable && !isNotEvaluated && prop->value.variantStatus == API_VariantStatusUserUndefined);
-                const bool hasValue = (!isNotAvailable && !isNotEvaluated && !isUserUndefined);
+            if (!criteriaList.IsEmpty ()) {
+                GS::Array<API_Property> fetchedProperties;
+                GSErrCode propErr = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, propGuidsToFetch, fetchedProperties);
+                if (propErr != NoError) {
+                    continue;
+                }
 
-                bool passed = false;
-                switch (crit.op) {
-                    case CriterionOperator::IsNotAvailable:  passed = isNotAvailable; break;
-                    case CriterionOperator::IsUserUndefined: passed = isUserUndefined; break;
-                    case CriterionOperator::HasValue:        passed = hasValue; break;
-                    case CriterionOperator::IsDefault:       passed = !isNotAvailable && prop->isDefault; break;
-                    case CriterionOperator::HasCustomValue:  passed = !isNotAvailable && !isNotEvaluated && !prop->isDefault; break;
-                    default:
-                        // Comparisons only match real values.
-                        if (!hasValue) {
+                GS::HashTable<API_Guid, const API_Property*> propMap;
+                for (const API_Property& fp : fetchedProperties) {
+                    propMap.Add (fp.definition.guid, &fp);
+                }
+
+                bool allCriteriaPassed = true;
+                for (const auto& crit : criteriaList) {
+                    const API_Property* prop = propMap.ContainsKey (crit.propertyGuid) ? propMap[crit.propertyGuid] : nullptr;
+
+                    // Not available: the property does not apply to this element.
+                    const bool isNotAvailable = (prop == nullptr || prop->status == API_Property_NotAvailable);
+                    // Not evaluated is neither a value nor user undefined.
+                    const bool isNotEvaluated = (!isNotAvailable && prop->status == API_Property_NotEvaluated);
+                    const bool isUserUndefined = (!isNotAvailable && !isNotEvaluated && prop->value.variantStatus == API_VariantStatusUserUndefined);
+                    const bool hasValue = (!isNotAvailable && !isNotEvaluated && !isUserUndefined);
+
+                    bool passed = false;
+                    switch (crit.op) {
+                        case CriterionOperator::IsNotAvailable:  passed = isNotAvailable; break;
+                        case CriterionOperator::IsUserUndefined: passed = isUserUndefined; break;
+                        case CriterionOperator::HasValue:        passed = hasValue; break;
+                        case CriterionOperator::IsDefault:       passed = !isNotAvailable && prop->isDefault; break;
+                        case CriterionOperator::HasCustomValue:  passed = !isNotAvailable && !isNotEvaluated && !prop->isDefault; break;
+                        default:
+                            // Comparisons only match real values.
+                            if (!hasValue) {
+                                break;
+                            }
+                            if (crit.compareNumbers) {
+                                const double actual = GetNumericPropertyValue (*prop);
+                                switch (crit.op) {
+                                    case CriterionOperator::Equals:         passed = AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                    case CriterionOperator::NotEquals:      passed = !AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                    case CriterionOperator::GreaterThan:    passed = actual > crit.numericValue && !AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                    case CriterionOperator::LessThan:       passed = actual < crit.numericValue && !AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                    case CriterionOperator::GreaterOrEqual: passed = actual > crit.numericValue || AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                    case CriterionOperator::LessOrEqual:    passed = actual < crit.numericValue || AreCriterionNumbersEqual (actual, crit.numericValue); break;
+                                    default: break;
+                                }
+                            } else {
+                                GS::UniString actualStr;
+                                GetPropertyValueString (*prop, actualStr);
+                                const GS::UniString actualLower = GetLowerCasedString (actualStr);
+                                switch (crit.op) {
+                                    case CriterionOperator::Equals:    passed = actualLower == crit.expectedValueLower; break;
+                                    case CriterionOperator::NotEquals: passed = actualLower != crit.expectedValueLower; break;
+                                    case CriterionOperator::Contains:  passed = actualLower.Contains (crit.expectedValueLower); break;
+                                    default: break;
+                                }
+                            }
                             break;
-                        }
-                        if (crit.compareNumbers) {
-                            const double actual = GetNumericPropertyValue (*prop);
-                            switch (crit.op) {
-                                case CriterionOperator::Equals:         passed = AreCriterionNumbersEqual (actual, crit.numericValue); break;
-                                case CriterionOperator::NotEquals:      passed = !AreCriterionNumbersEqual (actual, crit.numericValue); break;
-                                case CriterionOperator::GreaterThan:    passed = actual > crit.numericValue && !AreCriterionNumbersEqual (actual, crit.numericValue); break;
-                                case CriterionOperator::LessThan:       passed = actual < crit.numericValue && !AreCriterionNumbersEqual (actual, crit.numericValue); break;
-                                case CriterionOperator::GreaterOrEqual: passed = actual > crit.numericValue || AreCriterionNumbersEqual (actual, crit.numericValue); break;
-                                case CriterionOperator::LessOrEqual:    passed = actual < crit.numericValue || AreCriterionNumbersEqual (actual, crit.numericValue); break;
-                                default: break;
-                            }
-                        } else {
-                            GS::UniString actualStr;
-                            GetPropertyValueString (*prop, actualStr);
-                            const GS::UniString actualLower = GetLowerCasedString (actualStr);
-                            switch (crit.op) {
-                                case CriterionOperator::Equals:    passed = actualLower == crit.expectedValueLower; break;
-                                case CriterionOperator::NotEquals: passed = actualLower != crit.expectedValueLower; break;
-                                case CriterionOperator::Contains:  passed = actualLower.Contains (crit.expectedValueLower); break;
-                                default: break;
-                            }
-                        }
+                    }
+
+                    if (!passed) {
+                        allCriteriaPassed = false;
                         break;
+                    }
                 }
 
-                if (!passed) {
-                    allCriteriaPassed = false;
-                    break;
+                if (!allCriteriaPassed) {
+                    continue;
                 }
             }
 
-            if (!allCriteriaPassed) {
-                continue;
+            // count is the total number of matches; limit only caps the listed elements.
+            matchCount++;
+            if (!countOnly && (!hasLimit || matchCount <= limit)) {
+                elementsAdder (CreateElementIdObjectState (elemGuid));
             }
         }
+        return NoError;
+    };
 
-        // count is the total number of matches; limit only caps the listed elements.
-        matchCount++;
-        if (!countOnly && (!hasLimit || matchCount <= limit)) {
-            elementsAdder (CreateElementIdObjectState (elemGuid));
+    GS::Array<GS::ObjectState> databases;
+    if (!parameters.Get ("databases", databases) || databases.IsEmpty ()) {
+        evaluateCurrentDatabase ();
+    } else {
+        const auto& executionResultForDatabases = response.AddList<GS::ObjectState> ("executionResultForDatabases");
+        const GS::Array<API_Guid> databaseIds = databases.Transform<API_Guid> (GetGuidFromDatabaseArrayItem);
+
+        auto actionSuccess = [&]() -> void {
+            executionResultForDatabases (CreateSuccessfulExecutionResult ());
+        };
+        auto actionFailure = [&](GSErrCode err, const GS::UniString& errMsg) -> void {
+            executionResultForDatabases (CreateFailedExecutionResult (err, errMsg));
+        };
+
+        const GSErrCode err = ExecuteActionForEachDatabase (databaseIds, evaluateCurrentDatabase, actionSuccess, actionFailure);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrieve the starting database or to switch back to it after execution.");
         }
     }
 
