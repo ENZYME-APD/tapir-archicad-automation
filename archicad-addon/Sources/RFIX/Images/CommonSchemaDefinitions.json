@@ -15675,6 +15675,11 @@
                 "type": "number",
                 "description": "The offset of the baseline from that edge (API_StairType::baselineOffset)."
             },
+            "inputDirection": {
+                "type": "string",
+                "enum": [ "Upward", "Inverse" ],
+                "description": "The walking direction along the baseline, as CreateStairs and ModifyStairs take it."
+            },
             "leftBoundary": {
                 "$ref": "#/StairBoundary",
                 "description": "The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it."

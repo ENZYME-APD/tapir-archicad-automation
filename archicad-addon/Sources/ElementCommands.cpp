@@ -4602,6 +4602,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("isMirrored", IsStairPlaneMirrored (elem.stair.basePlane));
                 typeSpecificDetails.Add ("baselinePosition", StairLinePositionToString (elem.stair.baselinePosition));
                 typeSpecificDetails.Add ("baselineOffset", elem.stair.baselineOffset);
+                typeSpecificDetails.Add ("inputDirection", GS::UniString (elem.stair.inputDirection == APISD_Inverse ? "Inverse" : "Upward"));
                 AddStairOutlineFromMemo (elem.header.guid, elem.stair.basePlane, typeSpecificDetails);
                 {
                     GS::ObjectState linkOS;
