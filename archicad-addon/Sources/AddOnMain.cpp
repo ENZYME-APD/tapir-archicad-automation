@@ -1033,6 +1033,8 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
             elementCommands, "1.5.7",
             "Gets all the GDL parameters (name, type, value) of the given elements. "
+            "parameterNames returns only the named parameters, and includePossibleValues false leaves out the value lists "
+            "(which for font parameters list every installed font), for a much smaller answer. "
             "For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), "
             "which have no parameter session in the Archicad API, the parameters are read from the component itself: "
             "isLocked is then always false and possibleValues is not given."
