@@ -181,7 +181,7 @@ Spacing stays in `px` (so the Display menu's Text size changes text only).
 | Section head to content | 40 px | 20 px |
 | Space between two blocks inside a section | 32 px (24 px after a grid or a `.flow`, 12 px between the first blocks of a page body): `.gap-top`, `.gap-top-sm`, `.gap-top-xs` | the same |
 | Gap between cards in a grid | 20 px | 16 px |
-| Card padding (`.way`, `.teaser`, `.share-steps li`) | 24 px | 18 px |
+| Card padding (`.way`, `.teaser`, `.share-steps li`, `.timeline > li`) | 24 px | 18 px |
 | Cell padding (`.flow`, `.uses-grid`, `.figures`, `.spec`) | 20 px | 16 px |
 | Footer | 72 px above | 40 px |
 
@@ -247,7 +247,7 @@ Use these from `site.css` before making a new one; a new component that a second
 | Uses grid | `ul.uses-grid` (4 columns) or `.uses-grid.three` | Short facts in a frame of cells |
 | Figures | `.figures > div > strong + span` | Live numbers |
 | Flow | `.flow` (5), `.flow-3`, `.flow-4` `> div > b + strong + span`; `.flow.steps` when `b` is a step number | A short sequence or a set of parallel points |
-| Timeline | `ol.timeline > li > span.n + .body` | Numbered steps with a paragraph or more each |
+| Timeline | `ol.timeline > li > span.n + .body` | Numbered steps with a paragraph or more each: one card per step, as the share steps' cards, the number beside the text (above it on phones) |
 | Share steps | `.share-steps ol > li > b + strong + span` | Three big numbered steps |
 | Schedule | `.schedule-wrap > table.schedule` | Tables; on phones each row is a card (`data-label` on each cell) |
 | Spec | `.spec > dl` | Key/value facts of one item |
@@ -369,6 +369,11 @@ and the coverage pages' section heads end in `<em>…</em>.`.
 **Step numbers drawn three ways** (#2884): fixed. The timeline's numbers were 4.5 rem, the numbered
 flows' small mono capitals and only the share steps' 3 rem; all three now use the share steps' number
 (section 8).
+
+**Two layouts for numbered steps** (#2942): fixed. The timeline drew its steps as rows between lines
+and only the share steps drew them as cards; every timeline step (Get started, Grasshopper, Roadmap,
+the tutorials) is now a card like the share steps', and a code box's title bar wraps on a phone
+instead of running past the box.
 
 **Page stylesheets that still draw the Legacy look in Standard**: fixed in part 4. The community map,
 the coverage pages' phone filter sheet and the floor plan's Run button have their Standard rules.
