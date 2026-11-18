@@ -74,6 +74,11 @@
           "name": "baseline offset read as created"
         },
         {
+          "path": "detailsOfElements[0].details.inputDirection",
+          "eq": "Upward",
+          "name": "the stair rises from the first point of its baseline"
+        },
+        {
           "path": "detailsOfElements[0].details.leftBoundary.points",
           "len": 2,
           "name": "left boundary of a straight flight has two points"
