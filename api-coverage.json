@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 13:22 UTC",
+ "generatedAt": "2026-11-18 14:21 UTC",
  "versions": [
   25,
   26,
@@ -5851,6 +5851,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2939,
+     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+    },
+    {
      "number": 2935,
      "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
     },
@@ -8262,6 +8266,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2939,
+     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+    },
     {
      "number": 2935,
      "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
@@ -26095,6 +26103,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2938,
+     "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
+    },
+    {
+     "number": 2937,
+     "title": "[1/3] Grasshopper: stair baselines from Rhino curves (CreateStairs, SolveStairBaseline)"
+    },
+    {
      "number": 2934,
      "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
     },
@@ -31846,6 +31862,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2939,
+     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+    },
     {
      "number": 2935,
      "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
@@ -38464,6 +38484,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2938,
+     "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
+    },
+    {
+     "number": 2937,
+     "title": "[1/3] Grasshopper: stair baselines from Rhino curves (CreateStairs, SolveStairBaseline)"
+    },
     {
      "number": 2934,
      "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
@@ -45371,6 +45399,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2939,
+     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+    },
+    {
      "number": 2935,
      "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
     },
@@ -48625,6 +48657,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2939,
+     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+    },
     {
      "number": 2935,
      "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"

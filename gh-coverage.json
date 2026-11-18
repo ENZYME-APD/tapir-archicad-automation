@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-11-18 13:22 UTC",
+ "generatedAt": "2026-11-18 14:21 UTC",
  "counts": {
   "done": 788,
   "open": 14,
-  "claimed": 1,
+  "in progress": 1,
   "not applicable": 1
  },
  "parameters": {
@@ -3025,7 +3025,12 @@
    "missingParameters": [
     "additionalFields"
    ],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2939,
+     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+    }
+   ],
    "issues": [
     {
      "number": 2391,
@@ -8337,14 +8342,19 @@
    "group": "Element Commands",
    "version": "2.0.1",
    "brief": "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).",
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2938,
+     "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
+    }
+   ],
    "issues": [
     {
      "number": 2936,
