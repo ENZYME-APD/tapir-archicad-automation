@@ -15658,6 +15658,14 @@
                     "required": ["turnType", "landingStartEdgeOffset", "landingEndEdgeOffset", "minLandingStartEdgeOffset", "minLandingEndEdgeOffset"]
                 }
             },
+            "basePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "The stair's own coordinate system (API_StairType::basePlane), in model coordinates. Archicad keeps the baseline, the boundaries and the walking lines in it; the points reported here are already transformed by it (origin + x * xAxis + y * yAxis). A rotated stair has turned axes, a mirrored one axes of the other handedness (isMirrored)."
+            },
+            "isMirrored": {
+                "type": "boolean",
+                "description": "Whether the stair was mirrored, as its basePlane tells (xAxis and yAxis of the other handedness). Its left boundary is then on the right seen along the baseline, and its arcs bend the other way in its own coordinate system; the arcs reported are already turned back to model coordinates."
+            },
             "baselinePosition": {
                 "type": "string",
                 "enum": ["Left", "Right", "Center", "Auto", "Unknown"],
