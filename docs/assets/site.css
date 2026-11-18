@@ -312,9 +312,10 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 
 /* ---------- timeline, flow, stack ---------- */
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 }
-.timeline > li { display: grid; grid-template-columns: 96px 1fr; gap: 24px; padding-block: 32px; border-top: 1px solid var(--line) }
+.timeline > li { display: grid; grid-template-columns: 72px 1fr; gap: 24px; padding-block: 32px; border-top: 1px solid var(--line) }
 .timeline > li:first-child { border-top: 0; padding-top: 0 }
-.timeline .n { font: 900 4.5rem/.85 var(--display); color: var(--link); font-variant-numeric: lining-nums }
+/* One step number for every numbered list: the timeline, a numbered .flow (.flow.steps) and the share steps. */
+.timeline .n, .flow.steps b, .share-steps li b { font: 900 3rem/1 var(--display); color: var(--link); font-variant-numeric: lining-nums; text-transform: none }
 .timeline h2, .timeline h3 { font-size: 1.875rem; font-weight: 700; margin-bottom: 4px }
 .timeline p, .timeline li li { color: var(--muted); max-width: 40em }
 .timeline .body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; align-content: start }
@@ -367,7 +368,6 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--muted) }
 .share-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .share-steps li { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 24px; display: grid; gap: 10px; align-content: start }
-.share-steps li b { font: 900 3rem/1 var(--display); color: var(--link) }
 .share-steps li strong { display: block; font: 700 1.375rem/1.2 var(--display) } .share-steps li span { color: var(--muted) }
 
 /* ---------- videos ---------- */
@@ -419,7 +419,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .tblock { grid-template-columns: 1fr 1fr } .tblock > div:first-child { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--line) }
     .tblock > div:nth-child(3) { border-right: 0 } .tblock > div:nth-child(-n+3) { border-bottom: 1px solid var(--line) }
     .flow, .flow.flow-3, .flow.flow-4 { grid-template-columns: 1fr } .flow > div { border-right: 0; border-bottom: 1px solid var(--line) } .flow > div:last-child { border-bottom: 0 }
-    .timeline > li { grid-template-columns: 56px 1fr; gap: 16px } .timeline .n { font-size: 3rem }
+    .timeline > li { grid-template-columns: 56px 1fr; gap: 16px }
     .timeline h2, .timeline h3 { font-size: 1.625rem }
     .site-header .right { margin-left: auto }
 }
@@ -682,7 +682,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) h1 em, :root:not([data-style="legacy"]) h2 em, :root:not([data-style="legacy"]) h3 em,
 :root:not([data-style="legacy"]) .h1 em { font-style: normal; font-weight: inherit; color: inherit }
 :root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .figures strong, :root:not([data-style="legacy"]) .timeline .n,
-:root:not([data-style="legacy"]) .share-steps li b, :root:not([data-style="legacy"]) .tblock .proj { font-weight: 700 }
+:root:not([data-style="legacy"]) .share-steps li b, :root:not([data-style="legacy"]) .flow.steps b,
+:root:not([data-style="legacy"]) .tblock .proj { font-weight: 700 }
 :root:not([data-style="legacy"]) .tagline, :root:not([data-style="legacy"]) .dim, :root:not([data-style="legacy"]) .figures span,
 :root:not([data-style="legacy"]) .way .who, :root:not([data-style="legacy"]) .schedule caption, :root:not([data-style="legacy"]) .schedule th,
 :root:not([data-style="legacy"]) .schedule .id, :root:not([data-style="legacy"]) .schedule tr.area th, :root:not([data-style="legacy"]) .spec dt,
@@ -941,13 +942,12 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     .way, .teaser { padding: 18px; gap: 10px }
     .teaser h3, .comm .way h3 { font-size: 1.375rem }
     .share-steps li { padding: 18px }
-    .share-steps li b { font-size: 2.25rem }
     .video .text { padding: 16px }
     .figures > div { padding: 16px }
     .figures strong { font-size: 2.25rem }
     .uses-grid li, .flow > div { padding: 16px }
     .timeline > li { padding-block: 20px }
-    .timeline .n { font-size: 2.25rem }
+    .timeline .n, .flow.steps b, .share-steps li b { font-size: 2.25rem }
     .timeline h2, .timeline h3 { font-size: 1.375rem }
     .prose > h3 { margin-top: 20px }
     .lead-out { margin-top: 20px }
