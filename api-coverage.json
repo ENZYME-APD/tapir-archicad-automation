@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 02:35 UTC",
+ "generatedAt": "2026-11-18 09:07 UTC",
  "versions": [
   25,
   26,
@@ -23599,7 +23599,12 @@
    "status": "not applicable",
    "reason": "add-on infrastructure (undo scopes, results)",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2929,
+     "title": "Archicad 30 macOS crash in ModifyMEPRoutingElements when moving routes connected through a piping tee"
+    }
+   ]
   },
   {
    "id": "ACAPI::CreateDesignOptionManager",

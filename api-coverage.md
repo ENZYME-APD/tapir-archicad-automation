@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-18 02:35 UTC.
+Archicad 25–30 DevKits; updated 2026-11-18 09:07 UTC.
 
 | | Status |
 |---|---|
@@ -2384,7 +2384,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI::CallDefaultModifier` <sub>AC27–30</sub> *(add-on infrastructure (undo scopes, results))*
 - ➖ `ACAPI::CallNotUndoableModifier` <sub>AC27–30</sub> *(add-on infrastructure (undo scopes, results))*
 - ➖ `ACAPI::CallUndoableCommand` <sub>AC27–30</sub> *(add-on infrastructure (undo scopes, results))*
-- ➖ `ACAPI::CallUndoableModifier` <sub>AC27–30</sub> *(add-on infrastructure (undo scopes, results))*
+- ➖ `ACAPI::CallUndoableModifier` <sub>AC27–30</sub> — [#2929](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2929 "Archicad 30 macOS crash in ModifyMEPRoutingElements when moving routes connected through a piping tee") *(add-on infrastructure (undo scopes, results))*
 - ✅ `ACAPI::CreateGSIDObject` <sub>AC28–30</sub>
 - ➖ `ACAPI::CreateInputHandler` <sub>AC28–30</sub> *(interactive input from the user)*
 - ✅ `ACAPI::CreateZoneLabelingSettings` <sub>AC28–30</sub>
