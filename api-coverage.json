@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 17:17 UTC",
+ "generatedAt": "2026-11-18 19:35 UTC",
  "versions": [
   25,
   26,
@@ -38488,6 +38488,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2947,
+     "title": "CreateLabels: keep the favorite's text content when no text or runs is given"
+    },
     {
      "number": 2938,
      "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
