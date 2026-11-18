@@ -42,7 +42,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             OutCurves(
                 "BaseLines",
-                "The baseline of each stair, with its arcs.");
+                "The baseline of each stair, with its arcs, from the bottom of the stair to its top.");
 
             OutCurves(
                 "LeftBoundaries",
@@ -104,12 +104,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 var left = ToOpenCurve(details["leftBoundary"], z);
                 var right = ToOpenCurve(details["rightBoundary"], z);
 
-                baseLines.Add(
-                    PolygonHelp.ToCurve(
-                        details["baseLinePoints"],
-                        details["baseLineArcs"],
-                        false,
-                        z));
+                var baseLine = PolygonHelp.ToCurve(
+                    details["baseLinePoints"],
+                    details["baseLineArcs"],
+                    false,
+                    z);
+
+                // baseLinePoints run from the top down on an Inverse stair;
+                // the boundaries and the walking line always run bottom-up.
+                if (baseLine != null &&
+                    details.Value<string>("inputDirection") == "Inverse")
+                {
+                    baseLine.Reverse();
+                }
+
+                baseLines.Add(baseLine);
                 leftBoundaries.Add(left);
                 rightBoundaries.Add(right);
                 walkingLines.Add(ToOpenCurve(details["walkingLine"], z));

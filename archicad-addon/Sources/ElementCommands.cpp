@@ -1181,8 +1181,8 @@ static void AddStairBaseLineSegmentsFromMemo (const API_StairPolylineData& baseL
 // the way CalculateStairBounds and GetSubelementsOfHierarchicalElements already read the
 // Stair's memo in this file. The arcs come back with the same 0-based indices as the
 // polygon arcs of the other element types.
-// On a placed stair the coords are relative to the stair's basePlane.basePoint (a stair
-// created at (110, 0) reads its baseline from (0, 0), #1561), so they are moved by origin
+// On a placed stair the coords are in the stair's basePlane (a stair created at (110, 0)
+// reads its baseline from (0, 0), #1561), so they are transformed by it (StairPlanToModel)
 // to report them in the same coordinates as CreateStairs takes them.
 // The going of a Stair (#823). API_StairType::treadDepth is not kept in step with the modeled
 // treads (Archicad 29 reads 0 on every placed stair, whatever its going, and 1 on some), so it
@@ -1251,7 +1251,29 @@ static GS::Optional<double> GetStairGoing (const API_Guid& guid, const API_Stair
     return length / stair.treadNum;
 }
 
-static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
+// The memo polylines of a stair (baseline, boundaries, walking lines) are in the stair's own
+// coordinate system, basePlane: a point is basePoint + x * axisX + y * axisY in model coordinates.
+// Adding only basePoint was right for a stair that is neither rotated nor mirrored; a mirrored
+// stair (axisY reversed) came back mirrored about its start point. A mirrored stair (axisX and
+// axisY of the opposite handedness) also bends its arcs the other way.
+static API_Coord StairPlanToModel (const API_Plane3D& plane, const API_Coord& c)
+{
+    return { plane.basePoint.x + c.x * plane.axisX.x + c.y * plane.axisY.x,
+             plane.basePoint.y + c.x * plane.axisX.y + c.y * plane.axisY.y };
+}
+
+static bool IsStairPlaneMirrored (const API_Plane3D& plane)
+{
+    return plane.axisX.x * plane.axisY.y - plane.axisX.y * plane.axisY.x < 0.0;
+}
+
+static GS::ObjectState CreateStairPlanArcObjectState (const API_Plane3D& plane, const API_PolyArc& arc)
+{
+    const double arcAngle = IsStairPlaneMirrored (plane) ? -arc.arcAngle : arc.arcAngle;
+    return GS::ObjectState ("begIndex", arc.begIndex - 1, "endIndex", arc.endIndex - 1, "arcAngle", arcAngle);
+}
+
+static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Plane3D& plane, GS::ObjectState& os)
 {
     const auto& coords = os.AddList<GS::ObjectState> ("baseLinePoints");
 
@@ -1268,8 +1290,7 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
         last = (*baseLine.pends)[1];
     }
     for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
-        const API_Coord& coord = (*baseLine.coords)[i];
-        coords (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
+        coords (Create2DCoordinateObjectState (StairPlanToModel (plane, (*baseLine.coords)[i])));
     }
 
     AddStairBaseLineSegmentsFromMemo (baseLine, last < nCoords ? last : nCoords - 1, os);
@@ -1283,7 +1304,7 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
     }
     const auto& arcs = os.AddList<GS::ObjectState> ("baseLineArcs");
     for (GSIndex i = 0; i < nArcs; ++i) {
-        arcs (CreatePolyArcObjectState ((*baseLine.parcs)[i]));
+        arcs (CreateStairPlanArcObjectState (plane, (*baseLine.parcs)[i]));
     }
 }
 
@@ -1303,7 +1324,7 @@ static GSIndex GetStairMemoPolylineLast (API_Coord** coords, Int32** pends)
 }
 
 // The arcs of a stair memo polyline whose both ends are within its first polyline.
-static void AddStairMemoPolylineArcs (API_PolyArc** parcs, GSIndex last, GS::ObjectState& os)
+static void AddStairMemoPolylineArcs (const API_Plane3D& plane, API_PolyArc** parcs, GSIndex last, GS::ObjectState& os)
 {
     const auto& arcs = os.AddList<GS::ObjectState> ("arcs");
     if (parcs == nullptr) {
@@ -1313,15 +1334,15 @@ static void AddStairMemoPolylineArcs (API_PolyArc** parcs, GSIndex last, GS::Obj
     for (GSIndex i = 0; i < nArcs; ++i) {
         const API_PolyArc& arc = (*parcs)[i];
         if (arc.begIndex >= 1 && arc.endIndex <= last) {
-            arcs (CreatePolyArcObjectState (arc));
+            arcs (CreateStairPlanArcObjectState (plane, arc));
         }
     }
 }
 
 // A walking line of a stair (memo stairWalkingLine, stairCustomWalkLine, stairCenterWalkLine):
-// its points, moved by origin into model coordinates like the baseline, and its arcs.
+// its points in model coordinates like the baseline, and its arcs.
 // Not added when the memo has no such line.
-static void AddStairWalkingLineFromMemo (const API_StairPolylineData& line, const API_Coord& origin, const char* name, GS::ObjectState& os)
+static void AddStairWalkingLineFromMemo (const API_StairPolylineData& line, const API_Plane3D& plane, const char* name, GS::ObjectState& os)
 {
     const GSIndex last = GetStairMemoPolylineLast (line.coords, line.pends);
     if (last < 1) {
@@ -1330,10 +1351,9 @@ static void AddStairWalkingLineFromMemo (const API_StairPolylineData& line, cons
     GS::ObjectState lineOs;
     const auto& points = lineOs.AddList<GS::ObjectState> ("points");
     for (GSIndex i = 1; i <= last; ++i) {
-        const API_Coord& coord = (*line.coords)[i];
-        points (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
+        points (Create2DCoordinateObjectState (StairPlanToModel (plane, (*line.coords)[i])));
     }
-    AddStairMemoPolylineArcs (line.parcs, last, lineOs);
+    AddStairMemoPolylineArcs (plane, line.parcs, last, lineOs);
     os.Add (name, lineOs);
 }
 
@@ -1341,7 +1361,7 @@ static void AddStairWalkingLineFromMemo (const API_StairPolylineData& line, cons
 // the stair on that side, and whether each edge is visible (edgeData, aligned the way the baseline's
 // edgeData is). The vertexData zValue is not reported: Archicad 29 reads 0 at every point of a
 // rising stair, so it is not the elevation of the point.
-static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, const API_Coord& origin, const char* name, GS::ObjectState& os)
+static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, const API_Plane3D& plane, const char* name, GS::ObjectState& os)
 {
     const GSIndex last = GetStairMemoPolylineLast (boundary.coords, boundary.pends);
     if (last < 1) {
@@ -1353,10 +1373,9 @@ static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, con
     boundaryOs.Add ("isCustom", boundary.isCustom);
     const auto& points = boundaryOs.AddList<GS::ObjectState> ("points");
     for (GSIndex i = 1; i <= last; ++i) {
-        const API_Coord& coord = (*boundary.coords)[i];
-        points (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
+        points (Create2DCoordinateObjectState (StairPlanToModel (plane, (*boundary.coords)[i])));
     }
-    AddStairMemoPolylineArcs (boundary.parcs, last, boundaryOs);
+    AddStairMemoPolylineArcs (plane, boundary.parcs, last, boundaryOs);
     const auto& edges = boundaryOs.AddList<GS::ObjectState> ("edges");
     for (GSIndex i = 1; i < last && i < nEdgeData; ++i) {
         edges (GS::ObjectState ("visible", boundary.edgeData[i].visible));
@@ -1365,18 +1384,18 @@ static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, con
 }
 
 // The plan geometry of a stair that is not its baseline: its two boundaries and its walking lines.
-static void AddStairOutlineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
+static void AddStairOutlineFromMemo (const API_Guid& guid, const API_Plane3D& plane, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError) {
         return;
     }
-    AddStairBoundaryFromMemo (memo.stairBoundary[0], origin, "leftBoundary", os);
-    AddStairBoundaryFromMemo (memo.stairBoundary[1], origin, "rightBoundary", os);
-    AddStairWalkingLineFromMemo (memo.stairWalkingLine, origin, "walkingLine", os);
-    AddStairWalkingLineFromMemo (memo.stairCustomWalkLine, origin, "customWalkingLine", os);
-    AddStairWalkingLineFromMemo (memo.stairCenterWalkLine, origin, "centerWalkingLine", os);
+    AddStairBoundaryFromMemo (memo.stairBoundary[0], plane, "leftBoundary", os);
+    AddStairBoundaryFromMemo (memo.stairBoundary[1], plane, "rightBoundary", os);
+    AddStairWalkingLineFromMemo (memo.stairWalkingLine, plane, "walkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCustomWalkLine, plane, "customWalkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCenterWalkLine, plane, "centerWalkingLine", os);
 }
 
 // The section line and the depth line of a Section (CutPlane), or of an Elevation, live in the memo's
@@ -4574,10 +4593,17 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
-                AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+                AddStairBaseLineFromMemo (elem.header.guid, elem.stair.basePlane, typeSpecificDetails);
+                typeSpecificDetails.Add ("basePlane", GS::ObjectState (
+                    "origin", Create3DCoordinateObjectState (elem.stair.basePlane.basePoint),
+                    "xAxis", Create3DCoordinateObjectState ({ elem.stair.basePlane.axisX.x, elem.stair.basePlane.axisX.y, elem.stair.basePlane.axisX.z }),
+                    "yAxis", Create3DCoordinateObjectState ({ elem.stair.basePlane.axisY.x, elem.stair.basePlane.axisY.y, elem.stair.basePlane.axisY.z }),
+                    "zAxis", Create3DCoordinateObjectState ({ elem.stair.basePlane.axisZ.x, elem.stair.basePlane.axisZ.y, elem.stair.basePlane.axisZ.z })));
+                typeSpecificDetails.Add ("isMirrored", IsStairPlaneMirrored (elem.stair.basePlane));
                 typeSpecificDetails.Add ("baselinePosition", StairLinePositionToString (elem.stair.baselinePosition));
                 typeSpecificDetails.Add ("baselineOffset", elem.stair.baselineOffset);
-                AddStairOutlineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+                typeSpecificDetails.Add ("inputDirection", GS::UniString (elem.stair.inputDirection == APISD_Inverse ? "Inverse" : "Upward"));
+                AddStairOutlineFromMemo (elem.header.guid, elem.stair.basePlane, typeSpecificDetails);
                 {
                     GS::ObjectState linkOS;
                     linkOS.Add ("homeStoryDifference", (Int32) elem.stair.linkToSettings.homeStoryDifference);
