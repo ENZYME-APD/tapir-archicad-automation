@@ -122,6 +122,9 @@
     .hero h1 { margin-top: 12px; font-size: 2.75rem }
     .hero .lead { margin-top: 16px }
     .hero .ctas { margin-top: 24px }
+    /* The two installers are one under the other, each the column's width, so they are the same size
+       whatever their names' lengths (#2886). */
+    .hero .ctas .btn { flex: 1 1 100%; justify-content: center }
     .try { gap: 24px }
     .plan-card { box-shadow: var(--shadow-plan-small) }
 }

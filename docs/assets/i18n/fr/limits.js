@@ -88,6 +88,10 @@
         'Définir les valeurs des modificateurs de profil, ou la largeur et la hauteur étirées, d\'un mur, d\'une poutre ou d\'un poteau qui utilise un profil',
     'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
         'Lisez-les avec <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. Pour les changer, modifiez le profil avec <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (une copie pour ces éléments, ou le profil lui-même), ou réglez-les dans les paramètres de l\'élément dans Archicad.',
+    'Read or set how a grid element is shown in sections, elevations and interior elevations: its vertical extent and its markers at the top and bottom':
+        'Lire ou définir comment un élément de grille est affiché dans les coupes, les façades et les élévations intérieures : son étendue verticale et ses marqueurs en haut et en bas',
+    'Select the grid elements in Archicad and set it for all of them at once in their settings dialog.':
+        'Sélectionnez les éléments de grille dans Archicad et réglez-le pour tous à la fois dans leur boîte de dialogue de paramètres.',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         'Vous avez trouvé autre chose que l’API Archicad ne sait pas faire ? Signalez-le dans une issue, avec les en-têtes du DevKit que vous avez vérifiés, et ce sera ajouté ici. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Ouvrir une issue</a>'

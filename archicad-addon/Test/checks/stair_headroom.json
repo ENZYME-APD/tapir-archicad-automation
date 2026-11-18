@@ -1,0 +1,99 @@
+{
+  "title": "Stairs: CreateStairs and ModifyStairs write the headroom (method, height, left and right offset), and GetDetailsOfElements reads it back (#2857)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a stair with a 2.10 m headroom measured vertically",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 780.0, "y": 720.0 },
+              { "x": 786.0, "y": 720.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "headroom": {
+              "method": "VerticallyToSlope",
+              "height": 2.1,
+              "leftOffset": 0.05,
+              "rightOffset": 0.07
+            }
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "read the headroom back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.headroom.method", "eq": "VerticallyToSlope", "name": "method as created" },
+        { "path": "detailsOfElements[0].details.headroom.height", "approx": 2.1, "tol": 0.0001, "name": "height as created" },
+        { "path": "detailsOfElements[0].details.headroom.leftOffset", "approx": 0.05, "tol": 0.0001, "name": "left offset as created" },
+        { "path": "detailsOfElements[0].details.headroom.rightOffset", "approx": 0.07, "tol": 0.0001, "name": "right offset as created" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: a higher headroom at right angle to the slope, offsets not given",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "headroom": { "method": "RightAngleToSlope", "height": 2.3 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "headroom change accepted" }
+      ]
+    },
+    {
+      "id": "the new headroom reads back, the offsets kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.headroom.method", "eq": "RightAngleToSlope", "name": "new method" },
+        { "path": "detailsOfElements[0].details.headroom.height", "approx": 2.3, "tol": 0.0001, "name": "new height" },
+        { "path": "detailsOfElements[0].details.headroom.leftOffset", "approx": 0.05, "tol": 0.0001, "name": "left offset kept" },
+        { "path": "detailsOfElements[0].details.headroom.rightOffset", "approx": 0.07, "tol": 0.0001, "name": "right offset kept" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "tol": 0.0001, "name": "other settings kept" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: an unknown headroom key is refused",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "headroom": { "headroomHeight": 2.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" },
+        { "path": "executionResults[0].error.message", "contains": "headroomHeight", "name": "the error names the key" }
+      ]
+    },
+    {
+      "id": "the refused change wrote nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.headroom.height", "approx": 2.3, "tol": 0.0001, "name": "height unchanged" }
+      ]
+    }
+  ]
+}

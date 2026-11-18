@@ -752,7 +752,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
+            "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. A Stair returns the structure settings of each part and side (structures, with the monolith or side stringer data of its type), and a StairStructure subelement returns the same keys. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
@@ -1098,7 +1098,7 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.0",
             "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge "
             "and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, "
-            "the top link (relativeTopStory, topOffset), the Rules and Standards, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
+            "the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
             "and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); "
             "settings not given come from the Stair tool defaults or the favorite."
         );
@@ -1212,11 +1212,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyAssociativeDimensionsCommand> (
             elementCommands, "2.0.0",
-            "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings."
+            "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings."
         );
         err |= RegisterCommand<GetDimensionDataCommand> (
             elementCommands, "1.5.0",
-            "Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen and frame, and the text content (measured value or custom text), superscript and whether the text was moved by hand."
+            "Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen, frame, font and style, and the text content (measured value or custom text), superscript and whether the text was moved by hand."
         );
         err |= RegisterCommand<GetOpeningTransformationsCommand> (
             elementCommands, "1.7.3",
@@ -1344,7 +1344,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
-            "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides, the custom surface of individual edges (edgeMaterials) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite."
+            "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides, the custom surface of individual edges (edgeMaterials) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) of Shell elements, the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), the profile, axis, revolution, begin, slant and shear angles and segments of revolved Shells, and the two profiles, their planes and the morphing rule of ruled Shells (keeping their GUID and base plane), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite."
         );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",
@@ -1391,14 +1391,14 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyStairsCommand> (
             elementCommands, "2.0.0",
-            "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the finish and structure visibility, "
+            "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, "
             "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, "
             "and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), "
             "and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on "
             "and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. "
             "CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. "
             "A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. "
-            "Not written by this command: the baseline with its landings and winders, the break marks, lines and fills of the floor plan symbol, and the headroom; "
+            "Not written by this command: the baseline with its landings and winders, and the break marks, lines and fills of the floor plan symbol; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
         err |= RegisterCommand<RecreateStairsCommand> (
@@ -2535,7 +2535,7 @@ GSErrCode Initialize (void)
         CommandGroup navigatorCommands ("Navigator Commands");
         err |= RegisterCommand<PublishPublisherSetCommand> (
             navigatorCommands, "0.1.0",
-            "Performs a publish operation on the currently opened project. Only the given publisher set will be published."
+            "Performs a publish operation on the currently opened project. Only the given publisher set will be published. The command answers when Archicad's API reports the publishing done; for a local or LAN output folder the answer names the folder and lists the files created or changed in it (writtenFiles). A large set can take minutes, so give the call a long enough timeout. The output format of each item is the one set in the publisher set: Archicad's API cannot choose it per call."
         );
         err |= RegisterCommand<GetPublisherSetsCommand> (
             navigatorCommands, "2.0.0",
@@ -2581,7 +2581,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyDetailMarkersCommand> (
             navigatorCommands, "2.0.0",
-            "Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result."
+            "Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen, and 'Copy construction elements only' of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result."
         );
         err |= RegisterCommand<CreateLayoutCommand> (
             navigatorCommands, "1.4.0",

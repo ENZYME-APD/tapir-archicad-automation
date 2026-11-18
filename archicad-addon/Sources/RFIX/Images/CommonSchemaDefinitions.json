@@ -5067,6 +5067,16 @@
             "EntireElement"
         ]
     },
+    "ColumnCoreSymbolType": {
+        "type": "string",
+        "description": "Core symbol of a column in the floor plan (API_ColumnType::coreSymbolType): Plain (no symbol), Slash, X or CrossHair.",
+        "enum": [
+            "Plain",
+            "Slash",
+            "X",
+            "CrossHair"
+        ]
+    },
     "ElemProjectionMode": {
         "type": "string",
         "description": "Floor plan projection mode of an element part (API_ElemProjectionModesID).",
@@ -6522,7 +6532,7 @@
             },
             "floorIndex": {
                 "type": "integer",
-                "description": "The story to place the interior elevation on. Defaults to the current story."
+                "description": "The story to place the interior elevation on. Defaults to the current story. Archicad places an interior elevation on the active story, so for another story that story is activated while the interior elevation is created, and the previously active one is put back afterwards."
             }
         },
         "additionalProperties": false,
@@ -10144,7 +10154,7 @@
         "properties": {
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "The current zoom parameters."
+                "description": "The current zoom parameters. In a rotated window (rotation is not 0) the box is in the window's own rotated frame, as Archicad stores it, not in model coordinates."
             },
             "rotation": {
                 "type": "number",
@@ -10826,6 +10836,10 @@
                 "type": "integer",
                 "description": "Multi-plane: the number of segments of a whole circle when segmentType is SegmentsByCircle."
             },
+            "fitSkylightToCurve": {
+                "type": "boolean",
+                "description": "Multi-plane: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments (fitSkylightToCurve of API_PolyRoofData). ModifyRoofs and CreateRoofs write it."
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.",
@@ -11037,11 +11051,61 @@
             },
             "basePlane": {
                 "$ref": "#/CoordinateSystem3D",
-                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profile, the extrusion start and the extrusion vector are given in it."
+                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profiles, the extrusion start and vector, the axis and the profile planes are given in it."
             },
             "profile": {
                 "$ref": "#/ShellProfile",
-                "description": "Extruded only: the profile polyline, in the plane across the extrusion (x horizontal, y up), as CreateShells takes it. Only the first polyline of the profile is returned."
+                "description": "The profile polyline, as CreateShells takes it. Extruded: in the plane across the extrusion (x horizontal, y up). Revolved: in the base plane's XY plane. Ruled: the first profile, in the XY plane of profilePlane. Only the first polyline of the profile is returned."
+            },
+            "axis": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Revolved only: the coordinate system whose Z axis the profile is turned around, in base plane coordinates (API_RevolvedShellData::axisBase), as CreateShells takes it."
+            },
+            "revolutionAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the profile is turned through, in radians."
+            },
+            "beginAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the revolution starts at, in radians (API_RevolvedShellData::begAngle)."
+            },
+            "distortionAngle": {
+                "type": "number",
+                "description": "Revolved only: shear of the revolution, in radians; pi/2 is no shear."
+            },
+            "segmentType": {
+                "type": "string",
+                "enum": [ "ByCircle", "ByArc" ],
+                "description": "Revolved only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+            },
+            "segmentsByCircle": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments a full circle is resolved into, used when segmentType is ByCircle."
+            },
+            "segmentsByArc": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments the revolution arc is resolved into, used when segmentType is ByArc."
+            },
+            "segmentedSurfaces": {
+                "type": "boolean",
+                "description": "Revolved only: whether the revolved surface is broken into planes along the revolution arc."
+            },
+            "profilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of profile, in base plane coordinates (API_RuledShellData::plane1), as CreateShells takes it."
+            },
+            "secondProfile": {
+                "$ref": "#/ShellProfile",
+                "description": "Ruled only: the second profile polyline, in the XY plane of secondProfilePlane, as CreateShells takes it. Only the first polyline of the profile is returned."
+            },
+            "secondProfilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of secondProfile, in base plane coordinates (API_RuledShellData::plane2), as CreateShells takes it."
+            },
+            "morphingRule": {
+                "type": "string",
+                "enum": [ "Paired", "Smooth" ],
+                "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
             },
             "extrusionStart": {
                 "$ref": "#/Coordinate3D",
@@ -11069,7 +11133,7 @@
             },
             "slantAngle": {
                 "type": "number",
-                "description": "Extruded only: slant of the extrusion vector, in radians."
+                "description": "Extruded and Revolved: slant of the extrusion vector or of the profile, in radians."
             }
         },
         "additionalProperties": false,
@@ -11291,6 +11355,17 @@
             "coreSymbolPen": {
                 "type": "integer",
                 "description": "Pen of the core symbol lines (slash, X or crosshair) of the column."
+            },
+            "coreSymbolType": {
+                "$ref": "#/ColumnCoreSymbolType"
+            },
+            "coreSymbolPar1": {
+                "type": "number",
+                "description": "Length of the crosshair outside the column's contour line, used by the CrossHair core symbol."
+            },
+            "coreSymbolPar2": {
+                "type": "number",
+                "description": "Distance of the crosshair from the column's centre, used by the CrossHair core symbol."
             },
             "belowViewLinePen": {
                 "type": "integer",
@@ -11941,6 +12016,10 @@
                 "type": "boolean",
                 "description": "Side (detail/worksheet) window is opened?"
             },
+            "constructionElementsOnly": {
+                "type": "boolean",
+                "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the detail/worksheet (API_DetailType::constructionElementsOnly)."
+            },
             "clipPolygon": {
                 "type": "array",
                 "description": "The clip polygon of the detail/worksheet",
@@ -11978,6 +12057,7 @@
             "detailIdStr",
             "isHorizontalMarker",
             "isWindowOpened",
+            "constructionElementsOnly",
             "clipPolygon",
             "linkData"
         ]
@@ -12479,6 +12559,10 @@
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12497,9 +12581,13 @@
             "Continuous"
         ]
     },
+    "LinkedArrowAttributes": {
+        "type": "boolean",
+        "description": "Are the size and pen of the start and end arrowheads linked (Archicad 29 and later; \"Links the start and end arrows sizes and pens\")? Read from Archicad 29 on, not returned before. Writing true links them: a size or pen given for one end only applies to both ends, two ends given different ones are refused, and without a size or pen given the end takes the start's. Writing false unlinks them. When it is not given, ends given a different size or pen are unlinked. Before Archicad 29 both ends always share one size and pen: true is accepted and changes nothing, false is refused."
+    },
     "LineArrowhead": {
         "type": "object",
-        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
+        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked, unless linkedArrowAttributes is given; see LinkedArrowAttributes). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
         "properties": {
             "visible": {
                 "type": "boolean",
@@ -12584,6 +12672,10 @@
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12641,6 +12733,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end. Only present for Arc, not Circle."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present for Arc, not Circle, from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -12707,6 +12803,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -15444,7 +15544,7 @@
     },
     "StairDetails": {
         "type": "object",
-        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists; structures gives the structure settings they are built from, and GetDetailsOfElements reads a StairStructure subelement with the same keys.",
         "properties": {
             "stepNum": {
                 "type": "integer",
@@ -15481,6 +15581,10 @@
             "rules": {
                 "$ref": "#/StairRules",
                 "description": "The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied."
+            },
+            "headroom": {
+                "$ref": "#/StairHeadroom",
+                "description": "The headroom of the stair (Stair Settings > Headroom), as stored in the stair. Whether the headroom body is shown is a Model View Option, not part of the stair."
             },
             "level": {
                 "type": "number",
@@ -15781,6 +15885,13 @@
                     "additionalProperties": false,
                     "required": ["view", "uniformSymbolRepresentationEnabled", "stories"]
                 }
+            },
+            "structures": {
+                "type": "array",
+                "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side (API_StairType::structure), in the order Run LeftSide, RightSide, UnderSide, then Landing LeftSide, RightSide, UnderSide. These are the settings Archicad builds the StairStructure subelements from.",
+                "items": {
+                    "$ref": "#/StairStructureDetails"
+                }
             }
         },
         "additionalProperties": false,
@@ -15798,6 +15909,201 @@
             "finishVisible",
             "baseLinePoints"
         ]
+    },
+    "StairStructureDetails": {
+        "type": "object",
+        "description": "The settings of one structure of a stair: of one part (Run or Landing) and side in the stair's structures, or of a StairStructure subelement, whose values are the ones Archicad solved for that part (API_StairStructureType). monolith is given for a Monolith structure and sideStair for a Side structure; beam supported and cantilevered structures have no extra data.",
+        "properties": {
+            "role": {
+                "type": "string",
+                "description": "Whether the structure belongs to the flights (Run) or to the landings (Landing).",
+                "enum": ["Run", "Landing", "Unknown"]
+            },
+            "side": {
+                "type": "string",
+                "description": "Where the structure supports the steps: from the left, from the right or from under.",
+                "enum": ["LeftSide", "RightSide", "UnderSide", "Unknown"]
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the structure is modeled."
+            },
+            "structureType": {
+                "type": "string",
+                "description": "The type of the structure: side stringers, monolithic, beam supported or cantilevered.",
+                "enum": ["Side", "Monolith", "BeamSupport", "CantileveredSupport", "Unknown"]
+            },
+            "bottomType": {
+                "type": "string",
+                "description": "The bottom of the structure: stepped along with the steps, flat under the steps, or smooth.",
+                "enum": ["Stepped", "Flat", "Smooth", "Unknown"]
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the structure."
+            },
+            "horizontalThickness": {
+                "type": "number",
+                "description": "The horizontal thickness of the structure."
+            },
+            "monolith": {
+                "$ref": "#/StairMonolithStructure"
+            },
+            "sideStair": {
+                "$ref": "#/StairSideStructure"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["role", "side", "visible", "structureType", "bottomType", "thickness", "horizontalThickness"]
+    },
+    "StairMonolithStructure": {
+        "type": "object",
+        "description": "The data of a monolithic stair structure (API_MonolithStairStructData). An attribute that is not set is left out.",
+        "properties": {
+            "thinning": {
+                "type": "boolean",
+                "description": "Whether the structure is thinned."
+            },
+            "monolithThickness": {
+                "type": "number",
+                "description": "The thickness of the monolith."
+            },
+            "bottomOversize": {
+                "type": "number",
+                "description": "The size of the horizontal bottom."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the structure."
+            },
+            "sideFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the building material."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surfaces of the structure are chained."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The top surface of the structure."
+            },
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The left side surface of the structure."
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The right side surface of the structure."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The bottom surface of the structure."
+            },
+            "surfaceMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface material of the structure."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the cut parts' 2D representation."
+            },
+            "cutLinePen": {
+                "type": "integer",
+                "description": "The pen of the cut parts' 2D representation."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the 2D representation."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen of the 2D representation."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill pen of the structure."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill background pen of the structure."
+            },
+            "uniformDrainings": {
+                "type": "boolean",
+                "description": "Whether the drainings on the left and the right side are the same."
+            },
+            "drainings": {
+                "type": "array",
+                "description": "The drainings of the structure, on the left and on the right side.",
+                "items": {
+                    "$ref": "#/StairStructureDraining"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["thinning", "monolithThickness", "bottomOversize", "materialsChained", "topMaterial", "leftMaterial", "rightMaterial", "bottomMaterial", "cutLinePen", "pen", "cutFillPen", "cutFillBackgroundPen", "uniformDrainings", "drainings"]
+    },
+    "StairStructureDraining": {
+        "type": "object",
+        "description": "The draining of one side of a monolithic stair structure (API_StairStructureDrainingData).",
+        "properties": {
+            "side": {
+                "type": "string",
+                "enum": ["Left", "Right"]
+            },
+            "enabled": {
+                "type": "boolean",
+                "description": "Whether the draining is modeled."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the draining."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the draining from the boundary."
+            },
+            "horizontalDepth": {
+                "type": "number",
+                "description": "The horizontal depth of the draining."
+            },
+            "verticalDepth": {
+                "type": "number",
+                "description": "The vertical depth of the draining."
+            },
+            "material": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface of the draining."
+            },
+            "surfaceType": {
+                "type": "string",
+                "description": "Whether the draining is stepped or smooth.",
+                "enum": ["Stepped", "Smooth"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["side", "enabled", "width", "offset", "horizontalDepth", "verticalDepth", "material", "surfaceType"]
+    },
+    "StairSideStructure": {
+        "type": "object",
+        "description": "The data of a side (stringer) stair structure (API_SideStairStructData).",
+        "properties": {
+            "width": {
+                "type": "number",
+                "description": "The width of the stringer."
+            },
+            "heightAboveTread": {
+                "type": "number",
+                "description": "The height of the stringer above its tread."
+            },
+            "heightMeasure": {
+                "type": "string",
+                "description": "How the height above the tread is measured: perpendicular to the stair or vertically.",
+                "enum": ["Perpendicular", "Vertical"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["width", "heightAboveTread", "heightMeasure"]
     },
     "StairSymbolView": {
         "type": "string",
@@ -15843,6 +16149,17 @@
             "walkingLineOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing offset is applied." },
             "winderTurnOffsetMinValue": { "type": "number", "description": "Minimum winder width." },
             "winderTurnOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum winder width is applied." }
+        },
+        "additionalProperties": false
+    },
+    "StairHeadroom": {
+        "type": "object",
+        "description": "The headroom of a Stair (API_StairHeadroomData, Stair Settings > Headroom): the clear space above the flights that Archicad checks against the elements above the stair. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
+        "properties": {
+            "method": { "type": "string", "enum": ["RightAngleToSlope", "VerticallyToSlope", "Unknown"], "description": "How the headroom is generated: at right angle to the slope of the stair (APIHM_RightAngleToSlope) or vertically to it (APIHM_VerticallyToSlope). GetDetailsOfElements returns Unknown for a value it does not know; CreateStairs and ModifyStairs refuse Unknown." },
+            "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the headroom." },
+            "leftOffset": { "type": "number", "description": "The offset of the headroom from the left side of the stair." },
+            "rightOffset": { "type": "number", "description": "The offset of the headroom from the right side of the stair." }
         },
         "additionalProperties": false
     },
@@ -16301,6 +16618,9 @@
             },
             {
                 "$ref": "#/StairDetails"
+            },
+            {
+                "$ref": "#/StairStructureDetails"
             },
             {
                 "$ref": "#/SectionDetails"
@@ -17611,6 +17931,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -17657,6 +17981,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads of an Arc. A Circle refuses it."
             }
         },
         "additionalProperties": false,
@@ -17699,6 +18027,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -17740,6 +18072,10 @@
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,

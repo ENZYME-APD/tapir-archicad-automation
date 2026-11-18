@@ -1,0 +1,73 @@
+{
+  "title": "GetDetailsOfElements reads the structures of a stair, with the monolith data, and a StairStructure subelement with the same keys (#2866)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a straight stair with a monolithic run structure",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 800.0, "y": 760.0 },
+              { "x": 806.0, "y": 760.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "structures": [
+              { "role": "Run", "side": "UnderSide", "visible": true, "structureType": "Monolith", "bottomType": "Smooth", "thickness": 0.18 }
+            ]
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "read the structures of the stair",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structures", "len": 6, "name": "one structure per role and side" },
+        { "path": "detailsOfElements[0].details.structures[0].role", "eq": "Run", "name": "first is the run" },
+        { "path": "detailsOfElements[0].details.structures[0].side", "eq": "LeftSide", "name": "first is the left side" },
+        { "path": "detailsOfElements[0].details.structures[2].side", "eq": "UnderSide", "name": "third is the run's under side" },
+        { "path": "detailsOfElements[0].details.structures[2].structureType", "eq": "Monolith", "name": "run under side is monolithic as created" },
+        { "path": "detailsOfElements[0].details.structures[2].bottomType", "eq": "Smooth", "name": "run under side bottom is smooth as created" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.monolithThickness", "exists": true, "name": "the monolith data is read" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.topMaterial.overridden", "exists": true, "name": "the monolith surfaces are read" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.drainings", "len": 2, "name": "a draining per side" },
+        { "path": "detailsOfElements[0].details.structures[3].role", "eq": "Landing", "name": "fourth is the landing" }
+      ]
+    },
+    {
+      "id": "list the structure subelements",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": { "st": "subelements[0].stairStructures[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].stairStructures[0].elementId.guid", "exists": true, "name": "the stair has a structure subelement" }
+      ]
+    },
+    {
+      "id": "read a structure subelement",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${st}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "StairStructure", "name": "it is a stair structure" },
+        { "path": "detailsOfElements[0].details.error", "exists": false, "name": "its details are supported" },
+        { "path": "detailsOfElements[0].details.role", "exists": true, "name": "it names its role" },
+        { "path": "detailsOfElements[0].details.side", "exists": true, "name": "it names its side" },
+        { "path": "detailsOfElements[0].details.structureType", "exists": true, "name": "it names its type" },
+        { "path": "detailsOfElements[0].details.thickness", "exists": true, "name": "it gives its thickness" }
+      ]
+    }
+  ]
+}

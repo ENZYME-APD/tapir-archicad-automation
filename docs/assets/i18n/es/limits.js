@@ -88,6 +88,10 @@
         'Establecer los valores de los modificadores de perfil, o el ancho y la altura estirados, de un muro, una viga o un pilar que usa un perfil',
     'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
         'Léalos con <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. Para cambiarlos, cambie el perfil con <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (una copia para estos elementos, o el propio perfil), o ajústelos en la configuración del elemento en Archicad.',
+    'Read or set how a grid element is shown in sections, elevations and interior elevations: its vertical extent and its markers at the top and bottom':
+        'Leer o establecer cómo se muestra un elemento de rejilla en secciones, alzados y alzados interiores: su extensión vertical y sus marcadores arriba y abajo',
+    'Select the grid elements in Archicad and set it for all of them at once in their settings dialog.':
+        'Seleccione los elementos de rejilla en Archicad y ajústelo para todos a la vez en su cuadro de diálogo de configuración.',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         '¿Ha encontrado algo más que la API de Archicad no puede hacer? Dígalo en un issue, con las cabeceras del DevKit que comprobó, y se añadirá aquí. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Abrir un issue</a>'

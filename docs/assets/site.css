@@ -198,7 +198,10 @@ main { display: block }
 
 /* ---------- figures (live numbers; a hidden one leaves no gap) ---------- */
 .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1.5px solid var(--fg); background: var(--surface); overflow: hidden }
-.figures > div { padding: 20px; display: grid; gap: 8px; align-content: start; box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); min-width: 0 }
+/* Each cell draws the line on its right and under it; the frame clips those of the last column and the
+   last row. So a last row with fewer cells than the columns still ends in a line, and the empty space
+   after it is closed off, not an open corner of the grid (#2892). */
+.figures > div { padding: 20px; display: grid; gap: 8px; align-content: start; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); min-width: 0 }
 .figures strong { font: 900 clamp(2.5rem, 5vw, 4rem)/.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.02em }
 .figures strong sup { font-size: .4em; vertical-align: top; color: var(--link) }
 .figures span { font: 500 .8125rem/1.4 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em }
@@ -309,9 +312,10 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 
 /* ---------- timeline, flow, stack ---------- */
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 }
-.timeline > li { display: grid; grid-template-columns: 96px 1fr; gap: 24px; padding-block: 32px; border-top: 1px solid var(--line) }
+.timeline > li { display: grid; grid-template-columns: 72px 1fr; gap: 24px; padding-block: 32px; border-top: 1px solid var(--line) }
 .timeline > li:first-child { border-top: 0; padding-top: 0 }
-.timeline .n { font: 900 4.5rem/.85 var(--display); color: var(--link); font-variant-numeric: lining-nums }
+/* One step number for every numbered list: the timeline, a numbered .flow (.flow.steps) and the share steps. */
+.timeline .n, .flow.steps b, .share-steps li b { font: 900 3rem/1 var(--display); color: var(--link); font-variant-numeric: lining-nums; text-transform: none }
 .timeline h2, .timeline h3 { font-size: 1.875rem; font-weight: 700; margin-bottom: 4px }
 .timeline p, .timeline li li { color: var(--muted); max-width: 40em }
 .timeline .body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; align-content: start }
@@ -364,7 +368,6 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--muted) }
 .share-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .share-steps li { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 24px; display: grid; gap: 10px; align-content: start }
-.share-steps li b { font: 900 3rem/1 var(--display); color: var(--link) }
 .share-steps li strong { display: block; font: 700 1.375rem/1.2 var(--display) } .share-steps li span { color: var(--muted) }
 
 /* ---------- videos ---------- */
@@ -395,7 +398,8 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 
 /* ---------- footer: the drawing's title block ---------- */
 .site-footer { margin-top: 72px; border-top: 1.5px solid var(--fg); background: var(--surface) }
-.tblock { display: grid; grid-template-columns: 2fr repeat(4, 1fr); border-left: 1.5px solid var(--fg); border-right: 1.5px solid var(--fg); margin-block: 32px 0 }
+/* A closed frame, as a drawing's title block is: its lines no longer start and end in the open (#2892). */
+.tblock { display: grid; grid-template-columns: 2fr repeat(4, 1fr); border: 1.5px solid var(--fg); margin-block: 32px 0 }
 .tblock > div { padding: 14px 16px; border-right: 1px solid var(--line); display: grid; gap: 6px; align-content: start; min-width: 0 }
 .tblock > div:last-child { border-right: 0 }
 .tblock .lab { font: 700 .75rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
@@ -415,7 +419,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .tblock { grid-template-columns: 1fr 1fr } .tblock > div:first-child { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--line) }
     .tblock > div:nth-child(3) { border-right: 0 } .tblock > div:nth-child(-n+3) { border-bottom: 1px solid var(--line) }
     .flow, .flow.flow-3, .flow.flow-4 { grid-template-columns: 1fr } .flow > div { border-right: 0; border-bottom: 1px solid var(--line) } .flow > div:last-child { border-bottom: 0 }
-    .timeline > li { grid-template-columns: 56px 1fr; gap: 16px } .timeline .n { font-size: 3rem }
+    .timeline > li { grid-template-columns: 56px 1fr; gap: 16px }
     .timeline h2, .timeline h3 { font-size: 1.625rem }
     .site-header .right { margin-left: auto }
 }
@@ -434,6 +438,8 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .has-menu .brand { min-width: 0 }
     .has-menu .right { flex: none }
     .has-menu .menu-button { display: inline-flex }
+    /* Download is as high as the menu and search buttons next to it (#2886). */
+    .has-menu .right > .btn-sm { height: 38px; padding-block: 0 }
     .has-menu .site-menu {
         display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 1px; z-index: 20;
         background: var(--moss); border-bottom: 1px solid var(--cream-12); box-shadow: var(--shadow-menu);
@@ -483,7 +489,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 }
 @media (max-width: 400px) {
     .uses-grid, .uses-grid.three { grid-template-columns: 1fr }
-    .site-header .right .btn-sm { padding: 8px 12px }
+    .site-header .right .btn-sm { padding-inline: 12px }
 }
 /* Less motion: the Display menu's Motion Reduced, or System (no data-motion) when the system asks for
    it; Full keeps every animation whatever the system asks. The two blocks are the same. */
@@ -676,7 +682,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) h1 em, :root:not([data-style="legacy"]) h2 em, :root:not([data-style="legacy"]) h3 em,
 :root:not([data-style="legacy"]) .h1 em { font-style: normal; font-weight: inherit; color: inherit }
 :root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .figures strong, :root:not([data-style="legacy"]) .timeline .n,
-:root:not([data-style="legacy"]) .share-steps li b, :root:not([data-style="legacy"]) .tblock .proj { font-weight: 700 }
+:root:not([data-style="legacy"]) .share-steps li b, :root:not([data-style="legacy"]) .flow.steps b,
+:root:not([data-style="legacy"]) .tblock .proj { font-weight: 700 }
 :root:not([data-style="legacy"]) .tagline, :root:not([data-style="legacy"]) .dim, :root:not([data-style="legacy"]) .figures span,
 :root:not([data-style="legacy"]) .way .who, :root:not([data-style="legacy"]) .schedule caption, :root:not([data-style="legacy"]) .schedule th,
 :root:not([data-style="legacy"]) .schedule .id, :root:not([data-style="legacy"]) .schedule tr.area th, :root:not([data-style="legacy"]) .spec dt,
@@ -742,7 +749,9 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 /* Buttons, chips, the skip link. */
 :root:not([data-style="legacy"]) .skip-link, :root:not([data-style="legacy"]) .skip-link:focus { background: var(--accent-fill); color: var(--on-accent); border-radius: var(--radius-control) }
 :root:not([data-style="legacy"]) .btn { border-radius: var(--radius-control) }
-:root:not([data-style="legacy"]) .btn-primary, :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill); color: var(--on-accent) }
+/* The filled button's (transparent) border is as wide as the outlined one's 1 px line, so a filled and an
+   outlined button side by side are the same height (#2886). */
+:root:not([data-style="legacy"]) .btn-primary, :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill); color: var(--on-accent); border-width: 1px }
 :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill-hover) }
 :root:not([data-style="legacy"]) .btn-ghost, :root:not([data-style="legacy"]) .btn-line { border: 1px solid var(--border-strong); color: var(--fg); background: var(--surface) }
 :root:not([data-style="legacy"]) .btn-ghost:hover, :root:not([data-style="legacy"]) .btn-line:hover { border-color: var(--link); color: var(--link) }
@@ -787,7 +796,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 
 /* Footer. */
 :root:not([data-style="legacy"]) .site-footer { border-top: 1px solid var(--line) }
-:root:not([data-style="legacy"]) .tblock { border-left: 1px solid var(--line); border-right: 1px solid var(--line) }
+/* The title block as a card: a light line all round and 12 px corners, like the cards above it. */
+:root:not([data-style="legacy"]) .tblock { border: 1px solid var(--line); border-radius: var(--radius-card) }
 
 /* The Display menu (site.js): its button sits where the Dark/Light toggle was; the panel is a popover
    under it on wide screens and a sheet from the bottom where the header has its menu (below 640 px, and
@@ -932,13 +942,12 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     .way, .teaser { padding: 18px; gap: 10px }
     .teaser h3, .comm .way h3 { font-size: 1.375rem }
     .share-steps li { padding: 18px }
-    .share-steps li b { font-size: 2.25rem }
     .video .text { padding: 16px }
     .figures > div { padding: 16px }
     .figures strong { font-size: 2.25rem }
     .uses-grid li, .flow > div { padding: 16px }
     .timeline > li { padding-block: 20px }
-    .timeline .n { font-size: 2.25rem }
+    .timeline .n, .flow.steps b, .share-steps li b { font-size: 2.25rem }
     .timeline h2, .timeline h3 { font-size: 1.375rem }
     .prose > h3 { margin-top: 20px }
     .lead-out { margin-top: 20px }

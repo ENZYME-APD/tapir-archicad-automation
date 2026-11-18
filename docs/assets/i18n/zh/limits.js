@@ -88,6 +88,10 @@
         '设置使用轮廓的墙、梁或柱的轮廓修改器值，或其拉伸后的宽度和高度',
     'Read them with <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a>. To change them, change the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> (a copy for these elements, or the profile itself), or set them in the settings of the element in Archicad.':
         '用 <a href="../archicad-addon/#GetProfileValuesOfElements">GetProfileValuesOfElements</a> 读取它们。要更改它们，请用 <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> 修改轮廓（为这些构件建一个副本，或修改轮廓本身），或在 Archicad 中构件的设置里设置。',
+    'Read or set how a grid element is shown in sections, elevations and interior elevations: its vertical extent and its markers at the top and bottom':
+        '读取或设置轴网元素在剖面、立面和室内立面中的显示方式：其竖向范围以及顶部和底部的标记',
+    'Select the grid elements in Archicad and set it for all of them at once in their settings dialog.':
+        '在 Archicad 中选择这些轴网元素，并在其设置对话框中一次性为所有元素设置。',
 
     'Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>':
         '发现了 Archicad API 做不到的其他事情？请在 issue 中说明，并写出你查过的 DevKit 头文件，它就会被添加到这里。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">提交 issue</a>'
