@@ -1097,14 +1097,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateStairsCommand> (
             elementCommands, "1.5.0",
             "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge "
-            "and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, "
+            "and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, "
             "the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
             "and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); "
             "settings not given come from the Stair tool defaults or the favorite."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
             elementCommands, "1.7.3",
-            "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. "
+            "Runs the Archicad stair solver on the given Stair baselines (straight or with curved edges) and parameters without creating any element. "
             "Returns for each one whether the baseline was already correct, could be solved or could not be solved, "
             "with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, "
             "2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. "
@@ -1403,7 +1403,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RecreateStairsCommand> (
             elementCommands, "2.0.1",
-            "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. "
+            "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. "
             "The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, "
             "and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. "
             "The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in)."

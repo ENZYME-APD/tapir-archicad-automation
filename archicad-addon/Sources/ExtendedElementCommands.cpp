@@ -8341,6 +8341,11 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "array",
                             "description": "Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.",
                             "items": { "$ref": "#/StairBaseLineVertex" }
+                        },
+                        "baseLineArcs": {
+                            "type": "array",
+                            "description": "Optional. The curved edges of the baseline, for a curved or spiral stair, in the format GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, and an arc bends one edge, so endIndex = begIndex + 1. arcAngle is the angle of the arc in radians, not 0 and less than a full turn; it is positive if the arc is on the right-hand side of the straight edge. At most one arc per edge; the edges without an arc are straight.",
+                            "items": { "$ref": "#/PolyArc" }
                         },)") + StairSettingsSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -8415,6 +8420,36 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     if (hasVertices && baseLineVertices.GetSize () != baseLinePoints.GetSize ()) {
         return CreateErrorResponse (APIERR_BADPARS, "baseLineVertices must have one item per baseline point (baseLinePoints.length).");
     }
+
+    // Curved segments (#2933), in the PolyArc format GetDetailsOfElements returns them: 0-based
+    // point indices, written 1-based into the memo like the coords. The baseline is a polyline, so
+    // an arc can only bend one edge, from point i to point i + 1. The DevKit's Do_CreateStair
+    // creates a curved stair by setting stairBaseLine.parcs and polygon.nArcs the same way.
+    GS::Array<GS::ObjectState> baseLineArcs;
+    parameters.Get ("baseLineArcs", baseLineArcs);
+    const Int32 nBaseLinePoints = static_cast<Int32> (baseLinePoints.GetSize ());
+    std::vector<API_PolyArc> polyArcs;
+    for (const GS::ObjectState& arc : baseLineArcs) {
+        API_PolyArc polyArc = {};
+        if (!arc.Get ("begIndex", polyArc.begIndex) || !arc.Get ("endIndex", polyArc.endIndex) || !arc.Get ("arcAngle", polyArc.arcAngle)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Every item of baseLineArcs needs begIndex, endIndex and arcAngle.");
+        }
+        if (polyArc.begIndex < 0 || polyArc.endIndex != polyArc.begIndex + 1 || polyArc.endIndex >= nBaseLinePoints) {
+            return CreateErrorResponse (APIERR_BADPARS, "An arc of baseLineArcs must bend one baseline edge: endIndex = begIndex + 1, both indices of baseLinePoints (0-based).");
+        }
+        if (std::abs (polyArc.arcAngle) < 1e-9 || std::abs (polyArc.arcAngle) >= 2.0 * 3.14159265358979323846) {
+            return CreateErrorResponse (APIERR_BADPARS, "The arcAngle of an arc of baseLineArcs must not be 0 and must be less than a full turn (2 pi) either way.");
+        }
+        for (const API_PolyArc& other : polyArcs) {
+            if (other.begIndex == polyArc.begIndex + 1) {
+                return CreateErrorResponse (APIERR_BADPARS, "baseLineArcs has more than one arc on the same baseline edge.");
+            }
+        }
+        polyArc.begIndex += 1;
+        polyArc.endIndex += 1;
+        polyArcs.push_back (polyArc);
+    }
+    std::sort (polyArcs.begin (), polyArcs.end (), [] (const API_PolyArc& a, const API_PolyArc& b) { return a.begIndex < b.begIndex; });
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
@@ -8507,17 +8542,24 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     // baselines fail with -2130313215 (#444).
     memo.stairBaseLine.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+    const Int32 nArcs = static_cast<Int32> (polyArcs.size ());
+    memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    if (memo.stairBaseLine.coords == nullptr || memo.stairBaseLine.pends == nullptr || (nArcs > 0 && memo.stairBaseLine.parcs == nullptr)) {
+        return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the stair baseline.");
+    }
 
     for (Int32 i = 0; i < nCoords; ++i) {
         (*memo.stairBaseLine.coords)[i + 1] = Get2DCoordinateFromObjectState (baseLinePoints[i]);
+    }
+    for (Int32 i = 0; i < nArcs; ++i) {
+        (*memo.stairBaseLine.parcs)[i] = polyArcs[i];
     }
 
     (*memo.stairBaseLine.pends)[1] = nCoords;
 
     memo.stairBaseLine.polygon.nCoords = nCoords;
     memo.stairBaseLine.polygon.nSubPolys = 1;
-    memo.stairBaseLine.polygon.nArcs = 0;
+    memo.stairBaseLine.polygon.nArcs = nArcs;
 
     if (hasEdges || hasVertices) {
         // Landings (#1628): edgeData and vertexData hold nCoords + 1 entries with slot 0 unused,
@@ -10717,6 +10759,11 @@ GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () c
                             "type": "array",
                             "description": "Optional. The turn at each point of the new baseline (baseLinePoints.length items), as in CreateStairs.",
                             "items": { "$ref": "#/StairBaseLineVertex" }
+                        },
+                        "baseLineArcs": {
+                            "type": "array",
+                            "description": "Optional. The curved edges of the new baseline, as in CreateStairs and as GetDetailsOfElements returns them (0-based indices, endIndex = begIndex + 1). Without it every edge of the new baseline is straight, also when the old stair was curved.",
+                            "items": { "$ref": "#/PolyArc" }
                         }
                     },
                     "additionalProperties": false,
