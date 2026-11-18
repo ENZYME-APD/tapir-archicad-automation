@@ -310,7 +310,7 @@ class AmbiguousSource(Exception):
 
 
 def resolve_source(api, d, items, forced):
-    """(theta1, T1, name, family) of the view the Drawing shows.
+    """(theta1, T1, name, family, guid) of the view the Drawing shows.
 
     Tapir Add-Ons that return sourceNavigatorItemId on Drawings give it directly. Older ones do
     not (navigatorItemId is the Drawing's own link item, refused by GetViewSettings): the
@@ -328,7 +328,7 @@ def resolve_source(api, d, items, forced):
             or next((item_label(it) for it in items
                      if (it.get("sourceNavigatorItemId") or {}).get("guid", "").upper() == forced.upper()),
                     "source view")
-        return th, T, name, GROUPS.get(nav_types(api).get(forced.upper()))
+        return th, T, name, GROUPS.get(nav_types(api).get(forced.upper())), forced
     dets = d["details"]
     denom = round(1.0 / dets["drawingScale"], 6)
     types = nav_types(api)
@@ -356,7 +356,8 @@ def resolve_source(api, d, items, forced):
         raise AmbiguousSource([{"guid": g, "name": n} for g, n in seen.items()])
     _, its = next(iter(transforms.items()))
     th, T = view_transform(next(v for it, v in cands if it is its[0]))
-    return th, T, " | ".join(dict.fromkeys(item_label(it) for it in its)), groups.pop()
+    return (th, T, " | ".join(dict.fromkeys(item_label(it) for it in its)), groups.pop(),
+            its[0]["sourceNavigatorItemId"]["guid"])
 
 
 # ---------------------------------------------------------------- computing the relink
@@ -565,8 +566,8 @@ class Session:
         lay, items = layout_drawing_items(api, layout_db)
         st = {"layout_db": layout_db, "lay": lay, "d": d, "candidates": None}
         try:
-            th1, T1, src, group = resolve_source(api, d, items, self.sources.get(d["_id"]["guid"]))
-            st.update(th1=th1, T1=T1, src=src, group=group)
+            th1, T1, src, group, src_guid = resolve_source(api, d, items, self.sources.get(d["_id"]["guid"]))
+            st.update(th1=th1, T1=T1, src=src, group=group, src_guid=src_guid)
         except AmbiguousSource as e:
             st["candidates"] = e.candidates
         return st
@@ -621,8 +622,7 @@ class Session:
         p = plan(d, st["th1"], st["T1"], tg["vs"])
         frame = old_frame(self.api, d)
         old_guid = d["_id"]["guid"]
-        src_guid = (d["details"].get("sourceNavigatorItemId") or {}).get("guid") or self.sources.get(old_guid)
-        snap = snapshot(d, src_guid) if src_guid else None
+        snap = snapshot(d, st["src_guid"])
         new_id, warnings, nd = relink(self.api, d, st["layout_db"], tg["guid"], p["ratio"], p["angle"], p["ds2"],
                                       lambda mo2: pos_for(d, p, mo2), frame)
         self.sources[new_id["guid"]] = tg["guid"]
