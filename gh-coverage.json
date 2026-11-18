@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 10:42 UTC",
+ "generatedAt": "2026-11-18 13:01 UTC",
  "counts": {
   "done": 788,
   "open": 15,
@@ -14610,7 +14610,7 @@
    "id": "PublishPublisherSet",
    "group": "Navigator Commands",
    "version": "0.1.0",
-   "brief": "Performs a publish operation on the currently opened project. Only the given publisher set will be published.",
+   "brief": "Performs a publish operation on the currently opened project. Only the given publisher set will be published. The command answers when Archicad's API reports the publishing done; for a local or LAN output folder the answer names the folder and lists the files created or changed in it (writtenFiles). A large set can take minutes, so give the call a long enough timeout. The output format of each item is the one set in the publisher set: Archicad's API cannot choose it per call.",
    "status": "done",
    "reason": "",
    "components": [

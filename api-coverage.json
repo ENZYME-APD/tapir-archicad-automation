@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 10:42 UTC",
+ "generatedAt": "2026-11-18 13:01 UTC",
  "versions": [
   25,
   26,
@@ -7246,6 +7246,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 2933,
+     "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
+    },
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
@@ -14728,12 +14732,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2813,
-     "title": "PublishPublisherSet: list the written files, document selectedNavigatorItemIds"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14756,12 +14755,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2813,
-     "title": "PublishPublisherSet: list the written files, document selectedNavigatorItemIds"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38561,10 +38555,6 @@
     {
      "number": 2838,
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
-    },
-    {
-     "number": 2813,
-     "title": "PublishPublisherSet: list the written files, document selectedNavigatorItemIds"
     },
     {
      "number": 2797,
