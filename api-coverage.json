@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 13:01 UTC",
+ "generatedAt": "2026-11-18 13:22 UTC",
  "versions": [
   25,
   26,
@@ -5851,6 +5851,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2935,
+     "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
+    },
+    {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
@@ -8258,6 +8262,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2935,
+     "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
+    },
     {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
@@ -26087,6 +26095,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2934,
+     "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
+    },
+    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
@@ -31834,6 +31846,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2935,
+     "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
+    },
     {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
@@ -38448,6 +38464,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2934,
+     "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
+    },
     {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
@@ -45351,6 +45371,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2935,
+     "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
+    },
+    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
@@ -48601,6 +48625,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2935,
+     "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
+    },
     {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"

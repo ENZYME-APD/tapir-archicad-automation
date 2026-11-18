@@ -1,8 +1,9 @@
 {
- "generatedAt": "2026-11-18 13:01 UTC",
+ "generatedAt": "2026-11-18 13:22 UTC",
  "counts": {
   "done": 788,
-  "open": 15,
+  "open": 14,
+  "claimed": 1,
   "not applicable": 1
  },
  "parameters": {
@@ -5286,7 +5287,12 @@
     "stairsData.walkingLinePosition"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2936,
+     "title": "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves"
+    }
+   ]
   },
   {
    "id": "SolveStairBaseline",
@@ -5308,7 +5314,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2936,
+     "title": "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves"
+    }
+   ]
   },
   {
    "id": "CreateSlabs",
@@ -8326,7 +8337,7 @@
    "group": "Element Commands",
    "version": "2.0.1",
    "brief": "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).",
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "components": [],
    "parameters": null,
@@ -8334,7 +8345,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2936,
+     "title": "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves"
+    }
+   ]
   },
   {
    "id": "ChangeTextContent",
