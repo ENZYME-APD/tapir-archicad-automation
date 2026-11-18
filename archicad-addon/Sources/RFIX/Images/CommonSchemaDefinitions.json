@@ -15678,7 +15678,7 @@
             "inputDirection": {
                 "type": "string",
                 "enum": [ "Upward", "Inverse" ],
-                "description": "The walking direction along the baseline, as CreateStairs and ModifyStairs take it."
+                "description": "The walking direction along the baseline, as CreateStairs and ModifyStairs take it. Upward: baseLinePoints run from the bottom of the stair to its top. Inverse: they run from the top down. The walking lines and the boundaries run from the bottom up either way (seen on a stair drawn in Archicad 27); Archicad 29 creates and keeps stairs Upward even when Inverse is given."
             },
             "leftBoundary": {
                 "$ref": "#/StairBoundary",
