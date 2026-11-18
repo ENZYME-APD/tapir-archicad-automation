@@ -990,6 +990,18 @@ static void AddStairFloorPlanDetails (const API_StairType& stair, GS::ObjectStat
     }
 }
 
+// The baseline position of a stair, with the names CreateStairs takes (Auto only on reading).
+static const char* StairLinePositionToString (API_LinePositionID position)
+{
+    switch (position) {
+        case APILP_Left:   return "Left";
+        case APILP_Right:  return "Right";
+        case APILP_Center: return "Center";
+        case APILP_Auto:   return "Auto";
+        default:           return "Unknown";
+    }
+}
+
 static const char* StairPartRoleToString (API_StairPartRoleID role)
 {
     switch (role) {
@@ -1273,6 +1285,102 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
     for (GSIndex i = 0; i < nArcs; ++i) {
         arcs (CreatePolyArcObjectState ((*baseLine.parcs)[i]));
     }
+}
+
+// The last point of the first (and only) polyline of a stair memo polyline: pends[1] when
+// given, else the last coord. Like the baseline, the coords are 1-based with slot 0 unused.
+static GSIndex GetStairMemoPolylineLast (API_Coord** coords, Int32** pends)
+{
+    if (coords == nullptr) {
+        return 0;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (coords)) / sizeof (API_Coord);
+    GSIndex last = nCoords - 1;
+    if (pends != nullptr && BMhGetSize (reinterpret_cast<GSHandle> (pends)) / sizeof (Int32) > 1 && (*pends)[1] < nCoords) {
+        last = (*pends)[1];
+    }
+    return last;
+}
+
+// The arcs of a stair memo polyline whose both ends are within its first polyline.
+static void AddStairMemoPolylineArcs (API_PolyArc** parcs, GSIndex last, GS::ObjectState& os)
+{
+    const auto& arcs = os.AddList<GS::ObjectState> ("arcs");
+    if (parcs == nullptr) {
+        return;
+    }
+    const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (parcs)) / sizeof (API_PolyArc);
+    for (GSIndex i = 0; i < nArcs; ++i) {
+        const API_PolyArc& arc = (*parcs)[i];
+        if (arc.begIndex >= 1 && arc.endIndex <= last) {
+            arcs (CreatePolyArcObjectState (arc));
+        }
+    }
+}
+
+// A walking line of a stair (memo stairWalkingLine, stairCustomWalkLine, stairCenterWalkLine):
+// its points, moved by origin into model coordinates like the baseline, and its arcs.
+// Not added when the memo has no such line.
+static void AddStairWalkingLineFromMemo (const API_StairPolylineData& line, const API_Coord& origin, const char* name, GS::ObjectState& os)
+{
+    const GSIndex last = GetStairMemoPolylineLast (line.coords, line.pends);
+    if (last < 1) {
+        return;
+    }
+    GS::ObjectState lineOs;
+    const auto& points = lineOs.AddList<GS::ObjectState> ("points");
+    for (GSIndex i = 1; i <= last; ++i) {
+        const API_Coord& coord = (*line.coords)[i];
+        points (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
+    }
+    AddStairMemoPolylineArcs (line.parcs, last, lineOs);
+    os.Add (name, lineOs);
+}
+
+// The left (index 0) or right (index 1) boundary of a stair (memo stairBoundary): the outline of
+// the stair on that side, with the elevation of each point (vertexData zValue) and whether each
+// edge is visible (edgeData), aligned the way the baseline's vertexData and edgeData are.
+static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, const API_Coord3D& origin, const char* name, GS::ObjectState& os)
+{
+    const GSIndex last = GetStairMemoPolylineLast (boundary.coords, boundary.pends);
+    if (last < 1) {
+        return;
+    }
+    const GSSize nVertexData = boundary.vertexData != nullptr ? BMGetPtrSize (reinterpret_cast<GSPtr> (boundary.vertexData)) / sizeof (API_StairBoundaryVertexData) : 0;
+    const GSSize nEdgeData = boundary.edgeData != nullptr ? BMGetPtrSize (reinterpret_cast<GSPtr> (boundary.edgeData)) / sizeof (API_StairBoundaryEdgeData) : 0;
+
+    GS::ObjectState boundaryOs;
+    boundaryOs.Add ("isCustom", boundary.isCustom);
+    const auto& points = boundaryOs.AddList<GS::ObjectState> ("points");
+    for (GSIndex i = 1; i <= last; ++i) {
+        const API_Coord& coord = (*boundary.coords)[i];
+        GS::ObjectState pointOs ("x", coord.x + origin.x, "y", coord.y + origin.y);
+        if (i < nVertexData) {
+            pointOs.Add ("z", boundary.vertexData[i].zValue + origin.z);
+        }
+        points (pointOs);
+    }
+    AddStairMemoPolylineArcs (boundary.parcs, last, boundaryOs);
+    const auto& edges = boundaryOs.AddList<GS::ObjectState> ("edges");
+    for (GSIndex i = 1; i < last && i < nEdgeData; ++i) {
+        edges (GS::ObjectState ("visible", boundary.edgeData[i].visible));
+    }
+    os.Add (name, boundaryOs);
+}
+
+// The plan geometry of a stair that is not its baseline: its two boundaries and its walking lines.
+static void AddStairOutlineFromMemo (const API_Guid& guid, const API_Coord3D& origin, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError) {
+        return;
+    }
+    AddStairBoundaryFromMemo (memo.stairBoundary[0], origin, "leftBoundary", os);
+    AddStairBoundaryFromMemo (memo.stairBoundary[1], origin, "rightBoundary", os);
+    AddStairWalkingLineFromMemo (memo.stairWalkingLine, { origin.x, origin.y }, "walkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCustomWalkLine, { origin.x, origin.y }, "customWalkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCenterWalkLine, { origin.x, origin.y }, "centerWalkingLine", os);
 }
 
 // The section line and the depth line of a Section (CutPlane), or of an Elevation, live in the memo's
@@ -4471,6 +4579,18 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
                 AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+                typeSpecificDetails.Add ("baselinePosition", StairLinePositionToString (elem.stair.baselinePosition));
+                typeSpecificDetails.Add ("baselineOffset", elem.stair.baselineOffset);
+                AddStairOutlineFromMemo (elem.header.guid, basePoint, typeSpecificDetails);
+                {
+                    GS::ObjectState linkOS;
+                    linkOS.Add ("homeStoryDifference", (Int32) elem.stair.linkToSettings.homeStoryDifference);
+                    linkOS.Add ("newCreationMode", elem.stair.linkToSettings.newCreationMode);
+                    typeSpecificDetails.Add ("linkToSettings", linkOS);
+                }
+                typeSpecificDetails.Add ("uniformLeftRightSideSupports", GS::ObjectState (
+                    "run", elem.stair.uniformLeftRightSideSupports[APISR_Run],
+                    "landing", elem.stair.uniformLeftRightSideSupports[APISR_Landing]));
                 AddStairFloorPlanDetails (elem.stair, typeSpecificDetails);
                 AddStairStructures (elem.stair, typeSpecificDetails);
             } break;
@@ -14362,6 +14482,7 @@ static bool AreQuantitiesSupported (API_ElemTypeID typeID)
         case API_ZoneID:
         case API_ColumnSegmentID:
         case API_BeamSegmentID:
+        case API_StairID:
             return true;
         default:
             return false;
@@ -14553,6 +14674,19 @@ static void AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("rightSurface", q.rightSurface);
             quantities.Add ("endSurface", q.endSurface);
             quantities.Add ("holesSurface", q.holesSurface);
+            break;
+        }
+        case API_StairID: {
+            // The fields API_StairQuantity has in both the Archicad 27 and 29 DevKits (Archicad 27
+            // also has a length, which Archicad 29 no longer has).
+            const auto& q = elementQuantity.stair;
+            quantities.Add ("area", q.area);
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("height", q.height);
+            quantities.Add ("walkingLineLength", q.walklineLength);
+            quantities.Add ("gradient", q.gradient);
+            quantities.Add ("numberOfRisers", static_cast<Int32> (q.numOfRisers));
+            quantities.Add ("numberOfTreads", static_cast<Int32> (q.numOfTreads));
             break;
         }
         default:

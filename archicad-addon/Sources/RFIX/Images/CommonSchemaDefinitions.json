@@ -15658,6 +15658,52 @@
                     "required": ["turnType", "landingStartEdgeOffset", "landingEndEdgeOffset", "minLandingStartEdgeOffset", "minLandingEndEdgeOffset"]
                 }
             },
+            "baselinePosition": {
+                "type": "string",
+                "enum": ["Left", "Right", "Center", "Auto", "Unknown"],
+                "description": "The edge of the flight the baseline runs on, as CreateStairs takes it (API_StairType::baselinePosition)."
+            },
+            "baselineOffset": {
+                "type": "number",
+                "description": "The offset of the baseline from that edge (API_StairType::baselineOffset)."
+            },
+            "leftBoundary": {
+                "$ref": "#/StairBoundary",
+                "description": "The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it."
+            },
+            "rightBoundary": {
+                "$ref": "#/StairBoundary",
+                "description": "The right boundary line of the stair (the memo's stairBoundary[1]), seen along the baseline. Given when Archicad has calculated it."
+            },
+            "walkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "The walking line of the stair (the memo's stairWalkingLine), the one Archicad lays the goings out along. Given when Archicad has calculated it."
+            },
+            "customWalkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "The custom walking line of the stair (the memo's stairCustomWalkLine). Given only when the stair has one."
+            },
+            "centerWalkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "The center walking line of the stair (the memo's stairCenterWalkLine). Given only when the stair has one."
+            },
+            "linkToSettings": {
+                "$ref": "#/LinkToSettings"
+            },
+            "uniformLeftRightSideSupports": {
+                "type": "object",
+                "description": "Whether the left and right side supports of the flights (run) and of the landings (landing) share their settings (API_StairType::uniformLeftRightSideSupports).",
+                "properties": {
+                    "run": {
+                        "type": "boolean"
+                    },
+                    "landing": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["run", "landing"]
+            },
             "stairDisplayType": {
                 "type": "string",
                 "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions) (API_StairType::stairDisplayType).",
@@ -15909,6 +15955,81 @@
             "finishVisible",
             "baseLinePoints"
         ]
+    },
+    "StairPolyline": {
+        "type": "object",
+        "description": "A polyline of a stair, such as its walking line, in model coordinates (the coordinates of baseLinePoints).",
+        "properties": {
+            "points": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "description": "The curved segments of the polyline, with 0-based indices into points; empty when every segment is straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["points", "arcs"]
+    },
+    "StairBoundary": {
+        "type": "object",
+        "description": "A side boundary line of a stair, in model coordinates (the coordinates of baseLinePoints), with the elevation of each point.",
+        "properties": {
+            "isCustom": {
+                "type": "boolean",
+                "description": "Whether the boundary was edited by hand."
+            },
+            "points": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "x": {
+                            "type": "number"
+                        },
+                        "y": {
+                            "type": "number"
+                        },
+                        "z": {
+                            "type": "number",
+                            "description": "ZDESC"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["x", "y"]
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "description": "The curved segments of the boundary, with 0-based indices into points; empty when every segment is straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "edges": {
+                "type": "array",
+                "description": "One item per segment: edge i runs from points[i] to points[i + 1].",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "visible": {
+                            "type": "boolean",
+                            "description": "Whether the part of the stair this segment describes is visible."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["visible"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["isCustom", "points", "arcs", "edges"]
     },
     "StairStructureDetails": {
         "type": "object",
@@ -20766,6 +20887,50 @@
             "holesSurface"
         ]
     },
+    "StairQuantities": {
+        "type": "object",
+        "description": "Quantities of a Stair element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "area": {
+                "type": "number",
+                "description": "The front surface area of the stair."
+            },
+            "volume": {
+                "type": "number",
+                "description": "Volume of the stair."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the stair."
+            },
+            "walkingLineLength": {
+                "type": "number",
+                "description": "Length of the walking line."
+            },
+            "gradient": {
+                "type": "number",
+                "description": "GRADDESC"
+            },
+            "numberOfRisers": {
+                "type": "integer",
+                "description": "Number of risers."
+            },
+            "numberOfTreads": {
+                "type": "integer",
+                "description": "Number of treads."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "area",
+            "volume",
+            "height",
+            "walkingLineLength",
+            "gradient",
+            "numberOfRisers",
+            "numberOfTreads"
+        ]
+    },
     "ElementQuantities": {
         "description": "The type-specific quantities of an element. The fields depend on the type of the element.",
         "type": "object",
@@ -20799,6 +20964,9 @@
             },
             {
                 "$ref": "#/BeamSegmentQuantities"
+            },
+            {
+                "$ref": "#/StairQuantities"
             }
         ]
     },
