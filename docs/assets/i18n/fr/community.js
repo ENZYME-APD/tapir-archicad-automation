@@ -142,6 +142,7 @@
     "People on the map": "Personnes sur la carte",
     "Countries": "Pays",
     "Towns": "Villes",
+    "Continents": "Continents",
     "A dot per town, larger where more people are. Land: Natural Earth.": "Un point par ville, plus grand là où il y a plus de monde. Terres : Natural Earth.",
     "Add your town on Discord": "Ajoutez votre ville sur Discord",
     "{place}, {country}: {count} person": "{place}, {country} : {count} personne",
