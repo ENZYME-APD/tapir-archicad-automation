@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 14:21 UTC",
+ "generatedAt": "2026-11-18 15:11 UTC",
  "versions": [
   25,
   26,
@@ -7548,6 +7548,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2941,
+     "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
+    },
     {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
