@@ -1100,7 +1100,8 @@ GSErrCode Initialize (void)
             "and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, "
             "the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
             "and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); "
-            "settings not given come from the Stair tool defaults or the favorite."
+            "settings not given come from the Stair tool defaults or the favorite. A given walking direction or walking line is read back: a stair Archicad did not keep it on "
+            "is deleted again and its item fails with what Archicad made of it."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
             elementCommands, "1.7.3",
@@ -1392,7 +1393,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ModifyStairsCommand> (
             elementCommands, "2.0.0",
             "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, "
-            "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, "
+            "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction (the walking line and the direction are read back, and one Archicad did not apply is reported as an error), the uniform finish, monolith and draining settings, "
             "and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), "
             "and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on "
             "and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. "
