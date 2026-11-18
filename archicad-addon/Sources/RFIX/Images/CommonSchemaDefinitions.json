@@ -15681,11 +15681,11 @@
             },
             "customWalkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The custom walking line of the stair (the memo's stairCustomWalkLine). Given only when the stair has one."
+                "description": "The custom walking line of the stair (the memo's stairCustomWalkLine). Archicad 29 fills it on every stair: on a stair whose walking line was not edited it is the same as walkingLine."
             },
             "centerWalkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The center walking line of the stair (the memo's stairCenterWalkLine). Given only when the stair has one."
+                "description": "The center walking line of the stair (the memo's stairCenterWalkLine). Archicad 29 fills it on every stair: on a stair with a centered walking line it is the same as walkingLine."
             },
             "linkToSettings": {
                 "$ref": "#/LinkToSettings"
@@ -15979,7 +15979,7 @@
     },
     "StairBoundary": {
         "type": "object",
-        "description": "A side boundary line of a stair, in model coordinates (the coordinates of baseLinePoints), with the elevation of each point.",
+        "description": "A side boundary line of a stair: an open polyline along that side of the flights and landings, in model coordinates (the coordinates of baseLinePoints). The left boundary, the right boundary reversed and the two segments joining their ends make the outline of the stair in plan.",
         "properties": {
             "isCustom": {
                 "type": "boolean",
@@ -15988,21 +15988,7 @@
             "points": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "x": {
-                            "type": "number"
-                        },
-                        "y": {
-                            "type": "number"
-                        },
-                        "z": {
-                            "type": "number",
-                            "description": "ZDESC"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["x", "y"]
+                    "$ref": "#/Coordinate2D"
                 }
             },
             "arcs": {
@@ -20893,7 +20879,7 @@
         "properties": {
             "area": {
                 "type": "number",
-                "description": "The front surface area of the stair."
+                "description": "The front surface area of the stair, as Archicad calls it: on a straight flight its length times its width."
             },
             "volume": {
                 "type": "number",
@@ -20909,7 +20895,7 @@
             },
             "gradient": {
                 "type": "number",
-                "description": "GRADDESC"
+                "description": "Inclination angle of the stair, in radians."
             },
             "numberOfRisers": {
                 "type": "integer",

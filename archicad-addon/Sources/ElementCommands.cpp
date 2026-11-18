@@ -1338,15 +1338,15 @@ static void AddStairWalkingLineFromMemo (const API_StairPolylineData& line, cons
 }
 
 // The left (index 0) or right (index 1) boundary of a stair (memo stairBoundary): the outline of
-// the stair on that side, with the elevation of each point (vertexData zValue) and whether each
-// edge is visible (edgeData), aligned the way the baseline's vertexData and edgeData are.
-static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, const API_Coord3D& origin, const char* name, GS::ObjectState& os)
+// the stair on that side, and whether each edge is visible (edgeData, aligned the way the baseline's
+// edgeData is). The vertexData zValue is not reported: Archicad 29 reads 0 at every point of a
+// rising stair, so it is not the elevation of the point.
+static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, const API_Coord& origin, const char* name, GS::ObjectState& os)
 {
     const GSIndex last = GetStairMemoPolylineLast (boundary.coords, boundary.pends);
     if (last < 1) {
         return;
     }
-    const GSSize nVertexData = boundary.vertexData != nullptr ? BMGetPtrSize (reinterpret_cast<GSPtr> (boundary.vertexData)) / sizeof (API_StairBoundaryVertexData) : 0;
     const GSSize nEdgeData = boundary.edgeData != nullptr ? BMGetPtrSize (reinterpret_cast<GSPtr> (boundary.edgeData)) / sizeof (API_StairBoundaryEdgeData) : 0;
 
     GS::ObjectState boundaryOs;
@@ -1354,11 +1354,7 @@ static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, con
     const auto& points = boundaryOs.AddList<GS::ObjectState> ("points");
     for (GSIndex i = 1; i <= last; ++i) {
         const API_Coord& coord = (*boundary.coords)[i];
-        GS::ObjectState pointOs ("x", coord.x + origin.x, "y", coord.y + origin.y);
-        if (i < nVertexData) {
-            pointOs.Add ("z", boundary.vertexData[i].zValue + origin.z);
-        }
-        points (pointOs);
+        points (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
     }
     AddStairMemoPolylineArcs (boundary.parcs, last, boundaryOs);
     const auto& edges = boundaryOs.AddList<GS::ObjectState> ("edges");
@@ -1369,7 +1365,7 @@ static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, con
 }
 
 // The plan geometry of a stair that is not its baseline: its two boundaries and its walking lines.
-static void AddStairOutlineFromMemo (const API_Guid& guid, const API_Coord3D& origin, GS::ObjectState& os)
+static void AddStairOutlineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -1378,9 +1374,9 @@ static void AddStairOutlineFromMemo (const API_Guid& guid, const API_Coord3D& or
     }
     AddStairBoundaryFromMemo (memo.stairBoundary[0], origin, "leftBoundary", os);
     AddStairBoundaryFromMemo (memo.stairBoundary[1], origin, "rightBoundary", os);
-    AddStairWalkingLineFromMemo (memo.stairWalkingLine, { origin.x, origin.y }, "walkingLine", os);
-    AddStairWalkingLineFromMemo (memo.stairCustomWalkLine, { origin.x, origin.y }, "customWalkingLine", os);
-    AddStairWalkingLineFromMemo (memo.stairCenterWalkLine, { origin.x, origin.y }, "centerWalkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairWalkingLine, origin, "walkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCustomWalkLine, origin, "customWalkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCenterWalkLine, origin, "centerWalkingLine", os);
 }
 
 // The section line and the depth line of a Section (CutPlane), or of an Elevation, live in the memo's
@@ -4581,7 +4577,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
                 typeSpecificDetails.Add ("baselinePosition", StairLinePositionToString (elem.stair.baselinePosition));
                 typeSpecificDetails.Add ("baselineOffset", elem.stair.baselineOffset);
-                AddStairOutlineFromMemo (elem.header.guid, basePoint, typeSpecificDetails);
+                AddStairOutlineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
                 {
                     GS::ObjectState linkOS;
                     linkOS.Add ("homeStoryDifference", (Int32) elem.stair.linkToSettings.homeStoryDifference);
