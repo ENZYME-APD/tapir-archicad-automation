@@ -112,6 +112,7 @@ static void AddRoofDetails (const API_RoofType& roof, const API_Guid& guid, shor
         os.Add ("segmentType", RoofSegmentTypeToString (roof.u.polyRoof.segmentType));
         os.Add ("segmentsByArc", (Int32) roof.u.polyRoof.segmentsByArc);
         os.Add ("segmentsByCircle", (Int32) roof.u.polyRoof.segmentsByCircle);
+        os.Add ("fitSkylightToCurve", roof.u.polyRoof.fitSkylightToCurve);
         if (partMemo == nullptr) {
             AddPivotPolygonFromMemo (guid, os);
             AddPivotEdgesFromMemo (guid, os);
@@ -986,6 +987,150 @@ static void AddStairFloorPlanDetails (const API_StairType& stair, GS::ObjectStat
             stories (CreateStairStructureVisibilityOnStoryObjectState (relevantStories, visibility.structureVisibilityOnStories[relevantStories]));
         }
         onStories (viewOS);
+    }
+}
+
+static const char* StairPartRoleToString (API_StairPartRoleID role)
+{
+    switch (role) {
+        case APISR_Run:     return "Run";
+        case APISR_Landing: return "Landing";
+        default:            return "Unknown";
+    }
+}
+
+static const char* StairStructureSideToString (API_StairStructureSideID side)
+{
+    switch (side) {
+        case APISS_LeftSide:  return "LeftSide";
+        case APISS_RightSide: return "RightSide";
+        case APISS_UnderSide: return "UnderSide";
+        default:              return "Unknown";
+    }
+}
+
+static const char* StairStructureTypeToString (API_StairStructureTypeID structType)
+{
+    switch (structType) {
+        case APIST_Side:                return "Side";
+        case APIST_Monolith:            return "Monolith";
+        case APIST_BeamSupport:         return "BeamSupport";
+        case APIST_CantileveredSupport: return "CantileveredSupport";
+        default:                        return "Unknown";
+    }
+}
+
+static const char* StairStructBottomTypeToString (API_StairStructBottomTypeID bottomType)
+{
+    switch (bottomType) {
+        case APISB_Stepped: return "Stepped";
+        case APISB_Flat:    return "Flat";
+        case APISB_Smooth:  return "Smooth";
+        default:            return "Unknown";
+    }
+}
+
+// The cut fill pens of a monolithic stair structure: API_OverriddenPen from Archicad 27, before
+// that an API_OverriddenAttribute whose attributeIndex holds the pen (AC25 and AC26 DevKits, where
+// the background pen is named cutFillBackPen). Both are read into the OverriddenPen shape.
+static void AddStairMonolithCutFillPens (const API_MonolithStairStructData& monolith, GS::ObjectState& os)
+{
+#ifdef ServerMainVers_2700
+    os.Add ("cutFillPen", CreateOverriddenPenObjectState (monolith.cutFillPen));
+    os.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (monolith.cutFillBackgroundPen));
+#else
+    GS::ObjectState cutFillPenOs ("overridden", monolith.cutFillPen.overridden);
+    if (monolith.cutFillPen.overridden) {
+        cutFillPenOs.Add ("penIndex", static_cast<Int32> (monolith.cutFillPen.attributeIndex));
+    }
+    os.Add ("cutFillPen", cutFillPenOs);
+    GS::ObjectState cutFillBackgroundPenOs ("overridden", monolith.cutFillBackPen.overridden);
+    if (monolith.cutFillBackPen.overridden) {
+        cutFillBackgroundPenOs.Add ("penIndex", static_cast<Int32> (monolith.cutFillBackPen.attributeIndex));
+    }
+    os.Add ("cutFillBackgroundPen", cutFillBackgroundPenOs);
+#endif
+}
+
+static GS::ObjectState CreateStairMonolithObjectState (const API_MonolithStairStructData& monolith)
+{
+    GS::ObjectState os;
+    os.Add ("thinning", monolith.thinning);
+    os.Add ("monolithThickness", monolith.monolithThickness);
+    os.Add ("bottomOversize", monolith.bottomOversize);
+    AddStairAttributeId (os, "buildingMaterialId", API_BuildingMaterialID, monolith.buildingMaterial);
+    AddStairAttributeId (os, "sideFillId", API_FilltypeID, monolith.sideFill);
+    os.Add ("materialsChained", monolith.materialsChained);
+    os.Add ("topMaterial", CreateOverriddenMaterialObjectState (monolith.topMaterial));
+    os.Add ("leftMaterial", CreateOverriddenMaterialObjectState (monolith.leftMaterial));
+    os.Add ("rightMaterial", CreateOverriddenMaterialObjectState (monolith.rightMaterial));
+    os.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (monolith.bottomMaterial));
+    AddStairAttributeId (os, "surfaceMaterialId", API_MaterialID, monolith.surfaceMaterial);
+    AddStairAttributeId (os, "cutLineTypeId", API_LinetypeID, monolith.cutLineType);
+    os.Add ("cutLinePen", static_cast<Int32> (monolith.cutLinePen));
+    AddStairAttributeId (os, "lineTypeId", API_LinetypeID, monolith.lineType);
+    os.Add ("pen", static_cast<Int32> (monolith.pen));
+    AddStairMonolithCutFillPens (monolith, os);
+    os.Add ("uniformDrainings", monolith.uniformDrainings);
+    const auto& drainings = os.AddList<GS::ObjectState> ("drainings");
+    for (Int32 side = 0; side < API_StairDrainSideNum; ++side) {
+        const API_StairStructureDrainingData& draining = monolith.draining[side];
+        GS::ObjectState drainingOs;
+        drainingOs.Add ("side", side == APIDS_Left ? "Left" : "Right");
+        drainingOs.Add ("enabled", draining.enabled);
+        drainingOs.Add ("width", draining.width);
+        drainingOs.Add ("offset", draining.offset);
+        drainingOs.Add ("horizontalDepth", draining.horizontalDepth);
+        drainingOs.Add ("verticalDepth", draining.verticalDepth);
+        drainingOs.Add ("material", CreateOverriddenMaterialObjectState (draining.material));
+        drainingOs.Add ("surfaceType", draining.surfaceType == APIST_Smooth ? "Smooth" : "Stepped");
+        drainings (drainingOs);
+    }
+    return os;
+}
+
+static GS::ObjectState CreateStairSideStructureObjectState (const API_SideStairStructData& sideStair)
+{
+    GS::ObjectState os;
+    os.Add ("width", sideStair.width);
+    os.Add ("heightAboveTread", sideStair.heightAboveTread);
+    os.Add ("heightMeasure", sideStair.heightMeasure == APIHM_Vertical ? "Vertical" : "Perpendicular");
+    return os;
+}
+
+// One structure of a stair (#2866), in the StairStructureDetails shape: the per-part settings
+// ModifyStairs writes, and the data of its type. API_StairStructureType::data is a union, so only
+// the member of the structure's type is read: monolith for a Monolith, sideStair for a Side
+// structure; beam supported and cantilevered structures have none. The role and side are given,
+// since the per-part settings of the stair (API_StairType::structure[role][side]) are indexed by
+// them, while a StairStructure subelement carries its own.
+static void AddStairStructureDetails (const API_StairStructureType& structure, API_StairPartRoleID role, API_StairStructureSideID side, GS::ObjectState& os)
+{
+    os.Add ("role", StairPartRoleToString (role));
+    os.Add ("side", StairStructureSideToString (side));
+    os.Add ("visible", structure.visible);
+    os.Add ("structureType", StairStructureTypeToString (structure.structType));
+    os.Add ("bottomType", StairStructBottomTypeToString (structure.bottomType));
+    os.Add ("thickness", structure.thickness);
+    os.Add ("horizontalThickness", structure.horizontalThickness);
+    if (structure.structType == APIST_Monolith) {
+        os.Add ("monolith", CreateStairMonolithObjectState (structure.data.monolith));
+    } else if (structure.structType == APIST_Side) {
+        os.Add ("sideStair", CreateStairSideStructureObjectState (structure.data.sideStair));
+    }
+}
+
+// The structure settings of every part and side of a stair (API_StairType::structure), in the
+// order Run LeftSide, RightSide, UnderSide, then the same for Landing.
+static void AddStairStructures (const API_StairType& stair, GS::ObjectState& os)
+{
+    const auto& structures = os.AddList<GS::ObjectState> ("structures");
+    for (Int32 role = 0; role < API_StairPartRoleNum; ++role) {
+        for (Int32 side = 0; side < API_StairStructureSideNum; ++side) {
+            GS::ObjectState structureOs;
+            AddStairStructureDetails (stair.structure[role][side], static_cast<API_StairPartRoleID> (role), static_cast<API_StairStructureSideID> (side), structureOs);
+            structures (structureOs);
+        }
     }
 }
 
@@ -3422,6 +3567,15 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("veneerLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.venLineType)));
                 }
                 typeSpecificDetails.Add ("coreSymbolPen", (Int32) elem.column.coreSymbolPen);
+                {
+                    // The core symbol and its crosshair sizes, written by ModifyColumns (#2858).
+                    GS::UniString coreSymbolType;
+                    if (ColumnCoreSymbolTypeToString (elem.column.coreSymbolType, coreSymbolType)) {
+                        typeSpecificDetails.Add ("coreSymbolType", coreSymbolType);
+                    }
+                }
+                typeSpecificDetails.Add ("coreSymbolPar1", elem.column.coreSymbolPar1);
+                typeSpecificDetails.Add ("coreSymbolPar2", elem.column.coreSymbolPar2);
                 typeSpecificDetails.Add ("belowViewLinePen", (Int32) elem.column.belowViewLinePen);
                 if (elem.column.belowViewLineType != APIInvalidAttributeIndex) {
                     typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.belowViewLineType)));
@@ -3682,6 +3836,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("detailIdStr", detailIdStr);
                 typeSpecificDetails.Add ("isHorizontalMarker", elem.detail.horizontalMarker);
                 typeSpecificDetails.Add ("isWindowOpened", elem.detail.windOpened);
+                typeSpecificDetails.Add ("constructionElementsOnly", elem.detail.constructionElementsOnly);
                 AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "clipPolygon");
                 GS::ObjectState linkDataOS;
                 switch (elem.detail.linkData.referringLevel) {
@@ -4317,7 +4472,14 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
                 AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
                 AddStairFloorPlanDetails (elem.stair, typeSpecificDetails);
+                AddStairStructures (elem.stair, typeSpecificDetails);
             } break;
+
+            case API_StairStructureID:
+                // A structure subelement of a stair (#2866), with the keys of the stair's
+                // structures: the values Archicad solved for this part.
+                AddStairStructureDetails (elem.stairStructure, elem.stairStructure.role, elem.stairStructure.side, typeSpecificDetails);
+                break;
 
             case API_CutPlaneID: {
                 // The fields CreateSections writes, read back (#1607).
@@ -4920,9 +5082,9 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, ltypeInd);
                         if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, roomSeparator);
                         if (GetElemTypeId (elem.header) == API_CircleID &&
-                            (typeSpecificDetails->Contains ("startArrow") || typeSpecificDetails->Contains ("endArrow"))) {
+                            (typeSpecificDetails->Contains ("startArrow") || typeSpecificDetails->Contains ("endArrow") || typeSpecificDetails->Contains ("linkedArrowAttributes"))) {
                             ACAPI_DisposeElemMemoHdls (&clipMemo);
-                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "A Circle has no ends, so it takes no startArrow or endArrow."));
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "A Circle has no ends, so it takes no startArrow, endArrow or linkedArrowAttributes."));
                             continue;
                         }
                         const GS::Optional<GS::UniString> arrowsError = SetLineArrowsFields (*typeSpecificDetails, elem.arc, mask.arc);

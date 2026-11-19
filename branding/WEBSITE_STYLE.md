@@ -246,7 +246,7 @@ Use these from `site.css` before making a new one; a new component that a second
 | Grids | `.ways`, `.comm`, `.teasers` (3 columns), `.doc-grid`, `.two` (2) | Cards in a row |
 | Uses grid | `ul.uses-grid` (4 columns) or `.uses-grid.three` | Short facts in a frame of cells |
 | Figures | `.figures > div > strong + span` | Live numbers |
-| Flow | `.flow` (5), `.flow-3`, `.flow-4` `> div > b + strong + span` | A short sequence or a set of parallel points |
+| Flow | `.flow` (5), `.flow-3`, `.flow-4` `> div > b + strong + span`; `.flow.steps` when `b` is a step number | A short sequence or a set of parallel points |
 | Timeline | `ol.timeline > li > span.n + .body` | Numbered steps with a paragraph or more each |
 | Share steps | `.share-steps ol > li > b + strong + span` | Three big numbered steps |
 | Schedule | `.schedule-wrap > table.schedule` | Tables; on phones each row is a card (`data-label` on each cell) |
@@ -265,6 +265,10 @@ class (a page that needs a variant adds a modifier class in `site.css`).
 
 - A step number is the plain number: `1`, `2`, `3`, never `01`, `1.`, `Step 1` or a letter. The same in
   `.timeline .n`, `.flow b` and `.share-steps li b`.
+- Every step number looks the same: the share steps' big number (`--display`, 3 rem, 2.25 rem on phones,
+  `--link`), one rule in `site.css` for `.timeline .n`, `.flow.steps b` and `.share-steps li b`. A
+  `.flow` whose `b` are step numbers has the `steps` class; a `.flow` of labels has not, and its labels
+  stay small.
 - A step number is decorative (the list or the order says it) and has `aria-hidden="true"`.
 - Number with `.flow b` only when the points are a sequence. Points that are not a sequence get a
   one-word label in sentence case (`Read`, `Free`), or no `b` at all.
@@ -361,6 +365,10 @@ now gets the 32 px of section 5 instead of 28 px), and `<main>`'s children on `a
 **Numbering, labels and wording**: fixed in part 3. Every `.flow` numbers its steps `1, 2, 3` with
 `aria-hidden="true"`, its labels are no longer typed in capitals, every page title ends with ` | Tapir`
 and the coverage pages' section heads end in `<em>…</em>.`.
+
+**Step numbers drawn three ways** (#2884): fixed. The timeline's numbers were 4.5 rem, the numbered
+flows' small mono capitals and only the share steps' 3 rem; all three now use the share steps' number
+(section 8).
 
 **Page stylesheets that still draw the Legacy look in Standard**: fixed in part 4. The community map,
 the coverage pages' phone filter sheet and the floor plan's Run button have their Standard rules.
