@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-19 09:29 UTC",
+ "generatedAt": "2026-11-19 18:39 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -5224,7 +5224,7 @@
    "id": "CreateStairs",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
+   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5234,7 +5234,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 52,
+   "parameterCount": 54,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLinePoints",
@@ -5275,7 +5275,9 @@
     "stairsData.structures",
     "stairsData.structures.bottomType",
     "stairsData.structures.horizontalThickness",
+    "stairsData.structures.monolith",
     "stairsData.structures.side",
+    "stairsData.structures.sideStair",
     "stairsData.topOffset",
     "stairsData.totalHeightLocked",
     "stairsData.treadDepthLocked",
@@ -6261,7 +6263,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 23,
+   "parameterCount": 24,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -6272,6 +6274,7 @@
     "dimensionsData.appearance",
     "dimensionsData.defaultWitnessForm",
     "dimensionsData.defaultWitnessVal",
+    "dimensionsData.elevationMarker",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.floorIndex",
@@ -6306,7 +6309,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 28,
+   "parameterCount": 29,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -6319,6 +6322,7 @@
     "dimensionsData.beginPlane",
     "dimensionsData.defaultWitnessForm",
     "dimensionsData.defaultWitnessVal",
+    "dimensionsData.elevationMarker",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.layerIndex",
@@ -6356,7 +6360,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 22,
+   "parameterCount": 23,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
@@ -6367,6 +6371,7 @@
     "dimensionsData.appearance",
     "dimensionsData.defaultWitnessForm",
     "dimensionsData.defaultWitnessVal",
+    "dimensionsData.elevationMarker",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.layerIndex",
@@ -6390,7 +6395,7 @@
    "id": "ModifyAssociativeDimensions",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
+   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6400,7 +6405,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 25,
+   "parameterCount": 26,
    "coveredParameters": [
     "dimensionsWithDetails",
     "dimensionsWithDetails.appearance",
@@ -6414,6 +6419,7 @@
     "dimensionsWithDetails.textPen"
    ],
    "missingParameters": [
+    "dimensionsWithDetails.elevationMarker",
     "dimensionsWithDetails.elevationOrigin",
     "dimensionsWithDetails.layeredElementDimensions",
     "dimensionsWithDetails.onlyDimensionText",
@@ -7764,7 +7770,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes), edgeSideMaterials (the custom surface of each edge of the polygon, on a multi-plane roof of its contour; read back after writing) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine and edgeTypes (the Edge Type of each polygon edge, used by schedules) only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8275,7 +8281,7 @@
    "id": "ModifyStairs",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders, and the break marks, lines and fills of the floor plan symbol; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
+   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders, and the break marks, lines and fills of the floor plan symbol; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8285,7 +8291,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 44,
+   "parameterCount": 46,
    "coveredParameters": [
     "stairsWithDetails",
     "stairsWithDetails.elementId",
@@ -8320,7 +8326,9 @@
     "stairsWithDetails.structures",
     "stairsWithDetails.structures.bottomType",
     "stairsWithDetails.structures.horizontalThickness",
+    "stairsWithDetails.structures.monolith",
     "stairsWithDetails.structures.side",
+    "stairsWithDetails.structures.sideStair",
     "stairsWithDetails.topOffset",
     "stairsWithDetails.treads",
     "stairsWithDetails.treads.nosingSlant",

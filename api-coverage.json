@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-19 09:29 UTC",
+ "generatedAt": "2026-11-19 18:39 UTC",
  "versions": [
   25,
   26,
@@ -5919,10 +5919,6 @@
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
     {
-     "number": 2595,
-     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     }
@@ -7597,10 +7593,6 @@
      "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
     },
     {
-     "number": 2871,
-     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
-    },
-    {
      "number": 2856,
      "title": "[3/3] ModifyStairs/CreateStairs: write the visibility of the structure symbols on the stories"
     },
@@ -8333,10 +8325,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2595,
-     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
      "number": 2550,
@@ -26172,14 +26160,6 @@
      "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
     {
-     "number": 2871,
-     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
-    },
-    {
-     "number": 2865,
-     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
      "number": 2856,
      "title": "[3/3] ModifyStairs/CreateStairs: write the visibility of the structure symbols on the stories"
     },
@@ -26214,10 +26194,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2595,
-     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
      "number": 2550,
@@ -31958,10 +31934,6 @@
     {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
-    },
-    {
-     "number": 2865,
-     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
     {
      "number": 2855,
@@ -38606,14 +38578,6 @@
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
     {
-     "number": 2871,
-     "title": "[2/2] CreateStairs, ModifyStairs: write the monolith and side stringer data of the stair structures"
-    },
-    {
-     "number": 2865,
-     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
      "number": 2856,
      "title": "[3/3] ModifyStairs/CreateStairs: write the visibility of the structure symbols on the stories"
     },
@@ -38668,10 +38632,6 @@
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
-    },
-    {
-     "number": 2595,
-     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
     },
     {
      "number": 2550,
@@ -45512,10 +45472,6 @@
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
     {
-     "number": 2865,
-     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
-    },
-    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
@@ -48773,10 +48729,6 @@
     {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
-    },
-    {
-     "number": 2865,
-     "title": "Elevation dimensions: read and write the elevation marker (elevationMarker)"
     },
     {
      "number": 2855,
