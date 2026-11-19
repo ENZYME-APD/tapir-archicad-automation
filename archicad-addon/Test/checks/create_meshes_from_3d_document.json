@@ -1,8 +1,8 @@
 {
-  "title": "CreateMeshes and CreateSlabs create model elements on the floor plan while a 3D Document is the active window (#2956)",
+  "title": "CreateMeshes, CreateSlabs and CreateWalls create model elements on the floor plan while a 3D Document is the active window (#2956)",
   "minTapir": "2.0.1",
   "minArchicad": "27",
-  "requiresEmpty": [ "Mesh", "Slab" ],
+  "requiresEmpty": [ "Mesh", "Slab", "Wall" ],
   "steps": [
     {
       "id": "floor plan",
@@ -94,6 +94,21 @@
       ]
     },
     {
+      "id": "a wall, sent from the 3D Document",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1060.0, "y": 1000.0 }, "endCoordinate": { "x": 1063.0, "y": 1000.0 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error", "exists": false, "name": "not refused from the 3D Document" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
       "id": "the 3D Document is still the active window",
       "command": "GetCurrentWindowType",
       "creates": false,
@@ -113,18 +128,20 @@
       ]
     },
     {
-      "id": "the mesh and the slab are model elements with their outline",
+      "id": "the mesh, the slab and the wall are model elements with their geometry",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": {
-        "elements": [ { "elementId": { "guid": "${mesh}" } }, { "elementId": { "guid": "${slab}" } } ]
+        "elements": [ { "elementId": { "guid": "${mesh}" } }, { "elementId": { "guid": "${slab}" } }, { "elementId": { "guid": "${wall}" } } ]
       },
       "expect": [
         { "path": "detailsOfElements[0].type", "eq": "Mesh" },
         { "path": "detailsOfElements[0].details.polygonCoordinates", "len": 4, "name": "three corners and the closing point" },
         { "path": "detailsOfElements[0].details.polygonCoordinates[1].x", "approx": 1042.0, "name": "second corner x kept" },
         { "path": "detailsOfElements[0].details.polygonCoordinates[2].y", "approx": 1002.0, "name": "third corner y kept" },
-        { "path": "detailsOfElements[1].type", "eq": "Slab" }
+        { "path": "detailsOfElements[1].type", "eq": "Slab" },
+        { "path": "detailsOfElements[2].type", "eq": "Wall" },
+        { "path": "detailsOfElements[2].details.endCoordinate.x", "approx": 1063.0, "name": "wall end x kept" }
       ]
     }
   ],

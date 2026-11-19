@@ -51,6 +51,11 @@ GS::Optional<GS::UniString> CreateElementsCommandBase::GetRawResponseSchema () c
 static bool IsFloorPlanOnlyModelElementType (API_ElemTypeID elemTypeID)
 {
     switch (elemTypeID) {
+        case API_WallID:
+        case API_BeamID:
+        case API_StairID:
+        case API_ShellID:
+        case API_SkylightID:
         case API_ColumnID:
         case API_SlabID:
         case API_ZoneID:
