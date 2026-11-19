@@ -1286,6 +1286,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.2.5",
             "Creates Label elements based on the given parameters, optionally on a given layer. A Symbol label can name its label library part in libraryPartName; it starts from the Symbol label settings of the Label tool default or of the favorite in favoriteName."
         );
+        err |= RegisterCommand<LabelElementsCommand> (
+            elementCommands, "2.0.1",
+            "Labels the given elements, one associative label each, with the current settings of the Label tool or with a Label favorite, as Document > Label Selected Items does: the label keeps the content of those settings, autotext included, and is placed at its default position. Optionally in a given database (databaseId), for elements of that database."
+        );
         err |= RegisterCommand<CreateTextsCommand> (
             elementCommands, "1.5.0",
             "Creates standalone Text elements based on the given parameters."

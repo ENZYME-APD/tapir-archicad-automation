@@ -7261,6 +7261,8 @@ static void RemoveDictionaryParameters (API_AddParType**& params)
     params = filtered;
 }
 
+static GS::Optional<GS::ObjectState> PrepareSymbolLabelParams (API_Element& element, API_ElementMemo& memo);
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
@@ -7410,36 +7412,45 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
             element.label.u.symbol.libInd = libPart.index;
         }
 
-        // A Symbol label is a library part instance, so ACAPI_Element_Create needs the library
-        // part's parameter list in memo.params. The Label tool defaults (or the favorite applied
-        // to them) normally carry it - for Flexi_Zone_Label all 140 parameters, checked on AC29
-        // (#742) - and those values are kept. Only defaults that carry none get the library
-        // part's own list, the way Window/Door markers (PrepareWindowOrDoorDefaults) and
-        // interior elevation markers get theirs.
-        const GSSize paramNum = memo.params != nullptr ? BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType) : 0;
-        if (paramNum == 0) {
-            double a = 0.0;
-            double b = 0.0;
-            Int32 addParNum = 0;
-            API_AddParType** libPartPars = nullptr;
-            const GSErrCode paramsErr = ACAPI_LibraryPart_GetParams (element.label.u.symbol.libInd, &a, &b, &addParNum, &libPartPars);
-            if (paramsErr != NoError || libPartPars == nullptr) {
-                if (libPartPars != nullptr) {
-                    ACAPI_DisposeAddParHdl (&libPartPars);
-                }
-                return CreateErrorResponse (paramsErr != NoError ? paramsErr : APIERR_BADINDEX, "Failed to read the parameters of the symbol label's library part. The Label tool defaults do not name a valid symbol library part - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
-            }
-            if (memo.params != nullptr) {
-                ACAPI_DisposeAddParHdl (&memo.params);
-            }
-            memo.params = libPartPars;
+        auto paramsErr = PrepareSymbolLabelParams (element, memo);
+        if (paramsErr.HasValue ()) {
+            return paramsErr;
         }
-
-        // Whichever list it is, it holds the Dictionary parameters with no value: see
-        // RemoveDictionaryParameters for why the label is broken when they are passed on.
-        RemoveDictionaryParameters (memo.params);
     }
 
+    return {};
+}
+
+// A Symbol label is a library part instance, so ACAPI_Element_Create needs the library
+// part's parameter list in memo.params. The Label tool defaults (or the favorite applied
+// to them) normally carry it - for Flexi_Zone_Label all 140 parameters, checked on AC29
+// (#742) - and those values are kept. Only defaults that carry none get the library
+// part's own list, the way Window/Door markers (PrepareWindowOrDoorDefaults) and
+// interior elevation markers get theirs. Shared by CreateLabels and LabelElements.
+static GS::Optional<GS::ObjectState> PrepareSymbolLabelParams (API_Element& element, API_ElementMemo& memo)
+{
+    const GSSize paramNum = memo.params != nullptr ? BMGetHandleSize ((GSHandle) memo.params) / sizeof (API_AddParType) : 0;
+    if (paramNum == 0) {
+        double a = 0.0;
+        double b = 0.0;
+        Int32 addParNum = 0;
+        API_AddParType** libPartPars = nullptr;
+        const GSErrCode paramsErr = ACAPI_LibraryPart_GetParams (element.label.u.symbol.libInd, &a, &b, &addParNum, &libPartPars);
+        if (paramsErr != NoError || libPartPars == nullptr) {
+            if (libPartPars != nullptr) {
+                ACAPI_DisposeAddParHdl (&libPartPars);
+            }
+            return CreateErrorResponse (paramsErr != NoError ? paramsErr : APIERR_BADINDEX, "Failed to read the parameters of the symbol label's library part. The Label tool defaults do not name a valid symbol library part - apply a Symbol label favorite (favoriteName) or set the Label tool to a symbol label first.");
+        }
+        if (memo.params != nullptr) {
+            ACAPI_DisposeAddParHdl (&memo.params);
+        }
+        memo.params = libPartPars;
+    }
+
+    // Whichever list it is, it holds the Dictionary parameters with no value: see
+    // RemoveDictionaryParameters for why the label is broken when they are passed on.
+    RemoveDictionaryParameters (memo.params);
     return {};
 }
 
@@ -7449,6 +7460,116 @@ GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement,
         return NoError;
     }
     // The factors of the style, the favorite or the tool defaults: the create with the content memo leaves them at 1.
+    return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.label.u.text.widthFactor, requestedElement.label.u.text.charSpaceFactor);
+}
+
+// Document > Label Selected Items through the API (#2877): one associative label per element,
+// placed with the Label tool's current settings (or a Label favorite) as they are, content and
+// autotext included. It is the DevKit's own way of labelling an element (MEP_Test example,
+// LabelingElements.cpp PlaceLabelOn): the defaults are read with the autotext flag off, so the
+// content memo holds the autotext keys, and the label is created with that memo unchanged at
+// its default position. The items go through CreateElementsCommandBase as "labelsData" items,
+// with the favorite of the call on each of them.
+LabelElementsCommand::LabelElementsCommand () :
+    CreateElementsCommandBase ("LabelElements", API_LabelID, "labelsData")
+{
+}
+
+GS::Optional<GS::UniString> LabelElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "elements": {
+            "$ref": "#/Elements",
+            "description": "The elements to label, one associative label each, in this order (the same element given twice gets two labels). Each must be an element that can carry a label in the current database (or in the one given by databaseId), e.g. one returned by GetElementsByType or GetSelectedElements."
+        },
+        "favoriteName": {
+            "type": "string",
+            "description": "Optional name of a Label favorite to label the elements with instead of the current Label tool settings. The Label tool settings are left as they were."
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to place the labels in, e.g. a worksheet or a detail (see GetDatabases); the elements must be elements of that database. The front window stays as it is. Without it the labels are placed in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "elements"
+    ]
+})";
+}
+
+GS::ObjectState LabelElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const
+{
+    GS::Array<GS::ObjectState> elementItems;
+    parameters.Get ("elements", elementItems);
+    GS::UniString favoriteName;
+    parameters.Get ("favoriteName", favoriteName);
+
+    GS::ObjectState labelsParameters;
+    const auto& labelsData = labelsParameters.AddList<GS::ObjectState> (arrayFieldName);
+    for (const GS::ObjectState& elementItem : elementItems) {
+        GS::ObjectState labelData;
+        const GS::ObjectState* elementIdOs = elementItem.Get ("elementId");
+        if (elementIdOs != nullptr) {
+            labelData.Add ("elementId", *elementIdOs);
+        }
+        if (!favoriteName.IsEmpty ()) {
+            labelData.Add ("favoriteName", favoriteName);
+        }
+        labelsData (labelData);
+    }
+    const GS::ObjectState* databaseIdOs = parameters.Get ("databaseId");
+    if (databaseIdOs != nullptr) {
+        labelsParameters.Add ("databaseId", *databaseIdOs);
+    }
+
+    return CreateElementsCommandBase::Execute (labelsParameters, processControl);
+}
+
+GS::Optional<GS::ObjectState> LabelElementsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
+{
+    API_Elem_Head parentElemHead = {};
+    parentElemHead.guid = GetGuidFromArrayItem ("elementId", parameters);
+    if (parentElemHead.guid == APINULLGuid || ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, "The element to label was not found.");
+    }
+    if (GetElemTypeId (parentElemHead) == API_LabelID) {
+        return CreateErrorResponse (APIERR_BADPARS, "A label cannot be labelled.");
+    }
+
+    // As CreateLabels places a label with a parentElementId and no coordinates: associative to
+    // the element, on its story, at Archicad's default position for it.
+    element.label.parent = parentElemHead.guid;
+#ifdef ServerMainVers_2600
+    element.label.parentType = parentElemHead.type;
+#else
+    element.label.parentType = parentElemHead.typeID;
+#endif
+    element.header.floorInd = parentElemHead.floorInd;
+
+    API_Box3D box = {};
+    CalcLabelParentBounds (parentElemHead, box);
+    element.label.begC.x = (box.xMin + box.xMax) / 2.0;
+    element.label.begC.y = (box.yMin + box.yMax) / 2.0;
+    element.label.createAtDefaultPosition = true;
+
+    // The content, style and class of the defaults are kept as they are. A Symbol label needs
+    // the parameter list of its library part, as for CreateLabels.
+    if (element.label.labelClass == APILblClass_Symbol) {
+        return PrepareSymbolLabelParams (element, memo);
+    }
+
+    return {};
+}
+
+GSErrCode LabelElementsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
+{
+    if (requestedElement.label.labelClass != APILblClass_Text) {
+        return NoError;
+    }
+    // See CreateLabelsCommand::AfterCreate.
     return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.label.u.text.widthFactor, requestedElement.label.u.text.charSpaceFactor);
 }
 
