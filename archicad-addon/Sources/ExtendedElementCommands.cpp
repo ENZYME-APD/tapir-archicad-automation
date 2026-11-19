@@ -21530,6 +21530,132 @@ void BuildMeshSublinesMemoFromGeometry (
     }
 }
 
+// When the level lines of a mesh cross its new outline or holes, ACAPI_Element_Change inserts a
+// vertex at each crossing, but keeps the heights (meshPolyZ) by index, so every height after an
+// inserted vertex lands on the wrong point (#2958). This reads the stored polygon back and gives each
+// vertex the height of the requested point at the same xy; an inserted vertex gets the height
+// interpolated along its contour between the nearest requested points before and after it. Does
+// nothing when every vertex already has its requested height.
+static GS::Optional<GS::UniString> RestoreRequestedMeshPolyHeights (const API_Guid& meshGuid, const GS::Array<API_Coord3D>& requestedPoints, GSErrCode& err)
+{
+    const double kEps = 1e-5;
+
+    API_Element elem = {};
+    elem.header.guid = meshGuid;
+    err = ACAPI_Element_Get (&elem);
+    if (err != NoError) {
+        return GS::UniString ("The outline was changed, but the mesh could not be read back to check its point heights.");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (meshGuid, &memo, APIMemoMask_Polygon | APIMemoMask_MeshPolyZ);
+    if (err != NoError) {
+        return GS::UniString ("The outline was changed, but the mesh polygon could not be read back to check its point heights.");
+    }
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.meshPolyZ == nullptr) {
+        return {};
+    }
+
+    const Int32 nCoords   = elem.mesh.poly.nCoords;
+    const Int32 nSubPolys = elem.mesh.poly.nSubPolys;
+    if ((Int32) (BMGetHandleSize (reinterpret_cast<GSHandle> (memo.meshPolyZ)) / sizeof (double)) < nCoords + 1) {
+        memo.meshPolyZ = reinterpret_cast<double**> (
+            BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshPolyZ), (nCoords + 1) * sizeof (double), REALLOC_CLEAR, 0));
+        if (memo.meshPolyZ == nullptr) {
+            err = APIERR_MEMFULL;
+            return GS::UniString ("The outline was changed, but its point heights could not be set.");
+        }
+    }
+
+    bool changed = false;
+    for (Int32 sub = 1; sub <= nSubPolys; ++sub) {
+        const Int32 begin = (*memo.pends)[sub - 1] + 1;
+        const Int32 end   = (*memo.pends)[sub];   // the closing copy of the contour's first vertex
+        const Int32 count = end - begin;
+        if (count <= 0) {
+            continue;
+        }
+
+        GS::Array<bool>   matched;
+        GS::Array<double> heights;
+        bool anyMatched = false;
+        for (Int32 i = begin; i < end; ++i) {
+            const API_Coord& c = (*memo.coords)[i];
+            bool found = false;
+            double z = (*memo.meshPolyZ)[i];
+            for (const API_Coord3D& p : requestedPoints) {
+                if (fabs (p.x - c.x) < kEps && fabs (p.y - c.y) < kEps) {
+                    found = true;
+                    z = p.z;
+                    break;
+                }
+            }
+            matched.Push (found);
+            heights.Push (z);
+            anyMatched = anyMatched || found;
+        }
+        if (!anyMatched) {
+            continue;
+        }
+
+        const auto coordAt = [&] (Int32 j) -> const API_Coord& { return (*memo.coords)[begin + j]; };
+        const auto dist = [&] (Int32 a, Int32 b) {
+            const double dx = coordAt (b).x - coordAt (a).x;
+            const double dy = coordAt (b).y - coordAt (a).y;
+            return sqrt (dx * dx + dy * dy);
+        };
+
+        GS::Array<double> finalHeights = heights;
+        for (Int32 j = 0; j < count; ++j) {
+            if (matched[j]) {
+                continue;
+            }
+            double distPrev = 0.0;
+            Int32 prev = j;
+            do {
+                const Int32 before = (prev + count - 1) % count;
+                distPrev += dist (before, prev);
+                prev = before;
+            } while (!matched[prev]);
+            double distNext = 0.0;
+            Int32 next = j;
+            do {
+                const Int32 after = (next + 1) % count;
+                distNext += dist (next, after);
+                next = after;
+            } while (!matched[next]);
+            const double total = distPrev + distNext;
+            finalHeights[j] = total > kEps
+                ? heights[prev] + (heights[next] - heights[prev]) * distPrev / total
+                : heights[prev];
+        }
+
+        for (Int32 j = 0; j < count; ++j) {
+            if (fabs ((*memo.meshPolyZ)[begin + j] - finalHeights[j]) > kEps) {
+                (*memo.meshPolyZ)[begin + j] = finalHeights[j];
+                changed = true;
+            }
+        }
+        if (fabs ((*memo.meshPolyZ)[end] - finalHeights[0]) > kEps) {
+            (*memo.meshPolyZ)[end] = finalHeights[0];
+            changed = true;
+        }
+    }
+
+    if (!changed) {
+        return {};
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&elem, &mask, &memo, APIMemoMask_Polygon | APIMemoMask_MeshPolyZ, true);
+    if (err != NoError) {
+        return GS::UniString ("The outline was changed, but Archicad added points where level lines cross it, and the heights of its points could not be set.");
+    }
+    return {};
+}
+
 ModifyMeshesCommand::ModifyMeshesCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -21805,6 +21931,31 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to modify mesh"));
                 continue;
+            }
+
+            if (hasPolyGeom) {
+                // Archicad inserts a vertex where a level line crosses the new outline or a hole,
+                // and keeps the heights by index; give every vertex its requested height (#2958).
+                GS::Array<API_Coord3D> requestedPoints;
+                for (const GS::ObjectState& coord : polygonCoordinates) {
+                    requestedPoints.Push (Get3DCoordinateFromObjectState (coord));
+                }
+                for (const GS::ObjectState& hole : holes) {
+                    GS::Array<GS::ObjectState> holeCoords;
+                    GS::Array<GS::ObjectState> holeArcs;
+                    if (GetHoleGeometry (hole, holeCoords, holeArcs)) {
+                        for (const GS::ObjectState& coord : holeCoords) {
+                            requestedPoints.Push (Get3DCoordinateFromObjectState (coord));
+                        }
+                    }
+                }
+                GSErrCode heightErr = NoError;
+                const GS::Optional<GS::UniString> heightError = RestoreRequestedMeshPolyHeights (elem.header.guid, requestedPoints, heightErr);
+                if (heightError.HasValue ()) {
+                    changeReporter.MarkChanged (elem.header.guid);
+                    executionResults (CreateFailedExecutionResult (heightErr != NoError ? heightErr : APIERR_GENERAL, heightError.Get ()));
+                    continue;
+                }
             }
 
             changeReporter.MarkChanged (elem.header.guid);
