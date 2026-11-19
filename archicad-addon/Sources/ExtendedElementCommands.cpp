@@ -7083,34 +7083,20 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
         }
     }
 
-    const auto applyStoryVisibility = [&] (const char* fieldName, API_StoryVisibility& target) {
-        const GS::ObjectState* svOS = details.Get (fieldName);
-        if (svOS == nullptr) {
-            return;
-        }
-        API_StoryVisibility sv = target;
-        svOS->Get ("showOnHome", sv.showOnHome);
-        svOS->Get ("showAllAbove", sv.showAllAbove);
-        svOS->Get ("showAllBelow", sv.showAllBelow);
-        Int32 relAbove = sv.showRelAbove;
-        Int32 relBelow = sv.showRelBelow;
-        if (svOS->Get ("showRelAbove", relAbove)) {
-            sv.showRelAbove = (short) relAbove;
-        }
-        if (svOS->Get ("showRelBelow", relBelow)) {
-            sv.showRelBelow = (short) relBelow;
-        }
-        target = sv;
-        ++appliedCount;
+    const std::pair<const char*, API_StoryVisibility API_MorphType::*> storyVisibilities[] = {
+        { "showContour", &API_MorphType::showContour },
+        { "showFill", &API_MorphType::showFill }
     };
-    applyStoryVisibility ("showContour", element.morph.showContour);
-    if (details.Get ("showContour") != nullptr && mask != nullptr) {
-        ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showContour);
+    for (const auto& storyVisibility : storyVisibilities) {
+        const GS::ObjectState* storyVisibilityOs = details.Get (storyVisibility.first);
+        if (storyVisibilityOs == nullptr) {
+            continue;
+        }
+        MergeStoryVisibility (*storyVisibilityOs, element.morph.*storyVisibility.second);
+        ++appliedCount;
     }
-    applyStoryVisibility ("showFill", element.morph.showFill);
-    if (details.Get ("showFill") != nullptr && mask != nullptr) {
-        ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showFill);
-    }
+    if (mask != nullptr && details.Contains ("showContour")) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showContour);
+    if (mask != nullptr && details.Contains ("showFill")) ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showFill);
 
     {
         const GS::ObjectState* linkOS = details.Get ("linkToSettings");
@@ -23001,6 +22987,48 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
+// Reads a Morph back after ModifyMorphs changed it, and names each story visibility key given in
+// item that Archicad did not apply (Archicad 29 answered NoError and kept the old showContour and
+// showFill). The automatic story visibility, when it is on after the change, recomputes both
+// visibilities, so they are not compared then.
+static GS::Array<GS::UniString> GetUnappliedMorphStoryVisibility (const API_Guid& morphGuid, const GS::ObjectState& item)
+{
+    GS::Array<GS::UniString> unapplied;
+    API_Element morph = {};
+    morph.header.guid = morphGuid;
+    if (ACAPI_Element_Get (&morph) != NoError) {
+        return unapplied;
+    }
+    bool isAutoOnStoryVisibility = false;
+    if (item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility) && morph.morph.isAutoOnStoryVisibility != isAutoOnStoryVisibility) {
+        unapplied.Push ("isAutoOnStoryVisibility");
+    }
+    if (morph.morph.isAutoOnStoryVisibility) {
+        return unapplied;
+    }
+    const std::pair<const char*, const API_StoryVisibility*> storyVisibilities[] = {
+        { "showContour", &morph.morph.showContour },
+        { "showFill", &morph.morph.showFill }
+    };
+    for (const auto& storyVisibility : storyVisibilities) {
+        const GS::ObjectState* storyVisibilityOs = item.Get (storyVisibility.first);
+        if (storyVisibilityOs == nullptr) {
+            continue;
+        }
+        API_StoryVisibility requested = *storyVisibility.second;
+        MergeStoryVisibility (*storyVisibilityOs, requested);
+        const API_StoryVisibility& kept = *storyVisibility.second;
+        if (requested.showOnHome != kept.showOnHome ||
+            requested.showAllAbove != kept.showAllAbove ||
+            requested.showAllBelow != kept.showAllBelow ||
+            requested.showRelAbove != kept.showRelAbove ||
+            requested.showRelBelow != kept.showRelBelow) {
+            unapplied.Push (storyVisibility.first);
+        }
+    }
+    return unapplied;
+}
+
 GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -23170,6 +23198,16 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                         continue;
                     }
                 }
+            }
+
+            const GS::Array<GS::UniString> unapplied = GetUnappliedMorphStoryVisibility (element.header.guid, item);
+            if (!unapplied.IsEmpty ()) {
+                GS::UniString list;
+                for (UIndex k = 0; k < unapplied.GetSize (); ++k) {
+                    list += (k == 0 ? "" : ", ") + unapplied[k];
+                }
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply " + list + " to the Morph. The other details given were applied."));
+                continue;
             }
 
             results.Push (CreateSuccessfulExecutionResult ());
