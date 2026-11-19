@@ -706,6 +706,40 @@ static GS::ObjectState CreateDimensionMarkerObjectState (const API_Element& elem
         "size", element.dimension.markerData.markerSize);
 }
 
+// ed_arrowAng stores the half-arrow angle of an Elevation dimension as 0, 1, 2 for 30, 45 and 60
+// degrees (APIdefs_Elements.h).
+static Int32 ElevationArrowAngleDegrees (char arrowAngleIndex)
+{
+    switch (arrowAngleIndex) {
+        case 1:  return 45;
+        case 2:  return 60;
+        default: return 30;
+    }
+}
+
+static bool ParseElevationArrowAngle (Int32 degrees, char& arrowAngleIndex)
+{
+    switch (degrees) {
+        case 30: arrowAngleIndex = 0; return true;
+        case 45: arrowAngleIndex = 1; return true;
+        case 60: arrowAngleIndex = 2; return true;
+        default: return false;
+    }
+}
+
+// The marker of an Elevation dimension as GetDetailsOfElements and GetDimensionData return it
+// (DimensionElevationMarker, #2864).
+static GS::ObjectState CreateDimensionElevationMarkerObjectState (const API_Element& element)
+{
+    GS::ObjectState marker;
+    marker.Add ("form", static_cast<Int32> (element.dimension.ed_dimForm));
+    marker.Add ("arrowAngle", ElevationArrowAngleDegrees (element.dimension.ed_arrowAng));
+    marker.Add ("arrowFilled", element.dimension.ed_arrowFill);
+    marker.Add ("arrowUp", element.dimension.ed_arrowUp);
+    marker.Add ("plusSign", element.dimension.ed_needPlus);
+    return marker;
+}
+
 static GS::ObjectState CreateDimensionTextPlacementObjectState (const API_Element& element)
 {
     return GS::ObjectState (
@@ -746,6 +780,10 @@ static const char* DimensionSettingsSchemaProperties = R"(
                         "elevationOrigin": {
                             "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
                         },
                         "linePen": {
                             "type": "integer",
@@ -926,6 +964,41 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         element.dimension.ed_origin = origin;
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_origin);
+        }
+    }
+
+    // The marker of an Elevation dimension (#2864); only the fields given change.
+    const GS::ObjectState* elevationMarker = data.Get ("elevationMarker");
+    if (elevationMarker != nullptr) {
+        Int32 form = 0;
+        if (elevationMarker->Get ("form", form)) {
+            if (form < 0 || form > 19) {
+                return CreateErrorResponse (APIERR_BADPARS, "'elevationMarker.form' must be between 0 and 19.");
+            }
+            element.dimension.ed_dimForm = static_cast<char> (form);
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_dimForm);
+            }
+        }
+        Int32 arrowAngle = 0;
+        if (elevationMarker->Get ("arrowAngle", arrowAngle)) {
+            char arrowAngleIndex = 0;
+            if (!ParseElevationArrowAngle (arrowAngle, arrowAngleIndex)) {
+                return CreateErrorResponse (APIERR_BADPARS, "'elevationMarker.arrowAngle' must be 30, 45 or 60.");
+            }
+            element.dimension.ed_arrowAng = arrowAngleIndex;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_arrowAng);
+            }
+        }
+        if (elevationMarker->Get ("arrowFilled", element.dimension.ed_arrowFill) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_arrowFill);
+        }
+        if (elevationMarker->Get ("arrowUp", element.dimension.ed_arrowUp) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_arrowUp);
+        }
+        if (elevationMarker->Get ("plusSign", element.dimension.ed_needPlus) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_needPlus);
         }
     }
 
@@ -1443,6 +1516,7 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
 {
     details.Add ("appearance", DimensionAppearanceToString (element.dimension.dimAppear));
     details.Add ("elevationOrigin", GS::UniString (DimensionOriginToString (element.dimension.ed_origin)));
+    details.Add ("elevationMarker", CreateDimensionElevationMarkerObjectState (element));
     details.Add ("dimensionLinePosition", Create2DCoordinateObjectState (element.dimension.refC));
     details.Add ("direction", Create2DCoordinateObjectState (element.dimension.direction));
     details.Add ("witnessPointCount", static_cast<Int32> (element.dimension.nDimElem));
@@ -14610,6 +14684,26 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             if (item.Contains ("elevationOrigin") && changed.dimension.ed_origin != element.dimension.ed_origin) {
                 notApplied += " elevationOrigin";
             }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, ed_dimForm) &&
+                changed.dimension.ed_dimForm != element.dimension.ed_dimForm) {
+                notApplied += " elevationMarker.form";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, ed_arrowAng) &&
+                changed.dimension.ed_arrowAng != element.dimension.ed_arrowAng) {
+                notApplied += " elevationMarker.arrowAngle";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, ed_arrowFill) &&
+                changed.dimension.ed_arrowFill != element.dimension.ed_arrowFill) {
+                notApplied += " elevationMarker.arrowFilled";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, ed_arrowUp) &&
+                changed.dimension.ed_arrowUp != element.dimension.ed_arrowUp) {
+                notApplied += " elevationMarker.arrowUp";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, ed_needPlus) &&
+                changed.dimension.ed_needPlus != element.dimension.ed_needPlus) {
+                notApplied += " elevationMarker.plusSign";
+            }
             if (item.Contains ("linePen") && changed.dimension.linPen != element.dimension.linPen) {
                 notApplied += " linePen";
             }
@@ -18679,6 +18773,7 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         dimensionData.Add ("dimensionLinePosition", Create2DCoordinateObjectState (element.dimension.refC));
         dimensionData.Add ("appearance", DimensionAppearanceToString (element.dimension.dimAppear));
         dimensionData.Add ("elevationOrigin", GS::UniString (DimensionOriginToString (element.dimension.ed_origin)));
+        dimensionData.Add ("elevationMarker", CreateDimensionElevationMarkerObjectState (element));
 
         const auto& witnessPoints = dimensionData.AddList<GS::ObjectState> ("witnessPoints");
 

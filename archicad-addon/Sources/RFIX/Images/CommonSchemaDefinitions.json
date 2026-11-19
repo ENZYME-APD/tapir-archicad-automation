@@ -15127,6 +15127,10 @@
                 "$ref": "#/DimensionOrigin",
                 "description": "The level an Elevation dimension measures from (kept for the other types too)."
             },
+            "elevationMarker": {
+                "$ref": "#/DimensionElevationMarker",
+                "description": "The marker of an Elevation dimension, always with all of its fields (kept for the other types too)."
+            },
             "dimensionLinePosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "A point of the dimension line."
@@ -15200,6 +15204,7 @@
         "required": [
             "appearance",
             "elevationOrigin",
+            "elevationMarker",
             "dimensionLinePosition",
             "direction",
             "witnessPointCount",
@@ -15363,6 +15368,35 @@
             "pushNeighbors": {
                 "type": "boolean",
                 "description": "Flexible method: a text may push its neighbouring texts aside (API pushNeighborEnabled)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "DimensionElevationMarker": {
+        "type": "object",
+        "description": "The marker an Elevation dimension (appearance Elevation, e.g. a height chain in a section) draws at its witness points, set under Elevation dimension in the Dimension Settings (API ed_dimForm, ed_arrowAng, ed_arrowFill, ed_arrowUp, ed_needPlus). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all five, for the other dimension types too.",
+        "properties": {
+            "form": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The marker form as Archicad stores it (API ed_dimForm; the DevKit does not list the values, the commands take 0 to 19, as for the Level Dimension tool's dimForm): read it back with GetDetailsOfElements from an Elevation dimension that has the wanted marker."
+            },
+            "arrowAngle": {
+                "type": "integer",
+                "enum": [30, 45, 60],
+                "description": "The angle of the half arrow in degrees (API ed_arrowAng 0, 1, 2)."
+            },
+            "arrowFilled": {
+                "type": "boolean",
+                "description": "Whether the arrow is filled (API ed_arrowFill)."
+            },
+            "arrowUp": {
+                "type": "boolean",
+                "description": "Whether the arrow points up (API ed_arrowUp; false: down)."
+            },
+            "plusSign": {
+                "type": "boolean",
+                "description": "Whether positive values get a \"+\" sign (API ed_needPlus)."
             }
         },
         "additionalProperties": false
@@ -19311,6 +19345,10 @@
             "elevationOrigin": {
                 "$ref": "#/DimensionOrigin",
                 "description": "The level an Elevation dimension measures from (kept for the other types too)."
+            },
+            "elevationMarker": {
+                "$ref": "#/DimensionElevationMarker",
+                "description": "The marker of an Elevation dimension, always with all of its fields (kept for the other types too)."
             },
             "witnessPoints": {
                 "type": "array",
