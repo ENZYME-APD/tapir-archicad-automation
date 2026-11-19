@@ -1,9 +1,9 @@
 {
  "version": 1,
- "generatedAt": "2026-11-18T11:52:38Z",
+ "generatedAt": "2026-11-19T11:51:15Z",
  "totals": {
-  "people": 46,
-  "places": 44,
+  "people": 48,
+  "places": 45,
   "countries": 29
  },
  "places": [
@@ -21,6 +21,14 @@
    "countryCode": "HU",
    "lat": 47.5,
    "lon": 19.04,
+   "people": 2
+  },
+  {
+   "name": "Innsbruck",
+   "country": "Austria",
+   "countryCode": "AT",
+   "lat": 47.27,
+   "lon": 11.39,
    "people": 2
   },
   {
@@ -378,6 +386,11 @@
    "people": 5
   },
   {
+   "name": "Austria",
+   "code": "AT",
+   "people": 4
+  },
+  {
    "name": "United States",
    "code": "US",
    "people": 4
@@ -396,11 +409,6 @@
    "name": "Spain",
    "code": "ES",
    "people": 3
-  },
-  {
-   "name": "Austria",
-   "code": "AT",
-   "people": 2
   },
   {
    "name": "Finland",
@@ -640,6 +648,14 @@
    "lat": 47.18,
    "lon": 19.51,
    "kind": "country"
+  },
+  "innsbruck": {
+   "name": "Innsbruck",
+   "country": "Austria",
+   "countryCode": "AT",
+   "lat": 47.27,
+   "lon": 11.39,
+   "kind": "settlement"
   },
   "italy": {
    "name": "Italy",
