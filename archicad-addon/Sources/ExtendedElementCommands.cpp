@@ -12046,7 +12046,6 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
                 continue;
             }
-<<<<<<< HEAD
             // And for the structure symbols (#2848).
             const GS::UniString symbolsNotApplied = CheckStairStructureSymbolsApplied (element, givenSymbolMask);
             if (!symbolsNotApplied.IsEmpty ()) {
