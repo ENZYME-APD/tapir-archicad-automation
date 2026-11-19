@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18 19:35 UTC",
+ "generatedAt": "2026-11-19 01:28 UTC",
  "versions": [
   25,
   26,
@@ -7549,6 +7549,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
+    {
      "number": 2941,
      "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
     },
@@ -7993,6 +7997,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
+    {
      "number": 2921,
      "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
     },
@@ -8198,6 +8206,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
     {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
@@ -8545,7 +8557,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    }
+   ],
    "issues": []
   },
   {
@@ -26107,6 +26124,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
+    {
      "number": 2938,
      "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
     },
@@ -31866,6 +31887,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
     {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
@@ -38488,6 +38513,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2953,
+     "title": "[2/2] GetGDLParametersOfElements: parameterNames and includePossibleValues"
+    },
+    {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
     {
      "number": 2947,
      "title": "CreateLabels: keep the favorite's text content when no text or runs is given"
@@ -45407,6 +45440,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
+    {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
     },
@@ -48665,6 +48702,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2951,
+     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
+    },
     {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
