@@ -1,6 +1,7 @@
 {
-  "title": "CreateStairs and ModifyStairs read the walking direction and walking line back and fail an item whose value Archicad did not keep (#2940; Archicad 29 keeps neither an Inverse inputDirection nor a Left walking line)",
+  "title": "CreateStairs and ModifyStairs read the walking direction and walking line back and fail an item whose value Archicad did not keep (#2940; reported on Archicad 29, which keeps neither an Inverse inputDirection nor a Left walking line, so the check runs from Archicad 29; a failure on a later version means it keeps them)",
   "minTapir": "2.0.1",
+  "minArchicad": "29",
   "steps": [
     {
       "id": "create an upward stair",
