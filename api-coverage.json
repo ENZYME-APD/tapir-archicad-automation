@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-19 19:09 UTC",
+ "generatedAt": "2026-11-19 21:59 UTC",
  "versions": [
   25,
   26,
@@ -4802,6 +4802,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2960,
+     "title": "Create meshes and other model elements from a 3D Document or other 2D window"
+    },
+    {
      "number": 2921,
      "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
     },
@@ -4941,6 +4945,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2960,
+     "title": "Create meshes and other model elements from a 3D Document or other 2D window"
+    },
     {
      "number": 2921,
      "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
@@ -5850,6 +5858,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+    },
     {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
@@ -6880,6 +6892,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+    },
+    {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
@@ -7213,6 +7229,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2960,
+     "title": "Create meshes and other model elements from a 3D Document or other 2D window"
+    },
+    {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
@@ -7544,6 +7564,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+    },
     {
      "number": 2951,
      "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
@@ -8274,6 +8298,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+    },
     {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
@@ -26112,6 +26140,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+    },
+    {
      "number": 2951,
      "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
     },
@@ -38485,6 +38517,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+    },
     {
      "number": 2953,
      "title": "[2/2] GetGDLParametersOfElements: parameterNames and includePossibleValues"
