@@ -12940,7 +12940,7 @@ GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema (
                         },
                         "transformation": {
                             "type": "array",
-                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] moves the opening by 1 along X. The matrix goes to Archicad as it is, and Archicad only accepts a move and a rotation: a 3x3 part that is not orthogonal or that scales is refused with the error 'Can transform only with ortogonal matrix with no scaling.'",
+                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] is a translation by 1 along X. The matrix goes to Archicad as it is, and Archicad refuses a 3x3 part that is not orthogonal or that scales with the error 'Can transform only with ortogonal matrix with no scaling.' Archicad 29 has also been reported to refuse a pure translation with that error (#2957); the cause is not known yet.",
                             "items": { "type": "number" },
                             "minItems": 12,
                             "maxItems": 12
