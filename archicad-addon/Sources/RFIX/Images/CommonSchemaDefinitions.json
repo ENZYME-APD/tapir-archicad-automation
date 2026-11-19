@@ -16105,6 +16105,163 @@
         "additionalProperties": false,
         "required": ["width", "heightAboveTread", "heightMeasure"]
     },
+    "StairMonolithStructureSettings": {
+        "type": "object",
+        "description": "The data of a monolithic stair structure that CreateStairs and ModifyStairs write (API_MonolithStairStructData), with the keys GetDetailsOfElements reads in StairMonolithStructure. Only the given fields are changed. An attribute is given by the id of an existing attribute of its type; an unknown id is refused.",
+        "properties": {
+            "thinning": {
+                "type": "boolean",
+                "description": "Whether the structure is thinned."
+            },
+            "monolithThickness": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The thickness of the monolith. Archicad 26 and 28 were seen to keep 0 here for a Smooth structure, whose thickness is the structure's thickness; ModifyStairs then reports it as not applied."
+            },
+            "bottomOversize": {
+                "type": "number",
+                "description": "The size of the horizontal bottom. Archicad 26 and 28 were seen to keep 0 here for a Smooth structure; ModifyStairs then reports it as not applied."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the structure."
+            },
+            "sideFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the building material."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surfaces of the structure are chained. While they are, Archicad was seen to give the top the surface of another side, so give false with a surface of one side."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The top surface of the structure."
+            },
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The left side surface of the structure."
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The right side surface of the structure."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The bottom surface of the structure."
+            },
+            "surfaceMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface material of the structure."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the cut parts' 2D representation."
+            },
+            "cutLinePen": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "The pen of the cut parts' 2D representation."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the 2D representation."
+            },
+            "pen": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "The pen of the 2D representation."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill pen of the structure."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill background pen of the structure."
+            },
+            "uniformDrainings": {
+                "type": "boolean",
+                "description": "Whether the drainings on the left and the right side are the same."
+            },
+            "drainings": {
+                "type": "array",
+                "description": "The drainings of the structure to change, each named by its side. Only the given fields of the given sides are changed.",
+                "items": {
+                    "$ref": "#/StairStructureDrainingSettings"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "StairStructureDrainingSettings": {
+        "type": "object",
+        "description": "The draining of one side of a monolithic stair structure that CreateStairs and ModifyStairs write (API_StairStructureDrainingData). Only the given fields are changed.",
+        "properties": {
+            "side": {
+                "type": "string",
+                "description": "The side of the draining.",
+                "enum": ["Left", "Right"]
+            },
+            "enabled": {
+                "type": "boolean",
+                "description": "Whether the draining is modeled."
+            },
+            "width": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The width of the draining."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the draining from the boundary."
+            },
+            "horizontalDepth": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The horizontal depth of the draining."
+            },
+            "verticalDepth": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The vertical depth of the draining."
+            },
+            "material": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface of the draining."
+            },
+            "surfaceType": {
+                "type": "string",
+                "description": "Whether the draining is stepped or smooth.",
+                "enum": ["Stepped", "Smooth"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["side"]
+    },
+    "StairSideStructureSettings": {
+        "type": "object",
+        "description": "The data of a side (stringer) stair structure that CreateStairs and ModifyStairs write (API_SideStairStructData), with the keys GetDetailsOfElements reads in StairSideStructure. Only the given fields are changed.",
+        "properties": {
+            "width": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The width of the stringer."
+            },
+            "heightAboveTread": {
+                "type": "number",
+                "description": "The height of the stringer above its tread."
+            },
+            "heightMeasure": {
+                "type": "string",
+                "description": "How the height above the tread is measured: perpendicular to the stair or vertically.",
+                "enum": ["Perpendicular", "Vertical"]
+            }
+        },
+        "additionalProperties": false
+    },
     "StairSymbolView": {
         "type": "string",
         "description": "The view a stair structure symbol setting belongs to (API_StairStructSymbViewID).",
