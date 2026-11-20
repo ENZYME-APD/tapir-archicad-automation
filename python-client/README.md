@@ -7,13 +7,21 @@ running.
 
 ## Install
 
-```
-pip install tapir-archicad
-```
+From this repository, any of:
 
-The package is `tapir-archicad` on PyPI and `tapir_archicad` in Python (the PyPI project `tapir` is an
-unrelated one). Its version is the Tapir release it was built with: it knows the commands of that
-release, and a newer Tapir Add-On's commands are always reachable with `run`.
+- `pip install "git+https://github.com/ENZYME-APD/tapir-archicad-automation#subdirectory=python-client"`
+  (the client of `main`; add `@<release tag>` after the repository URL for that release's client)
+- put the `python-client` folder on `PYTHONPATH`
+- copy the `tapir_archicad` folder next to your script
+
+From PyPI, once it is published there: `pip install tapir-archicad`. Nothing publishes it yet: the
+release workflow that publishes it with each Tapir release is
+[#3001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3001), and it stays off until a
+maintainer has set up PyPI for it.
+
+The package is `tapir-archicad` for pip and `tapir_archicad` in Python (the PyPI project `tapir` is an
+unrelated one). It knows the commands of the Tapir version it comes from; a newer Tapir Add-On's
+commands are always reachable with `run`.
 
 ## Use
 
@@ -37,9 +45,6 @@ print (tapir.get_details_of_elements (elements = walls))
 - **Port and host:** `Client (host = 'http://127.0.0.1', port = 19723, timeout = None)`. The first
   Archicad listens on 19723, the next ones on the following ports.
 
-Without pip, put the `python-client` folder on `PYTHONPATH` (or copy its `tapir_archicad` folder next
-to your script).
-
 ## Keeping it up to date
 
 `tapir_archicad/commands.py` is generated from the command reference
@@ -59,10 +64,11 @@ a fake server. `python python-client/generate.py --check` only reports whether
 ## Version and release
 
 The package's version has one place: `__version__` in `tapir_archicad/__init__.py`, which
-`pyproject.toml` reads (`[tool.setuptools.dynamic]`). A checkout carries `0.0.0.dev0`; the release
-workflow sets it to the release's version (the version of `tools/package_info.json` that the release
-ships) before it builds the package, and publishes it to PyPI with each Tapir release. To build it
-yourself:
+`pyproject.toml` reads (`[tool.setuptools.dynamic]`). A checkout carries `0.0.0.dev0`. With
+[#3001](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3001) merged and PyPI publishing
+turned on, the weekly release sets it to the release's version before it builds the package from the
+release tag, and publishes it to PyPI as `tapir-archicad`; until then no workflow sets it or publishes
+the package. To build it yourself:
 
 ```
 pip install build
