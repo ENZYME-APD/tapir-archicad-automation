@@ -1145,12 +1145,20 @@ LANGUAGE_CODES_BY_ISO_LANGUAGE = {
 LANGUAGE = DEFAULT_LANGUAGE
 
 
+# The Archicad language versions without a table of their own that use
+# another language's texts: the Austrian and Swiss versions are German.
+TEXT_LANGUAGES = {
+    'AUT' : 'GER',
+    'CHE' : 'GER',
+}
+
+
 def GetText (key, *arguments):
     # The text of the key in the current language, filled in with the
     # arguments. A text missing from the language, or one whose placeholders
     # do not fit the arguments, is shown in English.
     englishText = TEXTS[DEFAULT_LANGUAGE][key]
-    text = TEXTS.get (LANGUAGE, {}).get (key, englishText)
+    text = TEXTS.get (TEXT_LANGUAGES.get (LANGUAGE, LANGUAGE), {}).get (key, englishText)
     if len (arguments) == 0:
         return text
     try:

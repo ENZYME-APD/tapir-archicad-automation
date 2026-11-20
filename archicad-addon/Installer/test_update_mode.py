@@ -1695,6 +1695,13 @@ class LanguageTests (unittest.TestCase):
                 if language != tapir_installer.DEFAULT_LANGUAGE:
                     self.assertNotEqual (tapir_installer.GetText ('buttonClose'), tapir_installer.TEXTS['INT']['buttonClose'])
 
+    def testAustrianAndSwissUseGerman (self):
+        for language in ['AUT', 'CHE']:
+            with self.subTest (language = language):
+                tapir_installer.SetLanguage (language)
+                self.assertEqual (tapir_installer.GetText ('buttonClose'), tapir_installer.TEXTS['GER']['buttonClose'])
+        tapir_installer.SetLanguage (tapir_installer.DEFAULT_LANGUAGE)
+
     def testUnprintableCharactersAreReplaced (self):
         # A Japanese text printed to a console that cannot show it.
         stream = io.TextIOWrapper (io.BytesIO (), encoding = 'cp1252')
