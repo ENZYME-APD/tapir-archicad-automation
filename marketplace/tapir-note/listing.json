@@ -1,0 +1,18 @@
+{
+    "slug": "tapir-note",
+    "name": "Tapir Note",
+    "summary": "Hands the manual steps of a task to a team member as an Archicad Issue: one comment per step, the selected elements attached, BCF export.",
+    "category": "utilities",
+    "tags": ["issues", "tasks", "notes", "teamwork", "bcf"],
+    "author": { "name": "Tapir" },
+    "license": "MIT",
+    "entry": "TapirNote.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version."
+        }
+    ]
+}
