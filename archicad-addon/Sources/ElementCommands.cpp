@@ -2389,6 +2389,10 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetInputParametersSchem
                     "$ref": "#/ElementDetailsAdditionalField"
                 },
                 "minItems": 1
+            },
+            "readFromOtherDatabases": {
+                "type": "boolean",
+                "description": "Optional, default false. When true, a listed element of another database (a drawing on a layout that is not open, an element of a worksheet, a section, a master layout ...) is read in full: the add-on makes the element's own database the current one while it reads it, without opening a window, and puts the starting database back afterwards. Without it, such an element returns only its header fields with fromOtherDatabase set to true. An element whose database cannot be made current (for example a worksheet whose window was never opened) still returns only its header."
             }
         },
         "additionalProperties": false,
@@ -3149,6 +3153,8 @@ static void AddAdditionalElementDetails (GS::ObjectState& os, const API_Elem_Hea
     }
 }
 
+static GSErrCode ChangeToContainingDatabase (const API_Guid& elemGuid, API_DatabaseInfo& currentDatabase);
+
 GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -3202,6 +3208,25 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
     GS::Array<GS::UniString> additionalFields;
     parameters.Get ("additionalFields", additionalFields);
 
+    // With readFromOtherDatabases an element of another database is read in its own database
+    // (#2791), which is made the current one the way Get3DBoundingBoxes does it, without opening
+    // a window; the starting database is put back when the command returns.
+    bool readFromOtherDatabases = false;
+    parameters.Get ("readFromOtherDatabases", readFromOtherDatabases);
+    API_DatabaseInfo startingDatabase = {};
+    if (readFromOtherDatabases) {
+        const GSErrCode databaseErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+        if (databaseErr != NoError) {
+            return CreateErrorResponse (databaseErr, "Failed to get the current database.");
+        }
+    }
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (readFromOtherDatabases) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        }
+    });
+
     GS::ObjectState response;
     const auto& detailsOfElements = response.AddList<GS::ObjectState> ("detailsOfElements");
 
@@ -3218,6 +3243,14 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         API_Element elem = {};
         elem.header.guid = guid;
         GSErrCode err = ACAPI_Element_Get (&elem);
+
+        if (err == APIERR_BADID && readFromOtherDatabases && ChangeToContainingDatabase (guid, currentDatabase) == NoError) {
+            // Now in the element's own database, so it is read again from there. When that
+            // database was already the current one, the read fails the same way as before.
+            elem = {};
+            elem.header.guid = guid;
+            err = ACAPI_Element_Get (&elem);
+        }
 
         if (err == APIERR_BADID) {
             // Not in the current database: an element of another database (a layout, a section,
