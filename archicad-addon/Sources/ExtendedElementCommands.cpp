@@ -20180,9 +20180,11 @@ static API_CutPlanePlanConn StringToPlanConn (const GS::UniString& s)
     return APICutPl_Online;
 }
 
-static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneType& cutPlane, bool includeReadOnly)
+// The settings of one section segment, the keys of SectionElevationDetails. cutPlane, when given,
+// adds the settings a Section or an Elevation keeps outside its segment (showOnStories,
+// storyToShowOn, markerShowType) in their place; an Interior Elevation segment has none of them.
+static void AddSectionSegmentDetails (GS::ObjectState& os, const API_SectionSegment& seg, bool includeReadOnly, const API_CutPlaneType* cutPlane)
 {
-    const API_SectionSegment& seg = cutPlane.segment;
 
     os.Add ("name", GS::UniString (seg.cutPlName));
     os.Add ("id", GS::UniString (seg.cutPlIdStr));
@@ -20249,9 +20251,11 @@ static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneT
     os.Add ("boundaryDisplayMode", BoundaryDisplayToString (seg.boundaryDisplay));
     os.Add ("boundaryPenIndex", seg.boundaryPen);
     os.Add ("boundaryLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, seg.boundaryLineType)));
-    os.Add ("showOnStories", CutPlaneShowTypeToString (cutPlane.cutPlShow));
-    os.Add ("storyToShowOn", cutPlane.storyToShowOn);
-    os.Add ("markerShowType", cutPlane.markerShow == APICutPl_ShowWingMarkers ? GS::UniString ("WingMarkers") : GS::UniString ("MiddleMarker"));
+    if (cutPlane != nullptr) {
+        os.Add ("showOnStories", CutPlaneShowTypeToString (cutPlane->cutPlShow));
+        os.Add ("storyToShowOn", cutPlane->storyToShowOn);
+        os.Add ("markerShowType", cutPlane->markerShow == APICutPl_ShowWingMarkers ? GS::UniString ("WingMarkers") : GS::UniString ("MiddleMarker"));
+    }
     os.Add ("intendedPlanConnectivity", PlanConnToString (seg.intPlanConn));
 
     if (includeReadOnly) {
@@ -20266,14 +20270,105 @@ static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneT
     }
 }
 
-// Applies every field present in 'details' onto cutPlane. Returns an error for an attribute guid
-// that does not name an attribute of the expected type. When mask is non-null, also sets the
-// corresponding ACAPI_ELEMENT_MASK_SET bit (needed for ACAPI_Element_Change; not needed when
-// preparing a brand new element for ACAPI_Element_CreateExt, which always writes the full struct).
-static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const GS::ObjectState& details, API_CutPlaneType& cutPlane, API_Element* mask)
+static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneType& cutPlane, bool includeReadOnly)
 {
-    API_SectionSegment& seg = cutPlane.segment;
+    AddSectionSegmentDetails (os, cutPlane.segment, includeReadOnly, &cutPlane);
+}
 
+// The segments of an Interior Elevation are in its memo (#2851): intElevSegments holds one
+// API_SectionSegment per segment, and sectionSegmentMainCoords and sectionSegmentDepthCoords
+// hold the main and depth line points of every segment one after the other, nMainCoord and
+// nDepthCoord points per segment (the DevKit's DumpSectionLineCoords reads the main line so).
+// The element's own segment only holds the defaults the segments were made from, so it is not
+// reported. Every count is checked against the size of its pointer.
+void AddInteriorElevationDetails (const API_Element& elem, GS::ObjectState& os)
+{
+    const API_InteriorElevationType& intElev = elem.interiorElevation;
+    os.Add ("showOnStories", CutPlaneShowTypeToString (intElev.cutPlShow));
+    os.Add ("storyToShowOn", intElev.storyToShowOn);
+    os.Add ("useCommonMarker", intElev.useCommonMarker);
+    os.Add ("commonMarkerGuid", APIGuidToString (intElev.markerGuid));
+    os.Add ("commonMarkerPenIndex", intElev.markerPen);
+    os.Add ("commonMarkerFontIndex", intElev.markerFont);
+    os.Add ("commonMarkerSize", intElev.markerSize);
+    os.Add ("commonMarkerTextSize", intElev.markerTextSize);
+
+    const auto& segments = os.AddList<GS::ObjectState> ("segments");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All) != NoError || memo.intElevSegments == nullptr) {
+        return;
+    }
+
+    const GSSize nSegments = std::min<GSSize> (static_cast<GSSize> (intElev.nSegments),
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment));
+    const GSSize nAllMain = memo.sectionSegmentMainCoords != nullptr
+        ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords)) / sizeof (API_Coord)
+        : 0;
+    const GSSize nAllDepth = memo.sectionSegmentDepthCoords != nullptr
+        ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentDepthCoords)) / sizeof (API_Coord)
+        : 0;
+
+    GSSize mainOffset = 0;
+    GSSize depthOffset = 0;
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        const API_SectionSegment& seg = memo.intElevSegments[i];
+        GS::ObjectState segmentOs;
+        segmentOs.Add ("name", GS::UniString (seg.cutPlName));
+        segmentOs.Add ("idStr", GS::UniString (seg.cutPlIdStr));
+
+        const GSSize nMain = std::max<GSSize> (0, std::min<GSSize> (static_cast<GSSize> (seg.nMainCoord), nAllMain - mainOffset));
+        const GSSize nDepth = std::max<GSSize> (0, std::min<GSSize> (static_cast<GSSize> (seg.nDepthCoord), nAllDepth - depthOffset));
+        const API_Coord* mainCoords = nMain > 0 ? memo.sectionSegmentMainCoords + mainOffset : nullptr;
+        const API_Coord* depthCoords = nDepth > 0 ? memo.sectionSegmentDepthCoords + depthOffset : nullptr;
+
+        const auto& mainList = segmentOs.AddList<GS::ObjectState> ("mainCoordinates");
+        for (GSIndex j = 0; j < nMain; ++j) {
+            mainList (Create2DCoordinateObjectState (mainCoords[j]));
+        }
+        const auto& depthList = segmentOs.AddList<GS::ObjectState> ("depthCoordinates");
+        for (GSIndex j = 0; j < nDepth; ++j) {
+            depthList (Create2DCoordinateObjectState (depthCoords[j]));
+        }
+
+        if (nMain >= 2) {
+            const API_Coord& begC = mainCoords[0];
+            segmentOs.Add ("startCoordinate", Create2DCoordinateObjectState (begC));
+            segmentOs.Add ("endCoordinate", Create2DCoordinateObjectState (mainCoords[nMain - 1]));
+            const double dx = mainCoords[1].x - begC.x;
+            const double dy = mainCoords[1].y - begC.y;
+            const double length = sqrt (dx * dx + dy * dy);
+            if (nDepth >= 1 && length > 1e-9) {
+                // Signed distance of the first depth point from the first line of the segment, positive on its left.
+                const API_Coord& depthC = depthCoords[0];
+                const double leftDistance = (dx * (depthC.y - begC.y) - dy * (depthC.x - begC.x)) / length;
+                segmentOs.Add ("depth", fabs (leftDistance));
+                const double side = leftDistance < 0.0 ? -1.0 : 1.0;
+                const API_Coord viewDirection = { -dy / length * side, dx / length * side };
+                segmentOs.Add ("viewDirection", Create2DCoordinateObjectState (viewDirection));
+            }
+        }
+
+        GS::ObjectState settings;
+        AddSectionSegmentDetails (settings, seg, true, nullptr);
+        segmentOs.Add ("settings", settings);
+        segments (segmentOs);
+
+        mainOffset += static_cast<GSSize> (seg.nMainCoord);
+        depthOffset += static_cast<GSSize> (seg.nDepthCoord);
+    }
+}
+
+// Applies every segment field present in 'details' (the keys of SectionElevationSettableDetails
+// apart from showOnStories, storyToShowOn and markerShowType, which are not in the segment) onto
+// seg. Returns an error for an attribute guid that does not name an attribute of the expected
+// type. When mask is non-null, seg is the segment of an API_CutPlaneType and the corresponding
+// ACAPI_ELEMENT_MASK_SET bit is set too (needed for ACAPI_Element_Change; not needed when
+// preparing a brand new element for ACAPI_Element_CreateExt, which always writes the full struct,
+// nor for an Interior Elevation segment, which is written through the memo).
+static GS::Optional<GS::UniString> ApplySectionSegmentSettableDetails (const GS::ObjectState& details, API_SectionSegment& seg, API_Element* mask)
+{
     // The name and the reference ID are not among these settings: ACAPI_Element_Change reports
     // success for them but Archicad keeps the old values. CreateSections and CreateElevations
     // take them as 'name' and 'id', and ModifySections changes them on existing elements.
@@ -20511,6 +20606,24 @@ static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const G
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.boundaryLineType);
         }
     }
+    if (details.Get ("intendedPlanConnectivity", strVal)) {
+        seg.intPlanConn = StringToPlanConn (strVal);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.intPlanConn);
+    }
+
+    return {};
+}
+
+// Applies every field present in 'details' onto cutPlane: its segment and the settings a Section or
+// an Elevation keeps outside it. See ApplySectionSegmentSettableDetails for the errors and the mask.
+static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const GS::ObjectState& details, API_CutPlaneType& cutPlane, API_Element* mask)
+{
+    const GS::Optional<GS::UniString> segmentError = ApplySectionSegmentSettableDetails (details, cutPlane.segment, mask);
+    if (segmentError.HasValue ()) {
+        return segmentError;
+    }
+
+    GS::UniString strVal;
     if (details.Get ("showOnStories", strVal)) {
         cutPlane.cutPlShow = StringToCutPlaneShowType (strVal);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, cutPlShow);
@@ -20525,10 +20638,6 @@ static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const G
     if (details.Get ("markerShowType", strVal)) {
         cutPlane.markerShow = (strVal == "WingMarkers") ? APICutPl_ShowWingMarkers : APICutPl_ShowMiddleMarker;
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, markerShow);
-    }
-    if (details.Get ("intendedPlanConnectivity", strVal)) {
-        seg.intPlanConn = StringToPlanConn (strVal);
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.intPlanConn);
     }
 
     return {};
@@ -21100,7 +21209,9 @@ GS::ObjectState GetSectionsAndElevationsDetailsCommand::Execute (const GS::Objec
         } else if (typeID == API_ElevationID) {
             AddSectionElevationDetails (os, elem.elevation, true);
         } else {
-            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, "The element is neither a Section nor an Elevation."));
+            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, typeID == API_InteriorElevationID
+                ? "The element is an Interior Elevation, not a Section or an Elevation; GetDetailsOfElements returns its settings and segments."
+                : "The element is neither a Section nor an Elevation."));
             continue;
         }
         detailsOfElements (os);
@@ -21199,6 +21310,288 @@ GS::ObjectState SetSectionsAndElevationsDetailsCommand::Execute (const GS::Objec
 
             err = ACAPI_Element_Change (&elem, &mask, nullptr, 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the element."));
+        }
+    });
+}
+
+SetInteriorElevationsDetailsCommand::SetInteriorElevationsDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetInteriorElevationsDetailsCommand::GetName () const
+{
+    return "SetInteriorElevationsDetails";
+}
+
+GS::Optional<GS::UniString> SetInteriorElevationsDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "interiorElevationsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "details": { "$ref": "#/InteriorElevationSettableDetails" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "details"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["interiorElevationsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetInteriorElevationsDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// Applies the element-level settings of an Interior Elevation (#/InteriorElevationSettableDetails
+// without its segments) onto intElev and sets their mask bits.
+static void ApplyInteriorElevationSettableDetails (const GS::ObjectState& details, API_InteriorElevationType& intElev, API_Element& mask)
+{
+    GS::UniString strVal;
+    if (details.Get ("showOnStories", strVal)) {
+        intElev.cutPlShow = StringToCutPlaneShowType (strVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, cutPlShow);
+    }
+    Int32 intVal;
+    if (details.Get ("storyToShowOn", intVal)) {
+        intElev.storyToShowOn = static_cast<short> (intVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, storyToShowOn);
+    }
+    if (details.Get ("useCommonMarker", intElev.useCommonMarker)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, useCommonMarker);
+    }
+    if (details.Get ("commonMarkerPenIndex", intVal)) {
+        intElev.markerPen = static_cast<short> (intVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerPen);
+    }
+    if (details.Get ("commonMarkerFontIndex", intVal)) {
+        intElev.markerFont = static_cast<short> (intVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerFont);
+    }
+    if (details.Get ("commonMarkerSize", intElev.markerSize)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerSize);
+    }
+    if (details.Get ("commonMarkerTextSize", intElev.markerTextSize)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerTextSize);
+    }
+}
+
+// The mask bits ApplySectionSegmentSettableDetails sets for the segment of an API_CutPlaneType,
+// added to a mask of one API_SectionSegment: both are the same struct, so a field's bit is at the
+// same place in either, and the segment of an API_InteriorElevationType takes the same mask.
+static void AddSectionSegmentMaskBits (const API_Element& cutPlaneMask, API_SectionSegment& segmentMask)
+{
+    const char* source = reinterpret_cast<const char*> (&cutPlaneMask.cutPlane.segment);
+    char* target = reinterpret_cast<char*> (&segmentMask);
+    for (size_t i = 0; i < sizeof (API_SectionSegment); ++i) {
+        target[i] |= source[i];
+    }
+}
+
+// The segments of an Interior Elevation are in its memo (intElevSegments), like the ones
+// RenameNavigatorItem renames. Every segment entry is checked before anything is changed, so a
+// bad entry changes nothing. ACAPI_Element_Change is not for elements with markers (ACAPinc.h:
+// "To change elements having associated markers use the ACAPI_Element_ChangeExt function"): it
+// returned NoError and kept the common marker pen and every segment change (the testers' AC26 and
+// AC28 runs of #2851). So the interior elevation is changed with ACAPI_Element_ChangeExt, which
+// changes one segment, subIndex, at a time, as the DevKit's Do_ChangeInteriorElevation does: once
+// for each changed segment, with the segment in element.interiorElevation.segment and in the memo,
+// or once with subIndex 0 and no segment fields in the mask when no segment changes. Both keep the
+// element's GUID and the segments' viewpoints. What Archicad still did not apply is read back and
+// reported as a failure rather than as a success.
+GS::ObjectState SetInteriorElevationsDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> interiorElevationsWithDetails;
+    auto error = GetElementArray (parameters, "interiorElevationsWithDetails", interiorElevationsWithDetails);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Set Interior Elevations Details", interiorElevationsWithDetails, [&](GS::Array<GS::ObjectState>& results) {
+        for (const GS::ObjectState& item : interiorElevationsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            const GS::ObjectState* details = item.Get ("details");
+            if (elementId == nullptr || details == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId or details is missing"));
+                continue;
+            }
+
+            API_Element elem = {};
+            elem.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&elem);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to find the element."));
+                continue;
+            }
+
+            if (GetElemTypeId (elem.header) != API_InteriorElevationID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element is not an Interior Elevation. SetSectionsAndElevationsDetails sets Sections and Elevations."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            ApplyInteriorElevationSettableDetails (*details, elem.interiorElevation, mask);
+
+            GS::Array<GS::ObjectState> segmentChanges;
+            details->Get ("segments", segmentChanges);
+
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            GS::Optional<GS::UniString> segmentError;
+            // The mask of each changed segment, by its index.
+            std::map<Int32, API_SectionSegment> segmentMasks;
+            if (!segmentChanges.IsEmpty ()) {
+                err = ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All);
+                const GSSize nSegments = (err == NoError && memo.intElevSegments != nullptr)
+                    ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment)
+                    : 0;
+                if (nSegments == 0) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the segments of the interior elevation."));
+                    continue;
+                }
+
+                for (USize i = 0; i < segmentChanges.GetSize () && !segmentError.HasValue (); ++i) {
+                    const GS::ObjectState& change = segmentChanges[i];
+                    Int32 segmentIndex = -1;
+                    if (!change.Get ("segmentIndex", segmentIndex) || segmentIndex < 0 || segmentIndex >= nSegments) {
+                        segmentError = GS::UniString::Printf ("segments[%u]: 'segmentIndex' must be the index of a segment, from 0 to %d.", i, static_cast<int> (nSegments) - 1);
+                        break;
+                    }
+
+                    API_SectionSegment& seg = memo.intElevSegments[segmentIndex];
+                    API_SectionSegment& segMask = segmentMasks[segmentIndex];
+                    GS::UniString strVal;
+                    if (change.Get ("name", strVal)) {
+                        CopySectionString (seg.cutPlName, strVal);
+                        ACAPI_ELEMENT_MASK_SET (segMask, API_SectionSegment, cutPlName);
+                    }
+                    if (change.Get ("id", strVal)) {
+                        CopySectionString (seg.cutPlIdStr, strVal);
+                        ACAPI_ELEMENT_MASK_SET (segMask, API_SectionSegment, cutPlIdStr);
+                    }
+
+                    const GS::ObjectState* settings = change.Get ("settings");
+                    if (settings == nullptr) {
+                        continue;
+                    }
+                    for (const char* elementLevelKey : { "showOnStories", "storyToShowOn", "markerShowType" }) {
+                        if (settings->Contains (elementLevelKey)) {
+                            segmentError = GS::UniString::Printf ("segments[%u].settings: '%s' is not a setting of a segment; showOnStories and storyToShowOn are set on the interior elevation itself.", i, elementLevelKey);
+                            break;
+                        }
+                    }
+                    if (segmentError.HasValue ()) {
+                        break;
+                    }
+                    // The settings are applied to a copy in a cut plane, so that
+                    // ApplySectionSegmentSettableDetails sets the mask bits of the fields it
+                    // changes; the copy then goes back into the memo.
+                    API_Element cutPlane = {};
+                    cutPlane.cutPlane.segment = seg;
+                    API_Element cutPlaneMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (cutPlaneMask);
+                    const GS::Optional<GS::UniString> settingsError = ApplySectionSegmentSettableDetails (*settings, cutPlane.cutPlane.segment, &cutPlaneMask);
+                    if (settingsError.HasValue ()) {
+                        segmentError = GS::UniString::Printf ("segments[%u].settings: ", i) + settingsError.Get ();
+                        break;
+                    }
+                    seg = cutPlane.cutPlane.segment;
+                    AddSectionSegmentMaskBits (cutPlaneMask, segMask);
+                }
+            }
+            if (segmentError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentError.Get ()));
+                continue;
+            }
+
+            // What was asked for, to check it against what Archicad stored.
+            const API_InteriorElevationType wanted = elem.interiorElevation;
+            GS::Array<std::pair<Int32, API_SectionSegment>> wantedSegments;
+            for (const auto& entry : segmentMasks) {
+                wantedSegments.Push (std::make_pair (entry.first, memo.intElevSegments[entry.first]));
+            }
+
+            if (segmentMasks.empty ()) {
+                err = ACAPI_Element_ChangeExt (&elem, &mask, nullptr, 0, 0, nullptr, true, 0);
+            } else {
+                for (const auto& entry : segmentMasks) {
+                    API_Element segmentChangeMask = mask;
+                    segmentChangeMask.interiorElevation.segment = entry.second;
+                    elem.interiorElevation.segment = memo.intElevSegments[entry.first];
+                    err = ACAPI_Element_ChangeExt (&elem, &segmentChangeMask, &memo, APIMemoMask_SectionSegments, 0, nullptr, true, entry.first);
+                    if (err != NoError) {
+                        break;
+                    }
+                }
+            }
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify the interior elevation."));
+                continue;
+            }
+
+            API_Element stored = {};
+            stored.header.guid = elem.header.guid;
+            API_ElementMemo storedMemo = {};
+            const GS::OnExit storedMemoGuard ([&storedMemo] () { ACAPI_DisposeElemMemoHdls (&storedMemo); });
+            if (ACAPI_Element_Get (&stored) != NoError) {
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "The interior elevation was changed, but could not be read back."));
+                continue;
+            }
+            GS::Array<GS::UniString> notApplied;
+            const API_InteriorElevationType& got = stored.interiorElevation;
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, cutPlShow) && got.cutPlShow != wanted.cutPlShow) notApplied.Push ("showOnStories");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, storyToShowOn) && got.storyToShowOn != wanted.storyToShowOn) notApplied.Push ("storyToShowOn");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, useCommonMarker) && got.useCommonMarker != wanted.useCommonMarker) notApplied.Push ("useCommonMarker");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerPen) && got.markerPen != wanted.markerPen) notApplied.Push ("commonMarkerPenIndex");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerFont) && got.markerFont != wanted.markerFont) notApplied.Push ("commonMarkerFontIndex");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerSize) && std::abs (got.markerSize - wanted.markerSize) > 1e-6) notApplied.Push ("commonMarkerSize");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerTextSize) && std::abs (got.markerTextSize - wanted.markerTextSize) > 1e-6) notApplied.Push ("commonMarkerTextSize");
+            if (!wantedSegments.IsEmpty ()) {
+                const bool segmentsRead = ACAPI_Element_GetMemo (stored.header.guid, &storedMemo, APIMemoMask_SectionSegments) == NoError && storedMemo.intElevSegments != nullptr;
+                const GSSize nStored = segmentsRead ? BMGetPtrSize (reinterpret_cast<GSPtr> (storedMemo.intElevSegments)) / sizeof (API_SectionSegment) : 0;
+                for (const auto& entry : wantedSegments) {
+                    const API_SectionSegment& segMask = segmentMasks[entry.first];
+                    const API_SectionSegment* storedSeg = entry.first < nStored ? &storedMemo.intElevSegments[entry.first] : nullptr;
+                    if (ACAPI_ELEMENT_MASK_CHECK (segMask, API_SectionSegment, cutPlName) && (storedSeg == nullptr || GS::UniString (storedSeg->cutPlName) != GS::UniString (entry.second.cutPlName))) {
+                        notApplied.Push (GS::UniString::Printf ("the name of segment %d", static_cast<int> (entry.first)));
+                    }
+                    if (ACAPI_ELEMENT_MASK_CHECK (segMask, API_SectionSegment, cutPlIdStr) && (storedSeg == nullptr || GS::UniString (storedSeg->cutPlIdStr) != GS::UniString (entry.second.cutPlIdStr))) {
+                        notApplied.Push (GS::UniString::Printf ("the id of segment %d", static_cast<int> (entry.first)));
+                    }
+                }
+            }
+            if (!notApplied.IsEmpty ()) {
+                GS::UniString message ("Archicad did not apply ");
+                for (UIndex i = 0; i < notApplied.GetSize (); ++i) {
+                    if (i > 0) {
+                        message += ", ";
+                    }
+                    message += notApplied[i];
+                }
+                message += "; the other changes were made.";
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, message));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }
