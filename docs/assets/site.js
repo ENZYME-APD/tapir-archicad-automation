@@ -1510,6 +1510,10 @@
         // The overlay covers the whole document; its own position on the page turns page coordinates
         // into its coordinates, whatever offsets the body has.
         function sizeOverlay () {
+            // The overlay itself counts in the document's size: shrink it first, so the page can get
+            // narrower again after a resize.
+            overlay.style.width = '0';
+            overlay.style.height = '0';
             var width = Math.max (root.scrollWidth, root.clientWidth);
             var height = Math.max (root.scrollHeight, root.clientHeight);
             overlay.setAttribute ('width', width);
@@ -1685,9 +1689,10 @@
             update ();
         }, { passive: true });
 
-        // A click sets a point and does nothing else: captured before the page's own handlers.
+        // A click sets a point and does nothing else: captured before the page's own handlers. A click
+        // made with the keyboard (Enter or Space on a link or button, detail 0) still activates it.
         document.addEventListener ('click', function (event) {
-            if (!active || event.button !== 0) {
+            if (!active || event.button !== 0 || event.detail === 0) {
                 return;
             }
             event.preventDefault ();
