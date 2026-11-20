@@ -16710,6 +16710,113 @@
             "depthCoordinates"
         ]
     },
+    "InteriorElevationDetails": {
+        "type": "object",
+        "description": "The settings of an Interior Elevation element and its segments. Each segment is one viewpoint of the Project Map, with its own name, reference ID, lines and settings.",
+        "properties": {
+            "showOnStories": {
+                "type": "string",
+                "enum": ["All", "OneStory", "InRange", "PartRange"],
+                "description": "Which stories the interior elevation is shown on."
+            },
+            "storyToShowOn": {
+                "type": "integer",
+                "description": "The story index the interior elevation is shown on, if showOnStories is 'OneStory'."
+            },
+            "useCommonMarker": {
+                "type": "boolean",
+                "description": "Whether the common marker of the interior elevation is shown."
+            },
+            "commonMarkerGuid": {
+                "$ref": "#/Guid",
+                "description": "The GUID Archicad keeps for the common marker (API_InteriorElevationType::markerGuid)."
+            },
+            "commonMarkerPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the common marker."
+            },
+            "commonMarkerFontIndex": {
+                "type": "integer",
+                "description": "Font index of the common marker."
+            },
+            "commonMarkerSize": {
+                "type": "number",
+                "description": "Size of the common marker."
+            },
+            "commonMarkerTextSize": {
+                "type": "number",
+                "description": "Size of the common marker's text."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The segments of the interior elevation, in the order of its line (CreateInteriorElevations makes one per gap between two nodeCoordinates). Empty when they cannot be read.",
+                "items": {
+                    "$ref": "#/InteriorElevationSegmentDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "useCommonMarker",
+            "segments"
+        ]
+    },
+    "InteriorElevationSegmentDetails": {
+        "type": "object",
+        "description": "One segment of an Interior Elevation: one viewpoint of the Project Map.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the segment, shown in the Project Map. RenameNavigatorItem changes it through the segment's viewpoint."
+            },
+            "idStr": {
+                "type": "string",
+                "description": "The reference ID of the segment, shown in its marker and in the Project Map."
+            },
+            "mainCoordinates": {
+                "type": "array",
+                "description": "The points of the segment's line, from start to end. Empty when the line cannot be read. Archicad does not keep the line on the nodeCoordinates given to CreateInteriorElevations: in Archicad 26 and 28 each segment's line is moved to the left of its pair of nodes by the depth.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "depthCoordinates": {
+                "type": "array",
+                "description": "The points of the segment's depth line, its far boundary. Empty when it cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "startCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The first point of the segment's line."
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The last point of the segment's line."
+            },
+            "depth": {
+                "type": "number",
+                "description": "The distance of the first depth point from the first line of the segment (depth of CreateInteriorElevations)."
+            },
+            "viewDirection": {
+                "$ref": "#/Coordinate2D",
+                "description": "The unit vector perpendicular to the first line of the segment, pointing to the side of the depth line: the direction the segment looks in."
+            },
+            "settings": {
+                "$ref": "#/SectionElevationDetails",
+                "description": "The settings of the segment (API_SectionSegment), with the keys GetSectionsAndElevationsDetails gives for a Section or an Elevation. showOnStories and storyToShowOn are the interior elevation's own, above, and markerShowType is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "idStr",
+            "mainCoordinates",
+            "depthCoordinates",
+            "settings"
+        ]
+    },
     "PictureAnchorPoint": {
         "type": "string",
         "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
@@ -16935,6 +17042,9 @@
             },
             {
                 "$ref": "#/SectionDetails"
+            },
+            {
+                "$ref": "#/InteriorElevationDetails"
             },
             {
                 "$ref": "#/PictureDetails"

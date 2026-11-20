@@ -1,0 +1,77 @@
+{
+  "title": "GetDetailsOfElements reads an Interior Elevation: its settings and each segment's name, line, depth and settings (#2851)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "InteriorElevation" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "interior elevation of two segments, depth 2",
+      "command": "CreateInteriorElevations",
+      "params": {
+        "interiorElevationsData": [
+          {
+            "nodeCoordinates": [ { "x": 900.0, "y": 900.0 }, { "x": 906.0, "y": 900.0 }, { "x": 906.0, "y": 904.0 } ],
+            "depth": 2.0,
+            "name": "TapirCheck IE Read",
+            "id": "TC-IER",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "ie": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "interior elevation created" }
+      ]
+    },
+    {
+      "id": "read it back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ie}" } } ] },
+      "save": {
+        "s0StartY": "detailsOfElements[0].details.segments[0].startCoordinate.y",
+        "s0EndY": "detailsOfElements[0].details.segments[0].endCoordinate.y",
+        "s1StartX": "detailsOfElements[0].details.segments[1].startCoordinate.x",
+        "s1EndX": "detailsOfElements[0].details.segments[1].endCoordinate.x"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "InteriorElevation" },
+        { "path": "detailsOfElements[0].details.error", "exists": false, "name": "no longer 'Not yet supported element type'" },
+        { "path": "detailsOfElements[0].details.useCommonMarker", "exists": true },
+        { "path": "detailsOfElements[0].details.showOnStories", "exists": true },
+        { "path": "detailsOfElements[0].details.commonMarkerPenIndex", "exists": true },
+        { "path": "detailsOfElements[0].details.segments", "len": 2, "name": "one segment per gap between the nodes" },
+        { "path": "detailsOfElements[0].details.segments[0].name", "contains": "TapirCheck IE Read", "name": "segment named after it" },
+        { "path": "detailsOfElements[0].details.segments[0].startCoordinate.x", "approx": 900.0, "name": "first segment runs from the first node's x" },
+        { "path": "detailsOfElements[0].details.segments[0].endCoordinate.x", "approx": 906.0, "name": "to the middle node's x" },
+        { "expr": "${s0EndY} - ${s0StartY}", "approx": 0.0, "name": "first segment parallel to the first node pair" },
+        { "path": "detailsOfElements[0].details.segments[1].startCoordinate.y", "approx": 900.0, "name": "second segment runs from the middle node's y" },
+        { "path": "detailsOfElements[0].details.segments[1].endCoordinate.y", "approx": 904.0, "name": "to the last node's y" },
+        { "expr": "${s1EndX} - ${s1StartX}", "approx": 0.0, "name": "second segment parallel to the second node pair" },
+        { "expr": "(${s0StartY} - 900.0) - (906.0 - ${s1StartX})", "approx": 0.0, "name": "both lines the same distance inside the nodes (Archicad offsets them)" },
+        { "expr": "${s0StartY} - 900.0", "gt": -0.001, "name": "the first line is not outside the nodes" },
+        { "path": "detailsOfElements[0].details.segments[0].depth", "approx": 2.0, "name": "depth line 2 m away" },
+        { "path": "detailsOfElements[0].details.segments[0].settings.linePenIndex", "exists": true, "name": "segment settings read" },
+        { "path": "detailsOfElements[0].details.segments[0].settings.horizontalRange", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[1].settings.markerSize", "exists": true }
+      ]
+    },
+    {
+      "id": "GetSectionsAndElevationsDetails points to GetDetailsOfElements",
+      "command": "GetSectionsAndElevationsDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ie}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].error.message", "contains": "GetDetailsOfElements" }
+      ]
+    }
+  ]
+}

@@ -34,6 +34,10 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     const GS::ObjectState& details,
     bool& changed);
 
+// The settings of an Interior Elevation and of each of its segments (#/InteriorElevationDetails),
+// read by GetDetailsOfElements (#2851).
+void AddInteriorElevationDetails (const API_Element& elem, GS::ObjectState& os);
+
 // The surface, cut fill and cover fill settings each Create and Modify pair shares (#2220): the
 // schema fragment ends the item schema of both commands, and the function writes the given keys
 // into the element and its mask (the Create commands discard the mask). Returns an error text,
