@@ -67,6 +67,10 @@ GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::
 // trees first, and one that is in none of them gets APIERR_BADID.
 GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item);
 
+// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with custom settings (as the
+// DevKit's Navigator_Test example does). Call it on every view ACAPI_Navigator_GetNavigatorView filled.
+void FreeNavigatorView (API_NavigatorView& navigatorView);
+
 // The optional boolean "dryRun" input of the commands that delete or change (#2195), the #/DryRun
 // schema definition. A dry run makes every check of a real run and resolves the same targets, with
 // the same errors, but changes nothing in the project. A command reads the flag once with
