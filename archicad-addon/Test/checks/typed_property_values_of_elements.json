@@ -193,5 +193,19 @@
         { "path": "propertyValuesForElements[1].propertyValues[0].propertyValue.value", "eq": 5, "name": "the next element is still read" }
       ]
     }
+  ],
+  "teardown": [
+    {
+      "command": "DeletePropertyDefinitions",
+      "params": { "propertyIds": [ { "propertyId": { "guid": "${pBool}" } }, { "propertyId": { "guid": "${pInt}" } }, { "propertyId": { "guid": "${pMulti}" } } ] }
+    },
+    {
+      "command": "DeletePropertyGroups",
+      "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${group}" } } ] }
+    },
+    {
+      "command": "DeleteClassificationSystems",
+      "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${system}" } } ] }
+    }
   ]
 }
