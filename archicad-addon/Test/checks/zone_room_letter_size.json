@@ -95,7 +95,17 @@
         ]
       },
       "expect": [
-        { "path": "error", "exists": true, "name": "schema refuses 0 (exclusiveMinimum)" }
+        { "path": "executionResults[0].success", "eq": false, "name": "a letter size of 0 is refused" },
+        { "path": "executionResults[0].error.message", "contains": "roomLSize", "name": "the refusal names roomLSize" }
+      ]
+    },
+    {
+      "id": "the refused letter size changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roomLSize", "approx": 2.5, "name": "letter size kept after the refusal" }
       ]
     }
   ]
