@@ -2231,6 +2231,28 @@ static GS::ObjectState CreateStoryParametersObjectState (const API_StoryInfo& st
     return storyData;
 }
 
+// The height of the story at this position (0 is the bottom one), from the level of the record
+// above it (the virtual one for the top story); 0 when there is no such record.
+static double GetStoryHeightAt (const API_StoryInfo& storyInfo, const short position)
+{
+    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+    if (position < 0 || position + 1 >= recordCount) {
+        return 0.0;
+    }
+    return (*storyInfo.data)[position + 1].level - (*storyInfo.data)[position].level;
+}
+
+// The position (0 is the bottom one) of the story with this floorId, or -1.
+static short FindStoryPosition (const API_StoryInfo& storyInfo, const short floorId)
+{
+    for (short i = 0; i <= storyInfo.lastStory - storyInfo.firstStory; ++i) {
+        if ((*storyInfo.data)[i].floorId == floorId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 GetStoriesCommand::GetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -2702,9 +2724,9 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
 // Archicad deletes together with the story. They are listed in the floor plan database,
 // which is made the current one for the count when another database (a section, a layout)
 // is current, and put back afterwards.
-static GSErrCode CountElementsOnStory (const short storyIndex, GS::USize& count)
+static GSErrCode CountElementsPerStory (std::map<short, GS::USize>& countByStoryIndex)
 {
-    count = 0;
+    countByStoryIndex.clear ();
 
     API_DatabaseInfo startingDatabase = {};
     GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
@@ -2738,12 +2760,225 @@ static GSErrCode CountElementsOnStory (const short storyIndex, GS::USize& count)
     for (const API_Guid& elemGuid : elemList) {
         API_Elem_Head elemHead = {};
         elemHead.guid = elemGuid;
-        if (ACAPI_Element_GetHeader (&elemHead) == NoError && elemHead.floorInd == storyIndex) {
-            ++count;
+        if (ACAPI_Element_GetHeader (&elemHead) == NoError) {
+            ++countByStoryIndex[elemHead.floorInd];
         }
     }
 
     return NoError;
+}
+
+static GSErrCode CountElementsOnStory (const short storyIndex, GS::USize& count)
+{
+    std::map<short, GS::USize> countByStoryIndex;
+    const GSErrCode err = CountElementsPerStory (countByStoryIndex);
+    const auto found = countByStoryIndex.find (storyIndex);
+    count = found != countByStoryIndex.end () ? found->second : 0;
+    return err;
+}
+
+// The number of floor plan elements per story, keyed by the story's floorId, which, unlike its
+// index, does not change when a story is inserted or deleted. Elements whose home story index
+// is not a story are counted under the key ElementsOnNoStory.
+constexpr short ElementsOnNoStory = -32768;
+static GSErrCode CountElementsPerFloorId (std::map<short, GS::USize>& countByFloorId)
+{
+    countByFloorId.clear ();
+
+    std::map<short, GS::USize> countByStoryIndex;
+    GSErrCode err = CountElementsPerStory (countByStoryIndex);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_StoryInfo storyInfo = {};
+    err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const auto& entry : countByStoryIndex) {
+        const bool isStory = entry.first >= storyInfo.firstStory && entry.first <= storyInfo.lastStory;
+        const short key = isStory ? (*storyInfo.data)[entry.first - storyInfo.firstStory].floorId : ElementsOnNoStory;
+        countByFloorId[key] += entry.second;
+    }
+    return NoError;
+}
+
+// Whether every story kept its elements, comparing the counts by floorId from before and after
+// a change of the stories; the story of skippedFloorId (a deleted one) is left out. The stories
+// whose count changed are described in difference.
+static bool ElementsKeptTheirStories (const std::map<short, GS::USize>& before,
+                                      const std::map<short, GS::USize>& after,
+                                      const short skippedFloorId,
+                                      GS::UniString& difference)
+{
+    std::map<short, std::pair<GS::USize, GS::USize>> counts;
+    for (const auto& entry : before) {
+        counts[entry.first].first = entry.second;
+    }
+    for (const auto& entry : after) {
+        counts[entry.first].second = entry.second;
+    }
+
+    for (const auto& entry : counts) {
+        if (entry.first == skippedFloorId || entry.second.first == entry.second.second) {
+            continue;
+        }
+        if (!difference.IsEmpty ()) {
+            difference += ", ";
+        }
+        if (entry.first == ElementsOnNoStory) {
+            difference += GS::UniString::Printf ("no story: %u before, %u after",
+                static_cast<unsigned int> (entry.second.first), static_cast<unsigned int> (entry.second.second));
+        } else {
+            difference += GS::UniString::Printf ("floorId %d: %u before, %u after", static_cast<int> (entry.first),
+                static_cast<unsigned int> (entry.second.first), static_cast<unsigned int> (entry.second.second));
+        }
+    }
+    return difference.IsEmpty ();
+}
+
+// Runs func with the floor plan database as the current one, and puts back the database that
+// was current before.
+static GSErrCode RunOnFloorPlanDatabase (const std::function<GSErrCode ()>& func)
+{
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    bool databaseChanged = false;
+    if (startingDatabase.typeID != APIWind_FloorPlanID) {
+        API_DatabaseInfo floorPlanDatabase = {};
+        floorPlanDatabase.typeID = APIWind_FloorPlanID;
+        ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase);
+        err = ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase);
+        if (err != NoError) {
+            return err;
+        }
+        databaseChanged = true;
+    }
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseChanged) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        }
+    });
+
+    return func ();
+}
+
+// The home story (floorId) of every floor plan element; ElementsOnNoStory for an element whose
+// home story index is not a story.
+static GSErrCode GetHomeStoryOfElements (GS::Array<std::pair<API_Guid, short>>& floorIdByElement)
+{
+    floorIdByElement.Clear ();
+
+    API_StoryInfo storyInfo = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return err;
+    }
+
+    return RunOnFloorPlanDatabase ([&] () -> GSErrCode {
+        GS::Array<API_Guid> elemList;
+        const GSErrCode listErr = ACAPI_Element_GetElemList (API_ZombieElemID, &elemList);
+        if (listErr != NoError) {
+            return listErr;
+        }
+        for (const API_Guid& elemGuid : elemList) {
+            API_Elem_Head elemHead = {};
+            elemHead.guid = elemGuid;
+            if (ACAPI_Element_GetHeader (&elemHead) == NoError) {
+                const bool isStory = elemHead.floorInd >= storyInfo.firstStory && elemHead.floorInd <= storyInfo.lastStory;
+                floorIdByElement.Push ({ elemGuid, isStory ? (*storyInfo.data)[elemHead.floorInd - storyInfo.firstStory].floorId : ElementsOnNoStory });
+            }
+        }
+        return NoError;
+    });
+}
+
+// Archicad keeps some elements on their story index, not on their story, when a story is inserted
+// or deleted: on Archicad 30, inserting a story below Ground Floor (done as APIStory_InsAbove on
+// the story under it) moved the walls of Ground Floor up with it, but left its Elevation markers
+// and the elements that belong to them on the old index, which became the new story (#2843).
+// Every floor plan element whose home story is not the one of floorIdBefore any more is put back
+// on that story. The elements that could not be put back are counted in failedCount.
+static GSErrCode RestoreHomeStoryOfElements (const GS::Array<std::pair<API_Guid, short>>& homeStoriesBefore, GS::USize& failedCount)
+{
+    failedCount = 0;
+
+    GS::HashTable<API_Guid, short> floorIdBefore;
+    for (const auto& entry : homeStoriesBefore) {
+        floorIdBefore.Put (entry.first, entry.second);
+    }
+
+    GS::Array<std::pair<API_Guid, short>> floorIdAfter;
+    GSErrCode err = GetHomeStoryOfElements (floorIdAfter);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_StoryInfo storyInfo = {};
+    err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::Array<std::pair<API_Guid, short>> elementsToMove;
+    for (const auto& entry : floorIdAfter) {
+        const API_Guid& elemGuid = entry.first;
+        if (!floorIdBefore.ContainsKey (elemGuid)) {
+            continue;
+        }
+        const short before = floorIdBefore.Get (elemGuid);
+        if (before == ElementsOnNoStory || before == entry.second) {
+            continue;
+        }
+        const short position = FindStoryPosition (storyInfo, before);
+        if (position < 0) {
+            continue;
+        }
+        elementsToMove.Push ({ elemGuid, (*storyInfo.data)[position].index });
+    }
+    if (elementsToMove.IsEmpty ()) {
+        return NoError;
+    }
+
+    return RunOnFloorPlanDatabase ([&] () -> GSErrCode {
+        return ACAPI_CallUndoableCommand ("Keep the home stories of the elements", [&] () -> GSErrCode {
+            for (const auto& elementToMove : elementsToMove) {
+                API_Element element = {};
+                element.header.guid = elementToMove.first;
+                if (ACAPI_Element_Get (&element) != NoError) {
+                    ++failedCount;
+                    continue;
+                }
+                // An element that belongs to another one may have moved with it already.
+                if (element.header.floorInd == elementToMove.second) {
+                    continue;
+                }
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                element.header.floorInd = elementToMove.second;
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                if (ACAPI_Element_Change (&element, &mask, nullptr, 0, true) != NoError) {
+                    ++failedCount;
+                }
+            }
+            return NoError;
+        });
+    });
 }
 
 InsertStoryCommand::InsertStoryCommand () :
@@ -2837,22 +3072,42 @@ GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
     }
 
-    double height = 0.0;
-    if (parameters.Get ("height", height)) {
-        if (height <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "height must be greater than zero.");
-        }
-    } else {
-        // The height of the reference story; the array has a record above the top story too
-        // (see CreateStoryParametersObjectState), so every story has one.
-        const short referencePosition = storyIndex - storyInfo.firstStory;
-        const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
-        if (referencePosition + 1 < recordCount) {
-            height = (*storyInfo.data)[referencePosition + 1].level - (*storyInfo.data)[referencePosition].level;
-        }
-        if (height <= 0.0) {
-            return CreateErrorResponse (APIERR_GENERAL, "Failed to read the height of the story of storyIndex; give height.");
-        }
+    // Archicad's APIStory_InsBelow leaves the elements of the stories that move up on their old
+    // index, so they end up one story lower (tested on Archicad 30 in #2843: the elements of the
+    // story of storyIndex were then on the new story). Below a story that has a story under it,
+    // the new story is the same as one inserted above that lower story, so APIStory_InsAbove is
+    // used there; APIStory_InsBelow only below the bottom story, where no story moves up.
+    const short referencePosition = storyIndex - storyInfo.firstStory;
+    const bool useInsAbove = insertAbove || storyIndex > storyInfo.firstStory;
+    const short cmdPosition = insertAbove || !useInsAbove ? referencePosition : referencePosition - 1;
+
+    // The heights of the reference story and of the story of the command (the same one, except
+    // for a Below insert done as Above); the array has a record above the top story too (see
+    // CreateStoryParametersObjectState), so every story has one. A story may be 0 high (a datum).
+    const short referenceFloorId = (*storyInfo.data)[referencePosition].floorId;
+    const short cmdFloorId = (*storyInfo.data)[cmdPosition].floorId;
+    const short originalActFloorId = (*storyInfo.data)[storyInfo.actStory - storyInfo.firstStory].floorId;
+    const double referenceHeight = GetStoryHeightAt (storyInfo, referencePosition);
+    const double cmdHeight = GetStoryHeightAt (storyInfo, cmdPosition);
+    if (referenceHeight < 0.0 || cmdHeight < 0.0) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to read the height of the story of storyIndex.");
+    }
+
+    // The elements per story, to check afterwards that every element is still on its story.
+    std::map<short, GS::USize> elementsBefore;
+    err = CountElementsPerFloorId (elementsBefore);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to count the elements of the stories.");
+    }
+    GS::Array<std::pair<API_Guid, short>> homeStoriesBefore;
+    err = GetHomeStoryOfElements (homeStoriesBefore);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the home stories of the elements.");
+    }
+
+    double height = referenceHeight;
+    if (parameters.Get ("height", height) && height <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "height must be greater than zero.");
     }
 
     // The new story is the one whose floorId was not there before: the indices of the other
@@ -2864,9 +3119,13 @@ GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, 
     const short storyCountBefore = storyInfo.lastStory - storyInfo.firstStory + 1;
 
     API_StoryCmdType storyCmd = {};
-    storyCmd.action = insertAbove ? APIStory_InsAbove : APIStory_InsBelow;
-    storyCmd.index  = storyIndex;
-    storyCmd.height = height;
+    storyCmd.action = useInsAbove ? APIStory_InsAbove : APIStory_InsBelow;
+    storyCmd.index  = (*storyInfo.data)[cmdPosition].index;
+    // Archicad gives this height to the story of the command, not to the new one (tested on
+    // Archicad 30 in #2843: the new story got the reference story's old height). So that
+    // story is asked to keep its own height, and the new story's height is set afterwards
+    // with APIStory_SetHeight; the heights are read back and checked.
+    storyCmd.height = cmdHeight;
 
     GS::UniString name;
     parameters.Get ("name", name);
@@ -2897,70 +3156,106 @@ GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, 
     }
     const short newFloorId = (*storyInfo.data)[newPosition].floorId;
 
-    // Archicad does not always give the new story the height of the insert command (it keeps
-    // the height of the story it was inserted next to), so the height is set afterwards, as
-    // ModifyStory does: the new story is made the active one, APIStory_SetHeight moves the
-    // stories above it with its top, and the previously active story is restored.
-    const auto readNewHeight = [&] (double& newHeight) -> bool {
-        const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
-        if (newPosition + 1 >= recordCount) {
-            return false;
+    // The heights are set on the active story, as in the DevKit's Environment_Control example;
+    // the story that was active before is made active again afterwards.
+    bool actStoryMoved = false;
+    const GS::OnExit restoreActStory ([&] () {
+        if (actStoryMoved && RefreshStoryInfo (storyInfo) == NoError) {
+            const short actPosition = FindStoryPosition (storyInfo, originalActFloorId);
+            if (actPosition >= 0) {
+                API_StoryCmdType goToCmd = {};
+                goToCmd.action = APIStory_GoTo;
+                goToCmd.index  = (*storyInfo.data)[actPosition].index;
+                ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+            }
         }
-        newHeight = (*storyInfo.data)[newPosition + 1].level - (*storyInfo.data)[newPosition].level;
-        return true;
+    });
+    const auto setStoryHeight = [&] (const short floorId, const double targetHeight) -> GSErrCode {
+        const short position = FindStoryPosition (storyInfo, floorId);
+        if (position < 0) {
+            return APIERR_GENERAL;
+        }
+        if (std::abs (GetStoryHeightAt (storyInfo, position) - targetHeight) < StoryLevelTolerance) {
+            return NoError;
+        }
+
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = (*storyInfo.data)[position].index;
+        GSErrCode cmdErr = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (cmdErr != NoError) {
+            return cmdErr;
+        }
+        actStoryMoved = true;
+
+        API_StoryCmdType heightCmd = {};
+        heightCmd.action = APIStory_SetHeight;
+        heightCmd.index  = goToCmd.index;
+        heightCmd.height = targetHeight;
+        cmdErr = ACAPI_ProjectSetting_ChangeStorySettings (&heightCmd);
+        if (cmdErr != NoError) {
+            return cmdErr;
+        }
+        return RefreshStoryInfo (storyInfo);
     };
-    double newHeight = 0.0;
-    if (readNewHeight (newHeight) && std::abs (newHeight - height) >= StoryLevelTolerance) {
-        const short newStoryIndex = (*storyInfo.data)[newPosition].index;
-        const short originalActStory = storyInfo.actStory;
-        {
-            bool actStoryMoved = false;
-            const GS::OnExit restoreActStory ([&] () {
-                if (actStoryMoved) {
-                    API_StoryCmdType goBackCmd = {};
-                    goBackCmd.action = APIStory_GoTo;
-                    goBackCmd.index  = originalActStory;
-                    ACAPI_ProjectSetting_ChangeStorySettings (&goBackCmd);
-                }
-            });
 
-            API_StoryCmdType goToCmd = {};
-            goToCmd.action = APIStory_GoTo;
-            goToCmd.index  = newStoryIndex;
-            err = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
-            if (err != NoError) {
-                return CreateErrorResponse (err, "The story was inserted, but failed to make it active to set its height.");
-            }
-            actStoryMoved = newStoryIndex != originalActStory;
+    err = setStoryHeight (cmdFloorId, cmdHeight);
+    if (err == NoError && referenceFloorId != cmdFloorId) {
+        err = setStoryHeight (referenceFloorId, referenceHeight);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to keep the height of the story next to it.");
+    }
+    err = setStoryHeight (newFloorId, height);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to set its height.");
+    }
 
-            API_StoryCmdType heightCmd = {};
-            heightCmd.action = APIStory_SetHeight;
-            heightCmd.index  = newStoryIndex;
-            heightCmd.height = height;
-            err = ACAPI_ProjectSetting_ChangeStorySettings (&heightCmd);
-            if (err != NoError) {
-                return CreateErrorResponse (err, "The story was inserted, but failed to set its height.");
-            }
-        }
+    const short referencePositionAfter = FindStoryPosition (storyInfo, referenceFloorId);
+    const short cmdPositionAfter = FindStoryPosition (storyInfo, cmdFloorId);
+    newPosition = FindStoryPosition (storyInfo, newFloorId);
+    if (newPosition < 0 || referencePositionAfter < 0 || cmdPositionAfter < 0) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+    if (std::abs (GetStoryHeightAt (storyInfo, newPosition) - height) >= StoryLevelTolerance ||
+        std::abs (GetStoryHeightAt (storyInfo, referencePositionAfter) - referenceHeight) >= StoryLevelTolerance ||
+        std::abs (GetStoryHeightAt (storyInfo, cmdPositionAfter) - cmdHeight) >= StoryLevelTolerance) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The story was inserted, but Archicad gave it the height %.4f instead of %.4f, and the story of storyIndex the height %.4f instead of %.4f.",
+            GetStoryHeightAt (storyInfo, newPosition), height, GetStoryHeightAt (storyInfo, referencePositionAfter), referenceHeight));
+    }
+    if (insertAbove ? newPosition != referencePositionAfter + 1 : newPosition + 1 != referencePositionAfter) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story was inserted, but not next to the story of storyIndex.");
+    }
 
-        err = RefreshStoryInfo (storyInfo);
-        if (err != NoError) {
-            return CreateErrorResponse (err, "Failed to retrive stories info.");
-        }
-        newPosition = -1;
-        for (short i = 0; i <= storyInfo.lastStory - storyInfo.firstStory; ++i) {
-            if ((*storyInfo.data)[i].floorId == newFloorId) {
-                newPosition = i;
-                break;
-            }
-        }
-        if (newPosition < 0) {
-            return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
-        }
-        if (readNewHeight (newHeight) && std::abs (newHeight - height) >= StoryLevelTolerance) {
-            return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
-                "The story was inserted, but failed to set its height: requested %.4f, got %.4f.", height, newHeight));
-        }
+    GS::USize notRestoredCount = 0;
+    err = RestoreHomeStoryOfElements (homeStoriesBefore, notRestoredCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to put the elements back on their home stories.");
+    }
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+    newPosition = FindStoryPosition (storyInfo, newFloorId);
+    if (newPosition < 0) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+
+    std::map<short, GS::USize> elementsAfter;
+    err = CountElementsPerFloorId (elementsAfter);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to count the elements of the stories.");
+    }
+    GS::UniString elementDifference;
+    if (!ElementsKeptTheirStories (elementsBefore, elementsAfter, newFloorId, elementDifference)) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The story was inserted, but Archicad changed the home story of elements, and %u of them could not be put back (element counts per story ",
+            static_cast<unsigned int> (notRestoredCount)) + elementDifference + ").");
+    }
+    if (elementsAfter.find (newFloorId) != elementsAfter.end ()) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The story was inserted, but Archicad put %u element(s) on it.", static_cast<unsigned int> (elementsAfter.at (newFloorId))));
     }
 
     bool dispOnSections = false;
@@ -3104,6 +3399,20 @@ GS::ObjectState DeleteStoryCommand::Execute (const GS::ObjectState& parameters, 
         return result;
     }
 
+    // The elements per story, to check afterwards that the elements of the other stories are
+    // still on their stories (the stories above the deleted one get lower indices).
+    const short deletedFloorId = (*storyInfo.data)[storyIndex - storyInfo.firstStory].floorId;
+    std::map<short, GS::USize> elementsBefore;
+    err = CountElementsPerFloorId (elementsBefore);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to count the elements of the stories.");
+    }
+    GS::Array<std::pair<API_Guid, short>> homeStoriesBefore;
+    err = GetHomeStoryOfElements (homeStoriesBefore);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the home stories of the elements.");
+    }
+
     // APIStory_Delete is a complete, undoable operation of its own (ACAPI_ProjectSetting_ChangeStorySettings).
     API_StoryCmdType storyCmd = {};
     storyCmd.action = APIStory_Delete;
@@ -3119,6 +3428,27 @@ GS::ObjectState DeleteStoryCommand::Execute (const GS::ObjectState& parameters, 
     }
     if (storyInfo.lastStory - storyInfo.firstStory + 1 != storyCountBefore - 1) {
         return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not delete the story.");
+    }
+
+    // The elements of the deleted story are gone, and its floorId is no story any more, so only
+    // the elements of the other stories are put back.
+    GS::USize notRestoredCount = 0;
+    err = RestoreHomeStoryOfElements (homeStoriesBefore, notRestoredCount);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The story was deleted, but failed to put the elements of the other stories back on their home stories.");
+    }
+
+    std::map<short, GS::USize> elementsAfter;
+    err = CountElementsPerFloorId (elementsAfter);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The story was deleted, but failed to count the elements of the stories.");
+    }
+    GS::UniString elementDifference;
+    if (!ElementsKeptTheirStories (elementsBefore, elementsAfter, deletedFloorId, elementDifference)) {
+        GS::ObjectState failed = CreateFailedExecutionResult (APIERR_GENERAL,
+            GS::UniString ("The story was deleted, but Archicad changed the home story of elements of other stories (element counts per story ") + elementDifference + ").");
+        failed.Add ("elementCount", static_cast<Int32> (elementCount));
+        return failed;
     }
 
     GS::ObjectState result = CreateSuccessfulExecutionResult ();
