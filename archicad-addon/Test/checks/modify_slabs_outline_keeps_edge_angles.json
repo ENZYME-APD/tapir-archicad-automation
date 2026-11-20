@@ -105,7 +105,7 @@
         { "path": "detailsOfElements[0].details.edgeTrims[3].angle", "approx": 1.2, "tol": 0.0001, "name": "edge 3 angle kept" },
         { "path": "detailsOfElements[0].details.edgeSideMaterials[2].overridden", "eq": true, "name": "edge 2 still has its own surface" },
         { "path": "detailsOfElements[0].details.edgeSideMaterials[2].attributeId.guid", "eq": "${surfB}", "name": "edge 2 surface kept" },
-        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfA}", "name": "slab side surface kept" }
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[0].overridden", "eq": false, "name": "edge 0 still has no custom surface" }
       ]
     },
     {
