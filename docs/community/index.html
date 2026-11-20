@@ -200,8 +200,12 @@
                         <div class="map-canvas" id="map-canvas" role="img"><div class="map-land" aria-hidden="true"></div></div>
                         <figcaption data-i18n>A dot per town, larger where more people are. Land: Natural Earth.</figcaption>
                     </figure>
-                    <ol class="country-list" id="country-list"></ol>
-                    <a class="btn btn-primary map-join" href="https://discord.gg/NAnSennmpY" data-i18n>Add your town on Discord</a>
+                    <!-- Collapsed until the button opens it (user-map.js), so the long list doesn't push the page down. -->
+                    <ol class="country-list" id="country-list" hidden></ol>
+                    <div class="ctas">
+                        <a class="btn btn-primary btn-sm map-join" href="https://discord.gg/NAnSennmpY" data-i18n>Add your town on Discord</a>
+                        <button class="btn btn-line btn-sm" type="button" id="country-toggle" aria-expanded="false" aria-controls="country-list" hidden><span data-i18n>Show the countries</span><span data-i18n hidden>Hide the countries</span></button>
+                    </div>
                 </div>
             </section>
         </div>

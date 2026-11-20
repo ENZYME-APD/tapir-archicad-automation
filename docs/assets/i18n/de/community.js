@@ -147,6 +147,8 @@
     "Continents": "Kontinente",
     "A dot per town, larger where more people are. Land: Natural Earth.": "Ein Punkt pro Ort, größer, wo mehr Leute sind. Land: Natural Earth.",
     "Add your town on Discord": "Deinen Ort auf Discord eintragen",
+    "Show the countries": "Länder anzeigen",
+    "Hide the countries": "Länder ausblenden",
     "{place}, {country}: {count} person": "{place}, {country}: {count} Person",
     "{place}, {country}: {count} people": "{place}, {country}: {count} Personen",
     "{count} person": "{count} Person",

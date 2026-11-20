@@ -147,6 +147,8 @@
     "Continents": "大洲",
     "A dot per town, larger where more people are. Land: Natural Earth.": "每个城市一个点，人越多点越大。陆地数据：Natural Earth。",
     "Add your town on Discord": "在 Discord 上添加你的城市",
+    "Show the countries": "显示国家",
+    "Hide the countries": "隐藏国家",
     "{place}, {country}: {count} person": "{place}，{country}：{count} 人",
     "{place}, {country}: {count} people": "{place}，{country}：{count} 人",
     "{count} person": "{count} 人",
