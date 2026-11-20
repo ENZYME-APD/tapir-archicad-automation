@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20 09:10 UTC",
+ "generatedAt": "2026-11-20 13:54 UTC",
  "versions": [
   25,
   26,
@@ -7265,6 +7265,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 2970,
+     "title": "ChangeDrawingLink creates the new drawing with anchorPoint BottomLeft and shifts content vs. clip frame (native relink keeps everything)"
+    },
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
