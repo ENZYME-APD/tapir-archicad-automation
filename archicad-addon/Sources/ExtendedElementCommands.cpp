@@ -17510,6 +17510,32 @@ static GS::Optional<GS::UniString> CheckRoofEdgeSideMaterials (const API_Guid& g
     return {};
 }
 
+// Reads the edge types of a roof back after ModifyRoofs wrote them (see ApplyRoofEdgeTypes), in
+// the order of GetPolygonEdgeIndices; an edge without a stored type is Undefined (#2454).
+static GS::Optional<GS::UniString> CheckRoofEdgeTypes (const API_Guid& guid, const GS::Array<GS::UniString>& edgeTypes)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&]() {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_Polygon | APIMemoMask_RoofEdgeTypes) != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+        return GS::UniString ("Modified the roof, but failed to read its edge types back.");
+    }
+    const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
+    if (edgeIndices.GetSize () != edgeTypes.GetSize ()) {
+        return GS::UniString::Printf ("Archicad did not apply edgeTypes: the roof's polygon has %u edges after writing instead of %u.", (unsigned) edgeIndices.GetSize (), (unsigned) edgeTypes.GetSize ());
+    }
+    const GSSize nEdgeTypes = memo.roofEdgeTypes == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.roofEdgeTypes) / sizeof (API_RoofEdgeTypeID);
+    for (UIndex k = 0; k < edgeTypes.GetSize (); ++k) {
+        const GS::Optional<API_RoofEdgeTypeID> expected = RoofEdgeTypeFromString (edgeTypes[k]);
+        const API_RoofEdgeTypeID actual = edgeIndices[k] < nEdgeTypes ? memo.roofEdgeTypes[edgeIndices[k]] : APIRoofEdgeType_Undefined;
+        if (!expected.HasValue () || expected.Get () != actual) {
+            return GS::UniString::Printf ("Archicad did not keep edgeTypes[%u]: the edge has another edge type after writing.", (unsigned) k);
+        }
+    }
+    return {};
+}
+
 // The curve resolution of a multi-plane roof's curved pivot edges (segmentType, segmentsByArc
 // and segmentsByCircle of API_PolyRoofData, see ModifyRoofs) (#2582). given tells whether any
 // of them was in the item. Changes nothing on an error.
@@ -17887,7 +17913,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTypes": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline or holes.",
+                            "description": "The Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges; on a multi-plane roof of its contour (GetDetailsOfElements' polygonOutline, the edges Archicad makes from the pivot polygon and the eaves overhang), not of the pivot polygon. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts; on a multi-plane roof the pivot polygon, pivotEdges and the edge surfaces are sent back unchanged and the edge types are read back after writing. Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with eavesOverhang, pivotEdges or the segmentation, which make the contour again.",
                             "items": {
                                 "$ref": "#/RoofEdgeType"
                             }
@@ -17954,23 +17980,25 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'holes', 'pivotEdges', 'eavesOverhang', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour from the pivot polygon."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine' and 'edgeTypes' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle' and 'pivotLine' are only valid for single-plane roofs."));
                 continue;
             }
-            // A multi-plane roof's edge surfaces belong to the edges of its contour, which
-            // eavesOverhang, pivotEdges and the segmentation make again from the pivot polygon (#2582).
-            if (!isPlaneRoof && item.Contains ("edgeSideMaterials") && (item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") ||
-                                                                        item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeSideMaterials' cannot be combined with 'eavesOverhang', 'pivotEdges', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour again; send them in separate calls."));
+            // A multi-plane roof's edge surfaces and edge types belong to the edges of its contour,
+            // which eavesOverhang, pivotEdges and the segmentation make again from the pivot polygon
+            // (#2582, #2454).
+            if (!isPlaneRoof && (item.Contains ("edgeSideMaterials") || item.Contains ("edgeTypes")) &&
+                (item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") ||
+                 item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeSideMaterials' and 'edgeTypes' cannot be combined with 'eavesOverhang', 'pivotEdges', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour again; send them in separate calls."));
                 continue;
             }
             if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("contourPolygon"))) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', 'holes' or 'contourPolygon', which make new edges."));
                 continue;
             }
-            if (item.Contains ("edgeTypes") && (item.Contains ("polygonOutline") || item.Contains ("holes"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
+            if (item.Contains ("edgeTypes") && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("contourPolygon"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline', 'holes' or 'contourPolygon', which make new edges."));
                 continue;
             }
             // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
@@ -18225,8 +18253,9 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     // Do_Roof_Edit example (Element_Modify_ModelElements.cpp) writes a multi-plane roof's
                     // edited contour: with ACAPI_Element_Change, the contour's counts in the element and
                     // only the polygon handles and the edge data in the memo, unchanged but for the
-                    // given trims and side surfaces, so the edge types and the pivot polygon stay
-                    // (#2435, #2582). The overhang type is not in the mask, so it stays too.
+                    // given trims, edge types and side surfaces, so the rest of the edge data and the
+                    // pivot polygon stay (#2435, #2582, #2454). The overhang type is not in the mask,
+                    // so it stays too.
                     element.roof.u.polyRoof.contourPolygon.nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
                     element.roof.u.polyRoof.contourPolygon.nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
                     element.roof.u.polyRoof.contourPolygon.nArcs = memo.parcs == nullptr ? 0 : (Int32) (BMGetHandleSize ((GSHandle) memo.parcs) / sizeof (API_PolyArc));
@@ -18252,8 +18281,17 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     }
                     err = ACAPI_Element_Change (&element, &mask, &contourMemo, contourMask, true);
                     if (err != NoError) {
-                        results.Push (CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : "Failed to modify the edge surfaces of the roof."));
+                        results.Push (CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : hasEdgeTypes ? "Failed to modify the edge types of the roof." : "Failed to modify the edge surfaces of the roof."));
                         continue;
+                    }
+                    // Archicad makes the contour of a multi-plane roof again from its pivot polygon,
+                    // so the edge types are read back rather than trusted (#2454).
+                    if (hasEdgeTypes) {
+                        auto checkError = CheckRoofEdgeTypes (element.header.guid, edgeTypes);
+                        if (checkError.HasValue ()) {
+                            results.Push (CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()));
+                            continue;
+                        }
                     }
                     if (hasEdgeSideMaterials) {
                         auto checkError = CheckRoofEdgeSideMaterials (element.header.guid, edgeSideMaterials);

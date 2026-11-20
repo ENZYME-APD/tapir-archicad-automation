@@ -10872,7 +10872,7 @@
             },
             "edgeTypes": {
                 "type": "array",
-                "description": "Single-plane roofs only: the Edge Type of each edge of the roof's polygon (Custom Edge Settings), which schedules use, e.g. to list the length of the Eaves or Gable edges. In the order of edgeSideMaterials and edgeTrims: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. It does not change the geometry of the roof. ModifyRoofs takes the same list.",
+                "description": "The Edge Type of each edge of the roof's polygon (Custom Edge Settings), which schedules use, e.g. to list the length of the Eaves or Gable edges. On a multi-plane roof these are the edges of its contour (polygonOutline, which Archicad makes from the pivot polygon and the eaves overhang), which do not map one to one onto pivotEdges. In the order of edgeSideMaterials and edgeTrims: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. It does not change the geometry of the roof. ModifyRoofs takes the same list.",
                 "items": {
                     "$ref": "#/RoofEdgeType"
                 }
