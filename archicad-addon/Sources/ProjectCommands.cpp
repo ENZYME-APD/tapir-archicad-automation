@@ -3742,6 +3742,15 @@ GS::ObjectState SetGeoLocationCommand::Execute (const GS::ObjectState& parameter
             stepErr = ACAPI_GeoLocation_SetGeoLocation (&apiGeoLocation);
             if (stepErr != NoError) {
                 errorMessage = "Failed to set geolocation.";
+#ifdef ServerMainVers_2600
+                // Archicad refuses a new location while the survey point is locked, with an error
+                // code that does not say so. Name the cause and the way out.
+                bool stillLocked = false;
+                if (ACAPI_SurveyPoint_IsSurveyPointLocked (&stillLocked) == NoError && stillLocked) {
+                    errorMessage += " The survey point is locked: send surveyPoint.isLocked false with the change "
+                        "(and isLocked true in a second call to lock it again), or unlock it in Archicad.";
+                }
+#endif
                 return stepErr;
             }
         }
