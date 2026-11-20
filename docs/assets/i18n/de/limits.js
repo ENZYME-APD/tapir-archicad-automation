@@ -22,6 +22,7 @@
     'Partly possible': 'Teilweise möglich',
     'Workaround': 'Ausweg',
     'Nothing yet': 'Noch nichts',
+    'Not documented': 'Nicht dokumentiert',
 
     // Elements
     'Elements': 'Elemente',
@@ -44,6 +45,24 @@
         'Das Grundrisssymbol eines Geländers lesen oder einstellen: seine Bruchlinie, welche Symbolkomponenten es zeigt, deren 2D-Attribute und die Symbolüberschreibungen',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lesen Sie den Umriss der Decke mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus und erstellen Sie mit <a href="../archicad-addon/#CreateRailings">CreateRailings</a> ein statisches Geländer entlang der Kante. Wenn sich die Decke ändert, löschen Sie das Geländer und erstellen Sie es neu.',
+    'Anchor the sill or header of a window or door to the project zero or to a reference level':
+        'Die Brüstung oder den Sturz eines Fensters oder einer Tür an den Projektnullpunkt oder an eine Bezugsebene binden',
+    'Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).':
+        'Binden Sie sie mit <code>verticalLink</code> <code>SillToStory</code> oder <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> oder <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a> an ein Geschoss und berechnen Sie die Höhe aus dem Niveau des Geschosses (<a href="../archicad-addon/#GetStories">GetStories</a>).',
+    'Read or set the joint type (Vertical Cut and the others) and the dx offset of a stair structure':
+        'Den Verbindungstyp (Vertical Cut und die anderen) und den dx-Versatz einer Treppenstruktur lesen oder einstellen',
+    'Change the baseline of an existing stair (move a flight end, a landing or a winder) and keep its GUID':
+        'Die Basislinie einer bestehenden Treppe ändern (ein Laufende, ein Podest oder eine Wendelung verschieben) und ihre GUID behalten',
+    'Recreate the stair on the new baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a>, which keeps its settings, Element ID, classifications, categories, properties and solid element operations, and returns the old and the new GUID. Its labels are lost.':
+        'Erstellen Sie die Treppe mit <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a> auf der neuen Basislinie neu. Der Befehl behält ihre Einstellungen, Element-ID, Klassifizierungen, Kategorien, Eigenschaften und Solid Element Operations und gibt die alte und die neue GUID zurück. Ihre Beschriftungen gehen verloren.',
+    'Set a label’s optimised position, “use text pen as uniform pen” of a symbol label, or a perpendicular text direction':
+        'Die optimierte Position einer Beschriftung, „use text pen as uniform pen“ einer Symbolbeschriftung oder eine senkrechte Textrichtung einstellen',
+    'Set the text direction (parallel, horizontal, vertical or a custom angle) with textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> and <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. When the symbol label’s library part has a parameter for the other two, set it with <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; otherwise set them in the Label tool settings or a favorite, and create the labels with favoriteName.':
+        'Die Textrichtung (parallel, horizontal, vertikal oder ein eigener Winkel) setzen Sie mit textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> und <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. Hat das Bibliothekselement der Symbolbeschriftung einen Parameter für die beiden anderen, setzen Sie ihn mit <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; sonst stellen Sie sie in den Einstellungen des Beschriftungswerkzeugs oder in einem Favoriten ein und erstellen die Beschriftungen mit favoriteName.',
+    'Create a radial dimension of an arc, a circle, a curved wall or a curved slab edge':
+        'Eine Radiusbemaßung eines Bogens, eines Kreises, einer gebogenen Wand oder einer gebogenen Deckenkante erstellen',
+    'Place the radial dimension in Archicad and read it with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a>, which returns how Archicad stored it. Those readings are what a create command needs.':
+        'Platzieren Sie die Radiusbemaßung in Archicad und lesen Sie sie mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus, das zurückgibt, wie Archicad sie gespeichert hat. Diese Werte braucht ein Befehl zum Erstellen.',
 
     // Design options
     'Design options': 'Varianten',
@@ -74,6 +93,14 @@
     'Change, rename or create a stored Model View Options combination':'Eine gespeicherte Kombination der Model View Options ändern, umbenennen oder anlegen',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Lesen Sie die Kombinationen mit <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; ändern Sie die Optionen des aktuellen Fensters mit <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.',
+    'Read or set the floor plan cut plane or the structural analytical model settings saved in a view':
+        'Die Grundriss-Schnittebene oder die Einstellungen des statischen Analysemodells lesen oder einstellen, die in einem Ausschnitt gespeichert sind',
+    'Set them in the view\'s View Settings in Archicad. The project\'s floor plan cut plane can be set with <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.':
+        'Stellen Sie sie in Archicad in den View Settings des Ausschnitts ein. Die Grundriss-Schnittebene des Projekts lässt sich mit <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a> einstellen.',
+    'Tell a clone folder of the View Map from a normal folder':
+        'Einen Klonordner der View Map von einem normalen Ordner unterscheiden',
+    'Give the clone folders a name or ID of their own and find them by it in <a href="../archicad-addon/#GetNavigatorItemTree">GetNavigatorItemTree</a>.':
+        'Geben Sie den Klonordnern einen eigenen Namen oder eine eigene ID und finden Sie sie daran in <a href="../archicad-addon/#GetNavigatorItemTree">GetNavigatorItemTree</a>.',
 
     // Project and files
     'Project and files': 'Projekt und Dateien',
@@ -86,6 +113,13 @@
     'Merge a file into the project, as File &gt; Interoperability &gt; Merge does': 'Eine Datei in das Projekt einfügen, wie es File &gt; Interoperability &gt; Merge tut',
     'Place the file as a hotlink with <a href="../archicad-addon/#CreateHotlinkNodes">CreateHotlinkNodes</a> and <a href="../archicad-addon/#CreateHotlinkInstances">CreateHotlinkInstances</a>, then <a href="../archicad-addon/#BreakHotlinkNodes">BreakHotlinkNodes</a>.':
         'Platzieren Sie die Datei als Hotlink mit <a href="../archicad-addon/#CreateHotlinkNodes">CreateHotlinkNodes</a> und <a href="../archicad-addon/#CreateHotlinkInstances">CreateHotlinkInstances</a>, dann <a href="../archicad-addon/#BreakHotlinkNodes">BreakHotlinkNodes</a>.',
+    'Delete one offset modifier of a profile': 'Einen einzelnen Versatz-Modifikator eines Profils löschen',
+    'Rebuild the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a>\' <code>replaceSkins</code> and <code>newSkins</code>, which drops every modifier, then add the ones to keep again with <code>newProfileModifiers</code> (Archicad 27 and later).':
+        'Bauen Sie das Profil mit <code>replaceSkins</code> und <code>newSkins</code> von <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a> neu auf, was alle Modifikatoren entfernt, und fügen Sie die zu behaltenden danach mit <code>newProfileModifiers</code> wieder hinzu (ab Archicad 27).',
+    'Import an IFC translator from a file into the project, or export one to a file':
+        'Einen IFC-Übersetzer aus einer Datei ins Projekt importieren oder einen in eine Datei exportieren',
+    'Keep the office translator in the project template, so new projects have it, and bring it into older projects once with Import… in the IFC Translators dialog. A script can check that a project has it with <a href="../archicad-addon/#GetIFCExportTranslators">GetIFCExportTranslators</a> and export with it by name with <a href="../archicad-addon/#IFCFileOperation">IFCFileOperation</a>.':
+        'Legen Sie den Übersetzer des Büros in der Projektvorlage ab, damit neue Projekte ihn haben, und holen Sie ihn einmal mit Import… im Dialog IFC Translators in ältere Projekte. Ein Skript kann mit <a href="../archicad-addon/#GetIFCExportTranslators">GetIFCExportTranslators</a> prüfen, ob ein Projekt ihn hat, und mit <a href="../archicad-addon/#IFCFileOperation">IFCFileOperation</a> über seinen Namen damit exportieren.',
 
     // Documents and publishing
     'Documents and publishing': 'Dokumente und Veröffentlichen',
@@ -95,6 +129,21 @@
     'Export an Interactive Schedule': 'Eine Interactive Schedule exportieren',
     'Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Legen Sie die Liste einmal in Archicad in ein Publisher Set und veröffentlichen Sie dieses Set dann mit <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.',
+    'Choose the output format (PDF, DWG, DXF …) of a publisher set per call':
+        'Das Ausgabeformat (PDF, DWG, DXF …) eines Publisher Sets pro Aufruf wählen',
+    'Make one publisher set per format in Archicad’s Organizer once, then publish the one you need with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>; its answer lists the files written (<code>writtenFiles</code>).':
+        'Legen Sie einmal im Organizer von Archicad ein Publisher Set pro Format an und veröffentlichen Sie dann das benötigte mit <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>; seine Antwort listet die geschriebenen Dateien auf (<code>writtenFiles</code>).',
+    'Create a revision Change without placing a Change Marker, or change the ID or description of an existing Change':
+        'Einen Change der Revision anlegen, ohne einen Change Marker zu platzieren, oder die ID oder Beschreibung eines bestehenden Change ändern',
+    'Create the Change together with its first marker with <a href="../archicad-addon/#CreateChangeMarkers">CreateChangeMarkers</a> (createChange). To change an existing Change, use Archicad’s Change Manager.':
+        'Legen Sie den Change zusammen mit seinem ersten Marker mit <a href="../archicad-addon/#CreateChangeMarkers">CreateChangeMarkers</a> (createChange) an. Um einen bestehenden Change zu ändern, nutzen Sie den Change Manager von Archicad.',
+    'Set the custom scheme fields of a revision Change': 'Die benutzerdefinierten Schemafelder eines Change der Revision setzen',
+    'Fill them in Archicad’s Change Manager; <a href="../archicad-addon/#GetRevisionChanges">GetRevisionChanges</a> reads them back.':
+        'Füllen Sie sie im Change Manager von Archicad aus; <a href="../archicad-addon/#GetRevisionChanges">GetRevisionChanges</a> liest sie wieder aus.',
+    'Add elements to a revision Change, or remove them from it':
+        'Elemente zu einem Change der Revision hinzufügen oder aus ihm entfernen',
+    'Add them in Archicad’s Change Manager; <a href="../archicad-addon/#GetRevisionChangesOfElements">GetRevisionChangesOfElements</a> reads which Changes an element belongs to.':
+        'Fügen Sie sie im Change Manager von Archicad hinzu; <a href="../archicad-addon/#GetRevisionChangesOfElements">GetRevisionChangesOfElements</a> liest aus, zu welchen Changes ein Element gehört.',
 
     // Archicad's interface
     'Archicad\'s interface': 'Die Oberfläche von Archicad',
@@ -104,6 +153,10 @@
     'Get the outcome of an Action Center check': 'Das Ergebnis einer Prüfung im Action Center erhalten',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Starten Sie die Prüfung mit <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad zeigt das Action Center, wenn es ein Problem gefunden hat. Für die Hotlink-Prüfung lesen Sie den Zustand jeder Quelle mit <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (ab Archicad 27).',
+    'Load a new add-on (.apx or .bundle) while Archicad runs, from an add-on or a script':
+        'Ein neues Add-On (.apx oder .bundle) laden, während Archicad läuft, aus einem Add-On oder einem Skript heraus',
+    'Add it in Archicad\'s Add-On Manager (Options &gt; Add-On Manager &gt; Edit List of Available Add-Ons &gt; Add). An add-on that is already loaded is replaced only after Archicad quits, as the Tapir Installer does when it updates Tapir.':
+        'Fügen Sie es im Add-On Manager von Archicad hinzu (Options &gt; Add-On Manager &gt; Edit List of Available Add-Ons &gt; Add). Ein bereits geladenes Add-On wird erst ersetzt, nachdem Archicad beendet wurde, so wie es der Tapir Installer tut, wenn er Tapir aktualisiert.',
 
     'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
         'Die Werte der Profil-Modifikatoren oder die gestreckte Breite und Höhe einer Wand, eines Unterzugs oder einer Stütze mit Profil einstellen',

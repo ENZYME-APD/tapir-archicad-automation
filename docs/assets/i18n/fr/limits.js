@@ -22,6 +22,7 @@
     'Partly possible': 'Possible en partie',
     'Workaround': 'Contournement',
     'Nothing yet': 'Rien pour l’instant',
+    'Not documented': 'Non documenté',
 
     // Elements
     'Elements': 'Éléments',
@@ -44,6 +45,41 @@
         'Lire ou régler le symbole en plan d\'un garde-corps : sa ligne de coupure, les composants du symbole qu\'il affiche, leurs attributs 2D et les remplacements du symbole',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lisez le contour de la dalle avec <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> et créez un garde-corps statique le long du bord avec <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Quand la dalle change, supprimez le garde-corps et créez-le à nouveau.',
+    'Anchor the sill or header of a window or door to the project zero or to a reference level':
+        'Ancrer l’allège ou le linteau d’une fenêtre ou d’une porte au zéro du projet ou à un niveau de référence',
+    'Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).':
+        'Ancrez-le à un niveau avec <code>verticalLink</code> <code>SillToStory</code> ou <code>HeaderToStory</code> dans <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> ou <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, et calculez la hauteur à partir de la cote du niveau (<a href="../archicad-addon/#GetStories">GetStories</a>).',
+    'Read or set the joint type (Vertical Cut and the others) and the dx offset of a stair structure':
+        'Lire ou régler le type de jonction (Vertical Cut et les autres) et le décalage dx d’une structure d’escalier',
+    'Change the baseline of an existing stair (move a flight end, a landing or a winder) and keep its GUID':
+        'Modifier la ligne de base d’un escalier existant (déplacer l’extrémité d’une volée, un palier ou un tournant) en gardant son GUID',
+    'Recreate the stair on the new baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a>, which keeps its settings, Element ID, classifications, categories, properties and solid element operations, and returns the old and the new GUID. Its labels are lost.':
+        'Recréez l’escalier sur la nouvelle ligne de base avec <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a>, qui garde ses paramètres, son ID d’élément, ses classifications, ses catégories, ses propriétés et ses opérations sur éléments solides, et renvoie l’ancien et le nouveau GUID. Ses étiquettes sont perdues.',
+    'Set a label’s optimised position, “use text pen as uniform pen” of a symbol label, or a perpendicular text direction':
+        'Régler la position optimisée d’une étiquette, « use text pen as uniform pen » d’une étiquette symbole, ou une direction de texte perpendiculaire',
+    'Set the text direction (parallel, horizontal, vertical or a custom angle) with textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> and <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. When the symbol label’s library part has a parameter for the other two, set it with <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; otherwise set them in the Label tool settings or a favorite, and create the labels with favoriteName.':
+        'Réglez la direction du texte (parallèle, horizontale, verticale ou un angle libre) avec textWay dans <a href="../archicad-addon/#CreateLabels">CreateLabels</a> et <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. Quand l’élément de bibliothèque de l’étiquette symbole a un paramètre pour les deux autres, réglez-le avec <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a> ; sinon réglez-les dans les paramètres de l’outil Étiquette ou dans un favori, et créez les étiquettes avec favoriteName.',
+    'Create a radial dimension of an arc, a circle, a curved wall or a curved slab edge':
+        'Créer une cote de rayon d’un arc, d’un cercle, d’un mur courbe ou d’un bord de dalle courbe',
+    'Place the radial dimension in Archicad and read it with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a>, which returns how Archicad stored it. Those readings are what a create command needs.':
+        'Placez la cote de rayon dans Archicad et lisez-la avec <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a>, qui renvoie la façon dont Archicad l’a enregistrée. Ce sont ces valeurs dont une commande de création a besoin.',
+
+    // Design options
+    'Design options': 'Options de conception',
+    'Read which design option, or the Main Model, is the default that new elements go to':
+        'Lire quelle option de conception, ou le Main Model, est celle par défaut dans laquelle vont les nouveaux éléments',
+    'Create a temporary element, read its design option with <a href="../archicad-addon/#GetDesignOptionForElements">GetDesignOptionForElements</a>, then move it to the Main Model with <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a> (a null GUID as <code>designOptionId</code>) and delete it with <a href="../archicad-addon/#DeleteElements">DeleteElements</a>; an element in an option that is not shown cannot be deleted. Set the default with <a href="../archicad-addon/#SetDefaultDesignOption">SetDefaultDesignOption</a>.':
+        'Créez un élément temporaire, lisez son option de conception avec <a href="../archicad-addon/#GetDesignOptionForElements">GetDesignOptionForElements</a>, puis déplacez-le dans le Main Model avec <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a> (un GUID nul comme <code>designOptionId</code>) et supprimez-le avec <a href="../archicad-addon/#DeleteElements">DeleteElements</a> ; un élément d’une option qui n’est pas affichée ne peut pas être supprimé. Définissez l’option par défaut avec <a href="../archicad-addon/#SetDefaultDesignOption">SetDefaultDesignOption</a>.',
+    'Read or change which design options the current window shows, as the eye icons of the Design Options palette do':
+        'Lire ou changer les options de conception que la fenêtre active affiche, comme le font les icônes en forme d’œil de la palette Design Options',
+    'Work with saved views: read and set the combination a View Map view shows with <a href="../archicad-addon/#GetDesignOptionCombinationOfViews">GetDesignOptionCombinationOfViews</a> and <a href="../archicad-addon/#SetDesignOptionCombinationOfViews">SetDesignOptionCombinationOfViews</a>, and the options of a combination with <a href="../archicad-addon/#SetActiveDesignOptionsInCombinations">SetActiveDesignOptionsInCombinations</a>.':
+        'Travaillez avec des vues enregistrées : lisez et définissez la combinaison qu’affiche une vue de la View Map avec <a href="../archicad-addon/#GetDesignOptionCombinationOfViews">GetDesignOptionCombinationOfViews</a> et <a href="../archicad-addon/#SetDesignOptionCombinationOfViews">SetDesignOptionCombinationOfViews</a>, et les options d’une combinaison avec <a href="../archicad-addon/#SetActiveDesignOptionsInCombinations">SetActiveDesignOptionsInCombinations</a>.',
+    'Duplicate a design option or a design option set, as the duplicate button of the Design Options palette does':
+        'Dupliquer une option de conception ou un jeu d’options de conception, comme le fait le bouton de duplication de la palette Design Options',
+    'Create the set and its options with <a href="../archicad-addon/#CreateDesignOptionSets">CreateDesignOptionSets</a> and <a href="../archicad-addon/#CreateDesignOptions">CreateDesignOptions</a>. For the elements, list them with <a href="../archicad-addon/#GetElementsOfDesignOptions">GetElementsOfDesignOptions</a>, copy them with <a href="../archicad-addon/#CopyElements">CopyElements</a> and move the copies to the new option with <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a>.':
+        'Créez le jeu et ses options avec <a href="../archicad-addon/#CreateDesignOptionSets">CreateDesignOptionSets</a> et <a href="../archicad-addon/#CreateDesignOptions">CreateDesignOptions</a>. Pour les éléments, listez-les avec <a href="../archicad-addon/#GetElementsOfDesignOptions">GetElementsOfDesignOptions</a>, copiez-les avec <a href="../archicad-addon/#CopyElements">CopyElements</a> et déplacez les copies dans la nouvelle option avec <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a>.',
+    'Lock or colour the passive elements of design options, as the Design Options palette does':
+        'Verrouiller ou colorer les éléments passifs des options de conception, comme le fait la palette Design Options',
 
     // Navigator and views
     'Navigator and views': 'Navigateur et vues',
@@ -53,6 +89,17 @@
     'Change, rename or create a stored Model View Options combination': 'Modifier, renommer ou créer une combinaison enregistrée de Model View Options',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Lisez les combinaisons avec <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a> ; modifiez les options de la fenêtre active avec <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.',
+    'Read or set the floor plan cut plane or the structural analytical model settings saved in a view':
+        'Lire ou régler le plan de coupe du plan d’étage ou les paramètres du modèle analytique structurel enregistrés dans une vue',
+    'Set them in the view\'s View Settings in Archicad. The project\'s floor plan cut plane can be set with <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.':
+        'Réglez-les dans les View Settings de la vue dans Archicad. Le plan de coupe du plan d’étage du projet peut être réglé avec <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.',
+    'Tell a clone folder of the View Map from a normal folder': 'Distinguer un dossier clone de la View Map d’un dossier normal',
+    'Give the clone folders a name or ID of their own and find them by it in <a href="../archicad-addon/#GetNavigatorItemTree">GetNavigatorItemTree</a>.':
+        'Donnez aux dossiers clones un nom ou un ID qui leur est propre et retrouvez-les ainsi dans <a href="../archicad-addon/#GetNavigatorItemTree">GetNavigatorItemTree</a>.',
+    'Change the settings of an existing Layout Book subset (prefix, numbering style, start at, ...)':
+        'Modifier les paramètres d’un sous-ensemble existant du Layout Book (préfixe, style de numérotation, début, ...)',
+    'Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.':
+        'Lisez le sous-ensemble avec <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, créez un sous-ensemble avec les nouveaux paramètres avec <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> et déplacez-y les layouts avec <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. L’ancien sous-ensemble, désormais vide, se supprime dans Archicad.',
 
     // Project and files
     'Project and files': 'Projet et fichiers',
@@ -65,6 +112,13 @@
     'Merge a file into the project, as File &gt; Interoperability &gt; Merge does': 'Fusionner un fichier dans le projet, comme le fait File &gt; Interoperability &gt; Merge',
     'Place the file as a hotlink with <a href="../archicad-addon/#CreateHotlinkNodes">CreateHotlinkNodes</a> and <a href="../archicad-addon/#CreateHotlinkInstances">CreateHotlinkInstances</a>, then <a href="../archicad-addon/#BreakHotlinkNodes">BreakHotlinkNodes</a>.':
         'Placez le fichier comme hotlink avec <a href="../archicad-addon/#CreateHotlinkNodes">CreateHotlinkNodes</a> et <a href="../archicad-addon/#CreateHotlinkInstances">CreateHotlinkInstances</a>, puis <a href="../archicad-addon/#BreakHotlinkNodes">BreakHotlinkNodes</a>.',
+    'Delete one offset modifier of a profile': 'Supprimer un seul modificateur de décalage d’un profil',
+    'Rebuild the profile with <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a>\' <code>replaceSkins</code> and <code>newSkins</code>, which drops every modifier, then add the ones to keep again with <code>newProfileModifiers</code> (Archicad 27 and later).':
+        'Reconstruisez le profil avec <code>replaceSkins</code> et <code>newSkins</code> de <a href="../archicad-addon/#CreateProfiles">CreateProfiles</a>, ce qui supprime tous les modificateurs, puis ajoutez à nouveau ceux à garder avec <code>newProfileModifiers</code> (Archicad 27 et suivants).',
+    'Import an IFC translator from a file into the project, or export one to a file':
+        'Importer un traducteur IFC d’un fichier dans le projet, ou en exporter un vers un fichier',
+    'Keep the office translator in the project template, so new projects have it, and bring it into older projects once with Import… in the IFC Translators dialog. A script can check that a project has it with <a href="../archicad-addon/#GetIFCExportTranslators">GetIFCExportTranslators</a> and export with it by name with <a href="../archicad-addon/#IFCFileOperation">IFCFileOperation</a>.':
+        'Gardez le traducteur du bureau dans le gabarit de projet, pour que les nouveaux projets l’aient, et importez-le une fois dans les projets plus anciens avec Import… dans la boîte de dialogue IFC Translators. Un script peut vérifier qu’un projet l’a avec <a href="../archicad-addon/#GetIFCExportTranslators">GetIFCExportTranslators</a> et exporter avec lui, par son nom, avec <a href="../archicad-addon/#IFCFileOperation">IFCFileOperation</a>.',
 
     // Documents and publishing
     'Documents and publishing': 'Documents et publication',
@@ -74,6 +128,21 @@
     'Export an Interactive Schedule': 'Exporter un Interactive Schedule',
     'Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Placez une fois le tableau dans un publisher set dans Archicad, puis publiez ce set avec <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.',
+    'Choose the output format (PDF, DWG, DXF …) of a publisher set per call':
+        'Choisir le format de sortie (PDF, DWG, DXF …) d’un publisher set à chaque appel',
+    'Make one publisher set per format in Archicad’s Organizer once, then publish the one you need with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>; its answer lists the files written (<code>writtenFiles</code>).':
+        'Créez une fois un publisher set par format dans l’Organizer d’Archicad, puis publiez celui dont vous avez besoin avec <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> ; sa réponse liste les fichiers écrits (<code>writtenFiles</code>).',
+    'Create a revision Change without placing a Change Marker, or change the ID or description of an existing Change':
+        'Créer un Change de révision sans placer de Change Marker, ou modifier l’ID ou la description d’un Change existant',
+    'Create the Change together with its first marker with <a href="../archicad-addon/#CreateChangeMarkers">CreateChangeMarkers</a> (createChange). To change an existing Change, use Archicad’s Change Manager.':
+        'Créez le Change avec son premier marqueur grâce à <a href="../archicad-addon/#CreateChangeMarkers">CreateChangeMarkers</a> (createChange). Pour modifier un Change existant, utilisez le Change Manager d’Archicad.',
+    'Set the custom scheme fields of a revision Change': 'Renseigner les champs de schéma personnalisés d’un Change de révision',
+    'Fill them in Archicad’s Change Manager; <a href="../archicad-addon/#GetRevisionChanges">GetRevisionChanges</a> reads them back.':
+        'Remplissez-les dans le Change Manager d’Archicad ; <a href="../archicad-addon/#GetRevisionChanges">GetRevisionChanges</a> les relit.',
+    'Add elements to a revision Change, or remove them from it':
+        'Ajouter des éléments à un Change de révision, ou les en retirer',
+    'Add them in Archicad’s Change Manager; <a href="../archicad-addon/#GetRevisionChangesOfElements">GetRevisionChangesOfElements</a> reads which Changes an element belongs to.':
+        'Ajoutez-les dans le Change Manager d’Archicad ; <a href="../archicad-addon/#GetRevisionChangesOfElements">GetRevisionChangesOfElements</a> lit à quels Changes appartient un élément.',
 
     // Archicad's interface
     'Archicad\'s interface': 'L’interface d’Archicad',
@@ -83,6 +152,10 @@
     'Get the outcome of an Action Center check': 'Obtenir le résultat d’une vérification de l’Action Center',
     'Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).':
         'Lancez la vérification avec <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a> ; Archicad affiche l’Action Center s’il a trouvé un problème. Pour la vérification des hotlinks, lisez l’état de chaque source avec <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (à partir d’Archicad 27).',
+    'Load a new add-on (.apx or .bundle) while Archicad runs, from an add-on or a script':
+        'Charger un nouvel add-on (.apx ou .bundle) pendant qu’Archicad tourne, depuis un add-on ou un script',
+    'Add it in Archicad\'s Add-On Manager (Options &gt; Add-On Manager &gt; Edit List of Available Add-Ons &gt; Add). An add-on that is already loaded is replaced only after Archicad quits, as the Tapir Installer does when it updates Tapir.':
+        'Ajoutez-le dans l’Add-On Manager d’Archicad (Options &gt; Add-On Manager &gt; Edit List of Available Add-Ons &gt; Add). Un add-on déjà chargé n’est remplacé qu’après la fermeture d’Archicad, comme le fait le Tapir Installer quand il met Tapir à jour.',
 
     'Set the profile modifier values, or the stretched width and height, of a wall, beam or column that uses a profile':
         'Définir les valeurs des modificateurs de profil, ou la largeur et la hauteur étirées, d\'un mur, d\'une poutre ou d\'un poteau qui utilise un profil',

@@ -10,6 +10,28 @@
     'Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.':
         'Archicad और Grasshopper में Tapir को काम करते दिखाने वाले छोटे वीडियो (अंग्रेज़ी में), सभी YouTube पर एक playlist में।',
 
+    // Written tutorials
+    'Written <em>tutorials.</em>': 'लिखित <em>ट्यूटोरियल।</em>',
+    'Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.':
+        'Archicad को automate करने के बारे में लोग जो सवाल पूछते हैं, उनके step by step जवाब, हर एक Tapir में पहले से मौजूद चीज़ों से।',
+    'Export Archicad element properties to Excel with Python': 'Python से Archicad element properties को Excel में export करें',
+    'Property values to an Excel or CSV file, one row per element, and the edited values back.':
+        'Property values को Excel या CSV file में, हर element की एक row, और edit की गई values वापस।',
+    'Read the tutorial': 'ट्यूटोरियल पढ़ें',
+    'Connect Grasshopper to Archicad': 'Grasshopper को Archicad से जोड़ें',
+    'Install the tapir package, read a wall and change its height.':
+        'tapir package install करें, एक wall पढ़ें और उसकी ऊँचाई बदलें।',
+    'Batch rename views in Archicad': 'Archicad में views का नाम एक साथ बदलें',
+    'Find and replace, a prefix or a counter in the names of the views.':
+        'Views के नामों में find and replace, prefix या counter।',
+    'Elements': 'Elements',
+    'Number doors and windows by room in Archicad': 'Archicad में doors और windows को room के हिसाब से number दें',
+    'Element IDs such as 1.04-D1, from the zone each door or window opens into.':
+        '1.04-D1 जैसे Element IDs, उस zone से जिसकी ओर हर door या window खुलती है।',
+    'Your first Archicad Python script': 'आपकी पहली Archicad Python script',
+    'A few lines that call one Tapir command, run from the Tapir palette.':
+        'कुछ lines जो एक Tapir command call करती हैं, Tapir palette से चलाई जाती हैं।',
+
     // The videos
     'Videos': 'वीडियो',
     'Getting started': 'शुरुआत',
