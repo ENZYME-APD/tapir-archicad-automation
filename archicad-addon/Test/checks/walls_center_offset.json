@@ -1,0 +1,126 @@
+{
+  "title": "Create/ModifyWalls refuse a non-zero offset on a Center reference line instead of reporting success (#2973)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "center wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 930.0, "y": 780.0 },
+            "endCoordinate": { "x": 934.0, "y": 780.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.8,
+            "structureType": "Basic",
+            "thickness": 0.3,
+            "referenceLineLocation": "Center",
+            "offset": 0.0
+          }
+        ]
+      },
+      "save": { "center": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "a Center wall with offset 0 is created" }
+      ]
+    },
+    {
+      "id": "outside wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 940.0, "y": 780.0 },
+            "endCoordinate": { "x": 944.0, "y": 780.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.8,
+            "structureType": "Basic",
+            "thickness": 0.3,
+            "referenceLineLocation": "Outside",
+            "offset": 0.0
+          }
+        ]
+      },
+      "save": { "outside": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "offset on the center wall fails, on the outside wall it works",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          { "elementId": { "guid": "${center}" }, "offset": 0.05, "height": 3.5 },
+          { "elementId": { "guid": "${center}" }, "offset": 0.0 },
+          { "elementId": { "guid": "${outside}" }, "offset": 0.05 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "offset on a Center wall fails" },
+        { "path": "executionResults[1].success", "eq": true, "name": "offset 0 on a Center wall is accepted" },
+        { "path": "executionResults[2].success", "eq": true, "name": "offset on an Outside wall works" }
+      ]
+    },
+    {
+      "id": "read the walls",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${center}" } }, { "elementId": { "guid": "${outside}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Center" },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.8, "tol": 0.0001, "name": "the failed item changed nothing" },
+        { "path": "detailsOfElements[1].details.offset", "approx": 0.05, "tol": 0.0001, "name": "offset kept on the Outside wall" }
+      ]
+    },
+    {
+      "id": "switching to Outside in the same item takes the offset",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          { "elementId": { "guid": "${center}" }, "referenceLineLocation": "Outside", "offset": 0.05 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the switched wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${center}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Outside" },
+        { "path": "detailsOfElements[0].details.offset", "approx": 0.05, "tol": 0.0001 }
+      ]
+    },
+    {
+      "id": "a new Center wall with an offset fails instead of dropping it",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 950.0, "y": 780.0 },
+            "endCoordinate": { "x": 954.0, "y": 780.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.8,
+            "structureType": "Basic",
+            "thickness": 0.3,
+            "referenceLineLocation": "Center",
+            "offset": 0.05
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "offset on a new Center wall refused" }
+      ]
+    }
+  ]
+}

@@ -4413,6 +4413,26 @@ GS::Optional<GS::UniString> CheckWallSlantTakesEffect (const API_Element& elemen
     return {};
 }
 
+// Called after ApplyWallDetails (#2973). The DevKit (API_WallReferenceLineLocationID) says an
+// offset cannot be specified when the reference line is Center or CoreCenter: Archicad keeps
+// offset 0 there while the command reports success. A non-zero offset on such a wall, after
+// this item is applied, is therefore an error; 0 (what GetDetailsOfElements reads on such a
+// wall) is accepted, so a read fed back unchanged never fails. Profile walls do not use
+// referenceLineLocation, so they are not checked.
+GS::Optional<GS::UniString> CheckWallOffsetTakesEffect (const API_Element& element, const GS::ObjectState& details)
+{
+    constexpr double Tolerance = 1e-6;
+    auto offset = GetOptionalDouble (details, "offset");
+    if (!offset.HasValue () || std::abs (offset.Get ()) < Tolerance || element.wall.modelElemStructureType == API_ProfileStructure) {
+        return {};
+    }
+    const API_WallReferenceLineLocationID referenceLineLocation = element.wall.referenceLineLocation;
+    if (referenceLineLocation == APIWallRefLine_Center || referenceLineLocation == APIWallRefLine_CoreCenter) {
+        return GS::UniString ("'offset' is unavailable on a wall whose referenceLineLocation is Center or CoreCenter: Archicad keeps it 0. Send another referenceLineLocation (e.g. Outside or Inside) in the same item, or omit 'offset'.");
+    }
+    return {};
+}
+
 GS::Optional<GS::UniString> ApplyRoofLevels (API_Element& element, API_Element* mask, const GS::ObjectState& details, bool& changed)
 {
     GS::Array<GS::ObjectState> roofLevels;
@@ -7739,7 +7759,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "exclusiveMinimum": 0.0,
                             "description": "Optional thickness. When omitted, the favorite's or the Wall tool default's thickness is kept. Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the favorite (or the wall tool default), which may be a composite; send structureType 'Basic' for the thickness to apply."
                         },
-                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept." },
+                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept. Unavailable when the wall's referenceLineLocation is Center or CoreCenter (Archicad keeps 0 there): a non-zero value on such a wall fails it instead of being dropped." },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation",
@@ -7942,6 +7962,10 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     auto slantError = CheckWallSlantTakesEffect (element, previousSlantAlpha, previousSlantBeta, parameters);
     if (slantError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, slantError.Get ());
+    }
+    auto offsetError = CheckWallOffsetTakesEffect (element, parameters);
+    if (offsetError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, offsetError.Get ());
     }
 
     return {};
@@ -14877,7 +14901,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Send structureType 'Basic' in the same call to switch such a wall first."
                         },
                         "bottomOffset": { "type": "number" },
-                        "offset": { "type": "number" },
+                        "offset": { "type": "number", "description": "Reference line offset. Unavailable when the wall's referenceLineLocation is Center or CoreCenter after this item is applied (Archicad keeps 0 there): a non-zero value on such a wall fails the item instead of being dropped. 0 is accepted." },
                         "structureType": {
                             "$ref": "#/WallStructureType"
                         },
@@ -15003,6 +15027,11 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
             auto slantError = CheckWallSlantTakesEffect (element, previousSlantAlpha, previousSlantBeta, item);
             if (slantError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, slantError.Get ()));
+                continue;
+            }
+            auto offsetError = CheckWallOffsetTakesEffect (element, item);
+            if (offsetError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, offsetError.Get ()));
                 continue;
             }
             if (!changed) {
