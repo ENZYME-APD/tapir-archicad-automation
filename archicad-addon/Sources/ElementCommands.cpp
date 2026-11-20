@@ -3711,6 +3711,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("topOffset", elem.zone.roomTopOffset);
                 typeSpecificDetails.Add ("relativeTopStory", elem.zone.relativeTopStory);
                 typeSpecificDetails.Add ("floorThickness", elem.zone.roomFlThick);
+                // In millimetres, as Archicad stores it (#2867).
+                typeSpecificDetails.Add ("roomLSize", elem.zone.roomLSize);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
