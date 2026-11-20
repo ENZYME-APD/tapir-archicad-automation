@@ -81,6 +81,10 @@
     "SearchActive"
 }
 
+'GICN' ID_SCRIPTSPANEL_BUTTON_ICON "ScriptsPanel" {
+    "ScriptsPanel"
+}
+
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
 }

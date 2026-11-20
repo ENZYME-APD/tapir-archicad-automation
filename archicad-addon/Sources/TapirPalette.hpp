@@ -11,6 +11,7 @@
 #include "ScriptInfo.hpp"
 #include "PaletteState.hpp"
 #include "ResourceIds.hpp"
+#include "ScriptsPanel.hpp"
 
 #include <atomic>
 #include <memory>
@@ -33,6 +34,10 @@ public:
 
     void Show ();
     void Hide ();
+    // The "Scripts Panel" menu item: shows the palette with its scripts panel open.
+    void ShowScriptsPanel ();
+    // What the Tapir Scripts palette asks of the palette: the script list and the run and stop functions.
+    ScriptsPanel::Actions GetPanelActions ();
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
@@ -122,6 +127,7 @@ private:
     SearchKeyHandler searchKeyHandler { *this };
     bool             searchKeyHandlerInstalled = false;
     DG::IconButton scriptManagerButton;   // opens the Script Manager (#2408)
+    DG::IconButton scriptsPanelButton;   // opens and closes the Tapir Scripts palette (#2407)
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
@@ -226,6 +232,14 @@ private:
     GS::UniString GetSearchText () const;   // the search, trimmed; empty: no filter
     void SetSearchButtonIcon ();     // SearchActive while a filter is applied, else Search
     ScriptList GetAllScripts () const;   // in the order of the dropdown
+    // The scripts panel's accessor of the script list: every script of the dropdown, in its order, with what the
+    // panel shows of it.
+    GS::Array<ScriptsPanel::Script> GetPanelScripts () const;
+    // What the scripts panel asks of the palette: the script list, and its Run and Stop, which are the palette's own.
+    // The panel's Run: starts the script of the list with this file, as the bar's Run button does, unless it runs.
+    void RunListedScript (const IO::Location& fileLocation);
+    // The panel's Stop: stops the script with the processes it started, as the bar's Run button does while it runs.
+    void StopScript (const IO::Location& fileLocation);
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();   // also writes the selection to palette.json
@@ -239,7 +253,13 @@ private:
     short GetPreferencesItemIndex (const GS::Ref<PopUpItemData>& script) const;
     static GS::UniString GetScriptPath (const PopUpItemData& popUpData);   // how palette.json names the script
     bool AddNewScript ();
+    // Adds the files to the scripts the user added, as the Add button does; files already listed are skipped.
+    bool AddScriptFiles (const GS::Array<IO::Location>& files);
     void DeleteScriptFromPopUp ();
+    // The scripts panel's Remove: removes the script from the scripts the user added.
+    void RemoveAddedScript (const IO::Location& fileLocation);
+    short FindPopUpItem (const IO::Location& fileLocation) const;   // 0: not in the dropdown
+    static GS::UniString GetScriptWebUrl (const PopUpItemData& popUpItemData);   // its page on GitHub; empty for a local file
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
     void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot

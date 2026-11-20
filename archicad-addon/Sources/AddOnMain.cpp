@@ -20,6 +20,7 @@
 #include "TapirPalette.hpp"
 #include "ScriptUIPalette.hpp"
 #include "ScriptManager.hpp"
+#include "ScriptsPalette.hpp"
 #include "VersionChecker.hpp"
 #include "ShareDialog.hpp"
 
@@ -130,6 +131,13 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     break;
             }
             break;
+        case ID_ADDON_MENU_FOR_SCRIPTS_PANEL:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_SCRIPTS_PANEL:
+                    TapirPalette::Instance ().ShowScriptsPanel ();
+                    break;
+            }
+            break;
         case ID_ADDON_MENU_FOR_UPDATE:
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_UPDATE:
@@ -189,6 +197,7 @@ GSErrCode RegisterInterface (void)
 
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_PALETTE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SCRIPT_MANAGER, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SCRIPTS_PANEL, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_UPDATE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SHARE, 0, MenuCode_UserDef, MenuFlag_SeparatorBefore);
@@ -214,6 +223,7 @@ GSErrCode Initialize (void)
 
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_PALETTE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SCRIPT_MANAGER, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SCRIPTS_PANEL, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_UPDATE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SHARE, MenuCommandHandler);
@@ -228,6 +238,7 @@ GSErrCode Initialize (void)
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
     err |= ScriptManager::RegisterPaletteControlCallBack ();
+    err |= ScriptsPalette::RegisterPaletteControlCallBack ();
     // The add-on's one project event handler: drops the element states of CaptureElementState when
     // the project closes and passes window, floor and project events to the notification clients.
     err |= InstallProjectEventHandler ();
@@ -3724,6 +3735,7 @@ GSErrCode FreeData (void)
     ScriptUIPalette::Release ();
     // The Script Manager has a browser control (its README) too, so it goes here for the same reason.
     ScriptManager::Release ();
+    ScriptsPalette::Release ();
     TapirPalette::Release ();
     // Deletes the files of the states CaptureElementState still holds.
     ReleaseAllElementStates ();

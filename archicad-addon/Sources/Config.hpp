@@ -88,13 +88,15 @@ public:
     // site-data branch (empty: the default address, see ScriptManager.cpp).
     const GS::UniString& MarketplaceCatalogueUrl () const { return marketplaceCatalogueUrlStr; }
 
+    // Documents/Tapir/config.json; the scripts panel's Settings button opens it.
+    static IO::Location GetConfigFileLocation ();
+
 private:
     Config ();
     void GetDefaults ();
     void LoadFromFile (IO::File& file);
     void SaveToFile (IO::File& file) const;
     static bool FileExist (const IO::Location& fileLocation);
-    static IO::Location GetConfigFileLocation ();
     static bool IsFileNewer (const IO::File& file, GSTime& timestamp);
 
 private:
