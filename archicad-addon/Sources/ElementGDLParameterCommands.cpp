@@ -562,11 +562,28 @@ static bool IsRailingComponentType (API_ElemTypeID typeId)
     }
 }
 
+// The parameterNames input of GetGDLParametersOfElements: when given, only the parameters named
+// in it are returned (#2948); nullptr means all of them. GDL parameter names are case-insensitive.
+static bool IsRequestedParameter (const GS::Array<GS::UniString>* parameterNames, const char* name)
+{
+    if (parameterNames == nullptr) {
+        return true;
+    }
+
+    const GS::UniString nameStr (name);
+    for (const GS::UniString& requestedName : *parameterNames) {
+        if (requestedName.Compare (nameStr, CaseInsensitive) == GS::UniString::Equal) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // The parameters of a railing component, from the APIMemoMask_AddPars memo of the component
 // itself. Without a parameter session nothing reports locks or the Parameter Script's possible
 // values, so isLocked is false and possibleValues is left out. Returns false when the component
 // has no parameters there.
-static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, GS::ObjectState& gdlParameters)
+static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, const GS::Array<GS::UniString>* parameterNames, GS::ObjectState& gdlParameters)
 {
     API_ElementMemo memo = {};
     const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -582,7 +599,7 @@ static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, GS::O
     const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
     for (GSIndex ii = 0; ii < nParams; ++ii) {
         const API_AddParType& actParam = (*memo.params)[ii];
-        if (actParam.typeID == APIParT_Separator) {
+        if (actParam.typeID == APIParT_Separator || !IsRequestedParameter (parameterNames, actParam.name)) {
             continue;
         }
 
@@ -616,6 +633,17 @@ GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetInputParameter
     "properties": {
         "elements": {
             "$ref": "#/Elements"
+        },
+        "parameterNames": {
+            "type": "array",
+            "description": "Optional. Only the parameters with these GDL variable names are returned (case-insensitive), in the order of the library part. A name the element's library part does not have is left out. All parameters are returned when it is not given.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "includePossibleValues": {
+            "type": "boolean",
+            "description": "Optional, true by default. When false, possibleValues (the value lists of the Parameter Script, e.g. every installed font for a font parameter) is left out of the answer, which makes it much smaller."
         }
     },
     "additionalProperties": false,
@@ -649,6 +677,13 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
+
+    GS::Array<GS::UniString> requestedNames;
+    const bool hasParameterNames = parameters.Get ("parameterNames", requestedNames);
+    const GS::Array<GS::UniString>* parameterNames = hasParameterNames ? &requestedNames : nullptr;
+
+    bool includePossibleValues = true;
+    parameters.Get ("includePossibleValues", includePossibleValues);
 
     GS::ObjectState response;
     const auto& elemGdlParameterListAdder = response.AddList<GS::ObjectState> ("gdlParametersOfElements");
@@ -690,7 +725,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
         if (err != NoError && IsRailingComponentType (GetElemTypeId (apiElement.header))) {
             GS::ObjectState gdlParameters;
-            if (AddMemoParametersOfRailingComponent (paramOwner.guid, gdlParameters)) {
+            if (AddMemoParametersOfRailingComponent (paramOwner.guid, parameterNames, gdlParameters)) {
                 elemGdlParameterListAdder (gdlParameters);
             } else {
                 const GS::UniString errorMsg = GS::UniString::Printf ("Archicad gives no GDL parameters for the railing component with guid %T: neither a parameter session nor its element memo has them.", APIGuidToString (paramOwner.guid).ToPrintf ());
@@ -726,7 +761,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             const API_AddParType& actParam = (*getParams.params)[ii];
             const API_AddParType& actLibPartParam = ii < nLibPartParams ? (*addPars)[ii] : actParam;
 
-            if (actParam.typeID == APIParT_Separator) {
+            if (actParam.typeID == APIParT_Separator || !IsRequestedParameter (parameterNames, actParam.name)) {
                 continue;
             }
 
@@ -748,6 +783,15 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             if (getValues.nVals > 0) {
                 if (actParam.typeID == APIParT_PenCol && getValues.nVals == 255) {
                     BMhFree ((GSHandle)getValues.realValues);
+                } else if (!includePossibleValues) {
+                    // The lists are read anyway (isLocked comes from the same call), so they are freed here.
+                    if (getValues.uStrValues != nullptr) {
+                        BMhFree ((GSHandle)getValues.uStrValues);
+                    }
+                    if (getValues.realValues != nullptr) {
+                        BMhFree ((GSHandle)getValues.realValues);
+                    }
+                    gdlParameterDetails.Add ("canHaveCustomValue", getValues.custom);
                 } else {
                     if (getValues.uStrValues != nullptr) {
                         const auto& possibleValues = gdlParameterDetails.AddList<GS::UniString> ("possibleValues");
