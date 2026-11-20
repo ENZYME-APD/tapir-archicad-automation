@@ -6769,10 +6769,21 @@ static GSErrCode GetTextContentMemo (const API_Guid& elemGuid, API_ElementMemo& 
 #endif
 }
 
+// Archicad separates the paragraphs of a text's content with a bare '\r' (the testers' AC26 and
+// AC28 runs of #2874 read "first\rsecond" back for a content written as "first\nsecond", one
+// paragraph per line). The content is read with '\n' instead, as the commands take it (they turn
+// "\r\n" and '\r' into '\n'), so a text reads back as it was written and a text typed in Archicad
+// reads the same way. Each '\r' becomes one '\n', so the length and the run positions stay as they are.
+static GS::UniString WithNewlineLineBreaks (GS::UniString content)
+{
+    content.ReplaceAll ("\r", "\n");
+    return content;
+}
+
 static GS::UniString GetTextContentFromMemo (const API_ElementMemo& memo)
 {
 #ifdef ServerMainVers_2800
-    return (memo.textContent != nullptr) ? *memo.textContent : GS::EmptyUniString;
+    return (memo.textContent != nullptr) ? WithNewlineLineBreaks (*memo.textContent) : GS::EmptyUniString;
 #else
     GS::UniString content;
     if (memo.textContent != nullptr) {
@@ -6789,7 +6800,7 @@ static GS::UniString GetTextContentFromMemo (const API_ElementMemo& memo)
         }
         content = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (chars), contentCharCount);
     }
-    return content;
+    return WithNewlineLineBreaks (content);
 #endif
 }
 
