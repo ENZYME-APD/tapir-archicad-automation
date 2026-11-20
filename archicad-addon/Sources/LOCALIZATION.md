@@ -87,6 +87,7 @@ One installer holds every language, and chooses one when it starts:
 
 The language of a tag is matched by its first part (`de-AT` is `GER`), except `pt-BR` (`BRA`) and the
 traditional Chinese `zh-Hant`, `zh-TW`, `zh-HK` (`TAI`); the table is `LANGUAGE_CODES_BY_ISO_LANGUAGE`.
+The Austrian and Swiss language versions (`AUT`, `CHE`) show the German texts (`TEXT_LANGUAGES`).
 A text that a language's table lacks is shown in English, but the tables that ship are complete:
 `test_update_mode.py` checks that each has every key of `INT`, with the same placeholders, line breaks
 and option names.

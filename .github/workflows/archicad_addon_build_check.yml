@@ -39,6 +39,17 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
+    # The Python client (python-client/): its tests need no Archicad and also
+    # fail when the committed tapir_archicad/commands.py is not what
+    # python-client/generate.py writes from the committed command reference,
+    # so they run before the next step regenerates docs/archicad-addon.
+    - name: Test the Python client
+      run: |
+        if [ -d python-client/tests ]; then
+          python3 -m unittest discover python-client/tests
+        else
+          echo "No python-client/tests - nothing to test."
+        fi
     - name: Generate the docs
       run: python3 tools/generate_addon_docs.py
     # One example per command, at archicad-addon/Examples/<Group>/<CommandName>.py;

@@ -1744,7 +1744,7 @@ class LanguageTests (unittest.TestCase):
             self.assertEqual (tapir_installer.GetText ('buttonCancel'), 'Cancel')
             # A wrong placeholder does not break the message.
             self.assertEqual (tapir_installer.GetText ('updated', '1.2.3'), 'Tapir was updated to 1.2.3.')
-            tapir_installer.SetLanguage ('AUT')
+            tapir_installer.SetLanguage ('KOR')
             self.assertEqual (tapir_installer.GetText ('buttonClose'), 'Close')
 
 
