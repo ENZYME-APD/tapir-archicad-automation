@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20 13:54 UTC",
+ "generatedAt": "2026-11-20 18:00 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -7,9 +7,9 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 724,
-  "json": 58,
-  "partial": 7
+  "all": 722,
+  "json": 59,
+  "partial": 8
  },
  "items": [
   {
@@ -2543,7 +2543,7 @@
    "id": "GetElementsByType",
    "group": "Element Commands",
    "version": "1.0.7",
-   "brief": "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
+   "brief": "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Without databases it lists the current database: in a section or elevation window the model elements of the type that the window shows, the same elements GetAllElements reports there; pass the floor plan's database (GetDatabases) to list every one.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2572,7 +2572,7 @@
    "id": "GetAllElements",
    "group": "Element Commands",
    "version": "1.0.7",
-   "brief": "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
+   "brief": "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Without databases it lists the current database: in a section or elevation window the model elements that the window shows (and its own 2D elements); pass the floor plan's database (GetDatabases) to list every model element.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2828,7 +2828,7 @@
    "id": "GetElementsByCriteria",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
+   "brief": "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. It searches the current database, as GetElementsByType does (in a section or elevation window the model elements the window shows), or the given databases.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2837,8 +2837,8 @@
      "path": "Components/ElementsComponents/GetElementsByCriteriaComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 12,
+   "parameters": "json",
+   "parameterCount": 13,
    "coveredParameters": [
     "countOnly",
     "filters",
@@ -2853,7 +2853,9 @@
     "propertyCriteria.value",
     "types"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "databases"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -4777,7 +4779,7 @@
    "id": "GetGDLParametersOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets all the GDL parameters (name, type, value) of the given elements. For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), which have no parameter session in the Archicad API, the parameters are read from the component itself: isLocked is then always false and possibleValues is not given.",
+   "brief": "Gets all the GDL parameters (name, type, value) of the given elements. parameterNames returns only the named parameters, and includePossibleValues false leaves out the value lists (which for font parameters list every installed font), for a much smaller answer. For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), which have no parameter session in the Archicad API, the parameters are read from the component itself: isLocked is then always false and possibleValues is not given.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4786,12 +4788,15 @@
      "path": "Components/ElementsComponents/GetGDLParametersComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "elements"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "includePossibleValues",
+    "parameterNames"
+   ],
    "pullRequests": [],
    "issues": []
   },

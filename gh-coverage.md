@@ -4,14 +4,14 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **789 of 803** applicable Tapir commands have a Grasshopper component (98 %): ✅ 788 done, 🔀 1 merged, ⬜ 14 open, ➖ 1 not applicable.
 
-Parameters of the 789 used commands: 🟢 724 every parameter has an input, 🟡 58 the rest through a JSON input, 🟠 7 some parameters missing.
+Parameters of the 789 used commands: 🟢 722 every parameter has an input, 🟡 59 the rest through a JSON input, 🟠 8 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 42 |  |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 66 |  |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 96 % | 181 | 174 | 1 |  |  | 6 |  |  | 133 | 42 |  |
+| Element Commands | 96 % | 181 | 174 | 1 |  |  | 6 |  |  | 131 | 43 | 1 |
 | Element grouping Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 27 | 27 |  |  |  |  |  |  | 26 |  | 1 |
 | Property Commands | 100 % | 31 | 31 |  |  |  |  |  |  | 31 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 789 used commands: 🟢 724 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-20 13:54 UTC.
+Updated 2026-11-20 18:00 UTC.
 
 | | Status |
 |---|---|
@@ -185,7 +185,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetMarquee` 🟢 0/0 parameters – `GetMarqueeComponent`
 - ✅ `SetMarquee` 🟢 4/4 parameters – `SetMarqueeComponent`
 - ✅ `FilterElements` 🟢 7/7 parameters – `FilterElementsComponent`
-- ✅ `GetElementsByCriteria` 🟢 12/12 parameters – `GetElementsByCriteriaComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")
+- ✅ `GetElementsByCriteria` 🟡 12/13 parameters – `GetElementsByCriteriaComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")<br><sub>no input: `databases`</sub>
 - ✅ `GetDetailsOfElements` 🟡 3/4 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#2939](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2939 "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"), [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"), [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
 - ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 - ✅ `SetElementInfoStrings` 🟢 1/1 parameters – `SetElementInfoStringsComponent`
@@ -256,7 +256,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `LockElements` 🟢 1/1 parameters – `LockElementsComponent`
 - ✅ `UnlockElements` 🟢 1/1 parameters – `UnlockElementsComponent`
 - ✅ `RefreshElements` 🟢 2/2 parameters – `RefreshElementsComponent`
-- ✅ `GetGDLParametersOfElements` 🟢 1/1 parameters – `GetGDLParametersComponent`
+- ✅ `GetGDLParametersOfElements` 🟠 1/3 parameters – `GetGDLParametersComponent`<br><sub>no input: `includePossibleValues`, `parameterNames`</sub>
 - ✅ `SetGDLParametersOfElements` 🟢 4/4 parameters – `SetGDLParametersComponent`
 - ✅ `GetMarkerParametersOfElements` 🟢 1/1 parameters – `GetMarkerParametersComponent`
 - ✅ `SetMarkerParametersOfElements` 🟢 6/6 parameters – `SetMarkerParametersComponent`

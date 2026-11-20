@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20 13:54 UTC",
+ "generatedAt": "2026-11-20 18:00 UTC",
  "versions": [
   25,
   26,
@@ -7564,10 +7564,6 @@
      "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
-    {
      "number": 2941,
      "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
     },
@@ -8008,10 +8004,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
-    {
      "number": 2921,
      "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
     },
@@ -8217,10 +8209,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
     {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
@@ -8568,12 +8556,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26143,10 +26126,6 @@
      "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
-    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
@@ -31882,10 +31861,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
     {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
@@ -38507,14 +38482,6 @@
     {
      "number": 2961,
      "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
-    },
-    {
-     "number": 2953,
-     "title": "[2/2] GetGDLParametersOfElements: parameterNames and includePossibleValues"
-    },
-    {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
     },
     {
      "number": 2925,
@@ -45407,10 +45374,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
-    {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
     },
@@ -48665,10 +48628,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2951,
-     "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
     {
      "number": 2939,
      "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
