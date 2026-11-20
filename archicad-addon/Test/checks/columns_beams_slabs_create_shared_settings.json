@@ -39,7 +39,7 @@
               "use": true,
               "useFromSurface": false,
               "orientationComesFrom3D": false,
-              "fillId": { "attributeId": { "guid": "${fill}" } },
+              "fillId": { "guid": "${fill}" },
               "foregroundPen": 3,
               "backgroundPen": 9,
               "transformationType": "Global",
@@ -66,7 +66,7 @@
         { "path": "detailsOfElements[0].details.cutFillBackgroundPen.penIndex", "eq": 7, "name": "cut fill background pen" },
         { "path": "detailsOfElements[0].details.coverFill.use", "eq": true, "name": "cover fill shown" },
         { "path": "detailsOfElements[0].details.coverFill.useFromSurface", "eq": false, "name": "cover fill not from the surface" },
-        { "path": "detailsOfElements[0].details.coverFill.fillId.attributeId.guid", "eq": "${fill}", "name": "cover fill" },
+        { "path": "detailsOfElements[0].details.coverFill.fillId.guid", "eq": "${fill}", "name": "cover fill" },
         { "path": "detailsOfElements[0].details.coverFill.foregroundPen", "eq": 3, "name": "cover fill pen" },
         { "path": "detailsOfElements[0].details.coverFill.backgroundPen", "eq": 9, "name": "cover fill background pen" }
       ]
@@ -83,7 +83,7 @@
               "use": true,
               "useFromSurface": false,
               "orientationComesFrom3D": false,
-              "fillId": { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+              "fillId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
               "foregroundPen": 3,
               "backgroundPen": 9,
               "transformationType": "Global",
@@ -121,7 +121,7 @@
               "use": true,
               "useFromSurface": false,
               "orientationComesFrom3D": false,
-              "fillId": { "attributeId": { "guid": "${fill}" } },
+              "fillId": { "guid": "${fill}" },
               "foregroundPen": 2,
               "backgroundPen": 6,
               "transformationType": "Global",
@@ -146,7 +146,7 @@
         { "path": "detailsOfElements[0].details.cutFillPen.penIndex", "eq": 4, "name": "cut fill pen" },
         { "path": "detailsOfElements[0].details.cutFillBackgroundPen.penIndex", "eq": 8, "name": "cut fill background pen" },
         { "path": "detailsOfElements[0].details.coverFill.use", "eq": true, "name": "cover fill shown" },
-        { "path": "detailsOfElements[0].details.coverFill.fillId.attributeId.guid", "eq": "${fill}", "name": "cover fill" },
+        { "path": "detailsOfElements[0].details.coverFill.fillId.guid", "eq": "${fill}", "name": "cover fill" },
         { "path": "detailsOfElements[0].details.coverFill.foregroundPen", "eq": 2, "name": "cover fill pen" },
         { "path": "detailsOfElements[0].details.coverFill.backgroundPen", "eq": 6, "name": "cover fill background pen" }
       ]
@@ -198,7 +198,7 @@
               "use": true,
               "foregroundPen": 3,
               "backgroundPen": 9,
-              "fillId": { "attributeId": { "guid": "${fill}" } }
+              "fillId": { "guid": "${fill}" }
             }
           }
         ]
@@ -224,7 +224,7 @@
         { "path": "detailsOfElements[0].details.floorFill.use", "eq": true, "name": "floor fill shown" },
         { "path": "detailsOfElements[0].details.floorFill.foregroundPen", "eq": 3, "name": "floor fill pen" },
         { "path": "detailsOfElements[0].details.floorFill.backgroundPen", "eq": 9, "name": "floor fill background pen" },
-        { "path": "detailsOfElements[0].details.floorFill.fillId.attributeId.guid", "eq": "${fill}", "name": "floor fill" }
+        { "path": "detailsOfElements[0].details.floorFill.fillId.guid", "eq": "${fill}", "name": "floor fill" }
       ]
     },
     {

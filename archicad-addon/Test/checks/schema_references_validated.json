@@ -1,0 +1,56 @@
+{
+  "title": "Input schemas: the parts that are a $ref to a shared definition are validated by Archicad, nested and at the top level",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a wall",
+      "command": "CreateWalls",
+      "params": { "wallsData": [ { "begCoordinate": { "x": 700.0, "y": 700.0 }, "endCoordinate": { "x": 703.0, "y": 700.0 }, "zCoordinate": 0.0, "height": 2.5, "thickness": 0.2 } ] },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "valid elementId",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Wall", "name": "details of the wall" }
+      ]
+    },
+    {
+      "id": "guid that is not a guid (Guid's pattern, inside ElementId)",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "elements": [ { "elementId": { "guid": "not-a-guid" } } ] },
+      "expect": [
+        { "path": "__envelopeError__.code", "eq": 4002, "name": "refused by the input schema" },
+        { "path": "detailsOfElements", "exists": false, "name": "the command did not run" }
+      ]
+    },
+    {
+      "id": "elementId with an unknown field next to a valid guid (ElementId's additionalProperties)",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "elements": [ { "elementId": { "guid": "${w}", "foo": 1 } } ] },
+      "expect": [
+        { "path": "__envelopeError__.code", "eq": 4002, "name": "refused by the input schema" },
+        { "path": "detailsOfElements", "exists": false, "name": "the command did not run" }
+      ]
+    },
+    {
+      "id": "unknown field in an input that is a $ref at the top level",
+      "command": "ChangeWindow",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "foo": 1 },
+      "expect": [
+        { "path": "__envelopeError__.code", "eq": 4002, "name": "refused by the input schema" }
+      ]
+    }
+  ]
+}
