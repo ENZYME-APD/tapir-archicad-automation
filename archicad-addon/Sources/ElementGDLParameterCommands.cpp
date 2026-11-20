@@ -1764,7 +1764,11 @@ GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
 // openingBase.markGuid, so it is read the way the opening itself is, with ACAPI_Element_Get
 // and ACAPI_Element_GetMemo. `memo` is left empty: none of the opening's own memo is needed.
 // `memo` and `marker.memo` are the caller's to dispose, whether or not this succeeds.
-static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, GS::UniString& errMessage)
+// With allowChangeMarker a Change Marker is accepted too (#2930): its marker head is the
+// object element changeMarker.markerGuid names, which ACAPI_Element_ChangeExt takes as the
+// ChangeMarker's marker sub-element the way it takes an opening's marker. A Change Marker
+// without a head (markerComponent CloudOnly) has no marker.
+static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, GS::UniString& errMessage, bool allowChangeMarker = false)
 {
     element = {};
     memo = {};
@@ -1778,12 +1782,17 @@ static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Elemen
     }
 
     const API_ElemTypeID elemTypeId = GetElemTypeId (element.header);
-    if (elemTypeId != API_WindowID && elemTypeId != API_DoorID) {
-        errMessage = GS::UniString::Printf ("Element with guid %T is not a window or a door, only those have a marker.", APIGuidToString (elemGuid).ToPrintf ());
+    const bool isChangeMarker = allowChangeMarker && elemTypeId == API_ChangeMarkerID;
+    if (elemTypeId != API_WindowID && elemTypeId != API_DoorID && !isChangeMarker) {
+        if (allowChangeMarker) {
+            errMessage = GS::UniString::Printf ("Element with guid %T is not a window, a door or a change marker, only those have a marker.", APIGuidToString (elemGuid).ToPrintf ());
+        } else {
+            errMessage = GS::UniString::Printf ("Element with guid %T is not a window or a door, only those have a marker.", APIGuidToString (elemGuid).ToPrintf ());
+        }
         return APIERR_BADELEMENTTYPE;
     }
 
-    const API_Guid markerGuid = element.window.openingBase.markGuid;
+    const API_Guid markerGuid = isChangeMarker ? element.changeMarker.markerGuid : element.window.openingBase.markGuid;
     if (markerGuid == APINULLGuid) {
         errMessage = GS::UniString::Printf ("Element with guid %T has no marker.", APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_GENERAL;
@@ -2149,7 +2158,7 @@ GS::Optional<GS::UniString> GetMarkerParametersOfElementsCommand::GetRawResponse
     "properties": {
         "markerParametersOfElements": {
             "type": "array",
-            "description": "The marker of each given element, in the order of the input, or an error for an element that is not a window or a door.",
+            "description": "The marker of each given element, in the order of the input, or an error for an element that is not a window, a door or a change marker, or has no marker (a change marker with only a cloud).",
             "items": {
                 "type": "object",
                 "oneOf": [
@@ -2212,7 +2221,7 @@ GS::ObjectState GetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
         });
 
         GS::UniString errMessage;
-        const GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, apiElement, memo, marker, errMessage);
+        const GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, apiElement, memo, marker, errMessage, true);
         if (err != NoError) {
             markerParametersListAdder (CreateErrorResponse (err, errMessage));
             continue;
@@ -2252,7 +2261,7 @@ GS::Optional<GS::UniString> SetMarkerParametersOfElementsCommand::GetInputParame
                     },
                     "markerParameters": {
                         "type": "array",
-                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the opening's own settings are left as they are.",
+                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the element's own settings are left as they are.",
                         "items": {
                             "oneOf": [
                                 {
@@ -2361,7 +2370,7 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
             });
 
             GS::UniString errMessage;
-            GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, element, memo, marker, errMessage);
+            GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, element, memo, marker, errMessage, true);
 
             for (const GS::ObjectState& parameter : markerParameters) {
                 if (err != NoError) {
@@ -2372,7 +2381,7 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
 
             if (err == NoError) {
                 // Only the marker changes: the cleared mask and the empty memo mask leave the
-                // opening's own fields and memo alone, and the marker goes back whole with the
+                // opening's (or the Change Marker's) own fields and memo alone, and the marker goes back whole with the
                 // parameters changed above - as ApplyWindowOrDoorFavoriteToDefaults hands a
                 // favorite's marker to ACAPI_Element_ChangeDefaultsExt with a full mask.
                 API_Element mask = {};

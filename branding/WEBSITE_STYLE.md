@@ -181,7 +181,7 @@ Spacing stays in `px` (so the Display menu's Text size changes text only).
 | Section head to content | 40 px | 20 px |
 | Space between two blocks inside a section | 32 px (24 px after a grid or a `.flow`, 12 px between the first blocks of a page body): `.gap-top`, `.gap-top-sm`, `.gap-top-xs` | the same |
 | Gap between cards in a grid | 20 px | 16 px |
-| Card padding (`.way`, `.teaser`, `.share-steps li`) | 24 px | 18 px |
+| Card padding (`.way`, `.teaser`, `.share-steps li`, `.timeline > li`) | 24 px | 18 px |
 | Cell padding (`.flow`, `.uses-grid`, `.figures`, `.spec`) | 20 px | 16 px |
 | Footer | 72 px above | 40 px |
 
@@ -246,8 +246,8 @@ Use these from `site.css` before making a new one; a new component that a second
 | Grids | `.ways`, `.comm`, `.teasers` (3 columns), `.doc-grid`, `.two` (2) | Cards in a row |
 | Uses grid | `ul.uses-grid` (4 columns) or `.uses-grid.three` | Short facts in a frame of cells |
 | Figures | `.figures > div > strong + span` | Live numbers |
-| Flow | `.flow` (5), `.flow-3`, `.flow-4` `> div > b + strong + span` | A short sequence or a set of parallel points |
-| Timeline | `ol.timeline > li > span.n + .body` | Numbered steps with a paragraph or more each |
+| Flow | `.flow` (5), `.flow-3`, `.flow-4` `> div > b + strong + span`; `.flow.steps` when `b` is a step number | A short sequence or a set of parallel points |
+| Timeline | `ol.timeline > li > span.n + .body` | Numbered steps with a paragraph or more each: one card per step, as the share steps' cards, the number beside the text (above it on phones) |
 | Share steps | `.share-steps ol > li > b + strong + span` | Three big numbered steps |
 | Schedule | `.schedule-wrap > table.schedule` | Tables; on phones each row is a card (`data-label` on each cell) |
 | Spec | `.spec > dl` | Key/value facts of one item |
@@ -265,6 +265,10 @@ class (a page that needs a variant adds a modifier class in `site.css`).
 
 - A step number is the plain number: `1`, `2`, `3`, never `01`, `1.`, `Step 1` or a letter. The same in
   `.timeline .n`, `.flow b` and `.share-steps li b`.
+- Every step number looks the same: the share steps' big number (`--display`, 3 rem, 2.25 rem on phones,
+  `--link`), one rule in `site.css` for `.timeline .n`, `.flow.steps b` and `.share-steps li b`. A
+  `.flow` whose `b` are step numbers has the `steps` class; a `.flow` of labels has not, and its labels
+  stay small.
 - A step number is decorative (the list or the order says it) and has `aria-hidden="true"`.
 - Number with `.flow b` only when the points are a sequence. Points that are not a sequence get a
   one-word label in sentence case (`Read`, `Free`), or no `b` at all.
@@ -358,22 +362,18 @@ of #2765 that fixes it; strike it from this list in that part.
 now gets the 32 px of section 5 instead of 28 px), and `<main>`'s children on `api-coverage/` and
 `gh-coverage/` are indented like every other page's.
 
-**Numbering and labels** (part 3):
+**Numbering, labels and wording**: fixed in part 3. Every `.flow` numbers its steps `1, 2, 3` with
+`aria-hidden="true"`, its labels are no longer typed in capitals, every page title ends with ` | Tapir`
+and the coverage pages' section heads end in `<em>…</em>.`.
 
-- Step numbers are `1, 2, 3` in every `.timeline` and in `.share-steps`, but `01, 02, 03` in the `.flow`
-  blocks of `ai/index.html` (twice) and `community/index.html`.
-- Step numbers have `aria-hidden="true"` in `.timeline` and `.share-steps`, but not in `.flow`.
-- `.flow` labels typed in capitals: `READ`, `CHANGE`, `CREATE`, `PROJECT` and `REFRESH`, `EXECUTE`,
-  `CREATE` (`grasshopper/index.html`), `FREE`, `OPEN`, `SIGNED`, `WEEKLY` (`about/index.html`); in the
-  Standard look, which shows labels as written, they are the only capitals on the site.
+**Step numbers drawn three ways** (#2884): fixed. The timeline's numbers were 4.5 rem, the numbered
+flows' small mono capitals and only the share steps' 3 rem; all three now use the share steps' number
+(section 8).
 
-**Wording** (part 3):
-
-- Page titles: most end with ` | Tapir`, but `roadmap/` ("Tapir roadmap – Archicad automation"),
-  `community/` ("Community – Archicad automation with Tapir"), `about/` ("About Tapir – open-source
-  Archicad add-on") and `404.html` ("Page not found - Tapir", with a hyphen) do not.
-- The section heads of `api-coverage/` and `gh-coverage/` ("Overview", "Checklist") lack the
-  `<em>…</em>.` ending every other section head has, including the command reference's ("All <em>commands.</em>").
+**Two layouts for numbered steps** (#2942): fixed. The timeline drew its steps as rows between lines
+and only the share steps drew them as cards; every timeline step (Get started, Grasshopper, Roadmap,
+the tutorials) is now a card like the share steps', and a code box's title bar wraps on a phone
+instead of running past the box.
 
 **Page stylesheets that still draw the Legacy look in Standard**: fixed in part 4. The community map,
 the coverage pages' phone filter sheet and the floor plan's Run button have their Standard rules.

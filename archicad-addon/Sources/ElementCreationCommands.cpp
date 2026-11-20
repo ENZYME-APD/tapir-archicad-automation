@@ -2080,6 +2080,10 @@ static const char* LineArrowsSchemaProperties = R"(
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
                     },)";
 
 static GS::Optional<GS::ObjectState> SetLineArrowsParameters (const GS::ObjectState& parameters, const LineArrows& arrows)
@@ -3764,7 +3768,17 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
             vis.showRelBelow = (short) relBelow;
         }
         element.object.visibility = vis;
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility);
+        if (mask != nullptr) {
+            // ACAPI_ELEMENT_MASK_SET marks only the first byte of the member it names, so masking
+            // 'visibility' as a whole marked only showOnHome, and ModifyObjects/ModifyLamps reported
+            // success while Archicad kept the other fields (#2821). Mark each field, as the shell and
+            // mesh paths do.
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showOnHome);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showAllAbove);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showAllBelow);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showRelAbove);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, visibility.showRelBelow);
+        }
     }
 
     const GS::ObjectState* linkOS = parameters.Get ("linkToSettings");
@@ -3776,7 +3790,11 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
         }
         linkOS->Get ("newCreationMode", link.newCreationMode);
         element.object.linkToSettings = link;
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, linkToSettings);
+        if (mask != nullptr) {
+            // Each field, for the same reason as visibility above.
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, linkToSettings.homeStoryDifference);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ObjectType, linkToSettings.newCreationMode);
+        }
     }
 
     return {};
@@ -6037,11 +6055,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given. A text label needs 'text' or 'runs', unless favoriteName is given: then the label keeps the text content of the favorite, autotext included, with the fields of 'style' applied to it."
                     },
                     "runs": {
                         "type": "array",
-                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given. Like 'text', it replaces the content of the favorite given in favoriteName.",
                         "items": { "$ref": "#/TextRunDetails" },
                         "minItems": 1
                     },
@@ -7276,6 +7294,67 @@ static API_Guid FindSectionElementOfModelElement (const API_Guid& modelElemGuid)
     return APINULLGuid;
 }
 
+// Whether the memo of the Label tool defaults holds any text content. Before Archicad 28 the
+// content is a char handle, 8-bit or UTF-16 by the defaults' charCode, so it is not empty when
+// either of its first two bytes is set (an empty content is a terminator only).
+static bool HasTextContent (const API_ElementMemo& memo)
+{
+#ifdef ServerMainVers_2800
+    return memo.textContent != nullptr && !memo.textContent->IsEmpty ();
+#else
+    if (memo.textContent == nullptr || *memo.textContent == nullptr) {
+        return false;
+    }
+    const GSSize byteSize = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.textContent));
+    const char* bytes = *memo.textContent;
+    return (byteSize > 0 && bytes[0] != 0) || (byteSize > 1 && bytes[1] != 0);
+#endif
+}
+
+// Keeps the content of the defaults' memo (a favorite's content) and applies to it the style
+// fields that 'style' changed: Archicad reads the pen, font, face, effects and size of a
+// multistyle label from its runs and the justification and spacing from its paragraphs, not from
+// API_TextType, so a changed field is written to every run or paragraph. The rest of the runs,
+// their ranges and the content, stay as the favorite has them.
+static void KeepTextContentWithStyle (API_ElementMemo& memo, const API_TextType& before, const API_TextType& after)
+{
+    if (memo.paragraphs == nullptr || *memo.paragraphs == nullptr) {
+        return;
+    }
+    const GSSize paragraphCount = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.paragraphs)) / sizeof (API_ParagraphType);
+    for (GSSize p = 0; p < paragraphCount; ++p) {
+        API_ParagraphType& paragraph = (*memo.paragraphs)[p];
+        if (after.just != before.just) {
+            paragraph.just = after.just;
+        }
+        if (after.spacing != before.spacing) {
+            paragraph.spacing = after.spacing;
+        }
+        if (paragraph.run == nullptr) {
+            continue;
+        }
+        const GSSize runCount = BMGetPtrSize (reinterpret_cast<GSPtr> (paragraph.run)) / sizeof (API_RunType);
+        for (GSSize r = 0; r < runCount; ++r) {
+            API_RunType& run = paragraph.run[r];
+            if (after.pen != before.pen) {
+                run.pen = after.pen;
+            }
+            if (after.font != before.font) {
+                run.font = after.font;
+            }
+            if (after.faceBits != before.faceBits) {
+                run.faceBits = after.faceBits;
+            }
+            if (after.effectsBits != before.effectsBits) {
+                run.effectBits = static_cast<unsigned short> (after.effectsBits);
+            }
+            if (after.size != before.size) {
+                run.size = after.size;
+            }
+        }
+    }
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
@@ -7385,6 +7464,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         // element.label.u.text.pen/faceBits/font/size at the time ApplyTextContent runs, and
         // Archicad ignores those top-level fields afterwards for a multistyle (paragraph-based)
         // element - only the run's own copies matter once paragraphs exist.
+        const API_TextType textBeforeStyle = element.label.u.text;
         const GS::ObjectState* styleOS = parameters.Get ("style");
         if (styleOS != nullptr) {
             auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
@@ -7392,6 +7472,20 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
                 return styleErr;
             }
         }
+
+        // A favorite carries the content of its label, autotext included, in the memo of the
+        // defaults it was applied to (the DevKit's Element_Test example creates its labels from
+        // that memo too). Without 'text' and 'runs' that content is kept as it is (#2946).
+        GS::UniString favoriteName;
+        const bool fromFavorite = parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
+        if (fromFavorite && !parameters.Contains ("text") && !parameters.Contains ("runs")) {
+            if (!HasTextContent (memo)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' (or 'runs') parameter: the favorite '" + favoriteName + "' has no text content to keep.");
+            }
+            KeepTextContentWithStyle (memo, textBeforeStyle, element.label.u.text);
+            return {};
+        }
+
         auto err = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, parameters);
         if (err.HasValue ()) {
             return err;

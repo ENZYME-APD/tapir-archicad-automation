@@ -122,8 +122,28 @@
     .hero h1 { margin-top: 12px; font-size: 2.75rem }
     .hero .lead { margin-top: 16px }
     .hero .ctas { margin-top: 24px }
+    /* The two installers are one under the other, each the column's width, so they are the same size
+       whatever their names' lengths (#2886). */
+    .hero .ctas .btn { flex: 1 1 100%; justify-content: center }
     .try { gap: 24px }
     .plan-card { box-shadow: var(--shadow-plan-small) }
+}
+/* A phone in landscape (the header's short wide query in site.css, #2905): stacked, the full-width
+   floor plan was taller than the screen and had to be scrolled through in parts. Here the plan stays
+   beside the text and is never wider than what lets its bar, drawing and status line fit under the
+   sticky header (56 px; the bar and a status line of up to two lines take about 100 px, the drawing
+   is 1.6 times as wide as high). */
+@media (max-width: 1024px) and (max-height: 500px) {
+    .hero .wrap { grid-template-columns: 1fr 1fr; gap: 24px; padding-block: 24px 28px }
+    .hero h1 { margin-top: 12px; font-size: 2.75rem }
+    .hero h1:lang(fr), .hero h1:lang(es), .hero h1:lang(it) { font-size: min(2.75rem, 14cqi) }
+    .hero .lead { margin-top: 16px; font-size: 1rem }
+    .hero .ctas { margin-top: 20px }
+    .plan-card {
+        justify-self: center; width: 100%; box-shadow: var(--shadow-plan-small);
+        max-width: calc((100vh - 160px) * 1.6); max-width: calc((100dvh - 160px) * 1.6)
+    }
+    .plan-sheet { display: none }
 }
 
 /* The Standard look (see the end of site.css): the hero is a page head (the subtle background, no

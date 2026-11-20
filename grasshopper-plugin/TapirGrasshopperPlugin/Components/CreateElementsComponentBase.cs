@@ -74,7 +74,12 @@ namespace TapirGrasshopperPlugin.Components
             // A single database identifier (e.g. the DatabaseId output of
             // CreateWorksheets), written as the command's top-level JsonKey,
             // not into the items. Only supported in TrailingFields.
-            DatabaseId
+            DatabaseId,
+            // An open curve per element (a stair baseline), written as the
+            // JsonKey's points plus, under ArcsJsonKey, the 0-based arcs of
+            // its arc segments (PolygonHelp.TryToBaseLine). Only supported in
+            // TrailingFields.
+            BaseLineCurve
         }
 
         protected sealed class Field
@@ -86,7 +91,8 @@ namespace TapirGrasshopperPlugin.Components
                 string description,
                 bool required = false,
                 int minPointsPerBranch = 0,
-                Func<ValueList> valueList = null)
+                Func<ValueList> valueList = null,
+                string arcsJsonKey = null)
             {
                 InputName = inputName;
                 JsonKey = jsonKey;
@@ -95,7 +101,11 @@ namespace TapirGrasshopperPlugin.Components
                 Required = required;
                 MinPointsPerBranch = minPointsPerBranch;
                 ValueList = valueList;
+                ArcsJsonKey = arcsJsonKey;
             }
+
+            // The key the arcs of a BaseLineCurve field are written under.
+            public string ArcsJsonKey { get; }
 
             public string InputName { get; }
             public string JsonKey { get; }
@@ -127,6 +137,14 @@ namespace TapirGrasshopperPlugin.Components
         // are saved too, see ToggleableInputsComponentBase). New ones are always
         // appended at the end. Tree kinds are not supported here.
         protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
+
+        // The InputName of a trailing field that can be given instead of the
+        // first field (e.g. a baseline curve instead of the baseline points):
+        // when it has items, they define the number of elements and the
+        // first field must be empty. With an alternative the first field's
+        // input stays shown but is optional, so the component also runs when
+        // only the alternative is connected.
+        protected virtual string FirstFieldAlternative => null;
 
         private const string AdditionalSettingsDescription =
             "One JSON object per element with further optional settings matching the " +
@@ -184,10 +202,14 @@ namespace TapirGrasshopperPlugin.Components
                             : " Input only 1 to use the same value for all elements. Optional.";
                     }
 
+                    // The first field of a component with an alternative is
+                    // optional but always shown (see FirstFieldAlternative).
+                    var optional = !field.Required ||
+                                   (index == 0 && FirstFieldAlternative != null);
                     descriptors.Add(
                         new InputDescriptor(
                             field.InputName,
-                            () => CreateFieldParam(field, description, !field.Required),
+                            () => CreateFieldParam(field, description, optional),
                             !field.Required));
                 }
 
@@ -228,7 +250,9 @@ namespace TapirGrasshopperPlugin.Components
 
                 foreach (var field in TrailingFields)
                 {
-                    var description = field.Kind == FieldKind.AdditionalSettings || field.Kind == FieldKind.DatabaseId
+                    var description = field.Kind == FieldKind.AdditionalSettings ||
+                                      field.Kind == FieldKind.DatabaseId ||
+                                      field.InputName == FirstFieldAlternative
                         ? field.Description
                         : field.Description + " Input only 1 to use the same value for all elements. Optional.";
                     descriptors.Add(
@@ -288,6 +312,7 @@ namespace TapirGrasshopperPlugin.Components
                     return NewInputParam(
                         new Param_Point(), field.InputName, description, null, GH_ParamAccess.tree, optional);
                 case FieldKind.OutlineCurve:
+                case FieldKind.BaseLineCurve:
                     return NewInputParam(
                         new Param_Curve(), field.InputName, description, null, GH_ParamAccess.list, optional);
                 case FieldKind.HoleCurvesTree:
@@ -332,6 +357,26 @@ namespace TapirGrasshopperPlugin.Components
             {
                 AttachValueList(field);
             }
+        }
+
+        public override bool Read(
+            GH_IO.Serialization.GH_IReader reader)
+        {
+            var result = base.Read(reader);
+
+            // A parameter reads its Optional flag from the document, so the
+            // first input of a definition saved before the component had an
+            // alternative would stay required.
+            if (FirstFieldAlternative != null)
+            {
+                var index = IndexOfInput(Fields[0].InputName);
+                if (index >= 0)
+                {
+                    Params.Input[index].Optional = true;
+                }
+            }
+
+            return result;
         }
 
         protected override void OnInputShown(
@@ -647,6 +692,29 @@ namespace TapirGrasshopperPlugin.Components
                         }
                         break;
                     }
+                case FieldKind.BaseLineCurve:
+                    {
+                        var curves = new List<Curve>();
+                        da.GetDataList(inputIndex, curves);
+                        tokens = new List<JToken>();
+                        foreach (var curve in curves)
+                        {
+                            if (!PolygonHelp.TryToBaseLine(curve, out JArray coordinates, out JArray arcs, out string error))
+                            {
+                                this.AddError($"The input {field.InputName} is invalid: {error}.");
+                                tokens = null;
+                                return false;
+                            }
+
+                            var baseLine = new JObject { [field.JsonKey] = coordinates };
+                            if (arcs.Count > 0)
+                            {
+                                baseLine[field.ArcsJsonKey] = arcs;
+                            }
+                            tokens.Add(baseLine);
+                        }
+                        break;
+                    }
                 case FieldKind.HoleCurvesTree:
                     {
                         tokens = new List<JToken>();
@@ -823,7 +891,9 @@ namespace TapirGrasshopperPlugin.Components
             Field field,
             JToken token)
         {
-            if (field.Kind == FieldKind.Line || field.Kind == FieldKind.OutlineCurve)
+            if (field.Kind == FieldKind.Line ||
+                field.Kind == FieldKind.OutlineCurve ||
+                field.Kind == FieldKind.BaseLineCurve)
             {
                 foreach (var property in ((JObject)token).Properties())
                 {
@@ -881,15 +951,58 @@ namespace TapirGrasshopperPlugin.Components
             // OutlineCurve is read as a plain list, so it needs no special casing
             // here - TryReadTokens turns each curve into the item's polygon.
 
+            // The trailing field that may replace the first one; its items,
+            // when it has any, define the elements instead.
+            var alternative = FirstFieldAlternative == null
+                ? null
+                : TrailingFields.FirstOrDefault(f => f.InputName == FirstFieldAlternative);
+            List<JToken> alternativeTokens = null;
+            if (alternative != null)
+            {
+                var alternativeIndex = IndexOfInput(alternative.InputName);
+                if (alternativeIndex >= 0 &&
+                    !TryReadTokens(da, alternativeIndex, alternative, out alternativeTokens))
+                {
+                    return;
+                }
+                if (alternativeTokens != null && alternativeTokens.Count == 0)
+                {
+                    alternativeTokens = null;
+                }
+            }
+
             int itemCount;
             var items = new List<JObject>();
-            if (isTreeFirst)
+            if (alternativeTokens != null)
+            {
+                if (Params.Input[firstInputIndex].VolatileDataCount > 0)
+                {
+                    this.AddError(
+                        $"Give either the {firstField.InputName} or the {alternative.InputName} input, not both.");
+                    return;
+                }
+
+                itemCount = alternativeTokens.Count;
+                foreach (var token in alternativeTokens)
+                {
+                    var item = new JObject();
+                    AssignToken(item, alternative, token);
+                    items.Add(item);
+                }
+            }
+            else if (isTreeFirst)
             {
                 if (!da.TryGetTree(firstInputIndex, out GH_Structure<GH_Point> tree))
                 {
                     return;
                 }
                 itemCount = tree.Branches.Count;
+                if (alternative != null && tree.DataCount == 0)
+                {
+                    this.AddError(
+                        $"Give the {firstField.InputName} or the {alternative.InputName} input.");
+                    return;
+                }
                 if (itemCount == 0)
                 {
                     this.AddError(
@@ -946,7 +1059,8 @@ namespace TapirGrasshopperPlugin.Components
             foreach (var trailingField in TrailingFields)
             {
                 if (trailingField.Kind != FieldKind.AdditionalSettings &&
-                    trailingField.Kind != FieldKind.DatabaseId)
+                    trailingField.Kind != FieldKind.DatabaseId &&
+                    trailingField.InputName != alternative?.InputName)
                 {
                     typedInputs.Add(trailingField);
                 }

@@ -1,0 +1,109 @@
+{
+  "title": "linkedArrowAttributes of Lines and Polylines (Archicad 29 and later): set by CreateLineElements, CreatePolylines and SetDetailsOfElements, read back by GetDetailsOfElements; linked ends share their size and pen, linked ends given different sizes are refused, and a Circle refuses the flag",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "requiresEmpty": [ "Line", "PolyLine", "Circle" ],
+  "steps": [
+    {
+      "id": "a line with linked arrowheads, size and pen given for the start only",
+      "command": "CreateLineElements",
+      "params": {
+        "linesData": [
+          {
+            "begCoordinate": { "x": 950.0, "y": 800.0 },
+            "endCoordinate": { "x": 956.0, "y": 800.0 },
+            "startArrow": { "type": "FullArrow30", "size": 3.0, "pen": 2 },
+            "endArrow": { "type": "FullArrow30" },
+            "linkedArrowAttributes": true,
+            "floorInd": 0
+          }
+        ]
+      },
+      "save": { "l1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "line created" }
+      ]
+    },
+    {
+      "id": "a polyline with unlinked arrowheads of different sizes",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          {
+            "coordinates": [ { "x": 950.0, "y": 810.0 }, { "x": 954.0, "y": 810.0 }, { "x": 954.0, "y": 813.0 } ],
+            "startArrow": { "type": "ClosedArrow45", "size": 2.0 },
+            "endArrow": { "type": "ClosedArrow45", "size": 4.0 },
+            "linkedArrowAttributes": false,
+            "floorInd": 0
+          }
+        ]
+      },
+      "save": { "p1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "polyline created" }
+      ]
+    },
+    {
+      "id": "read the linked flags back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } }, { "elementId": { "guid": "${p1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Line" },
+        { "path": "detailsOfElements[0].details.linkedArrowAttributes", "eq": true, "name": "line: arrowheads linked" },
+        { "path": "detailsOfElements[0].details.startArrow.size", "approx": 3.0, "name": "line: start size applied" },
+        { "path": "detailsOfElements[0].details.endArrow.size", "approx": 3.0, "name": "line: linked end takes the start's size" },
+        { "path": "detailsOfElements[0].details.endArrow.pen", "eq": 2, "name": "line: linked end takes the start's pen" },
+        { "path": "detailsOfElements[1].type", "eq": "PolyLine" },
+        { "path": "detailsOfElements[1].details.linkedArrowAttributes", "eq": false, "name": "polyline: arrowheads unlinked" },
+        { "path": "detailsOfElements[1].details.startArrow.size", "approx": 2.0, "name": "polyline: start size kept" },
+        { "path": "detailsOfElements[1].details.endArrow.size", "approx": 4.0, "name": "polyline: end size kept" }
+      ]
+    },
+    {
+      "id": "a circle",
+      "command": "CreateCircles",
+      "params": {
+        "circlesData": [ { "origin": { "x": 970.0, "y": 800.0 }, "radius": 1.0, "floorInd": 0 } ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "circle created" }
+      ]
+    },
+    {
+      "id": "unlink the line, refuse linked ends of different sizes, link the polyline, refuse the flag on a circle",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${l1}" }, "details": { "typeSpecificDetails": { "linkedArrowAttributes": false, "endArrow": { "size": 5.0 } } } },
+          { "elementId": { "guid": "${p1}" }, "details": { "typeSpecificDetails": { "linkedArrowAttributes": true, "startArrow": { "size": 2.0 }, "endArrow": { "size": 6.0 } } } },
+          { "elementId": { "guid": "${p1}" }, "details": { "typeSpecificDetails": { "linkedArrowAttributes": true, "endArrow": { "size": 2.5 } } } },
+          { "elementId": { "guid": "${c1}" }, "details": { "typeSpecificDetails": { "linkedArrowAttributes": true } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "line unlinked" },
+        { "path": "executionResults[1].success", "eq": false, "name": "linked ends given different sizes are refused" },
+        { "path": "executionResults[2].success", "eq": true, "name": "polyline linked" },
+        { "path": "executionResults[3].success", "eq": false, "name": "a circle has no ends" }
+      ]
+    },
+    {
+      "id": "read the changed flags back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } }, { "elementId": { "guid": "${p1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linkedArrowAttributes", "eq": false, "name": "line: now unlinked" },
+        { "path": "detailsOfElements[0].details.startArrow.size", "approx": 3.0, "name": "line: start size kept" },
+        { "path": "detailsOfElements[0].details.endArrow.size", "approx": 5.0, "name": "line: end size changed alone" },
+        { "path": "detailsOfElements[1].details.linkedArrowAttributes", "eq": true, "name": "polyline: now linked" },
+        { "path": "detailsOfElements[1].details.startArrow.size", "approx": 2.5, "name": "polyline: the end's size applies to both ends" },
+        { "path": "detailsOfElements[1].details.endArrow.size", "approx": 2.5, "name": "polyline: end size changed" },
+        { "path": "detailsOfElements[1].details.endArrow.type", "eq": "ClosedArrow45", "name": "polyline: type kept" }
+      ]
+    }
+  ]
+}
