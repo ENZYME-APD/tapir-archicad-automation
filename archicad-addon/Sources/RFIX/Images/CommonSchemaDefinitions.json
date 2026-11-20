@@ -7520,6 +7520,24 @@
             }
         ]
     },
+    "TypedPropertyValue": {
+        "type": "object",
+        "description": "The value of a property for one element in JSON's own types, as GetTypedPropertyValuesOfElements returns it: a number, an integer, a string, a boolean, an array of them, or the identifiers of the chosen options of an option set, with the property's type and status next to it.",
+        "properties": {
+            "propertyValue": {
+                "$ref": "#/PropertyValueDetails",
+                "description": "The value with its type (number, length, area, volume, angle, integer, string, boolean, their lists, singleEnum or multiEnum) and its status: normal with a value, userUndefined (the user set it to Undefined, no value) or notAvailable (the property is not available for the element, no value). Measured values are in SI units: meters, square meters, cubic meters and radians, whatever the project's working units. An option is named by its nonLocalizedValue when it has one, else by its displayValue."
+            },
+            "isDefault": {
+                "type": "boolean",
+                "description": "Whether the value comes from the property's default value rather than one set for the element. Left out for a notAvailable value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValue"
+        ]
+    },
     "PropertyValueDetails": {
         "type": "object",
         "description": "A normal, userUndefined, notAvailable or notEvaluated property value.",
