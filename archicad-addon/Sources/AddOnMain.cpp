@@ -2415,7 +2415,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetLibraryPartFileInfoCommand> (
             libraryCommands, "2.0.0",
-            "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28."
+            "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype, its master, parameter, 2D, 3D and properties scripts, and its parameters with their default values and descriptions (includeParameters, in the format of GetLibraryPartParameterValues). Password protected parts need their password. Available from Archicad 28."
         );
         err |= RegisterCommand<CopyLibraryPartsCommand> (
             libraryCommands, "2.0.0",
