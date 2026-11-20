@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20 18:00 UTC",
+ "generatedAt": "2026-11-20 21:34 UTC",
  "versions": [
   25,
   26,
@@ -6960,7 +6960,12 @@
      "title": "ModifyRoofs: keep the side surface when the edge surfaces are written"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2972,
+     "title": "ModifyColumns: explain a hidden-layer refusal as SetDetailsOfElements does"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeContent",
