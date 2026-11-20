@@ -428,7 +428,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (see Versioning for which version it ships); first regenerates
   `docs/archicad-addon` with `tools/generate_addon_docs.py`, the Python client's
   `python-client/tapir_archicad/commands.py` from them with `python-client/generate.py`
-  (a failure there only warns), then the site's copies
+  and `docs/grasshopper-components` with `tools/generate_gh_docs.py` when it exists
+  (a failure of either only warns), then the site's copies
   for AI assistants with `tools/generate_llm_files.py` (`llms.txt`, `llms-full.txt`,
   `commands.json`/`.md` with every command's schemas, Grasshopper components and
   example, each page as `index.md`, `sitemap.xml`, `robots.txt`; a failure there only

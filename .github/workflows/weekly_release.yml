@@ -20,9 +20,11 @@ name: Weekly Release
 #      skipped version (AddOnMain.cpp), and push it to main.
 #   3. Regenerate docs/archicad-addon from the Add-On sources
 #      (tools/generate_addon_docs.py, no Archicad needed), the Python
-#      client's commands from them (python-client/generate.py) and the copies
-#      of the site for AI assistants (tools/generate_llm_files.py), and push
-#      the result to main when it changed, so the release tags current docs.
+#      client's commands from them (python-client/generate.py), the
+#      Grasshopper component reference (tools/generate_gh_docs.py) and the
+#      copies of the site for AI assistants (tools/generate_llm_files.py), and
+#      push the result to main when it changed, so the release tags current
+#      docs.
 #   4. Tag HEAD with the release version.
 #   5. Start the two existing release pipelines (Add-On build + release,
 #      Grasshopper build + yak deploy) on that tag and wait for them.
@@ -368,21 +370,33 @@ jobs:
               git clean -fdq -- python-client
             fi
           fi
+          # The Grasshopper component reference (docs/grasshopper-components),
+          # from the plugin's sources and the command reference. It never
+          # holds up a release either: when it fails, the last one stays.
+          if [ -f tools/generate_gh_docs.py ]; then
+            if ! python3 tools/generate_gh_docs.py; then
+              echo "::warning::tools/generate_gh_docs.py failed; docs/grasshopper-components was not updated."
+              git checkout -- docs/grasshopper-components 2> /dev/null || true
+              git clean -fdq -- docs/grasshopper-components
+            fi
+          fi
           # Then the copies of the site for AI assistants (llms.txt, llms-full.txt,
           # commands.json/.md, the pages as Markdown, sitemap.xml, robots.txt),
           # from those docs and the pages. They never hold up a release: when
           # the script fails, the files from the last release stay. Only docs/
-          # and the client's commands.py are staged.
+          # (with docs/grasshopper-components) and the client's commands.py
+          # are staged.
           if ! python3 tools/generate_llm_files.py; then
             echo "::warning::tools/generate_llm_files.py failed; the LLM files were not updated."
             # Undo everything it wrote, tracked or new, but keep the
-            # docs/archicad-addon the step above regenerated.
-            git checkout -- docs ':!docs/archicad-addon'
-            git clean -fdq -- docs ':!docs/archicad-addon'
+            # docs/archicad-addon and docs/grasshopper-components regenerated
+            # above.
+            git checkout -- docs ':!docs/archicad-addon' ':!docs/grasshopper-components'
+            git clean -fdq -- docs ':!docs/archicad-addon' ':!docs/grasshopper-components'
           fi
           git add -A -- "${PATHS[@]}"
           if git diff --cached --quiet -- "${PATHS[@]}"; then
-            echo "docs/archicad-addon, the Python client and the LLM files are up to date."
+            echo "docs/archicad-addon, the Python client, the Grasshopper component reference and the LLM files are up to date."
             exit 0
           fi
           git diff --cached --stat -- "${PATHS[@]}"
@@ -395,14 +409,14 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "Regenerate the Add-On docs, the Python client and the LLM files" -- "${PATHS[@]}"
+          git commit -m "Regenerate the Add-On docs, the Python client, the Grasshopper component reference and the LLM files" -- "${PATHS[@]}"
           # No rebase here: the tag goes on HEAD next, and a rebase would
           # pull in commits the plan step above never looked at.
           if ! git push origin HEAD:main; then
             echo "::error::main moved while the docs were regenerated - re-run this workflow."
             exit 1
           fi
-          echo "Regenerated docs/archicad-addon, the Python client and the LLM files and pushed them to main." >> "$GITHUB_STEP_SUMMARY"
+          echo "Regenerated docs/archicad-addon, the Python client, the Grasshopper component reference and the LLM files and pushed them to main." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report the dry run
         if: steps.plan.outputs.release == 'true' && inputs.dry_run == true
