@@ -132,6 +132,8 @@ jobs:
        github.event.issue.pull_request &&
        github.event.issue.state == 'open' &&
        github.event.comment.user.type != 'Bot' &&
+       github.event.comment.body != '/merge-schema' &&
+       github.event.comment.body != '/check-schema' &&
        !startsWith(github.event.comment.body, 'tapir-test:') &&
        github.event.issue.user.login != 'claude[bot]') ||
       (github.event_name == 'pull_request_review_comment' &&
