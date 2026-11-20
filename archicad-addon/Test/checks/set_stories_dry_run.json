@@ -28,6 +28,21 @@
       ]
     },
     {
+      "id": "the elements already on the bottom story (a template can have some there)",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          { "index": "${newIndex}", "dispOnSections": true, "level": "${newLevel}", "name": "Tapir Dry Run Story" }
+        ],
+        "dryRun": true
+      },
+      "save": { "bottomCount0": "wouldDeleteStories[0].elementCount" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
       "id": "a wall on the bottom story",
       "command": "CreateWalls",
       "params": {
@@ -51,11 +66,12 @@
         ],
         "dryRun": true
       },
+      "save": { "bottomCount1": "wouldDeleteStories[0].elementCount" },
       "expect": [
         { "path": "success", "eq": true },
         { "path": "dryRun", "eq": true },
         { "path": "wouldDeleteStories[0].index", "eq": "${first}", "name": "the bottom story is the first one it would delete" },
-        { "path": "wouldDeleteStories[0].elementCount", "eq": 1, "name": "with the wall on it" },
+        { "expr": "${bottomCount1} - ${bottomCount0}", "eq": 1, "name": "with the wall on it, one element more than before" },
         { "path": "wouldInsertStoryCount", "eq": 0 }
       ]
     },
