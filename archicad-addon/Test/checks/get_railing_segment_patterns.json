@@ -1,0 +1,236 @@
+{
+  "title": "GetRailingSegmentPatterns reads the pattern entry of each segment of a three-segment railing apart from the pattern instances generated for it, and refuses what is not a railing (#2447)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a railing with three segments and a wall",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "floorIndex": 0,
+            "bottomOffset": 0.0,
+            "height": 1.1,
+            "coordinates": [
+              {
+                "x": 930.0,
+                "y": 700.0
+              },
+              {
+                "x": 934.0,
+                "y": 700.0
+              },
+              {
+                "x": 934.0,
+                "y": 703.0
+              },
+              {
+                "x": 930.0,
+                "y": 703.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "rail": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "railing created"
+        }
+      ]
+    },
+    {
+      "id": "a wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 930.0,
+              "y": 710.0
+            },
+            "endCoordinate": {
+              "x": 933.0,
+              "y": 710.0
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "wall created"
+        }
+      ]
+    },
+    {
+      "id": "the segments of the railing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${rail}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "seg0": "detailsOfElements[0].details.segments[0].elementId.guid",
+        "seg2": "detailsOfElements[0].details.segments[2].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.segments",
+          "len": 3,
+          "name": "three segments"
+        }
+      ]
+    },
+    {
+      "id": "pattern entries and instances; a wall and an unknown guid",
+      "command": "GetRailingSegmentPatterns",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${rail}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${wall}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "00000000-0000-0000-0000-00000000BEEF"
+            }
+          }
+        ]
+      },
+      "save": {
+        "pattern0": "railings[0].segments[0].instances.patterns[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "railings",
+          "len": 3,
+          "name": "one item per element"
+        },
+        {
+          "path": "railings[0].segments",
+          "len": 3,
+          "name": "one item per segment"
+        },
+        {
+          "path": "railings[0].segments[0].segmentIndex",
+          "eq": 0
+        },
+        {
+          "path": "railings[0].segments[2].segmentIndex",
+          "eq": 2
+        },
+        {
+          "path": "railings[0].segments[0].segmentId.guid",
+          "eq": "${seg0}",
+          "name": "segment 0 is the segment GetDetailsOfElements lists first"
+        },
+        {
+          "path": "railings[0].segments[2].segmentId.guid",
+          "eq": "${seg2}",
+          "name": "segment 2 is the third segment"
+        },
+        {
+          "path": "railings[0].segments[0].entry.distribution.type",
+          "exists": true,
+          "name": "the entry has a pattern distribution"
+        },
+        {
+          "path": "railings[0].segments[0].entry.balusterSet.distribution.length",
+          "exists": true,
+          "name": "the entry has a baluster spacing"
+        },
+        {
+          "path": "railings[0].segments[0].entry.panel.frame",
+          "exists": true,
+          "name": "the entry has panel settings"
+        },
+        {
+          "path": "railings[0].segments[0].entry.innerPost.postCount",
+          "exists": true,
+          "name": "the entry has inner post settings"
+        },
+        {
+          "path": "railings[0].segments[0].entry.panel.ownerElementId",
+          "exists": false,
+          "name": "the entry is settings, not a placed element"
+        },
+        {
+          "path": "railings[0].segments[0].instances.patterns[0].elementId.guid",
+          "exists": true,
+          "name": "segment 0 has a generated pattern instance"
+        },
+        {
+          "path": "railings[0].segments[0].instances.patterns[0].elementId.guid",
+          "ne": "${seg0}",
+          "name": "the instance is not the segment"
+        },
+        {
+          "path": "railings[1].error.code",
+          "exists": true,
+          "name": "a wall is an error item"
+        },
+        {
+          "path": "railings[1].segments",
+          "exists": false,
+          "name": "a wall has no segments"
+        },
+        {
+          "path": "railings[2].error.code",
+          "exists": true,
+          "name": "an unknown guid is an error item"
+        }
+      ]
+    },
+    {
+      "id": "the instance is a RailingPattern owned by segment 0",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${pattern0}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].type",
+          "eq": "RailingPattern",
+          "name": "the instance is a RailingPattern subelement"
+        },
+        {
+          "path": "detailsOfElements[0].details.ownerElementId.guid",
+          "eq": "${seg0}",
+          "name": "owned by segment 0"
+        }
+      ]
+    }
+  ]
+}
