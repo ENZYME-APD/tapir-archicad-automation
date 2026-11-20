@@ -1,0 +1,135 @@
+{
+  "title": "ModifyBeams sets and clears the top, bottom and side surfaces of a beam segment, and refuses a wrong segment or surface (#2535)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Beam" ],
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surfA": "attributes[0].attributeId.guid",
+        "surfB": "attributes[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "a beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 900.0 },
+            "endCoordinate": { "x": 906.0, "y": 900.0 },
+            "zCoordinate": 3.0
+          }
+        ]
+      },
+      "save": { "b": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "the beam has one segment",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "one segment" }
+      ]
+    },
+    {
+      "id": "segment surfaces; refused items",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b}" },
+            "segments": [
+              {
+                "segmentIndex": 0,
+                "materialsChained": false,
+                "topMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
+                "bottomMaterial": { "overridden": true, "attributeId": { "guid": "${surfB}" } },
+                "leftMaterial": { "overridden": true, "attributeId": { "guid": "${surfB}" } }
+              }
+            ]
+          },
+          {
+            "elementId": { "guid": "${b}" },
+            "segments": [
+              { "segmentIndex": 5, "topMaterial": { "overridden": true, "attributeId": { "guid": "${surfB}" } } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${b}" },
+            "segments": [
+              { "segmentIndex": 0, "topMaterial": { "overridden": true, "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+            ]
+          },
+          {
+            "elementId": { "guid": "${b}" },
+            "segments": [
+              { "segmentIndex": 0, "topMaterial": { "overridden": true } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "segment surfaces written" },
+        { "path": "executionResults[1].success", "eq": false, "name": "segment index past the last segment refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown surface refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "overridden surface without attributeId refused" }
+      ]
+    },
+    {
+      "id": "read the segment surfaces",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "still one segment" },
+        { "path": "detailsOfElements[0].details.segments[0].materialsChained", "eq": false, "name": "surfaces unchained" },
+        { "path": "detailsOfElements[0].details.segments[0].topMaterial.overridden", "eq": true, "name": "top surface overridden" },
+        { "path": "detailsOfElements[0].details.segments[0].topMaterial.attributeId.guid", "eq": "${surfA}", "name": "top surface (refused items changed nothing)" },
+        { "path": "detailsOfElements[0].details.segments[0].bottomMaterial.attributeId.guid", "eq": "${surfB}", "name": "bottom surface" },
+        { "path": "detailsOfElements[0].details.segments[0].leftMaterial.attributeId.guid", "eq": "${surfB}", "name": "left side surface" }
+      ]
+    },
+    {
+      "id": "clear the top surface, by the item's position in the list",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b}" },
+            "segments": [
+              { "topMaterial": { "overridden": false } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "top surface override cleared" }
+      ]
+    },
+    {
+      "id": "read the cleared surface",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].topMaterial.overridden", "eq": false, "name": "top surface override cleared" },
+        { "path": "detailsOfElements[0].details.segments[0].bottomMaterial.attributeId.guid", "eq": "${surfB}", "name": "bottom surface kept" },
+        { "path": "detailsOfElements[0].details.segments[0].leftMaterial.attributeId.guid", "eq": "${surfB}", "name": "left side surface kept" }
+      ]
+    }
+  ]
+}
