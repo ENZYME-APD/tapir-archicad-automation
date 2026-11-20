@@ -16104,7 +16104,7 @@
             },
             "mainCoordinates": {
                 "type": "array",
-                "description": "The points of the segment's line, from start to end. Empty when the line cannot be read.",
+                "description": "The points of the segment's line, from start to end. Empty when the line cannot be read. Archicad does not keep the line on the nodeCoordinates given to CreateInteriorElevations: in Archicad 26 and 28 each segment's line is moved to the left of its pair of nodes by the depth.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
