@@ -1,13 +1,14 @@
-"""Reads the marker (the stamp next to the opening on the floor plan) library part and parameters of the first windows and doors with GetMarkerParametersOfElements.
+"""Reads the marker library part and parameters of the first windows, doors and change markers with GetMarkerParametersOfElements.
 
-Needs at least one Window or Door.
+The marker of a window or a door is the stamp next to the opening on the floor plan, the marker of a change marker is its marker head (with the texts typed into it).
+Needs at least one Window, Door or Change Marker.
 """
 import aclib
 
-openings = []
-for elementType in ['Window', 'Door']:
-    openings += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType})['elements']
-if not openings:
-    raise SystemExit ('No window or door in the project.')
+elements = []
+for elementType in ['Window', 'Door', 'ChangeMarker']:
+    elements += aclib.RunTapirCommand ('GetElementsByType', {'elementType': elementType})['elements'][:3]
+if not elements:
+    raise SystemExit ('No window, door or change marker in the project.')
 
-aclib.PrintJson (aclib.RunTapirCommand ('GetMarkerParametersOfElements', {'elements': openings[:3]}))
+aclib.PrintJson (aclib.RunTapirCommand ('GetMarkerParametersOfElements', {'elements': elements}))
