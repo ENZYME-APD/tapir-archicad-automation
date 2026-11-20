@@ -1,7 +1,7 @@
 {
   "title": "ModifySections moves the section line and the depth line of a Section and an Elevation; SetDetailsOfElements refuses their geometry instead of ignoring it (#2837)",
   "minTapir": "2.0.1",
-  "requiresEmpty": [ "CutPlane", "Elevation" ],
+  "requiresEmpty": [],
   "steps": [
     {
       "id": "floor plan, story 0",
@@ -30,6 +30,15 @@
       "save": { "s1": "elements[0].elementId.guid" },
       "expect": [
         { "path": "elements[0].elementId.guid", "exists": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "the section's horizontal range Limited, so that it has a depth",
+      "command": "SetSectionsAndElevationsDetails",
+      "creates": false,
+      "params": { "elementsWithDetails": [ { "elementId": { "guid": "${s1}" }, "details": { "horizontalRange": "Limited" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
       ]
     },
     {
@@ -170,6 +179,15 @@
       "save": { "e1": "elements[0].elementId.guid" },
       "expect": [
         { "path": "elements[0].elementId.guid", "exists": true, "name": "elevation created" }
+      ]
+    },
+    {
+      "id": "the elevation's horizontal range Limited, so that it has a depth",
+      "command": "SetSectionsAndElevationsDetails",
+      "creates": false,
+      "params": { "elementsWithDetails": [ { "elementId": { "guid": "${e1}" }, "details": { "horizontalRange": "Limited" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
       ]
     },
     {

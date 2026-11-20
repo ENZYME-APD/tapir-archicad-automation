@@ -19382,6 +19382,15 @@ static GS::Optional<GS::UniString> ChangeSectionLines (const API_Guid& guid,
     if (requestedDepth.HasValue () && requestedDepth.Get () <= 0.0) {
         return GS::UniString ("'depth' must be greater than 0.");
     }
+    // Archicad refuses or ignores the depth line while the horizontal range is not Limited (an
+    // Infinite range, the default of new markers, on Archicad 26 and 30, #2838).
+    const bool depthIsLimited = segment.horizRange == APIHorRange_Limited;
+    if (requestedDepth.HasValue () && !depthIsLimited) {
+        return GS::UniString ("'depth' only applies when the horizontal range is Limited; this element's horizontalRange is ") +
+            (segment.horizRange == APIHorRange_ZeroDepth ? "ZeroDepth" : "Infinite") + ". Set horizontalRange to Limited with SetSectionsAndElevationsDetails first.";
+    }
+    // With a Limited range the depth line keeps its distance when the section line moves.
+    const bool keepDepthLine = depthIsLimited && nDepth >= 1 && nDepth <= 2;
 
     const API_Coord oldBeg = memo.sectionSegmentMainCoords[0];
     const API_Coord oldEnd = memo.sectionSegmentMainCoords[1];
@@ -19445,22 +19454,25 @@ static GS::Optional<GS::UniString> ChangeSectionLines (const API_Guid& guid,
             !same (changed.sectionSegmentMainCoords[0], newBeg) || !same (changed.sectionSegmentMainCoords[1], newEnd)) {
             return GS::UniString ("Archicad did not apply the new start and end coordinates.");
         }
-        if (!requestedDepth.HasValue () || depthApplied (changed)) {
+        if (!keepDepthLine || depthApplied (changed)) {
             err = NoError;
             return {};
         }
     }
 
     // The main coords mask leaves the depth line where it was when only the depth changes
-    // (Archicad 30, #2838), so the depth line is written on its own with the depth coords mask.
+    // (Archicad 30, #2838), and also when the section line moves (Archicad 26: the depth read
+    // 0.2 instead of 5 after a start point moved), so the depth line is written on its own with
+    // the depth coords mask.
     const GS::UniString movedNote = lineMoved ? GS::UniString ("The section line was moved, but ") : GS::UniString ();
+    const GS::UniString depthWhat = requestedDepth.HasValue () ? GS::UniString ("the new depth.") : GS::UniString ("the depth line with it.");
     err = ACAPI_Element_Get (&element);
     if (err != NoError) {
         return GS::UniString ("Failed to load the element.");
     }
     err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionDepthCoords, true);
     if (err != NoError) {
-        return movedNote + "Archicad refused the new depth.";
+        return movedNote + "Archicad refused " + depthWhat;
     }
     API_ElementMemo changedDepth = {};
     const GS::OnExit changedDepthGuard ([&changedDepth] () { ACAPI_DisposeElemMemoHdls (&changedDepth); });
@@ -19470,7 +19482,7 @@ static GS::Optional<GS::UniString> ChangeSectionLines (const API_Guid& guid,
     }
     err = APIERR_REFUSEDPAR;
     if (!depthApplied (changedDepth)) {
-        return movedNote + "Archicad did not apply the new depth.";
+        return movedNote + "Archicad did not apply " + depthWhat;
     }
     err = NoError;
     return {};
@@ -19501,7 +19513,7 @@ GS::Optional<GS::UniString> ModifySectionsCommand::GetInputParametersSchema () c
                         "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." },
                         "startCoordinate": { "$ref": "#/Coordinate2D", "description": "The new start point of the section line. Only a straight marker (a section line of 2 points, as CreateSections and CreateElevations make) can be moved. The depth line and the marked distant area line keep their distance from it." },
                         "endCoordinate": { "$ref": "#/Coordinate2D", "description": "The new end point of the section line, as startCoordinate. The view looks to the side the depth line was on." },
-                        "depth": { "type": "number", "exclusiveMinimum": 0, "description": "The new distance of the depth line from the section line, on the side it is on. GetDetailsOfElements reads it back as depth." }
+                        "depth": { "type": "number", "exclusiveMinimum": 0, "description": "The new distance of the depth line from the section line, on the side it is on. GetDetailsOfElements reads it back as depth. Only applies when the element's horizontalRange is Limited (SetSectionsAndElevationsDetails); refused otherwise." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
