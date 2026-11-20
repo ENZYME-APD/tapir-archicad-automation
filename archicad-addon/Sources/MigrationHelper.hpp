@@ -1616,6 +1616,23 @@ inline void SetOverriddenAttribute (API_OverriddenAttribute& target, const API_A
 #endif
 }
 
+// The attribute of an API_OverriddenAttribute, when it is overridden (the reverse of SetOverriddenAttribute).
+inline bool GetOverriddenAttribute (const API_OverriddenAttribute& source, API_AttributeIndex& index)
+{
+#ifdef ServerMainVers_2700
+    if (!source.hasValue) {
+        return false;
+    }
+    index = source.value;
+#else
+    if (!source.overridden) {
+        return false;
+    }
+    index = source.attributeIndex;
+#endif
+    return true;
+}
+
 inline Int32 GetAttributeIndex (const API_AttributeIndex& index)
 {
 #ifdef ServerMainVers_2700
