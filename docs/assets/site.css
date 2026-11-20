@@ -9,9 +9,10 @@
 
    Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
    same header and footer (between the site-header and site-footer comments), and the head's
-   site-assets block: the favicon, two theme-color metas that colour a phone's browser bars like the
-   header (the dark one first, as a browser takes the first that matches; Standard's surface colours,
-   which the head's display script changes for a stored look or mode, and site.js when it changes):
+   site-assets block: the favicons (favicon.ico and apple-touch-icon.png at the root, for browsers
+   that cannot show the SVG one, and assets/favicon.svg), two theme-color metas that colour a phone's
+   browser bars like the header (the dark one first, as a browser takes the first that matches;
+   Standard's surface colours, which the head's display script changes for a stored look or mode, and site.js when it changes):
        <meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
        <meta name="theme-color" content="#FFFFFF">
    the fonts (Inter and JetBrains Mono; the display script adds Fraunces for Legacy's own font only,
