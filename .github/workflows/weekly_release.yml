@@ -19,9 +19,10 @@ name: Weekly Release
 #      in the "introduced in" version of the commands registered with the
 #      skipped version (AddOnMain.cpp), and push it to main.
 #   3. Regenerate docs/archicad-addon from the Add-On sources
-#      (tools/generate_addon_docs.py, no Archicad needed) and the copies of
-#      the site for AI assistants (tools/generate_llm_files.py), and push the
-#      result to main when it changed, so the release tags current docs.
+#      (tools/generate_addon_docs.py, no Archicad needed), the Python
+#      client's commands from them (python-client/generate.py) and the copies
+#      of the site for AI assistants (tools/generate_llm_files.py), and push
+#      the result to main when it changed, so the release tags current docs.
 #   4. Tag HEAD with the release version.
 #   5. Start the two existing release pipelines (Add-On build + release,
 #      Grasshopper build + yak deploy) on that tag and wait for them.
@@ -45,6 +46,9 @@ name: Weekly Release
 #      auto-generated notes, led by the download links of the installers.
 #   7. Announce the published release in the project's Discord channel,
 #      also starting with the installer download links.
+#      With the repository variable PYPI_PUBLISH set to 'true', the pypi_build
+#      and pypi_publish jobs then publish the Python client of the tag to PyPI
+#      as tapir-archicad (see pypi_build below); they never fail the release.
 #   8. Increment the patch version (tools/update_version.py) and commit, so
 #      development of the next version starts - the wiki's final step.
 #
@@ -114,6 +118,10 @@ jobs:
     permissions:
       contents: write   # push the tag and the version bump commit
       actions: write    # dispatch the two release pipelines
+    # For the PyPI jobs: the release's version and whether it is published.
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      published: ${{ steps.publish.outputs.published }}
 
     steps:
       - name: Require main
@@ -347,11 +355,24 @@ jobs:
           # guessed docs - fix the generator (or dispatch this workflow with
           # 'skip_docs_update') in that case.
           python3 tools/generate_addon_docs.py
+          # The Python client's commands come from those docs. The client
+          # never holds up a release: when its generator fails, the client of
+          # the last release stays.
+          PATHS=(docs)
+          if [ -f python-client/generate.py ]; then
+            if python3 python-client/generate.py; then
+              PATHS+=(python-client/tapir_archicad/commands.py)
+            else
+              echo "::warning::python-client/generate.py failed; the Python client was not updated."
+              git checkout -- python-client
+              git clean -fdq -- python-client
+            fi
+          fi
           # Then the copies of the site for AI assistants (llms.txt, llms-full.txt,
           # commands.json/.md, the pages as Markdown, sitemap.xml, robots.txt),
           # from those docs and the pages. They never hold up a release: when
           # the script fails, the files from the last release stay. Only docs/
-          # is staged.
+          # and the client's commands.py are staged.
           if ! python3 tools/generate_llm_files.py; then
             echo "::warning::tools/generate_llm_files.py failed; the LLM files were not updated."
             # Undo everything it wrote, tracked or new, but keep the
@@ -359,29 +380,29 @@ jobs:
             git checkout -- docs ':!docs/archicad-addon'
             git clean -fdq -- docs ':!docs/archicad-addon'
           fi
-          git add -A -- docs
-          if git diff --cached --quiet -- docs; then
-            echo "docs/archicad-addon and the LLM files are up to date."
+          git add -A -- "${PATHS[@]}"
+          if git diff --cached --quiet -- "${PATHS[@]}"; then
+            echo "docs/archicad-addon, the Python client and the LLM files are up to date."
             exit 0
           fi
-          git diff --cached --stat -- docs
+          git diff --cached --stat -- "${PATHS[@]}"
           if [ '${{ inputs.dry_run }}' = 'true' ]; then
             echo "DRY RUN: the docs would be regenerated and pushed to main." >> "$GITHUB_STEP_SUMMARY"
-            git reset -q -- docs
-            git checkout -- docs
-            git clean -fdq -- docs
+            git reset -q -- "${PATHS[@]}"
+            git checkout -- "${PATHS[@]}"
+            git clean -fdq -- "${PATHS[@]}"
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "Regenerate the Add-On docs and the LLM files" -- docs
+          git commit -m "Regenerate the Add-On docs, the Python client and the LLM files" -- "${PATHS[@]}"
           # No rebase here: the tag goes on HEAD next, and a rebase would
           # pull in commits the plan step above never looked at.
           if ! git push origin HEAD:main; then
             echo "::error::main moved while the docs were regenerated - re-run this workflow."
             exit 1
           fi
-          echo "Regenerated docs/archicad-addon and the LLM files and pushed them to main." >> "$GITHUB_STEP_SUMMARY"
+          echo "Regenerated docs/archicad-addon, the Python client and the LLM files and pushed them to main." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report the dry run
         if: steps.plan.outputs.release == 'true' && inputs.dry_run == true
@@ -551,6 +572,7 @@ jobs:
           done
 
       - name: Publish the release
+        id: publish
         if: steps.plan.outputs.release == 'true' && inputs.dry_run != true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -563,6 +585,7 @@ jobs:
           # published releases, so a hit means publishing is already done.
           if gh api "repos/${{ github.repository }}/releases/tags/$VERSION" --jq '.id' > /dev/null 2>&1; then
             echo "Release $VERSION is already published - continuing to the version bump." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "published=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # The Add-On pipeline collects every artifact on one draft release;
@@ -643,6 +666,7 @@ jobs:
           # make_latest is a string enum in the REST API, draft a real boolean.
           gh api --method PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" \
             -f name="$VERSION" -f body="$NOTES" -F draft=false -f make_latest=true > /dev/null
+          echo "published=true" >> "$GITHUB_OUTPUT"
           # If the parallel release jobs raced and created duplicate drafts
           # for this tag, delete the leftovers now that one is published.
           # The published release's own id is excluded so a stale listing
@@ -801,3 +825,127 @@ jobs:
             exit 1
           fi
           echo "Started development of version **$NEXT_VERSION**." >> "$GITHUB_STEP_SUMMARY"
+
+  # The Python client (python-client/, import name tapir_archicad) goes to
+  # PyPI as tapir-archicad with each published release, built from the
+  # release's tag with the release's version. Off until the repository
+  # variable PYPI_PUBLISH is 'true': PyPI must first trust this workflow
+  # (a trusted publisher for owner ENZYME-APD, repository
+  # tapir-archicad-automation, workflow weekly_release.yml, environment
+  # pypi), and the GitHub environment pypi must exist. No token is stored:
+  # pypi_publish gets a short-lived one from PyPI with its OIDC token.
+  # Neither job can fail the release: it is published before they start,
+  # and continue-on-error keeps the run green (their own result shows the
+  # failure). A dry run, a run that releases nothing and a tag without
+  # python-client/ publish nothing. A resumed release skips the files PyPI
+  # already has. Building and uploading are separate jobs, so the build
+  # tools never run in the job that can mint the upload token.
+  pypi_build:
+    needs: release
+    if: >-
+      !cancelled() && vars.PYPI_PUBLISH == 'true' && inputs.dry_run != true
+      && github.repository == 'ENZYME-APD/tapir-archicad-automation'
+      && needs.release.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      built: ${{ steps.built.outputs.built }}
+    steps:
+      - name: Checkout the release tag
+        uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ needs.release.outputs.version }}
+          persist-credentials: false
+
+      - name: Set the package version
+        id: version
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          set -eu
+          if [ ! -f python-client/pyproject.toml ]; then
+            echo "Tag $VERSION has no python-client/pyproject.toml - nothing to publish to PyPI." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The one place of the package's version (python-client/README.md).
+          python3 - <<'EOF'
+          import os
+          import re
+          path = 'python-client/tapir_archicad/__init__.py'
+          version = os.environ['VERSION']
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version):
+              raise SystemExit('{} is not a release version'.format(version))
+          content = open(path, encoding='utf-8').read()
+          content, count = re.subn(r"^__version__ = '[^']*'$", "__version__ = '{}'".format(version), content, flags=re.M)
+          if count != 1:
+              raise SystemExit('expected one __version__ line in {}, found {}'.format(path, count))
+          open(path, 'w', encoding='utf-8', newline='\n').write(content)
+          print('Set the package version to', version)
+          EOF
+          echo "present=true" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        if: steps.version.outputs.present == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build the sdist and the wheel
+        if: steps.version.outputs.present == 'true'
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          set -eu
+          python -m pip install build==1.6.1
+          python -m unittest discover python-client/tests
+          python -m build python-client --outdir dist
+          ls -l dist
+          # Exactly the two files of this version, or nothing is uploaded.
+          [ -f "dist/tapir_archicad-$VERSION.tar.gz" ]
+          [ -f "dist/tapir_archicad-$VERSION-py3-none-any.whl" ]
+          [ "$(ls dist | wc -l)" -eq 2 ]
+
+      - name: Keep the distribution files
+        if: steps.version.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-client-dist
+          path: dist/
+          if-no-files-found: error
+
+      # Only a complete build is uploaded: a failed step above skips this,
+      # and pypi_publish with it.
+      - name: Mark the build as complete
+        id: built
+        if: steps.version.outputs.present == 'true'
+        run: echo "built=true" >> "$GITHUB_OUTPUT"
+
+  pypi_publish:
+    needs: [release, pypi_build]
+    if: >-
+      !cancelled() && vars.PYPI_PUBLISH == 'true'
+      && needs.pypi_build.outputs.built == 'true'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    environment:
+      name: pypi
+      url: https://pypi.org/project/tapir-archicad/${{ needs.release.outputs.version }}/
+    permissions:
+      id-token: write   # PyPI trusted publishing; this job only
+    steps:
+      - name: Download the distribution files
+        uses: actions/download-artifact@v4
+        with:
+          name: python-client-dist
+          path: dist/
+
+      - name: Publish to PyPI
+        # v1.14.3
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
+        with:
+          skip-existing: true
