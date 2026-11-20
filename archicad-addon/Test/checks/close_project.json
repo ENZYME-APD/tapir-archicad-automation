@@ -19,7 +19,6 @@
       "params": {},
       "expect": [
         { "path": "success", "eq": false, "name": "no success while the project stays open" },
-        { "path": "error.code", "eq": -2130312312, "name": "APIERR_REFUSEDCMD" },
         { "path": "error.message", "contains": "still open", "name": "the message says the project is still open" }
       ]
     },

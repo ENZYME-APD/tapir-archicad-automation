@@ -2873,18 +2873,20 @@ GS::ObjectState CloseProjectCommand::Execute (const GS::ObjectState& /*parameter
         }
     }
 
-    GSErrCode err = ACAPI_ProjectOperation_Close ();
-    if (err != NoError) {
-        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to close the project. There might be none currently open.");
-    }
+    const GSErrCode err = ACAPI_ProjectOperation_Close ();
 
+    // Archicad 26 on Windows answers an error instead of NoError for its last open project (#2808),
+    // so the project is read again in both cases; the error code stays the one each case had.
     if (projectBefore.HasValue ()) {
         API_ProjectInfo projectInfo = {};
         if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError && OpenProjectIdentity (projectInfo).IsSameAs (*projectBefore)) {
-            return CreateFailedExecutionResult (APIERR_REFUSEDCMD, "Archicad did not close the project: it is still open. Archicad keeps its last open project open; use OpenProject or NewProject to replace it, or QuitArchicad to quit.");
+            return CreateFailedExecutionResult (err != NoError ? APIERR_COMMANDFAILED : APIERR_REFUSEDCMD, "Archicad did not close the project: it is still open. Archicad keeps its last open project open; use OpenProject or NewProject to replace it, or QuitArchicad to quit.");
         }
     }
 
+    if (err != NoError) {
+        return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to close the project. There might be none currently open.");
+    }
     return CreateSuccessfulExecutionResult ();
 }
 
