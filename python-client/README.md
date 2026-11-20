@@ -2,9 +2,23 @@
 
 One Python method per [Tapir command](https://archicad-api.com/archicad-addon/), so a script does not
 have to write the `API.ExecuteAddOnCommand` JSON by hand. Standard library only (Python 3.8 or later).
+It needs Archicad with the [Tapir Add-On](https://github.com/ENZYME-APD/tapir-archicad-automation)
+running.
+
+## Install
+
+```
+pip install tapir-archicad
+```
+
+The package is `tapir-archicad` on PyPI and `tapir_archicad` in Python (the PyPI project `tapir` is an
+unrelated one). Its version is the Tapir release it was built with: it knows the commands of that
+release, and a newer Tapir Add-On's commands are always reachable with `run`.
+
+## Use
 
 ```python
-from tapir import Client, TapirError
+from tapir_archicad import Client, TapirError
 
 tapir = Client ()                                    # Archicad on http://127.0.0.1:19723
 print (tapir.get_add_on_version ()['version'])
@@ -23,20 +37,34 @@ print (tapir.get_details_of_elements (elements = walls))
 - **Port and host:** `Client (host = 'http://127.0.0.1', port = 19723, timeout = None)`. The first
   Archicad listens on 19723, the next ones on the following ports.
 
-To use it, put the `python-client` folder on `PYTHONPATH` (or copy its `tapir` folder next to your
-script). It is not published on PyPI.
+Without pip, put the `python-client` folder on `PYTHONPATH` (or copy its `tapir_archicad` folder next
+to your script).
 
 ## Keeping it up to date
 
-`tapir/commands.py` is generated from the command reference (`docs/archicad-addon/command_definitions.js`
-and `common_schema_definitions.js`, which the weekly release regenerates). Never edit it by hand; after
-the command reference changed, run:
+`tapir_archicad/commands.py` is generated from the command reference
+(`docs/archicad-addon/command_definitions.js` and `common_schema_definitions.js`, which the weekly
+release regenerates). Never edit it by hand; after the command reference changed, run:
 
 ```
 python python-client/generate.py
 python -m unittest discover python-client/tests
 ```
 
-The tests need no Archicad: they check that the committed `tapir/commands.py` is what `generate.py`
-writes, that every command has its method, and the client's requests and errors against a fake server.
-`python python-client/generate.py --check` only reports whether `tapir/commands.py` is out of date.
+The tests need no Archicad: they check that the committed `tapir_archicad/commands.py` is what
+`generate.py` writes, that every command has its method, and the client's requests and errors against
+a fake server. `python python-client/generate.py --check` only reports whether
+`tapir_archicad/commands.py` is out of date.
+
+## Version and release
+
+The package's version has one place: `__version__` in `tapir_archicad/__init__.py`, which
+`pyproject.toml` reads (`[tool.setuptools.dynamic]`). A checkout carries `0.0.0.dev0`; the release
+workflow sets it to the release's version (the version of `tools/package_info.json` that the release
+ships) before it builds the package, and publishes it to PyPI with each Tapir release. To build it
+yourself:
+
+```
+pip install build
+python -m build python-client
+```

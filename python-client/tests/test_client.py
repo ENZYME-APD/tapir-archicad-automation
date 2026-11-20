@@ -15,8 +15,8 @@ CLIENT_ROOT = pathlib.Path (__file__).resolve ().parent.parent
 sys.path.insert (0, str (CLIENT_ROOT))
 
 import generate  # noqa: E402
-import tapir  # noqa: E402
-from tapir.commands import Commands  # noqa: E402
+import tapir_archicad  # noqa: E402
+from tapir_archicad.commands import Commands  # noqa: E402
 
 
 class GeneratedFileTest (unittest.TestCase):
@@ -24,7 +24,7 @@ class GeneratedFileTest (unittest.TestCase):
     def test_committed_commands_py_is_what_generate_py_writes (self):
         committed = generate.OUTPUT.read_text (encoding = 'utf-8')
         self.assertTrue (committed == generate.RenderFromFiles (),
-            'tapir/commands.py is out of date: run python python-client/generate.py')
+            'tapir_archicad/commands.py is out of date: run python python-client/generate.py')
 
     def test_one_method_per_command (self):
         commands = [command for group in generate.LoadJsVariable (generate.COMMANDS_JS) for command in group['commands']]
@@ -75,7 +75,7 @@ class ClientTest (unittest.TestCase):
         cls.server = http.server.HTTPServer (('127.0.0.1', 0), FakeArchicad)
         cls.thread = threading.Thread (target = cls.server.serve_forever, daemon = True)
         cls.thread.start ()
-        cls.client = tapir.Client (port = cls.server.server_address[1], timeout = 10)
+        cls.client = tapir_archicad.Client (port = cls.server.server_address[1], timeout = 10)
 
     @classmethod
     def tearDownClass (cls):
@@ -108,13 +108,13 @@ class ClientTest (unittest.TestCase):
 
     def test_error_in_the_response_raises (self):
         FakeArchicad.answer = {'succeeded': True, 'result': {'addOnCommandResponse': {'error': {'code': 42, 'message': 'Invalid input'}}}}
-        with self.assertRaises (tapir.TapirError) as raised:
+        with self.assertRaises (tapir_archicad.TapirError) as raised:
             self.client.get_add_on_version ()
         self.assertEqual ((raised.exception.code, raised.exception.message, raised.exception.command), (42, 'Invalid input', 'GetAddOnVersion'))
 
     def test_refused_command_raises (self):
         FakeArchicad.answer = {'succeeded': False, 'error': {'code': 4001, 'message': 'Unknown command'}}
-        with self.assertRaises (tapir.TapirError) as raised:
+        with self.assertRaises (tapir_archicad.TapirError) as raised:
             self.client.run ('NoSuchCommand', {})
         self.assertEqual ((raised.exception.code, raised.exception.message), (4001, 'Unknown command'))
 
@@ -124,8 +124,8 @@ class ClientTest (unittest.TestCase):
         unusedPort = closed.server_address[1]
         closed.server_close ()
         self.assertNotEqual (port, unusedPort)
-        with self.assertRaises (tapir.TapirError):
-            tapir.Client (port = unusedPort, timeout = 5).get_add_on_version ()
+        with self.assertRaises (tapir_archicad.TapirError):
+            tapir_archicad.Client (port = unusedPort, timeout = 5).get_add_on_version ()
 
 
 if __name__ == '__main__':
