@@ -11,6 +11,7 @@
 #include "ScriptInfo.hpp"
 #include "PaletteState.hpp"
 #include "ResourceIds.hpp"
+#include "LocalScripts.hpp"
 
 #include <atomic>
 #include <memory>
@@ -22,7 +23,6 @@ class TapirPalette final : public DG::Palette,
     public DG::PanelObserver,
     public DG::ButtonItemObserver,
     public DG::PopUpObserver,
-    public DG::TextEditBaseObserver,
     public DG::CompoundItemObserver
 {
 public:
@@ -33,15 +33,14 @@ public:
 
     void Show ();
     void Hide ();
+    // What the Script Manager asks of the palette: the script list and the run and stop functions.
+    LocalScriptActions GetLocalScriptActions ();
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
-    // The "Check for Updates..." menu item and the palette's update button: updates when a newer version exists,
+    // The "Check for Updates..." menu item: updates when a newer version exists,
     // otherwise tells why there is nothing to update to. Also offered when a script needs a newer Tapir.
     void CheckForUpdates ();
-    // The update button's icon: a mark on it when a newer version exists. Also called once the VersionChecker's
-    // lookup completes.
-    void SetUpdateButtonIcon ();
     // Shows "Update Tapir to <version>..." on the update menu item when a newer version exists, and keeps the item
     // enabled. Needs no palette, so it is static.
     static void ApplyUpdateMenuItemState ();
@@ -92,35 +91,7 @@ private:
     DG::IconButton tapirButton;
     DG::PopUp      scriptSelectionPopUp;
     DG::IconButton runScriptButton;
-    DG::IconButton openScriptButton;
-    DG::IconButton addScriptButton;
-    DG::IconButton delScriptButton;
-    DG::IconButton manageShortcutsButton;
-    DG::LeftText   installedVersionText;
-    DG::IconButton checkForUpdatesButton;
-    DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems); hidden until searchButton opens it
     DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
-    DG::IconButton searchButton;      // shows or hides searchEdit; highlighted while a filter is applied
-
-    // Return, Enter and Escape, registered only while searchEdit has the focus (0: not registered)
-    short returnHotKey = 0;
-    short enterHotKey = 0;
-    short escapeHotKey = 0;
-
-    // Up and Down while searchEdit has the focus: they move the dropdown's selection. The text edit takes the arrow
-    // keys before the palette's hot keys see them (Return comes through, Up and Down did not in Archicad 29), so they
-    // come through a low level keyboard handler, the way Graphisoft's search fields send them to their list (UDLib's
-    // KeyPressedHandler). Installed only while searchEdit has the focus.
-    class SearchKeyHandler : public DG::LowLevelKeyboardHandler
-    {
-        TapirPalette& palette;
-    public:
-        explicit SearchKeyHandler (TapirPalette& _palette) : palette (_palette) {}
-        using DG::LowLevelKeyboardHandler::KeyPressed;
-        virtual DG::EventHandlerResultType KeyPressed (const DG::Key::Code& code, DG::Item** item) override;
-    };
-    SearchKeyHandler searchKeyHandler { *this };
-    bool             searchKeyHandlerInstalled = false;
     DG::IconButton scriptManagerButton;   // opens the Script Manager (#2408)
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
@@ -164,8 +135,8 @@ private:
     // dropdown is visibleItems[i - 1], so nothing counts sections and separators to find a script.
     struct VisibleItem
     {
-        // NoMatch: "No matching scripts", disabled; Heading: the disabled "Marketplace" heading (#2408)
-        enum class Kind { Script, Separator, Reload, NoMatch, Heading };
+        // Heading: the disabled "Marketplace" heading (#2408)
+        enum class Kind { Script, Separator, Reload, Heading };
         Kind kind = Kind::Separator;
         GS::Ref<PopUpItemData> script;   // set for Kind::Script only
 
@@ -216,16 +187,16 @@ private:
     GS::Ref<PopUpItemData> GetSelectedScript () const;
     bool IsAddedScript (const GS::Ref<PopUpItemData>& script) const;   // one of addedScripts
     void SelectedScriptChanged ();   // saves the selection and updates the buttons that depend on it
-    void MoveSelection (bool down);  // to the next or previous script of the dropdown, skipping the other items
     void ToggleFavourite ();         // the star
     void SetFavouriteButtonIcon ();  // StarFilled when the selected script is a favourite, else Star
-    void SetSearchHotKeys (bool registered);
-    // Shows searchEdit in the left part of the dropdown's place, with the focus, or hides it; the filter stays.
-    void SetSearchOpen (bool open);
-    void ClearSearch ();             // Escape: no filter, and the field closes
-    GS::UniString GetSearchText () const;   // the search, trimmed; empty: no filter
-    void SetSearchButtonIcon ();     // SearchActive while a filter is applied, else Search
     ScriptList GetAllScripts () const;   // in the order of the dropdown
+    // The Script Manager's accessor of the script list: every script of the dropdown, in its order, with what the
+    // Scripts tab shows of it.
+    GS::Array<LocalScript> GetLocalScripts () const;
+    // The Script Manager's Run: starts the script of the list with this file, as the bar's Run button does, unless it runs.
+    void RunListedScript (const IO::Location& fileLocation);
+    // The Script Manager's Stop: stops the script with the processes it started, as the bar's Run button does while it runs.
+    void StopScript (const IO::Location& fileLocation);
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();   // also writes the selection to palette.json
@@ -239,9 +210,12 @@ private:
     short GetPreferencesItemIndex (const GS::Ref<PopUpItemData>& script) const;
     static GS::UniString GetScriptPath (const PopUpItemData& popUpData);   // how palette.json names the script
     bool AddNewScript ();
-    void DeleteScriptFromPopUp ();
+    // Adds the files to the scripts the user added, as the Add button does; files already listed are skipped.
+    bool AddScriptFiles (const GS::Array<IO::Location>& files);
+    // The Script Manager's Remove: removes the script from the scripts the user added.
+    void RemoveAddedScript (const IO::Location& fileLocation);
+    static GS::UniString GetScriptWebUrl (const PopUpItemData& popUpItemData);   // its page on GitHub; empty for a local file
     bool IsSelectedScriptFromGitHub () const;
-    void SetDeleteScriptButtonStatus ();
     void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot
     void ApplyShortcutMenuItemText (short slotIndex);   // pushes scriptShortcutLabels[slotIndex] to the real Archicad menu item
     void ApplyAllShortcutMenuItemTexts ();
@@ -253,12 +227,8 @@ private:
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
-    virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;
-    virtual void PanelHotkeyPressed (const DG::PanelHotKeyEvent& ev, bool* processed) override;
     // These override the ItemObserver functions of the button, pop-up and text edit observer bases.
     virtual void ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) override;
-    virtual void ItemFocusGained (const DG::ItemFocusEvent& ev) override;
-    virtual void ItemFocusLost (const DG::ItemFocusEvent& ev) override;
 
     static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary, the badge and the requirements, one per line
 

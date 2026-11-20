@@ -262,6 +262,14 @@ bool ParseHeader (const std::vector<std::string>& lines, ScriptInfo& info)
                 if (ParseTomlString (value, text) && (text == "model" || text == "files" || text == "read-only")) {
                     info.changes = ToUniString (text);
                 }
+            } else if (key == "author") {
+                if (ParseTomlString (value, text)) {
+                    info.author = ToUniString (Shorten (Trim (text), MaxTitleLength));
+                }
+            } else if (key == "version") {
+                if (ParseTomlString (value, text)) {
+                    info.version = ToUniString (Shorten (Trim (text), MaxTitleLength));
+                }
             }
         }
         info.hasHeader = true;

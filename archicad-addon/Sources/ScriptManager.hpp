@@ -5,12 +5,16 @@
 #include "DGModule.hpp"
 #include "DGBrowser.hpp"
 #include "MarketplaceInstalls.hpp"
+#include "LocalScripts.hpp"
+#include "ScriptRunResults.hpp"
 
 #include <ctime>
 #include <vector>
 
-// The Tapir Script Manager (#2408): a resizable window for browsing the marketplace scripts listed on
-// https://archicad-api.com/scripts/. It reads the catalogue that tools/generate_catalogue.py writes to the
+// The Tapir Script Manager (#2408): a resizable window for the scripts of Tapir. Its Scripts tab lists every script of
+// the Tapir Palette (built-in, marketplace and the user's own) by category and search, shows what each one does, and
+// runs and stops it, with how its last run ended; a right-click menu, dropped .py files and Add script... are there
+// too. The other tabs are the marketplace, the scripts listed on https://archicad-api.com/scripts/. It reads the catalogue that tools/generate_catalogue.py writes to the
 // site-data branch, from raw.githubusercontent.com (never through GitHub's API), when the window opens and on
 // Refresh; Documents/Tapir/config.json's marketplaceCatalogueUrl overrides the address for testing. The last good
 // copy is kept in Documents/Tapir/marketplace/catalogue.json and shown when the fetch fails.
@@ -81,13 +85,18 @@ public:
 
     static GSErrCode RegisterPaletteControlCallBack ();
 
+    // The Tapir Palette's list of scripts changed (Add, Remove, Reload scripts, an installed script enabled or
+    // disabled): the Scripts tab reads it again.
+    void LocalScriptsChanged ();
+
     // Tears the window and its browser control down. Called from FreeData, while Archicad's browser subsystem is
     // still alive (see ScriptUIPalette::Release).
     static void Release ();
 
 private:
     enum class Tab {
-        Available,
+        Scripts,     // every script the Tapir Palette lists, to run
+        Available,   // the catalogue's scripts
         Installed,
         Updates
     };
@@ -123,6 +132,13 @@ private:
     DG::Button           updateButton;
     DG::Button           updateAllButton;
     DG::Browser          readmeBrowser;
+    DG::RadioButton      scriptsTab;
+    DG::LeftText         resultText;     // the Scripts tab: how the last run of the selected script ended
+    DG::Button           runButton;
+    DG::Button           stopButton;
+    DG::Button           outputButton;   // Details: the last lines of the script's output
+    DG::Button           fixButton;      // Install uv, Try again or Report a problem
+    DG::Button           addScriptButton;
 
     std::vector<Script> scripts;            // the catalogue, in its order (by slug), then the installed scripts it lacks
     bool                hasCatalogue = false;
@@ -132,6 +148,14 @@ private:
     bool                hiddenByArchicad = false;
     MarketplaceInstalls::State installs;     // installed.json
     GS::UniString       shownReadmeFolder;  // the folder whose README the browser shows; empty: none
+
+    // The Scripts tab
+    LocalScriptActions       localActions;
+    GS::Array<LocalScript>   localScripts;      // the Tapir Palette's list, as it was read last
+    IO::Location             selectedLocalLocation;   // the script selected last on the Scripts tab, selected again when the list is rebuilt
+    GS::UniString            licenceLabelText;  // the Licence label's own text; the Scripts tab shows Source in its place
+    bool                     outputButtonShown = false;
+    bool                     fixButtonShown = false;
 
     // Fetches the catalogue (falling back to the cached copy, see the top of the class) and fills the window.
     void LoadCatalogue ();
@@ -177,10 +201,31 @@ private:
 
     const Script* GetSelectedScript () const;
 
+    // The Scripts tab
+    void LoadLocalScripts ();
+    void RefreshLocalScriptList ();
+    void RefreshLocalDetails ();
+    const LocalScript* GetSelectedLocalScript () const;
+    const LocalScript* GetLocalScriptOfRow (short row) const;
+    // The Run and Stop buttons and the result line of the selected script.
+    void ShowRunResult ();
+    void ShowLocalContextMenu (const LocalScript& script);
+    static GS::Array<IO::Location> GetDroppedScripts (const DG::ListBoxDropTargetEvent& ev);
+    bool HandleLocalButton (const DG::ButtonClickEvent& ev);
+    void AddScriptsWithDialog ();
+
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
     virtual void PanelResized (const DG::PanelResizeEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void ListBoxSelectionChanged (const DG::ListBoxSelectionEvent& ev) override;
+    virtual void ListBoxContextMenuRequested (const DG::ListBoxContextMenuEvent& ev, bool* processed) override;
+    // Both overloads of ListBoxDragEntered, so that whichever DG calls accepts the files.
+    virtual void ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool* defBehaviour) override;
+    virtual void ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool* defBehaviour,
+        bool* rightDragMenu) override;
+    virtual void ListBoxDragMoved (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect,
+        DG::DragDrop::Feedback* denyFeedback) override;
+    virtual void ListBoxDropped (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect) override;
     virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;
     virtual void CheckItemChanged (const DG::CheckItemChangeEvent& ev) override;
     virtual void RadioItemChanged (const DG::RadioItemChangeEvent& ev) override;
