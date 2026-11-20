@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-19 21:59 UTC",
+ "generatedAt": "2026-11-20 00:55 UTC",
  "versions": [
   25,
   26,
@@ -7111,12 +7111,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2931,
-     "title": "Read and write the marker head parameters of Change Markers"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1377,
@@ -7270,10 +7265,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 2933,
-     "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
-    },
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
@@ -26148,18 +26139,6 @@
      "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
     },
     {
-     "number": 2938,
-     "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
-    },
-    {
-     "number": 2937,
-     "title": "[1/3] Grasshopper: stair baselines from Rhino curves (CreateStairs, SolveStairBaseline)"
-    },
-    {
-     "number": 2934,
-     "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
-    },
-    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
@@ -38532,18 +38511,6 @@
     {
      "number": 2947,
      "title": "CreateLabels: keep the favorite's text content when no text or runs is given"
-    },
-    {
-     "number": 2938,
-     "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
-    },
-    {
-     "number": 2937,
-     "title": "[1/3] Grasshopper: stair baselines from Rhino curves (CreateStairs, SolveStairBaseline)"
-    },
-    {
-     "number": 2934,
-     "title": "Curved stairs: baseLineArcs in CreateStairs, RecreateStairs and SolveStairBaseline"
     },
     {
      "number": 2925,

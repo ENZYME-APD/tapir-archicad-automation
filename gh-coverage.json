@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-19 21:59 UTC",
+ "generatedAt": "2026-11-20 00:55 UTC",
  "counts": {
   "done": 788,
   "open": 14,
-  "in progress": 1,
+  "merged": 1,
   "not applicable": 1
  },
  "parameters": {
   "all": 724,
-  "json": 57,
+  "json": 58,
   "partial": 7
  },
  "items": [
@@ -4824,7 +4824,7 @@
    "id": "GetMarkerParametersOfElements",
    "group": "Element Commands",
    "version": "1.7.1",
-   "brief": "Gets the marker library part and the marker's GDL parameters (name, type, value) of the given Window and Door elements. The marker is the stamp drawn next to the opening on the floor plan; its parameters are separate from the opening's own GDL parameters, which GetGDLParametersOfElements returns.",
+   "brief": "Gets the marker library part and the marker's GDL parameters (name, type, value) of the given Window, Door and Change Marker elements. The marker of an opening is the stamp drawn next to it on the floor plan; its parameters are separate from the opening's own GDL parameters, which GetGDLParametersOfElements returns. The marker of a Change Marker is its marker head, e.g. with the texts typed into it; a Change Marker with only a cloud has no marker and gets an error. GetDetailsOfElements gives the Change a Change Marker is linked to.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4846,7 +4846,7 @@
    "id": "SetMarkerParametersOfElements",
    "group": "Element Commands",
    "version": "1.7.1",
-   "brief": "Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's own settings and the other marker parameters are left as they are.",
+   "brief": "Sets the given GDL parameters of the marker of the given Window, Door and Change Marker elements (the marker head of a Change Marker). The element's own settings and the other marker parameters are left as they are.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5224,7 +5224,7 @@
    "id": "CreateStairs",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
+   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5234,9 +5234,10 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 54,
+   "parameterCount": 55,
    "coveredParameters": [
     "stairsData",
+    "stairsData.baseLineArcs",
     "stairsData.baseLinePoints",
     "stairsData.favoriteName",
     "stairsData.finishVisible",
@@ -5305,7 +5306,7 @@
    "id": "SolveStairBaseline",
    "group": "Element Commands",
    "version": "1.7.3",
-   "brief": "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, 2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. The solver checks the baseline only: it does not lay out the steps, so stepNum, riserHeight and treadDepth are the given values or the tool defaults, and CreateStairs picks the riser count and height for totalHeight within the rules. Available from Archicad 27.",
+   "brief": "Runs the Archicad stair solver on the given Stair baselines (straight or with curved edges) and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, 2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. The solver checks the baseline only: it does not lay out the steps, so stepNum, riserHeight and treadDepth are the given values or the tool defaults, and CreateStairs picks the riser count and height for totalHeight within the rules. Available from Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8349,20 +8350,28 @@
    "id": "RecreateStairs",
    "group": "Element Commands",
    "version": "2.0.1",
-   "brief": "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).",
-   "status": "in progress",
+   "brief": "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2938,
-     "title": "[2/3] Grasshopper: RecreateStairs component (baseline as points or a curve)"
+     "name": "RecreateStairsComponent",
+     "path": "Components/ElementsComponents/RecreateStairsComponent.cs"
     }
    ],
+   "parameters": "json",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "stairs",
+    "stairs.baseLineArcs",
+    "stairs.baseLinePoints",
+    "stairs.elementId"
+   ],
+   "missingParameters": [
+    "stairs.baseLineEdges",
+    "stairs.baseLineVertices"
+   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2936,
