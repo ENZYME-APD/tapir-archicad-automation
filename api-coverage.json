@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20 02:10 UTC",
+ "generatedAt": "2026-11-20 03:42 UTC",
  "versions": [
   25,
   26,
@@ -10274,6 +10274,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2966,
+     "title": "Tapir Scripts palette: the scripts panel in a palette of its own (replaces #2413, #2416, #2419, #2421)"
+    },
+    {
      "number": 2421,
      "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
     },
@@ -13789,6 +13793,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2966,
+     "title": "Tapir Scripts palette: the scripts panel in a palette of its own (replaces #2413, #2416, #2419, #2421)"
+    },
+    {
      "number": 2421,
      "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
     },
@@ -13844,6 +13852,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2966,
+     "title": "Tapir Scripts palette: the scripts panel in a palette of its own (replaces #2413, #2416, #2419, #2421)"
+    },
     {
      "number": 2421,
      "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
@@ -17462,6 +17474,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2966,
+     "title": "Tapir Scripts palette: the scripts panel in a palette of its own (replaces #2413, #2416, #2419, #2421)"
+    },
     {
      "number": 2420,
      "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
@@ -38507,10 +38523,6 @@
     {
      "number": 2951,
      "title": "[1/2] GetElementsByType and GetElementsByCriteria: find model elements from section and elevation windows"
-    },
-    {
-     "number": 2947,
-     "title": "CreateLabels: keep the favorite's text content when no text or runs is given"
     },
     {
      "number": 2925,
