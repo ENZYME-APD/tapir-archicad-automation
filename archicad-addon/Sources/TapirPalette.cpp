@@ -1175,7 +1175,8 @@ GS::Array<LocalScript> TapirPalette::GetLocalScripts () const
     const std::pair<const ScriptList*, bool> lists[] = {
         { &addedScripts, true },
         { &customScripts, true },
-        { &listedScripts, false }
+        { &listedScripts, false },
+        { &marketplaceScripts, false }
     };
     for (const auto& list : lists) {
         for (const GS::Ref<PopUpItemData>& popUpItemData : *list.first) {
@@ -1186,7 +1187,9 @@ GS::Array<LocalScript> TapirPalette::GetLocalScripts () const
                 script.fileName = name.ToString ();
             }
             script.name = popUpItemData->info.title.IsEmpty () ? script.fileName : popUpItemData->info.title;
-            script.source = GetScriptSource (popUpItemData->repo, popUpItemData->sourceName, list.second);
+            script.source = list.first == &marketplaceScripts
+                ? RSGetIndString (ID_LOCAL_SCRIPT_STRINGS, ID_LOCAL_SCRIPT_STRINGS_MARKETPLACE, ACAPI_GetOwnResModule ())
+                : GetScriptSource (popUpItemData->repo, popUpItemData->sourceName, list.second);
             script.badge = GetScriptBadge (popUpItemData->info);
             script.requirements = GetScriptRequirements (popUpItemData->info);
             if (!popUpItemData->repoRelLoc.IsEmpty () && popUpItemData->repo != nullptr) {

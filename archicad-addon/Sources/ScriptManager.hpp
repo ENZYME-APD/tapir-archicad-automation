@@ -221,7 +221,6 @@ private:
     void ShowLocalContextMenu (const LocalScript& script);
     static GS::Array<IO::Location> GetDroppedScripts (const DG::ListBoxDropTargetEvent& ev);
     bool HandleLocalButton (const DG::ButtonClickEvent& ev);
-    void AddScriptsWithDialog ();
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
     virtual void PanelResized (const DG::PanelResizeEvent& ev) override;

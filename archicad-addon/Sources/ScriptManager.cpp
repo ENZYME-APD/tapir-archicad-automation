@@ -707,6 +707,9 @@ ScriptManager::ScriptManager ()
     // A script that was started from the bar, a shortcut or this window changes the result line shown here.
     ScriptRunResults::Instance ().SetChangedHandler ([this] () { ShowRunResult (); });
 
+    // Without this DG sends no drag and drop events, and a .py file dropped on the Scripts tab's list does nothing
+    EnableDragAndDropEvent ();
+
     BeginEventProcessing ();
 }
 
