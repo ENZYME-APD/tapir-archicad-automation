@@ -6757,7 +6757,10 @@ static GS::Optional<GS::UniString> GetRawTextContent (const API_Guid& elemGuid)
 // starts (offsets into textContent)"). They are read as offsets into the same content the paragraphs
 // index, which is read as characters. The starts are only reported when they are usable: ascending
 // and inside the content; a start at the very end of the content (a closing entry) adds no line.
-// Each line is its slice of the content without the line-end characters that end it.
+// Each line is its slice of the content without the line-end characters that end it. The start
+// of a line that follows a line end points at that line end ("First\nSecond" gives the starts 0
+// and 5 on Archicad 26 and 28, #2809), so the line end is skipped at the start of a line too and
+// the reported start is that of its first character.
 static void AddTextLines (GS::ObjectState& os, const API_ElementMemo& memo, const GS::UniString& content)
 {
     if (memo.textLineStarts == nullptr) {
@@ -6790,8 +6793,16 @@ static void AddTextLines (GS::ObjectState& os, const API_ElementMemo& memo, cons
     const auto& startList = os.AddList<Int32> ("lineStarts");
     const auto& lineList = os.AddList<GS::UniString> ("lines");
     for (UIndex i = 0; i < starts.GetSize (); ++i) {
-        const UIndex start = starts[i];
+        UIndex start = starts[i];
         UIndex end = (i + 1 < starts.GetSize ()) ? starts[i + 1] : contentLength;
+        if (i > 0) {
+            if (start < end && content[start] == '\r') {
+                ++start;
+            }
+            if (start < end && content[start] == '\n') {
+                ++start;
+            }
+        }
         while (end > start && (content[end - 1] == '\n' || content[end - 1] == '\r')) {
             --end;
         }
