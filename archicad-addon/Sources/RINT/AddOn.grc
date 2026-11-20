@@ -386,7 +386,7 @@
 5    "Script Manager"                  ScriptManagerButton
 }
 
-'GDLG' ID_SCRIPT_MANAGER Palette | topCaption | close | grow   0   0  940  540  "Tapir Script Manager"  {
+'GDLG' ID_SCRIPT_MANAGER Palette | topCaption | close | grow   0   0  480  620  "Tapir Script Manager"  {
 /* [  1] */ TextEdit                  10  10 220  22    LargePlain  128
 /* [  2] */ RadioButton              350  12 108  18    LargePlain  1  "Available"
 /* [  3] */ RadioButton              460  12 108  18    LargePlain  1  "Installed"
@@ -425,6 +425,7 @@
 /* [ 36] */ Button                   776 466  70  24    LargePlain  "Details"
 /* [ 37] */ Button                   640 500 170  24    LargePlain  "Report a problem"
 /* [ 38] */ Button                   510 500 120  24    LargePlain  "Add script..."
+/* [ 39] */ PopupControl               10  62 270  22    80  3
 }
 
 'DLGH' ID_SCRIPT_MANAGER Tapir_Script_Manager {
@@ -466,6 +467,7 @@
 36   "Show the last lines of the script's output"              OutputButton
 37   ""                                FixButton
 38   "Add Python scripts of your own to the list"   AddScriptButton
+39   "Show the scripts of one category"             CategoryPopUp
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

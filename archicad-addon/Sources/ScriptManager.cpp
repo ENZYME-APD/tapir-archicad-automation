@@ -75,6 +75,10 @@ static constexpr short ScriptNameTab = 1;
 static constexpr short ScriptSummaryTab = 2;
 static constexpr short ScriptVersionTab = 3;
 static constexpr short ScriptTabCount = 3;
+// Below this client width the window has one column instead of three; it cannot be made smaller than the minimum.
+static constexpr short NarrowWidth = 780;
+static constexpr short MinWidth = 360;
+static constexpr short MinHeight = 520;
 
 // The texts of the user interface, from the localized resources (RINT/AddOn.grc, see LOCALIZATION.md)
 static GS::UniString ManagerText (Int32 index)
@@ -638,9 +642,10 @@ ScriptManager::ScriptManager ()
     , outputButton (GetReference (), ID_SCRIPT_MANAGER_OUTPUT)
     , fixButton (GetReference (), ID_SCRIPT_MANAGER_FIX)
     , addScriptButton (GetReference (), ID_SCRIPT_MANAGER_ADD_SCRIPT)
+    , categoryPopUp (GetReference (), ID_SCRIPT_MANAGER_CATEGORY_POPUP)
 {
     SetGrowType (DG::Dialog::HVGrow);
-    SetMinClientSize (GetOriginalClientWidth (), GetOriginalClientHeight ());
+    SetMinClientSize (MinWidth, MinHeight);
 
     scriptsTab.Select ();
     fitsCheckBox.Check ();
@@ -659,12 +664,18 @@ ScriptManager::ScriptManager ()
             ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES + category));
     }
     categoryList.SelectItem (AllCategoriesItem);
+    for (short category = 0; category <= CategoryCount; ++category) {
+        categoryPopUp.AppendItem ();
+        categoryPopUp.SetItemText (DG::PopUp::BottomItem, ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES + category));
+    }
+    categoryPopUp.SelectItem (AllCategoriesItem);
 
     SetupScriptListColumns ();
     // The scripts of the Tapir Palette are listed first, and the installed ones even when no catalogue can be loaded.
     localActions = TapirPalette::Instance ().GetLocalScriptActions ();
     LoadLocalScripts ();
     LoadInstalls ();
+    LayoutItems ();
     RefreshAll ();
 
     // Attached once the controls are set up, so that setting them up sends no change events here.
@@ -685,6 +696,7 @@ ScriptManager::ScriptManager ()
     outputButton.Attach (*this);
     fixButton.Attach (*this);
     addScriptButton.Attach (*this);
+    categoryPopUp.Attach (*this);
     categoryList.Attach (*this);
     fitsCheckBox.Attach (*this);
     scriptList.Attach (*this);
@@ -708,6 +720,7 @@ ScriptManager::~ScriptManager ()
     outputButton.Detach (*this);
     fixButton.Detach (*this);
     addScriptButton.Detach (*this);
+    categoryPopUp.Detach (*this);
     availableTab.Detach (*this);
     installedTab.Detach (*this);
     updatesTab.Detach (*this);
@@ -752,6 +765,8 @@ void ScriptManager::Show ()
         return;
     }
     DG::Palette::Show ();
+    // Archicad gives the window the size it had when it was last closed, which sends no resize event
+    LayoutItems ();
     LocalScriptsChanged ();
     LoadCatalogue ();
 }
@@ -1062,14 +1077,16 @@ void ScriptManager::RefreshTabTexts ()
     const Tab tab = GetCurrentTab ();
     fitsCheckBox.SetVisibility (tab == Tab::Available);
     // The catalogue is the marketplace's: its time and Refresh do not belong to the Scripts tab.
-    catalogueTimeText.SetVisibility (tab != Tab::Scripts);
+    catalogueTimeText.SetVisibility (tab != Tab::Scripts && !isNarrow);
     refreshButton.SetVisibility (tab != Tab::Scripts);
 }
 
 void ScriptManager::RefreshCategoryList ()
 {
     const std::vector<size_t> tabScripts = GetScriptsOfTabAndSearch ();
-    categoryList.SetTabItemText (AllCategoriesItem, CategoryCountTab, GS::UniString::Printf ("%d", static_cast<int> (tabScripts.size ())));
+    const int allCount = static_cast<int> (tabScripts.size ());
+    categoryList.SetTabItemText (AllCategoriesItem, CategoryCountTab, GS::UniString::Printf ("%d", allCount));
+    categoryPopUp.SetItemText (AllCategoriesItem, GS::UniString::Printf ("%T (%d)", ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES).ToPrintf (), allCount));
     for (short category = 0; category < CategoryCount; ++category) {
         int count = 0;
         for (size_t index : tabScripts) {
@@ -1078,8 +1095,11 @@ void ScriptManager::RefreshCategoryList ()
                 ++count;
             }
         }
-        categoryList.SetTabItemText (static_cast<short> (AllCategoriesItem + 1 + category), CategoryCountTab, GS::UniString::Printf ("%d", count));
+        const short item = static_cast<short> (AllCategoriesItem + 1 + category);
+        categoryList.SetTabItemText (item, CategoryCountTab, GS::UniString::Printf ("%d", count));
+        categoryPopUp.SetItemText (item, GS::UniString::Printf ("%T (%d)", ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES + 1 + category).ToPrintf (), count));
     }
+    categoryPopUp.SelectItem (categoryList.GetSelectedItem () > 0 ? categoryList.GetSelectedItem () : AllCategoriesItem);
 }
 
 void ScriptManager::SetupScriptListColumns ()
@@ -1189,6 +1209,24 @@ const ScriptManager::Script* ScriptManager::GetSelectedScript () const
 }
 
 void ScriptManager::RefreshDetails ()
+{
+    RefreshDetailsOfTab ();
+    ApplyNarrowVisibility ();
+}
+
+void ScriptManager::ApplyNarrowVisibility ()
+{
+    if (!isNarrow) {
+        return;
+    }
+    for (DG::Item* item : { static_cast<DG::Item*> (&archicadLabel), static_cast<DG::Item*> (&archicadValue), static_cast<DG::Item*> (&tapirLabel),
+                            static_cast<DG::Item*> (&tapirValue), static_cast<DG::Item*> (&licenceLabel), static_cast<DG::Item*> (&licenceValue),
+                            static_cast<DG::Item*> (&whatIsNewTitle), static_cast<DG::Item*> (&changelogText), static_cast<DG::Item*> (&catalogueTimeText) }) {
+        item->SetVisibility (false);
+    }
+}
+
+void ScriptManager::RefreshDetailsOfTab ()
 {
     if (GetCurrentTab () == Tab::Scripts) {
         RefreshLocalDetails ();
@@ -1788,7 +1826,7 @@ void ScriptManager::ListBoxContextMenuRequested (const DG::ListBoxContextMenuEve
     }
     selectedLocalLocation = script->fileLocation;
     scriptList.SelectItem (row);
-    RefreshLocalDetails ();
+    RefreshDetails ();
 
     // A copy: a command may refill the list (Remove) and with it the scripts.
     const LocalScript clickedScript = *script;
@@ -1938,43 +1976,144 @@ void ScriptManager::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool
     *accepted = true;
 }
 
-void ScriptManager::PanelResized (const DG::PanelResizeEvent& ev)
+void ScriptManager::PanelResized (const DG::PanelResizeEvent&)
 {
-    const short h = ev.GetHorizontalChange ();
-    const short v = ev.GetVerticalChange ();
+    LayoutItems ();
+}
 
-    BeginMoveResizeItems ();
-    // The top bar's right end, the list in the middle and the details on the right follow the window's width; the
-    // lists and the README follow its height, the buttons at the bottom stay at the bottom.
-    catalogueTimeText.Move (h, 0);
-    refreshButton.Move (h, 0);
-    categoryList.Resize (0, v);
-    scriptList.Resize (h, v);
-    DG::Item* const detailItems[] = {
-        &nameText, &bylineText, &summaryText, &changesLabel, &changesValue, &archicadLabel, &archicadValue,
-        &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle, &changelogText
+// Wide: the categories on the left, the list in the middle and the details on the right; the list and the README follow
+// the window's size, the buttons stay at its right and bottom edges. Narrow: one column, so that the window can be
+// docked in a side panel: the search and the tabs on top, the categories as a dropdown, the list, then the details and
+// the buttons under it.
+void ScriptManager::LayoutItems ()
+{
+    const short width = GetClientWidth ();
+    const short height = GetClientHeight ();
+    const bool wasNarrow = isNarrow;
+    isNarrow = width < NarrowWidth;
+
+    const auto place = [] (DG::Item& item, short x, short y, short w, short h) {
+        item.SetPosition (x, y);
+        item.SetSize (w, h);
     };
-    for (DG::Item* item : detailItems) {
-        item->Move (h, 0);
-    }
-    readmeBrowser.MoveAndResize (h, 0, 0, v);
-    shareButton.Move (0, v);
-    scriptsPageButton.Move (0, v);
-    closeButton.Move (h, v);
-    enabledCheckBox.Move (h, v);
-    installButton.Move (h, v);
-    removeButton.Move (h, v);
-    updateButton.Move (h, v);
-    updateAllButton.Move (h, v);   // right-aligned under the list, which follows the width
-    resultText.Move (h, v);
-    runButton.Move (h, v);
-    stopButton.Move (h, v);
-    outputButton.Move (h, v);
-    fixButton.Move (h, v);
-    addScriptButton.Move (h, v);   // where Update all is, on the other tab
-    EndMoveResizeItems ();
 
+    // Not between BeginMoveResizeItems and EndMoveResizeItems: moves there are applied twice
+    if (!isNarrow) {
+        place (searchEdit, 10, 10, 220, 22);
+        place (scriptsTab, 240, 12, 108, 18);
+        place (availableTab, 350, 12, 108, 18);
+        place (installedTab, 460, 12, 108, 18);
+        place (updatesTab, 570, 12, 108, 18);
+        place (catalogueTimeText, static_cast<short> (width - 256), 12, 142, 18);
+        place (refreshButton, static_cast<short> (width - 110), 9, 100, 24);
+        place (categoryList, 10, 44, 200, static_cast<short> (height - 94));
+        place (fitsCheckBox, 220, 44, 410, 18);
+        place (scriptList, 220, 66, static_cast<short> (width - 530), static_cast<short> (height - 116));
+        const short x = static_cast<short> (width - 300);
+        const short valueX = static_cast<short> (x + 105);
+        place (nameText, x, 44, 290, 20);
+        place (bylineText, x, 66, 290, 32);
+        place (summaryText, x, 100, 290, 48);
+        place (changesLabel, x, 152, 100, 18);
+        place (changesValue, valueX, 152, 185, 18);
+        place (archicadLabel, x, 172, 100, 18);
+        place (archicadValue, valueX, 172, 185, 18);
+        place (tapirLabel, x, 192, 100, 18);
+        place (tapirValue, valueX, 192, 185, 18);
+        place (licenceLabel, x, 212, 100, 18);
+        place (licenceValue, valueX, 212, 185, 18);
+        place (whatIsNewTitle, x, 238, 290, 18);
+        place (changelogText, x, 258, 290, 48);
+        place (readmeBrowser, x, 312, 290, static_cast<short> (height - 414));
+        place (shareButton, 10, static_cast<short> (height - 40), 140, 24);
+        place (scriptsPageButton, 160, static_cast<short> (height - 40), 200, 24);
+        place (closeButton, static_cast<short> (width - 110), static_cast<short> (height - 40), 100, 24);
+        place (enabledCheckBox, x, static_cast<short> (height - 96), 290, 18);
+        place (resultText, x, static_cast<short> (height - 96), 290, 18);
+        place (installButton, static_cast<short> (width - 110), static_cast<short> (height - 74), 100, 24);
+        place (removeButton, static_cast<short> (width - 110), static_cast<short> (height - 74), 100, 24);
+        place (updateButton, static_cast<short> (width - 220), static_cast<short> (height - 74), 100, 24);
+        place (updateAllButton, static_cast<short> (width - 430), static_cast<short> (height - 40), 120, 24);
+        place (runButton, x, static_cast<short> (height - 74), 64, 24);
+        place (stopButton, static_cast<short> (x + 68), static_cast<short> (height - 74), 64, 24);
+        place (outputButton, static_cast<short> (x + 136), static_cast<short> (height - 74), 70, 24);
+        place (fixButton, x, static_cast<short> (height - 40), 170, 24);
+        place (addScriptButton, static_cast<short> (width - 430), static_cast<short> (height - 40), 120, 24);
+    } else {
+        constexpr short margin = 8;
+        const short contentWidth = static_cast<short> (width - 2 * margin);
+        place (searchEdit, margin, margin, contentWidth, 22);
+        const short tabWidth = static_cast<short> (contentWidth / 4);
+        place (scriptsTab, margin, 36, tabWidth, 18);
+        place (availableTab, static_cast<short> (margin + tabWidth), 36, tabWidth, 18);
+        place (installedTab, static_cast<short> (margin + 2 * tabWidth), 36, tabWidth, 18);
+        place (updatesTab, static_cast<short> (margin + 3 * tabWidth), 36, tabWidth, 18);
+        place (categoryPopUp, margin, 62, static_cast<short> (contentWidth - 88), 22);
+        place (refreshButton, static_cast<short> (width - margin - 80), 61, 80, 24);
+
+        // The bottom rows: what the selected script's tab offers, the buttons, and Share, Update all and Close.
+        const short rowC = static_cast<short> (height - 34);
+        const short rowB = static_cast<short> (height - 62);
+        const short rowA = static_cast<short> (height - 86);
+        const short bottomTop = static_cast<short> (rowA - 4);
+        constexpr short listTop = 90;
+        constexpr short detailsHeader = 94;   // name, author line, summary and what it changes
+        short listHeight = static_cast<short> ((bottomTop - listTop - detailsHeader - 6) * 55 / 100);
+        if (listHeight < 70) {
+            listHeight = 70;
+        }
+        place (scriptList, margin, listTop, contentWidth, listHeight);
+        const short detailsTop = static_cast<short> (listTop + listHeight + 6);
+        place (nameText, margin, detailsTop, contentWidth, 20);
+        place (bylineText, margin, static_cast<short> (detailsTop + 20), contentWidth, 16);
+        place (summaryText, margin, static_cast<short> (detailsTop + 38), contentWidth, 32);
+        place (changesLabel, margin, static_cast<short> (detailsTop + 72), 100, 18);
+        place (changesValue, static_cast<short> (margin + 105), static_cast<short> (detailsTop + 72), static_cast<short> (contentWidth - 105), 18);
+        const short browserTop = static_cast<short> (detailsTop + detailsHeader);
+        short browserHeight = static_cast<short> (bottomTop - browserTop);
+        if (browserHeight < 40) {
+            browserHeight = 40;
+        }
+        place (readmeBrowser, margin, browserTop, contentWidth, browserHeight);
+
+        place (resultText, margin, rowA, static_cast<short> (contentWidth - 138), 20);
+        place (fixButton, static_cast<short> (width - margin - 130), static_cast<short> (rowA - 2), 130, 24);
+        place (enabledCheckBox, margin, rowA, contentWidth, 18);
+        place (fitsCheckBox, margin, rowA, contentWidth, 18);
+        place (runButton, margin, rowB, 64, 24);
+        place (stopButton, static_cast<short> (margin + 68), rowB, 64, 24);
+        place (outputButton, static_cast<short> (margin + 136), rowB, 70, 24);
+        place (addScriptButton, static_cast<short> (width - margin - 120), rowB, 120, 24);
+        place (installButton, static_cast<short> (width - margin - 100), rowB, 100, 24);
+        place (removeButton, static_cast<short> (width - margin - 100), rowB, 100, 24);
+        place (updateButton, static_cast<short> (width - margin - 208), rowB, 100, 24);
+        place (shareButton, margin, rowC, 150, 24);
+        place (scriptsPageButton, margin, rowC, 150, 24);
+        place (updateAllButton, static_cast<short> (width - margin - 80 - 4 - 110), rowC, 110, 24);
+        place (closeButton, static_cast<short> (width - margin - 80), rowC, 80, 24);
+    }
+    categoryList.SetVisibility (!isNarrow);
+    categoryPopUp.SetVisibility (isNarrow);
+    if (wasNarrow != isNarrow) {
+        // The rows and the header that only one of the layouts has.
+        RefreshTabTexts ();
+        RefreshDetails ();
+    }
+    ApplyNarrowVisibility ();
     LayoutScriptListColumns ();
+
+    // DG does not repaint the items that were moved or resized by itself: without this part of the window keeps what
+    // the other layout drew.
+    DG::Item* const allItems[] = {
+        &searchEdit, &scriptsTab, &availableTab, &installedTab, &updatesTab, &catalogueTimeText, &refreshButton, &categoryList,
+        &categoryPopUp, &fitsCheckBox, &scriptList, &nameText, &bylineText, &summaryText, &changesLabel, &changesValue,
+        &archicadLabel, &archicadValue, &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle, &changelogText,
+        &shareButton, &scriptsPageButton, &closeButton, &enabledCheckBox, &installButton, &removeButton, &updateButton,
+        &updateAllButton, &readmeBrowser, &resultText, &runButton, &stopButton, &outputButton, &fixButton, &addScriptButton
+    };
+    for (DG::Item* item : allItems) {
+        item->Invalidate ();
+    }
 }
 
 void ScriptManager::ButtonClicked (const DG::ButtonClickEvent& ev)
@@ -2065,6 +2204,15 @@ void ScriptManager::CheckItemChanged (const DG::CheckItemChangeEvent& ev)
 void ScriptManager::RadioItemChanged (const DG::RadioItemChangeEvent&)
 {
     RefreshAll ();
+}
+
+void ScriptManager::PopUpChanged (const DG::PopUpChangeEvent& ev)
+{
+    if (ev.GetSource () != &categoryPopUp) {
+        return;
+    }
+    categoryList.SelectItem (categoryPopUp.GetSelectedItem ());
+    RefreshScriptList ();
 }
 
 GSErrCode ScriptManager::PaletteControlCallBack (Int32, API_PaletteMessageID messageID, GS::IntPtr param)

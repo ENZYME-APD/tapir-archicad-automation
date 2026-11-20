@@ -39,7 +39,8 @@ class ScriptManager final : public DG::Palette,
     public DG::ListBoxObserver,
     public DG::TextEditBaseObserver,
     public DG::CheckItemObserver,
-    public DG::RadioItemObserver
+    public DG::RadioItemObserver,
+    public DG::PopUpObserver
 {
 public:
     // A version of a script, as in the catalogue. commit, url and sha256 are empty for a version that was never the
@@ -139,6 +140,7 @@ private:
     DG::Button           outputButton;   // Details: the last lines of the script's output
     DG::Button           fixButton;      // Install uv, Try again or Report a problem
     DG::Button           addScriptButton;
+    DG::PopUp            categoryPopUp;   // the categories, in place of categoryList when the window is narrow
 
     std::vector<Script> scripts;            // the catalogue, in its order (by slug), then the installed scripts it lacks
     bool                hasCatalogue = false;
@@ -154,6 +156,7 @@ private:
     GS::Array<LocalScript>   localScripts;      // the Tapir Palette's list, as it was read last
     IO::Location             selectedLocalLocation;   // the script selected last on the Scripts tab, selected again when the list is rebuilt
     GS::UniString            licenceLabelText;  // the Licence label's own text; the Scripts tab shows Source in its place
+    bool                     isNarrow = false;   // the window is too narrow for three columns: the single column layout
     bool                     outputButtonShown = false;
     bool                     fixButtonShown = false;
 
@@ -193,7 +196,13 @@ private:
     void RefreshTabTexts ();
     void RefreshCategoryList ();
     void RefreshScriptList ();
+    // Places every item for the window's size: three columns when it is wide, one column when it is narrow (docked
+    // in a side panel, say).
+    void LayoutItems ();
+    // The rows of the details that only the wide layout has room for stay hidden when the window is narrow.
+    void ApplyNarrowVisibility ();
     void RefreshDetails ();
+    void RefreshDetailsOfTab ();
     // Shows the README and screenshots of the script in the browser; hides it when the catalogue gives no url.
     void RefreshReadme (const Script* script);
     void SetupScriptListColumns ();
@@ -229,6 +238,7 @@ private:
     virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;
     virtual void CheckItemChanged (const DG::CheckItemChangeEvent& ev) override;
     virtual void RadioItemChanged (const DG::RadioItemChangeEvent& ev) override;
+    virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
 
     static GSErrCode PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param);
 

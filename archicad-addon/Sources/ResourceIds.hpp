@@ -336,6 +336,7 @@
 #define ID_SCRIPT_MANAGER_OUTPUT                 36   // Details: the last lines of the script's output
 #define ID_SCRIPT_MANAGER_FIX                    37   // Install uv, Try again or Report a problem
 #define ID_SCRIPT_MANAGER_ADD_SCRIPT             38
+#define ID_SCRIPT_MANAGER_CATEGORY_POPUP         39   // the categories as a dropdown, for the narrow layout
 
 #define ID_SCRIPT_MANAGER_STRINGS            32121
 // "All categories", then the display names of the 12 categories in the order of CategoryKeys in ScriptManager.cpp
