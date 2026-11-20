@@ -32,6 +32,19 @@
       ]
     },
     {
+      "id": "the segment lines before the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ie}" } } ] },
+      "save": {
+        "s1StartX": "detailsOfElements[0].details.segments[1].startCoordinate.x",
+        "s1EndY": "detailsOfElements[0].details.segments[1].endCoordinate.y"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 2, "name": "two segments" }
+      ]
+    },
+    {
       "id": "show on one story, common marker pen 7, rename and limit the second segment",
       "command": "SetInteriorElevationsDetails",
       "creates": false,
@@ -61,7 +74,7 @@
         ]
       },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true }
+        { "path": "executionResults[0].success", "eq": true, "name": "every change applied (an unapplied one is reported here)" }
       ]
     },
     {
@@ -69,6 +82,10 @@
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${ie}" } } ] },
+      "save": {
+        "s1StartXAfter": "detailsOfElements[0].details.segments[1].startCoordinate.x",
+        "s1EndYAfter": "detailsOfElements[0].details.segments[1].endCoordinate.y"
+      },
       "expect": [
         { "path": "detailsOfElements[0].type", "eq": "InteriorElevation", "name": "same GUID, still an interior elevation" },
         { "path": "detailsOfElements[0].details.showOnStories", "eq": "OneStory" },
@@ -82,8 +99,8 @@
         { "path": "detailsOfElements[0].details.segments[1].settings.verticalRangeMax", "approx": 2.75 },
         { "path": "detailsOfElements[0].details.segments[1].settings.linePenIndex", "eq": 5 },
         { "path": "detailsOfElements[0].details.segments[0].name", "contains": "TapirCheck IE Set", "name": "first segment keeps its name" },
-        { "path": "detailsOfElements[0].details.segments[1].startCoordinate.x", "approx": 956.0, "name": "geometry kept" },
-        { "path": "detailsOfElements[0].details.segments[1].endCoordinate.y", "approx": 954.0 },
+        { "expr": "${s1StartXAfter} - ${s1StartX}", "approx": 0.0, "name": "geometry kept (x)" },
+        { "expr": "${s1EndYAfter} - ${s1EndY}", "approx": 0.0, "name": "geometry kept (y)" },
         { "path": "detailsOfElements[0].details.segments[0].depth", "approx": 2.0, "name": "depth kept" }
       ]
     },
