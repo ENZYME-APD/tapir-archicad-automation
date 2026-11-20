@@ -141,6 +141,10 @@ sandbox/                 Experiments / scratch
   Add-On downloads the installer of the latest release and starts it in update mode
   (`--addOnFile <own add-on> --versions <AC version> --archicadPort <port> --archicadPid <pid>`);
   the installer quits Archicad, replaces the add-on and starts Archicad again.
+  With `--waitForArchicadExit` (needs `--archicadPid`) and `--pendingMarker <file>`
+  it instead waits until that Archicad process has exited, replaces the add-on once
+  (holding the update lock only for that) and does not start Archicad again; it
+  deletes the Add-On's pending marker however the update ended, except on a dry run.
   Already released Add-Ons instead download
   [Tools/update_addon_and_restart_archicad.py](archicad-addon/Tools/update_addon_and_restart_archicad.py)
   from `main` and run it with uv (`--port`, `--downloadUrl`, `--addOnLocation`), so
