@@ -1,10 +1,10 @@
 {
  "version": 1,
- "generatedAt": "2026-11-19T11:51:15Z",
+ "generatedAt": "2026-11-20T11:49:15Z",
  "totals": {
-  "people": 48,
-  "places": 45,
-  "countries": 29
+  "people": 49,
+  "places": 46,
+  "countries": 30
  },
  "places": [
   {
@@ -223,14 +223,6 @@
    "people": 1
   },
   {
-   "name": "Paris",
-   "country": "France",
-   "countryCode": "FR",
-   "lat": 48.86,
-   "lon": 2.32,
-   "people": 1
-  },
-  {
    "name": "Philadelphia",
    "country": "United States",
    "countryCode": "US",
@@ -288,6 +280,14 @@
    "countryOnly": true
   },
   {
+   "name": "Salut",
+   "country": "Armenia",
+   "countryCode": "AM",
+   "lat": 40.97,
+   "lon": 43.93,
+   "people": 1
+  },
+  {
    "name": "Santiago",
    "country": "Chile",
    "countryCode": "CL",
@@ -336,6 +336,15 @@
    "lat": 43.7,
    "lon": -114.35,
    "people": 1
+  },
+  {
+   "name": "Switzerland",
+   "country": "Switzerland",
+   "countryCode": "CH",
+   "lat": 46.8,
+   "lon": 8.23,
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "Sydney",
@@ -431,13 +440,13 @@
    "people": 1
   },
   {
-   "name": "Chile",
-   "code": "CL",
+   "name": "Armenia",
+   "code": "AM",
    "people": 1
   },
   {
-   "name": "France",
-   "code": "FR",
+   "name": "Chile",
+   "code": "CL",
    "people": 1
   },
   {
@@ -513,6 +522,11 @@
   {
    "name": "South Korea",
    "code": "KR",
+   "people": 1
+  },
+  {
+   "name": "Switzerland",
+   "code": "CH",
    "people": 1
   },
   {
@@ -812,6 +826,14 @@
    "lon": 24.69,
    "kind": "country"
   },
+  "salut": {
+   "name": "Salut",
+   "country": "Armenia",
+   "countryCode": "AM",
+   "lat": 40.97,
+   "lon": 43.93,
+   "kind": "settlement"
+  },
   "santiago, chile": {
    "name": "Santiago",
    "country": "Chile",
@@ -867,6 +889,14 @@
    "lat": 43.7,
    "lon": -114.35,
    "kind": "settlement"
+  },
+  "switzerland": {
+   "name": "Switzerland",
+   "country": "Switzerland",
+   "countryCode": "CH",
+   "lat": 46.8,
+   "lon": 8.23,
+   "kind": "country"
   },
   "sydney, australia": {
    "name": "Sydney",
