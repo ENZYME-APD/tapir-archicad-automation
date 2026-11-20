@@ -28998,6 +28998,13 @@
                 },
                 "minItems": 2
             },
+            "baseLineArcs": {
+                "type": "array",
+                "description": "Optional. The curved edges of the baseline, as in CreateStairs and as GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, an arc bends one edge (endIndex = begIndex + 1), and arcAngle is not 0 and less than a full turn. Edges without an arc are straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
             "zCoordinate": {
                 "type": "number",
                 "description": "The Z coordinate (absolute elevation) of the stair base."
