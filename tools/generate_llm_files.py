@@ -5,10 +5,15 @@ Everything is generated from what the site and the repository already hold, with
   docs/llms.txt          the llms.txt index (https://llmstxt.org): what Tapir is, how a command is
                          sent, and a link to the Markdown copy of every page
   docs/llms-full.txt     every page and a compact reference of every command, in one file
-  docs/commands.json     every command: group, version it was added in, description, input and
+  docs/commands.json     the index of every command: its name, group, the version it was added in,
+                         a one-line description and links to its group's files and its docs entry
+  docs/commands.md       the same index in Markdown, by group, linking the group files
+  docs/commands/<group>.json  one file per command group: each command's description, input and
                          output schemas, the Grasshopper components that send it and its Python
-                         example; with the shared schema definitions
-  docs/commands.md       the command reference in Markdown, with parameters and results
+                         example, with the shared schema definitions those schemas use
+  docs/commands/<group>.md    the same group in Markdown, with parameters and results
+                         (<group> is the group's Examples folder in kebab case: element, custom-data,
+                         mep; groups that share an Examples folder share the files)
   docs/<page>/index.md   the text of each page (its <main>), in Markdown
   docs/sitemap.xml, docs/robots.txt
 
@@ -36,6 +41,7 @@ DOCS = REPO_ROOT / 'docs'
 sys.path.insert (0, str (REPO_ROOT / 'tools'))
 
 import generate_gh_coverage  # noqa: E402  (read_plugin, used_commands, components_of)
+from check_examples import ExampleFolder  # noqa: E402  (the Examples/<GroupFolder> of a command group)
 
 GITHUB = 'https://github.com/ENZYME-APD/tapir-archicad-automation'
 RAW = 'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation'
@@ -49,11 +55,14 @@ PAGES = [
     ('community/', 'Project'), ('roadmap/', 'Project'), ('about/', 'Project'),
 ]
 LIVE_PAGES = [
-    ('archicad-addon/', 'The command reference, also as commands.md and commands.json.'),
+    ('archicad-addon/', 'The command reference, also as Markdown and JSON: commands.md and commands.json '
+                        '(the index) and one file per command group under commands/.'),
     ('api-coverage/', 'Which parts of the Archicad API Tapir uses, updated hourly; data: '
                       + RAW + '/api-coverage/api-coverage.md'),
     ('gh-coverage/', 'Which Tapir commands have a Grasshopper component; data: '
                      + RAW + '/api-coverage/gh-coverage.md'),
+    ('grasshopper-components/', 'Every Grasshopper component with its inputs, outputs, Tapir commands and JSON keys; data: '
+                                + RAW + '/main/docs/grasshopper-components/components.js'),
 ]
 
 
@@ -379,6 +388,38 @@ def read_grasshopper (names):
     return {command: generate_gh_coverage.components_of (classes, owners) for command, owners in used.items ()}
 
 
+def group_slug (group_name):
+    """The name of a command group's files: its Examples folder (archicad-addon/Examples/README.md)
+    in kebab case. "Custom Data Commands" -> custom-data, "MEP Commands (extended)" -> mep."""
+    return re.sub (r'(?<=[a-z0-9])(?=[A-Z])', '-', ExampleFolder (group_name)).lower ()
+
+
+def first_sentence (text):
+    """The first sentence of a description, for the one-line index; "e.g." and "i.e." do not end it."""
+    text = re.sub (r'\s+', ' ', text or '').strip ()
+    end = re.search (r'(?<!\be\.g)(?<!\bi\.e)\.(?=\s+[A-Z(])', text)
+    return text[:end.end ()] if end else text
+
+
+def used_definitions (nodes, definitions):
+    """The shared schema definitions the given schemas refer to ({"$ref": "#/Name"}), also through
+    other definitions, in the order of definitions."""
+    used, stack = set (), list (nodes)
+    while stack:
+        node = stack.pop ()
+        if isinstance (node, dict):
+            ref = node.get ('$ref')
+            if isinstance (ref, str) and ref.startswith ('#/'):
+                name = ref[2:]
+                if name in definitions and name not in used:
+                    used.add (name)
+                    stack.append (definitions[name])
+            stack.extend (node.values ())
+        elif isinstance (node, list):
+            stack.extend (node)
+    return {name: node for name, node in definitions.items () if name in used}
+
+
 def read_commands (site):
     groups = read_js_json (DOCS / 'archicad-addon' / 'command_definitions.js', 'var gCommands = ')
     definitions = read_js_json (DOCS / 'archicad-addon' / 'common_schema_definitions.js', 'var gSchemaDefinitions = ')
@@ -390,9 +431,11 @@ def read_commands (site):
         for command in group['commands']:
             name = command['name']
             example = examples.get (name)
+            slug = group_slug (group['name'])
             commands.append ({
                 'name': name,
                 'group': group['name'],
+                'groupSlug': slug,
                 'version': command['version'],
                 'description': command['description'],
                 'inputSchema': command.get ('inputScheme'),
@@ -425,8 +468,9 @@ through Archicad's own `API.ExecuteAddOnCommand`, in the namespace `TapirCommand
 
 The answer is `{{"succeeded": true, "result": {{"addOnCommandResponse": {{...}}}}}}`. Python's standard
 library is enough (`urllib.request`); the official `archicad` package and the Tapir Grasshopper
-plugin send the same JSON. Every command, with its parameters and an example, is in
-[commands.md]({site}commands.md) and [commands.json]({site}commands.json).
+plugin send the same JSON. Every command is listed in [commands.md]({site}commands.md) and
+[commands.json]({site}commands.json), which link one file per command group (for example
+[commands/element.md]({site}commands/element.md)) with its commands' parameters, results and examples.
 """
 
 
@@ -469,6 +513,21 @@ def builtin_scripts ():
             about = ' '.join (body)
         scripts.append ((name.group (1).strip () if name else path.stem, about, path.relative_to (REPO_ROOT).as_posix ()))
     return scripts
+
+
+def index_markdown (site, groups):
+    out = ['## Groups\n']
+    for slug, names, group_commands in groups:
+        out.append (f'- [{" / ".join (names)}]({site}commands/{slug}.md) ([JSON]({site}commands/{slug}.json)): '
+                    f'{len (group_commands)} commands')
+    group = None
+    for slug, _, group_commands in groups:
+        for c in group_commands:
+            if c['group'] != group:
+                group = c['group']
+                out.append (f'\n## {group}\n\nParameters, results and examples: [commands/{slug}.md]({site}commands/{slug}.md).\n')
+            out.append (f'- **{c["name"]}** (since {c["version"]}): {first_sentence (c["description"])}')
+    return '\n'.join (out).strip () + '\n'
 
 
 def command_markdown (commands, definitions, compact):
@@ -523,19 +582,63 @@ def build ():
         files[f'{path}index.md'] = f'<!-- Generated by tools/generate_llm_files.py from {path}index.html. -->\n\n' + markdown
         pages.append ((path, section, title, description, markdown))
 
-    # commands.json and commands.md
+    # commands.json and commands.md are the index; commands/<group>.json and .md hold the commands
+    # of one group with the shared definitions they use, so each file is small enough to read (#2343).
+    how_to_call = {'url': 'http://127.0.0.1:19723', 'command': 'API.ExecuteAddOnCommand',
+                   'commandNamespace': 'TapirCommand'}
+    groups = []     # (slug, group names, commands), in the order of the command reference
+    for c in commands:
+        group = next ((g for g in groups if g[0] == c['groupSlug']), None)
+        if group is None:
+            group = (c['groupSlug'], [], [])
+            groups.append (group)
+        if c['group'] not in group[1]:
+            group[1].append (c['group'])
+        group[2].append (c)
+    for slug, names, group_commands in groups:
+        group_definitions = used_definitions ([[c['inputSchema'], c['outputSchema']] for c in group_commands], definitions)
+        entries = [{k: v for k, v in c.items () if k != 'groupSlug'} for c in group_commands]
+        files[f'commands/{slug}.json'] = json.dumps ({
+            'version': 1,
+            'groups': names,
+            'index': f'{site}commands.json',
+            'archicadVersions': versions,
+            'howToCall': how_to_call,
+            'commands': entries,
+            'schemaDefinitions': group_definitions,
+        }, indent=1, ensure_ascii=False) + '\n'
+        files[f'commands/{slug}.md'] = ('<!-- Generated by tools/generate_llm_files.py from docs/archicad-addon. -->\n\n'
+                                        f'# Tapir commands: {" / ".join (names)}\n\n'
+                                        f'The {len (group_commands)} commands of this group, with their parameters, results and examples. '
+                                        f'Every group and how a command is sent: [commands.md]({site}commands.md).\n\n'
+                                        + command_markdown (group_commands, definitions, compact=False)
+                                        + '\n' + definitions_markdown (group_definitions))
     files['commands.json'] = json.dumps ({
-        'version': 1,
+        'version': 2,
         'archicadVersions': versions,
-        'howToCall': {'url': 'http://127.0.0.1:19723', 'command': 'API.ExecuteAddOnCommand',
-                      'commandNamespace': 'TapirCommand'},
-        'commands': commands,
-        'schemaDefinitions': definitions,
+        'howToCall': how_to_call,
+        'groups': [{
+            'names': names,
+            'slug': slug,
+            'commandCount': len (group_commands),
+            'json': f'{site}commands/{slug}.json',
+            'markdown': f'{site}commands/{slug}.md',
+        } for slug, names, group_commands in groups],
+        'commands': [{
+            'name': c['name'],
+            'group': c['group'],
+            'version': c['version'],
+            'description': first_sentence (c['description']),
+            'groupFile': f'{site}commands/{c["groupSlug"]}.json',
+            'groupMarkdown': f'{site}commands/{c["groupSlug"]}.md',
+            'docsUrl': c['docsUrl'],
+        } for c in commands],
     }, indent=1, ensure_ascii=False) + '\n'
     files['commands.md'] = ('<!-- Generated by tools/generate_llm_files.py from docs/archicad-addon. -->\n\n'
-                            f'# Tapir commands\n\nAll {len (commands)} commands Tapir adds to Archicad, by group.\n\n'
-                            + call_section (site) + '\n' + command_markdown (commands, definitions, compact=False)
-                            + '\n' + definitions_markdown (definitions))
+                            f'# Tapir commands\n\nAll {len (commands)} commands Tapir adds to Archicad, by group, one line each. '
+                            'The file of each group has their parameters, results, Grasshopper components and examples; '
+                            'its JSON copy has the full schemas and the example code.\n\n'
+                            + call_section (site) + '\n' + index_markdown (site, groups))
 
     scripts = builtin_scripts ()
     scripts_md = '## Scripts in the Tapir palette\n\n' + '\n'.join (
@@ -550,8 +653,11 @@ def build ():
                 lines.append (f'- [{title}]({site}{path}index.md): {description}')
         lines.append ('')
     lines.append ('## Reference\n')
-    lines.append (f'- [Commands in Markdown]({site}commands.md): every command with its parameters, results, Grasshopper components and example.')
-    lines.append (f'- [Commands as JSON]({site}commands.json): the same, with the full JSON schemas and the example code.')
+    lines.append (f'- [Command index in Markdown]({site}commands.md): every command by group, one line each, linking the group files.')
+    lines.append (f'- [Command index as JSON]({site}commands.json): the same index, machine-readable.')
+    for slug, names, group_commands in groups:
+        lines.append (f'- [{" / ".join (names)}]({site}commands/{slug}.md) ([JSON]({site}commands/{slug}.json)): '
+                      f'{len (group_commands)} commands with their parameters, results, Grasshopper components and examples.')
     for path, about in LIVE_PAGES:
         lines.append (f'- [{path.strip ("/")}]({site}{path}): {about}')
     lines.append ('')
@@ -565,8 +671,8 @@ def build ():
     for path, _, title, _, markdown in pages:
         full.append (f'\n---\n\nSource: {site}{path}\n\n' + re.sub (r'^(#+) ', r'#\1 ', markdown, flags=re.M))
     full.append ('\n---\n\n' + scripts_md)
-    full.append ('\n---\n\n# Command reference (one line each)\n\nParameters and results of each: '
-                 f'{site}commands.md. ' + command_markdown (commands, definitions, compact=True))
+    full.append ('\n---\n\n# Command reference (one line each)\n\nParameters and results of each are in the file of its group, '
+                 f'listed in {site}commands.md. ' + command_markdown (commands, definitions, compact=True))
     files['llms-full.txt'] = '\n'.join (full).rstrip () + '\n'
 
     # sitemap.xml and robots.txt
@@ -589,6 +695,13 @@ def main ():
     args = parser.parse_args ()
     files, count, with_example, with_component = build ()
     changed = []
+    # A group file whose group is gone is removed, so the folder holds only the current groups.
+    stale = sorted (path.relative_to (DOCS).as_posix () for path in (DOCS / 'commands').glob ('*')
+                    if path.is_file () and path.relative_to (DOCS).as_posix () not in files)
+    for name in stale:
+        changed.append (name + ' (removed)')
+        if not args.check:
+            (DOCS / name).unlink ()
     for name, content in sorted (files.items ()):
         path = DOCS / name
         if not path.exists () or path.read_text (encoding='utf-8') != content:

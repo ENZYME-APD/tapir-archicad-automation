@@ -1,0 +1,290 @@
+{
+  "title": "ModifyPolylines changes the pen, line type, dash mode, zone boundary, arrowheads and points of a polyline, also in a worksheet with databaseId, keeps what is not given, reports each change as applied and refuses bad input",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "two line types of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "lt0": "attributes[0].attributeId.guid", "lt1": "attributes[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the template has two line types" }
+      ]
+    },
+    {
+      "id": "a polyline of three points",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          {
+            "coordinates": [ { "x": 1020.0, "y": 900.0 }, { "x": 1023.0, "y": 903.0 }, { "x": 1026.0, "y": 900.0 } ],
+            "linePenIndex": 1,
+            "lineTypeId": { "guid": "${lt0}" },
+            "roomSeparator": false,
+            "drawSegmentMode": "SegmentBySegment",
+            "startArrow": { "visible": false },
+            "endArrow": { "visible": false }
+          }
+        ]
+      },
+      "save": { "p": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "polyline created" }
+      ]
+    },
+    {
+      "id": "new settings and a fourth point joined by an arc",
+      "command": "ModifyPolylines",
+      "creates": false,
+      "params": {
+        "polylinesWithDetails": [
+          {
+            "elementId": { "guid": "${p}" },
+            "linePenIndex": 5,
+            "lineTypeId": { "guid": "${lt1}" },
+            "roomSeparator": true,
+            "drawSegmentMode": "Continuous",
+            "endArrow": { "type": "FullArrow30", "size": 3.0, "pen": 4 },
+            "coordinates": [ { "x": 1020.0, "y": 900.0 }, { "x": 1023.0, "y": 903.0 }, { "x": 1026.0, "y": 900.0 }, { "x": 1029.0, "y": 900.0 } ],
+            "arcs": [ { "begIndex": 2, "endIndex": 3, "arcAngle": 1.5707963 } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "read after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${p}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 5, "name": "pen changed" },
+        { "path": "detailsOfElements[0].details.lineTypeId.guid", "eq": "${lt1}", "name": "line type changed" },
+        { "path": "detailsOfElements[0].details.roomSeparator", "eq": true, "name": "zone boundary on" },
+        { "path": "detailsOfElements[0].details.drawSegmentMode", "eq": "Continuous", "name": "dash mode changed" },
+        { "path": "detailsOfElements[0].details.endArrow.visible", "eq": true, "name": "end arrowhead shown" },
+        { "path": "detailsOfElements[0].details.endArrow.type", "eq": "FullArrow30", "name": "end arrowhead type" },
+        { "path": "detailsOfElements[0].details.endArrow.size", "approx": 3.0, "name": "end arrowhead size" },
+        { "path": "detailsOfElements[0].details.startArrow.visible", "eq": false, "name": "start arrowhead still hidden" },
+        { "path": "detailsOfElements[0].details.coordinates", "len": 4, "name": "four points" },
+        { "path": "detailsOfElements[0].details.coordinates[3].x", "approx": 1029.0, "name": "new last point x" },
+        { "path": "detailsOfElements[0].details.coordinates[3].y", "approx": 900.0, "name": "new last point y" },
+        { "path": "detailsOfElements[0].details.arcs", "len": 1, "name": "one arc" },
+        { "path": "detailsOfElements[0].details.arcs[0].begIndex", "eq": 2, "name": "arc on the last segment" },
+        { "path": "detailsOfElements[0].details.arcs[0].arcAngle", "approx": 1.5707963, "name": "arc angle" }
+      ]
+    },
+    {
+      "id": "only the pen",
+      "command": "ModifyPolylines",
+      "creates": false,
+      "params": {
+        "polylinesWithDetails": [
+          { "elementId": { "guid": "${p}" }, "linePenIndex": 7 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pen change accepted" }
+      ]
+    },
+    {
+      "id": "read after the pen change: the rest is kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${p}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 7, "name": "pen changed again" },
+        { "path": "detailsOfElements[0].details.lineTypeId.guid", "eq": "${lt1}", "name": "line type kept" },
+        { "path": "detailsOfElements[0].details.drawSegmentMode", "eq": "Continuous", "name": "dash mode kept" },
+        { "path": "detailsOfElements[0].details.coordinates", "len": 4, "name": "points kept" },
+        { "path": "detailsOfElements[0].details.arcs", "len": 1, "name": "arc kept" },
+        { "path": "detailsOfElements[0].details.endArrow.type", "eq": "FullArrow30", "name": "arrowhead kept" }
+      ]
+    },
+    {
+      "id": "a wall to give as polyline",
+      "command": "CreateWalls",
+      "params": { "wallsData": [ { "begCoordinate": { "x": 1020.0, "y": 910.0 }, "endCoordinate": { "x": 1024.0, "y": 910.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 } ] },
+      "save": { "w": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "bad inputs",
+      "command": "ModifyPolylines",
+      "creates": false,
+      "params": {
+        "polylinesWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "linePenIndex": 2 },
+          { "elementId": { "guid": "${p}" } },
+          { "elementId": { "guid": "${p}" }, "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 0.5 } ] },
+          { "elementId": { "guid": "${p}" }, "coordinates": [ { "x": 1020.0, "y": 900.0 }, { "x": 1023.0, "y": 903.0 }, { "x": 1026.0, "y": 900.0 } ], "arcs": [ { "begIndex": 0, "endIndex": 2, "arcAngle": 0.5 } ] },
+          { "elementId": { "guid": "${p}" }, "lineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+          { "elementId": { "guid": "${w}" }, "linePenIndex": 2 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 6, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "an item with nothing to change refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "arcs without coordinates refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "an arc that skips a point refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "an unknown line type refused" },
+        { "path": "executionResults[5].success", "eq": false, "name": "a wall refused" }
+      ]
+    },
+    {
+      "id": "CreatePolylines refuses the same bad settings (the same apply function)",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          { "coordinates": [ { "x": 1020.0, "y": 920.0 }, { "x": 1024.0, "y": 920.0 } ], "lineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+          { "coordinates": [ { "x": 1020.0, "y": 921.0 }, { "x": 1024.0, "y": 921.0 } ], "penWeightMm": 0.0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "one result per item" },
+        { "path": "elements[0].error", "exists": true, "name": "an unknown line type refused on create" },
+        { "path": "elements[1].error", "exists": true, "name": "pen weight 0 refused on create" }
+      ]
+    },
+    {
+      "id": "a pen out of range is not in the schema",
+      "command": "ModifyPolylines",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "polylinesWithDetails": [
+          { "elementId": { "guid": "${p}" }, "linePenIndex": 300 }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "linePenIndex 300 refused by the schema" }
+      ]
+    },
+    {
+      "id": "the pen weight is not a ModifyPolylines key (Archicad does not keep it on a change)",
+      "command": "ModifyPolylines",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "polylinesWithDetails": [
+          { "elementId": { "guid": "${p}" }, "penWeightMm": 0.5 }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "penWeightMm refused by the schema" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${p}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 7, "name": "pen still 7" },
+        { "path": "detailsOfElements[0].details.lineTypeId.guid", "eq": "${lt1}", "name": "line type still the same" },
+        { "path": "detailsOfElements[0].details.coordinates", "len": 4, "name": "still four points" },
+        { "path": "detailsOfElements[0].details.arcs", "len": 1, "name": "still one arc" }
+      ]
+    },
+    {
+      "id": "a worksheet",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "Tapir check modify polylines", "referenceId": "TAPIR-CHK-MPL" }
+        ]
+      },
+      "save": {
+        "worksheetDb": "databases[0].databaseId.guid",
+        "worksheetItem": "databases[0].navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "databases[0].databaseId.guid", "exists": true, "name": "worksheet created" }
+      ]
+    },
+    {
+      "id": "a polyline in the worksheet (deleted with the worksheet)",
+      "command": "CreatePolylines",
+      "creates": false,
+      "params": {
+        "polylinesData": [
+          { "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 2.0, "y": 0.0 } ], "linePenIndex": 1 }
+        ],
+        "databaseId": { "guid": "${worksheetDb}" }
+      },
+      "save": { "pw": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "polyline created in the worksheet" }
+      ]
+    },
+    {
+      "id": "change it from the floor plan with databaseId",
+      "command": "ModifyPolylines",
+      "creates": false,
+      "params": {
+        "polylinesWithDetails": [
+          { "elementId": { "guid": "${pw}" }, "linePenIndex": 6, "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 3.0, "y": 1.0 } ] }
+        ],
+        "databaseId": { "guid": "${worksheetDb}" }
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "worksheet polyline changed" }
+      ]
+    },
+    {
+      "id": "the front window is still the floor plan",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${p}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 7, "name": "the floor plan polyline is found in the current database" }
+      ]
+    },
+    {
+      "id": "open the worksheet",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${worksheetDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the worksheet polyline",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePenIndex", "eq": 6, "name": "pen changed in the worksheet" },
+        { "path": "detailsOfElements[0].details.coordinates[1].x", "approx": 3.0, "name": "second point moved (x)" },
+        { "path": "detailsOfElements[0].details.coordinates[1].y", "approx": 1.0, "name": "second point moved (y)" }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${worksheetItem}" } } ] }
+    }
+  ]
+}

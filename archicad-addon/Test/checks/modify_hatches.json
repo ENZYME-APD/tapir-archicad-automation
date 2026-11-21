@@ -1,0 +1,272 @@
+{
+  "title": "ModifyHatches changes the pens, background color, line type, fill category, area text, zone area percentage, fill orientation, fill or building material and polygon of a hatch, keeps what is not given and refuses bad input",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Hatch" ],
+  "steps": [
+    {
+      "id": "a vector fill, so the fill orientation is kept",
+      "command": "CreateFills",
+      "creates": false,
+      "params": {
+        "fillDataArray": [
+          {
+            "name": "Tapir check modify hatches fill",
+            "subType": "Vector",
+            "scaleWithPlan": true,
+            "useForWalls": true,
+            "useForDraft": true,
+            "useForCover": true,
+            "horizontalSpacing": 1.0,
+            "verticalSpacing": 1.0,
+            "angle": 0.0,
+            "bitPattern": "AA55AA55AA55AA55",
+            "lineItems": [
+              { "frequency": 0.2, "direction": 0.7853981633974483, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } }
+            ]
+          }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "fill": "attributeIds[0].attributeId.guid" },
+      "expect": [ { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "vector fill created" } ]
+    },
+    {
+      "id": "two line types of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "lt0": "attributes[0].attributeId.guid", "lt1": "attributes[1].attributeId.guid" },
+      "expect": [ { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the template has two line types" } ]
+    },
+    {
+      "id": "a building material of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bm": "attributes[0].attributeId.guid" },
+      "expect": [ { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the template has a building material" } ]
+    },
+    {
+      "id": "a 4 m x 4 m hatch",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          {
+            "coordinates": [ { "x": 1040.0, "y": 900.0 }, { "x": 1044.0, "y": 900.0 }, { "x": 1044.0, "y": 904.0 }, { "x": 1040.0, "y": 904.0 } ],
+            "fillId": { "guid": "${fill}" },
+            "contourPenIndex": 1,
+            "contourLineTypeId": { "guid": "${lt0}" },
+            "fillPenIndex": 1,
+            "fillBackgroundPenIndex": 0,
+            "fillCategory": "Drafting",
+            "showArea": false,
+            "roomSpecial": -1
+          }
+        ]
+      },
+      "save": { "h": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "hatch created" } ]
+    },
+    {
+      "id": "new pens, background color, line type, category, area text, percentage and orientation",
+      "command": "ModifyHatches",
+      "creates": false,
+      "params": {
+        "hatchesWithDetails": [
+          {
+            "elementId": { "guid": "${h}" },
+            "contourPenIndex": 5,
+            "contourLineTypeId": { "guid": "${lt1}" },
+            "fillPenIndex": 4,
+            "backgroundColor": { "red": 1.0, "green": 0.0, "blue": 0.0 },
+            "fillCategory": "Cut",
+            "showArea": true,
+            "roomSpecial": 40,
+            "fillOrientation": { "type": "Rotated", "matrix00": 0.0, "matrix10": 1.0, "matrix01": -1.0, "matrix11": 0.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "read after the settings change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contourPenIndex", "eq": 5, "name": "contour pen changed" },
+        { "path": "detailsOfElements[0].details.contourLineTypeId.guid", "eq": "${lt1}", "name": "contour line type changed" },
+        { "path": "detailsOfElements[0].details.fillPenIndex", "eq": 4, "name": "fill pen changed" },
+        { "path": "detailsOfElements[0].details.backgroundColor.red", "approx": 1.0, "name": "red background" },
+        { "path": "detailsOfElements[0].details.backgroundColor.green", "approx": 0.0 },
+        { "path": "detailsOfElements[0].details.fillCategory", "eq": "Cut", "name": "fill category changed" },
+        { "path": "detailsOfElements[0].details.showArea", "eq": true, "name": "area text shown" },
+        { "path": "detailsOfElements[0].details.roomSpecial", "eq": 40, "name": "40 % subtracted from the zone area" },
+        { "path": "detailsOfElements[0].details.fillOrientation.type", "eq": "Rotated", "name": "orientation type changed" },
+        { "path": "detailsOfElements[0].details.fillOrientation.matrix10", "approx": 1.0, "name": "fill rotated by 90 degrees" },
+        { "path": "detailsOfElements[0].details.fillId.guid", "eq": "${fill}", "name": "fill kept" },
+        { "path": "detailsOfElements[0].details.coordinates[2].x", "approx": 1044.0, "name": "polygon kept" }
+      ]
+    },
+    {
+      "id": "a wider outline with a hole",
+      "command": "ModifyHatches",
+      "creates": false,
+      "params": {
+        "hatchesWithDetails": [
+          {
+            "elementId": { "guid": "${h}" },
+            "coordinates": [ { "x": 1040.0, "y": 900.0 }, { "x": 1046.0, "y": 900.0 }, { "x": 1046.0, "y": 904.0 }, { "x": 1040.0, "y": 904.0 } ],
+            "holes": [
+              { "polygonOutline": [ { "x": 1041.0, "y": 901.0 }, { "x": 1042.0, "y": 901.0 }, { "x": 1042.0, "y": 902.0 }, { "x": 1041.0, "y": 902.0 } ] }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "polygon change accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "read after the polygon change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coordinates[2].x", "approx": 1046.0, "name": "outline wider" },
+        { "path": "detailsOfElements[0].details.coordinates[2].y", "approx": 904.0 },
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "one hole" },
+        { "path": "detailsOfElements[0].details.contourPenIndex", "eq": 5, "name": "contour pen kept" },
+        { "path": "detailsOfElements[0].details.fillCategory", "eq": "Cut", "name": "fill category kept" },
+        { "path": "detailsOfElements[0].details.roomSpecial", "eq": 40, "name": "percentage kept" }
+      ]
+    },
+    {
+      "id": "a building material instead of the fill",
+      "command": "ModifyHatches",
+      "creates": false,
+      "params": {
+        "hatchesWithDetails": [
+          { "elementId": { "guid": "${h}" }, "buildingMaterialId": { "guid": "${bm}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "building material hatch" }
+      ]
+    },
+    {
+      "id": "read the building material",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.buildingMaterialId.guid", "eq": "${bm}", "name": "building material set" }
+      ]
+    },
+    {
+      "id": "the fill again, with a pen instead of the background color",
+      "command": "ModifyHatches",
+      "creates": false,
+      "params": {
+        "hatchesWithDetails": [
+          { "elementId": { "guid": "${h}" }, "fillId": { "guid": "${fill}" }, "fillBackgroundPenIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "fill hatch with a transparent background" }
+      ]
+    },
+    {
+      "id": "read the fill and background (Archicad gives the hatch a fill pen of its own when it goes back from a building material to a fill)",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
+      "save": { "fillPen": "detailsOfElements[0].details.fillPenIndex" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.fillId.guid", "eq": "${fill}", "name": "fill set again" },
+        { "path": "detailsOfElements[0].details.fillBackgroundPenIndex", "eq": 0, "name": "transparent background" },
+        { "path": "detailsOfElements[0].details.backgroundColor", "exists": false, "name": "the background color override is off" }
+      ]
+    },
+    {
+      "id": "a polyline to give as hatch",
+      "command": "CreatePolylines",
+      "params": { "polylinesData": [ { "coordinates": [ { "x": 1040.0, "y": 910.0 }, { "x": 1044.0, "y": 910.0 } ] } ] },
+      "save": { "pl": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "bad inputs",
+      "command": "ModifyHatches",
+      "creates": false,
+      "params": {
+        "hatchesWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "fillPenIndex": 2 },
+          { "elementId": { "guid": "${h}" } },
+          { "elementId": { "guid": "${h}" }, "holes": [ { "polygonOutline": [ { "x": 1041.0, "y": 901.0 }, { "x": 1042.0, "y": 901.0 }, { "x": 1042.0, "y": 902.0 } ] } ] },
+          { "elementId": { "guid": "${h}" }, "coordinates": [ { "x": 1040.0, "y": 900.0 }, { "x": 1046.0, "y": 900.0 }, { "x": 1040.0, "y": 900.0 } ] },
+          { "elementId": { "guid": "${h}" }, "coordinates": [ { "x": 1040.0, "y": 900.0 }, { "x": 1046.0, "y": 900.0 }, { "x": 1046.0, "y": 904.0 } ], "arcs": [ { "begIndex": 0, "endIndex": 2, "arcAngle": 0.5 } ] },
+          { "elementId": { "guid": "${h}" }, "fillId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+          { "elementId": { "guid": "${pl}" }, "fillPenIndex": 2 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 7, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "an item with nothing to change refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "holes without coordinates refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "an outline of 2 points (the last repeats the first) refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "an arc that skips a point refused" },
+        { "path": "executionResults[5].success", "eq": false, "name": "an unknown fill refused" },
+        { "path": "executionResults[6].success", "eq": false, "name": "a polyline refused" }
+      ]
+    },
+    {
+      "id": "CreateHatches refuses the same bad settings (the same apply function)",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          { "coordinates": [ { "x": 1040.0, "y": 920.0 }, { "x": 1044.0, "y": 920.0 }, { "x": 1044.0, "y": 924.0 } ], "fillId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one result" },
+        { "path": "elements[0].error", "exists": true, "name": "an unknown fill refused on create" }
+      ]
+    },
+    {
+      "id": "a fill pen out of range is not in the schema",
+      "command": "ModifyHatches",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "hatchesWithDetails": [
+          { "elementId": { "guid": "${h}" }, "fillPenIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "fillPenIndex 0 refused by the schema" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.fillPenIndex", "eq": "${fillPen}", "name": "fill pen still the one read before the refused items" },
+        { "path": "detailsOfElements[0].details.fillId.guid", "eq": "${fill}", "name": "fill still the same" },
+        { "path": "detailsOfElements[0].details.coordinates[2].x", "approx": 1046.0, "name": "outline still the same" },
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "still one hole" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${h}" } }, { "elementId": { "guid": "${pl}" } } ] } },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fill}" } } } ] }
+    }
+  ]
+}

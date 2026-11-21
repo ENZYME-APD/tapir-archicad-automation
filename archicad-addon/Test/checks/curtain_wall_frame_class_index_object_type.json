@@ -1,0 +1,106 @@
+{
+  "title": "GetDetailsOfElements reads a curtain wall frame's classIndex and objectType as ModifyCurtainWallFrames writes them",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CurtainWall" ],
+  "steps": [
+    {
+      "id": "create a curtain wall",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [ { "x": 970.0, "y": 900.0 }, { "x": 976.0, "y": 900.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          }
+        ]
+      },
+      "save": { "cw": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall created" }
+      ]
+    },
+    {
+      "id": "a frame of it",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "save": { "f": "subelements[0].cWallFrames[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].cWallFrames[0].elementId.guid", "exists": true, "name": "the curtain wall has frames" }
+      ]
+    },
+    {
+      "id": "frame as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "save": { "objectTypeBefore": "detailsOfElements[0].details.objectType" },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWallFrame", "name": "the subelement is a frame" },
+        { "path": "detailsOfElements[0].details.objectType", "ne": "Invisible", "name": "the frame is not invisible to begin with, so the Invisible change below shows" },
+        { "path": "detailsOfElements[0].details.classIndex", "exists": true, "name": "classIndex is read" },
+        { "path": "detailsOfElements[0].details.objectType", "exists": true, "name": "objectType is read" }
+      ]
+    },
+    {
+      "id": "make it a Division frame",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": { "framesWithDetails": [ { "frameId": { "guid": "${f}" }, "classIndex": 1 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "classIndex 1 accepted" }
+      ]
+    },
+    {
+      "id": "frame after the class change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.type", "eq": "Division", "name": "type is the class, Division" },
+        { "path": "detailsOfElements[0].details.classIndex", "eq": 1, "name": "classIndex reads back the 1 written" }
+      ]
+    },
+    {
+      "id": "make it an Invisible frame",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": { "framesWithDetails": [ { "frameId": { "guid": "${f}" }, "type": "Invisible" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "type Invisible accepted" }
+      ]
+    },
+    {
+      "id": "frame after the object type change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.objectType", "eq": "Invisible", "name": "objectType reads back the Invisible written as type" },
+        { "path": "detailsOfElements[0].details.type", "ne": "Invisible", "name": "type stays the class, not the object type" }
+      ]
+    },
+    {
+      "id": "an object type read is accepted back as type",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": { "framesWithDetails": [ { "frameId": { "guid": "${f}" }, "type": "${objectTypeBefore}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the objectType read at creation is accepted as type" }
+      ]
+    },
+    {
+      "id": "frame back to its object type",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.objectType", "eq": "${objectTypeBefore}", "name": "objectType is back to the one read at creation" }
+      ]
+    }
+  ]
+}

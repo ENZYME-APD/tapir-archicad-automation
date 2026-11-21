@@ -1,0 +1,169 @@
+{
+  "title": "GetDefaultDesignOption reads the Main Model or the design option SetDefaultDesignOption made the default, and leaves no temporary slab (#2693)",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "no design option sets yet",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets", "len": 0, "name": "the project has no design option sets" }
+      ]
+    },
+    {
+      "id": "without design options: the Main Model",
+      "command": "GetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isMainModel", "eq": true, "name": "the Main Model" },
+        { "path": "designOption", "exists": false, "name": "no design option" }
+      ]
+    },
+    {
+      "id": "create a set",
+      "command": "CreateDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ "Tapir check default set" ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read the set",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": { "set": "designOptionSets[0].designOptionSetId.guid" },
+      "expect": [
+        { "path": "designOptionSets[0].name", "eq": "Tapir check default set", "name": "the new set" }
+      ]
+    },
+    {
+      "id": "create options D1 and D2",
+      "command": "CreateDesignOptions",
+      "creates": false,
+      "params": {
+        "designOptions": [
+          { "name": "Tapir check default option 1", "id": "D1", "ownerSetName": "Tapir check default set" },
+          { "name": "Tapir check default option 2", "id": "D2", "ownerSetName": "Tapir check default set" }
+        ]
+      },
+      "save": {
+        "d1": "designOptionIdsOrErrors[0].designOptionId.guid",
+        "d2": "designOptionIdsOrErrors[1].designOptionId.guid"
+      },
+      "expect": [
+        { "path": "designOptionIdsOrErrors[0].designOptionId.guid", "exists": true, "name": "id of D1" },
+        { "path": "designOptionIdsOrErrors[1].designOptionId.guid", "exists": true, "name": "id of D2" }
+      ]
+    },
+    {
+      "id": "Main Model as the default",
+      "command": "SetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [ { "path": "success", "eq": true, "name": "success" } ]
+    },
+    {
+      "id": "with design options, Main Model default: read through a temporary slab",
+      "command": "GetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isMainModel", "eq": true, "name": "the Main Model" },
+        { "path": "designOption", "exists": false, "name": "no design option" }
+      ]
+    },
+    {
+      "id": "D2 as the default",
+      "command": "SetDefaultDesignOption",
+      "creates": false,
+      "params": { "designOptionId": { "guid": "${d2}" } },
+      "expect": [ { "path": "success", "eq": true, "name": "success" } ]
+    },
+    {
+      "id": "the default is D2",
+      "command": "GetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isMainModel", "eq": false, "name": "not the Main Model" },
+        { "path": "designOption.name", "eq": "Tapir check default option 2", "name": "name of D2" },
+        { "path": "designOption.id", "eq": "D2", "name": "id of D2" },
+        { "path": "designOption.ownerSetName", "eq": "Tapir check default set", "name": "in the set" },
+        { "path": "designOption.isEditable", "eq": true, "name": "editable" }
+      ]
+    },
+    {
+      "id": "the temporary slab is not left in D2",
+      "command": "GetElementsOfDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${d1}" } }, { "designOptionId": { "guid": "${d2}" } } ] },
+      "expect": [
+        { "path": "elementsOfDesignOptions[0].elements", "len": 0, "name": "D1 empty" },
+        { "path": "elementsOfDesignOptions[1].elements", "len": 0, "name": "D2 empty" }
+      ]
+    },
+    {
+      "id": "no slab left in the project",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Slab" },
+      "expect": [
+        { "path": "elements", "len": 0, "name": "no temporary slab" }
+      ]
+    },
+    {
+      "id": "D1 as the default",
+      "command": "SetDefaultDesignOption",
+      "creates": false,
+      "params": { "designOptionId": { "guid": "${d1}" } },
+      "expect": [ { "path": "success", "eq": true, "name": "success" } ]
+    },
+    {
+      "id": "the default is D1",
+      "command": "GetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isMainModel", "eq": false, "name": "not the Main Model" },
+        { "path": "designOption.id", "eq": "D1", "name": "id of D1" }
+      ]
+    },
+    {
+      "id": "Main Model as the default again",
+      "command": "SetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [ { "path": "success", "eq": true, "name": "success" } ]
+    },
+    {
+      "id": "the default is the Main Model again",
+      "command": "GetDefaultDesignOption",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isMainModel", "eq": true, "name": "the Main Model" }
+      ]
+    },
+    {
+      "id": "still no slab in the project",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Slab" },
+      "expect": [
+        { "path": "elements", "len": 0, "name": "no temporary slab" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "SetDefaultDesignOption", "params": {} },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${d1}" } } ] } },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${d2}" } } ] } },
+    { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${set}" } } ] } }
+  ]
+}
