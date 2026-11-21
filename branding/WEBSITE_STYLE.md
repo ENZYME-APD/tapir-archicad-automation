@@ -40,6 +40,7 @@ must respect:
 | `data-font` | none, `system`, `readable` | The font stacks (`--body`, `--mono`, `--display`). |
 | `data-spacing` | none, `compact` | The row padding of the long lists only. |
 | `data-motion` | none (follows the system), `reduced`, `full` | Animations and transitions. |
+| `data-measure` | none (on), `off` | Whether the M key starts the Measure tool (`site.js`, #2779); while it is on, `<html>` has the class `measure-active`. |
 
 So a page **must**: take every colour, font and shadow from a custom property (section 3), size text in
 `rem` (section 4), give its own colours for dark mode and High contrast when it has any, and check its
@@ -62,7 +63,9 @@ new parts in Light, Dark and High contrast, in both looks, and at Text size 130 
   font or a label case in the Legacy part has its Standard counterpart there.
 - Every page repeats, byte for byte, the blocks between these comments, copied from an existing page
   (paths adjusted with `../`):
-  - `<!-- site-assets -->` … `<!-- /site-assets -->` in the head: the favicon, the two `theme-color`
+  - `<!-- site-assets -->` … `<!-- /site-assets -->` in the head: the favicons (`favicon.ico` at the
+    site root with `sizes="32x32"`, then `assets/favicon.svg`, then `apple-touch-icon.png` at the site
+    root; the ICO and the PNG are for browsers that cannot show an SVG favicon, #2967), the two `theme-color`
     metas (`#11161D` for dark first, then `#FFFFFF`), the Google Fonts link for Inter (400, 500, 600, 700)
     and JetBrains Mono (400, 500, 700), `site.css`, the inline Display script, the inline translation
     script, `site.js`, `motion.css` with `motion.js`, and the inline splash script.
@@ -181,7 +184,7 @@ Spacing stays in `px` (so the Display menu's Text size changes text only).
 | Section head to content | 40 px | 20 px |
 | Space between two blocks inside a section | 32 px (24 px after a grid or a `.flow`, 12 px between the first blocks of a page body): `.gap-top`, `.gap-top-sm`, `.gap-top-xs` | the same |
 | Gap between cards in a grid | 20 px | 16 px |
-| Card padding (`.way`, `.teaser`, `.share-steps li`) | 24 px | 18 px |
+| Card padding (`.way`, `.teaser`, `.share-steps li`, `.timeline > li`) | 24 px | 18 px |
 | Cell padding (`.flow`, `.uses-grid`, `.figures`, `.spec`) | 20 px | 16 px |
 | Footer | 72 px above | 40 px |
 
@@ -246,8 +249,8 @@ Use these from `site.css` before making a new one; a new component that a second
 | Grids | `.ways`, `.comm`, `.teasers` (3 columns), `.doc-grid`, `.two` (2) | Cards in a row |
 | Uses grid | `ul.uses-grid` (4 columns) or `.uses-grid.three` | Short facts in a frame of cells |
 | Figures | `.figures > div > strong + span` | Live numbers |
-| Flow | `.flow` (5), `.flow-3`, `.flow-4` `> div > b + strong + span` | A short sequence or a set of parallel points |
-| Timeline | `ol.timeline > li > span.n + .body` | Numbered steps with a paragraph or more each |
+| Flow | `.flow` (5), `.flow-3`, `.flow-4` `> div > b + strong + span`; `.flow.steps` when `b` is a step number | A short sequence or a set of parallel points |
+| Timeline | `ol.timeline > li > span.n + .body` | Numbered steps with a paragraph or more each: one card per step, as the share steps' cards, the number beside the text (above it on phones) |
 | Share steps | `.share-steps ol > li > b + strong + span` | Three big numbered steps |
 | Schedule | `.schedule-wrap > table.schedule` | Tables; on phones each row is a card (`data-label` on each cell) |
 | Spec | `.spec > dl` | Key/value facts of one item |
@@ -265,6 +268,10 @@ class (a page that needs a variant adds a modifier class in `site.css`).
 
 - A step number is the plain number: `1`, `2`, `3`, never `01`, `1.`, `Step 1` or a letter. The same in
   `.timeline .n`, `.flow b` and `.share-steps li b`.
+- Every step number looks the same: the share steps' big number (`--display`, 3 rem, 2.25 rem on phones,
+  `--link`), one rule in `site.css` for `.timeline .n`, `.flow.steps b` and `.share-steps li b`. A
+  `.flow` whose `b` are step numbers has the `steps` class; a `.flow` of labels has not, and its labels
+  stay small.
 - A step number is decorative (the list or the order says it) and has `aria-hidden="true"`.
 - Number with `.flow b` only when the points are a sequence. Points that are not a sequence get a
   one-word label in sentence case (`Read`, `Free`), or no `b` at all.
@@ -361,6 +368,15 @@ now gets the 32 px of section 5 instead of 28 px), and `<main>`'s children on `a
 **Numbering, labels and wording**: fixed in part 3. Every `.flow` numbers its steps `1, 2, 3` with
 `aria-hidden="true"`, its labels are no longer typed in capitals, every page title ends with ` | Tapir`
 and the coverage pages' section heads end in `<em>…</em>.`.
+
+**Step numbers drawn three ways** (#2884): fixed. The timeline's numbers were 4.5 rem, the numbered
+flows' small mono capitals and only the share steps' 3 rem; all three now use the share steps' number
+(section 8).
+
+**Two layouts for numbered steps** (#2942): fixed. The timeline drew its steps as rows between lines
+and only the share steps drew them as cards; every timeline step (Get started, Grasshopper, Roadmap,
+the tutorials) is now a card like the share steps', and a code box's title bar wraps on a phone
+instead of running past the box.
 
 **Page stylesheets that still draw the Legacy look in Standard**: fixed in part 4. The community map,
 the coverage pages' phone filter sheet and the floor plan's Run button have their Standard rules.

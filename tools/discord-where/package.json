@@ -2,5 +2,6 @@
   "name": "tapir-discord-where",
   "private": true,
   "type": "module",
-  "engines": { "node": "22.x" }
+  "engines": { "node": "22.x" },
+  "dependencies": { "@vercel/functions": "^3.11.3" }
 }

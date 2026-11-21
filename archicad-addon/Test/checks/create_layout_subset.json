@@ -4,11 +4,15 @@
   "minArchicad": "27",
   "steps": [
     {
-      "id": "Layout Book item",
+      "id": "Layout Book item: the only item of the Layout Map root",
       "command": "GetNavigatorItemTree",
       "creates": false,
+      "stopOnFail": true,
       "params": { "navigatorMapId": "LayoutBook" },
-      "save": { "bookRoot": "navigatorItemTree.navigatorItemId.guid" }
+      "save": { "bookRoot": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.type", "eq": "BookItem", "name": "the Layout Book item" }
+      ]
     },
     {
       "id": "subset without a parent",
@@ -85,7 +89,9 @@
         { "path": "parentItems[0].type", "eq": "BookItem", "name": "no parent: in the Layout Book" },
         { "path": "parentItems[1].type", "eq": "SubSetItem", "name": "nested: in a subset" },
         { "path": "parentItems[1].name", "contains": "Tapir check subset no parent", "name": "nested: in the first subset" },
-        { "path": "parentItems[2].type", "eq": "BookItem", "name": "in the Layout Book item" }
+        { "path": "parentItems[2].type", "eq": "BookItem", "name": "in the Layout Book item" },
+        { "path": "parentItems[2].navigatorItemId.guid", "eq": "${bookRoot}", "name": "in the given Layout Book item" },
+        { "path": "parentItems[0].navigatorItemId.guid", "eq": "${bookRoot}", "name": "no parent: in the same Layout Book item" }
       ]
     }
   ],

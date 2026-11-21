@@ -562,11 +562,28 @@ static bool IsRailingComponentType (API_ElemTypeID typeId)
     }
 }
 
+// The parameterNames input of GetGDLParametersOfElements: when given, only the parameters named
+// in it are returned (#2948); nullptr means all of them. GDL parameter names are case-insensitive.
+static bool IsRequestedParameter (const GS::Array<GS::UniString>* parameterNames, const char* name)
+{
+    if (parameterNames == nullptr) {
+        return true;
+    }
+
+    const GS::UniString nameStr (name);
+    for (const GS::UniString& requestedName : *parameterNames) {
+        if (requestedName.Compare (nameStr, CaseInsensitive) == GS::UniString::Equal) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // The parameters of a railing component, from the APIMemoMask_AddPars memo of the component
 // itself. Without a parameter session nothing reports locks or the Parameter Script's possible
 // values, so isLocked is false and possibleValues is left out. Returns false when the component
 // has no parameters there.
-static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, GS::ObjectState& gdlParameters)
+static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, const GS::Array<GS::UniString>* parameterNames, GS::ObjectState& gdlParameters)
 {
     API_ElementMemo memo = {};
     const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -582,7 +599,7 @@ static bool AddMemoParametersOfRailingComponent (const API_Guid& elemGuid, GS::O
     const auto& parameterListAdder = gdlParameters.AddList<GS::ObjectState> ("parameters");
     for (GSIndex ii = 0; ii < nParams; ++ii) {
         const API_AddParType& actParam = (*memo.params)[ii];
-        if (actParam.typeID == APIParT_Separator) {
+        if (actParam.typeID == APIParT_Separator || !IsRequestedParameter (parameterNames, actParam.name)) {
             continue;
         }
 
@@ -616,6 +633,17 @@ GS::Optional<GS::UniString> GetGDLParametersOfElementsCommand::GetInputParameter
     "properties": {
         "elements": {
             "$ref": "#/Elements"
+        },
+        "parameterNames": {
+            "type": "array",
+            "description": "Optional. Only the parameters with these GDL variable names are returned (case-insensitive), in the order of the library part. A name the element's library part does not have is left out. All parameters are returned when it is not given.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "includePossibleValues": {
+            "type": "boolean",
+            "description": "Optional, true by default. When false, possibleValues (the value lists of the Parameter Script, e.g. every installed font for a font parameter) is left out of the answer, which makes it much smaller."
         }
     },
     "additionalProperties": false,
@@ -649,6 +677,13 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
+
+    GS::Array<GS::UniString> requestedNames;
+    const bool hasParameterNames = parameters.Get ("parameterNames", requestedNames);
+    const GS::Array<GS::UniString>* parameterNames = hasParameterNames ? &requestedNames : nullptr;
+
+    bool includePossibleValues = true;
+    parameters.Get ("includePossibleValues", includePossibleValues);
 
     GS::ObjectState response;
     const auto& elemGdlParameterListAdder = response.AddList<GS::ObjectState> ("gdlParametersOfElements");
@@ -690,7 +725,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
 
         if (err != NoError && IsRailingComponentType (GetElemTypeId (apiElement.header))) {
             GS::ObjectState gdlParameters;
-            if (AddMemoParametersOfRailingComponent (paramOwner.guid, gdlParameters)) {
+            if (AddMemoParametersOfRailingComponent (paramOwner.guid, parameterNames, gdlParameters)) {
                 elemGdlParameterListAdder (gdlParameters);
             } else {
                 const GS::UniString errorMsg = GS::UniString::Printf ("Archicad gives no GDL parameters for the railing component with guid %T: neither a parameter session nor its element memo has them.", APIGuidToString (paramOwner.guid).ToPrintf ());
@@ -726,7 +761,7 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             const API_AddParType& actParam = (*getParams.params)[ii];
             const API_AddParType& actLibPartParam = ii < nLibPartParams ? (*addPars)[ii] : actParam;
 
-            if (actParam.typeID == APIParT_Separator) {
+            if (actParam.typeID == APIParT_Separator || !IsRequestedParameter (parameterNames, actParam.name)) {
                 continue;
             }
 
@@ -748,6 +783,15 @@ GS::ObjectState	GetGDLParametersOfElementsCommand::Execute (const GS::ObjectStat
             if (getValues.nVals > 0) {
                 if (actParam.typeID == APIParT_PenCol && getValues.nVals == 255) {
                     BMhFree ((GSHandle)getValues.realValues);
+                } else if (!includePossibleValues) {
+                    // The lists are read anyway (isLocked comes from the same call), so they are freed here.
+                    if (getValues.uStrValues != nullptr) {
+                        BMhFree ((GSHandle)getValues.uStrValues);
+                    }
+                    if (getValues.realValues != nullptr) {
+                        BMhFree ((GSHandle)getValues.realValues);
+                    }
+                    gdlParameterDetails.Add ("canHaveCustomValue", getValues.custom);
                 } else {
                     if (getValues.uStrValues != nullptr) {
                         const auto& possibleValues = gdlParameterDetails.AddList<GS::UniString> ("possibleValues");
@@ -1764,7 +1808,11 @@ GSErrCode SetGDLParametersOfElementsCommand::ApplyArrayParameterChanges (
 // openingBase.markGuid, so it is read the way the opening itself is, with ACAPI_Element_Get
 // and ACAPI_Element_GetMemo. `memo` is left empty: none of the opening's own memo is needed.
 // `memo` and `marker.memo` are the caller's to dispose, whether or not this succeeds.
-static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, GS::UniString& errMessage)
+// With allowChangeMarker a Change Marker is accepted too (#2930): its marker head is the
+// object element changeMarker.markerGuid names, which ACAPI_Element_ChangeExt takes as the
+// ChangeMarker's marker sub-element the way it takes an opening's marker. A Change Marker
+// without a head (markerComponent CloudOnly) has no marker.
+static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Element& element, API_ElementMemo& memo, API_SubElement& marker, GS::UniString& errMessage, bool allowChangeMarker = false)
 {
     element = {};
     memo = {};
@@ -1778,12 +1826,17 @@ static GSErrCode GetWindowOrDoorWithMarker (const API_Guid& elemGuid, API_Elemen
     }
 
     const API_ElemTypeID elemTypeId = GetElemTypeId (element.header);
-    if (elemTypeId != API_WindowID && elemTypeId != API_DoorID) {
-        errMessage = GS::UniString::Printf ("Element with guid %T is not a window or a door, only those have a marker.", APIGuidToString (elemGuid).ToPrintf ());
+    const bool isChangeMarker = allowChangeMarker && elemTypeId == API_ChangeMarkerID;
+    if (elemTypeId != API_WindowID && elemTypeId != API_DoorID && !isChangeMarker) {
+        if (allowChangeMarker) {
+            errMessage = GS::UniString::Printf ("Element with guid %T is not a window, a door or a change marker, only those have a marker.", APIGuidToString (elemGuid).ToPrintf ());
+        } else {
+            errMessage = GS::UniString::Printf ("Element with guid %T is not a window or a door, only those have a marker.", APIGuidToString (elemGuid).ToPrintf ());
+        }
         return APIERR_BADELEMENTTYPE;
     }
 
-    const API_Guid markerGuid = element.window.openingBase.markGuid;
+    const API_Guid markerGuid = isChangeMarker ? element.changeMarker.markerGuid : element.window.openingBase.markGuid;
     if (markerGuid == APINULLGuid) {
         errMessage = GS::UniString::Printf ("Element with guid %T has no marker.", APIGuidToString (elemGuid).ToPrintf ());
         return APIERR_GENERAL;
@@ -2149,7 +2202,7 @@ GS::Optional<GS::UniString> GetMarkerParametersOfElementsCommand::GetRawResponse
     "properties": {
         "markerParametersOfElements": {
             "type": "array",
-            "description": "The marker of each given element, in the order of the input, or an error for an element that is not a window or a door.",
+            "description": "The marker of each given element, in the order of the input, or an error for an element that is not a window, a door or a change marker, or has no marker (a change marker with only a cloud).",
             "items": {
                 "type": "object",
                 "oneOf": [
@@ -2212,7 +2265,7 @@ GS::ObjectState GetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
         });
 
         GS::UniString errMessage;
-        const GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, apiElement, memo, marker, errMessage);
+        const GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, apiElement, memo, marker, errMessage, true);
         if (err != NoError) {
             markerParametersListAdder (CreateErrorResponse (err, errMessage));
             continue;
@@ -2252,7 +2305,7 @@ GS::Optional<GS::UniString> SetMarkerParametersOfElementsCommand::GetInputParame
                     },
                     "markerParameters": {
                         "type": "array",
-                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the opening's own settings are left as they are.",
+                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the element's own settings are left as they are.",
                         "items": {
                             "oneOf": [
                                 {
@@ -2361,7 +2414,7 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
             });
 
             GS::UniString errMessage;
-            GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, element, memo, marker, errMessage);
+            GSErrCode err = GetWindowOrDoorWithMarker (elemGuid, element, memo, marker, errMessage, true);
 
             for (const GS::ObjectState& parameter : markerParameters) {
                 if (err != NoError) {
@@ -2372,7 +2425,7 @@ GS::ObjectState SetMarkerParametersOfElementsCommand::Execute (const GS::ObjectS
 
             if (err == NoError) {
                 // Only the marker changes: the cleared mask and the empty memo mask leave the
-                // opening's own fields and memo alone, and the marker goes back whole with the
+                // opening's (or the Change Marker's) own fields and memo alone, and the marker goes back whole with the
                 // parameters changed above - as ApplyWindowOrDoorFavoriteToDefaults hands a
                 // favorite's marker to ACAPI_Element_ChangeDefaultsExt with a full mask.
                 API_Element mask = {};

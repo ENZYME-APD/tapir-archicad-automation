@@ -39,7 +39,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
             "aboveViewLinePen", "aboveViewLineTypeId", "axisRotationAngle", "belowViewLinePen",
             "belowViewLineTypeId", "bottomOffset", "buildingMaterialId", "circleBased", "contourLineTypeId",
-            "contourPen", "coreAnchor", "coreSymbolPen", "coverFill", "cutFillBackgroundPen", "cutFillPen", "depth",
+            "contourPen", "coreAnchor", "coreSymbolPar1", "coreSymbolPar2", "coreSymbolPen", "coreSymbolType", "coverFill", "cutFillBackgroundPen", "cutFillPen", "depth",
             "displayOption", "floorIndex", "height", "hiddenLinePen", "hiddenLineTypeId", "isAutoOnStoryVisibility",
             "isFlipped", "isSlanted", "isWidthAndHeightLinked", "origin", "profileId", "relativeTopStory",
             "slantAngle", "slantDirectionAngle", "topOffset", "veneer", "veneerLinePen", "veneerLineTypeId",

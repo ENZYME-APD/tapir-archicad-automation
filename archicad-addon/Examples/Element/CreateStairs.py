@@ -1,6 +1,7 @@
-"""Creates a straight stair and a U-shaped stair with a half landing with CreateStairs.
+"""Creates a straight stair, a U-shaped stair with a half landing and a curved stair with CreateStairs.
 
-Two baseline points make a straight stair; more points make an L- or U-shaped one. The straight
+Two baseline points make a straight stair; more points make an L- or U-shaped one. baseLineArcs bends
+baseline edges into arcs (0-based point indices, as GetDetailsOfElements returns them). The straight
 stair's baseline runs along the middle of its flight (baselinePosition), and its treads and structure
 are set with the same tread, riser and structure settings ModifyStairs accepts. Fields not given come
 from the Stair tool defaults.
@@ -29,5 +30,13 @@ aclib.PrintJson (aclib.RunTapirCommand ('CreateStairs', {'stairsData': [
         'flightWidth': 1.15,
         'baseLineEdges': [{'segmentType': 'Flight'}, {'segmentType': 'Landing'}, {'segmentType': 'Flight'}],
         'baseLineVertices': [{'turnType': 'None'}, {'turnType': 'Landing'}, {'turnType': 'Landing'}, {'turnType': 'None'}]
+    },
+    {
+        'baseLinePoints': [{'x': 20.0, 'y': 0.0}, {'x': 24.0, 'y': 0.0}],
+        'baseLineArcs': [{'begIndex': 0, 'endIndex': 1, 'arcAngle': 1.2}],
+        'baselinePosition': 'Center',
+        'zCoordinate': 0.0,
+        'totalHeight': 2.8,
+        'flightWidth': 1.1
     }
 ]}))

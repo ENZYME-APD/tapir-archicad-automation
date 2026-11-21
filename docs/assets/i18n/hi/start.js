@@ -10,6 +10,8 @@
         'डाउनलोड से आपकी पहली script तक, लगभग दस मिनट में। चरण 1 से 3 के लिए programming नहीं चाहिए।',
     '<strong class="callout-label"><span aria-hidden="true">▶</span> Video</strong> Prefer watching? The <a href="../tutorials/">Tapir video tutorials</a> walk through installing Tapir and using it.':
         '<strong class="callout-label"><span aria-hidden="true">▶</span> वीडियो</strong> देखकर सीखना पसंद है? <a href="../tutorials/">Tapir के वीडियो ट्यूटोरियल</a> Tapir को इंस्टॉल करना और इस्तेमाल करना दिखाते हैं (अंग्रेज़ी में)।',
+    '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Tutorials</strong> Written tutorials, step by step: <a href="../tutorials/export-properties-to-excel/">properties to Excel</a>, <a href="../tutorials/connect-grasshopper-to-archicad/">Grasshopper</a>, <a href="../tutorials/batch-rename-views/">renaming views</a>, <a href="../tutorials/number-doors-and-windows-by-zone/">numbering doors and windows</a> and <a href="../tutorials/first-python-script/">your first Python script</a>.':
+        '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> ट्यूटोरियल</strong> लिखित ट्यूटोरियल (अंग्रेज़ी में), step by step: <a href="../tutorials/export-properties-to-excel/">properties को Excel में</a>, <a href="../tutorials/connect-grasshopper-to-archicad/">Grasshopper</a>, <a href="../tutorials/batch-rename-views/">views का नाम बदलना</a>, <a href="../tutorials/number-doors-and-windows-by-zone/">doors और windows को number देना</a> और <a href="../tutorials/first-python-script/">आपकी पहली Python script</a>।',
 
     // 1. Install
     'Install Tapir': 'Tapir इंस्टॉल करें',
@@ -51,6 +53,8 @@
         'वैकल्पिक रूप से, <code>includePattern</code> और <code>excludePattern</code> regular expressions हैं जो तय करते हैं कि palette folder की कौन-सी फ़ाइलें दिखाए।',
     'The palette lists the folder\'s scripts next to the built-in ones the next time it loads its scripts.':
         'अगली बार scripts load करने पर palette उस folder की scripts को built-in scripts के साथ दिखाता है।',
+    'Many scripts use the helpers of the built-in scripts, the <code>utilities</code> and <code>aclib</code> folders. A Tapir newer than 2.0.0 gives them to every script it runs, so nothing more is needed. With Tapir 2.0.0 or older, copy those two folders from <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts">builtin-scripts</a> next to the script.':
+        'कई scripts built-in scripts के helpers, यानी <code>utilities</code> और <code>aclib</code> folders, इस्तेमाल करती हैं। 2.0.0 से नया Tapir उन्हें हर उस script को देता है जिसे वह चलाता है, इसलिए और कुछ नहीं करना पड़ता। Tapir 2.0.0 या पुराने के साथ, इन दोनों folders को <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts">builtin-scripts</a> से script के बगल में copy करें।',
 
     // 4. Python
     'Write a script of your own': 'अपनी ख़ुद की script लिखें',
