@@ -2170,6 +2170,8 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
             detailsOs.Add ("anchorPoint", Create3DCoordinateObjectState (modifiableElement->GetAnchorPoint ()));
             detailsOs.Add ("orientation", CreateMEPOrientationObjectState (modifiableElement->GetOrientation ()));
             detailsOs.Add ("libraryPartId", CreateGuidObjectState (modifiableElement->GetObjectId ()));
+            // ElementBase::GetObjectXSize and GetObjectYSize exist from Archicad 30 (MEPElementBase.hpp
+            // of the 29 DevKit has neither, and AddElectricalPlacement is in an Archicad 30 block too).
 #ifdef ServerMainVers_3000
             detailsOs.Add ("xSize", modifiableElement->GetObjectXSize ());
             detailsOs.Add ("ySize", modifiableElement->GetObjectYSize ());
