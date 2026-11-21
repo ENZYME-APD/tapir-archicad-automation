@@ -257,6 +257,16 @@ public:
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
+class ModifyAngleDimensionsCommand : public CommandBase
+{
+public:
+    ModifyAngleDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 // Shared by CreateLevelDimensionsCommand and ModifyLevelDimensionsCommand: applies the pen, texts,
 // marker and origin settings of parameters to element.levelDimension, and sets their bits in mask
 // when it is not nullptr. Custom texts are stored in texts. Returns the error response of an invalid value.
