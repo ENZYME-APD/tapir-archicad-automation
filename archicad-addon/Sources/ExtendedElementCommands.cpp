@@ -571,6 +571,131 @@ static GSErrCode ApplyWindowOrDoorFavoriteToDefaults (const GS::ObjectState& dat
     return NoError;
 }
 
+// Applies the item's optional "favoriteName" to the Window or Door tool defaults with
+// ApplyWindowOrDoorFavoriteToDefaults, and restores what it changed when this object goes out
+// of scope. Favorites can only be applied through the tool defaults, which are global: without
+// the restore the next window or door - of the same call without favoriteName, of a later call,
+// or placed by hand - took the favorite too, unlike the elements CreateElementsCommandBase
+// creates. Restored are the element, its memo and its marker, and the classifications, category
+// values and user-defined properties the favorite carries. Keep it alive until the window or door
+// is created.
+class WindowOrDoorDefaultsWithFavorite {
+public:
+    explicit WindowOrDoorDefaultsWithFavorite (API_ElemTypeID typeIdIn) : typeId (typeIdIn) {}
+    ~WindowOrDoorDefaultsWithFavorite ();
+    GSErrCode ApplyFavorite (const GS::ObjectState& data);
+
+private:
+    API_ElemTypeID typeId;
+    bool restore = false;
+    API_Element snapshot = {};
+    API_ElementMemo snapshotMemo = {};
+    API_SubElement snapshotMarker = {};
+    bool withMarker = false;
+    GS::Array<GS::Pair<API_Guid, API_Guid>> snapshotClassifications;
+    GS::Array<API_ElemCategoryValue> snapshotCategoryValues;
+    GS::Array<API_Property> snapshotProperties;
+};
+
+GSErrCode WindowOrDoorDefaultsWithFavorite::ApplyFavorite (const GS::ObjectState& data)
+{
+    GS::UniString favoriteName;
+    if (!data.Get ("favoriteName", favoriteName) || favoriteName.IsEmpty ()) {
+        return NoError;
+    }
+
+    // What the favorite carries besides the element, to read the defaults it will replace.
+    API_Favorite favorite;
+    favorite.name = favoriteName;
+    favorite.memo.New ();
+    favorite.properties.New ();
+    favorite.classifications.New ();
+    favorite.elemCategoryValues.New ();
+    GSErrCode err = ACAPI_Favorite_Get (&favorite);
+    ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+    if (err != NoError) {
+        return err;
+    }
+
+#ifdef ServerMainVers_2600
+    snapshot.header.type = typeId;
+#else
+    snapshot.header.typeID = typeId;
+#endif
+    snapshotMarker.subType = APISubElement_MainMarker;
+    withMarker = ACAPI_Element_GetDefaultsExt (&snapshot, &snapshotMemo, 1UL, &snapshotMarker) == NoError;
+    if (!withMarker) {
+        ACAPI_DisposeElemMemoHdls (&snapshotMemo);
+        ACAPI_DisposeElemMemoHdls (&snapshotMarker.memo);
+        snapshotMemo = {};
+        snapshotMarker = {};
+        snapshot = {};
+#ifdef ServerMainVers_2600
+        snapshot.header.type = typeId;
+#else
+        snapshot.header.typeID = typeId;
+#endif
+        err = ACAPI_Element_GetDefaults (&snapshot, &snapshotMemo);
+        if (err != NoError) {
+            return err;
+        }
+    }
+    TAPIR_Element_GetClassificationItemsDefault (typeId, snapshotClassifications);
+    for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+        API_ElemCategoryValue previous = {};
+        if (TAPIR_Element_GetCategoryValueDefault (typeId, categoryValue.category, previous) == NoError) {
+            snapshotCategoryValues.Push (previous);
+        }
+    }
+    GS::Array<API_Guid> propertyGuids;
+    for (const API_Property& property : *favorite.properties) {
+        propertyGuids.Push (property.definition.guid);
+    }
+    if (!propertyGuids.IsEmpty ()) {
+        TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (typeId, propertyGuids, snapshotProperties);
+    }
+    restore = true;
+
+    return ApplyWindowOrDoorFavoriteToDefaults (data, typeId);
+}
+
+WindowOrDoorDefaultsWithFavorite::~WindowOrDoorDefaultsWithFavorite ()
+{
+    if (restore) {
+        API_Element mask;
+        ACAPI_ELEMENT_MASK_SETFULL (mask);
+        if (withMarker) {
+            ACAPI_ELEMENT_MASK_SETFULL (snapshotMarker.mask);
+            ACAPI_Element_ChangeDefaultsExt (&snapshot, &snapshotMemo, &mask, 1UL, &snapshotMarker);
+        } else {
+            ACAPI_Element_ChangeDefaults (&snapshot, &snapshotMemo, &mask);
+        }
+
+        // The classifications: the favorite's items are added to the defaults, so every item
+        // that was not there before is removed and every one that was is added back.
+        GS::Array<GS::Pair<API_Guid, API_Guid>> current;
+        TAPIR_Element_GetClassificationItemsDefault (typeId, current);
+        for (const GS::Pair<API_Guid, API_Guid>& pair : current) {
+            if (!snapshotClassifications.Contains (pair)) {
+                TAPIR_Element_RemoveClassificationItemDefault (typeId, pair.second);
+            }
+        }
+        for (const GS::Pair<API_Guid, API_Guid>& pair : snapshotClassifications) {
+            if (!current.Contains (pair)) {
+                TAPIR_Element_AddClassificationItemDefault (typeId, pair.second);
+            }
+        }
+        for (const API_ElemCategoryValue& categoryValue : snapshotCategoryValues) {
+            TAPIR_Element_SetCategoryValueDefault (typeId, categoryValue.category, categoryValue);
+        }
+        for (const API_Property& property : snapshotProperties) {
+            TAPIR_Element_SetPropertyOfDefaultElem (typeId, property);
+        }
+    }
+    ACAPI_DisposeElemMemoHdls (&snapshotMemo);
+    ACAPI_DisposeElemMemoHdls (&snapshotMarker.memo);
+}
+
 void FillDimensionDefaults (API_Element& element, const API_Coord& referencePoint, const API_Vector& direction)
 {
     element.dimension.dimAppear = APIApp_Normal;
@@ -12870,8 +12995,10 @@ static GS::ObjectState CreateWindowsOrDoors (const GS::ObjectState& parameters,
             // libpart and builds a matching marker. Calling
             // PrepareWindowOrDoorDefaults first and applying the favorite
             // after leaves the marker pointing at the previous libpart,
-            // causing CreateExt to fail with -2130313110.
-            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, typeID);
+            // causing CreateExt to fail with -2130313110. The defaults are
+            // restored when this item ends, created or not.
+            WindowOrDoorDefaultsWithFavorite defaultsWithFavorite (typeID);
+            GSErrCode err = defaultsWithFavorite.ApplyFavorite (data);
             if (err != NoError) {
                 elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to resolve `favoriteName` for ") + noun + "."));
                 continue;
