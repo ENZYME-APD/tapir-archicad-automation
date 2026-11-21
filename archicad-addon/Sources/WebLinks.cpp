@@ -1,5 +1,7 @@
 #include "WebLinks.hpp"
 
+#include "APIEnvir.h"   // with ACAPinc.h, brings in windows.h, which shellapi.h needs
+#include "ACAPinc.h"
 #include "Array.hpp"
 #include "Process.hpp"
 
