@@ -3703,6 +3703,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     // The point an automatic zone was placed from (CreateZones geometry.referencePosition);
                     // the stamp is often moved away from it, so it is the only way to recreate the zone as it was.
                     typeSpecificDetails.Add ("referencePosition", Create2DCoordinateObjectState (elem.zone.refPos));
+                    // refLineFlag: surrounded by the walls' reference lines, not their side lines; it tells
+                    // whether polygonDisplay has an effect (#2631).
+                    typeSpecificDetails.Add ("boundaryMethod", GS::UniString (elem.zone.refLineFlag ? "ReferenceLine" : "InnerEdge"));
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);

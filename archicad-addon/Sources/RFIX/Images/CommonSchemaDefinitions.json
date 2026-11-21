@@ -12929,6 +12929,14 @@
                 "$ref": "#/Coordinate2D",
                 "description": "The reference point an automatic zone was placed from (the referencePosition of CreateZones); the zone is found around it when zones are updated. Only present when isManual is false."
             },
+            "boundaryMethod": {
+                "type": "string",
+                "description": "How an automatic zone found its boundary: ReferenceLine when it is surrounded by the reference lines of the walls, InnerEdge when by their inner edges (side lines). A ReferenceLine zone's polygon is expected to differ from the inner faces of its walls, and only such a zone uses polygonDisplay. Read only; only present when isManual is false.",
+                "enum": [
+                    "ReferenceLine",
+                    "InnerEdge"
+                ]
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
@@ -18551,7 +18559,7 @@
     },
     "ZonePolygonDisplay": {
         "type": "string",
-        "description": "The zone polygon display of the Zone settings: Gross uses the reference line of the bounding walls, Net their inner edges. Archicad only uses it for a zone whose boundary is the reference line of the walls; for other zones it is stored but has no effect.",
+        "description": "The zone polygon display of the Zone settings: Gross uses the reference line of the bounding walls, Net their inner edges. Archicad only uses it for a zone whose boundary is the reference line of the walls (boundaryMethod ReferenceLine in GetDetailsOfElements); for other zones it is stored but has no effect.",
         "enum": [
             "Gross",
             "Net"
