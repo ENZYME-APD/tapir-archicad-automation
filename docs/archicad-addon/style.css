@@ -442,6 +442,24 @@ span.command_version {
     font-variant-numeric: tabular-nums;
 }
 
+/* The Archicad versions the command works in, when its description limits them (renderer.js, ArchicadVersions). */
+span.command_archicad {
+    flex: none;
+    margin-left: auto;
+    padding: 0 .4em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: .75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+span.command_archicad + span.command_version {
+    margin-left: .5em;
+}
+
 div.command_content {
     padding: 0.4em 1em 1em;
     color: var(--fg);
