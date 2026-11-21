@@ -1,0 +1,236 @@
+{
+  "title": "ModifyChangeMarkers moves and turns the marker head, links the marker to a new or an existing Change or to none, changes its components, keeps what is not given and refuses bad input; CreateChangeMarkers takes the angle of the head",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a marker that creates a Change, with a turned head",
+      "command": "CreateChangeMarkers",
+      "params": {
+        "changeMarkersData": [
+          {
+            "polygon": [ { "x": 1060.0, "y": 900.0 }, { "x": 1064.0, "y": 900.0 }, { "x": 1064.0, "y": 903.0 }, { "x": 1060.0, "y": 903.0 } ],
+            "markerPosition": { "x": 1065.0, "y": 904.0 },
+            "changeId": "TAPIR-CHECK-MODIFY-CM-1",
+            "createChange": true,
+            "changeDescription": "Tapir check first change",
+            "angle": 0.5,
+            "horizontalMarker": false
+          }
+        ]
+      },
+      "save": { "m": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "marker created" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.changeId", "eq": "TAPIR-CHECK-MODIFY-CM-1", "name": "linked to the new Change" },
+        { "path": "detailsOfElements[0].details.markerComponent", "eq": "HeadAndCloud", "name": "head and cloud" },
+        { "path": "detailsOfElements[0].details.horizontalMarker", "eq": false, "name": "head not always horizontal" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.5, "name": "CreateChangeMarkers turned the head" },
+        { "path": "detailsOfElements[0].details.markerId.guid", "exists": true, "name": "the marker has a head" }
+      ]
+    },
+    {
+      "id": "move the head",
+      "command": "ModifyChangeMarkers",
+      "creates": false,
+      "params": {
+        "changeMarkersWithDetails": [
+          { "elementId": { "guid": "${m}" }, "markerPosition": { "x": 1070.0, "y": 906.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "head moved and read back by the command" }
+      ]
+    },
+    {
+      "id": "the head after the move",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
+      "save": { "movedHead": "detailsOfElements[0].details.markerId.guid" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.markerId.guid", "exists": true, "name": "the marker still has a head" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.5, "name": "angle kept" }
+      ]
+    },
+    {
+      "id": "read the head",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${movedHead}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1070.0, "name": "head at the new x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 906.0, "name": "head at the new y" }
+      ]
+    },
+    {
+      "id": "a second, new Change and a new angle",
+      "command": "ModifyChangeMarkers",
+      "creates": false,
+      "params": {
+        "changeMarkersWithDetails": [
+          {
+            "elementId": { "guid": "${m}" },
+            "changeId": "TAPIR-CHECK-MODIFY-CM-2",
+            "createChange": true,
+            "changeDescription": "Tapir check second change",
+            "angle": 1.0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "new Change made and linked, angle changed" }
+      ]
+    },
+    {
+      "id": "read the new link and angle",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.changeId", "eq": "TAPIR-CHECK-MODIFY-CM-2", "name": "linked to the second Change" },
+        { "path": "detailsOfElements[0].details.changeDescription", "eq": "Tapir check second change", "name": "the second Change has the given description" },
+        { "path": "detailsOfElements[0].details.linkType", "eq": "Linked", "name": "linked" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 1.0, "name": "angle changed" },
+        { "path": "detailsOfElements[0].details.markerComponent", "eq": "HeadAndCloud", "name": "components kept" }
+      ]
+    },
+    {
+      "id": "back to the first, existing Change",
+      "command": "ModifyChangeMarkers",
+      "creates": false,
+      "params": {
+        "changeMarkersWithDetails": [
+          { "elementId": { "guid": "${m}" }, "changeId": "TAPIR-CHECK-MODIFY-CM-1" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "linked to the existing Change" }
+      ]
+    },
+    {
+      "id": "read the link to the existing Change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.changeId", "eq": "TAPIR-CHECK-MODIFY-CM-1", "name": "linked to the first Change again" },
+        { "path": "detailsOfElements[0].details.changeDescription", "eq": "Tapir check first change", "name": "its description is the first one" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 1.0, "name": "angle kept" }
+      ]
+    },
+    {
+      "id": "cloud only",
+      "command": "ModifyChangeMarkers",
+      "creates": false,
+      "params": {
+        "changeMarkersWithDetails": [
+          { "elementId": { "guid": "${m}" }, "markerComponent": "CloudOnly" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "components changed" }
+      ]
+    },
+    {
+      "id": "read the components",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.markerComponent", "eq": "CloudOnly", "name": "cloud only" },
+        { "path": "detailsOfElements[0].details.changeId", "eq": "TAPIR-CHECK-MODIFY-CM-1", "name": "link kept" }
+      ]
+    },
+    {
+      "id": "no Change",
+      "command": "ModifyChangeMarkers",
+      "creates": false,
+      "params": {
+        "changeMarkersWithDetails": [
+          { "elementId": { "guid": "${m}" }, "linkType": "Unlinked", "markerComponent": "HeadAndCloud" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "marker unlinked, head and cloud again" }
+      ]
+    },
+    {
+      "id": "read the unlinked marker",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linkType", "eq": "Unlinked", "name": "not linked" },
+        { "path": "detailsOfElements[0].details.changeId", "eq": "", "name": "no Change ID" },
+        { "path": "detailsOfElements[0].details.markerComponent", "eq": "HeadAndCloud", "name": "head and cloud again" }
+      ]
+    },
+    {
+      "id": "a polyline to give as Change Marker",
+      "command": "CreatePolylines",
+      "params": { "polylinesData": [ { "coordinates": [ { "x": 1060.0, "y": 910.0 }, { "x": 1064.0, "y": 910.0 } ] } ] },
+      "save": { "pl": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "bad inputs",
+      "command": "ModifyChangeMarkers",
+      "creates": false,
+      "params": {
+        "changeMarkersWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "angle": 0.2 },
+          { "elementId": { "guid": "${m}" } },
+          { "elementId": { "guid": "${m}" }, "position": { "x": 1061.0, "y": 901.0 } },
+          { "elementId": { "guid": "${m}" }, "changeId": "TAPIR-CHECK-MODIFY-CM-NO-SUCH-CHANGE" },
+          { "elementId": { "guid": "${m}" }, "changeId": "TAPIR-CHECK-MODIFY-CM-1", "createChange": true },
+          { "elementId": { "guid": "${m}" }, "changeId": "TAPIR-CHECK-MODIFY-CM-1", "changeDescription": "renamed" },
+          { "elementId": { "guid": "${m}" }, "linkType": "Unlinked", "changeId": "TAPIR-CHECK-MODIFY-CM-1" },
+          { "elementId": { "guid": "${m}" }, "linkType": "Linked" },
+          { "elementId": { "guid": "${pl}" }, "angle": 0.2 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 9, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "an item with nothing to change refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "position of a marker with a polygon refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "a Change that does not exist refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "a second Change with an existing ID refused" },
+        { "path": "executionResults[5].success", "eq": false, "name": "a description without createChange refused" },
+        { "path": "executionResults[6].success", "eq": false, "name": "Unlinked with a changeId refused" },
+        { "path": "executionResults[7].success", "eq": false, "name": "Linked without a changeId refused" },
+        { "path": "executionResults[8].success", "eq": false, "name": "a polyline refused" }
+      ]
+    },
+    {
+      "id": "an unknown marker component is refused (Archicad 29 passes it to the command, which refuses it)",
+      "command": "ModifyChangeMarkers",
+      "creates": false,
+      "params": {
+        "changeMarkersWithDetails": [
+          { "elementId": { "guid": "${m}" }, "markerComponent": "Everything" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "markerComponent Everything refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linkType", "eq": "Unlinked", "name": "still not linked" },
+        { "path": "detailsOfElements[0].details.markerComponent", "eq": "HeadAndCloud", "name": "components kept" }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
-  "title": "CreateElementsFromAnalyticalMembers makes a beam and a column from curve members and refuses incomplete members; GetAnalyticalMemberTypesOfElements names their member types",
-  "minTapir": "1.8.1",
+  "title": "CreateElementsFromAnalyticalMembers makes a beam and a column from curve members and refuses incomplete members; GetAnalyticalMemberTypesOfElements reads Unknown without a Complementary Project and refuses an unknown guid",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Wall", "Slab", "Roof", "Beam", "Column" ],
   "steps": [
     {
@@ -134,9 +134,10 @@
         ]
       },
       "expect": [
-        { "path": "memberTypesOfElements[0].memberType", "eq": "Wall" },
-        { "path": "memberTypesOfElements[1].memberType", "eq": "Beam" },
-        { "path": "memberTypesOfElements[2].memberType", "eq": "Column" },
+        { "path": "memberTypesOfElements[0].memberType", "eq": "Unknown", "name": "an empty project has no Complementary Project: the wall reads Unknown" },
+        { "path": "memberTypesOfElements[1].memberType", "eq": "Unknown", "name": "the beam reads Unknown" },
+        { "path": "memberTypesOfElements[2].memberType", "eq": "Unknown", "name": "the column reads Unknown" },
+        { "path": "memberTypesOfElements[3].memberType", "exists": false, "name": "unknown guid has no member type" },
         { "path": "memberTypesOfElements[3].error.code", "exists": true, "name": "unknown guid is an error item" }
       ]
     }

@@ -1,0 +1,202 @@
+{
+  "title": "CreateStairs and ModifyStairs write the monolith and side stringer data of a stair's structures, read them back, and refuse the data of another structure type and unknown attributes (#2866)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a building material of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bm": "attributes[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two building materials" }
+      ]
+    },
+    {
+      "id": "a surface of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": { "surf": "attributes[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "create a straight stair with a monolithic run, its building material, thickness and top surface",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 820.0, "y": 780.0 },
+              { "x": 826.0, "y": 780.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "structures": [
+              {
+                "role": "Run", "side": "UnderSide", "visible": true, "structureType": "Monolith", "bottomType": "Smooth", "thickness": 0.18,
+                "monolith": {
+                  "buildingMaterialId": { "guid": "${bm}" },
+                  "materialsChained": false,
+                  "topMaterial": { "overridden": true, "attributeId": { "guid": "${surf}" } }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "CreateStairs wrote the monolith data",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structures[2].structureType", "eq": "Monolith", "name": "run under side is monolithic" },
+        { "path": "detailsOfElements[0].details.structures[2].thickness", "approx": 0.18, "tol": 0.0001, "name": "structure thickness as created" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.materialsChained", "eq": false, "name": "surfaces not chained as created" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.buildingMaterialId.guid", "eq": "${bm}", "name": "building material as created" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.topMaterial.overridden", "eq": true, "name": "top surface overridden" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.topMaterial.attributeId.guid", "eq": "${surf}", "name": "top surface as created" }
+      ]
+    },
+    {
+      "id": "ModifyStairs changes the structure thickness, the monolith pen, cut fill pen and bottom surface",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structures": [
+              {
+                "role": "Run", "side": "UnderSide", "thickness": 0.25,
+                "monolith": {
+                  "pen": 5,
+                  "cutFillPen": { "overridden": true, "penIndex": 7 },
+                  "bottomMaterial": { "overridden": true, "attributeId": { "guid": "${surf}" } }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "every monolith value applied" }
+      ]
+    },
+    {
+      "id": "the monolith changes are read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structures[2].thickness", "approx": 0.25, "tol": 0.0001, "name": "structure thickness changed" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.cutFillPen.penIndex", "eq": 7, "name": "cut fill pen changed" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.pen", "eq": 5, "name": "pen changed" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.bottomMaterial.attributeId.guid", "eq": "${surf}", "name": "bottom surface changed" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.buildingMaterialId.guid", "eq": "${bm}", "name": "building material kept" },
+        { "path": "detailsOfElements[0].details.structures[2].monolith.topMaterial.attributeId.guid", "eq": "${surf}", "name": "top surface kept" }
+      ]
+    },
+    {
+      "id": "ModifyStairs changes the left draining of the monolith",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structures": [
+              {
+                "role": "Run", "side": "UnderSide",
+                "monolith": {
+                  "uniformDrainings": false,
+                  "drainings": [ { "side": "Left", "enabled": true, "width": 0.05, "verticalDepth": 0.02 } ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the draining values applied" }
+      ]
+    },
+    {
+      "id": "ModifyStairs makes the run's left structure a side stringer with its width and height",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structures": [
+              {
+                "role": "Run", "side": "LeftSide", "visible": true, "structureType": "Side",
+                "sideStair": { "width": 0.06, "heightAboveTread": 0.05, "heightMeasure": "Vertical" }
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "every stringer value applied" }
+      ]
+    },
+    {
+      "id": "the stringer is read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structures[0].structureType", "eq": "Side", "name": "run left side is a stringer" },
+        { "path": "detailsOfElements[0].details.structures[0].sideStair.width", "approx": 0.06, "tol": 0.0001, "name": "stringer width" },
+        { "path": "detailsOfElements[0].details.structures[0].sideStair.heightAboveTread", "approx": 0.05, "tol": 0.0001, "name": "stringer height above tread" },
+        { "path": "detailsOfElements[0].details.structures[0].sideStair.heightMeasure", "eq": "Vertical", "name": "stringer height measured vertically" }
+      ]
+    },
+    {
+      "id": "monolith data for a side stringer is refused",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structures": [ { "role": "Run", "side": "LeftSide", "monolith": { "monolithThickness": 0.3 } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" },
+        { "path": "executionResults[0].error.message", "contains": "Monolith", "name": "the error names the type it needs" }
+      ]
+    },
+    {
+      "id": "an unknown building material is refused",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structures": [ { "role": "Run", "side": "UnderSide", "monolith": { "buildingMaterialId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" },
+        { "path": "executionResults[0].error.message", "contains": "buildingMaterialId", "name": "the error names the field" }
+      ]
+    }
+  ]
+}

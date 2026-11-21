@@ -31,6 +31,10 @@
     'What the Archicad API can\'t do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.':
         'Archicad API 做不到的事，例如撤销、剪贴板或清单中的行，附有替代办法和 DevKit 中的依据。',
     'See the limits': '查看限制',
+    'Written tutorials': '图文教程',
+    'Step by step: properties to Excel, Grasshopper, renaming views, numbering doors and windows, and your first Python script.':
+        '分步讲解：把属性导出到 Excel、Grasshopper、重命名视图、为门窗编号，以及您的第一个 Python 脚本。',
+    'Read the tutorials': '阅读教程',
 
     // How it works
     'How it works': '工作原理',

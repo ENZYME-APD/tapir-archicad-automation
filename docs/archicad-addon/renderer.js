@@ -24,11 +24,6 @@ function CreateTextElement(parentElement, elementType, className, text) {
     return elem;
 }
 
-function PlainText(html) {
-    // Descriptions may contain markup; DOMParser builds an inert document.
-    return new DOMParser().parseFromString(html || '', 'text/html').body.textContent;
-}
-
 // ---- The raw schema tree (json-schema-view-js), shown under "Raw schema" ----
 
 function ResolveReferences(schemaDefinitions, parentNode, parentKey, resolvedKeys) {
@@ -122,6 +117,33 @@ function CompareVersions(a, b) {
 
 function MinorVersion(version) {
     return VersionKey(version).slice(0, 2).join('.');
+}
+
+// The Archicad versions a command works in, read from the sentence of its description that says so
+// (#276): "Available from Archicad 29.", "Requires Archicad 27 or later.", "Needs Archicad 28 or earlier.",
+// "Available in Archicad 25, 26 and 27 only.", "Only for Archicad 27." Returns { label, title } or null for a
+// command that works in every supported version. Only a sentence that starts with one of these phrases counts,
+// so a field that needs a newer Archicad ("from Archicad 29 also ...") does not mark the whole command.
+function ArchicadVersions(descriptionText) {
+    let sentences = String(descriptionText || '').split(/\.\s+/);
+    for (let sentence of sentences) {
+        let match = /^(?:Available from Archicad (\d\d)\b|(?:Requires|Needs) Archicad (\d\d) or (?:later|newer)\b)/.exec(sentence);
+        if (match) {
+            let version = match[1] || match[2];
+            return { label: 'AC' + version + '+', title: 'Archicad ' + version + ' or later' };
+        }
+        match = /^(?:Requires|Needs) Archicad (\d\d) or earlier\b/.exec(sentence);
+        if (match) {
+            return { label: 'AC≤' + match[1], title: 'Archicad ' + match[1] + ' or earlier' };
+        }
+        match = /^(?:Available (?:only )?in|Only for) Archicad (\d\d(?:(?:, | and )\d\d)*)\b/.exec(sentence);
+        if (match) {
+            let versions = match[1].split(/, | and /);
+            let label = versions.length > 1 ? versions[0] + '–' + versions[versions.length - 1] : versions[0];
+            return { label: 'AC' + label, title: 'Only Archicad ' + match[1] };
+        }
+    }
+    return null;
 }
 
 // The words of a command name: "GetIFCRelationsOfElements" -> Get, IFC, Relations, Of, Elements.
@@ -710,7 +732,7 @@ function CommandUrl(name) {
 function RenderCommandContent(parentElement, entry, page) {
     let command = entry.command;
     let content = CreateElement(parentElement, 'div', 'command_content', null);
-    CreateElement(content, 'div', 'command_description', command.description);
+    CreateTextElement(content, 'div', 'command_description', command.description);
 
     // The example and the JSON to send, first.
     CreateTextElement(content, 'h4', 'command_section_title', 'Example');
@@ -819,7 +841,12 @@ function RenderCommand(entry, page) {
     // One line of the description; the full text shows on hover and when opened.
     let summary = CreateTextElement(header, 'span', 'command_summary', entry.descriptionText);
     summary.title = entry.descriptionText;
-    CreateTextElement(header, 'span', 'command_version', command.version);
+    if (entry.archicadVersions) {
+        let archicad = CreateTextElement(header, 'span', 'command_archicad', entry.archicadVersions.label);
+        archicad.title = 'Works in ' + entry.archicadVersions.title;
+    }
+    let version = CreateTextElement(header, 'span', 'command_version', command.version);
+    version.title = 'Added in Tapir ' + command.version;
 
     let rendered = false;
     details.addEventListener('toggle', function () {
@@ -883,12 +910,15 @@ function BuildGroups(commands) {
             groups.push(displayGroup);
         }
         for (let command of group.commands) {
-            let descriptionText = PlainText(command.description);
+            // Descriptions are plain text (registered in AddOnMain.cpp); '<LAYOUTID>' is an
+            // Autotext key, not markup, so they are never parsed as HTML (#2313).
+            let descriptionText = command.description || '';
             displayGroup.entries.push({
                 command: command,
                 groupName: group.name,
                 group: displayGroup,
                 descriptionText: descriptionText,
+                archicadVersions: ArchicadVersions(descriptionText),
                 searchText: (command.name + ' ' + descriptionText + ' ' + group.name).toLowerCase(),
                 action: CommandAction(command.name),
                 subjects: CommandSubjects(group.name, command, descriptionText),

@@ -1,0 +1,49 @@
+{
+  "title": "SolveStairBaseline takes and returns curved baseline edges (baseLineArcs) (#2933)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "solve a curved baseline",
+      "command": "SolveStairBaseline",
+      "creates": false,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 940.0, "y": 900.0 }, { "x": 944.0, "y": 900.0 } ],
+            "baseLineArcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 1.2 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "solutions[0].solution", "exists": true, "name": "solved" },
+        { "path": "solutions[0].error", "exists": false, "name": "no error" },
+        { "path": "solutions[0].baseLineArcs", "len": 1, "name": "the arc is returned" },
+        { "path": "solutions[0].baseLineArcs[0].begIndex", "eq": 0, "name": "on the first edge (0-based)" },
+        { "path": "solutions[0].baseLineArcs[0].arcAngle", "gt": 0.0, "name": "bulging to the side given" }
+      ]
+    },
+    {
+      "id": "[an arc on an edge the baseline does not have]",
+      "command": "SolveStairBaseline",
+      "creates": false,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 940.0, "y": 900.0 }, { "x": 944.0, "y": 900.0 } ],
+            "baseLineArcs": [ { "begIndex": 1, "endIndex": 2, "arcAngle": 1.2 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "solutions[0].error.message", "contains": "baseLineArcs", "name": "refused" }
+      ]
+    }
+  ]
+}

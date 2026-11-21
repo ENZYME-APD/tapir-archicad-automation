@@ -1,0 +1,176 @@
+{
+  "title": "ChangeLayoutSubsetSettings gives a subset new numbering settings: a new subset right after the old one holds its layouts in their order, the old one is left empty (#2702)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "Layout Book before: the map root holds the Layout Book item, which holds the subsets",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": {
+        "book": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.type", "eq": "BookItem", "name": "the Layout Book item" }
+      ]
+    },
+    {
+      "id": "subset with its numbering",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": {
+        "subsetsData": [
+          {
+            "name": "Tapir check change subset",
+            "ownPrefix": "TCA",
+            "addOwnPrefix": true,
+            "customNumbering": false,
+            "numberingStyle": "001",
+            "startAt": 3,
+            "continueNumbering": false,
+            "useUpperPrefix": false,
+            "includeToIDSequence": true
+          }
+        ]
+      },
+      "save": { "subset": "navigatorItems[0].navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItems[0].navigatorItemId.guid", "exists": true, "name": "id of the new subset" }
+      ]
+    },
+    {
+      "id": "subset second in the Layout Book item",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${subset}" },
+        "parentNavigatorItemId": { "guid": "${book}" },
+        "previousNavigatorItemId": { "guid": "${bookFirst}" }
+      },
+      "expect": [ { "path": "success", "eq": true } ]
+    },
+    {
+      "id": "two layouts in the subset",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          { "layoutName": "Tapir check change layout one", "masterLayoutName": "Tapir check change master", "parentNavigatorItemId": { "guid": "${subset}" } },
+          { "layoutName": "Tapir check change layout two", "masterLayoutName": "Tapir check change master", "parentNavigatorItemId": { "guid": "${subset}" } }
+        ]
+      },
+      "save": { "layout1Db": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases", "len": 2, "name": "one result per layout" },
+        { "path": "databases[0].error", "exists": false, "name": "layout one: no error" },
+        { "path": "databases[1].error", "exists": false, "name": "layout two: no error" }
+      ]
+    },
+    {
+      "id": "the master of the layouts",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layout1Db}" } } ] },
+      "save": { "master": "layoutSettings[0].masterNavigatorItemId.guid" }
+    },
+    {
+      "id": "the two layouts are in the subset (Archicad puts a new layout first, so the order is read, not assumed)",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
+      "save": {
+        "layout1": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid",
+        "layout2": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[1].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "second item is the subset" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.childCount", "eq": 2, "name": "with the two layouts" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check change layout", "name": "first item: one of the layouts" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check change layout", "name": "second item: the other layout" }
+      ]
+    },
+    {
+      "id": "change the prefix, numbering style and start",
+      "command": "ChangeLayoutSubsetSettings",
+      "creates": false,
+      "params": {
+        "subsets": [
+          { "navigatorItemId": { "guid": "${subset}" }, "settings": { "ownPrefix": "TCB", "numberingStyle": "01", "startAt": 5 } }
+        ]
+      },
+      "save": { "newSubset": "subsets[0].navigatorItemId.guid" },
+      "expect": [
+        { "path": "subsets", "len": 1, "name": "one result per subset" },
+        { "path": "subsets[0].error", "exists": false, "name": "no error" },
+        { "path": "subsets[0].oldNavigatorItemId.guid", "eq": "${subset}", "name": "the old subset is named" },
+        { "path": "subsets[0].navigatorItemId.guid", "ne": "${subset}", "name": "a new subset" }
+      ]
+    },
+    {
+      "id": "the new subset has the new settings, the others as before",
+      "command": "GetLayoutSubsetSettings",
+      "creates": false,
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${newSubset}" } }, { "navigatorItemId": { "guid": "${subset}" } } ] },
+      "expect": [
+        { "path": "subsetSettings[0].name", "eq": "Tapir check change subset", "name": "new: same name" },
+        { "path": "subsetSettings[0].ownPrefix", "eq": "TCB", "name": "new: new prefix" },
+        { "path": "subsetSettings[0].numberingStyle", "eq": "01", "name": "new: new numbering style" },
+        { "path": "subsetSettings[0].startAt", "eq": 5, "name": "new: new start" },
+        { "path": "subsetSettings[0].addOwnPrefix", "eq": true, "name": "new: kept addOwnPrefix" },
+        { "path": "subsetSettings[0].continueNumbering", "eq": false, "name": "new: kept continueNumbering" },
+        { "path": "subsetSettings[0].includeToIDSequence", "eq": true, "name": "new: kept includeToIDSequence" },
+        { "path": "subsetSettings[1].ownPrefix", "eq": "TCA", "name": "old: prefix unchanged" },
+        { "path": "subsetSettings[1].numberingStyle", "eq": "001", "name": "old: numbering style unchanged" }
+      ]
+    },
+    {
+      "id": "the new subset is right after the old one and holds the layouts in their order",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "the old subset stays second" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.childCount", "eq": 0, "name": "the old subset is empty" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.navigatorItemId.guid", "eq": "${newSubset}", "name": "the new subset is third" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.childCount", "eq": 2, "name": "the new subset holds the two layouts" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.children[0].navigatorItem.navigatorItemId.guid", "eq": "${layout1}", "name": "the first layout still first" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${layout2}", "name": "the second layout still second" }
+      ]
+    },
+    {
+      "id": "[a layout is not a subset, nor is an item that does not exist]",
+      "command": "ChangeLayoutSubsetSettings",
+      "creates": false,
+      "params": {
+        "subsets": [
+          { "navigatorItemId": { "guid": "${layout1}" }, "settings": { "startAt": 2 } },
+          { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "settings": { "startAt": 2 } }
+        ]
+      },
+      "expect": [
+        { "path": "subsets", "len": 2, "name": "one result per item" },
+        { "path": "subsets[0].error.message", "contains": "not a Layout Book subset", "name": "layout: refused" },
+        { "path": "subsets[1].error.code", "exists": true, "name": "missing item: refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[2].navigatorItem.childCount", "eq": 2, "name": "the new subset still holds the two layouts" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout1}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout2}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${master}" } } ] } }
+  ]
+}

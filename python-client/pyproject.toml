@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tapir-archicad"
+dynamic = ["version"]
+description = "Python client for the Tapir Archicad Add-On: one method per Tapir JSON command."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "ENZYME-APD"}]
+keywords = ["archicad", "tapir", "bim", "automation", "json"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Homepage = "https://archicad-api.com"
+Documentation = "https://archicad-api.com/archicad-addon/"
+Repository = "https://github.com/ENZYME-APD/tapir-archicad-automation"
+Issues = "https://github.com/ENZYME-APD/tapir-archicad-automation/issues"
+
+[tool.setuptools]
+packages = ["tapir_archicad"]
+
+[tool.setuptools.dynamic]
+version = {attr = "tapir_archicad.__version__"}

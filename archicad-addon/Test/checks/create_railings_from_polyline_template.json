@@ -1,0 +1,70 @@
+{
+  "title": "CreateRailingsFromPolyline takes the settings of an existing railing with templateElementId",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "template railing, 1.37 m high",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          { "coordinates": [ { "x": 540.0, "y": 500.0 }, { "x": 544.0, "y": 500.0 } ], "floorIndex": 0, "height": 1.37 }
+        ]
+      },
+      "save": { "t": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "template railing created" } ]
+    },
+    {
+      "id": "a climbing railing from the template, without height, and one with its own height",
+      "command": "CreateRailingsFromPolyline",
+      "params": {
+        "railingsData": [
+          {
+            "polylineCoordinates": [ { "x": 540.0, "y": 510.0, "z": 0.0 }, { "x": 544.0, "y": 510.0, "z": 0.5 }, { "x": 544.0, "y": 513.0, "z": 0.5 } ],
+            "templateElementId": { "guid": "${t}" }
+          },
+          {
+            "polylineCoordinates": [ { "x": 540.0, "y": 520.0, "z": 0.0 }, { "x": 544.0, "y": 520.0, "z": 0.0 } ],
+            "templateElementId": { "guid": "${t}" },
+            "height": 0.95
+          }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid", "h": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created from the template" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "railing created from the template with its own height" }
+      ]
+    },
+    {
+      "id": "read them back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${r}" } },
+          { "elementId": { "guid": "${h}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "the new reference line, one node per point" },
+        { "path": "detailsOfElements[0].details.segmentHeights", "len": 2, "name": "one segment per pair of points" },
+        { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.37, "name": "the template's height, not the tool default's" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "the template's home story" },
+        { "path": "detailsOfElements[1].details.segmentHeights[0]", "approx": 0.95, "name": "height given with the template overrides it" }
+      ]
+    },
+    {
+      "id": "a template that is not a railing",
+      "command": "CreateRailingsFromPolyline",
+      "params": {
+        "railingsData": [
+          {
+            "polylineCoordinates": [ { "x": 540.0, "y": 530.0, "z": 0.0 }, { "x": 544.0, "y": 530.0, "z": 0.0 } ],
+            "templateElementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          }
+        ]
+      },
+      "expect": [ { "path": "elements[0].error.code", "exists": true, "name": "a nonexistent template refused" } ]
+    }
+  ]
+}

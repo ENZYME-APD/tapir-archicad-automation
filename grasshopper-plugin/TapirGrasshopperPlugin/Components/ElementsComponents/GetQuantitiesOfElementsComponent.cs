@@ -20,7 +20,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths " +
                 "etc.), together with the volume and projected area per building material (one item per skin " +
                 "of composite and complex profile elements, one item for basic elements). Supported types: " +
-                "Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Lengths are " +
+                "Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment, Stair. Lengths are " +
                 "in meters, areas in square meters and volumes in cubic meters. Use CalculateInOneCall to calculate all the " +
                 "elements in one Archicad call.",
                 GroupNames.ElementDetails)

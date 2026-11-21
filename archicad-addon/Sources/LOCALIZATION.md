@@ -61,7 +61,11 @@ same position: the English text until it is translated.
 The texts of the Tapir Installer ([../Installer/tapir_installer.py](../Installer/tapir_installer.py)):
 the window, its buttons and statuses, the results and error messages, the console output and the
 messages of update mode, are in the `TEXTS` table at the top of that file, one table per language,
-with the same language codes as the Add-On. Only English (`INT`) ships for now.
+with the same language codes as the Add-On. The installer ships in English (`INT`), German (`GER`),
+French (`FRA`), Spanish (`SPA`), Italian (`ITA`), simplified Chinese (`CHI`) and Japanese (`JPN`): the
+languages of the site (`docs/assets/i18n/`) that Archicad has a language version in (Hindi has none).
+Their terms are the site's (installer, add-on, release), and so is the form of address (German and
+French formal, Spanish and Italian informal).
 
 Not translated: the help of the command line options (`--help`) and the option names inside the
 messages (`--versions`, `--addOnFile`, ...), the error details that come from the operating system or
@@ -83,25 +87,32 @@ One installer holds every language, and chooses one when it starts:
 
 The language of a tag is matched by its first part (`de-AT` is `GER`), except `pt-BR` (`BRA`) and the
 traditional Chinese `zh-Hant`, `zh-TW`, `zh-HK` (`TAI`); the table is `LANGUAGE_CODES_BY_ISO_LANGUAGE`.
-A text that a language's table lacks is shown in English, so a table may be translated in parts.
+The Austrian and Swiss language versions (`AUT`, `CHE`) show the German texts (`TEXT_LANGUAGES`).
+A text that a language's table lacks is shown in English, but the tables that ship are complete:
+`test_update_mode.py` checks that each has every key of `INT`, with the same placeholders, line breaks
+and option names.
 
 ## Adding a language
 
-For example French, `FRA`:
+For example Korean, `KOR`:
 
-1. In `TEXTS`, add an entry `'FRA' : { ... }` after `'INT'`, with the keys of the `INT` table and the
+1. In `TEXTS`, add an entry `'KOR' : { ... }` after the others, with the keys of the `INT` table and the
    texts translated. Keep:
    - the keys (`'buttonInstall'`, ...), only the texts are translated;
    - the placeholders `{0}`, `{1}`, ...: each one of the English text, any order (`test_update_mode.py`
      checks it);
    - `\n` (a line break) and `\'` (a quote);
-   - the names Tapir, Archicad, GitHub, the option names and the web addresses.
+   - the names Tapir, Archicad, GitHub, the option names and the web addresses;
+   - Archicad's own terms as Archicad shows them in that language, or in English when unsure.
 2. Keep the statuses short (`Installed 1.2.3`, `Downloading 42%`): their badge has a fixed width.
 3. Save the file as UTF-8.
-4. Try it: `python tapir_installer.py --language FRA` (the window), and in console mode with
-   `--console --dryRun --language FRA`. Then run `python test_update_mode.py`.
+4. Try it: `python tapir_installer.py --language KOR` (the window), and in console mode with
+   `--console --dryRun --language KOR`. Then run `python test_update_mode.py`.
 
 The executables need nothing else: the table is part of `tapir_installer.py`, which PyInstaller
-bundles. When an English text is added, the other tables need not change: it is shown in English until
-it is translated. When one is changed, change its translations too, or remove them until they are
-translated again.
+bundles, so the one installer holds every language. A language whose script needs other fonts (Chinese,
+Japanese) names the font families of its own language in `CJK_FONT_FAMILIES` of the window code; Tk takes
+a missing glyph from another font, but Chinese and Japanese draw some characters differently.
+
+When an English text is added or changed, add or change it in every table: translated, or in English
+until it is translated.

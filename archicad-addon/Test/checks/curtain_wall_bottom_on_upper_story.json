@@ -1,0 +1,91 @@
+{
+  "title": "GetCurtainWallAbsoluteBottoms and GetDetailsOfElements give the absolute bottom of a curtain wall on an upper story",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CurtainWall" ],
+  "steps": [
+    {
+      "id": "create curtain wall A 0.5 m above story 0",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [ { "x": 960.0, "y": 900.0 }, { "x": 966.0, "y": 900.0 } ],
+            "zCoordinate": 0.5,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall A created" }
+      ]
+    },
+    {
+      "id": "A on story 0",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "absoluteBottoms[0].absoluteBottom", "approx": 0.5, "name": "absolute bottom 0.5 m on story 0" },
+        { "path": "absoluteBottoms[0].bottomFromHomeStory", "approx": 0.5, "name": "0.5 m above its home story" }
+      ]
+    },
+    {
+      "id": "move A to story 1, keeping its offset from the home story",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${a}" }, "floorIndex": 1 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "story change accepted" }
+      ]
+    },
+    {
+      "id": "level of story 1, from the segment of A",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "save": { "s": "subelements[0].cWallSegments[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 1, "name": "A has one segment" }
+      ]
+    },
+    {
+      "id": "home story level and zCoordinate of A",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${s}" } },
+          { "elementId": { "guid": "${a}" } }
+        ]
+      },
+      "save": {
+        "level1": "detailsOfElements[0].details.homeStoryLevel",
+        "zA": "detailsOfElements[1].details.zCoordinate"
+      },
+      "expect": [
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "A homed on story 1" },
+        { "path": "detailsOfElements[0].details.homeStoryLevel", "ne": 0, "name": "story 1 is not at level 0, so relative and absolute differ" },
+        { "expr": "${zA} - ${level1}", "approx": 0.5, "name": "zCoordinate is 0.5 m above story 1" }
+      ]
+    },
+    {
+      "id": "bottom of A on story 1",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "save": { "bottomA": "absoluteBottoms[0].absoluteBottom" },
+      "expect": [
+        { "expr": "${bottomA} - ${level1}", "approx": 0.5, "name": "absoluteBottom is absolute: 0.5 m above the level of story 1" },
+        { "path": "absoluteBottoms[0].bottomFromHomeStory", "approx": 0.5, "name": "bottomFromHomeStory is still 0.5 m" }
+      ]
+    }
+  ]
+}
