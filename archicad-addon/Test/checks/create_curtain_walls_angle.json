@@ -1,0 +1,164 @@
+{
+  "title": "CreateCurtainWalls makes slanted curtain walls from angle, as Archicad draws them",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CurtainWall" ],
+  "steps": [
+    {
+      "id": "create curtain wall V without angle, L at 60 degrees and R at 120 degrees",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [ { "x": 940.0, "y": 900.0 }, { "x": 946.0, "y": 900.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "coordinates": [ { "x": 940.0, "y": 910.0 }, { "x": 946.0, "y": 910.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 60.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "coordinates": [ { "x": 940.0, "y": 920.0 }, { "x": 946.0, "y": 920.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 120.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "coordinates": [ { "x": 940.0, "y": 940.0 }, { "x": 946.0, "y": 940.0 } ],
+            "zCoordinate": 1.5,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 60.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          }
+        ]
+      },
+      "save": { "v": "elements[0].elementId.guid", "l": "elements[1].elementId.guid", "r": "elements[2].elementId.guid", "e": "elements[3].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall V created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "curtain wall L created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "curtain wall R created" },
+        { "path": "elements[3].elementId.guid", "exists": true, "name": "curtain wall E created 1.5 m up at 60 degrees" }
+      ]
+    },
+    {
+      "id": "angles, heights and reference lines",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${v}" } },
+          { "elementId": { "guid": "${l}" } },
+          { "elementId": { "guid": "${r}" } }
+        ]
+      },
+      "save": { "offsetL": "detailsOfElements[1].details.offset" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.angle", "approx": 90.0, "name": "V is vertical" },
+        { "path": "detailsOfElements[1].details.angle", "approx": 60.0, "name": "L has the given angle of 60 degrees" },
+        { "path": "detailsOfElements[2].details.angle", "approx": 120.0, "name": "R has the given angle of 120 degrees" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "L keeps the vertical height of 3 m" },
+        { "path": "detailsOfElements[2].details.height", "approx": 3.0, "name": "R keeps the vertical height of 3 m" },
+        { "path": "detailsOfElements[1].details.referenceLine[0].x", "approx": 940.0, "name": "L reference line starts at x 940" },
+        { "path": "detailsOfElements[1].details.referenceLine[0].y", "approx": 910.0, "name": "L reference line starts at y 910" },
+        { "path": "detailsOfElements[1].details.referenceLine[1].x", "approx": 946.0, "name": "L reference line ends at x 946" },
+        { "path": "detailsOfElements[1].details.referenceLine[1].y", "approx": 910.0, "name": "L reference line ends at y 910" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 0, "name": "L homed on story 0" }
+      ]
+    },
+    {
+      "id": "segments of V, L and R",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${v}" } },
+          { "elementId": { "guid": "${l}" } },
+          { "elementId": { "guid": "${r}" } },
+          { "elementId": { "guid": "${e}" } }
+        ]
+      },
+      "save": {
+        "vs": "subelements[0].cWallSegments[0].elementId.guid",
+        "ls": "subelements[1].cWallSegments[0].elementId.guid",
+        "rs": "subelements[2].cWallSegments[0].elementId.guid",
+        "es": "subelements[3].cWallSegments[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "subelements[1].cWallSegments", "len": 1, "name": "L has one segment" },
+        { "path": "subelements[2].cWallSegments", "len": 1, "name": "R has one segment" }
+      ]
+    },
+    {
+      "id": "extrusion of the segments: up for V, leaning left for L and right for R",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${vs}" } },
+          { "elementId": { "guid": "${ls}" } },
+          { "elementId": { "guid": "${rs}" } },
+          { "elementId": { "guid": "${es}" } }
+        ]
+      },
+      "save": {
+        "lby": "detailsOfElements[1].details.begCoordinate.y",
+        "lbz": "detailsOfElements[1].details.begCoordinate.z",
+        "eby": "detailsOfElements[3].details.begCoordinate.y",
+        "ebz": "detailsOfElements[3].details.begCoordinate.z"
+      },
+      "expect": [
+        { "expr": "${ebz} - ${lbz}", "approx": 1.5, "name": "E is 1.5 m above L, as its zCoordinate says" },
+        { "expr": "(${eby} - 940) - (${lby} - 910)", "approx": 0.0, "name": "E is not shifted sideways from its reference line" },
+        { "path": "detailsOfElements[3].details.extrusionVector.z", "approx": 3.0, "name": "E segment is 3 m high" },
+        { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 0.0, "name": "V segment goes straight up" },
+        { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 3.0, "name": "V segment is 3 m high" },
+        { "path": "detailsOfElements[1].details.extrusionVector.x", "approx": 0.0, "name": "L segment leans across its reference line" },
+        { "path": "detailsOfElements[1].details.extrusionVector.y", "approx": 1.7320508, "name": "L segment leans 3 / tan 60 to the left" },
+        { "path": "detailsOfElements[1].details.extrusionVector.z", "approx": 3.0, "name": "L segment is 3 m high" },
+        { "path": "detailsOfElements[2].details.extrusionVector.y", "approx": -1.7320508, "name": "R segment leans 3 / tan 60 to the right" },
+        { "path": "detailsOfElements[2].details.extrusionVector.z", "approx": 3.0, "name": "R segment is 3 m high" }
+      ]
+    },
+    {
+      "id": "bottom of L",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "save": { "bottomL": "absoluteBottoms[0].absoluteBottom" },
+      "expect": [
+        { "expr": "${bottomL} - ${offsetL} * 0.5", "approx": 0.0, "name": "L bottom at the given zCoordinate, raised by the panel offset times cos 60 as Archicad places a slanted curtain wall" }
+      ]
+    },
+    {
+      "id": "a slanted curtain wall with a bent reference line is refused",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [ { "x": 940.0, "y": 930.0 }, { "x": 946.0, "y": 930.0 }, { "x": 946.0, "y": 934.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 60.0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "3 coordinates with an angle refused" }
+      ]
+    }
+  ]
+}

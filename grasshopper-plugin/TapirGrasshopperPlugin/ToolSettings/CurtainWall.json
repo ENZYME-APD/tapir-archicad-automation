@@ -75,12 +75,12 @@
     },
     {
       "get": "angle",
-      "set": null,
+      "set": "angle",
       "apiMember": "API_CurtainWallType::angle",
       "apiDescription": "Angle of the curtain wall (input only).",
-      "label": null,
-      "labelSource": null,
-      "group": null,
+      "label": "Slant Angle",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm (text \"Slant Angle\")",
+      "group": "Geometry and Positioning",
       "subgroup": null
     },
     {
@@ -114,7 +114,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "primaryPattern",
       "set": "primaryPattern",
       "apiMember": "API_ElementMemo::cWSegPrimaryPattern",
       "apiDescription": "Curtain Wall primary segment pattern.",
@@ -124,7 +124,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "secondaryPattern",
       "set": "secondaryPattern",
       "apiMember": "API_ElementMemo::cWSegSecondaryPattern",
       "apiDescription": "Curtain Wall secondary segment pattern.",
@@ -134,7 +134,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "cells",
       "set": "cells",
       "apiMember": "API_ElementMemo::cWSegPatternCells",
       "apiDescription": "Curtain Wall segment pattern cells.",

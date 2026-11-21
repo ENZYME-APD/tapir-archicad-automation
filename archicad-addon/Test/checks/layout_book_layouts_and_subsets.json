@@ -4,14 +4,18 @@
   "minArchicad": "27",
   "steps": [
     {
-      "id": "Layout Book before",
+      "id": "Layout Book before: the Layout Map root holds the Layout Book item, which holds the subsets",
       "command": "GetNavigatorItemTree",
       "creates": false,
+      "stopOnFail": true,
       "params": { "navigatorMapId": "LayoutBook" },
       "save": {
-        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
-        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
-      }
+        "bookRoot": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.type", "eq": "BookItem", "name": "the Layout Book item" }
+      ]
     },
     {
       "id": "subset with its numbering",
@@ -76,7 +80,7 @@
       ]
     },
     {
-      "id": "subset second in the Layout Book",
+      "id": "subset second in the Layout Book item",
       "command": "MoveNavigatorItem",
       "creates": false,
       "params": {
@@ -120,7 +124,7 @@
         "masterDb": "layoutSettings[0].masterLayoutDatabaseId.guid"
       },
       "expect": [
-        { "path": "layoutSettings[0].layoutName", "eq": "Tapir check layout one" },
+        { "path": "layoutSettings[0].layoutName", "contains": "Tapir check layout one", "name": "layoutName (the French template puts the layout ID in front)" },
         { "path": "layoutSettings[0].horizontalSize", "approx": 420, "tol": 0.01, "name": "paperWidth" },
         { "path": "layoutSettings[0].verticalSize", "approx": 297, "tol": 0.01, "name": "paperHeight" },
         { "path": "layoutSettings[0].leftMargin", "approx": 11, "tol": 0.01 },
@@ -146,13 +150,14 @@
       "command": "GetNavigatorItemTree",
       "creates": false,
       "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
-      "save": { "layout1": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
+      "save": { "layout1": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
       "expect": [
-        { "path": "navigatorItemTree.children[1].navigatorItem.type", "eq": "SubSetItem", "name": "second item is a subset" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.name", "contains": "Tapir check layouts", "name": "the moved subset" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.childCount", "eq": 1 },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.type", "eq": "LayoutItem" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check layout one" }
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.type", "eq": "SubSetItem", "name": "second item is a subset" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "the moved subset" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check layouts", "name": "the moved subset's name" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.childCount", "eq": 1 },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.type", "eq": "LayoutItem" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check layout one" }
       ]
     },
     {
@@ -179,11 +184,11 @@
       "command": "GetNavigatorItemTree",
       "creates": false,
       "params": { "navigatorMapId": "LayoutBook" },
-      "save": { "layout2": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.navigatorItemId.guid" },
+      "save": { "layout2": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[1].navigatorItem.navigatorItemId.guid" },
       "expect": [
-        { "path": "navigatorItemTree.children[1].navigatorItem.children", "len": 2 },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check layout one" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check layout two" }
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children", "len": 2 },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check layout one" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check layout two" }
       ]
     },
     {
@@ -192,7 +197,7 @@
       "creates": false,
       "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layout2Db}" } } ] },
       "expect": [
-        { "path": "layoutSettings[0].layoutName", "eq": "Tapir check layout two" },
+        { "path": "layoutSettings[0].layoutName", "contains": "Tapir check layout two", "name": "layoutName (the French template puts the layout ID in front)" },
         { "path": "layoutSettings[0].masterLayoutName", "eq": "Tapir check master", "name": "on the given master" },
         { "path": "layoutSettings[0].horizontalSize", "approx": 420, "tol": 0.01, "name": "size of the master" },
         { "path": "layoutSettings[0].verticalSize", "approx": 297, "tol": 0.01, "name": "size of the master" }
@@ -250,7 +255,7 @@
         ]
       },
       "expect": [
-        { "path": "layoutSettings[0].layoutName", "eq": "Tapir check layout one renamed" },
+        { "path": "layoutSettings[0].layoutName", "contains": "Tapir check layout one renamed", "name": "renamed (the French template puts the layout ID in front)" },
         { "path": "layoutSettings[0].leftMargin", "approx": 21, "tol": 0.01 },
         { "path": "layoutSettings[0].topMargin", "approx": 12, "tol": 0.01, "name": "topMargin kept" },
         { "path": "layoutSettings[0].customLayoutNumber", "eq": "TC-9" },

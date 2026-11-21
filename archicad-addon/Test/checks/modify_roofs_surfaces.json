@@ -91,6 +91,7 @@
           },
           {
             "elementId": { "guid": "${r2}" },
+            "eavesOverhang": 0.3,
             "edgeSideMaterials": [
               { "overridden": false },
               { "overridden": false },
@@ -118,7 +119,7 @@
       "expect": [
         { "path": "executionResults", "len": 5, "name": "one result per item" },
         { "path": "executionResults[0].success", "eq": true, "name": "surfaces and edge surface written" },
-        { "path": "executionResults[1].success", "eq": false, "name": "edgeSideMaterials on a multi-plane roof refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "edgeSideMaterials with eavesOverhang on a multi-plane roof refused" },
         { "path": "executionResults[2].success", "eq": false, "name": "wrong edge count refused" },
         { "path": "executionResults[3].success", "eq": false, "name": "overridden surface without attributeId refused" },
         { "path": "executionResults[4].success", "eq": false, "name": "unknown surface refused" }

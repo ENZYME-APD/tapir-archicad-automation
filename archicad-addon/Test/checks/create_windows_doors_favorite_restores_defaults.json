@@ -1,0 +1,189 @@
+{
+  "title": "CreateWindows and CreateDoors with favoriteName leave the tool defaults as they were",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Window", "Door" ],
+  "steps": [
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 980.0, "y": 920.0 },
+            "endCoordinate": { "x": 1010.0, "y": 920.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "window W0 and door D0 from the tool defaults",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 1.5 }
+        ]
+      },
+      "save": { "w0": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "window W0 created from the defaults" }
+      ]
+    },
+    {
+      "id": "door D0 from the tool defaults",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 4.0 }
+        ]
+      },
+      "save": { "d0": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "door D0 created from the defaults" }
+      ]
+    },
+    {
+      "id": "window W1 1.73 m wide, the source of the favorite",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 7.0, "width": 1.73 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "door D1 1.13 m wide, the source of the favorite",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 10.0, "width": 1.13 }
+        ]
+      },
+      "save": { "d1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "default widths, and the favorite sources",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w0}" } },
+          { "elementId": { "guid": "${d0}" } }
+        ]
+      },
+      "save": { "w0width": "detailsOfElements[0].details.width", "d0width": "detailsOfElements[1].details.width" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "exists": true, "name": "default window width read" },
+        { "path": "detailsOfElements[1].details.width", "exists": true, "name": "default door width read" }
+      ]
+    },
+    {
+      "id": "favorites from W1 and D1",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${w1}" }, "favorite": "Tapir check window favorite keeps defaults" },
+          { "elementId": { "guid": "${d1}" }, "favorite": "Tapir check door favorite keeps defaults" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "window favorite created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "door favorite created" }
+      ]
+    },
+    {
+      "id": "one call: window W2 from the favorite, then window W3 without favoriteName",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 13.0, "favoriteName": "Tapir check window favorite keeps defaults" },
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 16.0 }
+        ]
+      },
+      "save": { "w2": "elements[0].elementId.guid", "w3": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "window W2 created from the favorite" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "window W3 created without favoriteName" }
+      ]
+    },
+    {
+      "id": "one call: door D2 from the favorite, then door D3 without favoriteName",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 19.0, "favoriteName": "Tapir check door favorite keeps defaults" },
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 22.0 }
+        ]
+      },
+      "save": { "d2": "elements[0].elementId.guid", "d3": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "door D2 created from the favorite" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "door D3 created without favoriteName" }
+      ]
+    },
+    {
+      "id": "a later call without favoriteName: window W4 and door D4",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 25.0 }
+        ]
+      },
+      "save": { "w4": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "door D4 in a later call without favoriteName",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 28.0 }
+        ]
+      },
+      "save": { "d4": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "widths: the favorite where it was named, the defaults everywhere else",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w2}" } },
+          { "elementId": { "guid": "${w3}" } },
+          { "elementId": { "guid": "${w4}" } },
+          { "elementId": { "guid": "${d2}" } },
+          { "elementId": { "guid": "${d3}" } },
+          { "elementId": { "guid": "${d4}" } }
+        ]
+      },
+      "save": {
+        "w3width": "detailsOfElements[1].details.width",
+        "w4width": "detailsOfElements[2].details.width",
+        "d3width": "detailsOfElements[4].details.width",
+        "d4width": "detailsOfElements[5].details.width"
+      },
+      "expect": [
+        { "expr": "${w0width} - 1.73", "ne": 0, "name": "the default window width is not the favorite's, so the check can tell them apart" },
+        { "expr": "${d0width} - 1.13", "ne": 0, "name": "the default door width is not the favorite's, so the check can tell them apart" },
+        { "path": "detailsOfElements[0].details.width", "approx": 1.73, "name": "W2 has the width of the favorite" },
+        { "path": "detailsOfElements[3].details.width", "approx": 1.13, "name": "D2 has the width of the favorite" },
+        { "expr": "${w3width} - ${w0width}", "approx": 0.0, "name": "W3, after W2 in the same call, has the default width, not the favorite's" },
+        { "expr": "${w4width} - ${w0width}", "approx": 0.0, "name": "W4, in a later call, has the default width: the window defaults were restored" },
+        { "expr": "${d3width} - ${d0width}", "approx": 0.0, "name": "D3, after D2 in the same call, has the default width, not the favorite's" },
+        { "expr": "${d4width} - ${d0width}", "approx": 0.0, "name": "D4, in a later call, has the default width: the door defaults were restored" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "id": "delete the favorites",
+      "command": "DeleteFavorites",
+      "creates": false,
+      "params": { "favorites": [ "Tapir check window favorite keeps defaults", "Tapir check door favorite keeps defaults" ] }
+    }
+  ]
+}

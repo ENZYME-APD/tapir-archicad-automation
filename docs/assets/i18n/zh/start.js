@@ -10,6 +10,8 @@
         '从下载到运行第一个脚本，大约十分钟。第 1 到第 3 步无需编程。',
     '<strong class="callout-label"><span aria-hidden="true">▶</span> Video</strong> Prefer watching? The <a href="../tutorials/">Tapir video tutorials</a> walk through installing Tapir and using it.':
         '<strong class="callout-label"><span aria-hidden="true">▶</span> 视频</strong> 更喜欢看视频？<a href="../tutorials/">Tapir 视频教程</a>（英文）演示了如何安装和使用 Tapir。',
+    '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Tutorials</strong> Written tutorials, step by step: <a href="../tutorials/export-properties-to-excel/">properties to Excel</a>, <a href="../tutorials/connect-grasshopper-to-archicad/">Grasshopper</a>, <a href="../tutorials/batch-rename-views/">renaming views</a>, <a href="../tutorials/number-doors-and-windows-by-zone/">numbering doors and windows</a> and <a href="../tutorials/first-python-script/">your first Python script</a>.':
+        '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> 教程</strong> 图文教程（英文），分步讲解：<a href="../tutorials/export-properties-to-excel/">把属性导出到 Excel</a>、<a href="../tutorials/connect-grasshopper-to-archicad/">Grasshopper</a>、<a href="../tutorials/batch-rename-views/">重命名视图</a>、<a href="../tutorials/number-doors-and-windows-by-zone/">为门窗编号</a>以及<a href="../tutorials/first-python-script/">您的第一个 Python 脚本</a>。',
 
     // 1. Install
     'Install Tapir': '安装 Tapir',
@@ -51,6 +53,8 @@
         '可选的 <code>includePattern</code> 和 <code>excludePattern</code> 是正则表达式，用来选择面板列出文件夹中的哪些文件。',
     'The palette lists the folder\'s scripts next to the built-in ones the next time it loads its scripts.':
         '面板下次加载脚本时，会把该文件夹的脚本列在内置脚本旁边。',
+    'Many scripts use the helpers of the built-in scripts, the <code>utilities</code> and <code>aclib</code> folders. A Tapir newer than 2.0.0 gives them to every script it runs, so nothing more is needed. With Tapir 2.0.0 or older, copy those two folders from <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts">builtin-scripts</a> next to the script.':
+        '许多脚本会用到内置脚本的辅助代码，即 <code>utilities</code> 和 <code>aclib</code> 文件夹。高于 2.0.0 的 Tapir 会把它们提供给它运行的每个脚本，因此无需再做什么。使用 Tapir 2.0.0 或更早版本时，请把这两个文件夹从 <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts">builtin-scripts</a> 复制到脚本旁边。',
 
     // 4. Python
     'Write a script of your own': '编写自己的脚本',

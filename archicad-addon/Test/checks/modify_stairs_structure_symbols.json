@@ -1,0 +1,214 @@
+{
+  "title": "CreateStairs and ModifyStairs write the line types, pens and fills of the stair's structure symbols and monolithic structure symbols (#2848)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a line type of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "line": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a line type" }
+      ]
+    },
+    {
+      "id": "a fill of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Fill" },
+      "save": { "fill": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a fill" }
+      ]
+    },
+    {
+      "id": "create a straight stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 800.0, "y": 720.0 },
+              { "x": 806.0, "y": 720.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "set the under structure symbol of the floor plan, the stringer symbol of the RCP and a monolith symbol",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structureSymbols": [
+              {
+                "structureType": "UnderStructure",
+                "view": "FloorPlan",
+                "visibleLineTypeId": { "guid": "${line}" },
+                "visibleLinePen": 17,
+                "hiddenLineTypeId": { "guid": "${line}" },
+                "hiddenLinePen": 23,
+                "visibleFillId": { "guid": "${fill}" },
+                "visibleFillPen": 41,
+                "visibleFillBackgroundPen": 42,
+                "hiddenFillPen": 43,
+                "hiddenFillBackgroundPen": -1
+              },
+              { "structureType": "Stringer", "view": "CeilingPlan", "visibleLinePen": 61 }
+            ],
+            "monolithStructureSymbols": [
+              {
+                "view": "FloorPlan",
+                "part": "Hidden",
+                "goingLinePen": 71,
+                "goingNosingLinePen": 72,
+                "connectionLineTypeId": { "guid": "${line}" },
+                "connectionLinePen": 73,
+                "connectionDetailLinePen": 73,
+                "drainingFillId": { "guid": "${fill}" },
+                "drainingFillPen": 75,
+                "drainingFillBackgroundPen": 76,
+                "contourLinePen": 77
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "symbol settings accepted and read back as given" }
+      ]
+    },
+    {
+      "id": "read the structure symbols back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureSymbols[0].structureType", "eq": "UnderStructure", "name": "item 0 is the under structure" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].view", "eq": "FloorPlan", "name": "item 0 is the floor plan" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].visibleLineTypeId.guid", "eq": "${line}", "name": "visible line type" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].visibleLinePen", "eq": 17, "name": "visible line pen" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].hiddenLineTypeId.guid", "eq": "${line}", "name": "hidden line type" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].hiddenLinePen", "eq": 23, "name": "hidden line pen" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].visibleFillId.guid", "eq": "${fill}", "name": "visible fill" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].visibleFillPen", "eq": 41, "name": "visible fill pen" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].visibleFillBackgroundPen", "eq": 42, "name": "visible fill background pen" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].hiddenFillPen", "eq": 43, "name": "hidden fill pen" },
+        { "path": "detailsOfElements[0].details.structureSymbols[0].hiddenFillBackgroundPen", "eq": -1, "name": "hidden fill background pen" },
+        { "path": "detailsOfElements[0].details.structureSymbols[3].structureType", "eq": "Stringer", "name": "item 3 is the stringer" },
+        { "path": "detailsOfElements[0].details.structureSymbols[3].view", "eq": "CeilingPlan", "name": "item 3 is the RCP" },
+        { "path": "detailsOfElements[0].details.structureSymbols[3].visibleLinePen", "eq": 61, "name": "RCP stringer pen set" },
+        { "path": "detailsOfElements[0].details.structureSymbols[1].visibleLinePen", "ne": 17, "name": "RCP under structure pen not changed by the floor plan item" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].view", "eq": "FloorPlan", "name": "monolith item 1 is the floor plan" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].part", "eq": "Hidden", "name": "monolith item 1 is the hidden part" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].goingLinePen", "eq": 71, "name": "going line pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].goingNosingLinePen", "eq": 72, "name": "nosing line pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].connectionLineTypeId.guid", "eq": "${line}", "name": "connection line type" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].connectionLinePen", "eq": 73, "name": "connection line pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].connectionDetailLinePen", "eq": 73, "name": "connection detail line pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].drainingFillId.guid", "eq": "${fill}", "name": "draining fill" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].drainingFillPen", "eq": 75, "name": "draining fill pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].drainingFillBackgroundPen", "eq": 76, "name": "draining fill background pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[1].contourLinePen", "eq": 77, "name": "contour line pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[0].goingLinePen", "ne": 71, "name": "visible monolith part not changed" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "name": "flight width unchanged" }
+      ]
+    },
+    {
+      "id": "a bad pen is refused",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structureSymbols": [
+              { "structureType": "UnderStructure", "view": "FloorPlan", "visibleLinePen": 199 },
+              { "structureType": "Stringer", "view": "FloorPlan", "hiddenLinePen": 999 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "a bad view is refused",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "monolithStructureSymbols": [ { "view": "Unknown", "part": "Visible", "goingLinePen": 199 } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "nothing of the refused changes is written",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureSymbols[0].visibleLinePen", "eq": 17, "name": "visible line pen kept" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[0].goingLinePen", "ne": 199, "name": "monolith pen kept" }
+      ]
+    },
+    {
+      "id": "create a stair with structure symbols",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 800.0, "y": 726.0 },
+              { "x": 806.0, "y": 726.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "structureSymbols": [ { "structureType": "Stringer", "view": "FloorPlan", "visibleLinePen": 33, "hiddenLinePen": 34 } ],
+            "monolithStructureSymbols": [ { "view": "CeilingPlan", "part": "Visible", "contourLinePen": 35 } ]
+          }
+        ]
+      },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "the created stair has the structure symbols",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureSymbols[2].structureType", "eq": "Stringer", "name": "item 2 is the stringer" },
+        { "path": "detailsOfElements[0].details.structureSymbols[2].view", "eq": "FloorPlan", "name": "item 2 is the floor plan" },
+        { "path": "detailsOfElements[0].details.structureSymbols[2].visibleLinePen", "eq": 33, "name": "created with the stringer visible line pen" },
+        { "path": "detailsOfElements[0].details.structureSymbols[2].hiddenLinePen", "eq": 34, "name": "created with the stringer hidden line pen" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[2].view", "eq": "CeilingPlan", "name": "monolith item 2 is the RCP" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[2].part", "eq": "Visible", "name": "monolith item 2 is the visible part" },
+        { "path": "detailsOfElements[0].details.monolithStructureSymbols[2].contourLinePen", "eq": 35, "name": "created with the monolith contour pen" }
+      ]
+    }
+  ]
+}
