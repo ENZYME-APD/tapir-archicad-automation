@@ -79,11 +79,12 @@
     {
       "slug": "bulk-view-renamer",
       "name": "Bulk View Renamer",
-      "summary": "Renames the views of the View Map, or of one folder, in one go: find and replace, prefix and suffix, or a pattern with a counter.",
+      "summary": "Renames the views of the View Map or the Project Map, or of one folder, in one go: find and replace, prefix and suffix, or a pattern with a counter.",
       "category": "navigator-views",
       "tags": [
         "views",
         "view-map",
+        "project-map",
         "renaming",
         "navigator"
       ],
@@ -95,6 +96,38 @@
       "entry": "BulkViewRenamer.py",
       "changes": "model",
       "versions": [
+        {
+          "version": "1.3.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "A Rename choice, Name or ID (one field per run): the find and replace, prefix and suffix and counter modes, the preview and the clash check work on the ID too. An ID that would become empty is skipped.",
+          "commit": "f2769e34849194bf054b353fe19098927d7a19dc",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/f2769e34849194bf054b353fe19098927d7a19dc/marketplace/bulk-view-renamer/BulkViewRenamer.py",
+          "sha256": "7a38f9bab68b86102228a4d4ddd765200b3bc0338272f17c6e868acf1d29a27f"
+        },
+        {
+          "version": "1.2.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "A Map choice: works on the View Map or on the Project Map, with the same folders that open and close. In the Project Map the sections, elevations, interior elevations, details and worksheets are renamed; the other viewpoints are listed as cannot rename.",
+          "commit": "26a6bdabb6f84e4b3b34b5c9bd55b08a1a5514b8",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/26a6bdabb6f84e4b3b34b5c9bd55b08a1a5514b8/marketplace/bulk-view-renamer/BulkViewRenamer.py",
+          "sha256": "5eea122238e30fbd00e62e4a8702175709dd321217c00bfe9a775e26dcf0a6f3"
+        },
         {
           "version": "1.1.0",
           "archicadVersions": [
@@ -619,6 +652,42 @@
       ]
     },
     {
+      "slug": "relink-drawing-keep-placement",
+      "name": "Relink Drawing, Keep Placement",
+      "summary": "Relinks a Drawing on a layout to another view and keeps it exactly where it was: same displayed scale, orientation and frame.",
+      "category": "documentation-layouts",
+      "tags": [
+        "drawings",
+        "layouts",
+        "relink",
+        "views",
+        "scale"
+      ],
+      "author": {
+        "name": "iota",
+        "discord": "iota"
+      },
+      "license": "MIT",
+      "entry": "relink_drawing_keep_placement.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "2.0.0",
+          "changelog": "First version.",
+          "commit": "4d568876fcc30044b00f3bd5d4d180991e372a38",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/4d568876fcc30044b00f3bd5d4d180991e372a38/marketplace/relink-drawing-keep-placement/relink_drawing_keep_placement.py",
+          "sha256": "07483daac5670b53476b9a59c7c926638c57ad8469017c828286d106fce41ede"
+        }
+      ]
+    },
+    {
       "slug": "room-finishes-from-zones",
       "name": "Room Finishes from Zones",
       "summary": "Adds the floor finish, the ceiling with an optional cove and the wall finishes of the selected zones from favorites or materials; a re-run replaces them.",
@@ -970,6 +1039,43 @@
       ]
     },
     {
+      "slug": "tapir-note",
+      "name": "Tapir Note",
+      "summary": "Hands the manual steps of a task to a team member as an Archicad Issue: one comment per step, the selected elements attached, BCF export.",
+      "category": "utilities",
+      "tags": [
+        "issues",
+        "tasks",
+        "notes",
+        "teamwork",
+        "bcf"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "TapirNote.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version.",
+          "commit": "3f8cfda5a23f204ca78bf0b447d606e4565fe31a",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/3f8cfda5a23f204ca78bf0b447d606e4565fe31a/marketplace/tapir-note/TapirNote.py",
+          "sha256": "fb62abe2fc6e472df7bf150290bcb9a4052cb7692049d43e07adc26451bb7ee7"
+        }
+      ]
+    },
+    {
       "slug": "text-find-replace",
       "name": "Find and Replace in Texts",
       "summary": "Finds a word in the Texts and text Labels and replaces it in the matches you check, keeping the styles and autotexts of the rest of the text.",
@@ -1189,7 +1295,7 @@
     {
       "slug": "zones-to-walls-and-slabs",
       "name": "Zones to Walls and Slabs",
-      "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, and balustrades around the terraces.",
+      "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, terrace balustrades and doors between rooms.",
       "category": "modeling-geometry",
       "tags": [
         "zones",
@@ -1209,6 +1315,22 @@
       "entry": "ZonesToWallsAndSlabs.py",
       "changes": "model",
       "versions": [
+        {
+          "version": "0.5.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "Doors between zones: with Doors between zones ticked, each pair of zones on a story that share an edge gets one door in the partition between them, in the middle of their longest shared segment, made with a Door favorite or the Door tool's defaults with a width. A segment shorter than the door and 10 cm at each end gets no door, and the pair is counted as skipped. The doors are a fourth Undo step.",
+          "commit": "a06d5d43c3c79b6c01ec28c3905e5e1482db9ef0",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/a06d5d43c3c79b6c01ec28c3905e5e1482db9ef0/marketplace/zones-to-walls-and-slabs/ZonesToWallsAndSlabs.py",
+          "sha256": "6c6b224b415278f90232eff3650639f960b838af5fe9d647d4e588ab99252aaf"
+        },
         {
           "version": "0.4.0",
           "archicadVersions": [
