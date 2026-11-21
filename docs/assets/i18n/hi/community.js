@@ -97,6 +97,7 @@
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':
         'हर महीने के कमिट, issues और pull requests, और Discord संदेश, एक के ऊपर एक, और Discord सदस्यों की संख्या एक रेखा के रूप में, {first} से {last} तक। नीचे की तालिका में हर संख्या है।',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'जन॰ फ़र॰ मार्च अप्रैल मई जून जुल॰ अग॰ सित॰ अक्तू॰ नव॰ दिस॰',
+    '{month} {year}': '{month} {year}',
     'Growth': 'विकास',
     'Total': 'कुल',
     'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':

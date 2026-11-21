@@ -55,6 +55,25 @@
     'Use Tapir to look at the Archicad project I have open. Do not change anything; only read. 1. List the stories with their names and levels. 2. Count the walls, slabs, columns, doors and windows on each story. 3. Show the result as one table, one row per story. Tell me which Tapir commands you used.':
         '用 Tapir 查看我打开的 Archicad 项目。\n不要修改任何内容，只读取。\n1. 列出所有楼层及其名称和标高。\n2. 统计每个楼层的墙、楼板、柱、门和窗的数量。\n3. 用一张表显示结果，每个楼层一行。\n告诉我你用了哪些 Tapir 命令。',
 
+    // Check the names first
+    'Check the names first': '先核对名称',
+    'Check names, <em>don\'t guess.</em>': '核对名称，<em>不要猜。</em>',
+    'Your words rarely match the names in the project: "fire rating" may be a property called <span class="mono">FireRating</span> in one template and <span class="mono">Feuerwiderstand</span> in another, and "level 2" may be the story "02 First Floor". An AI that guesses the name still gets an answer, only a wrong one: no values found, so "no doors have a fire rating".':
+        '您的说法很少与项目中的名称一致：“耐火等级”在一个模板里可能是名为 <span class="mono">FireRating</span> 的属性，在另一个模板里却是 <span class="mono">Feuerwiderstand</span>；“2 层”可能是名为“02 First Floor”的楼层。靠猜测名称的 AI 仍然会得到答案，只是错误的答案：找不到任何值，于是得出“没有门有耐火等级”。',
+    '<b aria-hidden="true">1</b><strong>Look the words up first</strong><span>Before a command whose parameters come from your words (a story, property, classification, layer, building material, composite, surface, zone category or element type), the AI sends those words to <a href="../archicad-addon/#ResolveNames">ResolveNames</a>, with the kind of each when it knows it. It only reads.</span>':
+        '<b aria-hidden="true">1</b><strong>先查这些词</strong><span>在执行参数来自您的说法（楼层、属性、分类、图层、建筑材料、复合结构、表面、区域类别或元素类型）的命令之前，AI 会先把这些词发给 <a href="../archicad-addon/#ResolveNames">ResolveNames</a>，知道类型时也一并说明。这个命令只读取。</span>',
+    '<b aria-hidden="true">2</b><strong>Use what it returns</strong><span><span class="mono">found</span>: the item named exactly so, with the ids the other commands take (story index, attribute id, elementType, propertyId, classification ids). <span class="mono">closeMatches</span>: only similar names, best first; the AI asks you which one you meant instead of picking one itself.</span>':
+        '<b aria-hidden="true">2</b><strong>使用它返回的结果</strong><span><span class="mono">found</span>：名称完全一致的条目，并附带其他命令需要的 id（楼层索引、attribute id、elementType、propertyId、分类 id）。<span class="mono">closeMatches</span>：只有相似的名称，最接近的排在前面；AI 会问您指的是哪一个，而不是自己挑一个。</span>',
+    '<b aria-hidden="true">3</b><strong>Say "not in this project"</strong><span><span class="mono">notFound</span>: nothing in the project is close, so the project has no such item. The AI says "this project has no X" instead of guessing a name or reporting an empty result as the answer.</span>':
+        '<b aria-hidden="true">3</b><strong>说“项目中没有”</strong><span><span class="mono">notFound</span>：项目中没有相近的名称，所以项目里没有这样的条目。AI 会说“这个项目没有 X”，而不是猜一个名称，或把空结果当作答案。</span>',
+    'Add these lines to your prompt, or to the instructions of your MCP server, so the AI checks the names every time. They work the same when the AI writes a script: the script sends <span class="mono">ResolveNames</span> first and stops with a message on <span class="mono">notFound</span>.':
+        '把这几行加到您的提示词或 MCP 服务器的说明中，AI 每次都会核对名称。AI 编写脚本时同样适用：脚本先发送 <span class="mono">ResolveNames</span>，遇到 <span class="mono">notFound</span> 时给出提示并停止。',
+    'Before a change, ask for a preview. The commands that delete or replace, such as <a href="../archicad-addon/#DeleteElements">DeleteElements</a>, <a href="../archicad-addon/#DeleteAttributes">DeleteAttributes</a> and <a href="../archicad-addon/#DeleteAndReplaceAttributes">DeleteAndReplaceAttributes</a>, take <span class="mono">"dryRun": true</span>: nothing changes, and the response lists what would. The command reference says which commands have it.':
+        '修改之前，先要求预览。删除或替换类的命令，例如 <a href="../archicad-addon/#DeleteElements">DeleteElements</a>、<a href="../archicad-addon/#DeleteAttributes">DeleteAttributes</a> 和 <a href="../archicad-addon/#DeleteAndReplaceAttributes">DeleteAndReplaceAttributes</a>，接受 <span class="mono">"dryRun": true</span>：不会做任何更改，响应会列出将要更改的内容。命令参考中写明了哪些命令支持它。',
+    'add to any request': '添加到任何请求中',
+    'Before you use a name taken from my words (a story, property, classification, layer, building material, composite, surface, zone category or element type), check it with the Tapir command ResolveNames. - found: use the ids it returns. - closeMatches: ask me which one I mean. - notFound: tell me this project has no such item. Never guess a name. Before a command that deletes or replaces, run it with "dryRun": true if it has that input, and show me what it would change.':
+        '在使用取自我说法的名称（楼层、属性、分类、图层、\n建筑材料、复合结构、表面、区域类别或元素类型）之前，\n先用 Tapir 命令 ResolveNames 核对。\n- found：使用它返回的 id。\n- closeMatches：问我指的是哪一个。\n- notFound：告诉我这个项目没有这样的条目。\n  绝不要猜测名称。\n在执行删除或替换类的命令之前，如果它有 "dryRun": true\n这个输入，就先这样运行，并告诉我它会更改什么。',
+
     // When the AI writes a script
     'When the AI writes a script': '当 AI 编写脚本时',
     'Describe it, <em>run it.</em>': '描述它，<em>运行它。</em>',

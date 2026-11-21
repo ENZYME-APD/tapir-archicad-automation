@@ -411,9 +411,11 @@ static GS::UniString RoofEdgeTypeToString (API_RoofEdgeTypeID edgeType)
     }
 }
 
-// The edge type of each edge of a Single-plane Roof's polygon (APIMemoMask_RoofEdgeTypes, the
-// Edge Type of the Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and
-// edgeTrims (#2436). A roof without stored edge types has every edge Undefined.
+// The edge type of each edge of a roof's polygon (APIMemoMask_RoofEdgeTypes, the Edge Type of the
+// Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and edgeTrims (#2436).
+// On a Multi-plane Roof the memo's polygon is the contour, as the DevKit documents the mask: "the
+// edge types of the contour polygon of a roof element" (#2454). A roof without stored edge types
+// has every edge Undefined.
 static void AddRoofEdgeTypesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -1691,6 +1693,12 @@ static void AddDrawingManagerDetails (const API_Guid& drawingGuid, GS::ObjectSta
     if (linkInfo.linkPath != nullptr) {
         os.Add ("linkPath", linkInfo.linkPath->ToDisplayText ());
     }
+    // The navigator item the drawing shows: the same guid as the sourceNavigatorItemId of the
+    // drawing's Layout Book item (see FindDrawingOfNavigatorItemInCurrentDatabase), so it can be
+    // passed to GetViewSettings - unlike navigatorItemId, which is the drawing's own link item.
+    if (linkInfo.linkGuid != APINULLGuid) {
+        os.Add ("sourceNavigatorItemId", CreateGuidObjectState (linkInfo.linkGuid));
+    }
 }
 
 static GS::UniString StructureTypeToString (API_ModelElemStructureType structureType)
@@ -2903,6 +2911,139 @@ static void AddCurtainWallReferenceLine (const API_Element& elem, GS::ObjectStat
     }
 }
 
+// A column (primary) or row (secondary) pattern of a curtain wall as a CurtainWallPattern, the inverse
+// of ApplyCurtainWallPattern (ElementCreationCommands.cpp), so CreateCurtainWalls and ModifyCurtainWalls
+// take it back as it is. Returns false for a pattern they cannot write: one without sizes, with a size
+// that is not positive, or with the number-of-divisions logic, which their logic field does not take.
+static bool CreateCurtainWallPatternObjectState (const API_CWSegmentPatternData& pattern, GS::ObjectState& patternOS)
+{
+    if (pattern.nPattern == 0 || pattern.pattern == nullptr ||
+        static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSConstPtr> (pattern.pattern)) / sizeof (double)) < pattern.nPattern) {
+        return false;
+    }
+    if (pattern.logic != APICWSePL_FixedSizes && pattern.logic != APICWSePL_BestDivision) {
+        return false;
+    }
+    for (UInt32 i = 0; i < pattern.nPattern; ++i) {
+        if (pattern.pattern[i] <= 0.0) {
+            return false;
+        }
+    }
+
+    const auto& sizes = patternOS.AddList<double> ("sizes");
+    for (UInt32 i = 0; i < pattern.nPattern; ++i) {
+        sizes (pattern.pattern[i]);
+    }
+    patternOS.Add ("logic", pattern.logic == APICWSePL_FixedSizes ? "FixedSizes" : "BestDivision");
+    // An origin the write does not know is left out, and writing the pattern back keeps it.
+    switch (pattern.gridOriginType) {
+        case APICWSeGridOrigin_StartWithPattern:    patternOS.Add ("origin", "StartWithPattern"); break;
+        case APICWSeGridOrigin_StartFromCenter:     patternOS.Add ("origin", "StartFromCenter"); break;
+        case APICWSeGridOrigin_AlignToCenter:       patternOS.Add ("origin", "AlignToCenter"); break;
+        case APICWSeGridOrigin_EndWithPattern:      patternOS.Add ("origin", "EndWithPattern"); break;
+        default: break;
+    }
+    // Always given, because the write rewrites them every time (all of them when omitted); an index
+    // outside the pattern, which the write refuses, is left out.
+    const UInt32 nStoredFlexibleIDs = pattern.flexibleIDs != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSConstPtr> (pattern.flexibleIDs)) / sizeof (UInt32))
+        : 0;
+    const UInt32 nFlexibleIDs = std::min (pattern.nFlexibleIDs, nStoredFlexibleIDs);
+    GS::Array<UInt32> flexibleIDs;
+    for (UInt32 i = 0; i < nFlexibleIDs; ++i) {
+        const UInt32 id = pattern.flexibleIDs[i];
+        if (id < pattern.nPattern && !flexibleIDs.Contains (id)) {
+            flexibleIDs.Push (id);
+        }
+    }
+    const auto& flexibleIndices = patternOS.AddList<Int32> ("flexibleIndices");
+    for (UInt32 id : flexibleIDs) {
+        flexibleIndices (static_cast<Int32> (id));
+    }
+    return true;
+}
+
+// The cells of the pattern unit of a curtain wall as CurtainWallPatternCell items, the inverse of
+// ApplyCurtainWallPatternCells (ElementCreationCommands.cpp): stored row by row from the bottom row,
+// each row from the start of the segment. A class index that the write refuses (outside the panel and
+// frame classes of the curtain wall, e.g. a customized cell) is left out of its item, so writing the
+// cells back keeps it. Nothing is added when Archicad returns fewer cells than the pattern unit has.
+static void AddCurtainWallPatternCells (const API_Element& elem, const API_ElementMemo& memo, GS::ObjectState& typeSpecificDetails)
+{
+    const UInt32 nColumns = memo.cWSegPrimaryPattern.nPattern;
+    const UInt32 nRows = memo.cWSegSecondaryPattern.nPattern;
+    const UInt32 nCells = nColumns * nRows;
+    const UInt32 nStoredCells = memo.cWSegPatternCells != nullptr
+        ? static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSConstPtr> (memo.cWSegPatternCells)) / sizeof (API_CWSegmentPatternCellData))
+        : 0;
+    if (nCells == 0 || nStoredCells < nCells) {
+        return;
+    }
+
+    // The class counts ModifyCurtainWalls bounds the indices by.
+    const UInt32 nPanelClasses = elem.curtainWall.nPanelDefaults;
+    const UInt32 nFrameClasses = elem.curtainWall.nFrameDefaults;
+    const auto isValidPanelClass = [&] (UInt32 index) {
+        return index == APICWPanelClass_Deleted ||
+               (index >= APICWPanelClass_FirstCustomClass && index - APICWPanelClass_FirstCustomClass < nPanelClasses);
+    };
+    const auto isValidFrameClass = [&] (UInt32 index) {
+        return index < APICWFrameClass_FirstCustomClass || index - APICWFrameClass_FirstCustomClass < nFrameClasses;
+    };
+
+    const auto& cells = typeSpecificDetails.AddList<GS::ObjectState> ("cells");
+    for (UInt32 i = 0; i < nCells; ++i) {
+        const API_CWSegmentPatternCellData& cell = memo.cWSegPatternCells[i];
+        GS::ObjectState cellOS;
+        cellOS.Add ("columnIndex", static_cast<Int32> (i % nColumns));
+        cellOS.Add ("rowIndex", static_cast<Int32> (i / nColumns));
+        if (isValidPanelClass (cell.leftPanelID)) {
+            cellOS.Add ("panelClassIndex", static_cast<Int32> (cell.leftPanelID));
+        }
+        if (isValidPanelClass (cell.rightPanelID)) {
+            cellOS.Add ("rightPanelClassIndex", static_cast<Int32> (cell.rightPanelID));
+        }
+        if (isValidFrameClass (cell.leftFrameID)) {
+            cellOS.Add ("leftFrameClassIndex", static_cast<Int32> (cell.leftFrameID));
+        }
+        if (isValidFrameClass (cell.bottomFrameID)) {
+            cellOS.Add ("bottomFrameClassIndex", static_cast<Int32> (cell.bottomFrameID));
+        }
+        switch (cell.crossingFrameType) {
+            case APICWCFT_NoCrossingFrame:              cellOS.Add ("crossingFrameType", "None"); break;
+            case APICWCFT_FromBottomLeftToTopRight:     cellOS.Add ("crossingFrameType", "FromBottomLeftToTopRight"); break;
+            case APICWCFT_FromTopLeftToBottomRight:     cellOS.Add ("crossingFrameType", "FromTopLeftToBottomRight"); break;
+            default: break;
+        }
+        if (isValidFrameClass (cell.crossingFrameID)) {
+            cellOS.Add ("crossingFrameClassIndex", static_cast<Int32> (cell.crossingFrameID));
+        }
+        cells (cellOS);
+    }
+}
+
+// The column and row patterns and the cells of a curtain wall, as CreateCurtainWalls and
+// ModifyCurtainWalls take them in primaryPattern, secondaryPattern and cells. Those commands write the
+// curtain wall's own cWSeg* memo, from which Archicad builds every segment (as the DevKit's
+// Element_Test changes it), so that memo is read here, not the memo of the segments.
+static void AddCurtainWallPatterns (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_CWSegPrimaryPattern | APIMemoMask_CWSegSecPattern | APIMemoMask_CWSegPanelPattern) != NoError) {
+        return;
+    }
+    GS::ObjectState primaryPattern;
+    if (CreateCurtainWallPatternObjectState (memo.cWSegPrimaryPattern, primaryPattern)) {
+        typeSpecificDetails.Add ("primaryPattern", primaryPattern);
+    }
+    GS::ObjectState secondaryPattern;
+    if (CreateCurtainWallPatternObjectState (memo.cWSegSecondaryPattern, secondaryPattern)) {
+        typeSpecificDetails.Add ("secondaryPattern", secondaryPattern);
+    }
+    AddCurtainWallPatternCells (elem, memo, typeSpecificDetails);
+}
+
 // A CoordinateSystem3D as CreateShells reads it: the axes are the columns of the 3x4 row-major
 // tmx and the origin is its translation column.
 static GS::ObjectState CreateCoordinateSystem3DObjectState (const API_Tranmat& tranmat)
@@ -3076,6 +3217,11 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
             segmentDetails.Add ("height", segment.height);
             segmentDetails.Add ("lateralOffset", segment.yOffset);
             segmentDetails.Add ("referenceLineLocation", segment.refLineLocation == APIRLL_Left ? "Left" : (segment.refLineLocation == APIRLL_Right ? "Right" : "Center"));
+            segmentDetails.Add ("visible", segment.visible);
+            segmentDetails.Add ("verticalOffset", segment.zOffset);
+            segmentDetails.Add ("slantAngle", segment.slantAngle);
+            segmentDetails.Add ("skewAngle", segment.skewAngle);
+            segmentDetails.Add ("relativeSkewingAngle", segment.relativeSkewingAngle);
             segments (segmentDetails);
         }
     }
@@ -3087,6 +3233,12 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
             nodeDetails.Add ("postOffset", node.postOffset);
             nodeDetails.Add ("elevation", node.elevation);
             nodeDetails.Add ("unifyPatterns", node.unifyPatterns);
+            nodeDetails.Add ("visible", node.visible);
+            nodeDetails.Add ("isStatic", node.isStatic);
+            nodeDetails.Add ("tiltedPost", node.tiltedPost);
+            nodeDetails.Add ("autoConnectionOffset", node.autoConnectionOffset);
+            nodeDetails.Add ("connectionOffset", node.connectionOffset);
+            nodeDetails.Add ("endingOffset", node.endingOffset);
             nodes (nodeDetails);
         }
     }
@@ -3096,8 +3248,32 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
 // that owns each one (a node, a segment, a pattern, a baluster set or a rail) and, for the ones
 // placed from a library part, that library part. The library part is looked up from the unique
 // ID Archicad reports for the component, and left out when it is not in the loaded libraries.
-static void AddRailingComponentOwnerAndSymbol (GS::ObjectState& typeSpecificDetails, const API_Elem_Head& header, const API_Guid& owner, const API_Guid* symbolId)
+// The owner to report for a railing component. The DevKit documents the node, segment, pattern, baluster
+// set or rail as the owner field of a component, but Archicad 29 (build 5101, FRA, checked in Archicad)
+// gives the railing itself in that field for every component. The component's immediate parent in its
+// hierarchical element is the documented owner there, so it is reported instead of the railing.
+static API_Guid GetRailingComponentOwner (const API_Elem_Head& header, const API_Guid& owner)
 {
+    if (owner != APINULLGuid) {
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = owner;
+        if (ACAPI_Element_GetHeader (&ownerHead) != NoError || GetElemTypeId (ownerHead) != API_RailingID) {
+            return owner;
+        }
+    }
+    const API_HierarchicalOwnerType ownerType = API_ParentHierarchicalOwner;
+    API_HierarchicalElemType hierarchicalElemType = API_UnknownElemType;
+    API_Guid parentGuid = APINULLGuid;
+    if (ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (&header.guid, &ownerType, &hierarchicalElemType, &parentGuid) != NoError ||
+        parentGuid == APINULLGuid || parentGuid == header.guid) {
+        return owner;
+    }
+    return parentGuid;
+}
+
+static void AddRailingComponentOwnerAndSymbol (GS::ObjectState& typeSpecificDetails, const API_Elem_Head& header, const API_Guid& structOwner, const API_Guid* symbolId)
+{
+    const API_Guid owner = GetRailingComponentOwner (header, structOwner);
     if (owner != APINULLGuid) {
         typeSpecificDetails.Add ("ownerElementId", CreateGuidObjectState (owner));
         API_Elem_Head ownerHead = {};
@@ -3701,6 +3877,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     // The point an automatic zone was placed from (CreateZones geometry.referencePosition);
                     // the stamp is often moved away from it, so it is the only way to recreate the zone as it was.
                     typeSpecificDetails.Add ("referencePosition", Create2DCoordinateObjectState (elem.zone.refPos));
+                    // refLineFlag: surrounded by the walls' reference lines, not their side lines; it tells
+                    // whether polygonDisplay has an effect (#2631).
+                    typeSpecificDetails.Add ("boundaryMethod", GS::UniString (elem.zone.refLineFlag ? "ReferenceLine" : "InnerEdge"));
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
@@ -3844,7 +4023,16 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
 
             case API_LabelID: {
-                AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
+                // A label in a section, elevation, interior elevation or 3D document belongs to the section
+                // element that shows its model element there; the owner is reported as that model element,
+                // the way the element listing commands report a section element (#2876).
+                API_Guid labelOwner = elem.label.parent;
+                API_ElemTypeID labelOwnerType = GetElemTypeId (elem.label.parentType);
+                if (labelOwnerType == API_SectElemID) {
+                    labelOwner = GetParentElemOfSectElem (labelOwner);
+                    labelOwnerType = API_ZombieElemID; // read from the owner's header
+                }
+                AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), labelOwner, labelOwnerType);
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.label.begC));
                 typeSpecificDetails.Add ("midCoordinate", Create2DCoordinateObjectState (elem.label.midC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.label.endC));
@@ -3884,6 +4072,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("pen", (Int32) elem.text.pen);
                 typeSpecificDetails.Add ("justification", JustificationToString (static_cast<API_JustID> (elem.text.just)));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
+                // The wrap width as CreateTexts and ModifyTexts write it with "width": the box width
+                // while word wrap is on, 0 for an auto-width text, so it can be sent back as it is read.
+                typeSpecificDetails.Add ("width", (!elem.text.nonBreaking && elem.text.width > 0.0) ? elem.text.width : 0.0);
                 GS::ObjectState styleOS;
                 TextLabelDetails::AddTextStyleDetails (styleOS, elem.text, true);
                 // Whether boxWidth is the wrap width CreateTexts/ModifyTexts set with "width".
@@ -4115,6 +4306,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 boxOS.Add ("xMax", picture.destBox.xMax + boxShiftX);
                 boxOS.Add ("yMax", picture.destBox.yMax + boxShiftY);
                 typeSpecificDetails.Add ("box", boxOS);
+                // The point ModifyPictures places the anchor point at, with the same key.
+                typeSpecificDetails.Add ("position", Create2DCoordinateObjectState (GetPicturePosition (picture)));
                 typeSpecificDetails.Add ("width", pictureWidth);
                 typeSpecificDetails.Add ("height", pictureHeight);
                 typeSpecificDetails.Add ("pixelWidth", static_cast<Int32> (picture.pixelSizeX));
@@ -4251,14 +4444,25 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (ACAPI_CurtainWall_GetCWHeight (&elem.header.guid, &actualHeight) == NoError) {
                     typeSpecificDetails.Add ("actualHeight", actualHeight);
                 }
-                // planeOffset is the offset of the bottom from the home story, as
-                // CreateCurtainWalls and ModifyCurtainWalls write it from zCoordinate.
-                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.curtainWall.planeOffset, stories));
+                {
+                    // The base level is storyRelLevel, which Archicad keeps up to date. planeOffset
+                    // is only what ACAPI_Element_Create places the base by: changing the base offset
+                    // in the Settings dialog leaves it as it was, so a curtain wall raised to 3 m
+                    // there read 0 (Archicad 29). storyRelLevel is the bottom of the panels, which
+                    // the panel offset lifts by offset * cos (angle) on a slanted curtain wall (by
+                    // -offset * cos (angle) when flipped; angle in degrees, 90 is vertical). That
+                    // rise is taken off, so zCoordinate is the reference line's elevation, as
+                    // CreateCurtainWalls and ModifyCurtainWalls take it.
+                    const double cosAngle = std::fabs (elem.curtainWall.angle - 90.0) > 1e-9 ? std::cos (elem.curtainWall.angle * std::acos (-1.0) / 180.0) : 0.0;
+                    const double panelRise = (elem.curtainWall.flipped ? -1.0 : 1.0) * elem.curtainWall.offset * cosAngle;
+                    typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.curtainWall.storyRelLevel - panelRise, stories));
+                }
                 AddCurtainWallReferenceLine (elem, typeSpecificDetails);
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
                 typeSpecificDetails.Add ("offset", elem.curtainWall.offset);
                 typeSpecificDetails.Add ("nominalWidth", elem.curtainWall.nominalWidth);
+                AddCurtainWallPatterns (elem, typeSpecificDetails);
                 typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.curtainWall.displayOption));
                 typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.curtainWall.viewDepthLimitation));
                 typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.curtainWall.visibility));
@@ -4409,6 +4613,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.cwFrame.classID == APICWFrameClass_Boundary ? "Boundary" :
                     elem.cwFrame.classID == APICWFrameClass_Corner ? "Corner" :
                     elem.cwFrame.classID == APICWFrameClass_Division ? "Division" : "Custom");
+                // type above is the frame's class; ModifyCurtainWallFrames takes the class as
+                // classIndex and its "type" is the object type, so both are read as it takes them.
+                typeSpecificDetails.Add ("classIndex", elem.cwFrame.classID == APICWFrameClass_Customized ? -1 : static_cast<Int32> (elem.cwFrame.classID));
+                typeSpecificDetails.Add ("objectType", GS::UniString (
+                    elem.cwFrame.objectType == APICWFrObjectType_Invisible ? "Invisible" :
+                    elem.cwFrame.objectType == APICWFrObjectType_GDL ? "GDL" :
+                    elem.cwFrame.objectType == APICWFrObjectType_InvisibleConnectedTurning ? "InvisibleConnectedTurning" : "InvisibleConnectedStill"));
                 AddCurtainWallHomeStoryLevel (elem.cwFrame.owner, stories, typeSpecificDetails);
             } break;
 
@@ -4568,9 +4779,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
                 AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
-                if (elem.roof.roofClass == API_PlaneRoofID) {
-                    AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
-                }
+                AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_ShellID: {
@@ -4616,6 +4825,33 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("adjustLevelDiffs", elem.hotlink.adjustLevelDiffs);
             } break;
 
+            // The treads and risers of a stair (GetSubelementsOfHierarchicalElements lists them):
+            // what API_StairTreadType and API_StairRiserType hold beyond their GDL object, whose
+            // parameters GetGDLParametersOfElements reads.
+            case API_TreadID:
+                typeSpecificDetails.Add ("role", GS::UniString (elem.stairTread.role == APISR_Landing ? "Landing" : "Run"));
+                typeSpecificDetails.Add ("visible", elem.stairTread.visible);
+                typeSpecificDetails.Add ("isCustom", elem.stairTread.isCustom);
+                typeSpecificDetails.Add ("nosingType", GS::UniString (elem.stairTread.nosingType == APITN_BySlanting ? "BySlanting" : "ByValue"));
+                typeSpecificDetails.Add ("nosingValue", elem.stairTread.nosingValue);
+                typeSpecificDetails.Add ("nosingSlant", elem.stairTread.nosingSlant);
+                typeSpecificDetails.Add ("offset", elem.stairTread.offset);
+                typeSpecificDetails.Add ("thickness", elem.stairTread.thickness);
+                typeSpecificDetails.Add ("zOffset", elem.stairTread.zOffset);
+                typeSpecificDetails.Add ("stairId", CreateGuidObjectState (elem.stairTread.owner));
+                break;
+
+            case API_RiserID:
+                typeSpecificDetails.Add ("role", GS::UniString (elem.stairRiser.role == APISR_Landing ? "Landing" : "Run"));
+                typeSpecificDetails.Add ("visible", elem.stairRiser.visible);
+                typeSpecificDetails.Add ("riserPosition", GS::UniString (elem.stairRiser.riserPosition == APIRP_BehindTread ? "BehindTread" : "OnTread"));
+                typeSpecificDetails.Add ("crossSection", GS::UniString (elem.stairRiser.crossSect == APIRCS_Slanted ? "Slanted" : "Simple"));
+                typeSpecificDetails.Add ("angle", elem.stairRiser.angle);
+                typeSpecificDetails.Add ("offset", elem.stairRiser.offset);
+                typeSpecificDetails.Add ("thickness", elem.stairRiser.thickness);
+                typeSpecificDetails.Add ("stairId", CreateGuidObjectState (elem.stairRiser.owner));
+                break;
+
             case API_StairID: {
                 // The fields CreateStairs writes, read back (#823). The finishes and the
                 // structure are modeled by the Stair's subelements (risers, treads and
@@ -4645,6 +4881,48 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
+                // The other settings CreateStairs and ModifyStairs write (ApplyStairSettings), read
+                // back with the same keys and values. The structure settings are left to the stair
+                // structure reading, inputDirection to the baseline reading below.
+                typeSpecificDetails.Add ("extraTopTread", elem.stair.extraTopTread);
+                typeSpecificDetails.Add ("extraBottomTread", elem.stair.extraBottomTread);
+                typeSpecificDetails.Add ("walkingLinePosition", GS::UniString (
+                    elem.stair.walkingLinePosition == APILP_Left ? "Left" :
+                    elem.stair.walkingLinePosition == APILP_Right ? "Right" :
+                    elem.stair.walkingLinePosition == APILP_Center ? "Center" : "Auto"));
+                typeSpecificDetails.Add ("walkingLineOffset", elem.stair.walkingLineOffset);
+                typeSpecificDetails.Add ("walkingLineSymbolPosition", GS::UniString (
+                    elem.stair.walkLineSymbPos == APISP_Center ? "Center" :
+                    elem.stair.walkLineSymbPos == APISP_Custom ? "Custom" : "Auto"));
+                typeSpecificDetails.Add ("numberingType", GS::UniString (elem.stair.numberingType == APISN_Risers ? "Risers" : "Treads"));
+                typeSpecificDetails.Add ("uniformFinish", elem.stair.uniformFinish);
+                typeSpecificDetails.Add ("uniformMonolithAttributes", elem.stair.uniformMonolithAttributes);
+                typeSpecificDetails.Add ("uniformDrainings", elem.stair.uniformDrainings);
+                {
+                    const auto& treads = typeSpecificDetails.AddList<GS::ObjectState> ("treads");
+                    const auto& risers = typeSpecificDetails.AddList<GS::ObjectState> ("risers");
+                    for (const API_StairPartRoleID role : { APISR_Run, APISR_Landing }) {
+                        const GS::UniString roleName (role == APISR_Landing ? "Landing" : "Run");
+                        const API_StairTreadType& tread = elem.stair.tread[role];
+                        GS::ObjectState treadOS ("role", roleName);
+                        treadOS.Add ("visible", tread.visible);
+                        treadOS.Add ("thickness", tread.thickness);
+                        treadOS.Add ("offset", tread.offset);
+                        treadOS.Add ("nosingType", GS::UniString (tread.nosingType == APITN_BySlanting ? "BySlanting" : "ByValue"));
+                        treadOS.Add ("nosingValue", tread.nosingValue);
+                        treadOS.Add ("nosingSlant", tread.nosingSlant);
+                        treads (treadOS);
+                        const API_StairRiserType& riser = elem.stair.riser[role];
+                        GS::ObjectState riserOS ("role", roleName);
+                        riserOS.Add ("visible", riser.visible);
+                        riserOS.Add ("thickness", riser.thickness);
+                        riserOS.Add ("offset", riser.offset);
+                        riserOS.Add ("crossSection", GS::UniString (riser.crossSect == APIRCS_Slanted ? "Slanted" : "Simple"));
+                        riserOS.Add ("angle", riser.angle);
+                        riserOS.Add ("position", GS::UniString (riser.riserPosition == APIRP_BehindTread ? "BehindTread" : "OnTread"));
+                        risers (riserOS);
+                    }
+                }
                 AddStairBaseLineFromMemo (elem.header.guid, elem.stair.basePlane, typeSpecificDetails);
                 typeSpecificDetails.Add ("basePlane", GS::ObjectState (
                     "origin", Create3DCoordinateObjectState (elem.stair.basePlane.basePoint),
@@ -4693,6 +4971,24 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_OpeningID:
                 // The opening's own settings are read by GetOpeningDetails (#2629).
                 typeSpecificDetails.Add ("error", "The details of an Opening are not returned here; use GetOpeningDetails. The id, layerIndex and the other common fields above are the Opening's.");
+                break;
+
+            // Junctions and accessories have no geometry of their own in API_Element: they are GDL
+            // objects placed by their curtain wall (their parameters are read by
+            // GetGDLParametersOfElements, their library part by the libraryPartUnId field).
+            case API_CurtainWallJunctionID:
+                typeSpecificDetails.Add ("category", GS::UniString (elem.cwJunction.category == APICWJunC_Custom ? "Custom" : "System"));
+                typeSpecificDetails.Add ("flipped", elem.cwJunction.flipped);
+                typeSpecificDetails.Add ("clampingFrameCount", static_cast<Int32> (elem.cwJunction.clampFramesNum));
+                typeSpecificDetails.Add ("clampingPanelCount", static_cast<Int32> (elem.cwJunction.clampPanelsNum));
+                typeSpecificDetails.Add ("curtainWallId", CreateGuidObjectState (elem.cwJunction.owner));
+                break;
+
+            case API_CurtainWallAccessoryID:
+                typeSpecificDetails.Add ("category", GS::UniString (elem.cwAccessory.category == APICWAccC_Custom ? "Custom" : "System"));
+                typeSpecificDetails.Add ("flipped", elem.cwAccessory.flipped);
+                typeSpecificDetails.Add ("referenceFrameId", CreateGuidObjectState (elem.cwAccessory.refFrame));
+                typeSpecificDetails.Add ("curtainWallId", CreateGuidObjectState (elem.cwAccessory.owner));
                 break;
 
             default:
@@ -6788,6 +7084,263 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
 #undef AddSubelements
 
         subelementsOfHierarchicalElements (subelements);
+    }
+
+    return response;
+}
+
+GetRailingSegmentPatternsCommand::GetRailingSegmentPatternsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRailingSegmentPatternsCommand::GetName () const
+{
+    return "GetRailingSegmentPatterns";
+}
+
+GS::Optional<GS::UniString> GetRailingSegmentPatternsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The railings to read."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetRailingSegmentPatternsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "railings": {
+                "type": "array",
+                "description": "One item per given element, in the order of the input. An element that is not a railing, or whose segments cannot be read, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "segments": {
+                                    "type": "array",
+                                    "description": "The segments of the railing, in the order of GetDetailsOfElements' segments.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "segmentIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the segment in the railing, from 0, as in GetDetailsOfElements' segments."
+                                            },
+                                            "segmentId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The RailingSegment subelement."
+                                            },
+                                            "entry": {
+                                                "$ref": "#/RailingPatternEntry"
+                                            },
+                                            "instances": {
+                                                "type": "object",
+                                                "description": "The subelements Archicad generated for this segment from its entry. Their own settings are read with GetDetailsOfElements.",
+                                                "properties": {
+                                                    "patterns": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingPattern subelements the segment owns."
+                                                    },
+                                                    "panels": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingPanel subelements owned by the segment or by one of its patterns."
+                                                    },
+                                                    "balusterSets": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingBalusterSet subelements owned by the segment or by one of its patterns."
+                                                    },
+                                                    "innerPosts": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingInnerPost subelements owned by the segment or by one of its patterns."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "patterns",
+                                                    "panels",
+                                                    "balusterSets",
+                                                    "innerPosts"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "segmentIndex",
+                                            "segmentId",
+                                            "entry",
+                                            "instances"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "segments"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "railings"
+        ]
+    })";
+}
+
+namespace {
+
+// The components of a pattern entry (API_RailingSegmentType::defPattern) are settings, not placed
+// elements: they have no owner and no library part to look up, only the symbol they are drawn with.
+void AddRailingEntrySymbol (GS::ObjectState& os, const API_Guid& symbolId)
+{
+    if (symbolId != APINULLGuid) {
+        os.Add ("symbolId", APIGuidToString (symbolId));
+    }
+}
+
+GS::ObjectState CreateRailingPatternEntryObjectState (const API_RailingPatternType& pattern)
+{
+    GS::ObjectState panel;
+    AddRailingEntrySymbol (panel, pattern.defPanel.symbID);
+    panel.Add ("visible", pattern.defPanel.visible);
+    panel.Add ("frame", CreateRailingFrameObjectState (pattern.defPanel.frame));
+
+    GS::ObjectState balusterSet;
+    balusterSet.Add ("frame", CreateRailingFrameObjectState (pattern.defBalusterSet.frame));
+    balusterSet.Add ("distribution", CreateRailingDistributionObjectState (pattern.defBalusterSet.distribution));
+    balusterSet.Add ("balusterCount", static_cast<Int32> (pattern.defBalusterSet.nBalusters));
+
+    GS::ObjectState baluster;
+    AddRailingEntrySymbol (baluster, pattern.defBalusterSet.defBaluster.symbID);
+    baluster.Add ("horizontalPosition", CreateRailingHorizontalPositionObjectState (pattern.defBalusterSet.defBaluster.horizontalPosition));
+
+    GS::ObjectState innerPost;
+    AddRailingEntrySymbol (innerPost, pattern.defInnerPost.symbID);
+    innerPost.Add ("doublePostOffset", pattern.defInnerPost.doublePostOffset);
+    innerPost.Add ("postCount", static_cast<Int32> (pattern.defInnerPost.postNum));
+    innerPost.Add ("verticalPosition", CreateRailingVerticalPositionObjectState (pattern.defInnerPost.verticalPosition));
+    innerPost.Add ("horizontalPosition", CreateRailingHorizontalPositionObjectState (pattern.defInnerPost.horizontalPosition));
+
+    GS::ObjectState entry;
+    entry.Add ("distribution", CreateRailingDistributionObjectState (pattern.distribution));
+    entry.Add ("panelCount", static_cast<Int32> (pattern.nPanels));
+    entry.Add ("balusterSetCount", static_cast<Int32> (pattern.nBalusterSets));
+    entry.Add ("innerPostCount", static_cast<Int32> (pattern.nInnerPosts));
+    entry.Add ("panel", panel);
+    entry.Add ("balusterSet", balusterSet);
+    entry.Add ("baluster", baluster);
+    entry.Add ("innerPost", innerPost);
+    return entry;
+}
+
+template <typename ComponentType>
+GSSize GetRailingMemoCount (const ComponentType* components)
+{
+    return components == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<ComponentType*> (components))) / sizeof (ComponentType);
+}
+
+// The components of a memo array owned by the segment itself or by one of the given patterns of
+// the segment: the DevKit names the segment as the owner of a panel, and a pattern as the owner of
+// an inner post and a baluster set, so both are accepted.
+template <typename ComponentType>
+GS::Array<GS::ObjectState> GetRailingSegmentComponents (const ComponentType* components, const API_Guid& segmentGuid, const GS::HashSet<API_Guid>& segmentPatterns)
+{
+    GS::Array<GS::ObjectState> ids;
+    const GSSize count = GetRailingMemoCount (components);
+    for (GSSize i = 0; i < count; ++i) {
+        if (components[i].owner == segmentGuid || segmentPatterns.Contains (components[i].owner)) {
+            ids.Push (CreateElementIdObjectState (components[i].head.guid));
+        }
+    }
+    return ids;
+}
+
+}
+
+GS::ObjectState GetRailingSegmentPatternsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& railings = response.AddList<GS::ObjectState> ("railings");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            railings (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head header = {};
+        header.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&header) != NoError) {
+            railings (CreateErrorResponse (APIERR_BADID, "The element does not exist."));
+            continue;
+        }
+        if (GetElemTypeId (header) != API_RailingID) {
+            railings (CreateErrorResponse (APIERR_BADID, "The element is not a railing."));
+            continue;
+        }
+
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        const GSErrCode err = ACAPI_Element_GetMemo (header.guid, &memo, APIMemoMask_RailingSegment | APIMemoMask_RailingPattern |
+                                                     APIMemoMask_RailingPanel | APIMemoMask_RailingBalusterSet | APIMemoMask_RailingInnerPost);
+        if (err != NoError) {
+            railings (CreateErrorResponse (err, "Failed to read the segments of the railing."));
+            continue;
+        }
+
+        GS::ObjectState railing;
+        const auto& segments = railing.AddList<GS::ObjectState> ("segments");
+        const GSSize nSegments = GetRailingMemoCount (memo.railingSegments);
+        const GSSize nPatterns = GetRailingMemoCount (memo.railingPatterns);
+        for (GSSize i = 0; i < nSegments; ++i) {
+            const API_RailingSegmentType& segment = memo.railingSegments[i];
+
+            GS::HashSet<API_Guid> segmentPatterns;
+            GS::Array<GS::ObjectState> patterns;
+            for (GSSize p = 0; p < nPatterns; ++p) {
+                if (memo.railingPatterns[p].owner == segment.head.guid) {
+                    segmentPatterns.Add (memo.railingPatterns[p].head.guid);
+                    patterns.Push (CreateElementIdObjectState (memo.railingPatterns[p].head.guid));
+                }
+            }
+
+            GS::ObjectState instances;
+            instances.Add ("patterns", patterns);
+            instances.Add ("panels", GetRailingSegmentComponents (memo.railingPanels, segment.head.guid, segmentPatterns));
+            instances.Add ("balusterSets", GetRailingSegmentComponents (memo.railingBalusterSets, segment.head.guid, segmentPatterns));
+            instances.Add ("innerPosts", GetRailingSegmentComponents (memo.railingInnerPosts, segment.head.guid, segmentPatterns));
+
+            GS::ObjectState segmentDetails;
+            segmentDetails.Add ("segmentIndex", static_cast<Int32> (i));
+            segmentDetails.Add ("segmentId", CreateGuidObjectState (segment.head.guid));
+            segmentDetails.Add ("entry", CreateRailingPatternEntryObjectState (segment.defPattern));
+            segmentDetails.Add ("instances", instances);
+            segments (segmentDetails);
+        }
+        railings (railing);
     }
 
     return response;
@@ -13114,7 +13667,7 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
+                "description": "The elements to delete, of any database (the floor plan, a section, a worksheet, a layout, ...): each is deleted in the database that contains it, whichever window is the current one, and the current window stays. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
             },
             "dryRun": {
                 "$ref": "#/DryRun"
@@ -13169,35 +13722,63 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // with the walls listed before their zone opened that dialog, while deleting the
     // zone first in a call of its own did not; so the zones get a call of their own,
     // before the rest, within the same undoable command.
+    //
+    // Each element is checked and deleted with the database that contains it as the
+    // current database, and the starting database is put back at the end, so the front
+    // window stays: ACAPI_Element_Delete did not delete a Dimension of the floor plan
+    // while the 3D window was the current one, nor a Text of a worksheet while another
+    // worksheet was (#1473). So the elements other than zones get one call for each
+    // database that contains some of them.
+    API_DatabaseInfo startingDatabase = {};
+    const bool hasStartingDatabase = ACAPI_Database_GetCurrentDatabase (&startingDatabase) == NoError;
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (hasStartingDatabase) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        }
+    });
+    const auto changeToContainingDatabase = [&] (const API_Guid& elemGuid) {
+        if (hasStartingDatabase) {
+            ChangeToContainingDatabase (elemGuid, currentDatabase);
+        }
+    };
+
     GS::Array<bool> existedBeforeDelete;
     GS::Array<API_Guid> zoneGuids;
-    GS::Array<API_Guid> otherGuids;
+    GS::Array<API_Guid> databaseIdsOfOtherGuids;
+    GS::HashTable<API_Guid, GS::Array<API_Guid>> otherGuidsByDatabaseId;
+    ElementChangeReporter changeReporter;
     for (const API_Guid& elemGuid : elemGuids) {
+        changeToContainingDatabase (elemGuid);
         API_Elem_Head elemHead = {};
         const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
         existedBeforeDelete.Push (exists);
         if (!exists) {
             continue;
         }
+        changeReporter.Add (elemGuid);
         if (GetElemTypeId (elemHead) == API_ZoneID) {
             zoneGuids.Push (elemGuid);
         } else {
-            otherGuids.Push (elemGuid);
+            const API_Guid databaseId = DatabaseIdResolver::Instance ().GetIdOfDatabase (currentDatabase);
+            if (!otherGuidsByDatabaseId.ContainsKey (databaseId)) {
+                databaseIdsOfOtherGuids.Push (databaseId);
+                otherGuidsByDatabaseId.Add (databaseId, {});
+            }
+            otherGuidsByDatabaseId[databaseId].Push (elemGuid);
         }
     }
 
-    ElementChangeReporter changeReporter (zoneGuids);
-    for (const API_Guid& elemGuid : otherGuids) {
-        changeReporter.Add (elemGuid);
-    }
-
     GSErrCode deleteErr = NoError;
-    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
+    if (!zoneGuids.IsEmpty () || !databaseIdsOfOtherGuids.IsEmpty ()) {
         CallUndoableCommandUnlessDryRun (dryRun, "DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
+                changeToContainingDatabase (zoneGuids.GetFirst ());
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
             }
-            if (!otherGuids.IsEmpty ()) {
+            for (const API_Guid& databaseId : databaseIdsOfOtherGuids) {
+                const GS::Array<API_Guid>& otherGuids = otherGuidsByDatabaseId[databaseId];
+                changeToContainingDatabase (otherGuids.GetFirst ());
                 const GSErrCode otherErr = ACAPI_Element_Delete (otherGuids);
                 if (deleteErr == NoError) {
                     deleteErr = otherErr;
@@ -13230,6 +13811,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
         // With dryRun every existing element is still there, and the checks below say
         // whether the deletion would skip it.
         const API_Guid& elemGuid = elemGuids[i];
+        changeToContainingDatabase (elemGuid);
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());
@@ -15191,6 +15773,7 @@ GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectS
 
     GS::ObjectState response;
     const auto& absoluteBottoms = response.AddList<GS::ObjectState> ("absoluteBottoms");
+    const Stories stories = GetStories ();
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -15216,6 +15799,10 @@ GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectS
             continue;
         }
 
+        // Despite its name, ACAPI_CurtainWall_GetCWAbsoluteBottom returns the bottom relative to
+        // the element's home story (DevKit: "As against the function name the bottom is relative
+        // to the element's home story"; a curtain wall drawn on a story at 4 m answers 0). The
+        // level of the home story is added to make it absolute, as the name of this command says.
         double bottom = 0.0;
         err = ACAPI_CurtainWall_GetCWAbsoluteBottom (&elemHead.guid, &bottom);
         if (err != NoError) {
@@ -15223,7 +15810,10 @@ GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectS
             continue;
         }
 
-        absoluteBottoms (GS::ObjectState ("absoluteBottom", bottom));
+        GS::ObjectState bottomOS;
+        bottomOS.Add ("absoluteBottom", GetZPos (elemHead.floorInd, bottom, stories));
+        bottomOS.Add ("bottomFromHomeStory", bottom);
+        absoluteBottoms (bottomOS);
     }
 
     return response;

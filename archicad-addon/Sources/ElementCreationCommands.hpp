@@ -26,6 +26,9 @@ const char* JustificationToString (API_JustID just);
 const char* DimensionOriginToString (API_DimOriginID origin);
 bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result);
 API_JustID ParseJustificationString (const GS::UniString& justification);
+// Shared with GetDetailsOfElementsCommand (ElementCommands.cpp): where the anchor point of a picture
+// is, as ModifyPictures takes it in "position", so a picture read can be sent back where it is.
+API_Coord GetPicturePosition (const API_PictureType& picture);
 
 // Shared by CreateCurtainWallsCommand and ModifyCurtainWallsCommand (ExtendedElementCommands.cpp):
 // rewrite a column/row pattern (API_CWSegmentPatternData) from a CurtainWallPattern object, and the
@@ -50,6 +53,9 @@ protected:
     // Archicad did not keep (each starting with a space). A non-empty text deletes the new element
     // and fails the item with it.
     virtual GS::UniString GetSettingsNotKept (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/, const GS::ObjectState& /*parameters*/) const { return {}; }
+    // AfterCreate for a command that also says why the new element could not be finished: the
+    // item's answer gives failureReason. The default calls AfterCreate and gives no reason.
+    virtual GSErrCode AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& /*failureReason*/) const { return AfterCreate (requestedElement, newElementGuid, parameters); }
 protected:
     GS::String     commandName;
     API_ElemTypeID elemTypeID;
@@ -98,12 +104,27 @@ GS::Optional<GS::UniString> ApplyZoneDisplayStampPenAndReduction (const GS::Obje
 void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details);
 GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
 
+// The overlap pre-check of CreateZones for a manual zone with the polygon of the existing zone
+// zoneGuid (RecreateZones), which is left out: the error response naming the zone of story floorInd
+// it would overlap, as CreateZones gives it, or nothing.
+GS::Optional<GS::ObjectState> FindOverlapOfZonePolygon (const API_Guid& zoneGuid, short floorInd);
+
 class CreatePolylinesCommand : public CreateElementsCommandBase
 {
 public:
     CreatePolylinesCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class ModifyPolylinesCommand : public CommandBase
+{
+public:
+    ModifyPolylinesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
 class CreateLineElementsCommand : public CreateElementsCommandBase
@@ -152,6 +173,16 @@ public:
     CreateHatchesCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class ModifyHatchesCommand : public CommandBase
+{
+public:
+    ModifyHatchesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
 class CreateSplinesCommand : public CreateElementsCommandBase
@@ -259,6 +290,16 @@ public:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
+};
+
+class ModifyAngleDimensionsCommand : public CommandBase
+{
+public:
+    ModifyAngleDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
 // Shared by CreateLevelDimensionsCommand and ModifyLevelDimensionsCommand: applies the pen, texts,

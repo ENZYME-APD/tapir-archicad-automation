@@ -9,6 +9,12 @@
 //
 // DISCORD_PUBLIC_KEY (the app's Public Key, Developer Portal > General Information) checks that a
 // request comes from Discord; without it every request is refused.
+//
+// Discord needs an answer within 3 s, and a cold start plus the OpenStreetMap lookup can take
+// longer. So the command is answered at once with "thinking…" (a deferred answer), and the town
+// is filled in afterwards by editing that answer (waitUntil keeps the function alive for it).
+
+import { waitUntil } from '@vercel/functions';
 
 const MAP_URL = 'https://archicad-api.com/community/#user-map';
 const REMOVED = 'Removed from the Tapir map.';
@@ -39,12 +45,11 @@ function cleanPlace (text) {
     return String (text || '').replace (/[*_~|`<>@#\\\n\r]+/g, ' ').replace (/\s+/g, ' ').trim ().slice (0, 60);
 }
 
-// The town as OpenStreetMap knows it ("Maribor", "Slovenia"), or null; never longer than ~1.5 s,
-// as Discord needs the answer within 3 s.
+// The town as OpenStreetMap knows it ("Maribor", "Slovenia"), or null, within 5 s.
 async function lookUp (place) {
     try {
         const params = new URLSearchParams ({ q: place, format: 'jsonv2', limit: '1', addressdetails: '1', 'accept-language': 'en' });
-        const response = await fetch (`${NOMINATIM}?${params}`, { headers: { 'User-Agent': USER_AGENT }, signal: AbortSignal.timeout (1500) });
+        const response = await fetch (`${NOMINATIM}?${params}`, { headers: { 'User-Agent': USER_AGENT }, signal: AbortSignal.timeout (5000) });
         const hit = response.ok ? (await response.json ())[0] : null;
         const address = (hit && hit.address) || {};
         if (!hit || !address.country) {
@@ -57,17 +62,41 @@ async function lookUp (place) {
     }
 }
 
-function reply (content) {
-    // allowed_mentions: none, so naming the person never pings them.
-    return Response.json ({ type: 4, data: { content, allowed_mentions: { parse: [] } } });
+// The words of the answer: the town in **bold**, which tools/generate_user_map.py reads.
+async function answer (userId, place) {
+    if (/^(remove|delete|none|off)$/i.test (place)) {
+        return `🗑️ <@${userId}>: ${REMOVED}`;
+    }
+    const found = await lookUp (place);
+    if (found && found.town) {
+        const country = found.country && found.country !== found.town ? `, ${found.country}` : '';
+        return `📍 <@${userId}> is in **${found.town}**${country}. On the Tapir map tonight: <${MAP_URL}>`;
+    }
+    return `📍 <@${userId}> is in **${place}**. On the Tapir map tonight, if OpenStreetMap knows it: <${MAP_URL}>`;
+}
+
+// Replaces the "thinking…" answer with the real one. allowed_mentions: none, so naming the
+// person never pings them.
+async function finish (interaction, userId, place) {
+    const content = await answer (userId, place);
+    const url = `https://discord.com/api/v10/webhooks/${interaction.application_id}/${interaction.token}/messages/@original`;
+    const response = await fetch (url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'User-Agent': USER_AGENT },
+        body: JSON.stringify ({ content, allowed_mentions: { parse: [] } }),
+    });
+    console.log (`where: answered (${response.status})`);
 }
 
 export async function POST (request) {
+    const started = Date.now ();
     const body = await request.text ();
     if (!(await verify (request, body))) {
+        console.log ('where: refused a request with a bad or missing signature');
         return new Response ('Bad signature', { status: 401 });
     }
     const interaction = JSON.parse (body);
+    console.log (`where: interaction type ${interaction.type} ${interaction.data?.name || ''} after ${Date.now () - started} ms`);
     if (interaction.type === 1) { // Discord's PING when the endpoint URL is saved
         return Response.json ({ type: 1 });
     }
@@ -77,19 +106,11 @@ export async function POST (request) {
     const user = (interaction.member && interaction.member.user) || interaction.user || {};
     const option = (interaction.data.options || []).find ((o) => o.name === 'place');
     const place = cleanPlace (option && option.value);
-
     if (!place) {
         return Response.json ({ type: 4, data: { flags: 64, content: 'Type your town, for example `/where place: Maribor, Slovenia`.' } });
     }
-    if (/^(remove|delete|none|off)$/i.test (place)) {
-        return reply (`🗑️ <@${user.id}>: ${REMOVED}`);
-    }
-    const found = await lookUp (place);
-    if (found && found.town) {
-        const country = found.country && found.country !== found.town ? `, ${found.country}` : '';
-        return reply (`📍 <@${user.id}> is in **${found.town}**${country}. On the Tapir map tonight: <${MAP_URL}>`);
-    }
-    return reply (`📍 <@${user.id}> is in **${place}**. On the Tapir map tonight, if OpenStreetMap knows it: <${MAP_URL}>`);
+    waitUntil (finish (interaction, user.id, place).catch ((error) => console.log (`where: could not answer: ${error}`)));
+    return Response.json ({ type: 5 }); // "Tapir Data Scraper is thinking…", public
 }
 
 export function GET () {

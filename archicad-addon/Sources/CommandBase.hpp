@@ -67,6 +67,10 @@ GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::
 // trees first, and one that is in none of them gets APIERR_BADID.
 GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item);
 
+// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with custom settings (as the
+// DevKit's Navigator_Test example does). Call it on every view ACAPI_Navigator_GetNavigatorView filled.
+void FreeNavigatorView (API_NavigatorView& navigatorView);
+
 // The optional boolean "dryRun" input of the commands that delete or change (#2195), the #/DryRun
 // schema definition. A dry run makes every check of a real run and resolves the same targets, with
 // the same errors, but changes nothing in the project. A command reads the flag once with
@@ -507,8 +511,12 @@ GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id);
 
 // Writes the Element ID of an existing element with ACAPI_Element_ChangeElementInfoString
 // (APIDb_ChangeElementInfoStringID before Archicad 27) and reads it back with GetElementId:
-// APIERR_REFUSEDPAR when Archicad did not keep it. Must be called inside an undoable
-// command. Defined in CommandBase.cpp.
+// APIERR_REFUSEDPAR when Archicad did not keep it. When that call refuses the element
+// (APIERR_BADID, APIERR_BADELEMENTTYPE) the elemInfoString memo part is tried instead, and an
+// ID that is not kept then answers with that call's refusal. From Archicad 29 a failed write on a
+// line, arc, circle, polyline, spline or hotspot, which have no Element ID, always answers
+// APIERR_BADELEMENTTYPE, as the Create* commands document (#2762). Must be called inside an
+// undoable command. Defined in CommandBase.cpp.
 GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);
 
 // Deletes a new element that a create command could not finish (its id or a later setting could

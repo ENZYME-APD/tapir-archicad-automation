@@ -30,6 +30,7 @@
 #include "NameResolutionCommands.hpp"
 #include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
+#include "ElementFieldCommands.hpp"
 #include "ElementChangeTrackingCommands.hpp"
 #include "ProjectEventHandler.hpp"
 #include "ElementCategoryCommands.hpp"
@@ -523,6 +524,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.8.0",
             "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
         );
+        err |= RegisterCommand<MergeFileCommand> (
+            projectCommands, "2.0.1",
+            "Merges an Archicad project or module file into the model, as File > Interoperability > Merge does, at an origin, rotation and mirroring, each story of the file on the story with the same index (or from floorIndex on). The Archicad API has no merge, so the file is placed as a hotlink and the hotlink is broken, in one undo step, and the elements that are new afterwards are returned; Archicad leaves them grouped together. A file the project already hotlinks is refused, because breaking would break that hotlink too."
+        );
         err |= RegisterCommand<GetHotlinkOwnersOfElementsCommand> (
             projectCommands, "1.8.0",
             "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27."
@@ -870,9 +875,33 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.6",
             "Gets the subelements of the given hierarchical elements. From Archicad 28 the subelements of external hierarchical elements (for example MEP elements or elements of other add-ons) are returned as externalSubelements."
         );
+        err |= RegisterCommand<GetRailingSegmentPatternsCommand> (
+            elementCommands, "2.0.1",
+            "Gets the pattern of each segment of the given railings, telling the entry apart from its instances: the entry is the segment's pattern settings (distribution, panel, baluster set with its spacing, baluster and inner post) that Archicad generates the pattern from, the instances are the RailingPattern, RailingPanel, RailingBalusterSet and RailingInnerPost subelements it generated for the segment, whose own settings GetDetailsOfElements reads. Read only."
+        );
         err |= RegisterCommand<GetHierarchicalElementOwnersCommand> (
             elementCommands, "1.7.3",
             "Gets the owner of each given element in its hierarchical element: the root (e.g. the Curtain Wall, Stair or Railing of a frame, tread or post) or the immediate parent. Also returns whether the given element is a main element, a subelement or not part of a hierarchical element."
+        );
+        err |= RegisterCommand<GetElementFieldDefinitionsCommand> (
+            elementCommands, "2.0.1",
+            "Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType) that GetElementFields reads and SetElementFields writes (and GetFieldsOfElementDefaults and SetFieldsOfElementDefaults in the tool defaults): its path, JSON type, C++ kind, size and whether it is read-only. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available."
+        );
+        err |= RegisterCommand<GetElementFieldsCommand> (
+            elementCommands, "2.0.1",
+            "Reads fields of elements by their path in the element's struct in the Archicad API (e.g. note.noteFont of an angle dimension, u.planeRoof.angle of a roof): every field, or only the given ones. Reaches the settings the other commands do not return."
+        );
+        err |= RegisterCommand<SetElementFieldsCommand> (
+            elementCommands, "2.0.1",
+            "Writes fields of elements by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_Change and a mask of exactly the given fields, in one undoable command. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept."
+        );
+        err |= RegisterCommand<GetFieldsOfElementDefaultsCommand> (
+            elementCommands, "2.0.1",
+            "Reads fields of the tool defaults of element types, the settings new elements of the type get, by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), e.g. thickness of the wall defaults: every field, or only the given ones. Reaches the default settings the other commands do not return. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available."
+        );
+        err |= RegisterCommand<SetFieldsOfElementDefaultsCommand> (
+            elementCommands, "2.0.1",
+            "Writes fields of the tool defaults of element types by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_ChangeDefaults and a mask of exactly the given fields: the elements created afterwards get them. Like the settings dialogs of the tools, it is not undoable. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept. A change Archicad refuses can still have written some of the given fields (seen with libInd, the library part, which Archicad refuses in the tool defaults): the failure names them."
         );
         err |= RegisterCommand<EditHierarchicalElementCommand> (
             elementCommands, "1.8.0",
@@ -1012,7 +1041,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
-            "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it."
+            "Deletes elements, each in the database that contains it (the floor plan, a section, a worksheet, a layout, ...), whichever window is the current one; the current window stays. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it."
         );
         err |= RegisterCommand<DeleteSelectedElementsCommand> (
             elementCommands, "1.7.3",
@@ -1215,7 +1244,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyAssociativeDimensionsCommand> (
             elementCommands, "2.0.0",
-            "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings."
+            "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, the text position and the reset to the automatic text position; GetDetailsOfElements reads them back with the same keys. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings."
         );
         err |= RegisterCommand<GetDimensionDataCommand> (
             elementCommands, "1.5.0",
@@ -1232,6 +1261,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreatePolylinesCommand> (
             elementCommands, "1.1.5",
             "Creates Polyline elements based on the given parameters."
+        );
+        err |= RegisterCommand<ModifyPolylinesCommand> (
+            elementCommands, "2.0.1",
+            "Changes existing Polyline elements with the keys CreatePolylines takes and GetDetailsOfElements returns: the pen, the line type, zone boundary (roomSeparator), the dash mode (drawSegmentMode), the arrowheads at both ends, and the polygon (coordinates with its arcs, replaced as a whole; the polyline keeps its GUID). Only the given settings are changed. With databaseId the polylines are looked for in that database, e.g. a worksheet, a detail or a layout. The polyline is read back, so a value Archicad did not keep is reported as a failure."
         );
         err |= RegisterCommand<CreateLineElementsCommand> (
             elementCommands, "1.5.6",
@@ -1256,6 +1289,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateHatchesCommand> (
             elementCommands, "1.5.6",
             "Creates Hatch elements based on the given parameters. A hatch can have holes, in the same format SetDetailsOfElements accepts for hatches, and takes its fill orientation, fill category (drafting, cut or cover), contour pen and line type, background (a pen, transparent or the window background) and the percentage it subtracts from the zone area in the same call."
+        );
+        err |= RegisterCommand<ModifyHatchesCommand> (
+            elementCommands, "2.0.1",
+            "Changes existing Hatch (Fill) elements with the keys CreateHatches takes and GetDetailsOfElements returns: the contour pen and line type, the fill pen and background pen or their RGB colors, the fill or building material, the fill category, the fill orientation, the area text and the percentage subtracted from the zone area, and the polygon (coordinates with its arcs and holes, replaced as a whole; the hatch keeps its GUID). Only the given settings are changed. With databaseId the hatches are looked for in that database, e.g. a worksheet, a detail or a layout. The hatch is read back, so a value Archicad did not keep is reported as a failure."
         );
         err |= RegisterCommand<CreateSplinesCommand> (
             elementCommands, "1.5.6",
@@ -1301,9 +1338,22 @@ GSErrCode Initialize (void)
             elementCommands, "2.0.1",
             "Creates Angle Dimension elements (the Angle Dimension tool) measuring the angle between two lines, each given by two points, with the dimension arc through the given arcPosition, optionally based on an Angle Dimension favorite. The dimensions are static (not associated with elements) and are created in the current database - the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active - or in the one given by databaseId. GetDetailsOfElements returns their lines, arc and measured angle."
         );
+        err |= RegisterCommand<CreateRadialDimensionsCommand> (
+            elementCommands, "2.0.1",
+            "Creates Radial Dimension elements (the Radial Dimension tool) measuring the radius of an arc, a circle or a curved wall, linked to that element, with the dimension line ending at dimensionLineEnd, "
+            "optionally based on a Radial Dimension favorite, with the line pen, marker, text height, pen, position and direction, a custom text and the centre mark. "
+            "The Archicad API does not document how a radial dimension stores the measured element, so the link is written as GetDetailsOfElements reads it from dimensions placed by hand (ownerElementInIndex and ownerElementLine can be given), "
+            "and each new dimension is read back: one Archicad did not link to the element, whose radius is not the element's, whose dimension line Archicad moved off the given direction (it may lengthen the line so that the text fits) or that did not keep a given setting fails with the values Archicad stored and is deleted again. "
+            "Archicad stores the link to a circle with the type Arc, and to a curved wall with ownerElementInIndex -1, as for a dimension placed by hand. Tested on Archicad 29 with circles, arcs and curved walls. "
+            "The dimensions are created in the current database or in the one given by databaseId; GetDetailsOfElements returns their radius, base point and owner element."
+        );
+        err |= RegisterCommand<ModifyAngleDimensionsCommand> (
+            elementCommands, "2.0.1",
+            "Changes the settings of existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: smallArc, the pen, and the text height and pen. Only the given settings are changed. The lines and the arc position cannot be changed, as Archicad keeps them: delete the dimension and create it again with CreateAngleDimensions. The element is read back, so a value Archicad did not take is reported as a failure."
+        );
         err |= RegisterCommand<ModifyLevelDimensionsCommand> (
             elementCommands, "2.0.0",
-            "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId)."
+            "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId, or ownerElementId as GetDetailsOfElements reads it, which does not change the Static checkbox)."
         );
         err |= RegisterCommand<ModifyWallsCommand> (
             elementCommands, "1.4.0",
@@ -1343,7 +1393,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyRoofsCommand> (
             elementCommands, "1.4.0",
-            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes), edgeSideMaterials (the custom surface of each edge of the polygon, on a multi-plane roof of its contour; read back after writing) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine and edgeTypes (the Edge Type of each polygon edge, used by schedules) only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story."
+            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes), edgeSideMaterials (the custom surface of each edge of the polygon, on a multi-plane roof of its contour; read back after writing), edgeTypes (the Edge Type of each polygon edge, used by schedules; on a multi-plane roof of its contour, read back after writing) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle and pivotLine only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story."
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
@@ -1355,7 +1405,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyRailingsCommand> (
             elementCommands, "2.0.0",
-            "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the inner posts (double post offset, post count, vertical and horizontal position), panels (visible, frame) and baluster sets (frame, distribution) of a segment by their index among that segment's components of the kind, and the posts of a node (vertical position) by their index among that node's posts. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result."
+            "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the pattern of a segment (segments[].pattern: the models of its inner posts, panels and baluster sets and its distribution, which the inner posts, panels and baluster sets the railing has then follow) and the post model of a node (nodes[].post: vertical position). Archicad generates posts, inner posts, panels and baluster sets from these models; a change to a single one of them (innerPosts, panels, balusterSets, posts, by index) is tried, and on Archicad 29 it is refused with a message that names the model to change instead. On Archicad 29 every segment of a new railing follows the pattern of segment 0. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result."
         );
         err |= RegisterCommand<ModifyObjectsCommand> (
             elementCommands, "1.5.7",
@@ -1406,12 +1456,64 @@ GSErrCode Initialize (void)
             "Not written by this command: the baseline with its landings and winders; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
+        err |= RegisterCommand<RecreateCurtainWallsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Curtain Wall elements on a new reference line with more or fewer segments, as CreateCurtainWalls takes it, because ModifyCurtainWalls can only keep the number of segments; "
+            "or with a new height or slant angle, which Archicad does not apply to an existing slanted curtain wall through ACAPI_Element_Change (seen in Archicad 29). Without coordinates the old reference line is kept. "
+            "The new curtain wall is created with the old one as templateElementId, so it gets its frame and panel classes, pattern, surfaces, boundary and corner frames, height, home story and base, layer and slant angle, unless height or angle is given; "
+            "it also gets its Element ID, renovation status, classifications, element categories, property values, solid element operations and trims, and the old curtain wall is then deleted. Each curtain wall is recreated in its own undo step, and when any step fails nothing is changed for that curtain wall. "
+            "The result lists what could not be carried over (labels, dimensions, group). Frames and panels changed one by one on the old curtain wall are generated again from its classes and pattern, as when it is drawn again in Archicad."
+        );
+        err |= RegisterCommand<RecreateRailingsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Railing elements on a new reference line - with more or fewer nodes and segments, in 2D as CreateRailings takes it or with an elevation per node and arcs as CreateRailingsFromPolyline takes it - because the Archicad API cannot change the reference line of an existing railing. "
+            "The new railing is created with the old one as templateElementId, so it gets its node and segment settings, posts, rails, handrails, toprails, panels and balusters, story visibility, pens, layer, home story and bottom offset; "
+            "it also gets its Element ID, renovation status, classifications, element categories, property values, solid element operations and trims, and the old railing is then deleted. Each railing is recreated in its own undo step, and when any step fails nothing is changed for that railing. "
+            "The result lists what could not be carried over (labels, dimensions, group). Settings given to single segments, nodes or posts of the old railing are not carried over: the new ones are generated from the railing's defaults, as when it is drawn again in Archicad."
+        );
         err |= RegisterCommand<RecreateStairsCommand> (
             elementCommands, "2.0.1",
             "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. "
             "The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, "
             "and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. "
             "The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in)."
+        );
+        err |= RegisterCommand<RecreateWindowsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Window elements in another wall (ownerWallId, optionally at a new centerOffset along it), because Archicad does not move a window into another wall through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). "
+            "The new window is created as CreateWindows creates one, from the Window tool defaults with the tool's marker, with the old window's settings (size, sill, anchor, reveal, sides, pens, line types, surfaces and the rest of API_WindowType), library part and GDL parameters, layer and renovation status; "
+            "its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old window's Element ID, classifications, element categories and property values, and the old window is then deleted. "
+            "Each window is recreated in its own undo step, and when any step fails nothing is changed for that window. The new window has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old window, group)."
+        );
+        err |= RegisterCommand<RecreateDoorsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Door elements in another wall (ownerWallId, optionally at a new centerOffset along it), because Archicad does not move a door into another wall through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). "
+            "The new door is created as CreateDoors creates one, from the Door tool defaults with the tool's marker, with the old door's settings (size, sill, anchor, reveal, sides, pens, line types, surfaces and the rest of API_DoorType), library part and GDL parameters, layer and renovation status; "
+            "its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old door's Element ID, classifications, element categories and property values, and the old door is then deleted. "
+            "Each door is recreated in its own undo step, and when any step fails nothing is changed for that door. The new door has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old door, group)."
+        );
+        err |= RegisterCommand<RecreateSkylightsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Skylight elements on another roof or shell (ownerId, optionally at a new anchorPosition on it), because Archicad does not move a skylight onto another roof or shell through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). "
+            "The new skylight is created as CreateSkylights creates one, from the Skylight tool defaults, with the old skylight's settings (size, anchor point, fix mode, azimuth, pens, line types, surfaces and the rest of API_SkylightType), library part and GDL parameters, layer and renovation status; "
+            "Archicad sets its plane, level and elevation angle from the new owner. It also gets the old skylight's Element ID, classifications, element categories and property values, and the old skylight is then deleted. "
+            "Each skylight is recreated in its own undo step, and when any step fails nothing is changed for that skylight. The new skylight has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old skylight, group)."
+        );
+        err |= RegisterCommand<RecreateZonesCommand> (
+            elementCommands, "2.0.1",
+            "Recreates automatic Zone elements as manual zones (makeManual), because Archicad does not turn an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). "
+            "The new manual zone has the polygon the old zone has now (with its arcs and holes, as GetDetailsOfElements returns it), so it no longer follows its boundaries when the zones are updated; "
+            "it gets the old zone's category, name, number, stamp library part, stamp position and stamp parameters, levels, contour, cover fill, surface and the rest of API_ZoneType, layer and renovation status, "
+            "and its Element ID, classifications, element categories and property values. The old zone is deleted first, since a new zone with its polygon would overlap it; a new zone that would overlap another zone of the story is refused, as CreateZones refuses it, unless allowOverlap is true. "
+            "Each zone is recreated in its own undo step, and when any step fails nothing is changed for that zone. The new zone has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old zone, group)."
+        );
+        err |= RegisterCommand<RecreateAngleDimensionsCommand> (
+            elementCommands, "2.0.1",
+            "Recreates Angle Dimension elements on new lines with a new arc position (firstLine, secondLine and arcPosition, as CreateAngleDimensions takes them), because Archicad does not move the lines or the arc of an angle dimension through ACAPI_Element_Change (seen in Archicad 29). "
+            "The new angle dimension is static, as CreateAngleDimensions creates it, and is created in the current database, where the old one has to be. "
+            "It gets the old one's settings (pen, inner or outer arc, markers, witness lines, text pen, size, font, style, position and direction, custom text and the rest of API_AngleDimensionType), layer, story and renovation status, "
+            "and its classifications, element categories and property values, and its Element ID where Archicad gives angle dimensions one (Archicad 29 refuses an Element ID on them, so there is none to carry); the text goes back to its automatic place on the new arc. The old angle dimension is then deleted. "
+            "Each angle dimension is recreated in its own undo step, and when any step fails nothing is changed for it. The new angle dimension has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (the group it was in)."
         );
         err |= RegisterCommand<ChangeTextContentCommand> (
             elementCommands, "1.8.0",
@@ -1701,6 +1803,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
             "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also. With includeAvailability it also tells whether each property is available for the element."
+        );
+        err |= RegisterCommand<GetTypedPropertyValuesOfElementsCommand> (
+            propertyCommands, "2.0.1",
+            "Returns the property values of the elements in JSON's own types instead of display text: numbers, integers, booleans, strings, lists of them, and the chosen options of an option set as their identifiers (a list for a multiple choice). Each value comes with its type (number, length, area, volume, angle, integer, string, boolean, their lists, singleEnum, multiEnum), its status (normal, userUndefined or notAvailable) and isDefault, in the PropertyValueDetails shape of Graphisoft's API. Measured values are in SI units (meters, square meters, cubic meters, radians) whatever the project's working units and language, and an option is named by its nonLocalizedValue when it has one. A property that is not found, cannot be evaluated for the element or has a Guid value gets an error item."
         );
         err |= RegisterCommand<SetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
@@ -2366,11 +2472,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartScriptsCommand> (
             libraryCommands, "1.7.3",
-            "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
+            "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<SetLibraryPartMetadataCommand> (
             libraryCommands, "1.8.0",
-            "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28."
+            "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<GetLibraryPartPicturesCommand> (
             libraryCommands, "1.8.0",
@@ -2378,7 +2484,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartPicturesCommand> (
             libraryCommands, "1.8.0",
-            "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+            "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<GetLibraryPartCustomSectionCommand> (
             libraryCommands, "1.8.0",
@@ -2386,7 +2492,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartCustomSectionCommand> (
             libraryCommands, "1.8.0",
-            "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+            "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<CreateLibraryPartCommand> (
             libraryCommands, "1.8.0",
@@ -2406,11 +2512,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetLibraryPartPictureImagesCommand> (
             libraryCommands, "2.0.0",
-            "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28."
+            "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<SetLibraryPartParametersCommand> (
             libraryCommands, "2.0.0",
-            "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28."
+            "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28."
         );
         err |= RegisterCommand<GetLibraryPartScriptsCommand> (
             libraryCommands, "2.0.0",
@@ -2418,7 +2524,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetLibraryPartFileInfoCommand> (
             libraryCommands, "2.0.0",
-            "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28."
+            "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype, its master, parameter, 2D, 3D and properties scripts, and, with includeParameters, its parameters with their default values and descriptions (in the format of GetLibraryPartParameterValues). Password protected parts need their password. Available from Archicad 28."
         );
         err |= RegisterCommand<CopyLibraryPartsCommand> (
             libraryCommands, "2.0.0",
@@ -2604,6 +2710,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.3",
             "Gets the settings of existing Layout Book subsets: the same fields CreateLayoutSubset accepts (name, ID prefix, numbering style, ...)."
         );
+        err |= RegisterCommand<ChangeLayoutSubsetSettingsCommand> (
+            navigatorCommands, "2.0.1",
+            "Changes the settings of existing Layout Book subsets (name, ID prefix, numbering style, start at, ...), the fields of CreateLayoutSubset; the ones not given keep their value. The Archicad API can neither change the settings of a subset nor delete one, so a new subset is created with the changed settings right after the old one, and the old one's layouts and subsets are moved into it in their order; when a move fails, the ones moved before are moved back. The old subset is left empty, and its id is returned with the new one's: delete it in Archicad. These navigator functions are not undoable."
+        );
         err |= RegisterCommand<CreateDrawingsCommand> (
             navigatorCommands, "1.4.0",
             "Creates Drawing elements on the specified or active layout from navigator items."
@@ -2655,7 +2765,9 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetViewOptionsCommand> (
             navigatorCommands, "1.8.0",
-            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply."
+            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply. "
+            "The options are read back, and a given field Archicad did not keep (with an index, a given on-screen view option) fails the call with the value it kept; the fields Archicad kept stay changed. "
+            "Archicad 29 does not keep the railing components shown in the floor plan (modelViewOptions.railing, railing2DDisplayComp*) changed this way, so such a change is reported as not kept; GetViewOptions reads them."
         );
         err |= RegisterCommand<GetViewSettingsCommand> (
             navigatorCommands, "1.1.4",
@@ -3019,7 +3131,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateChangeMarkersCommand> (
             issueCommands, "2.0.1",
-            "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults. GetDetailsOfElements reads the markers back."
+            "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults, with the angle and always-horizontal setting given (angle, horizontalMarker). ModifyChangeMarkers takes the same settings. GetDetailsOfElements reads the markers back."
+        );
+        err |= RegisterCommand<ModifyChangeMarkersCommand> (
+            issueCommands, "2.0.1",
+            "Changes existing Change Markers (revision clouds) with the keys CreateChangeMarkers takes and GetDetailsOfElements returns: the Change the marker is linked to (an existing Change by its ID, a new Change made with createChange, or no Change with linkType Unlinked), the marker components, the angle and always-horizontal setting of the marker head, the position of the marker head (markerPosition), and the point a marker without a cloud polygon points to (position). Only the given settings are changed. The cloud polygon cannot be changed, as Archicad keeps it: delete the marker and create it again. The marker is read back, so a value Archicad did not keep is reported as a failure."
         );
         AddCommandGroup (issueCommands);
     }
@@ -3113,6 +3229,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetDefaultDesignOptionCommand> (
             designOptionsCommands, "1.8.0",
             "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29."
+        );
+        err |= RegisterCommand<GetDefaultDesignOptionCommand> (
+            designOptionsCommands, "2.0.1",
+            "Retrieves which design option, or the Main Model, is the default that new elements go to. The Archicad API has no function for it, so in a project with design options the command creates a temporary slab in the floor plan, reads its design option, moves it to the Main Model and deletes it (without design options the answer is the Main Model and nothing is created). Archicad puts a new element into the default design option only when the undo step that created it ends, so this takes two undo steps, creating and removing the slab, which together leave the project as it was. Needs a window where design options can be edited. Available from Archicad 29."
         );
         err |= RegisterCommand<ReorderDesignOptionSetsCommand> (
             designOptionsCommands, "1.8.0",
@@ -3243,7 +3363,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPRoutingElementsCommand> (
             mepCommands, "1.5.6",
-            "Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style, insulation thickness and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions. Available from Archicad 28."
+            "Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style, insulation thickness and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions, and the node positions with the key ModifyMEPRoutingElements writes them with. Available from Archicad 28."
         );
         err |= RegisterCommand<GetMEPPortsCommand> (
             mepCommands, "1.5.6",
@@ -3399,7 +3519,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMEPElementDetailsCommand> (
             mepCommands, "1.8.0",
-            "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28."
+            "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions; the width and height of flexible segments, and the anchor point, orientation, library part and (from Archicad 30) size of the elements ModifyMEPElements places, with the keys it writes them with. Available from Archicad 28."
         );
         AddCommandGroup (mepCommands);
     }
@@ -3465,7 +3585,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetAnalyticalVisibilitySettingsCommand> (
             analyticalCommands, "1.8.0",
-            "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26."
+            "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. The settings are read back, and a given field Archicad did not keep is reported as an error with the value it kept. Available from Archicad 26."
         );
         err |= RegisterCommand<GetAnalyticalMemberTypesOfElementsCommand> (
             analyticalCommands, "1.8.0",
@@ -3604,6 +3724,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RemoveElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",
             "Removes the trim between an element and the roof or shell trimming it. The Archicad API removes the trimming connection between the two elements, so when they trim each other (two roofs or shells) both directions are removed; trim the other direction again with TrimElements to keep it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete."
+        );
+        err |= RegisterCommand<RemoveElementTrimDirectionCommand> (
+            solidElementOperationCommands, "2.0.1",
+            "Removes one direction of a trim: the trim of an element by a roof or shell, keeping the other direction when the two trim each other (two roofs or shells). The Archicad API can only remove both directions at once, so the command reads the other direction and its trim type, removes the trim and trims the other direction again, in one undo step, and reads the result back. A pair whose element is not trimmed by its trimming element fails without changing anything; when Archicad fails to remove or trim again, the whole call is undone."
         );
         err |= RegisterCommand<GetElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",

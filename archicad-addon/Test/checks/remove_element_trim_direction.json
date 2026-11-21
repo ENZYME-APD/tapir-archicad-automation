@@ -1,0 +1,141 @@
+{
+  "title": "RemoveElementTrimDirection removes one direction of the trim between two roofs and keeps the other with its trim type (#2365)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "two overlapping roofs",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 2.7, "floorIndex": 0,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.4363323 } ],
+            "polygonCoordinates": [ { "x": 700, "y": 700 }, { "x": 706, "y": 700 }, { "x": 706, "y": 705 }, { "x": 700, "y": 705 } ]
+          },
+          {
+            "level": 2.7, "floorIndex": 0,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.4363323 } ],
+            "polygonCoordinates": [ { "x": 703, "y": 702 }, { "x": 709, "y": 702 }, { "x": 709, "y": 707 }, { "x": 703, "y": 707 } ]
+          }
+        ]
+      },
+      "save": { "rA": "elements[0].elementId.guid", "rB": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "trim A with B, KeepInside",
+      "command": "TrimElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rA}" } } ], "trimmingElement": { "guid": "${rB}" }, "trimType": "KeepInside" },
+      "expect": [ { "path": "success", "eq": true, "name": "A trimmed by B" } ]
+    },
+    {
+      "id": "trim B with A, KeepOutside",
+      "command": "TrimElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rB}" } } ], "trimmingElement": { "guid": "${rA}" }, "trimType": "KeepOutside" },
+      "expect": [ { "path": "success", "eq": true, "name": "B trimmed by A" } ]
+    },
+    {
+      "id": "the roofs trim each other",
+      "command": "GetElementTrims",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "elements": [ { "elementId": { "guid": "${rA}" } }, { "elementId": { "guid": "${rB}" } } ] },
+      "expect": [
+        { "path": "elementTrims[0].trimmedBy", "len": 1, "name": "A is trimmed by one roof" },
+        { "path": "elementTrims[0].trimmedBy[0].elementId.guid", "eq": "${rB}", "name": "A is trimmed by B" },
+        { "path": "elementTrims[1].trimmedBy", "len": 1, "name": "B is trimmed by one roof" },
+        { "path": "elementTrims[1].trimmedBy[0].elementId.guid", "eq": "${rA}", "name": "B is trimmed by A" },
+        { "path": "elementTrims[1].trimmedBy[0].trimType", "eq": "KeepOutside", "name": "B's trim type" }
+      ]
+    },
+    {
+      "id": "remove only the trim of A by B",
+      "command": "RemoveElementTrimDirection",
+      "creates": false,
+      "params": { "elementPairs": [ { "elementId": { "guid": "${rA}" }, "trimmingElementId": { "guid": "${rB}" } } ] },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per pair" },
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "A is no longer trimmed, B still is, with its trim type",
+      "command": "GetElementTrims",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rA}" } }, { "elementId": { "guid": "${rB}" } } ] },
+      "expect": [
+        { "path": "elementTrims[0].trimmedBy", "len": 0, "name": "A is not trimmed any more" },
+        { "path": "elementTrims[1].trimmedBy", "len": 1, "name": "B is still trimmed" },
+        { "path": "elementTrims[1].trimmedBy[0].elementId.guid", "eq": "${rA}", "name": "B is still trimmed by A" },
+        { "path": "elementTrims[1].trimmedBy[0].trimType", "eq": "KeepOutside", "name": "B keeps KeepOutside" },
+        { "path": "elementTrims[0].trims", "len": 1, "name": "A still trims B" },
+        { "path": "elementTrims[1].trims", "len": 0, "name": "B trims nothing" }
+      ]
+    },
+    {
+      "id": "[the same pair again: A is not trimmed by B, a bogus element, the same element twice]",
+      "command": "RemoveElementTrimDirection",
+      "creates": false,
+      "params": {
+        "elementPairs": [
+          { "elementId": { "guid": "${rA}" }, "trimmingElementId": { "guid": "${rB}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "trimmingElementId": { "guid": "${rA}" } },
+          { "elementId": { "guid": "${rB}" }, "trimmingElementId": { "guid": "${rB}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per pair" },
+        { "path": "executionResults[0].success", "eq": false, "name": "not trimmed: failed" },
+        { "path": "executionResults[0].error.message", "contains": "not trimmed", "name": "not trimmed: says so" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bogus element: failed" },
+        { "path": "executionResults[2].success", "eq": false, "name": "same element twice: failed" }
+      ]
+    },
+    {
+      "id": "the failed pairs changed nothing",
+      "command": "GetElementTrims",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rA}" } }, { "elementId": { "guid": "${rB}" } } ] },
+      "expect": [
+        { "path": "elementTrims[0].trimmedBy", "len": 0, "name": "A still not trimmed" },
+        { "path": "elementTrims[1].trimmedBy", "len": 1, "name": "B still trimmed by A" }
+      ]
+    },
+    {
+      "id": "trim A with B again",
+      "command": "TrimElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rA}" } } ], "trimmingElement": { "guid": "${rB}" }, "trimType": "KeepInside" },
+      "expect": [ { "path": "success", "eq": true, "name": "A trimmed by B again" } ]
+    },
+    {
+      "id": "both directions as two pairs, done in order",
+      "command": "RemoveElementTrimDirection",
+      "creates": false,
+      "params": {
+        "elementPairs": [
+          { "elementId": { "guid": "${rA}" }, "trimmingElementId": { "guid": "${rB}" } },
+          { "elementId": { "guid": "${rB}" }, "trimmingElementId": { "guid": "${rA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per pair" },
+        { "path": "executionResults[0].success", "eq": true, "name": "A by B: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "B by A: success" }
+      ]
+    },
+    {
+      "id": "no trim left between the roofs",
+      "command": "GetElementTrims",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rA}" } }, { "elementId": { "guid": "${rB}" } } ] },
+      "expect": [
+        { "path": "elementTrims[0].trimmedBy", "len": 0, "name": "A not trimmed" },
+        { "path": "elementTrims[1].trimmedBy", "len": 0, "name": "B not trimmed" },
+        { "path": "elementTrims[0].trims", "len": 0, "name": "A trims nothing" },
+        { "path": "elementTrims[1].trims", "len": 0, "name": "B trims nothing" }
+      ]
+    }
+  ]
+}
