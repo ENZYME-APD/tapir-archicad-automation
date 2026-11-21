@@ -1,0 +1,306 @@
+{
+  "title": "GetDetailsOfElements reads a stair's boundaries, walking lines, baseline position and base plane, also after a mirror, and GetQuantitiesOfElements reads its quantities",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a straight stair with a centered baseline",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              {
+                "x": 900.0,
+                "y": 760.0
+              },
+              {
+                "x": 906.0,
+                "y": 760.0
+              }
+            ],
+            "baselinePosition": "Center",
+            "baselineOffset": 0.0,
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2
+          }
+        ]
+      },
+      "save": {
+        "s": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "stair created"
+        }
+      ]
+    },
+    {
+      "id": "read the outline of the stair",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "bx0": "detailsOfElements[0].details.baseLinePoints[0].x",
+        "bx1": "detailsOfElements[0].details.baseLinePoints[1].x",
+        "by": "detailsOfElements[0].details.baseLinePoints[0].y",
+        "ly": "detailsOfElements[0].details.leftBoundary.points[0].y",
+        "ry": "detailsOfElements[0].details.rightBoundary.points[0].y",
+        "lx1": "detailsOfElements[0].details.leftBoundary.points[1].x",
+        "wx0": "detailsOfElements[0].details.walkingLine.points[0].x",
+        "wy0": "detailsOfElements[0].details.walkingLine.points[0].y"
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.baselinePosition",
+          "eq": "Center",
+          "name": "baseline position read as created"
+        },
+        {
+          "path": "detailsOfElements[0].details.baselineOffset",
+          "approx": 0.0,
+          "tol": 0.0001,
+          "name": "baseline offset read as created"
+        },
+        {
+          "path": "detailsOfElements[0].details.inputDirection",
+          "eq": "Upward",
+          "name": "the stair rises from the first point of its baseline"
+        },
+        {
+          "path": "detailsOfElements[0].details.leftBoundary.points",
+          "len": 2,
+          "name": "left boundary of a straight flight has two points"
+        },
+        {
+          "path": "detailsOfElements[0].details.rightBoundary.points",
+          "len": 2,
+          "name": "right boundary of a straight flight has two points"
+        },
+        {
+          "path": "detailsOfElements[0].details.leftBoundary.edges",
+          "len": 1,
+          "name": "one edge per boundary segment"
+        },
+        {
+          "path": "detailsOfElements[0].details.leftBoundary.isCustom",
+          "eq": false,
+          "name": "boundary not edited by hand"
+        },
+        {
+          "expr": "${ly} - ${by}",
+          "approx": 0.6,
+          "tol": 0.001,
+          "name": "left boundary half the flight width left of the centered baseline, in model coordinates"
+        },
+        {
+          "expr": "${by} - ${ry}",
+          "approx": 0.6,
+          "tol": 0.001,
+          "name": "right boundary half the flight width right of the centered baseline"
+        },
+        {
+          "expr": "${lx1} - ${bx1}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "boundary ends where the baseline ends"
+        },
+        {
+          "expr": "${wx0} - ${bx0}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "walking line starts at the start of the baseline"
+        },
+        {
+          "expr": "${wy0} - ${by}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "centered walking line on the centered baseline"
+        },
+        {
+          "path": "detailsOfElements[0].details.walkingLine.arcs",
+          "len": 0,
+          "name": "straight walking line has no arcs"
+        },
+        {
+          "path": "detailsOfElements[0].details.uniformLeftRightSideSupports.run",
+          "exists": true,
+          "name": "uniform side supports read"
+        },
+        {
+          "path": "detailsOfElements[0].details.linkToSettings.homeStoryDifference",
+          "exists": true,
+          "name": "link to settings read"
+        }
+      ]
+    },
+    {
+      "id": "read the quantities of the stair",
+      "command": "GetQuantitiesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "wl": "quantitiesOfElements[0].quantities.walkingLineLength",
+        "area": "quantitiesOfElements[0].quantities.area"
+      },
+      "expect": [
+        {
+          "path": "quantitiesOfElements[0].type",
+          "eq": "Stair",
+          "name": "stairs are supported"
+        },
+        {
+          "path": "quantitiesOfElements[0].quantities.height",
+          "approx": 2.8,
+          "tol": 0.001,
+          "name": "height is the total height"
+        },
+        {
+          "expr": "${wl} - ${bx1} + ${bx0}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "walking line length is the length of the straight flight"
+        },
+        {
+          "expr": "${area} - 1.2 * (${bx1} - ${bx0})",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "area is length times width of the straight flight"
+        },
+        {
+          "path": "quantitiesOfElements[0].quantities.gradient",
+          "gt": 0.0,
+          "name": "gradient is positive"
+        },
+        {
+          "path": "quantitiesOfElements[0].quantities.gradient",
+          "lt": 1.5708,
+          "name": "gradient is in radians"
+        },
+        {
+          "path": "quantitiesOfElements[0].quantities.numberOfRisers",
+          "gt": 0,
+          "name": "risers counted"
+        },
+        {
+          "path": "quantitiesOfElements[0].quantities.numberOfTreads",
+          "gt": 0,
+          "name": "treads counted"
+        }
+      ]
+    },
+    {
+      "id": "mirror the stair across the vertical line x = 910",
+      "command": "MirrorElements",
+      "creates": false,
+      "params": {
+        "elementsWithMirrorAxes": [
+          {
+            "elementId": {
+              "guid": "${s}"
+            },
+            "mirrorAxis": {
+              "beginPoint": {
+                "x": 910.0,
+                "y": 0.0
+              },
+              "endPoint": {
+                "x": 910.0,
+                "y": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "mirrored"
+        }
+      ]
+    },
+    {
+      "id": "read the mirrored stair",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "mbx0": "detailsOfElements[0].details.baseLinePoints[0].x",
+        "mbx1": "detailsOfElements[0].details.baseLinePoints[1].x",
+        "mlx0": "detailsOfElements[0].details.leftBoundary.points[0].x",
+        "mly0": "detailsOfElements[0].details.leftBoundary.points[0].y",
+        "mwx1": "detailsOfElements[0].details.walkingLine.points[1].x"
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.isMirrored",
+          "eq": true,
+          "name": "the stair reads as mirrored"
+        },
+        {
+          "path": "detailsOfElements[0].details.basePlane.xAxis.x",
+          "lt": 0.0,
+          "name": "its base plane's x axis is reversed"
+        },
+        {
+          "expr": "${mbx0} + ${bx0} - 1820",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "the baseline start is mirrored, not kept in the stair's own coordinates"
+        },
+        {
+          "expr": "${mbx1} + ${bx1} - 1820",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "the baseline end is mirrored"
+        },
+        {
+          "expr": "${mlx0} + ${bx0} - 1820",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "the boundary is mirrored with the stair"
+        },
+        {
+          "expr": "${mly0} - ${ly}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "a mirror across a vertical line keeps y"
+        },
+        {
+          "expr": "${mwx1} + ${bx1} - 1820",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "the walking line is mirrored"
+        }
+      ]
+    }
+  ]
+}

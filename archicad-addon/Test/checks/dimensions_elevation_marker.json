@@ -1,0 +1,125 @@
+{
+  "title": "Elevation dimensions: the elevation marker (form, half-arrow angle, filled, up/down, plus sign) written and read back (#2864)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "Elevation dimension with an elevation marker",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "appearance": "Elevation",
+            "elevationOrigin": "ProjectZero",
+            "elevationMarker": { "arrowAngle": 45, "arrowFilled": true, "arrowUp": false, "plusSign": true },
+            "referencePoint": { "x": 880.0, "y": 879.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 880.0, "y": 880.0 } },
+              { "coordinate": { "x": 883.0, "y": 880.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "Elevation dimension with the opposite marker",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "appearance": "Elevation",
+            "elevationMarker": { "arrowAngle": 60, "arrowFilled": false, "arrowUp": true, "plusSign": false },
+            "referencePoint": { "x": 880.0, "y": 884.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 880.0, "y": 885.0 } },
+              { "coordinate": { "x": 882.0, "y": 885.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "d2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "second dimension created" }
+      ]
+    },
+    {
+      "id": "the markers read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } }
+        ]
+      },
+      "save": { "form": "detailsOfElements[0].details.elevationMarker.form" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.appearance", "eq": "Elevation", "name": "Elevation dimension" },
+        { "path": "detailsOfElements[0].details.elevationMarker.form", "exists": true, "name": "form returned" },
+        { "path": "detailsOfElements[0].details.elevationMarker.arrowAngle", "eq": 45, "name": "45 degree arrow" },
+        { "path": "detailsOfElements[0].details.elevationMarker.arrowFilled", "eq": true, "name": "arrow filled" },
+        { "path": "detailsOfElements[0].details.elevationMarker.arrowUp", "eq": false, "name": "arrow down" },
+        { "path": "detailsOfElements[0].details.elevationMarker.plusSign", "eq": true, "name": "plus sign" },
+        { "path": "detailsOfElements[1].details.elevationMarker.arrowAngle", "eq": 60, "name": "second: 60 degree arrow" },
+        { "path": "detailsOfElements[1].details.elevationMarker.arrowFilled", "eq": false, "name": "second: arrow not filled" },
+        { "path": "detailsOfElements[1].details.elevationMarker.arrowUp", "eq": true, "name": "second: arrow up" },
+        { "path": "detailsOfElements[1].details.elevationMarker.plusSign", "eq": false, "name": "second: no plus sign" }
+      ]
+    },
+    {
+      "id": "GetDimensionData returns the elevation marker",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].elevationMarker.arrowAngle", "eq": 45, "name": "arrow angle in GetDimensionData" },
+        { "path": "dimensionsData[0].elevationMarker.plusSign", "eq": true, "name": "plus sign in GetDimensionData" },
+        { "path": "dimensionsData[0].witnessPoints", "len": 2, "name": "two witness points" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions changes single marker fields",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "elevationMarker": { "plusSign": false, "arrowUp": true } },
+          { "elementId": { "guid": "${d2}" }, "elevationMarker": { "arrowAngle": 30, "arrowFilled": true } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "first change accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "second change accepted" }
+      ]
+    },
+    {
+      "id": "the markers after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.elevationMarker.plusSign", "eq": false, "name": "plus sign off" },
+        { "path": "detailsOfElements[0].details.elevationMarker.arrowUp", "eq": true, "name": "arrow up" },
+        { "path": "detailsOfElements[0].details.elevationMarker.arrowAngle", "eq": 45, "name": "arrow angle kept" },
+        { "path": "detailsOfElements[0].details.elevationMarker.arrowFilled", "eq": true, "name": "filled kept" },
+        { "path": "detailsOfElements[0].details.elevationMarker.form", "eq": "${form}", "name": "form kept" },
+        { "path": "detailsOfElements[1].details.elevationMarker.arrowAngle", "eq": 30, "name": "second: 30 degree arrow" },
+        { "path": "detailsOfElements[1].details.elevationMarker.arrowFilled", "eq": true, "name": "second: arrow filled" },
+        { "path": "detailsOfElements[1].details.elevationMarker.arrowUp", "eq": true, "name": "second: arrow up kept" },
+        { "path": "detailsOfElements[1].details.elevationMarker.plusSign", "eq": false, "name": "second: plus sign kept off" }
+      ]
+    }
+  ]
+}

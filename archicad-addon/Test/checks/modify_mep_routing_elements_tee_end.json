@@ -1,0 +1,295 @@
+{
+  "title": "ModifyMEPRoutingElements refuses, without changing anything, nodePositions that move a route's end away from its tee (which crashed Archicad, #2929), and still moves the route's other nodes",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "a main duct and a branch duct starting on it",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "nodeCoordinates": [
+              {
+                "x": 0.0,
+                "y": -50.0,
+                "z": 3.0
+              },
+              {
+                "x": 8.0,
+                "y": -50.0,
+                "z": 3.0
+              }
+            ]
+          },
+          {
+            "domain": "Ventilation",
+            "nodeCoordinates": [
+              {
+                "x": 4.0,
+                "y": -50.0,
+                "z": 3.0
+              },
+              {
+                "x": 4.0,
+                "y": -47.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "main": "elements[0].elementId.guid",
+        "branch": "elements[1].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "both ducts created"
+        }
+      ]
+    },
+    {
+      "id": "connect them with a tee",
+      "command": "ConnectMEPElements",
+      "creates": false,
+      "params": {
+        "connectionsData": [
+          {
+            "routingElementId": {
+              "guid": "${main}"
+            },
+            "connectToId": {
+              "guid": "${branch}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "tee": "connectionResults[0].createdBranchId.guid"
+      },
+      "expect": [
+        {
+          "path": "connectionResults[0].createdBranchId.guid",
+          "exists": true,
+          "name": "tee created"
+        }
+      ]
+    },
+    {
+      "id": "routes and tee after the connection (deleted at the end, with the split part of the main duct)",
+      "command": "GetMEPElements",
+      "params": {
+        "elementTypes": [
+          "RoutingElement",
+          "Branch"
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 4,
+          "name": "main split in two, branch and the tee"
+        }
+      ]
+    },
+    {
+      "id": "the branch duct starts at the tee",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${branch}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "b0x": "routingElements[0].polyline[0].x",
+        "b0y": "routingElements[0].polyline[0].y",
+        "b0z": "routingElements[0].polyline[0].z"
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].logicallyConnectedPortIdAtRouteBegin",
+          "exists": true,
+          "name": "connected to the tee at its first node"
+        },
+        {
+          "path": "routingElements[0].polyline",
+          "len": 2
+        }
+      ]
+    },
+    {
+      "id": "[moving the node at the tee]",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          {
+            "elementId": {
+              "guid": "${branch}"
+            },
+            "nodePositions": [
+              {
+                "x": 4.5,
+                "y": -49.5,
+                "z": 3.0
+              },
+              {
+                "x": 4.5,
+                "y": -47.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults",
+          "len": 1
+        },
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "refused instead of crashing Archicad (#2929)"
+        },
+        {
+          "path": "executionResults[0].error.message",
+          "contains": "tee",
+          "name": "says why"
+        }
+      ]
+    },
+    {
+      "id": "the refused route did not move",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${branch}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].polyline[0].x",
+          "approx": "${b0x}",
+          "tol": 0.0001,
+          "name": "node at the tee kept"
+        },
+        {
+          "path": "routingElements[0].polyline[1].x",
+          "approx": 4.0,
+          "tol": 0.0001,
+          "name": "far node kept"
+        },
+        {
+          "path": "routingElements[0].polyline[1].y",
+          "approx": -47.0,
+          "tol": 0.0001
+        }
+      ]
+    },
+    {
+      "id": "[moving only the far node]",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          {
+            "elementId": {
+              "guid": "${branch}"
+            },
+            "nodePositions": [
+              {
+                "x": "${b0x}",
+                "y": "${b0y}",
+                "z": "${b0z}"
+              },
+              {
+                "x": 4.0,
+                "y": -46.0,
+                "z": 3.0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "a route at a tee can still be changed away from the tee"
+        }
+      ]
+    },
+    {
+      "id": "the far node moved",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${branch}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].polyline[1].y",
+          "approx": -46.0,
+          "tol": 0.0001,
+          "name": "far node moved"
+        },
+        {
+          "path": "routingElements[0].logicallyConnectedPortIdAtRouteBegin",
+          "exists": true,
+          "name": "still connected to the tee"
+        }
+      ]
+    },
+    {
+      "id": "the tee is kept",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${tee}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elementPorts[0].ports",
+          "len": 3,
+          "name": "the tee still has its three ports"
+        }
+      ]
+    }
+  ]
+}

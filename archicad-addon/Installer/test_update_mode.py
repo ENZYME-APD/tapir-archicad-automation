@@ -1660,6 +1660,58 @@ class LanguageTests (unittest.TestCase):
                     self.assertIn (key, englishTexts)
                     self.assertEqual (GetPlaceholders (text), GetPlaceholders (englishTexts[key]))
 
+    def testShippedLanguagesAreComplete (self):
+        # Every shipped table has every English text, with the same
+        # placeholders (each as often as in English), line breaks and option
+        # names, and each fills in with as many arguments as the English one.
+        def GetPlaceholders (text):
+            return sorted (re.findall (r'\{\d+\}', text))
+        def GetOptionNames (text):
+            return sorted (re.findall (r'--\w+', text))
+        englishTexts = tapir_installer.TEXTS['INT']
+        self.assertLessEqual ({ 'INT', 'GER', 'FRA', 'SPA', 'ITA', 'CHI', 'JPN' }, set (tapir_installer.TEXTS))
+        for language, texts in tapir_installer.TEXTS.items ():
+            with self.subTest (language = language):
+                self.assertEqual (sorted (texts), sorted (englishTexts))
+            for key, englishText in englishTexts.items ():
+                with self.subTest (language = language, key = key):
+                    text = texts[key]
+                    self.assertIsInstance (text, str)
+                    self.assertNotEqual (text.strip (), '')
+                    self.assertEqual (GetPlaceholders (text), GetPlaceholders (englishText))
+                    self.assertEqual (text.count ('\n'), englishText.count ('\n'))
+                    self.assertEqual (GetOptionNames (text), GetOptionNames (englishText))
+                    arguments = ['<{0}>'.format (index) for index in range (len (GetPlaceholders (englishText)))]
+                    filledText = text.format (*arguments)
+                    for argument in arguments:
+                        self.assertEqual (filledText.count (argument), 1)
+
+    def testShippedLanguagesAreUsed (self):
+        for language in tapir_installer.TEXTS:
+            with self.subTest (language = language):
+                tapir_installer.SetLanguage (language)
+                self.assertEqual (tapir_installer.GetText ('archicadVersion', '29'), 'Archicad 29')
+                self.assertEqual (tapir_installer.GetText ('buttonClose'), tapir_installer.TEXTS[language]['buttonClose'])
+                if language != tapir_installer.DEFAULT_LANGUAGE:
+                    self.assertNotEqual (tapir_installer.GetText ('buttonClose'), tapir_installer.TEXTS['INT']['buttonClose'])
+
+    def testAustrianAndSwissUseGerman (self):
+        for language in ['AUT', 'CHE']:
+            with self.subTest (language = language):
+                tapir_installer.SetLanguage (language)
+                self.assertEqual (tapir_installer.GetText ('buttonClose'), tapir_installer.TEXTS['GER']['buttonClose'])
+        tapir_installer.SetLanguage (tapir_installer.DEFAULT_LANGUAGE)
+
+    def testUnprintableCharactersAreReplaced (self):
+        # A Japanese text printed to a console that cannot show it.
+        stream = io.TextIOWrapper (io.BytesIO (), encoding = 'cp1252', newline = '\n')
+        with unittest.mock.patch.object (sys, 'stdout', stream), unittest.mock.patch.object (sys, 'stderr', None):
+            tapir_installer.ReplaceUnprintableCharacters ()
+            tapir_installer.SetLanguage ('JPN')
+            print (tapir_installer.GetText ('consoleError', 'x'))
+        stream.flush ()
+        self.assertEqual (stream.buffer.getvalue (), b'????x\n')
+
     def testProtocolTextsAreTheEnglishOnes (self):
         texts = tapir_installer.TEXTS['INT']
         self.assertEqual (texts['updateRunning'], tapir_installer.UPDATE_RUNNING_TEXT)
@@ -1699,7 +1751,7 @@ class LanguageTests (unittest.TestCase):
             self.assertEqual (tapir_installer.GetText ('buttonCancel'), 'Cancel')
             # A wrong placeholder does not break the message.
             self.assertEqual (tapir_installer.GetText ('updated', '1.2.3'), 'Tapir was updated to 1.2.3.')
-            tapir_installer.SetLanguage ('AUT')
+            tapir_installer.SetLanguage ('KOR')
             self.assertEqual (tapir_installer.GetText ('buttonClose'), 'Close')
 
 

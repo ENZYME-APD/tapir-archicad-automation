@@ -1,0 +1,199 @@
+{
+  "title": "Zones: GetDetailsOfElements reads the boundary method (refLineFlag) of an automatic zone, and no boundary method for a manual zone (#2631)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "four walls around a room",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 960,
+              "y": 770
+            },
+            "endCoordinate": {
+              "x": 964,
+              "y": 770
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          },
+          {
+            "begCoordinate": {
+              "x": 964,
+              "y": 770
+            },
+            "endCoordinate": {
+              "x": 964,
+              "y": 773
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          },
+          {
+            "begCoordinate": {
+              "x": 964,
+              "y": 773
+            },
+            "endCoordinate": {
+              "x": 960,
+              "y": 773
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          },
+          {
+            "begCoordinate": {
+              "x": 960,
+              "y": 773
+            },
+            "endCoordinate": {
+              "x": 960,
+              "y": 770
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 4,
+          "name": "four walls created"
+        }
+      ]
+    },
+    {
+      "id": "automatic zone inside the walls",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck boundary zone",
+            "numberStr": "B1",
+            "floorIndex": 0,
+            "geometry": {
+              "referencePosition": {
+                "x": 962.0,
+                "y": 771.5
+              }
+            }
+          }
+        ]
+      },
+      "save": {
+        "za": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "automatic zone created"
+        }
+      ]
+    },
+    {
+      "id": "manual zone away from the walls",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck manual zone",
+            "numberStr": "B2",
+            "floorIndex": 0,
+            "geometry": {
+              "polygonCoordinates": [
+                {
+                  "x": 970.0,
+                  "y": 770.0
+                },
+                {
+                  "x": 972.0,
+                  "y": 770.0
+                },
+                {
+                  "x": 972.0,
+                  "y": 772.0
+                },
+                {
+                  "x": 970.0,
+                  "y": 772.0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "save": {
+        "zm": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "manual zone created"
+        }
+      ]
+    },
+    {
+      "id": "read both zones",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${za}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${zm}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.isManual",
+          "eq": false,
+          "name": "the first zone is automatic"
+        },
+        {
+          "path": "detailsOfElements[0].details.boundaryMethod",
+          "exists": true,
+          "name": "the automatic zone has a boundary method"
+        },
+        {
+          "path": "detailsOfElements[0].details.boundaryMethod",
+          "ne": "",
+          "name": "the boundary method is not empty"
+        },
+        {
+          "path": "detailsOfElements[1].details.isManual",
+          "eq": true,
+          "name": "the second zone is manual"
+        },
+        {
+          "path": "detailsOfElements[1].details.boundaryMethod",
+          "exists": false,
+          "name": "a manual zone has no boundary method"
+        },
+        {
+          "path": "detailsOfElements[1].details.polygonDisplay",
+          "exists": true,
+          "name": "polygonDisplay is still read"
+        }
+      ]
+    }
+  ]
+}

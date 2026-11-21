@@ -97,6 +97,7 @@
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':
         'हर महीने के कमिट, issues और pull requests, और Discord संदेश, एक के ऊपर एक, और Discord सदस्यों की संख्या एक रेखा के रूप में, {first} से {last} तक। नीचे की तालिका में हर संख्या है।',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'जन॰ फ़र॰ मार्च अप्रैल मई जून जुल॰ अग॰ सित॰ अक्तू॰ नव॰ दिस॰',
+    '{month} {year}': '{month} {year}',
     'Growth': 'विकास',
     'Total': 'कुल',
     'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
@@ -143,8 +144,11 @@
     "People on the map": "नक्शे पर लोग",
     "Countries": "देश",
     "Towns": "शहर",
+    "Continents": "महाद्वीप",
     "A dot per town, larger where more people are. Land: Natural Earth.": "हर शहर के लिए एक बिंदु, जहाँ ज़्यादा लोग हैं वहाँ बड़ा। ज़मीन: Natural Earth।",
     "Add your town on Discord": "Discord पर अपना शहर जोड़ें",
+    "Show the countries": "देश दिखाएँ",
+    "Hide the countries": "देश छिपाएँ",
     "{place}, {country}: {count} person": "{place}, {country}: {count} व्यक्ति",
     "{place}, {country}: {count} people": "{place}, {country}: {count} लोग",
     "{count} person": "{count} व्यक्ति",

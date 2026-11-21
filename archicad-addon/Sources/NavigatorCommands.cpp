@@ -5,7 +5,12 @@
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
+#include "Folder.hpp"
+#include "File.hpp"
 #include <memory>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -26,8 +31,84 @@ static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
     return table;
 }
 
+// The saved local or LAN output folder of a publisher set, empty when it publishes elsewhere.
+static IO::Location GetPublisherSetPath (const API_Guid& rootGuid)
+{
+    Int32 numberOfPublisherSets = 0;
+    ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets);
+
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        set.wantsExtraInfo = true;
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&set, &ii);
+
+        // The publishing parameters are allocated by Archicad and owned by the caller.
+        std::unique_ptr<IO::Location> path (set.path);
+        std::unique_ptr<IO::Location> twFileServerPath (set.twFileServerPath);
+        std::unique_ptr<GS::UniString> host (set.host);
+        std::unique_ptr<GS::UniString> dirName (set.dirName);
+
+        if (err == NoError && set.rootGuid == rootGuid) {
+            // For a set published to a BIMcloud/Teamwork file server, path is only the
+            // temporary local folder Archicad uploads from, so no folder is reported.
+            if (path == nullptr || twFileServerPath != nullptr) {
+                return {};
+            }
+            return *path;
+        }
+    }
+
+    return {};
+}
+
+static const UInt32 MaxScannedOutputEntries = 20000;
+
+// Collects the files under the folder with their modification times. Returns false when the
+// folder holds more than MaxScannedOutputEntries entries, so a huge folder is not listed.
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes, UInt32& entryCount)
+{
+    IO::Folder folder (folderLoc);
+    if (folder.GetStatus () != NoError) {
+        return true;
+    }
+
+    bool withinLimit = true;
+    GS::Array<IO::Location> subFolders;
+    folder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+        if (!withinLimit || ++entryCount > MaxScannedOutputEntries) {
+            withinLimit = false;
+            return;
+        }
+
+        const IO::Location entryLoc (folderLoc, name);
+        if (isFolder) {
+            subFolders.Push (entryLoc);
+            return;
+        }
+
+        GSTime modificationTime = 0;
+        IO::File (entryLoc).GetModificationTime (&modificationTime);
+        fileTimes.Put (entryLoc.ToDisplayText (), modificationTime);
+    });
+
+    for (const IO::Location& subFolder : subFolders) {
+        if (!withinLimit || !CollectFileTimes (subFolder, fileTimes, entryCount)) {
+            return false;
+        }
+    }
+
+    return withinLimit;
+}
+
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes)
+{
+    UInt32 entryCount = 0;
+    return CollectFileTimes (folderLoc, fileTimes, entryCount);
+}
+
 PublishPublisherSetCommand::PublishPublisherSetCommand() :
-    CommandBase(CommonSchema::NotUsed)
+    CommandBase(CommonSchema::Used)
 {
 }
 
@@ -53,7 +134,7 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
             },
             "selectedNavigatorItemIds": {
                 "$ref": "#/NavigatorItemIds",
-                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set."
+                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set. Each item wraps its id in navigatorItemId, as the items of GetNavigatorItemTree do: [{\"navigatorItemId\": {\"guid\": \"6E1C3A9B-0F2D-4B8E-9C7A-1D2E3F405162\"}}], not [{\"guid\": \"...\"}]."
             }
         },
         "additionalProperties": false,
@@ -63,25 +144,35 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
     })";
 }
 
+GS::Optional<GS::UniString> PublishPublisherSetCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "outputFolder": {
+                "type": "string",
+                "description": "The local or LAN folder the set was published to: outputPath, else the path saved in the publisher set. Absent when the set publishes elsewhere (to the Internet or a BIMcloud/Teamwork file server)."
+            },
+            "writtenFiles": {
+                "type": "array",
+                "description": "Full paths of the files in outputFolder and its subfolders that were created or changed while the command ran, as found when Archicad reported the publishing finished. Absent when outputFolder is absent or holds more than 20000 files and folders.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString publisherSetName;
     parameters.Get("publisherSetName", publisherSetName);
 
-    const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
-    if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
-        return CreateErrorResponse(Error, "Not valid publisher set name.");
-    }
-
-    API_PublishPars publishPars = {};
-    publishPars.guid = publisherSetNameGuidTable.Get(publisherSetName);
-
-    if (parameters.Contains("outputPath")) {
-        GS::UniString outputPath;
-        parameters.Get("outputPath", outputPath);
-        publishPars.path = new IO::Location(outputPath);
-    }
-
+    // Archicad does not refuse items of the wrong shape by the input schema, so they are checked
+    // here, before the name, and the error says what is wrong with them.
     GS::Array<API_Guid> selectedLinks;
     const GS::Array<API_Guid>* selectedLinksPtr = nullptr;
     if (parameters.Contains("selectedNavigatorItemIds")) {
@@ -91,8 +182,7 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         for (const GS::ObjectState& navigatorItemIdArrayItem : selectedNavigatorItemIds) {
             const API_Guid selectedGuid = GetGuidFromNavigatorItemIdArrayItem(navigatorItemIdArrayItem);
             if (selectedGuid == APINULLGuid) {
-                delete publishPars.path;
-                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing.");
+                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing. Each item must be {\"navigatorItemId\": {\"guid\": \"...\"}}.");
             }
             selectedLinks.Push(selectedGuid);
         }
@@ -102,6 +192,29 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         }
     }
 
+    const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
+    if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
+        return CreateErrorResponse(Error, GS::UniString("Not valid publisher set name: no publisher set is named \"") + publisherSetName + "\". GetPublisherSets lists the names.");
+    }
+
+    API_PublishPars publishPars = {};
+    publishPars.guid = publisherSetNameGuidTable.Get(publisherSetName);
+
+    IO::Location outputFolder;
+    if (parameters.Contains("outputPath")) {
+        GS::UniString outputPath;
+        parameters.Get("outputPath", outputPath);
+        publishPars.path = new IO::Location(outputPath);
+        outputFolder = *publishPars.path;
+    } else {
+        outputFolder = GetPublisherSetPath(publishPars.guid);
+    }
+
+    // The API reports neither the files it writes nor a later end of publishing, so the files
+    // are found by comparing the output folder before and after the call.
+    GS::HashTable<GS::UniString, GSTime> filesBefore;
+    bool canListFiles = !outputFolder.IsEmpty() && CollectFileTimes(outputFolder, filesBefore);
+
     GSErrCode err = ACAPI_ProjectOperation_Publish(&publishPars, selectedLinksPtr);
     delete publishPars.path;
 
@@ -109,7 +222,31 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         return CreateErrorResponse(err, "Publishing failed. Check output path!");
     }
 
-    return {};
+    GS::ObjectState response;
+    if (outputFolder.IsEmpty()) {
+        return response;
+    }
+
+    response.Add("outputFolder", outputFolder.ToDisplayText());
+
+    GS::HashTable<GS::UniString, GSTime> filesAfter;
+    canListFiles = canListFiles && CollectFileTimes(outputFolder, filesAfter);
+    if (canListFiles) {
+        std::vector<GS::UniString> writtenFiles;
+        filesAfter.Enumerate([&](const GS::UniString& path, const GSTime& modificationTime) {
+            if (!filesBefore.ContainsKey(path) || filesBefore.Get(path) != modificationTime) {
+                writtenFiles.push_back(path);
+            }
+        });
+        std::sort(writtenFiles.begin(), writtenFiles.end());
+
+        const auto& writtenFilesList = response.AddList<GS::UniString>("writtenFiles");
+        for (const GS::UniString& path : writtenFiles) {
+            writtenFilesList(path);
+        }
+    }
+
+    return response;
 }
 
 GetPublisherSetsCommand::GetPublisherSetsCommand () :
@@ -1292,9 +1429,6 @@ GS::ObjectState GetModelViewOptionDetailsCommand::Execute (const GS::ObjectState
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
 #endif
 }
-
-// Defined at CreateViewsInViewMap below; frees what ACAPI_Navigator_GetNavigatorView allocates.
-static void FreeNavigatorView (API_NavigatorView& navigatorView);
 
 struct RenovationFilter {
     API_Guid      guid;
@@ -3146,7 +3280,7 @@ GS::Optional<GS::UniString> SetZoomCommand::GetInputParametersSchema () const
         "properties": {
             "zoomBox": {
                 "$ref": "#/Zoom",
-                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is."
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is; in a rotated window the whole box is shown, so the shown area is larger than the box."
             }
         },
         "additionalProperties": false,
@@ -3161,6 +3295,39 @@ GS::Optional<GS::UniString> SetZoomCommand::GetRawResponseSchema () const
     return R"({
         "$ref": "#/ExecutionResult"
     })";
+}
+
+static bool IsUnrotatedWindowTransformation (const API_Tranmat& tranmat)
+{
+    const double eps = 1e-9;
+    return std::abs (tranmat.tmx[0] - 1.0) < eps && std::abs (tranmat.tmx[1]) < eps &&
+           std::abs (tranmat.tmx[4]) < eps && std::abs (tranmat.tmx[5] - 1.0) < eps;
+}
+
+static API_Box GetZoomBoxInWindowFrame (const API_Box& modelBox, const API_Tranmat& tranmat)
+{
+    if (IsUnrotatedWindowTransformation (tranmat)) {
+        return modelBox;
+    }
+
+    const double cornerX[4] = { modelBox.xMin, modelBox.xMax, modelBox.xMax, modelBox.xMin };
+    const double cornerY[4] = { modelBox.yMin, modelBox.yMin, modelBox.yMax, modelBox.yMax };
+
+    API_Box frameBox = {};
+    for (UInt32 i = 0; i < 4; ++i) {
+        const double x = tranmat.tmx[0] * cornerX[i] + tranmat.tmx[1] * cornerY[i] + tranmat.tmx[3];
+        const double y = tranmat.tmx[4] * cornerX[i] + tranmat.tmx[5] * cornerY[i] + tranmat.tmx[7];
+        if (i == 0) {
+            frameBox.xMin = frameBox.xMax = x;
+            frameBox.yMin = frameBox.yMax = y;
+        } else {
+            frameBox.xMin = GS::Min (frameBox.xMin, x);
+            frameBox.xMax = GS::Max (frameBox.xMax, x);
+            frameBox.yMin = GS::Min (frameBox.yMin, y);
+            frameBox.yMax = GS::Max (frameBox.yMax, y);
+        }
+    }
+    return frameBox;
 }
 
 GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -3197,7 +3364,14 @@ GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::
         return CreateFailedExecutionResult (err, "Failed to get the current zoom and rotation of the current window.");
     }
 
-    err = ACAPI_View_SetZoom (&zoomBox, &currentTranmat);
+    // ACAPI_View_SetZoom takes the box in the window's own frame, which on a rotated
+    // window is the model rotated by the window's transformation (the same frame
+    // ACAPI_View_GetZoom reports the box in), not in model coordinates (issue #2846).
+    // So the four corners of the model box are transformed into that frame and
+    // their bounding box is set, which shows the whole model box. An unrotated
+    // window is left as before, its frame is the model's.
+    API_Box windowFrameBox = GetZoomBoxInWindowFrame (zoomBox, currentTranmat);
+    err = ACAPI_View_SetZoom (&windowFrameBox, &currentTranmat);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the zoom of the current window.");
     }
@@ -3433,26 +3607,6 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetRawResponseSchema ()
         "additionalProperties": false,
         "required": ["navigatorItems"]
     })";
-}
-
-// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with
-// custom settings (as the DevKit's Navigator_Test example does).
-static void FreeNavigatorView (API_NavigatorView& navigatorView)
-{
-    if (navigatorView.modelViewOpt != nullptr) {
-        ACAPI_FreeGDLModelViewOptionsPtr (&navigatorView.modelViewOpt->gdlOptions);
-        BMKillPtr ((GSPtr*) &navigatorView.modelViewOpt);
-    }
-#ifdef ServerMainVers_2700
-    delete navigatorView.layerStats;
-    navigatorView.layerStats = nullptr;
-    delete navigatorView.pens;
-    navigatorView.pens = nullptr;
-#else
-    BMKillHandle ((GSHandle*) &navigatorView.layerStats);
-    BMKillPtr ((GSPtr*) &navigatorView.pens);
-#endif
-    BMKillPtr ((GSPtr*) &navigatorView.dimPrefs);
 }
 
 GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const

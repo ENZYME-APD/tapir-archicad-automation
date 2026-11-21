@@ -10,6 +10,29 @@
     'Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.':
         'Kurze Videos (auf Englisch), die Tapir in Archicad und Grasshopper bei der Arbeit zeigen, alle in einer Playlist auf YouTube.',
 
+    // Written tutorials
+    'Written <em>tutorials.</em>': 'Schriftliche <em>Tutorials.</em>',
+    'Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.':
+        'Schritt für Schritt, zu Fragen, die zur Automatisierung von Archicad gestellt werden, jede beantwortet mit dem, was Tapir schon hat.',
+    'Export Archicad element properties to Excel with Python':
+        'Eigenschaften von Archicad-Elementen mit Python nach Excel exportieren',
+    'Property values to an Excel or CSV file, one row per element, and the edited values back.':
+        'Eigenschaftswerte in eine Excel- oder CSV-Datei, eine Zeile pro Element, und die bearbeiteten Werte zurück.',
+    'Read the tutorial': 'Zum Tutorial',
+    'Connect Grasshopper to Archicad': 'Grasshopper mit Archicad verbinden',
+    'Install the tapir package, read a wall and change its height.':
+        'Das Paket tapir installieren, eine Wand lesen und ihre Höhe ändern.',
+    'Batch rename views in Archicad': 'Ansichten in Archicad im Stapel umbenennen',
+    'Find and replace, a prefix or a counter in the names of the views.':
+        'Suchen und Ersetzen, ein Präfix oder ein Zähler in den Namen der Ansichten.',
+    'Elements': 'Elemente',
+    'Number doors and windows by room in Archicad': 'Türen und Fenster in Archicad nach Raum nummerieren',
+    'Element IDs such as 1.04-D1, from the zone each door or window opens into.':
+        'Element-IDs wie 1.04-D1, aus der Zone, in die sich jede Tür oder jedes Fenster öffnet.',
+    'Your first Archicad Python script': 'Ihr erstes Archicad-Python-Skript',
+    'A few lines that call one Tapir command, run from the Tapir palette.':
+        'Ein paar Zeilen, die einen Tapir-Befehl aufrufen, ausgeführt aus der Tapir-Palette.',
+
     // The videos
     'Videos': 'Videos',
     'Getting started': 'Einstieg',

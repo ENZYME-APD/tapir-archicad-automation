@@ -421,8 +421,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (see Versioning for which version it ships); first regenerates
   `docs/archicad-addon` with `tools/generate_addon_docs.py`, then the site's copies
   for AI assistants with `tools/generate_llm_files.py` (`llms.txt`, `llms-full.txt`,
-  `commands.json`/`.md` with every command's schemas, Grasshopper components and
-  example, each page as `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
+  `commands.json`/`.md`, an index with one file per command group under `docs/commands/`
+  that holds every command's schemas, Grasshopper components and example, each page as
+  `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
   warns), and pushes them to `main` when they changed (never hand-edit those docs).
   Run both scripts yourself to update them earlier; `--check` reports stale files.
   The release notes are the installer links, a short summary written by
@@ -655,7 +656,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - Grasshopper coverage of the Tapir commands: <https://archicad-api.com/gh-coverage/>
   (same branch and workflow)
 - For AI assistants: <https://archicad-api.com/llms.txt> (the index), `llms-full.txt`
-  (everything in one file) and `commands.json` (every command, machine-readable)
+  (everything in one file) and `commands.json` (every command, machine-readable: an index,
+  with one file per command group under `docs/commands/`)
 - Developer docs (wiki): <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki>
 - Add-On development guide: <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development>
 - Roadmap: <https://github.com/orgs/ENZYME-APD/projects/4/views/1>
