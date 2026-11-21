@@ -1,0 +1,113 @@
+{
+  "title": "SetDetailsOfElements on a Detail or Worksheet marker refuses typeSpecificDetails (detailName, detailIdStr) instead of answering success, and still takes the Element ID without them (#1377)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Detail", "Worksheet" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "a detail marker",
+      "command": "CreateDetailMarkers",
+      "params": {
+        "detailMarkersData": [
+          {
+            "clipPolygon": [ { "x": 930.0, "y": 900.0 }, { "x": 934.0, "y": 900.0 }, { "x": 934.0, "y": 903.0 }, { "x": 930.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 929.0, "y": 899.0 },
+            "angle": 0.0,
+            "name": "TapirCheck SetDetails Detail",
+            "id": "TSD-1",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "dm": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "detail marker created" }
+      ]
+    },
+    {
+      "id": "a worksheet marker",
+      "command": "CreateWorksheetMarkers",
+      "params": {
+        "worksheetMarkersData": [
+          {
+            "clipPolygon": [ { "x": 940.0, "y": 900.0 }, { "x": 944.0, "y": 900.0 }, { "x": 942.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 939.0, "y": 899.0 },
+            "angle": 0.0,
+            "name": "TapirCheck SetDetails Worksheet",
+            "id": "TSW-1",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "wm": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "worksheet marker created" }
+      ]
+    },
+    {
+      "id": "set a name and an ID through typeSpecificDetails",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          {
+            "elementId": { "guid": "${dm}" },
+            "details": { "id": "TapirCheck refused", "typeSpecificDetails": { "detailName": "Changed name" } }
+          },
+          {
+            "elementId": { "guid": "${wm}" },
+            "details": { "typeSpecificDetails": { "detailIdStr": "X-99" } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "detail marker refused, not answered with success" },
+        { "path": "executionResults[0].error.message", "contains": "ModifyDetailMarkers", "name": "the error names the command to use" },
+        { "path": "executionResults[0].error.message", "contains": "detailName", "name": "the error names the field" },
+        { "path": "executionResults[1].success", "eq": false, "name": "worksheet marker refused, not answered with success" },
+        { "path": "executionResults[1].error.message", "contains": "detailIdStr", "name": "the error names the field" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm}" } }, { "elementId": { "guid": "${wm}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck SetDetails Detail", "name": "detail name kept" },
+        { "path": "detailsOfElements[0].id", "ne": "TapirCheck refused", "name": "Element ID of the refused item not applied" },
+        { "path": "detailsOfElements[1].details.detailIdStr", "eq": "TSW-1", "name": "worksheet ID kept" }
+      ]
+    },
+    {
+      "id": "set only the Element ID",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${dm}" }, "details": { "id": "TapirCheck accepted" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the common details are still accepted" }
+      ]
+    },
+    {
+      "id": "the Element ID was applied",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].id", "eq": "TapirCheck accepted", "name": "Element ID applied" }
+      ]
+    }
+  ]
+}

@@ -8286,6 +8286,11 @@ static const char* StairSettingsSchemaProperties = R"(
                             "description": "The line types, pens and fills of the monolithic structure's symbol, per view (FloorPlan, CeilingPlan) and part (Visible, Hidden), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
                             "items": { "$ref": "#/StairMonolithStructureSymbolSettings" }
                         },
+                        "structureVisibilityOnStories": {
+                            "type": "array",
+                            "description": "Which structure symbols are shown on which of the stair's relevant stories, per view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns: whether one representation is used on every story, and per story range the visible structures, fills and monolithic parts. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureVisibilitySettings" }
+                        },
                         "treads": {
                             "type": "array",
                             "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
@@ -8427,6 +8432,11 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "array",
                             "description": "Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.",
                             "items": { "$ref": "#/StairBaseLineVertex" }
+                        },
+                        "baseLineArcs": {
+                            "type": "array",
+                            "description": "Optional. The curved edges of the baseline, for a curved or spiral stair, in the format GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, and an arc bends one edge, so endIndex = begIndex + 1. arcAngle is the angle of the arc in radians, not 0 and less than a full turn; it is positive if the arc is on the right-hand side of the straight edge. At most one arc per edge; the edges without an arc are straight.",
+                            "items": { "$ref": "#/PolyArc" }
                         },)") + StairSettingsSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -8501,6 +8511,36 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     if (hasVertices && baseLineVertices.GetSize () != baseLinePoints.GetSize ()) {
         return CreateErrorResponse (APIERR_BADPARS, "baseLineVertices must have one item per baseline point (baseLinePoints.length).");
     }
+
+    // Curved segments (#2933), in the PolyArc format GetDetailsOfElements returns them: 0-based
+    // point indices, written 1-based into the memo like the coords. The baseline is a polyline, so
+    // an arc can only bend one edge, from point i to point i + 1. The DevKit's Do_CreateStair
+    // creates a curved stair by setting stairBaseLine.parcs and polygon.nArcs the same way.
+    GS::Array<GS::ObjectState> baseLineArcs;
+    parameters.Get ("baseLineArcs", baseLineArcs);
+    const Int32 nBaseLinePoints = static_cast<Int32> (baseLinePoints.GetSize ());
+    std::vector<API_PolyArc> polyArcs;
+    for (const GS::ObjectState& arc : baseLineArcs) {
+        API_PolyArc polyArc = {};
+        if (!arc.Get ("begIndex", polyArc.begIndex) || !arc.Get ("endIndex", polyArc.endIndex) || !arc.Get ("arcAngle", polyArc.arcAngle)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Every item of baseLineArcs needs begIndex, endIndex and arcAngle.");
+        }
+        if (polyArc.begIndex < 0 || polyArc.endIndex != polyArc.begIndex + 1 || polyArc.endIndex >= nBaseLinePoints) {
+            return CreateErrorResponse (APIERR_BADPARS, "An arc of baseLineArcs must bend one baseline edge: endIndex = begIndex + 1, both indices of baseLinePoints (0-based).");
+        }
+        if (std::abs (polyArc.arcAngle) < 1e-9 || std::abs (polyArc.arcAngle) >= 2.0 * 3.14159265358979323846) {
+            return CreateErrorResponse (APIERR_BADPARS, "The arcAngle of an arc of baseLineArcs must not be 0 and must be less than a full turn (2 pi) either way.");
+        }
+        for (const API_PolyArc& other : polyArcs) {
+            if (other.begIndex == polyArc.begIndex + 1) {
+                return CreateErrorResponse (APIERR_BADPARS, "baseLineArcs has more than one arc on the same baseline edge.");
+            }
+        }
+        polyArc.begIndex += 1;
+        polyArc.endIndex += 1;
+        polyArcs.push_back (polyArc);
+    }
+    std::sort (polyArcs.begin (), polyArcs.end (), [] (const API_PolyArc& a, const API_PolyArc& b) { return a.begIndex < b.begIndex; });
 
     double zCoordinate = 0.0;
     parameters.Get ("zCoordinate", zCoordinate);
@@ -8593,17 +8633,24 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     // baselines fail with -2130313215 (#444).
     memo.stairBaseLine.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     memo.stairBaseLine.pends = reinterpret_cast<Int32**> (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
-    memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (0, ALLOCATE_CLEAR, 0));
+    const Int32 nArcs = static_cast<Int32> (polyArcs.size ());
+    memo.stairBaseLine.parcs = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (nArcs * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    if (memo.stairBaseLine.coords == nullptr || memo.stairBaseLine.pends == nullptr || (nArcs > 0 && memo.stairBaseLine.parcs == nullptr)) {
+        return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the stair baseline.");
+    }
 
     for (Int32 i = 0; i < nCoords; ++i) {
         (*memo.stairBaseLine.coords)[i + 1] = Get2DCoordinateFromObjectState (baseLinePoints[i]);
+    }
+    for (Int32 i = 0; i < nArcs; ++i) {
+        (*memo.stairBaseLine.parcs)[i] = polyArcs[i];
     }
 
     (*memo.stairBaseLine.pends)[1] = nCoords;
 
     memo.stairBaseLine.polygon.nCoords = nCoords;
     memo.stairBaseLine.polygon.nSubPolys = 1;
-    memo.stairBaseLine.polygon.nArcs = 0;
+    memo.stairBaseLine.polygon.nArcs = nArcs;
 
     if (hasEdges || hasVertices) {
         // Landings (#1628): edgeData and vertexData hold nCoords + 1 entries with slot 0 unused,
@@ -10575,6 +10622,254 @@ static GS::Optional<GS::UniString> ApplyStairStructureSymbols (const GS::ObjectS
     return {};
 }
 
+// Whether any byte of a mask member is set.
+template <typename T>
+static bool IsAnyMaskByteSet (const T& maskMember)
+{
+    const char* bytes = reinterpret_cast<const char*> (&maskMember);
+    for (size_t i = 0; i < sizeof (T); ++i) {
+        if (bytes[i] != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Sets every byte of a mask member.
+template <typename T>
+static void SetAllMaskBytes (T& maskMember)
+{
+    char* bytes = reinterpret_cast<char*> (&maskMember);
+    for (size_t i = 0; i < sizeof (T); ++i) {
+        bytes[i] = -1;
+    }
+}
+
+// Names the given fields of one symbol item (marked in givenMask) that differ after the change.
+template <typename Data, size_t FieldCount>
+static GS::UniString StairSymbolFieldsNotApplied (const GS::UniString& where, const StairSymbolField<Data> (&fields)[FieldCount], const Data& want, const Data& got, const Data& givenMask)
+{
+    GS::UniString notApplied;
+    for (const StairSymbolField<Data>& field : fields) {
+        if (field.attribute != nullptr) {
+            if (*reinterpret_cast<const char*> (&(givenMask.*field.attribute)) != 0 && got.*field.attribute != want.*field.attribute) {
+                notApplied += GS::UniString (" ") + where + "." + field.name + (field.kind == StairSymbolFieldKind::LineType ? " is another line type." : " is another fill type.");
+            }
+        } else if (*reinterpret_cast<const char*> (&(givenMask.*field.pen)) != 0 && got.*field.pen != want.*field.pen) {
+            notApplied += GS::UniString (" ") + where + "." + field.name + GS::UniString::Printf (" is %d.", static_cast<int> (got.*field.pen));
+        }
+    }
+    return notApplied;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the structure symbol fields given
+// (marked in givenMask) that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairStructureSymbolsApplied (const API_Element& wanted, const API_StairType& givenMask)
+{
+    if (!IsAnyMaskByteSet (givenMask.structSymbData) && !IsAnyMaskByteSet (givenMask.monolithStructureSymbolData)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    static const char* const TypeNames[API_StairStructSymbTypeNum] = { "UnderStructure", "Stringer" };
+    static const char* const ViewNames[API_StairStructSymbViewNum] = { "FloorPlan", "CeilingPlan" };
+    static const char* const PartNames[API_StairStructSymbPartNum] = { "Visible", "Hidden" };
+
+    GS::UniString notApplied;
+    for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+        for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+            const GS::UniString where = GS::UniString ("structureSymbols (") + TypeNames[type] + ", " + ViewNames[view] + ")";
+            notApplied += StairSymbolFieldsNotApplied (where, StairStructureSymbolFields, wanted.stair.structSymbData[type][view], changed.stair.structSymbData[type][view], givenMask.structSymbData[type][view]);
+        }
+    }
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+            const GS::UniString where = GS::UniString ("monolithStructureSymbols (") + ViewNames[view] + ", " + PartNames[part] + ")";
+            notApplied += StairSymbolFieldsNotApplied (where, StairMonolithStructureSymbolFields, wanted.stair.monolithStructureSymbolData[view][part], changed.stair.monolithStructureSymbolData[view][part], givenMask.monolithStructureSymbolData[view][part]);
+        }
+    }
+    return notApplied;
+}
+
+// The visibility of the structure symbols on the stair's relevant stories (#2848):
+// API_StairType::structureVisibilityOnStories, per view, with the keys GetDetailsOfElements returns.
+static bool StairStructSymbVisibilityFromString (const GS::UniString& str, Int32& structure)
+{
+    if (str == "Beam")         { structure = APISV_Beam;         return true; }
+    if (str == "Cantilevered") { structure = APISV_Cantilevered; return true; }
+    if (str == "Stringer")     { structure = APISV_Stringer;     return true; }
+    if (str == "Monolith")     { structure = APISV_Monolith;     return true; }
+    return false;
+}
+
+static bool StairStructSymbRelevantStoriesFromString (const GS::UniString& str, Int32& stories)
+{
+    if (str == "AllStories")     { stories = APISCV_ALL_STORIES;     return true; }
+    if (str == "BelowRelevant")  { stories = APISCV_BELOW_RELEVANT;  return true; }
+    if (str == "BottomRelevant") { stories = APISCV_BOTTOM_RELEVANT; return true; }
+    if (str == "MiddleRelevant") { stories = APISCV_MID_RELEVANT;    return true; }
+    if (str == "TopRelevant")    { stories = APISCV_TOP_RELEVANT;    return true; }
+    if (str == "AboveRelevant")  { stories = APISCV_ABOVE_RELEVANT;  return true; }
+    return false;
+}
+
+static const char* const StairStructSymbViewNames[API_StairStructSymbViewNum] = { "FloorPlan", "CeilingPlan" };
+static const char* const StairStructSymbPartNames[API_StairStructSymbPartNum] = { "Visible", "Hidden" };
+static const char* const StairStructSymbTypeNames[API_StairStructSymbTypeNum] = { "UnderStructure", "Stringer" };
+static const char* const StairStructSymbVisibilityNames[API_StairStructSymbVisibilityNum] = { "Beam", "Cantilevered", "Stringer", "Monolith" };
+static const char* const StairStructSymbRelevantStoriesNames[API_StairStructSymbRelevantStoriesNum] = { "AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant" };
+
+struct StairMonolithPartVisibilityField {
+    const char*                             name;
+    bool API_MonolithPartsVisibilityData::* member;
+};
+
+static const StairMonolithPartVisibilityField StairMonolithPartVisibilityFields[] = {
+    { "connectionVisible",           &API_MonolithPartsVisibilityData::connectionVisible },
+    { "drainingVisible",             &API_MonolithPartsVisibilityData::drainingVisible },
+    { "landingLineVisible",          &API_MonolithPartsVisibilityData::landingLineVisible },
+    { "structureGoingVisible",       &API_MonolithPartsVisibilityData::structureGoingVisible },
+    { "structureGoingNosingVisible", &API_MonolithPartsVisibilityData::structureGoingNosingVisible }
+};
+
+// Reads the required boolean "visible" of a structures or fills item.
+static GS::Optional<GS::UniString> GetStairVisibleFlag (const GS::ObjectState& os, const GS::UniString& where, bool& visible)
+{
+    if (!os.Contains ("visible") || !os.Get ("visible", visible)) {
+        return where + ".visible must be true or false.";
+    }
+    return {};
+}
+
+// The visible structures, fills and monolithic parts of one story range: only the given items and
+// fields are written. Every value is checked first.
+static GS::Optional<GS::UniString> ApplyStairStructureVisibilityOnStory (const GS::ObjectState& storyOs, const GS::UniString& where, API_StairStructureComponentSettingsVisibilityOnStory& onStory, API_StairStructureComponentSettingsVisibilityOnStory& onStoryMask)
+{
+    GS::Array<GS::ObjectState> structures;
+    storyOs.Get ("structures", structures);
+    for (USize i = 0; i < structures.GetSize (); ++i) {
+        const GS::ObjectState& structureOs = structures[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".structures[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        GS::UniString structureStr;
+        Int32 part = 0;
+        Int32 structure = 0;
+        bool visible = false;
+        if (!structureOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        if (!structureOs.Get ("structure", structureStr) || !StairStructSymbVisibilityFromString (structureStr, structure)) {
+            return itemWhere + ".structure must be Beam, Cantilevered, Stringer or Monolith.";
+        }
+        const GS::Optional<GS::UniString> visibleError = GetStairVisibleFlag (structureOs, itemWhere, visible);
+        if (visibleError.HasValue ()) {
+            return visibleError;
+        }
+        onStory.structureVisibility[part][structure] = visible;
+        onStoryMask.structureVisibility[part][structure] = true;
+    }
+
+    GS::Array<GS::ObjectState> fills;
+    storyOs.Get ("fills", fills);
+    for (USize i = 0; i < fills.GetSize (); ++i) {
+        const GS::ObjectState& fillOs = fills[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".fills[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        GS::UniString typeStr;
+        Int32 part = 0;
+        Int32 type = 0;
+        bool visible = false;
+        if (!fillOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        if (!fillOs.Get ("structureType", typeStr) || !StairStructSymbTypeFromString (typeStr, type)) {
+            return itemWhere + ".structureType must be UnderStructure or Stringer.";
+        }
+        const GS::Optional<GS::UniString> visibleError = GetStairVisibleFlag (fillOs, itemWhere, visible);
+        if (visibleError.HasValue ()) {
+            return visibleError;
+        }
+        onStory.fillVisibility[part][type] = visible;
+        onStoryMask.fillVisibility[part][type] = true;
+    }
+
+    GS::Array<GS::ObjectState> monolithParts;
+    storyOs.Get ("monolithParts", monolithParts);
+    for (USize i = 0; i < monolithParts.GetSize (); ++i) {
+        const GS::ObjectState& partOs = monolithParts[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".monolithParts[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        Int32 part = 0;
+        if (!partOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        for (const StairMonolithPartVisibilityField& field : StairMonolithPartVisibilityFields) {
+            const GS::String key (field.name);
+            if (!partOs.Contains (key)) {
+                continue;
+            }
+            bool value = false;
+            if (!partOs.Get (key, value)) {
+                return itemWhere + "." + field.name + " must be true or false.";
+            }
+            onStory.monolithPartsVisibility[part].*field.member = value;
+            onStoryMask.monolithPartsVisibility[part].*field.member = true;
+        }
+    }
+    return {};
+}
+
+// structureVisibilityOnStories of CreateStairs and ModifyStairs (#2848): only the given fields of
+// the given items are written.
+static GS::Optional<GS::UniString> ApplyStairStructureVisibilityOnStories (const GS::ObjectState& details, API_StairType& stair, API_StairType& stairMask)
+{
+    GS::Array<GS::ObjectState> views;
+    details.Get ("structureVisibilityOnStories", views);
+    for (USize i = 0; i < views.GetSize (); ++i) {
+        const GS::ObjectState& viewOs = views[i];
+        const GS::UniString where = GS::UniString::Printf ("structureVisibilityOnStories[%u]", static_cast<unsigned> (i));
+        GS::UniString viewStr;
+        Int32 view = 0;
+        if (!viewOs.Get ("view", viewStr) || !StairStructSymbViewFromString (viewStr, view)) {
+            return where + ".view must be FloorPlan or CeilingPlan.";
+        }
+        API_StairStructureComponentSettingsVisibility& visibility = stair.structureVisibilityOnStories[view];
+        API_StairStructureComponentSettingsVisibility& visibilityMask = stairMask.structureVisibilityOnStories[view];
+
+        if (viewOs.Contains ("uniformSymbolRepresentationEnabled")) {
+            bool uniform = false;
+            if (!viewOs.Get ("uniformSymbolRepresentationEnabled", uniform)) {
+                return where + ".uniformSymbolRepresentationEnabled must be true or false.";
+            }
+            visibility.uniformSymbolRepresentationEnabled = uniform;
+            visibilityMask.uniformSymbolRepresentationEnabled = true;
+        }
+
+        GS::Array<GS::ObjectState> stories;
+        viewOs.Get ("stories", stories);
+        for (USize j = 0; j < stories.GetSize (); ++j) {
+            const GS::ObjectState& storyOs = stories[j];
+            const GS::UniString storyWhere = where + GS::UniString::Printf (".stories[%u]", static_cast<unsigned> (j));
+            GS::UniString storiesStr;
+            Int32 relevantStories = 0;
+            if (!storyOs.Get ("relevantStories", storiesStr) || !StairStructSymbRelevantStoriesFromString (storiesStr, relevantStories)) {
+                return storyWhere + ".relevantStories must be AllStories, BelowRelevant, BottomRelevant, MiddleRelevant, TopRelevant or AboveRelevant.";
+            }
+            const GS::Optional<GS::UniString> error = ApplyStairStructureVisibilityOnStory (storyOs, storyWhere,
+                visibility.structureVisibilityOnStories[relevantStories], visibilityMask.structureVisibilityOnStories[relevantStories]);
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
+    }
+    return {};
+}
+
 // Defined with the roof and shell surfaces below.
 static GS::Optional<GS::UniString> GetOverriddenMaterialChecked (const GS::ObjectState& materialOs, const GS::UniString& name, API_OverriddenAttribute& result);
 static bool IsSameOverriddenMaterial (const API_OverriddenAttribute& a, const API_OverriddenAttribute& b);
@@ -10841,52 +11136,16 @@ static GS::Optional<GS::UniString> ApplyStairMonolithSettings (const GS::ObjectS
     return {};
 }
 
-// Whether any byte of a mask member is set (the structure symbols #2848, the monolith and side
-// stair data #2866).
-template <typename T>
-static bool IsAnyMaskByteSet (const T& maskMember)
+static const char* StairVisibleText (bool visible)
 {
-    const char* bytes = reinterpret_cast<const char*> (&maskMember);
-    for (size_t i = 0; i < sizeof (T); ++i) {
-        if (bytes[i] != 0) {
-            return true;
-        }
-    }
-    return false;
+    return visible ? "true" : "false";
 }
 
-// Sets every byte of a mask member.
-template <typename T>
-static void SetAllMaskBytes (T& maskMember)
+// Reads the stair back after ModifyStairs changed it and names the structure visibility fields
+// given (marked in givenMask) that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairStructureVisibilityOnStoriesApplied (const API_Element& wanted, const API_StairType& givenMask)
 {
-    char* bytes = reinterpret_cast<char*> (&maskMember);
-    for (size_t i = 0; i < sizeof (T); ++i) {
-        bytes[i] = -1;
-    }
-}
-
-// Names the given fields of one symbol item (marked in givenMask) that differ after the change.
-template <typename Data, size_t FieldCount>
-static GS::UniString StairSymbolFieldsNotApplied (const GS::UniString& where, const StairSymbolField<Data> (&fields)[FieldCount], const Data& want, const Data& got, const Data& givenMask)
-{
-    GS::UniString notApplied;
-    for (const StairSymbolField<Data>& field : fields) {
-        if (field.attribute != nullptr) {
-            if (*reinterpret_cast<const char*> (&(givenMask.*field.attribute)) != 0 && got.*field.attribute != want.*field.attribute) {
-                notApplied += GS::UniString (" ") + where + "." + field.name + (field.kind == StairSymbolFieldKind::LineType ? " is another line type." : " is another fill type.");
-            }
-        } else if (*reinterpret_cast<const char*> (&(givenMask.*field.pen)) != 0 && got.*field.pen != want.*field.pen) {
-            notApplied += GS::UniString (" ") + where + "." + field.name + GS::UniString::Printf (" is %d.", static_cast<int> (got.*field.pen));
-        }
-    }
-    return notApplied;
-}
-
-// Reads the stair back after ModifyStairs changed it and names the structure symbol fields given
-// (marked in givenMask) that differ now. Empty when none were given or all were applied.
-static GS::UniString CheckStairStructureSymbolsApplied (const API_Element& wanted, const API_StairType& givenMask)
-{
-    if (!IsAnyMaskByteSet (givenMask.structSymbData) && !IsAnyMaskByteSet (givenMask.monolithStructureSymbolData)) {
+    if (!IsAnyMaskByteSet (givenMask.structureVisibilityOnStories)) {
         return {};
     }
 
@@ -10896,21 +11155,38 @@ static GS::UniString CheckStairStructureSymbolsApplied (const API_Element& wante
         return " the stair could not be read back after the change.";
     }
 
-    static const char* const TypeNames[API_StairStructSymbTypeNum] = { "UnderStructure", "Stringer" };
-    static const char* const ViewNames[API_StairStructSymbViewNum] = { "FloorPlan", "CeilingPlan" };
-    static const char* const PartNames[API_StairStructSymbPartNum] = { "Visible", "Hidden" };
-
     GS::UniString notApplied;
-    for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
-        for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
-            const GS::UniString where = GS::UniString ("structureSymbols (") + TypeNames[type] + ", " + ViewNames[view] + ")";
-            notApplied += StairSymbolFieldsNotApplied (where, StairStructureSymbolFields, wanted.stair.structSymbData[type][view], changed.stair.structSymbData[type][view], givenMask.structSymbData[type][view]);
-        }
-    }
     for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
-        for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
-            const GS::UniString where = GS::UniString ("monolithStructureSymbols (") + ViewNames[view] + ", " + PartNames[part] + ")";
-            notApplied += StairSymbolFieldsNotApplied (where, StairMonolithStructureSymbolFields, wanted.stair.monolithStructureSymbolData[view][part], changed.stair.monolithStructureSymbolData[view][part], givenMask.monolithStructureSymbolData[view][part]);
+        const API_StairStructureComponentSettingsVisibility& want = wanted.stair.structureVisibilityOnStories[view];
+        const API_StairStructureComponentSettingsVisibility& got = changed.stair.structureVisibilityOnStories[view];
+        const API_StairStructureComponentSettingsVisibility& given = givenMask.structureVisibilityOnStories[view];
+        const GS::UniString viewWhere = GS::UniString ("structureVisibilityOnStories (") + StairStructSymbViewNames[view] + ")";
+        if (given.uniformSymbolRepresentationEnabled && got.uniformSymbolRepresentationEnabled != want.uniformSymbolRepresentationEnabled) {
+            notApplied += GS::UniString (" ") + viewWhere + ".uniformSymbolRepresentationEnabled is " + StairVisibleText (got.uniformSymbolRepresentationEnabled) + ".";
+        }
+        for (Int32 stories = 0; stories < API_StairStructSymbRelevantStoriesNum; ++stories) {
+            const API_StairStructureComponentSettingsVisibilityOnStory& wantStory = want.structureVisibilityOnStories[stories];
+            const API_StairStructureComponentSettingsVisibilityOnStory& gotStory = got.structureVisibilityOnStories[stories];
+            const API_StairStructureComponentSettingsVisibilityOnStory& givenStory = given.structureVisibilityOnStories[stories];
+            const GS::UniString where = GS::UniString ("structureVisibilityOnStories (") + StairStructSymbViewNames[view] + ", " + StairStructSymbRelevantStoriesNames[stories] + ")";
+            for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+                for (Int32 structure = 0; structure < API_StairStructSymbVisibilityNum; ++structure) {
+                    if (givenStory.structureVisibility[part][structure] && gotStory.structureVisibility[part][structure] != wantStory.structureVisibility[part][structure]) {
+                        notApplied += GS::UniString (" ") + where + ".structures (" + StairStructSymbPartNames[part] + ", " + StairStructSymbVisibilityNames[structure] + ").visible is " + StairVisibleText (gotStory.structureVisibility[part][structure]) + ".";
+                    }
+                }
+                for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+                    if (givenStory.fillVisibility[part][type] && gotStory.fillVisibility[part][type] != wantStory.fillVisibility[part][type]) {
+                        notApplied += GS::UniString (" ") + where + ".fills (" + StairStructSymbPartNames[part] + ", " + StairStructSymbTypeNames[type] + ").visible is " + StairVisibleText (gotStory.fillVisibility[part][type]) + ".";
+                    }
+                }
+                for (const StairMonolithPartVisibilityField& field : StairMonolithPartVisibilityFields) {
+                    const bool gotValue = gotStory.monolithPartsVisibility[part].*field.member;
+                    if (givenStory.monolithPartsVisibility[part].*field.member && gotValue != wantStory.monolithPartsVisibility[part].*field.member) {
+                        notApplied += GS::UniString (" ") + where + ".monolithParts (" + StairStructSymbPartNames[part] + ")." + field.name + " is " + StairVisibleText (gotValue) + ".";
+                    }
+                }
+            }
         }
     }
     return notApplied;
@@ -11104,6 +11380,10 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     const GS::Optional<GS::UniString> symbolError = ApplyStairStructureSymbols (details, stair, mask.stair);
     if (symbolError.HasValue ()) {
         return symbolError;
+    }
+    const GS::Optional<GS::UniString> visibilityError = ApplyStairStructureVisibilityOnStories (details, stair, mask.stair);
+    if (visibilityError.HasValue ()) {
+        return visibilityError;
     }
 
     GS::Array<GS::ObjectState> treads;
@@ -11474,6 +11754,9 @@ static GS::UniString CheckStairRulesApplied (const API_Element& wanted, const AP
     return notApplied;
 }
 
+// IsAnyMaskByteSet (defined with the structure symbols above) tells whether the per-field mask
+// bytes of the monolith and side stair data of one structure (#2866) are set.
+
 #define STAIR_MASKED(maskRec, typ, varnam) (*reinterpret_cast<const char*> (&(maskRec).varnam) != 0)
 
 // Names the monolith data of one structure marked in the mask that differs after the change.
@@ -11779,6 +12062,10 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             if (IsAnyMaskByteSet (mask.stair.monolithStructureSymbolData)) {
                 SetAllMaskBytes (mask.stair.monolithStructureSymbolData);
             }
+            // And the visibility of the structure symbols on the stories (#2848).
+            if (IsAnyMaskByteSet (mask.stair.structureVisibilityOnStories)) {
+                SetAllMaskBytes (mask.stair.structureVisibilityOnStories);
+            }
 
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -11801,6 +12088,17 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
                 continue;
             }
+            // And for the structure symbols (#2848).
+            const GS::UniString symbolsNotApplied = CheckStairStructureSymbolsApplied (element, givenSymbolMask);
+            if (!symbolsNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure symbol setting:" + symbolsNotApplied));
+                continue;
+            }
+            const GS::UniString visibilityNotApplied = CheckStairStructureVisibilityOnStoriesApplied (element, givenSymbolMask);
+            if (!visibilityNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure visibility setting:" + visibilityNotApplied));
+                continue;
+            }
             // The same for the monolith and side stair data of the structures (#2866).
             const GS::UniString structuresNotApplied = CheckStairStructuresApplied (element, mask);
             if (!structuresNotApplied.IsEmpty ()) {
@@ -11811,12 +12109,6 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString headroomNotApplied = CheckStairHeadroomApplied (element, givenHeadroomMask);
             if (!headroomNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every headroom setting:" + headroomNotApplied));
-                continue;
-            }
-            // And for the structure symbols (#2848).
-            const GS::UniString symbolsNotApplied = CheckStairStructureSymbolsApplied (element, givenSymbolMask);
-            if (!symbolsNotApplied.IsEmpty ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure symbol setting:" + symbolsNotApplied));
                 continue;
             }
 
@@ -11879,6 +12171,11 @@ GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () c
                             "type": "array",
                             "description": "Optional. The turn at each point of the new baseline (baseLinePoints.length items), as in CreateStairs.",
                             "items": { "$ref": "#/StairBaseLineVertex" }
+                        },
+                        "baseLineArcs": {
+                            "type": "array",
+                            "description": "Optional. The curved edges of the new baseline, as in CreateStairs and as GetDetailsOfElements returns them (0-based indices, endIndex = begIndex + 1). Without it every edge of the new baseline is straight, also when the old stair was curved.",
+                            "items": { "$ref": "#/PolyArc" }
                         }
                     },
                     "additionalProperties": false,

@@ -15692,6 +15692,65 @@
                     "required": ["turnType", "landingStartEdgeOffset", "landingEndEdgeOffset", "minLandingStartEdgeOffset", "minLandingEndEdgeOffset"]
                 }
             },
+            "basePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "The stair's own coordinate system (API_StairType::basePlane), in model coordinates. Archicad keeps the baseline, the boundaries and the walking lines in it; the points reported here are already transformed by it (origin + x * xAxis + y * yAxis). A rotated stair has turned axes, a mirrored one axes of the other handedness (isMirrored)."
+            },
+            "isMirrored": {
+                "type": "boolean",
+                "description": "Whether the stair was mirrored, as its basePlane tells (xAxis and yAxis of the other handedness). Its left boundary is then on the right seen along the baseline, and its arcs bend the other way in its own coordinate system; the arcs reported are already turned back to model coordinates."
+            },
+            "baselinePosition": {
+                "type": "string",
+                "enum": ["Left", "Right", "Center", "Auto", "Unknown"],
+                "description": "The edge of the flight the baseline runs on, as CreateStairs takes it (API_StairType::baselinePosition)."
+            },
+            "baselineOffset": {
+                "type": "number",
+                "description": "The offset of the baseline from that edge (API_StairType::baselineOffset)."
+            },
+            "inputDirection": {
+                "type": "string",
+                "enum": [ "Upward", "Inverse" ],
+                "description": "The walking direction along the baseline, as CreateStairs and ModifyStairs take it. Upward: baseLinePoints run from the bottom of the stair to its top. Inverse: they run from the top down. The walking lines and the boundaries run from the bottom up either way (seen on a stair drawn in Archicad 27); Archicad 29 creates and keeps stairs Upward even when Inverse is given."
+            },
+            "leftBoundary": {
+                "$ref": "#/StairBoundary",
+                "description": "The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it."
+            },
+            "rightBoundary": {
+                "$ref": "#/StairBoundary",
+                "description": "The right boundary line of the stair (the memo's stairBoundary[1]), seen along the baseline. Given when Archicad has calculated it."
+            },
+            "walkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "The walking line of the stair (the memo's stairWalkingLine), the one Archicad lays the goings out along. Given when Archicad has calculated it."
+            },
+            "customWalkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "The custom walking line of the stair (the memo's stairCustomWalkLine). Archicad 29 fills it on every stair: on a stair whose walking line was not edited it is the same as walkingLine."
+            },
+            "centerWalkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "The center walking line of the stair (the memo's stairCenterWalkLine). Archicad 29 fills it on every stair: on a stair with a centered walking line it is the same as walkingLine."
+            },
+            "linkToSettings": {
+                "$ref": "#/LinkToSettings"
+            },
+            "uniformLeftRightSideSupports": {
+                "type": "object",
+                "description": "Whether the left and right side supports of the flights (run) and of the landings (landing) share their settings (API_StairType::uniformLeftRightSideSupports).",
+                "properties": {
+                    "run": {
+                        "type": "boolean"
+                    },
+                    "landing": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["run", "landing"]
+            },
             "stairDisplayType": {
                 "type": "string",
                 "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions) (API_StairType::stairDisplayType).",
@@ -15943,6 +16002,67 @@
             "finishVisible",
             "baseLinePoints"
         ]
+    },
+    "StairPolyline": {
+        "type": "object",
+        "description": "A polyline of a stair, such as its walking line, in model coordinates (the coordinates of baseLinePoints).",
+        "properties": {
+            "points": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "description": "The curved segments of the polyline, with 0-based indices into points; empty when every segment is straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["points", "arcs"]
+    },
+    "StairBoundary": {
+        "type": "object",
+        "description": "A side boundary line of a stair: an open polyline along that side of the flights and landings, in model coordinates (the coordinates of baseLinePoints). The left boundary, the right boundary reversed and the two segments joining their ends make the outline of the stair in plan.",
+        "properties": {
+            "isCustom": {
+                "type": "boolean",
+                "description": "Whether the boundary was edited by hand."
+            },
+            "points": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "description": "The curved segments of the boundary, with 0-based indices into points; empty when every segment is straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "edges": {
+                "type": "array",
+                "description": "One item per segment: edge i runs from points[i] to points[i + 1].",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "visible": {
+                            "type": "boolean",
+                            "description": "Whether the part of the stair this segment describes is visible."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["visible"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["isCustom", "points", "arcs", "edges"]
     },
     "StairStructureDetails": {
         "type": "object",
@@ -16635,6 +16755,121 @@
         },
         "additionalProperties": false,
         "required": ["view", "part"]
+    },
+    "StairStructureVisibilitySettings": {
+        "type": "object",
+        "description": "Which structure symbols of a Stair are shown on which of its relevant stories, for one view, that CreateStairs and ModifyStairs write (API_StairStructureComponentSettingsVisibility of API_StairType::structureVisibilityOnStories). Only the given fields of the given items are changed; GetDetailsOfElements reads them back in structureVisibilityOnStories, with the same keys.",
+        "properties": {
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the visibility is for (Unknown is refused)."
+            },
+            "uniformSymbolRepresentationEnabled": {
+                "type": "boolean",
+                "description": "Whether one structure symbol representation is used on every story (Archicad's uniform symbol representation) instead of the settings per story range."
+            },
+            "stories": {
+                "type": "array",
+                "description": "The visibility per story range relative to the stair's relevant stories (API_StairStructSymbRelevantStoriesID). Only the given story ranges are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "relevantStories": {
+                            "type": "string",
+                            "description": "The story range: every story, the stories below the relevant stories, the bottom, middle and top relevant story, or the stories above them.",
+                            "enum": ["AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant"]
+                        },
+                        "structures": {
+                            "type": "array",
+                            "description": "Whether the lines of each structure are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structure": {
+                                        "type": "string",
+                                        "description": "The structure: beam, cantilevered, stringer or monolithic.",
+                                        "enum": ["Beam", "Cantilevered", "Stringer", "Monolith"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its lines are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structure", "visible"]
+                            }
+                        },
+                        "fills": {
+                            "type": "array",
+                            "description": "Whether the fills of each structure type are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structureType": {
+                                        "type": "string",
+                                        "description": "The structure under the stair or the stringers.",
+                                        "enum": ["UnderStructure", "Stringer"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its fill is shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structureType", "visible"]
+                            }
+                        },
+                        "monolithParts": {
+                            "type": "array",
+                            "description": "Which parts of a monolithic structure are shown, per visible or hidden part. Only the given fields are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "connectionVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the connection lines are shown."
+                                    },
+                                    "drainingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the draining is shown."
+                                    },
+                                    "landingLineVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the landing lines are shown."
+                                    },
+                                    "structureGoingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the going lines of the structure are shown."
+                                    },
+                                    "structureGoingNosingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the nosing lines of the structure are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["relevantStories"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["view"]
     },
     "StairLayout": {
         "type": "object",
@@ -21211,6 +21446,50 @@
             "holesSurface"
         ]
     },
+    "StairQuantities": {
+        "type": "object",
+        "description": "Quantities of a Stair element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "area": {
+                "type": "number",
+                "description": "The front surface area of the stair, as Archicad calls it: on a straight flight its length times its width."
+            },
+            "volume": {
+                "type": "number",
+                "description": "Volume of the stair."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the stair."
+            },
+            "walkingLineLength": {
+                "type": "number",
+                "description": "Length of the walking line."
+            },
+            "gradient": {
+                "type": "number",
+                "description": "Inclination angle of the stair, in radians."
+            },
+            "numberOfRisers": {
+                "type": "integer",
+                "description": "Number of risers."
+            },
+            "numberOfTreads": {
+                "type": "integer",
+                "description": "Number of treads."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "area",
+            "volume",
+            "height",
+            "walkingLineLength",
+            "gradient",
+            "numberOfRisers",
+            "numberOfTreads"
+        ]
+    },
     "ElementQuantities": {
         "description": "The type-specific quantities of an element. The fields depend on the type of the element.",
         "type": "object",
@@ -21244,6 +21523,9 @@
             },
             {
                 "$ref": "#/BeamSegmentQuantities"
+            },
+            {
+                "$ref": "#/StairQuantities"
             }
         ]
     },
@@ -29247,6 +29529,13 @@
                     "$ref": "#/Coordinate2D"
                 },
                 "minItems": 2
+            },
+            "baseLineArcs": {
+                "type": "array",
+                "description": "Optional. The curved edges of the baseline, as in CreateStairs and as GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, an arc bends one edge (endIndex = begIndex + 1), and arcAngle is not 0 and less than a full turn. Edges without an arc are straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
             },
             "zCoordinate": {
                 "type": "number",

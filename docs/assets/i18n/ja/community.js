@@ -147,6 +147,8 @@
     "Continents": "大陸",
     "A dot per town, larger where more people are. Land: Natural Earth.": "都市ごとに1つの点。人が多いほど大きくなります。陸地：Natural Earth。",
     "Add your town on Discord": "Discord であなたの都市を追加",
+    "Show the countries": "国を表示",
+    "Hide the countries": "国を隠す",
     "{place}, {country}: {count} person": "{place}、{country}：{count} 人",
     "{place}, {country}: {count} people": "{place}、{country}：{count} 人",
     "{count} person": "{count} 人",

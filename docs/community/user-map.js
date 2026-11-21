@@ -10,8 +10,9 @@
    as a CSS mask so it takes the theme's colour; the towns are drawn over it in the same projection
    (SCALE, TX, TY are the numbers written in world.svg). Each town is a dot, larger the more people
    are there (by area); the pointer, a tap or the keyboard (Tab) names it. The list under the map
-   names every country with its count, so nothing is only in the picture. The figures above it are
-   the file's totals, and the continents, counted here from the places' country codes. When the file cannot be
+   names every country with its count, so nothing is only in the picture; it is collapsed until the
+   "Show the countries" button opens it. The figures above it are the file's totals, and the
+   continents, counted here from the places' country codes. When the file cannot be
    read, or holds no place, the section stays hidden. Its texts are in the page's HTML
    (data-place(s), data-country/-ies, data-map-label), translated by assets/site.js. */
 (function () {
@@ -204,7 +205,17 @@
             item.appendChild (bar);
             list.appendChild (item);
         });
-        list.hidden = !countries.length;
+        // The list stays collapsed until the button next to "Add your town on Discord" opens it.
+        var toggle = document.getElementById ('country-toggle');
+        var labels = toggle.querySelectorAll ('span');
+        toggle.addEventListener ('click', function () {
+            var open = toggle.getAttribute ('aria-expanded') !== 'true';
+            toggle.setAttribute ('aria-expanded', String (open));
+            list.hidden = !open;
+            labels[0].hidden = open;
+            labels[1].hidden = !open;
+        });
+        toggle.hidden = !countries.length;
         section.hidden = false;
     }
 

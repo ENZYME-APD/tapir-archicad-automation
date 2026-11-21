@@ -28,7 +28,9 @@
     <meta property="og:url" content="https://archicad-api.com/archicad-addon/">
     <meta name="twitter:card" content="summary">
     <!-- site-assets -->
+    <link rel="icon" href="../favicon.ico" sizes="32x32">
     <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../apple-touch-icon.png">
     <meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#FFFFFF">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -146,6 +148,60 @@ print(response)</code></pre>
                 <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/archicad-addon/Examples">archicad-addon/Examples</a>
                 that sends commands the same way as the standard-library script.
             </p>
+
+            <div class="sec-head ref">
+                <h2 id="configuration">The configuration <em>file.</em></h2>
+            </div>
+            <p>
+                Tapir reads its settings from <code>Documents/Tapir/config.json</code> in your user folder. It writes the
+                file with the defaults below the first time it runs and never changes it afterwards. When you edit the file,
+                Tapir reads it again the next time it needs a setting, so the Tapir Palette uses new script sources the next
+                time it loads its scripts. A key that is missing has its default. This is the file Tapir writes:
+            </p>
+<pre><code class="language-json">{
+    "repositories": [
+        {
+            "displayName": "Tapir",
+            "repoOwner": "ENZYME-APD",
+            "repoName": "tapir-archicad-automation",
+            "relativeLoc": "builtin-scripts",
+            "token": "",
+            "excludeFromDownloadPattern": "",
+            "includePattern": "",
+            "excludePattern": "",
+            "uvProject": ""
+        }
+    ],
+    "localFolders": [],
+    "askUpdatingAddOnBeforeEachExecution": false,
+    "uvLocation": "",
+    "pythonLocation": ""
+}</code></pre>
+            <div class="params_wrapper">
+                <table class="params">
+                    <thead>
+                        <tr><th>Key</th><th>Type</th><th>What it does</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="params_name"><code>repositories</code></td><td class="params_type">array</td><td class="params_description">The GitHub repositories whose scripts the Tapir Palette lists. Tapir downloads their files when it loads its scripts, and lists the files downloaded before when GitHub can't be reached. Each item has the keys below.</td></tr>
+                        <tr><td class="params_name"><code>repositories[].displayName</code></td><td class="params_type">string</td><td class="params_description">The name the palette shows in brackets after the scripts of the repository.</td></tr>
+                        <tr><td class="params_name"><code>repositories[].repoOwner</code>, <code>repoName</code></td><td class="params_type">string</td><td class="params_description">The repository on GitHub, as in github.com/&lt;repoOwner&gt;/&lt;repoName&gt;.</td></tr>
+                        <tr><td class="params_name"><code>repositories[].relativeLoc</code></td><td class="params_type">string</td><td class="params_description">The folder of the repository that holds the scripts. Only the files below it are downloaded. Empty: the repository's root.</td></tr>
+                        <tr><td class="params_name"><code>repositories[].token</code></td><td class="params_type">string</td><td class="params_description">A GitHub token, sent as <code>Authorization: Bearer</code>, for a private repository. Empty: no token. The file keeps it as plain text.</td></tr>
+                        <tr><td class="params_name"><code>repositories[].excludeFromDownloadPattern</code></td><td class="params_type">string</td><td class="params_description">A regular expression. A file whose <code>&lt;repoOwner&gt;/&lt;repoName&gt;/&lt;path&gt;</code> matches it in full is not downloaded.</td></tr>
+                        <tr><td class="params_name"><code>repositories[].includePattern</code>, <code>excludePattern</code></td><td class="params_type">string</td><td class="params_description">Regular expressions, matched in full against a file's path below <code>relativeLoc</code>. With <code>excludePattern</code>, every file that does not match it is listed, and <code>includePattern</code> is not used. With only <code>includePattern</code>, only the files that match it are listed. With neither, only the <code>.py</code> files directly in <code>relativeLoc</code> are listed.</td></tr>
+                        <tr><td class="params_name"><code>repositories[].uvProject</code></td><td class="params_type">string</td><td class="params_description">Optional: the folder of a uv project (its <code>pyproject.toml</code>), relative to <code>relativeLoc</code>, or <code>.</code> for <code>relativeLoc</code> itself. The scripts then run in that project (<code>uv run --project</code>) instead of as standalone scripts with inline metadata (<code>uv run --script</code>).</td></tr>
+                        <tr><td class="params_name"><code>localFolders</code></td><td class="params_type">array</td><td class="params_description">Folders on your computer or a network drive whose scripts the palette lists. <a href="../start/">Get started</a> shows how to add one. Each item has the keys below.</td></tr>
+                        <tr><td class="params_name"><code>localFolders[].displayName</code></td><td class="params_type">string</td><td class="params_description">The name the palette shows for the folder's scripts.</td></tr>
+                        <tr><td class="params_name"><code>localFolders[].path</code></td><td class="params_type">string</td><td class="params_description">The folder. In JSON, a Windows path's backslashes are doubled.</td></tr>
+                        <tr><td class="params_name"><code>localFolders[].includePattern</code>, <code>excludePattern</code>, <code>uvProject</code></td><td class="params_type">string</td><td class="params_description">As for a repository, relative to the folder.</td></tr>
+                        <tr><td class="params_name"><code>askUpdatingAddOnBeforeEachExecution</code></td><td class="params_type">boolean</td><td class="params_description">When true, before each script runs Tapir checks for a newer release and offers to update the add-on. Default: false.</td></tr>
+                        <tr><td class="params_name"><code>uvLocation</code></td><td class="params_type">string</td><td class="params_description">The path of the <a href="https://docs.astral.sh/uv/">uv</a> executable that runs the scripts. Empty: Tapir looks for uv itself and offers to install it. A path that isn't a recent enough uv is reported once, and Tapir then looks for uv itself.</td></tr>
+                        <tr><td class="params_name"><code>pythonLocation</code></td><td class="params_type">string</td><td class="params_description">The Python that uv runs the scripts with: the path of an interpreter, or a version request such as <code>3.12</code>, passed to uv as it is. Empty: uv chooses.</td></tr>
+                        <tr><td class="params_name"><code>marketplaceCatalogueUrl</code></td><td class="params_type">string</td><td class="params_description">For testing only, and never written by Tapir: the address the Script Manager reads the marketplace catalogue from instead of the default one.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <script type="text/javascript">
@@ -159,6 +215,12 @@ print(response)</code></pre>
         <div class="sec-head ref">
             <h2 id="all-commands" data-i18n>All <em>commands.</em></h2>
         </div>
+        <p>
+            The number at the end of a command's row is the Tapir version it was added in. A badge such as
+            <code>AC29+</code> before it gives the Archicad versions the command works in, as its description states them
+            (<code>AC29+</code>: Archicad 29 or later, <code>AC25&ndash;27</code>: only Archicad 25 to 27). A command
+            without a badge works in every Archicad version Tapir supports.
+        </p>
 
         <div id="commands">
             <script type="text/javascript">
