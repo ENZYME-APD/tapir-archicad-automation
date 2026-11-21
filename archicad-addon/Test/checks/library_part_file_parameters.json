@@ -47,7 +47,7 @@
       "id": "read the file with its parameters",
       "command": "GetLibraryPartFileInfo",
       "creates": false,
-      "params": { "files": [ "${partPath}" ], "scripts": [ "3d" ] },
+      "params": { "files": [ "${partPath}" ], "scripts": [ "3d" ], "includeParameters": true },
       "expect": [
         { "path": "files", "len": 1, "name": "one item per file" },
         { "path": "files[0].scripts.3d.script", "contains": "BLOCK A, B, 1", "name": "the scripts are still read" },

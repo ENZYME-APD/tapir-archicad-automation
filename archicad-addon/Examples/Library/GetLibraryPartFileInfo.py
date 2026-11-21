@@ -15,5 +15,6 @@ if not libraryParts or 'path' not in libraryParts[0]:
 
 aclib.PrintJson (aclib.RunTapirCommand ('GetLibraryPartFileInfo', {
     'files': [libraryParts[0]['path']],
-    'scripts': ['master', '2d', '3d']
+    'scripts': ['master', '2d', '3d'],
+    'includeParameters': True
 }))

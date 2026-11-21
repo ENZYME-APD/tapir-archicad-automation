@@ -5241,7 +5241,7 @@ GS::Optional<GS::UniString> GetLibraryPartFileInfoCommand::GetInputParametersSch
             },
             "includeParameters": {
                 "type": "boolean",
-                "description": "Also returns the parameters of each file with their default values and descriptions, in the format of GetLibraryPartParameterValues. Default is true."
+                "description": "Also returns the parameters of each file with their default values and descriptions, in the format of GetLibraryPartParameterValues. Default is false, so a caller that only wants the scripts gets them even when the parameters of a file cannot be read."
             }
         },
         "additionalProperties": false,
@@ -5296,7 +5296,7 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
     GS::UniString password;
     parameters.Get ("password", password);
 
-    bool includeParameters = true;
+    bool includeParameters = false;
     parameters.Get ("includeParameters", includeParameters);
 
     auto libraryManager = ACAPI::Library::GetLibraryManager ();
@@ -5334,7 +5334,8 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
         }
 
         // The parameters as stored in the file, read the way GetLibraryPartParameterValues reads those of a
-        // loaded part (#1265). A file whose parameters cannot be read is an error, not a file without parameters.
+        // loaded part (#1265), when asked for. A file whose parameters cannot be read is then an error, not a file
+        // without parameters.
         GS::Array<GS::ObjectState> parametersOut;
         if (includeParameters) {
             auto gdlParameters = object.GetParameters ();
