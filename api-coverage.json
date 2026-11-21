@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 07:51 UTC",
+ "generatedAt": "2026-11-21 14:39 UTC",
  "versions": [
   25,
   26,
@@ -11,8 +11,7 @@
  "counts": {
   "not applicable": 569,
   "done": 2278,
-  "skipped": 30,
-  "open": 2
+  "skipped": 32
  },
  "items": [
   {
@@ -4035,14 +4034,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -5818,20 +5809,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
      "number": 2855,
@@ -6804,14 +6783,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
@@ -6834,10 +6805,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2620,
-     "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
     },
     {
      "number": 2550,
@@ -6897,14 +6864,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -7072,12 +7031,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2620,
-     "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7100,20 +7054,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
      "number": 2880,
@@ -7411,20 +7353,8 @@
      "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
     },
     {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
      "number": 2855,
@@ -7453,10 +7383,6 @@
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
-    },
-    {
-     "number": 2620,
-     "title": "ApplyFavoritesToElements: keep a Drawing Favorite's anchorPoint"
     },
     {
      "number": 2550,
@@ -7680,18 +7606,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -8055,16 +7969,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
     {
      "number": 2898,
@@ -10750,8 +10656,8 @@
    "olderNames": [
     "APIAny_GetMainGroupGuidID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "answers APIERR_BADID for every group guid and NoError with a null guid for an element on Archicad 29 (29.0.0 5101; #2643); GetMainGroups finds the top level group with ACAPI_Grouping_GetRootGroup of a member instead (fc0c3016)",
    "pullRequests": [],
    "issues": []
   },
@@ -16358,14 +16264,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -16536,14 +16434,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
     {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
@@ -20066,8 +19956,8 @@
    "olderNames": [
     "APIEnv_SetCurrent3DStyleID"
    ],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "stops Archicad 29 with the ODB assertion 'can't open modification scope inside transaction' from a JSON command, inside ACAPI_CallUndoableCommand and from ACAPI_AddOnAddOnCommunication_CallFromEventLoop (154b83aa); an add-on menu command hits the same assertion (29.0.0 5101). SetCurrent3DStyle refuses instead; a view's 3D style is set with SetViewSettings",
    "pullRequests": [],
    "issues": []
   },
@@ -25687,18 +25577,6 @@
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2911,
-     "title": "Stairs: write and read the position of the walking line symbol"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
      "number": 2855,
@@ -31329,26 +31207,6 @@
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2911,
-     "title": "Stairs: write and read the position of the walking line symbol"
-    },
-    {
-     "number": 2910,
-     "title": "GetDetailsOfElements: read back the stair settings CreateStairs and ModifyStairs write"
-    },
-    {
-     "number": 2909,
-     "title": "GetDetailsOfElements: read the treads and risers of a stair"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
      "number": 2873,
@@ -37905,28 +37763,12 @@
      "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
     },
     {
-     "number": 2925,
-     "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
-    },
-    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2911,
-     "title": "Stairs: write and read the position of the walking line symbol"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
      "number": 2880,
@@ -44755,26 +44597,6 @@
      "title": "Read back what the Modify commands write, with the same keys"
     },
     {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2911,
-     "title": "Stairs: write and read the position of the walking line symbol"
-    },
-    {
-     "number": 2910,
-     "title": "GetDetailsOfElements: read back the stair settings CreateStairs and ModifyStairs write"
-    },
-    {
-     "number": 2909,
-     "title": "GetDetailsOfElements: read the treads and risers of a stair"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
@@ -47960,26 +47782,6 @@
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2911,
-     "title": "Stairs: write and read the position of the walking line symbol"
-    },
-    {
-     "number": 2910,
-     "title": "GetDetailsOfElements: read back the stair settings CreateStairs and ModifyStairs write"
-    },
-    {
-     "number": 2909,
-     "title": "GetDetailsOfElements: read the treads and risers of a stair"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
      "number": 2873,
@@ -54532,14 +54334,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2914,
-     "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2908,
-     "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
     {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
