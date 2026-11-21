@@ -13925,6 +13925,21 @@
                 "type": "number",
                 "description": "The nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth), as ModifyCurtainWalls takes it."
             },
+            "primaryPattern": {
+                "$ref": "#/CurtainWallPattern",
+                "description": "The column pattern of the curtain wall (the primary grid), as CreateCurtainWalls and ModifyCurtainWalls take it in primaryPattern, so it can be written back as it is. It is the curtain wall's own pattern (API_ElementMemo::cWSegPrimaryPattern of the curtain wall): those commands write one pattern for the whole curtain wall, and Archicad builds every segment from it. A segment whose scheme was changed on its own in Archicad may differ, and writing this pattern back applies it to every segment again. flexibleIndices is always given, because those commands rewrite it each time. Omitted when the pattern has no sizes or uses the number-of-divisions logic, which those commands cannot write; writing the details back without it keeps the pattern."
+            },
+            "secondaryPattern": {
+                "$ref": "#/CurtainWallPattern",
+                "description": "The row pattern of the curtain wall (the secondary grid, from the bottom up), as CreateCurtainWalls and ModifyCurtainWalls take it in secondaryPattern, so it can be written back as it is. It is the curtain wall's own pattern (API_ElementMemo::cWSegSecondaryPattern of the curtain wall): those commands write one pattern for the whole curtain wall, and Archicad builds every segment from it. A segment whose scheme was changed on its own in Archicad may differ, and writing this pattern back applies it to every segment again. flexibleIndices is always given, because those commands rewrite it each time. Omitted when the pattern has no sizes or uses the number-of-divisions logic, which those commands cannot write; writing the details back without it keeps the pattern."
+            },
+            "cells": {
+                "type": "array",
+                "description": "The panel and frame classes of every cell of the pattern unit, as CreateCurtainWalls and ModifyCurtainWalls take them in cells, so they can be written back as they are: one item per cell (the columns of the primary pattern times the rows of the secondary pattern), row by row from the bottom row, each row from the start of the segment. Read from the curtain wall's own cells (API_ElementMemo::cWSegPatternCells of the curtain wall), like the patterns. A class index those commands would refuse (outside the panel and frame classes of the curtain wall, e.g. a customized cell) is left out of its item, so writing the cell back keeps it. Omitted when Archicad returns fewer cells than the pattern unit has.",
+                "items": {
+                    "$ref": "#/CurtainWallPatternCell"
+                }
+            },
             "angle": {
                 "type": "number",
                 "description": "The rotation angle of the curtain wall in radians."
