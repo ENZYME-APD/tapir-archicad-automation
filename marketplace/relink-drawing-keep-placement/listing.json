@@ -1,0 +1,18 @@
+{
+    "slug": "relink-drawing-keep-placement",
+    "name": "Relink Drawing, Keep Placement",
+    "summary": "Relinks a Drawing on a layout to another view and keeps it exactly where it was: same displayed scale, orientation and frame.",
+    "category": "documentation-layouts",
+    "tags": ["drawings", "layouts", "relink", "views", "scale"],
+    "author": { "name": "iota", "discord": "iota" },
+    "license": "MIT",
+    "entry": "relink_drawing_keep_placement.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [27, 28, 29, 30],
+            "minTapirVersion": "2.0.0",
+            "changelog": "First version."
+        }
+    ]
+}

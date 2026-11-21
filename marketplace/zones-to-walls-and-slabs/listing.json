@@ -1,13 +1,19 @@
 {
     "slug": "zones-to-walls-and-slabs",
     "name": "Zones to Walls and Slabs",
-    "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, and balustrades around the terraces.",
+    "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, terrace balustrades and doors between rooms.",
     "category": "modeling-geometry",
     "tags": ["zones", "walls", "slabs", "massing", "early-design", "partitions", "terraces", "railings"],
     "author": { "name": "Jorge Beneitez", "github": "JBENEITEZ" },
     "license": "MIT",
     "entry": "ZonesToWallsAndSlabs.py",
     "versions": [
+        {
+            "version": "0.5.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Doors between zones: with Doors between zones ticked, each pair of zones on a story that share an edge gets one door in the partition between them, in the middle of their longest shared segment, made with a Door favorite or the Door tool's defaults with a width. A segment shorter than the door and 10 cm at each end gets no door, and the pair is counted as skipped. The doors are a fourth Undo step."
+        },
         {
             "version": "0.4.0",
             "archicadVersions": [25, 26, 27, 28, 29, 30],

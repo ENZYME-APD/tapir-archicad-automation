@@ -146,6 +146,8 @@
     "Continents": "महाद्वीप",
     "A dot per town, larger where more people are. Land: Natural Earth.": "हर शहर के लिए एक बिंदु, जहाँ ज़्यादा लोग हैं वहाँ बड़ा। ज़मीन: Natural Earth।",
     "Add your town on Discord": "Discord पर अपना शहर जोड़ें",
+    "Show the countries": "देश दिखाएँ",
+    "Hide the countries": "देश छिपाएँ",
     "{place}, {country}: {count} person": "{place}, {country}: {count} व्यक्ति",
     "{place}, {country}: {count} people": "{place}, {country}: {count} लोग",
     "{count} person": "{count} व्यक्ति",

@@ -5,7 +5,8 @@ makes the walls around them and the slabs under and over them. An edge two zones
 share becomes one internal partition; every other edge gets an external wall,
 placed outside the zone so the room keeps its area. Each story gets a floor slab,
 and the story above the highest zones a roof slab. Where a story is set back from
-the one below, the exposed part is a terrace, and its open edges get a balustrade.
+the one below, the exposed part is a terrace, and its open edges get a balustrade. On request,
+each pair of zones that share an edge gets a door in the partition between them.
 It works story by story, on as many stories as you select zones on.
 
 ## How to use it
@@ -16,16 +17,19 @@ It works story by story, on as many stories as you select zones on.
    external walls, or a Wall favorite for each, the slabs' layer and thickness
    or a Slab favorite, and the gap tolerance (below). Untick **Slabs** to make walls only. Choose how the
    balustrades are made (Railing or Wall, with a favorite of that tool or a
-   height), or untick **Balustrades**.
+   height), or untick **Balustrades**. Tick **Doors between zones** for a door
+   between each pair of adjacent zones, with a Door favorite or a width.
 4. Press **Preview**. The window lists, per story, how many zones it read, how
    many partitions and external walls it will make and how high they will be,
-   how many slabs, with their area, the terraces, with their area, and the
-   length of balustrade. It draws the walls, the slab outlines (dashed), the
-   terraces (tinted) and the balustrades (dotted) of the story you select in the
-   list. The zones are highlighted in Archicad.
+   how many slabs, with their area, the terraces, with their area, the
+   length of balustrade and the doors, with the pairs of zones that get none. It
+   draws the walls, the slab outlines (dashed), the terraces (tinted), the
+   balustrades (dotted) and the doors (open boxes in the partitions) of the story
+   you select in the list. The zones are highlighted in Archicad.
 5. Press **Create**. It asks before it creates anything, then makes all the
-   walls in one Undo step, all the slabs in another and all the balustrades in a
-   third, and reports how many it made on each story. The new elements are
+   walls in one Undo step, all the slabs in another, all the balustrades in a
+   third and all the doors in a fourth, and reports how many it made on each
+   story. The new elements are
    highlighted in blue; **Clear highlight** removes the highlight.
 
 ## Settings
@@ -46,6 +50,9 @@ It works story by story, on as many stories as you select zones on.
 | Balustrade height | 1.10 m | Their height, when no favorite is chosen. |
 | Balustrades: layer, thickness | the Wall tool's default layer, 0.20 m | For the Wall tool without a favorite (a Basic wall). A railing takes its layer from the Railing tool defaults. |
 | Balustrade favorite | none | A favorite of the chosen tool. Its settings, its height included, are used; only the line and the base come from the script. |
+| Doors between zones | off | Whether each pair of zones on a story that share an edge gets a door in the partition between them. |
+| Door favorite | none | A Door favorite of the project. The doors are made with it, so it brings the library part, the size, the sill, the opening side and everything else; the script only places them. Its width is read when you press Preview (see What it changes). |
+| Door width | 0.90 m | Without a Door favorite the doors are the Door tool's defaults with this width. It is also used when a favorite's width cannot be read. |
 | Gap tolerance | empty: the partition thickness | Zone edges no farther apart than this count as shared, since zones rarely touch exactly, and the slab closes the gap between them. Collinear walls no farther apart than this are merged. |
 
 ## The rules
@@ -82,6 +89,13 @@ It works story by story, on as many stories as you select zones on.
   so it runs into them neither in plan nor in 3D. A terrace open all round (an
   upper story standing in the middle of the one below) gets one closed
   balustrade.
+- Doors: each pair of zones on a story that share an edge (closer than the gap
+  tolerance) gets one door, in the partition on that edge, in the middle of the
+  shared segment. When two zones share several segments, the door goes in the
+  longest one. A segment shorter than the door's width and 10 cm at each end
+  gets no door, and the pair is counted as skipped in the list (the Python
+  output names the two zones and says why). External walls and balustrades get
+  no doors.
 
 ## What it changes
 
@@ -97,10 +111,12 @@ With a Wall favorite, Preview reads the favorite's thickness: no Tapir command
 returns it, so the script places one wall with the favorite, 50 m beyond the
 selected zones, reads its thickness and deletes it again. This shows as two
 steps in Archicad's Undo list. It is done once per favorite while the window is
-open.
+open. A Door favorite's width is read the same way: the script makes one wall
+50 m beyond the zones, places one door with the favorite in it, reads the door's
+width and deletes both again.
 
 It remembers its settings (layers, thicknesses, favorites, the balustrade
-settings and the gap tolerance) in `Documents/Tapir/ZonesToWallsAndSlabs.json`,
+and door settings and the gap tolerance) in `Documents/Tapir/ZonesToWallsAndSlabs.json`,
 written when you press Preview and when you close the window. A layer or
 favorite that is not in the project you run it in is left at its default.
 
@@ -121,7 +137,9 @@ favorite that is not in the project you run it in is left at its default.
   reference line in the middle, whatever reference line the favorite has. Its
   thickness is the thickness Archicad gives the wall made with it; for a complex
   profile that is the profile's width as Archicad reports it.
-- Doors and windows are not made.
+- Windows are not made, and doors only between two selected zones. A door's
+  position along the partition (`centerOffset`, measured from the wall's start)
+  has not been checked in Archicad yet.
 - Zones farther apart than the gap tolerance each get their own external wall,
   which may overlap the other's.
 - Lengths are in metres, whatever the project's units.
@@ -133,5 +151,6 @@ Requested by @JBENEITEZ in
 [#2261](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2261),
 written with the Tapir issue bot. The Wall favorites and the smaller window were
 requested by @JBENEITEZ in
-[#2736](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2736). The geometry is tested without Archicad by
+[#2736](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2736), and the doors between zones in
+[#2261](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2261). The geometry is tested without Archicad by
 `archicad-addon/Test/test_zones_to_walls_and_slabs.py`.

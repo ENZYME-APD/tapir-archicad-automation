@@ -1,0 +1,145 @@
+{
+  "title": "GetGDLParametersOfElements returns only the parameters named in parameterNames, and leaves out possibleValues when includePossibleValues is false (#2948)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "an Object of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "save": { "objectParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "own object with a value list on tapirChoice",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "Tapir Check GDL Filters 2948",
+            "parentId": "${objectParent}",
+            "type": "Object",
+            "path": "TapirCheckGDLFilters/Tapir Check GDL Filters 2948.gsm",
+            "a": 1.0,
+            "b": 0.5,
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 0.5",
+            "parameterScript": "VALUES \"tapirChoice\" \"one\", \"two\", \"three\"",
+            "parameters": [
+              { "name": "tapirChoice", "type": "String", "value": "one", "description": "Tapir Choice" },
+              { "name": "tapirOther", "type": "String", "value": "other", "description": "Tapir Other" }
+            ]
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 1, "name": "one answer" },
+        { "path": "libraryParts[0].path", "exists": true, "name": "library part created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "reload the libraries, so the new part can be placed",
+      "command": "ReloadLibraries",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true, "name": "libraries reloaded" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "place object",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          {
+            "libraryPartName": "Tapir Check GDL Filters 2948",
+            "coordinates": { "x": 975.0, "y": 975.0, "z": 0.0 },
+            "dimensions": { "x": 1.0, "y": 0.5, "z": 0.5 },
+            "useFixSize": false,
+            "angle": 0.0,
+            "reflected": false
+          }
+        ]
+      },
+      "save": { "object": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object placed" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "without the new inputs every parameter is returned, as before",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${object}" } } ] },
+      "expect": [
+        { "path": "gdlParametersOfElements", "len": 1, "name": "one answer" },
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "A", "name": "first parameter is A" },
+        { "path": "gdlParametersOfElements[0].parameters[1].name", "eq": "B", "name": "second parameter is B" }
+      ]
+    },
+    {
+      "id": "only the named parameter, matched case-insensitively, with its value list",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${object}" } } ],
+        "parameterNames": [ "TAPIRCHOICE" ]
+      },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters", "len": 1, "name": "only one parameter" },
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "tapirChoice", "name": "it is tapirChoice" },
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "eq": "one", "name": "with its value" },
+        { "path": "gdlParametersOfElements[0].parameters[0].possibleValues", "len": 3, "name": "possibleValues given by default" }
+      ]
+    },
+    {
+      "id": "includePossibleValues false leaves out the value list",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${object}" } } ],
+        "parameterNames": [ "tapirChoice" ],
+        "includePossibleValues": false
+      },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters", "len": 1, "name": "only one parameter" },
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "tapirChoice", "name": "it is tapirChoice" },
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "eq": "one", "name": "value still given" },
+        { "path": "gdlParametersOfElements[0].parameters[0].isLocked", "exists": true, "name": "isLocked still given" },
+        { "path": "gdlParametersOfElements[0].parameters[0].possibleValues", "exists": false, "name": "no possibleValues" }
+      ]
+    },
+    {
+      "id": "several names, in library part order; an unknown name is left out",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${object}" } } ],
+        "parameterNames": [ "tapirOther", "noSuchParameter2948", "tapirChoice" ]
+      },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters", "len": 2, "name": "two parameters" },
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "tapirChoice", "name": "tapirChoice first, as in the library part" },
+        { "path": "gdlParametersOfElements[0].parameters[1].name", "eq": "tapirOther", "name": "then tapirOther" },
+        { "path": "gdlParametersOfElements[0].parameters[1].value", "eq": "other", "name": "with its value" }
+      ]
+    },
+    {
+      "id": "an empty list returns no parameters",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${object}" } } ],
+        "parameterNames": []
+      },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters", "len": 0, "name": "no parameters" }
+      ]
+    }
+  ]
+}
