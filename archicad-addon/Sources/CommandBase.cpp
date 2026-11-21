@@ -859,6 +859,9 @@ void AddColumnSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os)
     } else if (segment.modelElemStructureType == API_ProfileStructure) {
         os.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
     }
+    // The veneer ModifyColumns writes to all segments, read from the first one like the cross
+    // section above, so the read value can be sent back with the same key.
+    os.Add ("veneer", CreateColumnVeneerObjectState (memo.columnSegments[0]));
 }
 
 void AddBeamSectionFromMemo (const API_Guid& elemGuid, GS::ObjectState& os)

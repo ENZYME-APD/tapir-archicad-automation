@@ -3286,6 +3286,19 @@ static API_Coord GetPictureAnchorOffset (API_AnchorID anchorPoint, double width,
     return offset;
 }
 
+API_Coord GetPicturePosition (const API_PictureType& picture)
+{
+    // The inverse of ModifyPictures' placement: the anchor point on the drawn box, which for a
+    // mirrored picture is one width left of the stored destBox (see ModifyPicturesCommand::Execute).
+    const double width = picture.destBox.xMax - picture.destBox.xMin;
+    const double height = picture.destBox.yMax - picture.destBox.yMin;
+    const API_Coord anchorOffset = GetPictureAnchorOffset (picture.anchorPoint, width, height);
+    API_Coord position;
+    position.x = picture.destBox.xMin - (picture.mirrored ? width : 0.0) + anchorOffset.x;
+    position.y = picture.destBox.yMin + anchorOffset.y;
+    return position;
+}
+
 CreatePicturesCommand::CreatePicturesCommand () :
     CreateElementsCommandBase ("CreatePictures", API_PictureID, "picturesData")
 {
@@ -4494,8 +4507,10 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
     API_Element& element, API_ElementMemo& memo, API_Element* mask,
     const Stories& stories, const GS::ObjectState& parameters)
 {
+    // origin is the placement as GetDetailsOfElements reads it (only in ModifyObjects and ModifyLamps),
+    // so an element read can be sent back; coordinates wins when both are given.
     GS::ObjectState coordinates;
-    if (parameters.Get ("coordinates", coordinates)) {
+    if (parameters.Get ("coordinates", coordinates) || parameters.Get ("origin", coordinates)) {
         const API_Coord3D apiCoordinate = Get3DCoordinateFromObjectState (coordinates);
 
         element.object.pos.x = apiCoordinate.x;
@@ -4831,6 +4846,10 @@ static GS::UniString BuildLibraryPartBasedModifySchema (const char* arrayFieldNa
                         "coordinates": {
                             "$ref": "#/Coordinate3D"
                         },
+                        "origin": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new placement as GetDetailsOfElements reads it (origin, z absolute), the same as coordinates, so an element read can be sent back. Ignored when coordinates is given."
+                        },
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
                         },
@@ -5016,6 +5035,10 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                             "$ref": "#/Coordinate3D",
                             "description": "The new placement position. As in CreateTexts, the z value selects the floor when floorIndex is omitted."
                         },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new placement position as GetDetailsOfElements reads it (position), so a text read can be sent back: the same as coordinate without z, so the text stays on its floor (floorIndex still moves it). Ignored when coordinate is given."
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value."
@@ -5030,7 +5053,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                         "width": {
                             "type": "number",
                             "minimum": 0.0,
-                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements with the same key (width, 0 when word wrap is off), and as style.boxWidth with style.nonBreaking false."
                         }
                     },
                     "additionalProperties": false,
@@ -5118,8 +5141,17 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 // Same floor resolution as CreateTexts: an explicit floorIndex wins, otherwise z picks the floor.
                 element.header.floorInd = ResolveFloorIndexAndOffset (item, "floorIndex", apiCoordinate.z, stories).first;
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-            } else if (item.Get ("floorIndex", element.header.floorInd)) {
-                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            } else {
+                // The placement as GetDetailsOfElements reads it (x and y), so a text read can be sent
+                // back; it keeps the floor. coordinate wins when both are given.
+                const GS::ObjectState* positionOS = item.Get ("position");
+                if (positionOS != nullptr) {
+                    element.text.loc = Get2DCoordinateFromObjectState (*positionOS);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, loc);
+                }
+                if (item.Get ("floorIndex", element.header.floorInd)) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                }
             }
 
             const GS::ObjectState* styleOS = item.Get ("style");
@@ -5250,7 +5282,7 @@ GS::Optional<GS::UniString> ModifyPicturesCommand::GetInputParametersSchema () c
                         "elementId": { "$ref": "#/ElementId" },
                         "position": {
                             "$ref": "#/Coordinate2D",
-                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is."
+                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is. GetDetailsOfElements reads it back with the same key, so the position read can be sent back."
                         },
                         "anchorPoint": {
                             "$ref": "#/PictureAnchorPoint",
@@ -8671,7 +8703,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     "width": {
                         "type": "number",
                         "exclusiveMinimum": 0.0,
-                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements with the same key (width), and as style.boxWidth with style.nonBreaking false."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -9690,6 +9722,10 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSche
                     "parentElementId": {
                         "$ref": "#/ElementId",
                         "description": "The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter."
+                    },
+                    "ownerElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The owner element as GetDetailsOfElements reads it (ownerElementId, the same Archicad field parentElementId writes), so a level dimension read can be sent back. Sets the owner like parentElementId, but does not change the Static checkbox (staticLevel) itself, so it can be sent back together with the staticLevel read with it. In tests on Archicad 29, staticLevel true failed for a level dimension with an owner, so the round trip is for associative level dimensions. Cannot name another element than a parentElementId given with it. Optional parameter."
                     },)") + LevelDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
@@ -9721,6 +9757,10 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
 // The static level, the Static checkbox and the owner element of an existing level dimension (#2656):
 // level makes it static with that value (the owner is kept), staticLevel switches the checkbox, and
 // parentElementId sets a new owner the way CreateLevelDimensions does and makes it associative.
+// ownerElementId is the owner as GetDetailsOfElements reads it (the same parentGuid), so a level
+// dimension read can be sent back: it sets the owner and does not change the Static checkbox itself,
+// so it can be sent back with the staticLevel read with it. Archicad 29 did not make a level
+// dimension with an owner static (staticLevel true failed), so that combination is not promised.
 static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS::ObjectState& item, API_Element& element, API_Element& mask)
 {
     double level = 0.0;
@@ -9728,6 +9768,7 @@ static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS:
     bool staticLevel = false;
     const bool hasStaticLevel = item.Get ("staticLevel", staticLevel);
     const bool hasParent = item.Contains ("parentElementId");
+    const bool hasOwner = item.Contains ("ownerElementId");
 
     if (hasLevel && hasStaticLevel && !staticLevel) {
         return CreateErrorResponse (APIERR_BADPARS, "level makes the level dimension static, it cannot be given with staticLevel false.");
@@ -9735,9 +9776,12 @@ static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS:
     if (hasParent && (hasLevel || (hasStaticLevel && staticLevel))) {
         return CreateErrorResponse (APIERR_BADPARS, "parentElementId makes the level dimension associative, it cannot be given with level or with staticLevel true.");
     }
+    if (hasParent && hasOwner && GetGuidFromArrayItem ("parentElementId", item) != GetGuidFromArrayItem ("ownerElementId", item)) {
+        return CreateErrorResponse (APIERR_BADPARS, "parentElementId and ownerElementId name different elements; give one of them.");
+    }
 
-    if (hasParent) {
-        const API_Guid parentGuid = GetGuidFromArrayItem ("parentElementId", item);
+    if (hasParent || hasOwner) {
+        const API_Guid parentGuid = GetGuidFromArrayItem (hasParent ? "parentElementId" : "ownerElementId", item);
         API_Elem_Head parentElemHead = {};
         parentElemHead.guid = parentGuid;
         if (parentGuid == APINULLGuid || parentGuid == element.header.guid || ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
@@ -9749,10 +9793,12 @@ static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS:
         element.levelDimension.parentType = parentElemHead.typeID;
 #endif
         element.levelDimension.parentGuid = parentGuid;
-        element.levelDimension.staticLevel = false;
         ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentType);
         ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentGuid);
-        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+        if (hasParent) {
+            element.levelDimension.staticLevel = false;
+            ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+        }
     }
 
     if (hasLevel) {
@@ -9867,6 +9913,9 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
             }
             if (item.Contains ("parentElementId") && changed.levelDimension.parentGuid != element.levelDimension.parentGuid) {
                 notApplied += " parentElementId";
+            }
+            if (item.Contains ("ownerElementId") && changed.levelDimension.parentGuid != element.levelDimension.parentGuid) {
+                notApplied += " ownerElementId";
             }
             if (item.Contains ("pen") && changed.levelDimension.pen != element.levelDimension.pen) {
                 notApplied += " pen";

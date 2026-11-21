@@ -55,6 +55,16 @@
       "subgroup": null
     },
     {
+      "get": null,
+      "set": "ownerElementId",
+      "apiMember": "API_LevelDimensionType::parentGuid",
+      "apiDescription": "Unique ID of referred element if parentType is not API_ZombieElemID. ModifyLevelDimensions takes it with the key GetDetailsOfElements reads (ownerElementId; unlike parentElementId it does not change the Static checkbox); the field above maps the read owner to parentElementId.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "ownerElementType",
       "set": null,
       "apiMember": "API_LevelDimensionType::parentType",

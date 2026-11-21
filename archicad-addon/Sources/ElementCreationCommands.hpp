@@ -26,6 +26,9 @@ const char* JustificationToString (API_JustID just);
 const char* DimensionOriginToString (API_DimOriginID origin);
 bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result);
 API_JustID ParseJustificationString (const GS::UniString& justification);
+// Shared with GetDetailsOfElementsCommand (ElementCommands.cpp): where the anchor point of a picture
+// is, as ModifyPictures takes it in "position", so a picture read can be sent back where it is.
+API_Coord GetPicturePosition (const API_PictureType& picture);
 
 // Shared by CreateCurtainWallsCommand and ModifyCurtainWallsCommand (ExtendedElementCommands.cpp):
 // rewrite a column/row pattern (API_CWSegmentPatternData) from a CurtainWallPattern object, and the
