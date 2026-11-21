@@ -40,6 +40,7 @@ must respect:
 | `data-font` | none, `system`, `readable` | The font stacks (`--body`, `--mono`, `--display`). |
 | `data-spacing` | none, `compact` | The row padding of the long lists only. |
 | `data-motion` | none (follows the system), `reduced`, `full` | Animations and transitions. |
+| `data-measure` | none (on), `off` | Whether the M key starts the Measure tool (`site.js`, #2779); while it is on, `<html>` has the class `measure-active`. |
 
 So a page **must**: take every colour, font and shadow from a custom property (section 3), size text in
 `rem` (section 4), give its own colours for dark mode and High contrast when it has any, and check its
