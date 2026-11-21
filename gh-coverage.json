@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-11-21 05:21 UTC",
+ "generatedAt": "2026-11-21 05:43 UTC",
  "counts": {
   "done": 788,
-  "open": 15,
+  "open": 16,
   "merged": 1,
   "not applicable": 1
  },
@@ -3789,6 +3789,21 @@
    "coveredParameters": [
     "elements"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetRailingSegmentPatterns",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Gets the pattern of each segment of the given railings, telling the entry apart from its instances: the entry is the segment's pattern settings (distribution, panel, baluster set with its spacing, baluster and inner post) that Archicad generates the pattern from, the instances are the RailingPattern, RailingPanel, RailingBalusterSet and RailingInnerPost subelements it generated for the segment, whose own settings GetDetailsOfElements reads. Read only.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

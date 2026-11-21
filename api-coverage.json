@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 05:21 UTC",
+ "generatedAt": "2026-11-21 05:43 UTC",
  "versions": [
   25,
   26,
@@ -5851,10 +5851,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
-    {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
@@ -8158,10 +8154,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
-    {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
     },
@@ -8229,10 +8221,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
     {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
@@ -26021,10 +26009,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
-    {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
@@ -27526,12 +27510,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31710,10 +31689,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
     {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
@@ -38312,10 +38287,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
@@ -45203,10 +45174,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
-    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
@@ -48441,10 +48408,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2999,
-     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
     {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
