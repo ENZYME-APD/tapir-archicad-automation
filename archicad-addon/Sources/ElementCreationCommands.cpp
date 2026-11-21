@@ -5452,19 +5452,10 @@ GS::Optional<GS::UniString> CreateRailingsCommand::GetInputParametersSchema () c
 })";
 }
 
-GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+// templateElementId of CreateRailings and CreateRailingsFromPolyline (see the comment inside). Returns the
+// error response of a template that is not a railing or whose settings could not be taken over.
+static GS::Optional<GS::ObjectState> ApplyRailingTemplate (const GS::ObjectState& parameters, API_Element& element, API_ElementMemo& memo)
 {
-    GS::Array<GS::ObjectState> coordinates;
-    parameters.Get ("coordinates", coordinates);
-    if (coordinates.GetSize () < 2) {
-        return CreateErrorResponse (APIERR_BADPARS, "coordinates must have at least 2 points.");
-    }
-    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
-        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
-            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
-        }
-    }
-
     // templateElementId: the settings of an existing railing replace the tool defaults. Part of them is held by
     // API_RailingType (defNode, defSegment, the pens, the story visibility), but Archicad generates the posts,
     // rails, handrails, toprails, panels and balusters from the subelement defaults in the memo as well, so copying
@@ -5523,6 +5514,28 @@ GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (
         element.railing.bottomOffset = templ.railing.bottomOffset;
         element.header.layer = templ.header.layer;
         element.header.floorInd = templ.header.floorInd;
+    }
+    return {};
+}
+
+GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+    if (coordinates.GetSize () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "coordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
+        }
+    }
+
+    {
+        const GS::Optional<GS::ObjectState> templateError = ApplyRailingTemplate (parameters, element, memo);
+        if (templateError.HasValue ()) {
+            return templateError;
+        }
     }
 
     short floorIndex = 0;
@@ -5610,6 +5623,10 @@ GS::Optional<GS::UniString> CreateRailingsFromPolylineCommand::GetInputParameter
                         "type": "number",
                         "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "templateElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional existing Railing whose settings the new railing takes instead of the tool defaults (or the favorite), as in CreateRailings: its node and segment settings, from which the posts, rails, handrails, toprails, panels and balusters are generated, its story visibility, pens, layer and home story. floorIndex and height given here override them. With itself as template, a railing is given a new 3D reference line by creating it again and deleting the old one."
                     }
                 },
                 "additionalProperties": false,
@@ -5646,6 +5663,13 @@ GS::Optional<GS::ObjectState> CreateRailingsFromPolylineCommand::SetTypeSpecific
     for (const API_PolyArc& arc : polyArcs) {
         if (arc.begIndex < 1 || arc.endIndex > nCoords || arc.endIndex != arc.begIndex + 1) {
             return CreateErrorResponse (APIERR_BADPARS, "Each item of polylineArcs must connect two consecutive points of polylineCoordinates.");
+        }
+    }
+
+    {
+        const GS::Optional<GS::ObjectState> templateError = ApplyRailingTemplate (parameters, element, memo);
+        if (templateError.HasValue ()) {
+            return templateError;
         }
     }
 
