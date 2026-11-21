@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 05:43 UTC",
+ "generatedAt": "2026-11-21 06:32 UTC",
  "versions": [
   25,
   26,
@@ -29019,12 +29019,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3002,
-     "title": "GetLibraryPartFileInfo: return the parameters of the .gsm file with their default values and descriptions"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29060,12 +29055,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3002,
-     "title": "GetLibraryPartFileInfo: return the parameters of the .gsm file with their default values and descriptions"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30916,12 +30906,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1265,
-     "title": "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Library::LibraryManager::Modifier::AddLibrary",

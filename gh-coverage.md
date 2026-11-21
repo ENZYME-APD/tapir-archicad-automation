@@ -4,7 +4,7 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **789 of 805** applicable Tapir commands have a Grasshopper component (98 %): ✅ 788 done, 🔀 1 merged, ⬜ 16 open, ➖ 1 not applicable.
 
-Parameters of the 789 used commands: 🟢 722 every parameter has an input, 🟡 59 the rest through a JSON input, 🟠 8 some parameters missing.
+Parameters of the 789 used commands: 🟢 721 every parameter has an input, 🟡 59 the rest through a JSON input, 🟠 9 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -18,7 +18,7 @@ Parameters of the 789 used commands: 🟢 722 every parameter has an input, 🟡
 | Classification Commands | 100 % | 19 | 19 |  |  |  |  |  |  | 19 |  |  |
 | Attribute Commands | 98 % | 70 | 69 |  |  |  | 1 |  |  | 60 | 9 |  |
 | IFC Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
-| Library Commands | 100 % | 51 | 51 |  |  |  |  |  |  | 51 |  |  |
+| Library Commands | 100 % | 51 | 51 |  |  |  |  |  |  | 50 |  | 1 |
 | Teamwork Commands | 100 % | 18 | 18 |  |  |  |  |  |  | 18 |  |  |
 | Navigator Commands | 94 % | 90 | 85 |  |  |  | 5 |  |  | 75 | 6 | 4 |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 789 used commands: 🟢 722 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-21 05:43 UTC.
+Updated 2026-11-21 06:32 UTC.
 
 | | Status |
 |---|---|
@@ -594,7 +594,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `SetLibraryPartPictureImages` 🟢 5/5 parameters – `SetLibraryPartPictureImagesComponent`
 - ✅ `SetLibraryPartParameters` 🟢 8/8 parameters – `SetLibraryPartParametersComponent`
 - ✅ `GetLibraryPartScripts` 🟢 5/5 parameters – `GetLibraryPartScriptsComponent`
-- ✅ `GetLibraryPartFileInfo` 🟢 3/3 parameters – `GetLibraryPartFileInfoComponent`
+- ✅ `GetLibraryPartFileInfo` 🟠 3/4 parameters – `GetLibraryPartFileInfoComponent`<br><sub>no input: `includeParameters`</sub>
 - ✅ `CopyLibraryParts` 🟢 1/1 parameters – `CopyLibraryPartsComponent`
 - ✅ `GetLibraryPartIdentities` 🟢 1/1 parameters – `GetLibraryPartIdentitiesComponent`
 - ✅ `CompareLibraryPartUnIds` 🟢 2/2 parameters – `CompareLibraryPartUnIdsComponent`

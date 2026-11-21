@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 05:43 UTC",
+ "generatedAt": "2026-11-21 06:32 UTC",
  "counts": {
   "done": 788,
   "open": 16,
@@ -7,9 +7,9 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 722,
+  "all": 721,
   "json": 59,
-  "partial": 8
+  "partial": 9
  },
  "items": [
   {
@@ -13964,7 +13964,7 @@
    "id": "GetLibraryPartFileInfo",
    "group": "Library Commands",
    "version": "2.0.0",
-   "brief": "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28.",
+   "brief": "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype, its master, parameter, 2D, 3D and properties scripts, and, with includeParameters, its parameters with their default values and descriptions (in the format of GetLibraryPartParameterValues). Password protected parts need their password. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13973,14 +13973,16 @@
      "path": "Components/LibraryComponents/GetLibraryPartFileInfoComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 3,
+   "parameters": "partial",
+   "parameterCount": 4,
    "coveredParameters": [
     "files",
     "password",
     "scripts"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "includeParameters"
+   ],
    "pullRequests": [],
    "issues": []
   },

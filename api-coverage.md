@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-21 05:43 UTC.
+Archicad 25–30 DevKits; updated 2026-11-21 06:32 UTC.
 
 | | Status |
 |---|---|
@@ -2587,9 +2587,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::GSMObject::GetLicense` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::GetLicenseVersion` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::GetMasterScript` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::GSMObject::GetParameterDescriptions` <sub>AC28–30</sub> — [#3002](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3002 "GetLibraryPartFileInfo: return the parameters of the .gsm file with their default values and descriptions")
+- ✅ `ACAPI::Library::GSMObject::GetParameterDescriptions` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::GetParameterScript` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::GSMObject::GetParameters` <sub>AC28–30</sub> — [#3002](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3002 "GetLibraryPartFileInfo: return the parameters of the .gsm file with their default values and descriptions")
+- ✅ `ACAPI::Library::GSMObject::GetParameters` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::GetPreviewPicture` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::GetPropertiesScript` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::GSMObject::GetSubTypeUnID` <sub>AC28–30</sub>
@@ -2692,7 +2692,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::LibraryManager::GetLibraryOfLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetLibraryTreePathOfLibPart` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::GetTWID` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::LibraryManager::LoadGSMObjectFromFile` <sub>AC28–30</sub> — [#1265](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1265 "Expose ACAPI::Library::LibraryManager::LoadGSMObjectFromFile (read a .gsm file from disk)")
+- ✅ `ACAPI::Library::LibraryManager::LoadGSMObjectFromFile` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::Modifier::AddLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::Modifier::RemoveLibrary` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::LibraryManager::ModifyLibraryList` <sub>AC28–30</sub>
