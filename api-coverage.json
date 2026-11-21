@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 02:31 UTC",
+ "generatedAt": "2026-11-21 04:23 UTC",
  "versions": [
   25,
   26,
@@ -5875,14 +5875,6 @@
      "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
     },
     {
-     "number": 2984,
-     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
-    },
-    {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
-    },
-    {
      "number": 2935,
      "title": "GetDetailsOfElements: a stair's boundaries, walking lines and baseline position; GetQuantitiesOfElements: stairs"
     },
@@ -6898,10 +6890,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
-    },
-    {
      "number": 2925,
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
@@ -7576,10 +7564,6 @@
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    },
-    {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
      "number": 2941,
@@ -8301,14 +8285,6 @@
     {
      "number": 2999,
      "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
-    },
-    {
-     "number": 2984,
-     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
-    },
-    {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
      "number": 2935,
@@ -26131,10 +26107,6 @@
      "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
     },
     {
-     "number": 2984,
-     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
-    },
-    {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
@@ -26145,10 +26117,6 @@
     {
      "number": 2974,
      "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
-    },
-    {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
      "number": 2923,
@@ -38619,10 +38587,6 @@
      "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
     },
     {
-     "number": 2984,
-     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
-    },
-    {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
@@ -38633,10 +38597,6 @@
     {
      "number": 2974,
      "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
-    },
-    {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
      "number": 2925,

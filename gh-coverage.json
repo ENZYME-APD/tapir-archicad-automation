@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 02:31 UTC",
+ "generatedAt": "2026-11-21 04:23 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -3027,12 +3027,7 @@
     "additionalFields"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1791,
-     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetDetailsOfElements",
@@ -5358,10 +5353,6 @@
    "reason": "",
    "components": [
     {
-     "name": "CreateWindowsComponent",
-     "path": "Components/ElementsComponents/CreateWindowsComponent.cs"
-    },
-    {
      "name": "WindowsComponent",
      "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
@@ -5411,12 +5402,7 @@
     "windowsData.verticalLinkStoryIndex"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1791,
-     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateDoors",
@@ -5426,10 +5412,6 @@
    "status": "done",
    "reason": "",
    "components": [
-    {
-     "name": "CreateDoorsComponent",
-     "path": "Components/ElementsComponents/CreateDoorsComponent.cs"
-    },
     {
      "name": "DoorsComponent",
      "path": "Components/DesignToolsComponents/DoorsComponent.cs"
@@ -5480,12 +5462,7 @@
     "doorsData.verticalLinkStoryIndex"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1791,
-     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateOpenings",
@@ -7521,10 +7498,6 @@
    "reason": "",
    "components": [
     {
-     "name": "ModifyWindowsComponent",
-     "path": "Components/ElementsComponents/ModifyWindowsComponent.cs"
-    },
-    {
      "name": "WindowsComponent",
      "path": "Components/DesignToolsComponents/WindowsComponent.cs"
     }
@@ -7570,12 +7543,7 @@
     "windowsWithDetails.verticalLinkStoryIndex"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1791,
-     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ModifyDoors",
@@ -7588,10 +7556,6 @@
     {
      "name": "DoorsComponent",
      "path": "Components/DesignToolsComponents/DoorsComponent.cs"
-    },
-    {
-     "name": "ModifyDoorsComponent",
-     "path": "Components/ElementsComponents/ModifyDoorsComponent.cs"
     }
    ],
    "parameters": "json",
@@ -7635,12 +7599,7 @@
     "doorsWithDetails.verticalLinkStoryIndex"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1791,
-     "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ModifyOpenings",
@@ -7734,7 +7693,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes), edgeSideMaterials (the custom surface of each edge of the polygon, on a multi-plane roof of its contour; read back after writing) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine and edgeTypes (the Edge Type of each polygon edge, used by schedules) only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes), edgeSideMaterials (the custom surface of each edge of the polygon, on a multi-plane roof of its contour; read back after writing), edgeTypes (the Edge Type of each polygon edge, used by schedules; on a multi-plane roof of its contour, read back after writing) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle and pivotLine only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
