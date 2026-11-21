@@ -22635,7 +22635,7 @@
             },
             "nodePositions": {
                 "type": "array",
-                "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
+                "description": "New positions of the routing nodes. The size must match the number of nodes of the route. A first or last node that is connected to a tee (Branch) must keep its position (within 1 mm): moving a route end away from its tee can crash Archicad, and no command moves a tee, so such an item is refused and nothing of it is changed.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 }
