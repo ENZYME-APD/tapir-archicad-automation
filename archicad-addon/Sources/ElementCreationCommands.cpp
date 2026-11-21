@@ -45,6 +45,29 @@ GS::Optional<GS::UniString> CreateElementsCommandBase::GetRawResponseSchema () c
     })";
 }
 
+// The element types of these Create* commands that exist only in the model (floor plan and 3D),
+// never in a worksheet, detail, layout, section or 3D Document. Objects and lamps are left out:
+// they can also be placed in a 2D database (their databaseId).
+static bool IsFloorPlanOnlyModelElementType (API_ElemTypeID elemTypeID)
+{
+    switch (elemTypeID) {
+        case API_WallID:
+        case API_BeamID:
+        case API_StairID:
+        case API_ShellID:
+        case API_SkylightID:
+        case API_ColumnID:
+        case API_SlabID:
+        case API_ZoneID:
+        case API_MeshID:
+        case API_RailingID:
+        case API_CurtainWallID:
+            return true;
+        default:
+            return false;
+    }
+}
+
 GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> dataArray;
@@ -77,6 +100,34 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
         }
     }
     GSErrCode databaseErr = NoError;
+
+    // Model elements that only live on the floor plan (and in the 3D window) cannot be created
+    // while a 2D database is current: from a 3D Document, ACAPI_Element_Create refused
+    // CreateMeshes, while the identical request worked once the floor plan was active (#2956).
+    // So, as CreateWindows and CreateDoors do (#532, SwitchCurrentDatabaseToFloorPlan), the
+    // CURRENT DATABASE - not the visible window - is switched to the floor plan around the
+    // create and put back on every exit path. From the floor plan and the 3D window nothing is
+    // touched, so the path that worked stays exactly as it was.
+    API_DatabaseInfo modelPreviousDatabase = {};
+    bool modelDatabaseSwitched = false;
+    const GS::OnExit restoreModelDatabase ([&] () {
+        if (modelDatabaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&modelPreviousDatabase);
+        }
+    });
+    if (databaseIdOs == nullptr && IsFloorPlanOnlyModelElementType (elemTypeID)) {
+        API_DatabaseInfo currentDatabase = {};
+        if (ACAPI_Database_GetCurrentDatabase (&currentDatabase) == NoError &&
+            currentDatabase.typeID != APIWind_FloorPlanID &&
+            currentDatabase.typeID != APIWind_3DModelID)
+        {
+            const GSErrCode switchErr = SwitchCurrentDatabaseToFloorPlan (modelPreviousDatabase, modelDatabaseSwitched);
+            if (switchErr != NoError) {
+                return CreateErrorResponse (switchErr, "Failed to activate the floor plan database, which is needed to create a " +
+                    elemTypeName + ", so nothing was created. Activate the floor plan in Archicad and run the command again.");
+            }
+        }
+    }
 
     API_NotifyElementType notification = {};
     notification.notifID = APINotifyElement_BeginEvents;
