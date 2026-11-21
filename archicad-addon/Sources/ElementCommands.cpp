@@ -6811,6 +6811,263 @@ GS::ObjectState GetSubelementsOfHierarchicalElementsCommand::Execute (const GS::
     return response;
 }
 
+GetRailingSegmentPatternsCommand::GetRailingSegmentPatternsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetRailingSegmentPatternsCommand::GetName () const
+{
+    return "GetRailingSegmentPatterns";
+}
+
+GS::Optional<GS::UniString> GetRailingSegmentPatternsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The railings to read."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetRailingSegmentPatternsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "railings": {
+                "type": "array",
+                "description": "One item per given element, in the order of the input. An element that is not a railing, or whose segments cannot be read, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "segments": {
+                                    "type": "array",
+                                    "description": "The segments of the railing, in the order of GetDetailsOfElements' segments.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "segmentIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the segment in the railing, from 0, as in GetDetailsOfElements' segments."
+                                            },
+                                            "segmentId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The RailingSegment subelement."
+                                            },
+                                            "entry": {
+                                                "$ref": "#/RailingPatternEntry"
+                                            },
+                                            "instances": {
+                                                "type": "object",
+                                                "description": "The subelements Archicad generated for this segment from its entry. Their own settings are read with GetDetailsOfElements.",
+                                                "properties": {
+                                                    "patterns": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingPattern subelements the segment owns."
+                                                    },
+                                                    "panels": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingPanel subelements owned by the segment or by one of its patterns."
+                                                    },
+                                                    "balusterSets": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingBalusterSet subelements owned by the segment or by one of its patterns."
+                                                    },
+                                                    "innerPosts": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingInnerPost subelements owned by the segment or by one of its patterns."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "patterns",
+                                                    "panels",
+                                                    "balusterSets",
+                                                    "innerPosts"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "segmentIndex",
+                                            "segmentId",
+                                            "entry",
+                                            "instances"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "segments"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "railings"
+        ]
+    })";
+}
+
+namespace {
+
+// The components of a pattern entry (API_RailingSegmentType::defPattern) are settings, not placed
+// elements: they have no owner and no library part to look up, only the symbol they are drawn with.
+void AddRailingEntrySymbol (GS::ObjectState& os, const API_Guid& symbolId)
+{
+    if (symbolId != APINULLGuid) {
+        os.Add ("symbolId", APIGuidToString (symbolId));
+    }
+}
+
+GS::ObjectState CreateRailingPatternEntryObjectState (const API_RailingPatternType& pattern)
+{
+    GS::ObjectState panel;
+    AddRailingEntrySymbol (panel, pattern.defPanel.symbID);
+    panel.Add ("visible", pattern.defPanel.visible);
+    panel.Add ("frame", CreateRailingFrameObjectState (pattern.defPanel.frame));
+
+    GS::ObjectState balusterSet;
+    balusterSet.Add ("frame", CreateRailingFrameObjectState (pattern.defBalusterSet.frame));
+    balusterSet.Add ("distribution", CreateRailingDistributionObjectState (pattern.defBalusterSet.distribution));
+    balusterSet.Add ("balusterCount", static_cast<Int32> (pattern.defBalusterSet.nBalusters));
+
+    GS::ObjectState baluster;
+    AddRailingEntrySymbol (baluster, pattern.defBalusterSet.defBaluster.symbID);
+    baluster.Add ("horizontalPosition", CreateRailingHorizontalPositionObjectState (pattern.defBalusterSet.defBaluster.horizontalPosition));
+
+    GS::ObjectState innerPost;
+    AddRailingEntrySymbol (innerPost, pattern.defInnerPost.symbID);
+    innerPost.Add ("doublePostOffset", pattern.defInnerPost.doublePostOffset);
+    innerPost.Add ("postCount", static_cast<Int32> (pattern.defInnerPost.postNum));
+    innerPost.Add ("verticalPosition", CreateRailingVerticalPositionObjectState (pattern.defInnerPost.verticalPosition));
+    innerPost.Add ("horizontalPosition", CreateRailingHorizontalPositionObjectState (pattern.defInnerPost.horizontalPosition));
+
+    GS::ObjectState entry;
+    entry.Add ("distribution", CreateRailingDistributionObjectState (pattern.distribution));
+    entry.Add ("panelCount", static_cast<Int32> (pattern.nPanels));
+    entry.Add ("balusterSetCount", static_cast<Int32> (pattern.nBalusterSets));
+    entry.Add ("innerPostCount", static_cast<Int32> (pattern.nInnerPosts));
+    entry.Add ("panel", panel);
+    entry.Add ("balusterSet", balusterSet);
+    entry.Add ("baluster", baluster);
+    entry.Add ("innerPost", innerPost);
+    return entry;
+}
+
+template <typename ComponentType>
+GSSize GetRailingMemoCount (const ComponentType* components)
+{
+    return components == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<ComponentType*> (components))) / sizeof (ComponentType);
+}
+
+// The components of a memo array owned by the segment itself or by one of the given patterns of
+// the segment: the DevKit names the segment as the owner of a panel, and a pattern as the owner of
+// an inner post and a baluster set, so both are accepted.
+template <typename ComponentType>
+GS::Array<GS::ObjectState> GetRailingSegmentComponents (const ComponentType* components, const API_Guid& segmentGuid, const GS::HashSet<API_Guid>& segmentPatterns)
+{
+    GS::Array<GS::ObjectState> ids;
+    const GSSize count = GetRailingMemoCount (components);
+    for (GSSize i = 0; i < count; ++i) {
+        if (components[i].owner == segmentGuid || segmentPatterns.Contains (components[i].owner)) {
+            ids.Push (CreateElementIdObjectState (components[i].head.guid));
+        }
+    }
+    return ids;
+}
+
+}
+
+GS::ObjectState GetRailingSegmentPatternsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& railings = response.AddList<GS::ObjectState> ("railings");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            railings (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head header = {};
+        header.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&header) != NoError) {
+            railings (CreateErrorResponse (APIERR_BADID, "The element does not exist."));
+            continue;
+        }
+        if (GetElemTypeId (header) != API_RailingID) {
+            railings (CreateErrorResponse (APIERR_BADID, "The element is not a railing."));
+            continue;
+        }
+
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        const GSErrCode err = ACAPI_Element_GetMemo (header.guid, &memo, APIMemoMask_RailingSegment | APIMemoMask_RailingPattern |
+                                                     APIMemoMask_RailingPanel | APIMemoMask_RailingBalusterSet | APIMemoMask_RailingInnerPost);
+        if (err != NoError) {
+            railings (CreateErrorResponse (err, "Failed to read the segments of the railing."));
+            continue;
+        }
+
+        GS::ObjectState railing;
+        const auto& segments = railing.AddList<GS::ObjectState> ("segments");
+        const GSSize nSegments = GetRailingMemoCount (memo.railingSegments);
+        const GSSize nPatterns = GetRailingMemoCount (memo.railingPatterns);
+        for (GSSize i = 0; i < nSegments; ++i) {
+            const API_RailingSegmentType& segment = memo.railingSegments[i];
+
+            GS::HashSet<API_Guid> segmentPatterns;
+            GS::Array<GS::ObjectState> patterns;
+            for (GSSize p = 0; p < nPatterns; ++p) {
+                if (memo.railingPatterns[p].owner == segment.head.guid) {
+                    segmentPatterns.Add (memo.railingPatterns[p].head.guid);
+                    patterns.Push (CreateElementIdObjectState (memo.railingPatterns[p].head.guid));
+                }
+            }
+
+            GS::ObjectState instances;
+            instances.Add ("patterns", patterns);
+            instances.Add ("panels", GetRailingSegmentComponents (memo.railingPanels, segment.head.guid, segmentPatterns));
+            instances.Add ("balusterSets", GetRailingSegmentComponents (memo.railingBalusterSets, segment.head.guid, segmentPatterns));
+            instances.Add ("innerPosts", GetRailingSegmentComponents (memo.railingInnerPosts, segment.head.guid, segmentPatterns));
+
+            GS::ObjectState segmentDetails;
+            segmentDetails.Add ("segmentIndex", static_cast<Int32> (i));
+            segmentDetails.Add ("segmentId", CreateGuidObjectState (segment.head.guid));
+            segmentDetails.Add ("entry", CreateRailingPatternEntryObjectState (segment.defPattern));
+            segmentDetails.Add ("instances", instances);
+            segments (segmentDetails);
+        }
+        railings (railing);
+    }
+
+    return response;
+}
+
 EditHierarchicalElementCommand::EditHierarchicalElementCommand () :
     CommandBase (CommonSchema::Used)
 {

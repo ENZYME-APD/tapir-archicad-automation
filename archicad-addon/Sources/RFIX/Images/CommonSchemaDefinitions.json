@@ -13633,6 +13633,55 @@
             "innerPostCount"
         ]
     },
+    "RailingPatternEntry": {
+        "type": "object",
+        "description": "The pattern entry of a railing segment (API_RailingSegmentType::defPattern): the settings Archicad generates the segment's RailingPattern, RailingPanel, RailingBalusterSet and RailingInnerPost subelements (the instances) from. The components in it are settings, not placed elements, so they have no owner and no libPart.",
+        "properties": {
+            "distribution": {
+                "$ref": "#/RailingDistribution",
+                "description": "How the pattern is repeated along the segment (API_RailingPatternType::distribution)."
+            },
+            "panelCount": {
+                "type": "integer",
+                "description": "The number of panels in the pattern (API_RailingPatternType::nPanels)."
+            },
+            "balusterSetCount": {
+                "type": "integer",
+                "description": "The number of baluster sets in the pattern (API_RailingPatternType::nBalusterSets)."
+            },
+            "innerPostCount": {
+                "type": "integer",
+                "description": "The number of inner posts in the pattern (API_RailingPatternType::nInnerPosts)."
+            },
+            "panel": {
+                "$ref": "#/RailingPanelDetails",
+                "description": "The panel settings of the pattern (defPanel)."
+            },
+            "balusterSet": {
+                "$ref": "#/RailingBalusterSetDetails",
+                "description": "The baluster set settings of the pattern (defBalusterSet); its distribution is the baluster spacing."
+            },
+            "baluster": {
+                "$ref": "#/RailingBalusterDetails",
+                "description": "The baluster settings of the pattern's baluster set (defBalusterSet.defBaluster)."
+            },
+            "innerPost": {
+                "$ref": "#/RailingInnerPostDetails",
+                "description": "The inner post settings of the pattern (defInnerPost)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "distribution",
+            "panelCount",
+            "balusterSetCount",
+            "innerPostCount",
+            "panel",
+            "balusterSet",
+            "baluster",
+            "innerPost"
+        ]
+    },
     "RailingRailEndDetails": {
         "type": "object",
         "description": "The details of the end of a rail, top rail or handrail (RailingRailEnd, RailingToprailEnd, RailingHandrailEnd: API_RailingRailEndType).",
