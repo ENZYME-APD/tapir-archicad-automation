@@ -6043,7 +6043,7 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
-                        "description" : "The parent element if the label is an associative label."
+                        "description" : "The parent element if the label is an associative label. In a section, elevation, interior elevation or 3D document (the current window, or databaseId) give the model element: the label is attached to the section element that shows it there, which GetDetailsOfElements reports as the model element in ownerElementId. A section element of GetSectionElements is taken as it is. There, the label is placed at its default position unless begCoordinate, midCoordinate and endCoordinate are all given."
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
@@ -7261,6 +7261,39 @@ static void RemoveDictionaryParameters (API_AddParType**& params)
     params = filtered;
 }
 
+// In a section, elevation, interior elevation or 3D document a model element is drawn by a section
+// element (API_SectElemID) of that database, and an associative label there belongs to that section
+// element: the DevKit's Element_Test (Do_CreateLabel_Associative) creates one with the clicked section
+// element as parent and API_SectElemID as parentType. Given the model element itself as parent there,
+// the label was placed as an independent one (#2876). Returns the section element of the model element
+// in the current database, or APINULLGuid when the current database is no such view or does not show it.
+static API_Guid FindSectionElementOfModelElement (const API_Guid& modelElemGuid)
+{
+    API_DatabaseInfo currentDatabase = {};
+    if (ACAPI_Database_GetCurrentDatabase (&currentDatabase) != NoError) {
+        return APINULLGuid;
+    }
+    if (currentDatabase.typeID != APIWind_SectionID &&
+        currentDatabase.typeID != APIWind_ElevationID &&
+        currentDatabase.typeID != APIWind_InteriorElevationID &&
+        currentDatabase.typeID != APIWind_DocumentFrom3DID) {
+        return APINULLGuid;
+    }
+
+    GS::Array<API_Guid> sectionElements;
+    if (ACAPI_Element_GetElemList (API_SectElemID, &sectionElements) != NoError) {
+        return APINULLGuid;
+    }
+    for (const API_Guid& sectionElementGuid : sectionElements) {
+        API_Element sectionElement = {};
+        sectionElement.header.guid = sectionElementGuid;
+        if (ACAPI_Element_Get (&sectionElement) == NoError && sectionElement.sectElem.parentGuid == modelElemGuid) {
+            return sectionElementGuid;
+        }
+    }
+    return APINULLGuid;
+}
+
 // Whether the memo of the Label tool defaults holds any text content. Before Archicad 28 the
 // content is a char handle, 8-bit or UTF-16 by the defaults' charCode, so it is not empty when
 // either of its first two bytes is set (an empty content is a terminator only).
@@ -7337,23 +7370,44 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
 
     element.label.parent = GetGuidFromArrayItem ("parentElementId", parameters);
     API_Elem_Head parentElemHead = {};
+    bool parentIsSectionElement = false;
     if (element.label.parent != APINULLGuid) {
         parentElemHead.guid = element.label.parent;
-        if (ACAPI_Element_GetHeader (&parentElemHead) == NoError) {
-#ifdef ServerMainVers_2600
-            element.label.parentType = parentElemHead.type;
-#else
-            element.label.parentType = parentElemHead.typeID;
-#endif
-        } else {
+        if (ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
             return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
         }
 
+        // In a section, elevation, interior elevation or 3D document the label belongs to the
+        // section element that draws the model element there, see FindSectionElementOfModelElement.
+        if (GetElemTypeId (parentElemHead) != API_SectElemID) {
+            const API_Guid sectionElementGuid = FindSectionElementOfModelElement (parentElemHead.guid);
+            if (sectionElementGuid != APINULLGuid) {
+                parentElemHead = {};
+                parentElemHead.guid = sectionElementGuid;
+                if (ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+                    return CreateErrorResponse (APIERR_BADPARS, "Failed to read the section element that shows the parent element in this window.");
+                }
+                element.label.parent = sectionElementGuid;
+            }
+        }
+        parentIsSectionElement = GetElemTypeId (parentElemHead) == API_SectElemID;
+
+#ifdef ServerMainVers_2600
+        element.label.parentType = parentElemHead.type;
+#else
+        element.label.parentType = parentElemHead.typeID;
+#endif
         element.header.floorInd = parentElemHead.floorInd;
     }
 
     if (begCOS != nullptr) {
         element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
+    } else if (parentIsSectionElement) {
+        // The bounds of a section element are not read: ACAPI_Element_CalcBounds goes through the
+        // window's 2D drawing (see CalcLabelParentBounds). At the default position begC is not used.
+        if (midCOS != nullptr && endCOS != nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "Give 'begCoordinate' together with 'midCoordinate' and 'endCoordinate' for a label of an element in a section, elevation, interior elevation or 3D document.");
+        }
     } else if (parentElemHead.guid != APINULLGuid) {
         API_Box3D box = {};
         CalcLabelParentBounds (parentElemHead, box);
@@ -7519,13 +7573,44 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
-GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
+// The text anchor given in style.anchor, written once more after the create: a new text label was
+// reported to keep the anchor of the Label tool default instead (#2876). Written the way ModifyLabels
+// writes it, without a memo, and only when the new label has another anchor.
+static GSErrCode KeepLabelTextAnchor (const API_Guid& labelGuid, API_AnchorID anchor)
+{
+    API_Element element = {};
+    element.header.guid = labelGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (element.label.labelClass != APILblClass_Text || element.label.u.text.anchor == anchor) {
+        return NoError;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.anchor);
+    element.label.u.text.anchor = anchor;
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
 {
     if (requestedElement.label.labelClass != APILblClass_Text) {
         return NoError;
     }
     // The factors of the style, the favorite or the tool defaults: the create with the content memo leaves them at 1.
-    return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.label.u.text.widthFactor, requestedElement.label.u.text.charSpaceFactor);
+    GSErrCode err = TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.label.u.text.widthFactor, requestedElement.label.u.text.charSpaceFactor);
+    if (err != NoError) {
+        return err;
+    }
+
+    const GS::ObjectState* styleOS = parameters.Get ("style");
+    if (styleOS != nullptr && styleOS->Contains (GS::String ("anchor"))) {
+        err = KeepLabelTextAnchor (newElementGuid, requestedElement.label.u.text.anchor);
+    }
+    return err;
 }
 
 CreateTextsCommand::CreateTextsCommand () :
