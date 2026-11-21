@@ -55,6 +55,10 @@
         '既存の階段の基準線を変更し（階段の端、踊り場、回り段を移動）、GUID はそのまま保つ',
     'Recreate the stair on the new baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a>, which keeps its settings, Element ID, classifications, categories, properties and solid element operations, and returns the old and the new GUID. Its labels are lost.':
         '<a href="../archicad-addon/#RecreateStairs">RecreateStairs</a> で新しい基準線上に階段を作り直してください。設定、要素 ID、分類、カテゴリ、プロパティ、ソリッド要素操作は保たれ、古い GUID と新しい GUID が返されます。ラベルは失われます。',
+    'Set the left and right boundaries or the walking line of a stair (a custom outline, or a walking line off the middle of the flight)':
+        '階段の左右の境界線または歩行線を設定する（独自の輪郭、または階段の中央から外れた歩行線）',
+    'Archicad lays them out from the baseline and the flight width: change the baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a> or the flight width with <a href="../archicad-addon/#ModifyStairs">ModifyStairs</a>. The walking line stays in the middle of the flight. <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> reads them.':
+        'Archicad は基準線と階段幅からこれらを配置します。基準線は <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a> で、階段幅は <a href="../archicad-addon/#ModifyStairs">ModifyStairs</a> で変更してください。歩行線は階段の中央に残ります。<a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> で読み取れます。',
     'Set a label’s optimised position, “use text pen as uniform pen” of a symbol label, or a perpendicular text direction':
         'ラベルの最適化された位置、シンボルラベルの「use text pen as uniform pen」、または直交する文字方向を設定する',
     'Set the text direction (parallel, horizontal, vertical or a custom angle) with textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> and <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. When the symbol label’s library part has a parameter for the other two, set it with <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; otherwise set them in the Label tool settings or a favorite, and create the labels with favoriteName.':

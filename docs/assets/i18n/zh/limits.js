@@ -54,6 +54,10 @@
         '更改现有楼梯的基线（移动梯段端点、休息平台或转角踏步），并保留其 GUID',
     'Recreate the stair on the new baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a>, which keeps its settings, Element ID, classifications, categories, properties and solid element operations, and returns the old and the new GUID. Its labels are lost.':
         '用 <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a> 在新基线上重新创建楼梯，它会保留楼梯的设置、Element ID、分类、类别、属性和实体元素操作，并返回旧的和新的 GUID。楼梯的标签会丢失。',
+    'Set the left and right boundaries or the walking line of a stair (a custom outline, or a walking line off the middle of the flight)':
+        '设置楼梯的左右边界或行走线（自定义轮廓，或不在梯段中间的行走线）',
+    'Archicad lays them out from the baseline and the flight width: change the baseline with <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a> or the flight width with <a href="../archicad-addon/#ModifyStairs">ModifyStairs</a>. The walking line stays in the middle of the flight. <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> reads them.':
+        'Archicad 根据基线和梯段宽度生成它们：用 <a href="../archicad-addon/#RecreateStairs">RecreateStairs</a> 更改基线，或用 <a href="../archicad-addon/#ModifyStairs">ModifyStairs</a> 更改梯段宽度。行走线始终位于梯段中间。<a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> 可以读取它们。',
     'Set a label’s optimised position, “use text pen as uniform pen” of a symbol label, or a perpendicular text direction':
         '设置标签的优化位置、符号标签的“use text pen as uniform pen”，或垂直的文字方向',
     'Set the text direction (parallel, horizontal, vertical or a custom angle) with textWay in <a href="../archicad-addon/#CreateLabels">CreateLabels</a> and <a href="../archicad-addon/#ModifyLabels">ModifyLabels</a>. When the symbol label’s library part has a parameter for the other two, set it with <a href="../archicad-addon/#SetGDLParametersOfElements">SetGDLParametersOfElements</a>; otherwise set them in the Label tool settings or a favorite, and create the labels with favoriteName.':

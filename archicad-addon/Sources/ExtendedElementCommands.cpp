@@ -8482,6 +8482,16 @@ static const char* StairSettingsSchemaProperties = R"(
                             }
                         })";
 
+// The boundaries and the walking lines GetDetailsOfElements reads, taken by CreateStairs,
+// ModifyStairs and RecreateStairs only to be refused with an error that says what to change instead
+// (ApplyStairSettings), rather than with a schema error about an unknown key.
+static const char* StairOutlineSchemaProperties = R"(
+                        "leftBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the left boundary of the stair. An item with it is refused." },
+                        "rightBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the right boundary of the stair. An item with it is refused." },
+                        "walkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the walking line of the stair. An item with it is refused." },
+                        "customWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the custom walking line of the stair. An item with it is refused." },
+                        "centerWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the center walking line of the stair. An item with it is refused." })";
+
 static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
 
 CreateStairsCommand::CreateStairsCommand () :
@@ -8571,7 +8581,7 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "array",
                             "description": "Optional. The curved edges of the baseline, for a curved or spiral stair, in the format GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, and an arc bends one edge, so endIndex = begIndex + 1. arcAngle is the angle of the arc in radians, not 0 and less than a full turn; it is positive if the arc is on the right-hand side of the straight edge. At most one arc per edge; the edges without an arc are straight.",
                             "items": { "$ref": "#/PolyArc" }
-                        },)") + StairSettingsSchemaProperties + R"(
+                        },)") + StairSettingsSchemaProperties + "," + StairOutlineSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["baseLinePoints", "zCoordinate"]
@@ -10075,7 +10085,7 @@ GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () con
                         "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
                         "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
                         "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
-                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + R"(
+                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + "," + StairOutlineSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11364,6 +11374,22 @@ static GS::Optional<GS::UniString> ApplyStairSideStructureSettings (const GS::Ob
 // memo, and Archicad rebuilds the subelements from them. Only the given settings are written.
 static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
 {
+    // The boundaries and the walking lines (memo stairBoundary, stairWalkingLine, stairCustomWalkLine,
+    // stairCenterWalkLine) cannot be written. Tried on Archicad 29 build 5101: ACAPI_Element_Change
+    // answers APIERR_GENERAL to a stair memo with APIMemoMask_All or APIMemoMask_Polygon, also when
+    // the memo is the stair's own, unchanged, and ignores them with the subelement masks;
+    // ACAPI_Element_ChangeExt answers APIERR_BADID for a stair; ACAPI_Element_Create, with them in
+    // the memo next to the baseline (isCustom set or not, with the baseline's edge and vertex data
+    // or without), lays them out again from the baseline and the flight width. So an item with one
+    // is refused before anything is written, saying what moves them instead.
+    for (const char* key : { "leftBoundary", "rightBoundary", "walkingLine", "customWalkingLine", "centerWalkingLine" }) {
+        if (details.Contains (key)) {
+            return GS::UniString (key) + " cannot be written: Archicad lays out the boundaries and the walking lines of a stair itself, from its baseline and its flight width, "
+                "and the API keeps none given (Archicad refuses or ignores them, also in a new stair). "
+                "To move them, change the baseline (CreateStairs, RecreateStairs) or flightWidth (ModifyStairs); the walking line stays in the middle of the flight. Nothing was changed.";
+        }
+    }
+
     API_StairType& stair = element.stair;
 
     auto flightWidth = GetOptionalDouble (details, "flightWidth");
@@ -12290,7 +12316,7 @@ GS::String RecreateStairsCommand::GetName () const
 
 GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "stairs": {
@@ -12323,7 +12349,7 @@ GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () c
                             "type": "array",
                             "description": "Optional. The curved edges of the new baseline, as in CreateStairs and as GetDetailsOfElements returns them (0-based indices, endIndex = begIndex + 1). Without it every edge of the new baseline is straight, also when the old stair was curved.",
                             "items": { "$ref": "#/PolyArc" }
-                        }
+                        },)") + StairOutlineSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId", "baseLinePoints"]
@@ -12606,8 +12632,9 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
     element.header.renovationStatus = data.element.header.renovationStatus;
     element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
 
-    // The item holds only elementId and the baseline keys of CreateStairs (its schema allows no
-    // other), so SetTypeSpecificParameters writes the baseline and nothing else. It also sets the
+    // The item holds only elementId, the baseline keys of CreateStairs and the boundary and walking
+    // line keys (its schema allows no other), so SetTypeSpecificParameters writes the baseline and
+    // nothing else; it refuses the item when it gives a boundary or walking line. It also sets the
     // story and the base offset from zCoordinate, which the item does not have: both are set to
     // the old stair's below.
     const CreateStairsCommand createStairsCommand;
