@@ -21,6 +21,7 @@
 #include "ScriptManager.hpp"
 #include "ScriptRunResults.hpp"
 #include "MarketplaceInstalls.hpp"
+#include "WebLinks.hpp"
 
 #include <algorithm>
 #include <cstdlib>
@@ -703,22 +704,6 @@ static void OpenWebpage (const GS::UniString& webpage)
     system (command.ToCStr ().Get ());
 }
 
-// Opens a URL whose query may hold '&' and '%', which the shell of OpenWebpage would take as its own: Windows gets it
-// from ShellExecuteW, which runs no shell, macOS in single quotes. The Script Manager's problem report needs this.
-static void OpenUrl (const GS::UniString& url)
-{
-#if defined (WINDOWS)
-    const auto urlUStr = url.ToUStr ();   // owns the UTF-16 string until ShellExecuteW returns
-    ShellExecuteW (nullptr, L"open", reinterpret_cast<LPCWSTR> (urlUStr.Get ()), nullptr, nullptr, SW_SHOWNORMAL);
-#else
-    if (url.Contains (GS::UniString ("'"))) {
-        return;
-    }
-    const GS::UniString command = "open '" + url + "'";
-    system (command.ToCStr (CC_UTF8).Get ());
-#endif
-}
-
 static void OpenFileInExplorer (const IO::Location& file)
 {
     IO::Location folderLoc = file;
@@ -921,19 +906,6 @@ GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetScriptOfPopUpItem (short i
 GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetSelectedScript () const
 {
     return GetScriptOfPopUpItem (scriptSelectionPopUp.GetSelectedItem ());
-}
-
-bool TapirPalette::IsAddedScript (const GS::Ref<PopUpItemData>& script) const
-{
-    if (script == nullptr) {
-        return false;
-    }
-    for (const GS::Ref<PopUpItemData>& popUpItemData : addedScripts) {
-        if (popUpItemData == script) {
-            return true;
-        }
-    }
-    return false;
 }
 
 GS::UniString TapirPalette::GetScriptLabel (const PopUpItemData& popUpData) const
@@ -1147,7 +1119,7 @@ GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
 static GS::UniString GetScriptSource (const Config::Repository* repo, const GS::UniString& sourceName, bool isUsersOwn)
 {
     if (isUsersOwn) {
-        return RSGetIndString (ID_LOCAL_SCRIPT_STRINGS, ID_LOCAL_SCRIPT_STRINGS_MY_SCRIPTS, ACAPI_GetOwnResModule ());
+        return LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_MY_SCRIPTS);
     }
     if (repo == nullptr) {
         return sourceName;
@@ -1160,10 +1132,10 @@ static GS::UniString GetScriptSource (const Config::Repository* repo, const GS::
             folder = GS::UniString (folder.GetSubstring (1, folder.GetLength () - 1));
         }
         if (folder.BeginsWith (GS::UniString ("builtin-scripts"))) {
-            return RSGetIndString (ID_LOCAL_SCRIPT_STRINGS, ID_LOCAL_SCRIPT_STRINGS_BUILT_IN, ACAPI_GetOwnResModule ());
+            return LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_BUILT_IN);
         }
         if (folder.BeginsWith (GS::UniString ("marketplace"))) {
-            return RSGetIndString (ID_LOCAL_SCRIPT_STRINGS, ID_LOCAL_SCRIPT_STRINGS_MARKETPLACE, ACAPI_GetOwnResModule ());
+            return LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_MARKETPLACE);
         }
     }
     return repo->displayName.IsEmpty () ? repo->repoOwner + "/" + repo->repoName : repo->displayName;
@@ -1188,15 +1160,12 @@ GS::Array<LocalScript> TapirPalette::GetLocalScripts () const
             }
             script.name = popUpItemData->info.title.IsEmpty () ? script.fileName : popUpItemData->info.title;
             script.source = list.first == &marketplaceScripts
-                ? RSGetIndString (ID_LOCAL_SCRIPT_STRINGS, ID_LOCAL_SCRIPT_STRINGS_MARKETPLACE, ACAPI_GetOwnResModule ())
+                ? LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_MARKETPLACE)
                 : GetScriptSource (popUpItemData->repo, popUpItemData->sourceName, list.second);
-            script.badge = GetScriptBadge (popUpItemData->info);
-            script.requirements = GetScriptRequirements (popUpItemData->info);
-            if (!popUpItemData->repoRelLoc.IsEmpty () && popUpItemData->repo != nullptr) {
+            if (!popUpItemData->repoRelLoc.IsEmpty ()) {
                 script.webUrl = GetScriptWebUrl (*popUpItemData);
             }
             script.isAdded = list.first == &addedScripts;
-            script.isUsersOwn = list.second;
             script.info = popUpItemData->info;
             scripts.Push (script);
         }
@@ -1292,7 +1261,7 @@ bool TapirPalette::ConfirmScriptRequirements (const PopUpItemData& popUpItemData
 }
 
 // The selected script's summary and badge, on the script list and on the Run button (while the selected script
-// does not run, when the button is Stop), and the update button's "Check for Updates" or "Update to <version>".
+// does not run, when the button is Stop).
 void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
 {
     if (toolTipText != nullptr && ev.GetSource () == &favouriteButton) {

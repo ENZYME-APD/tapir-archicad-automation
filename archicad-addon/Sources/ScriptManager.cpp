@@ -105,11 +105,6 @@ static GS::UniString ToLowerCased (const GS::UniString& text)
 #endif
 }
 
-// The texts of the Scripts tab's results, menu and details, from the localized resources (RINT/AddOn.grc)
-static GS::UniString LocalText (Int32 index)
-{
-    return RSGetIndString (ID_LOCAL_SCRIPT_STRINGS, index, ACAPI_GetOwnResModule ());
-}
 
 // The commands of the Scripts tab's right-click menu. Each is a DG::Command of Tapir's 'MDID' (RFIX/AddOnFix.grc), so
 // that it is never taken for a command of Archicad or another add-on.
@@ -401,15 +396,16 @@ static GS::UniString FormatCatalogueTime (std::time_t time)
     return GS::UniString (buffer);
 }
 
-// "28, 29, 30"
-static GS::UniString JoinArchicadVersions (const std::vector<int>& versions)
+// "28, 29, 30": the catalogue's versions (std::vector<int>) or a header's (GS::Array<Int32>).
+template <typename Versions>
+static GS::UniString JoinArchicadVersions (const Versions& versions)
 {
     GS::UniString text;
-    for (size_t i = 0; i < versions.size (); ++i) {
-        if (i > 0) {
+    for (const auto version : versions) {
+        if (!text.IsEmpty ()) {
             text += ", ";
         }
-        text += GS::UniString::Printf ("%d", versions[i]);
+        text += GS::UniString::Printf ("%d", static_cast<int> (version));
     }
     return text;
 }
@@ -665,10 +661,8 @@ ScriptManager::ScriptManager ()
     }
     categoryList.SelectItem (AllCategoriesItem);
     for (short category = 0; category <= CategoryCount; ++category) {
-        categoryPopUp.AppendItem ();
-        categoryPopUp.SetItemText (DG::PopUp::BottomItem, ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES + category));
+        categoryPopUp.AppendItem ();   // RefreshCategoryList gives the items their texts and counts
     }
-    categoryPopUp.SelectItem (AllCategoriesItem);
 
     SetupScriptListColumns ();
     // The scripts of the Tapir Palette are listed first, and the installed ones even when no catalogue can be loaded.
@@ -994,6 +988,14 @@ bool ScriptManager::MatchesSearch (const Script& script, const GS::UniString& lo
     return false;
 }
 
+// The Scripts tab's search: the name, the file name, what the script does and where it comes from.
+static bool MatchesLocalSearch (const LocalScript& script, const GS::UniString& lowerCasedSearch)
+{
+    return lowerCasedSearch.IsEmpty () || ToLowerCased (script.name).Contains (lowerCasedSearch) ||
+        ToLowerCased (script.fileName).Contains (lowerCasedSearch) || ToLowerCased (script.info.summary).Contains (lowerCasedSearch) ||
+        ToLowerCased (script.source).Contains (lowerCasedSearch);
+}
+
 // The scripts of the current tab and search: indexes into localScripts on the Scripts tab, into scripts on the others.
 std::vector<size_t> ScriptManager::GetScriptsOfTabAndSearch () const
 {
@@ -1003,9 +1005,7 @@ std::vector<size_t> ScriptManager::GetScriptsOfTabAndSearch () const
     if (tab == Tab::Scripts) {
         for (UIndex i = 0; i < localScripts.GetSize (); ++i) {
             const LocalScript& script = localScripts[i];
-            if (search.IsEmpty () || ToLowerCased (script.name).Contains (search) || ToLowerCased (script.fileName).Contains (search) ||
-                ToLowerCased (script.info.summary).Contains (search) || ToLowerCased (script.source).Contains (search))
-            {
+            if (MatchesLocalSearch (script, search)) {
                 result.push_back (i);
             }
         }
@@ -1067,9 +1067,7 @@ void ScriptManager::RefreshTabTexts ()
     }
     int scriptsCount = 0;
     for (const LocalScript& script : localScripts) {
-        if (search.IsEmpty () || ToLowerCased (script.name).Contains (search) || ToLowerCased (script.fileName).Contains (search) ||
-            ToLowerCased (script.info.summary).Contains (search) || ToLowerCased (script.source).Contains (search))
-        {
+        if (MatchesLocalSearch (script, search)) {
             ++scriptsCount;
         }
     }
@@ -1090,10 +1088,11 @@ void ScriptManager::RefreshCategoryList ()
     const int allCount = static_cast<int> (tabScripts.size ());
     categoryList.SetTabItemText (AllCategoriesItem, CategoryCountTab, GS::UniString::Printf ("%d", allCount));
     categoryPopUp.SetItemText (AllCategoriesItem, GS::UniString::Printf ("%T (%d)", ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES).ToPrintf (), allCount));
+    const bool onScriptsTab = GetCurrentTab () == Tab::Scripts;
     for (short category = 0; category < CategoryCount; ++category) {
         int count = 0;
         for (size_t index : tabScripts) {
-            const GS::UniString& scriptCategory = GetCurrentTab () == Tab::Scripts ? localScripts[static_cast<UIndex> (index)].info.category : scripts[index].category;
+            const GS::UniString& scriptCategory = onScriptsTab ? localScripts[static_cast<UIndex> (index)].info.category : scripts[index].category;
             if (scriptCategory == CategoryKeys[category]) {
                 ++count;
             }
@@ -1570,6 +1569,9 @@ void ScriptManager::LoadLocalScripts ()
 
 void ScriptManager::LocalScriptsChanged ()
 {
+    if (!IsVisible ()) {
+        return;   // Show loads them again
+    }
     LoadLocalScripts ();
     RefreshAll ();
 }
@@ -1676,13 +1678,13 @@ void ScriptManager::RefreshLocalDetails ()
     nameText.SetText (script->name);
     GS::UniString byline;
     if (!script->info.author.IsEmpty ()) {
-        byline = GS::UniString::Printf (LocalText (ID_LOCAL_SCRIPT_STRINGS_BY_AUTHOR), script->info.author.ToPrintf ());
+        byline = GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_BY_AUTHOR), script->info.author.ToPrintf ());
     }
     if (!script->info.version.IsEmpty ()) {
         if (!byline.IsEmpty ()) {
             byline += ", ";
         }
-        byline += GS::UniString::Printf (LocalText (ID_LOCAL_SCRIPT_STRINGS_VERSION), script->info.version.ToPrintf ());
+        byline += GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_VERSION), script->info.version.ToPrintf ());
     }
     bylineText.SetText (byline);
 
@@ -1691,14 +1693,10 @@ void ScriptManager::RefreshLocalDetails ()
     changesLabel.SetVisibility (!badge.IsEmpty ());
     changesValue.SetVisibility (!badge.IsEmpty ());
     changesValue.SetText (badge);
-    std::vector<int> archicadVersions;
-    for (const Int32 version : script->info.archicadVersions) {
-        archicadVersions.push_back (static_cast<int> (version));
-    }
-    const bool hasArchicad = !archicadVersions.empty ();
+    const bool hasArchicad = !script->info.archicadVersions.IsEmpty ();
     archicadLabel.SetVisibility (hasArchicad);
     archicadValue.SetVisibility (hasArchicad);
-    archicadValue.SetText (JoinArchicadVersions (archicadVersions));
+    archicadValue.SetText (JoinArchicadVersions (script->info.archicadVersions));
     const bool hasTapir = !script->info.minTapirVersion.IsEmpty ();
     tapirLabel.SetVisibility (hasTapir);
     tapirValue.SetVisibility (hasTapir);
@@ -1747,12 +1745,10 @@ void ScriptManager::ShowRunResult ()
     }
     resultText.SetText (display.text);
     if (display.fixTextIndex != 0) {
-        fixButton.SetText (LocalText (display.fixTextIndex));
+        fixButton.SetText (LocalScriptText (display.fixTextIndex));
     }
-    outputButtonShown = display.showOutputButton;
-    fixButtonShown = display.fixTextIndex != 0;
-    outputButton.SetVisibility (onScriptsTab && outputButtonShown);
-    fixButton.SetVisibility (onScriptsTab && fixButtonShown);
+    outputButton.SetVisibility (onScriptsTab && display.showOutputButton);
+    fixButton.SetVisibility (onScriptsTab && display.fixTextIndex != 0);
 }
 
 // Run, Stop, Details, the fix button and Add script. True when the button was one of them.
@@ -1775,17 +1771,13 @@ bool ScriptManager::HandleLocalButton (const DG::ButtonClickEvent& ev)
         return true;
     }
     // A copy: running or stopping the script changes the results.
+    // run and stop do nothing when the script already runs or does not run.
     const IO::Location fileLocation = script->fileLocation;
-    const bool isRunning = localActions.isRunning (fileLocation);
 
     if (isRunButton) {
-        if (!isRunning) {
-            localActions.run (fileLocation);
-        }
+        localActions.run (fileLocation);
     } else if (isStopButton) {
-        if (isRunning) {
-            localActions.stop (fileLocation);
-        }
+        localActions.stop (fileLocation);
     } else {
         const ScriptRunResults::RunResult* result = ScriptRunResults::Instance ().Find (fileLocation);
         if (result == nullptr) {
@@ -1799,9 +1791,7 @@ bool ScriptManager::HandleLocalButton (const DG::ButtonClickEvent& ev)
                     localActions.openWebpage ("https://docs.astral.sh/uv/getting-started/installation/");
                     break;
                 case ScriptRunResults::Failure::ConnectionBusy:
-                    if (!isRunning) {
-                        localActions.run (fileLocation);
-                    }
+                    localActions.run (fileLocation);
                     break;
                 case ScriptRunResults::Failure::NotStarted:
                 case ScriptRunResults::Failure::ScriptError:
@@ -1850,7 +1840,7 @@ void ScriptManager::ShowLocalContextMenu (const LocalScript& script)
     DG::CommandTable commandTable;
     const auto addCommand = [&menu, &commandTable] (ULong commandId, Int32 textIndex) {
         const DG::Command command (commandId, TapirDeveloperId, TapirLocalId);
-        commandTable.Add (command, new DG::CommandDescriptor (command, LocalText (textIndex)));
+        commandTable.Add (command, new DG::CommandDescriptor (command, LocalScriptText (textIndex)));
         menu.AddMenuItem (DG::MenuSimpleItem (command));
     };
     if (isRunning) {
@@ -1932,10 +1922,16 @@ GS::Array<IO::Location> ScriptManager::GetDroppedScripts (const DG::ListBoxDropT
     return files;
 }
 
+// Copy when .py files are dragged over the Scripts tab's list, else Reject.
+DG::DragDrop::Effect ScriptManager::GetDropEffect (const DG::ListBoxDropTargetEvent& ev) const
+{
+    return (GetCurrentTab () == Tab::Scripts && !GetDroppedScripts (ev).IsEmpty ()) ? DG::DragDrop::Effect::Copy : DG::DragDrop::Effect::Reject;
+}
+
 void ScriptManager::ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool*)
 {
     if (ev.GetSource () == &scriptList && effect != nullptr) {
-        *effect = (GetCurrentTab () == Tab::Scripts && !GetDroppedScripts (ev).IsEmpty ()) ? DG::DragDrop::Effect::Copy : DG::DragDrop::Effect::Reject;
+        *effect = GetDropEffect (ev);
     }
 }
 
@@ -1954,7 +1950,7 @@ void ScriptManager::ListBoxDragMoved (const DG::ListBoxDropTargetEvent& ev, DG::
         *denyFeedback = DG::DragDrop::RejectSelAndIns;
     }
     if (effect != nullptr) {
-        *effect = (GetCurrentTab () == Tab::Scripts && !GetDroppedScripts (ev).IsEmpty ()) ? DG::DragDrop::Effect::Copy : DG::DragDrop::Effect::Reject;
+        *effect = GetDropEffect (ev);
     }
 }
 

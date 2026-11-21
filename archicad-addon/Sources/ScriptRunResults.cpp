@@ -5,20 +5,21 @@
 #include "DGModule.hpp"
 #include "AddOnVersion.hpp"
 #include "VersionChecker.hpp"
+#include "WebLinks.hpp"
 
-#include <string>
 
-// The texts of the results, from the localized resources (RINT/AddOn.grc, see LOCALIZATION.md)
-static GS::UniString RunText (Int32 index)
+GS::UniString LocalScriptText (Int32 index)
 {
     return RSGetIndString (ID_LOCAL_SCRIPT_STRINGS, index, ACAPI_GetOwnResModule ());
 }
 
 static GS::UniString LowerCased (const GS::UniString& text)
 {
-    GS::UniString result = text;
-    result.SetToLowerCase ();
-    return result;
+#ifdef ServerMainVers_3000
+    return text.GetLowerCased ();
+#else
+    return text.ToLowerCase ();
+#endif
 }
 
 ScriptRunResults& ScriptRunResults::Instance ()
@@ -51,12 +52,7 @@ const ScriptRunResults::RunResult* ScriptRunResults::Find (const IO::Location& f
 
 ScriptRunResults::RunResult* ScriptRunResults::FindMutable (const IO::Location& fileLocation)
 {
-    for (RunResult& result : results) {
-        if (result.fileLocation == fileLocation) {
-            return &result;
-        }
-    }
-    return nullptr;
+    return const_cast<RunResult*> (Find (fileLocation));
 }
 
 ScriptRunResults::RunResult& ScriptRunResults::ResetResult (const IO::Location& fileLocation, const GS::UniString& scriptName)
@@ -131,7 +127,7 @@ void ScriptRunResults::ScriptOutput (const IO::Location& fileLocation, const GS:
     if (result == nullptr || text.IsEmpty ()) {
         return;
     }
-    if (ShowsConnectionError (LowerCased (text))) {
+    if (!result->sawConnectionError && ShowsConnectionError (LowerCased (text))) {
         result->sawConnectionError = true;
     }
 
@@ -203,32 +199,32 @@ ScriptRunResults::Display ScriptRunResults::Describe (const IO::Location& fileLo
     }
     switch (result->state) {
         case RunState::Running:
-            display.text = RunText (ID_LOCAL_SCRIPT_STRINGS_RUNNING);
+            display.text = LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_RUNNING);
             break;
         case RunState::Finished:
-            display.text = RunText (ID_LOCAL_SCRIPT_STRINGS_FINISHED);
+            display.text = LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_FINISHED);
             break;
         case RunState::Stopped:
-            display.text = RunText (ID_LOCAL_SCRIPT_STRINGS_STOPPED);
+            display.text = LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_STOPPED);
             break;
         case RunState::Failed:
             switch (result->failure) {
                 case Failure::UvMissing:
-                    display.text = RunText (ID_LOCAL_SCRIPT_STRINGS_ERROR_UV_MISSING);
+                    display.text = LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_ERROR_UV_MISSING);
                     display.fixTextIndex = ID_LOCAL_SCRIPT_STRINGS_INSTALL_UV;
                     break;
                 case Failure::NotStarted:
-                    display.text = RunText (ID_LOCAL_SCRIPT_STRINGS_ERROR_NOT_STARTED);
+                    display.text = LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_ERROR_NOT_STARTED);
                     display.fixTextIndex = ID_LOCAL_SCRIPT_STRINGS_REPORT_PROBLEM;
                     break;
                 case Failure::ConnectionBusy:
-                    display.text = RunText (ID_LOCAL_SCRIPT_STRINGS_ERROR_CONNECTION_BUSY);
+                    display.text = LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_ERROR_CONNECTION_BUSY);
                     display.showOutputButton = true;
                     display.fixTextIndex = ID_LOCAL_SCRIPT_STRINGS_TRY_AGAIN;
                     break;
                 case Failure::ScriptError:
                 case Failure::None:
-                    display.text = GS::UniString::Printf (RunText (ID_LOCAL_SCRIPT_STRINGS_ERROR_EXIT_CODE), result->exitCode);
+                    display.text = GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_ERROR_EXIT_CODE), result->exitCode);
                     display.showOutputButton = true;
                     display.fixTextIndex = ID_LOCAL_SCRIPT_STRINGS_REPORT_PROBLEM;
                     break;
@@ -246,48 +242,28 @@ void ScriptRunResults::ShowOutputDetails (const RunResult& result) const
 {
     const GS::UniString lines = GetLastLines (result);
     DGAlert (DG_INFORMATION,
-        RunText (ID_LOCAL_SCRIPT_STRINGS_OUTPUT_TITLE),
-        GS::UniString::Printf (RunText (ID_LOCAL_SCRIPT_STRINGS_OUTPUT_HEADER), result.scriptName.ToPrintf ()),
-        lines.IsEmpty () ? RunText (ID_LOCAL_SCRIPT_STRINGS_OUTPUT_EMPTY) : lines,
+        LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_OUTPUT_TITLE),
+        GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_OUTPUT_HEADER), result.scriptName.ToPrintf ()),
+        lines.IsEmpty () ? LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_OUTPUT_EMPTY) : lines,
         RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_OK, ACAPI_GetOwnResModule ()));
-}
-
-// The text percent-encoded as UTF-8 for a URL's query, every byte but the unreserved characters encoded.
-static GS::UniString PercentEncoded (const GS::UniString& text)
-{
-    static const char hexDigits[] = "0123456789ABCDEF";
-    const std::string bytes (text.ToCStr (CC_UTF8).Get ());
-    std::string encoded;
-    for (const char c : bytes) {
-        const unsigned char byte = static_cast<unsigned char> (c);
-        if ((byte >= 'A' && byte <= 'Z') || (byte >= 'a' && byte <= 'z') || (byte >= '0' && byte <= '9') ||
-            byte == '-' || byte == '_' || byte == '.' || byte == '~') {
-            encoded += static_cast<char> (byte);
-        } else {
-            encoded += '%';
-            encoded += hexDigits[byte >> 4];
-            encoded += hexDigits[byte & 0x0F];
-        }
-    }
-    return GS::UniString (encoded.c_str ());
 }
 
 // The oldest lines are left out when the address would be too long for the browser or GitHub.
 void ScriptRunResults::ReportProblem (const RunResult& result, const std::function<void (const GS::UniString&)>& openWebpage) const
 {
     static constexpr USize MaxEncodedBodyLength = 6000;
-    const GS::UniString title = GS::UniString::Printf (RunText (ID_LOCAL_SCRIPT_STRINGS_ISSUE_TITLE), result.scriptName.ToPrintf ());
+    const GS::UniString title = GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_ISSUE_TITLE), result.scriptName.ToPrintf ());
     const GS::UniString tapirVersion (ADDON_VERSION);
     GS::UniString encodedBody;
     for (UIndex skippedLines = 0; skippedLines <= result.lastLines.GetSize (); ++skippedLines) {
-        const GS::UniString body = GS::UniString::Printf (RunText (ID_LOCAL_SCRIPT_STRINGS_ISSUE_BODY),
+        const GS::UniString body = GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_ISSUE_BODY),
             result.scriptName.ToPrintf (), tapirVersion.ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ()),
             GetLastLines (result, skippedLines).ToPrintf ());
-        encodedBody = PercentEncoded (body);
+        encodedBody = EncodeUrlComponent (body);
         if (encodedBody.GetLength () <= MaxEncodedBodyLength) {
             break;
         }
     }
     openWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new?title=" +
-        PercentEncoded (title) + "&body=" + encodedBody);
+        EncodeUrlComponent (title) + "&body=" + encodedBody);
 }

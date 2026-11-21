@@ -157,8 +157,6 @@ private:
     IO::Location             selectedLocalLocation;   // the script selected last on the Scripts tab, selected again when the list is rebuilt
     GS::UniString            licenceLabelText;  // the Licence label's own text; the Scripts tab shows Source in its place
     bool                     isNarrow = false;   // the window is too narrow for three columns: the single column layout
-    bool                     outputButtonShown = false;
-    bool                     fixButtonShown = false;
 
     // Fetches the catalogue (falling back to the cached copy, see the top of the class) and fills the window.
     void LoadCatalogue ();
@@ -220,6 +218,7 @@ private:
     void ShowRunResult ();
     void ShowLocalContextMenu (const LocalScript& script);
     static GS::Array<IO::Location> GetDroppedScripts (const DG::ListBoxDropTargetEvent& ev);
+    DG::DragDrop::Effect GetDropEffect (const DG::ListBoxDropTargetEvent& ev) const;
     bool HandleLocalButton (const DG::ButtonClickEvent& ev);
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;

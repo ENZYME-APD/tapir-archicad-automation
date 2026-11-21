@@ -10,6 +10,9 @@
 // result of the selected script next to its Run button: "Running...", "Finished", "Stopped", or an error in plain
 // words, with Details (the last lines of the output) and a button that offers a fix (Install uv, Try again, or Report
 // a problem).
+// A text of the Scripts tab and its results (ID_LOCAL_SCRIPT_STRINGS of RINT/AddOn.grc).
+GS::UniString LocalScriptText (Int32 index);
+
 class ScriptRunResults
 {
 public:

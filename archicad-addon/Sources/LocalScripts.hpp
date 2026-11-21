@@ -13,11 +13,8 @@ struct LocalScript
     GS::UniString name;          // the docstring's title, or the file name when it has none
     GS::UniString fileName;
     GS::UniString source;        // Built-in, Marketplace, My scripts, or the folder's or repository's name
-    GS::UniString badge;         // Changes the model, Writes files, Read only, or empty
-    GS::UniString requirements;  // "Needs Tapir ..." and "Tested on Archicad ...", one per line, as in the bar's tooltip
     GS::UniString webUrl;        // the script's page on GitHub for a repository's script; empty for a local file
     bool          isAdded = false;     // added with the Add script button (or dropped on the list): Remove removes it
-    bool          isUsersOwn = false;  // added, or in the custom-scripts folder
     ScriptInfo    info;
 };
 

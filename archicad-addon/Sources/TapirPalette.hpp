@@ -3,7 +3,6 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "DGModule.hpp"
-#include "DGLowLevelKeyboardHandling.hpp"
 #include "ThreadedExecutor.hpp"
 #include "Process.hpp"
 #include "Config.hpp"
@@ -117,7 +116,7 @@ private:
     // separator when there is one, the scripts the user added, a separator when hasAddedScript, the scripts of the
     // custom-scripts folder, a separator when hasCustomScript, the scripts of the local folders and repositories, then,
     // when marketplaceScripts is not empty, a separator, the disabled "Marketplace" heading and the marketplace scripts,
-    // and last a separator and "Reload scripts...". A search shows only the scripts that match it (BuildVisibleItems).
+    // and last a separator and "Reload scripts...".
     using ScriptList = GS::Array<GS::Ref<PopUpItemData>>;
     ScriptList addedScripts;    // added with the Add button, saved in the preferences; the newest first
     ScriptList customScripts;   // Documents/Tapir/custom-scripts
@@ -171,9 +170,8 @@ private:
     void AddScriptsFromCustomScriptsFolder ();
     void AddScriptsFromMarketplace ();   // fills marketplaceScripts from installed.json
     void LoadScriptsToPopUp ();
-    // The dropdown's items for the script list. forDropdown: the favourites first, and only the scripts that match
-    // the search, those whose name matches before those whose summary does. Otherwise the layout every Tapir version
-    // builds, without favourites or search, which the item index in the preferences counts in.
+    // The dropdown's items for the script list. forDropdown: the favourites first. Otherwise the layout every Tapir
+    // version builds, without favourites, which the item index in the preferences counts in.
     VisibleItemList BuildVisibleItems (bool forDropdown) const;
     // Fills scriptSelectionPopUp and visibleItems from the script list and selects scriptToSelect (SelectScript).
     void RebuildScriptPopUp (const GS::Ref<PopUpItemData>& scriptToSelect);
@@ -185,7 +183,6 @@ private:
     const VisibleItem* GetVisibleItem (short item) const;   // nullptr outside the dropdown
     GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
     GS::Ref<PopUpItemData> GetSelectedScript () const;
-    bool IsAddedScript (const GS::Ref<PopUpItemData>& script) const;   // one of addedScripts
     void SelectedScriptChanged ();   // saves the selection and updates the buttons that depend on it
     void ToggleFavourite ();         // the star
     void SetFavouriteButtonIcon ();  // StarFilled when the selected script is a favourite, else Star
@@ -227,7 +224,7 @@ private:
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
-    // These override the ItemObserver functions of the button, pop-up and text edit observer bases.
+    // These override the ItemObserver functions of the button and pop-up observer bases.
     virtual void ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) override;
 
     static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary, the badge and the requirements, one per line
