@@ -6583,6 +6583,10 @@ GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema 
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "templateElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional existing Curtain Wall whose settings the new curtain wall takes instead of the tool defaults (or the favorite): its frame and panel classes, pattern, surfaces, boundary and corner frames, height, home story and base, layer and slant angle. The fields given here override them. With itself as template, a curtain wall is given a reference line with more or fewer segments by creating it again and deleting the old one (see RecreateCurtainWalls)."
+                    },
                     "id": {
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
@@ -6865,6 +6869,78 @@ GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::Ob
     return {};
 }
 
+// templateElementId of CreateCurtainWalls, as ApplyRailingTemplate does it for railings: the template
+// is made the Curtain Wall tool default for a moment, the defaults are read back as the new element
+// (so its memo - frame and panel classes, pattern, cells - comes along), and the previous defaults
+// are put back. The base is set to the template's (its reference line elevation, see the zCoordinate
+// of GetDetailsOfElements), the plane matrix to the identity (the new reference line is given on
+// the floor plan; a slant is set again from slantAngle by the caller), and the template's slant
+// angle is handed back.
+static GS::Optional<GS::ObjectState> ApplyCurtainWallTemplate (const API_Guid& templateGuid, API_Element& element, API_ElementMemo& memo, double& slantAngle)
+{
+    API_Element templ = {};
+    templ.header.guid = templateGuid;
+    if (ACAPI_Element_Get (&templ) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, "templateElementId: the element was not found.");
+    }
+    if (GetElemTypeId (templ.header) != API_CurtainWallID) {
+        return CreateErrorResponse (APIERR_BADPARS, "templateElementId: the element is not a Curtain Wall.");
+    }
+    API_ElementMemo templMemo = {};
+    const GS::OnExit templMemoGuard ([&templMemo] () { ACAPI_DisposeElemMemoHdls (&templMemo); });
+    GSErrCode err = ACAPI_Element_GetMemo (templ.header.guid, &templMemo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "templateElementId: the settings of the curtain wall could not be read.");
+    }
+
+    API_Element previousDefaults = {};
+    API_ElementMemo previousDefaultsMemo = {};
+    const GS::OnExit previousDefaultsGuard ([&previousDefaultsMemo] () { ACAPI_DisposeElemMemoHdls (&previousDefaultsMemo); });
+#ifdef ServerMainVers_2600
+    previousDefaults.header.type = API_CurtainWallID;
+#else
+    previousDefaults.header.typeID = API_CurtainWallID;
+#endif
+    err = ACAPI_Element_GetDefaults (&previousDefaults, &previousDefaultsMemo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the Curtain Wall tool defaults.");
+    }
+
+    API_Element fullMask;
+    ACAPI_ELEMENT_MASK_SETFULL (fullMask);
+    err = ACAPI_Element_ChangeDefaults (&templ, &templMemo, &fullMask);
+    if (err == NoError) {
+        ACAPI_DisposeElemMemoHdls (&memo);
+        memo = {};
+        const API_Elem_Head head = element.header;
+        element = {};
+        element.header = head;
+        err = ACAPI_Element_GetDefaults (&element, &memo);
+    }
+    ACAPI_Element_ChangeDefaults (&previousDefaults, &previousDefaultsMemo, &fullMask);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "templateElementId: the settings of the curtain wall could not be taken over.");
+    }
+
+    // The base of the template's reference line: storyRelLevel less the rise of the panel offset on a
+    // slanted curtain wall, as GetDetailsOfElements reads zCoordinate.
+    const double templateAngle = templ.curtainWall.angle;
+    const double cosAngle = std::fabs (templateAngle - 90.0) > 1e-9 ? std::cos (templateAngle * std::acos (-1.0) / 180.0) : 0.0;
+    const double panelRise = (templ.curtainWall.flipped ? -1.0 : 1.0) * templ.curtainWall.offset * cosAngle;
+    element.curtainWall.planeOffset = templ.curtainWall.storyRelLevel - panelRise;
+    element.curtainWall.storyRelLevel = element.curtainWall.planeOffset;
+    element.curtainWall.height = templ.curtainWall.height;
+    element.header.layer = templ.header.layer;
+    element.header.floorInd = templ.header.floorInd;
+    element.curtainWall.planeMatrix = {};
+    element.curtainWall.planeMatrix.tmx[0] = 1.0;
+    element.curtainWall.planeMatrix.tmx[5] = 1.0;
+    element.curtainWall.planeMatrix.tmx[10] = 1.0;
+    element.curtainWall.angle = 90.0;
+    slantAngle = templateAngle;
+    return {};
+}
+
 GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
     GS::Array<GS::ObjectState> coordinates;
@@ -6876,6 +6952,17 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
         if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
         }
+    }
+
+    GS::Optional<double> templateAngle;
+    const GS::ObjectState* templateId = parameters.Get ("templateElementId");
+    if (templateId != nullptr) {
+        double angleOfTemplate = 90.0;
+        const GS::Optional<GS::ObjectState> templateError = ApplyCurtainWallTemplate (GetGuidFromObjectState (*templateId), element, memo, angleOfTemplate);
+        if (templateError.HasValue ()) {
+            return templateError;
+        }
+        templateAngle = angleOfTemplate;
     }
 
     // The bottom of the curtain wall. planeOffset is what ACAPI_Element_Create places the base
@@ -6912,7 +6999,12 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
     // point of the reference line. A vertical curtain wall has the identity matrix, which an
     // angle of 90 writes; without angle the element is left as the defaults made it.
     double angle = 90.0;
-    const bool hasAngle = parameters.Get ("angle", angle);
+    bool hasAngle = parameters.Get ("angle", angle);
+    if (!hasAngle && templateAngle.HasValue ()) {
+        // A curtain wall made from a template takes its slant, unless angle is given.
+        angle = templateAngle.Get ();
+        hasAngle = true;
+    }
     const bool slanted = hasAngle && std::fabs (angle - 90.0) > 1e-9;
     if (slanted && coordinates.GetSize () != 2) {
         return CreateErrorResponse (APIERR_BADPARS, "A slanted curtain wall (angle other than 90) lies in one plane, so its coordinates must be the 2 points of a straight reference line.");
