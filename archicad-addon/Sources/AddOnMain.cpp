@@ -803,6 +803,10 @@ GSErrCode Initialize (void)
             elementCommands, "2.0.0",
             "Gets the snap points (hotspots) of the given elements, of any element type: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. For the 2D hotspots of library part instances see GetHotspotsOfElements. The output is aligned with the input array of elements."
         );
+        err |= RegisterCommand<GetPolygonVertexIdsOfElementsCommand> (
+            elementCommands, "2.0.1",
+            "Gets the polygon vertices of the given elements that have a polygon with vertex IDs (Slabs, Zones, Roofs, Meshes, Fills and others): for each point of the outline and of each hole, in the order GetDetailsOfElements returns them, its coordinate, its index in the element's polygon (inIndex) and the vertex ID Archicad stores for it. These are the inIndex and nodeId a witness point of CreateAssociativeDimensions needs to attach to a vertex or an edge of the polygon; the vertex IDs are kept when vertices are inserted or deleted, so they cannot be worked out from the order of the points. The output is aligned with the input array of elements."
+        );
         err |= RegisterCommand<ConvertRevealOffsetsCommand> (
             elementCommands, "1.7.3",
             "Converts the reveal depth offset of windows and doors placed in walls between the two references Archicad uses: measured from the core skin of a composite wall, or from the wall side. Give exactly one of coreOffset or sideOffset per opening; both values are returned. For walls with a basic structure the two values are equal. The output is aligned with the input array of openings. Available from Archicad 27."

@@ -1,0 +1,142 @@
+{
+  "title": "GetPolygonVertexIdsOfElements gives the inIndex and nodeId CreateAssociativeDimensions needs on slab vertices and edges, and points it cannot attach get an error (#3004)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a 6 m square slab",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              {"x": 1300.0, "y": 1300.0},
+              {"x": 1306.0, "y": 1300.0},
+              {"x": 1306.0, "y": 1306.0},
+              {"x": 1300.0, "y": 1306.0}
+            ]
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "the vertices of the slab",
+      "command": "GetPolygonVertexIdsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": {
+        "v1": "polygonVertexIdsOfElements[0].contours[0].points[0].vertexId",
+        "v2": "polygonVertexIdsOfElements[0].contours[0].points[1].vertexId",
+        "v3": "polygonVertexIdsOfElements[0].contours[0].points[2].vertexId"
+      },
+      "expect": [
+        { "path": "polygonVertexIdsOfElements[0].contours", "len": 1, "name": "one contour, no hole" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points", "len": 5, "name": "four vertices and the closing point" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[0].inIndex", "eq": 1, "name": "the first point has inIndex 1" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[2].inIndex", "eq": 3, "name": "the third point has inIndex 3" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[0].coordinate.x", "approx": 1300.0, "name": "first point x" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[1].coordinate.x", "approx": 1306.0, "name": "second point x" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[1].vertexId", "ne": "${v1}", "name": "the vertices have different IDs" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[4].vertexId", "eq": "${v1}", "name": "the closing point repeats the first vertex ID" }
+      ]
+    },
+    {
+      "id": "vertices, wrong nodeId, nodeId without inIndex, edges with and without coordinate",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 1300.0, "y": 1298.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "elementId": { "guid": "${s}" }, "inIndex": 1, "nodeId": "${v1}" },
+              { "elementId": { "guid": "${s}" }, "inIndex": 2, "nodeId": "${v2}" }
+            ]
+          },
+          {
+            "referencePoint": { "x": 1300.0, "y": 1297.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "elementId": { "guid": "${s}" }, "inIndex": 1, "nodeId": "${v2}" },
+              { "elementId": { "guid": "${s}" }, "inIndex": 2, "nodeId": "${v2}" }
+            ]
+          },
+          {
+            "referencePoint": { "x": 1300.0, "y": 1296.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "elementId": { "guid": "${s}" }, "inIndex": 1, "nodeId": "${v1}" },
+              { "elementId": { "guid": "${s}" }, "nodeId": "${v2}" }
+            ]
+          },
+          {
+            "referencePoint": { "x": 1309.0, "y": 1300.0 },
+            "direction": { "x": 0.0, "y": 1.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "elementId": { "guid": "${s}" }, "line": true, "inIndex": 1, "nodeId": "${v1}", "coordinate": { "x": 1303.0, "y": 1300.0 } },
+              { "elementId": { "guid": "${s}" }, "inIndex": 3, "nodeId": "${v3}" }
+            ]
+          },
+          {
+            "referencePoint": { "x": 1310.0, "y": 1300.0 },
+            "direction": { "x": 0.0, "y": 1.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "elementId": { "guid": "${s}" }, "line": true, "inIndex": 1, "nodeId": "${v1}" },
+              { "elementId": { "guid": "${s}" }, "inIndex": 3, "nodeId": "${v3}" }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "dv": "elements[0].elementId.guid",
+        "de": "elements[3].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "vertex 1 to vertex 2: created" },
+        { "path": "elements[1].elementId", "exists": false, "name": "vertex 1 with the ID of vertex 2: no elementId" },
+        { "path": "elements[1].error.code", "exists": true, "name": "vertex 1 with the ID of vertex 2: an error" },
+        { "path": "elements[2].elementId", "exists": false, "name": "nodeId without inIndex: no elementId" },
+        { "path": "elements[2].error.code", "exists": true, "name": "nodeId without inIndex: an error" },
+        { "path": "elements[3].elementId.guid", "exists": true, "name": "edge 1 with a coordinate to vertex 3: created" },
+        { "path": "elements[4].elementId", "exists": false, "name": "edge without a coordinate: no elementId" },
+        { "path": "elements[4].error.code", "exists": true, "name": "edge without a coordinate: an error" }
+      ]
+    },
+    {
+      "id": "the created dimensions are attached to the slab",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dv}" } }, { "elementId": { "guid": "${de}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[0].baseElementId.guid", "eq": "${s}", "name": "vertex 1 attached to the slab" },
+        { "path": "dimensionsData[0].witnessPoints[1].baseElementId.guid", "eq": "${s}", "name": "vertex 2 attached to the slab" },
+        { "path": "dimensionsData[0].witnessPoints[0].coordinate.x", "approx": 1300.0, "name": "vertex 1 at x 1300" },
+        { "path": "dimensionsData[0].witnessPoints[1].coordinate.x", "approx": 1306.0, "name": "vertex 2 at x 1306" },
+        { "path": "dimensionsData[1].witnessPoints[0].baseElementId.guid", "eq": "${s}", "name": "edge point attached to the slab" },
+        { "path": "dimensionsData[1].witnessPoints[0].coordinate.y", "approx": 1300.0, "name": "edge point on edge 1" },
+        { "path": "dimensionsData[1].witnessPoints[1].coordinate.y", "approx": 1306.0, "name": "vertex 3 at y 1306" }
+      ]
+    },
+    {
+      "id": "the dimensions with an error were not left in the project",
+      "command": "API.GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Dimension" },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "only the two attached dimensions" }
+      ]
+    }
+  ]
+}

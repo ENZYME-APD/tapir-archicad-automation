@@ -12640,6 +12640,179 @@ GS::ObjectState GetSnapPointsOfElementsCommand::Execute (const GS::ObjectState& 
     return response;
 }
 
+GetPolygonVertexIdsOfElementsCommand::GetPolygonVertexIdsOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetPolygonVertexIdsOfElementsCommand::GetName () const
+{
+    return "GetPolygonVertexIdsOfElements";
+}
+
+GS::Optional<GS::UniString> GetPolygonVertexIdsOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetPolygonVertexIdsOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "polygonVertexIdsOfElements": {
+                "type": "array",
+                "description": "The polygon vertices of each element, aligned with the input array of elements, or an error for an element without a polygon that has vertex IDs.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "contours": {
+                                    "type": "array",
+                                    "description": "The contours of the element's polygon in the order of its memo: the first is the outline (polygonOutline of GetDetailsOfElements), the others are the holes in the order of holes.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "points": {
+                                                "type": "array",
+                                                "description": "The points of the contour in the order of its polygonOutline in GetDetailsOfElements, the closing point included: the last point repeats the first one's position and vertexId.",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "coordinate": {
+                                                            "$ref": "#/Coordinate2D"
+                                                        },
+                                                        "inIndex": {
+                                                            "type": "integer",
+                                                            "description": "The 1-based index of the point among all the coordinates of the element's memo, across every contour. Give it as the inIndex of a witness point of CreateAssociativeDimensions, together with vertexId as its nodeId, for a point on this vertex; with line true and a coordinate on the edge from this point to the next, for a point on that edge."
+                                                        },
+                                                        "vertexId": {
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "description": "The vertex ID Archicad stores for the point (API_ElementMemo vertexIDs). It is kept when vertices are inserted or deleted, so it does not follow the order of the points. Give it as the nodeId of a witness point of CreateAssociativeDimensions."
+                                                        }
+                                                    },
+                                                    "additionalProperties": false,
+                                                    "required": [
+                                                        "coordinate",
+                                                        "inIndex",
+                                                        "vertexId"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "points"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "contours"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonVertexIdsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetPolygonVertexIdsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState response;
+    const auto& polygonVertexIdsOfElements = response.AddList<GS::ObjectState> ("polygonVertexIdsOfElements");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            polygonVertexIdsOfElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
+        if (err != NoError) {
+            polygonVertexIdsOfElements (CreateErrorResponse (err, "Failed to find element in Archicad"));
+            continue;
+        }
+
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        err = ACAPI_Element_GetMemo (elemHead.guid, &memo, APIMemoMask_Polygon);
+        if (err != NoError) {
+            polygonVertexIdsOfElements (CreateErrorResponse (err, "Failed to get the polygon of the element"));
+            continue;
+        }
+
+        // The memo's coords, pends and vertexIDs are 1-based: coords[0] and vertexIDs[0] are not
+        // vertices (vertexIDs[0] holds the largest vertex ID), pends[k] is the index of the closing
+        // point of contour k, which repeats the contour's first point. A witness point refers to a
+        // vertex by its index in coords (inIndex) and by its vertex ID (node_id) together (#3004).
+        const Int32 nCoords = memo.coords == nullptr ? 0 : static_cast<Int32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord)) - 1;
+        const Int32 nVertexIds = memo.vertexIDs == nullptr ? 0 : static_cast<Int32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.vertexIDs)) / sizeof (UInt32)) - 1;
+        if (nCoords < 1 || nVertexIds < nCoords) {
+            polygonVertexIdsOfElements (CreateErrorResponse (APIERR_BADPARS, "The element has no polygon with vertex IDs."));
+            continue;
+        }
+
+        GS::Array<Int32> contourEnds;
+        if (memo.pends == nullptr) {
+            contourEnds.Push (nCoords);
+        } else {
+            const Int32 nContours = static_cast<Int32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32)) - 1;
+            for (Int32 contourIndex = 1; contourIndex <= nContours; ++contourIndex) {
+                contourEnds.Push (std::min ((*memo.pends)[contourIndex], nCoords));
+            }
+        }
+
+        GS::ObjectState polygonVertexIds;
+        const auto& contours = polygonVertexIds.AddList<GS::ObjectState> ("contours");
+        Int32 startIndex = 1;
+        for (const Int32 endIndex : contourEnds) {
+            GS::ObjectState contour;
+            const auto& points = contour.AddList<GS::ObjectState> ("points");
+            for (Int32 coordIndex = startIndex; coordIndex <= endIndex; ++coordIndex) {
+                GS::ObjectState point;
+                point.Add ("coordinate", Create2DCoordinateObjectState ((*memo.coords)[coordIndex]));
+                point.Add ("inIndex", coordIndex);
+                point.Add ("vertexId", static_cast<Int64> ((*memo.vertexIDs)[coordIndex]));
+                points (point);
+            }
+            contours (contour);
+            startIndex = endIndex + 1;
+        }
+        polygonVertexIdsOfElements (polygonVertexIds);
+    }
+
+    return response;
+}
+
 ConvertRevealOffsetsCommand::ConvertRevealOffsetsCommand () :
     CommandBase (CommonSchema::Used)
 {

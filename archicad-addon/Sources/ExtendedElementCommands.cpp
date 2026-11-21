@@ -2376,6 +2376,47 @@ GS::Optional<GS::UniString> PopulateAssociativeDimensionMemo (
     return {};
 }
 
+// Archicad accepts an associative witness point it cannot attach to its element and stores it
+// without a base element at (0, 0), or as a static point, and ACAPI_Element_Create reports
+// success: on a polygon element (a Slab) when nodeId is not the vertex ID of the vertex at
+// inIndex, or is given without inIndex. A point on a polygon edge (line true) without a
+// coordinate keeps its base element but is placed at (0, 0). This reads the created dimension
+// back and names the first such witness point (#3004).
+GS::Optional<GS::UniString> CheckAssociativeDimensionPoints (
+    const API_Guid& dimensionGuid,
+    const GS::Array<AssociativeDimensionPoint>& points)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (dimensionGuid, &memo) != NoError || memo.dimElems == nullptr || *memo.dimElems == nullptr) {
+        return {};
+    }
+
+    const UIndex nDimElems = static_cast<UIndex> (BMhGetSize (reinterpret_cast<GSHandle> (memo.dimElems)) / sizeof (API_DimElem));
+    for (UIndex pointIndex = 0; pointIndex < points.GetSize () && pointIndex < nDimElems; ++pointIndex) {
+        const AssociativeDimensionPoint& point = points[pointIndex];
+        if (point.isStatic) {
+            continue;
+        }
+        const API_DimElem& dimElem = (*memo.dimElems)[pointIndex];
+        if (dimElem.base.base.guid == APINULLGuid) {
+            return GS::UniString::Printf (
+                "Witness point %d was not attached to its element, so the dimension was not created. "
+                "On a polygon element (a Slab, for example) give inIndex and nodeId together: the index and the vertexId "
+                "of the vertex, as GetPolygonVertexIdsOfElements returns them.", (int) pointIndex);
+        }
+        const bool polygonElement = point.elementType == API_SlabID || point.elementType == API_ZoneID ||
+            point.elementType == API_RoofID || point.elementType == API_MeshID || point.elementType == API_HatchID;
+        if (polygonElement && point.line && !point.hasCoordinate && dimElem.base.loc.x == 0.0 && dimElem.base.loc.y == 0.0) {
+            return GS::UniString::Printf (
+                "Witness point %d is on an edge of its element (line true) but Archicad placed it at (0, 0), so the dimension "
+                "was not created. Give a coordinate on the edge.", (int) pointIndex);
+        }
+    }
+
+    return {};
+}
+
 void TryApplyDimensionFloorIndex (
     const GS::Array<AssociativeDimensionPoint>& points,
     const GS::Optional<double>& floorIndex,
@@ -17108,6 +17149,16 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             createdElement.header.guid = element.header.guid;
             if (ACAPI_Element_Get (&createdElement) != NoError) {
                 elements.Push (CreateErrorResponse (APIERR_GENERAL, "The dimension was not created (is a section or elevation window active? Activate a floor plan window and retry)."));
+                continue;
+            }
+
+            // A witness point Archicad could not attach to its element is stored at (0, 0)
+            // without an error (#3004): the dimension is removed again and the point named.
+            const GS::Optional<GS::UniString> pointsError = CheckAssociativeDimensionPoints (element.header.guid, witnessPoints);
+            if (pointsError.HasValue ()) {
+                GS::Array<API_Guid> createdDimension = { element.header.guid };
+                ACAPI_Element_Delete (createdDimension);
+                elements.Push (CreateErrorResponse (APIERR_BADPARS, pointsError.Get ()));
                 continue;
             }
 
