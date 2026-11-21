@@ -1,0 +1,74 @@
+{
+  "title": "GetDetailsOfElements reads back the stair settings CreateStairs and ModifyStairs write",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a straight stair with numbering, extra tread and tread and riser settings",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 780.0, "y": 700.0 }, { "x": 786.0, "y": 700.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "extraTopTread": true,
+            "numberingType": "Risers",
+            "treads": [ { "role": "Run", "thickness": 0.05, "nosingType": "ByValue", "nosingValue": 0.03 } ],
+            "risers": [ { "role": "Run", "thickness": 0.025, "position": "BehindTread" } ]
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" } ]
+    },
+    {
+      "id": "read the settings back (the walking line is only read: Archicad 29.0.0 5101 keeps neither a walkingLinePosition nor a walkingLineOffset given through the API)",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.extraTopTread", "eq": true, "name": "extra top tread read" },
+        { "path": "detailsOfElements[0].details.walkingLinePosition", "exists": true, "name": "walking line position read" },
+        { "path": "detailsOfElements[0].details.walkingLineOffset", "exists": true, "name": "walking line offset read" },
+        { "path": "detailsOfElements[0].details.numberingType", "eq": "Risers", "name": "numbering read" },
+        { "path": "detailsOfElements[0].details.inputDirection", "exists": true, "name": "input direction read" },
+        { "path": "detailsOfElements[0].details.treads", "len": 2, "name": "tread settings of the flights and of the landings" },
+        { "path": "detailsOfElements[0].details.treads[0].role", "eq": "Run", "name": "the first tread settings are the flights'" },
+        { "path": "detailsOfElements[0].details.treads[0].thickness", "approx": 0.05, "name": "flight tread thickness read" },
+        { "path": "detailsOfElements[0].details.treads[0].nosingValue", "approx": 0.03, "name": "flight nosing read" },
+        { "path": "detailsOfElements[0].details.risers[0].role", "eq": "Run", "name": "the first riser settings are the flights'" },
+        { "path": "detailsOfElements[0].details.risers[0].thickness", "approx": 0.025, "name": "flight riser thickness read" },
+        { "path": "detailsOfElements[0].details.risers[0].position", "eq": "BehindTread", "name": "flight riser position read" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: number the treads, thicker flight treads",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "numberingType": "Treads",
+            "treads": [ { "role": "Run", "thickness": 0.06 } ]
+          }
+        ]
+      },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "change accepted" } ]
+    },
+    {
+      "id": "read the changed settings back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.numberingType", "eq": "Treads", "name": "numbering now on the treads" },
+        { "path": "detailsOfElements[0].details.treads[0].thickness", "approx": 0.06, "name": "flight tread thickness changed" },
+        { "path": "detailsOfElements[0].details.treads[0].nosingValue", "approx": 0.03, "name": "flight nosing kept" },
+        { "path": "detailsOfElements[0].details.extraTopTread", "eq": true, "name": "extra top tread kept" }
+      ]
+    }
+  ]
+}
