@@ -24,11 +24,6 @@ function CreateTextElement(parentElement, elementType, className, text) {
     return elem;
 }
 
-function PlainText(html) {
-    // Descriptions may contain markup; DOMParser builds an inert document.
-    return new DOMParser().parseFromString(html || '', 'text/html').body.textContent;
-}
-
 // ---- The raw schema tree (json-schema-view-js), shown under "Raw schema" ----
 
 function ResolveReferences(schemaDefinitions, parentNode, parentKey, resolvedKeys) {
@@ -710,7 +705,7 @@ function CommandUrl(name) {
 function RenderCommandContent(parentElement, entry, page) {
     let command = entry.command;
     let content = CreateElement(parentElement, 'div', 'command_content', null);
-    CreateElement(content, 'div', 'command_description', command.description);
+    CreateTextElement(content, 'div', 'command_description', command.description);
 
     // The example and the JSON to send, first.
     CreateTextElement(content, 'h4', 'command_section_title', 'Example');
@@ -883,7 +878,9 @@ function BuildGroups(commands) {
             groups.push(displayGroup);
         }
         for (let command of group.commands) {
-            let descriptionText = PlainText(command.description);
+            // Descriptions are plain text (registered in AddOnMain.cpp); '<LAYOUTID>' is an
+            // Autotext key, not markup, so they are never parsed as HTML (#2313).
+            let descriptionText = command.description || '';
             displayGroup.entries.push({
                 command: command,
                 groupName: group.name,
