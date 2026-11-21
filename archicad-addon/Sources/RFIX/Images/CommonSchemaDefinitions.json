@@ -16476,7 +16476,7 @@
     },
     "StairLayoutSettings": {
         "type": "object",
-        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (part of API_StairLayoutData). Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout.",
+        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (API_StairLayoutData without its visibility and isAutoOnStoryVisibility, which storyVisibility sets): the shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides. Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout, with the same keys.",
         "properties": {
             "storyVisibility": {
                 "type": "string",
@@ -16502,9 +16502,374 @@
             "showStructure": {
                 "type": "boolean",
                 "description": "Whether the stair structures are shown."
+            },
+            "gridTypeAbove": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories above the stair's relevant stories (Unknown is refused)."
+            },
+            "gridTypeTop": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the top relevant story (Unknown is refused)."
+            },
+            "gridTypeMiddle": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the middle relevant stories (Unknown is refused)."
+            },
+            "gridTypeBottom": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the bottom relevant story (Unknown is refused)."
+            },
+            "gridTypeBelow": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories below the stair's relevant stories (Unknown is refused)."
+            },
+            "breakLineAngleType": {
+                "type": "string",
+                "description": "How the angle of the break line is given: by breakLineAngle to the vertical or to the horizontal, or worked out from breakLineAngleNumberOfGoings.",
+                "enum": ["AngleToVertical", "AngleToHorizontal", "NumberOfGoings"]
+            },
+            "breakLineAngle": {
+                "type": "number",
+                "description": "The angle of the break line, used when breakLineAngleType is AngleToVertical or AngleToHorizontal."
+            },
+            "breakLineAngleNumberOfGoings": {
+                "type": "integer",
+                "description": "The number of goings the break line crosses, used when breakLineAngleType is NumberOfGoings.",
+                "minimum": 1
+            },
+            "breakLineDistance": {
+                "type": "number",
+                "description": "The gap of the break line."
+            },
+            "breakLinePositionType": {
+                "type": "string",
+                "description": "Where the break line is: at the floor plan cut plane height, at a custom height or at a given riser.",
+                "enum": ["FloorPlanCutPlaneHeight", "CustomHeight", "AtNthRiser"]
+            },
+            "upperBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the upper break line, used when breakLinePositionType is CustomHeight."
+            },
+            "lowerBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the lower break line, used when breakLinePositionType is CustomHeight."
+            },
+            "upperBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the upper break line, used when breakLinePositionType is AtNthRiser.",
+                "minimum": 0
+            },
+            "lowerBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the lower break line, used when breakLinePositionType is AtNthRiser.",
+                "minimum": 0
+            },
+            "overrideLineType": {
+                "type": "boolean",
+                "description": "Whether lineTypeId overrides the line types of the stair's components."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The override line type: a line type of the project."
+            },
+            "overridePen": {
+                "type": "boolean",
+                "description": "Whether pen overrides the line pens of the stair's components."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The override line pen.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "overrideSymbolFill": {
+                "type": "boolean",
+                "description": "Whether symbolFillId and its pens override the symbol fills of the stair's components."
+            },
+            "symbolFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The override symbol fill: a fill type of the project."
+            },
+            "symbolFillPen": {
+                "type": "integer",
+                "description": "The foreground pen of the override symbol fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "symbolFillBackgroundPen": {
+                "type": "integer",
+                "description": "The background pen of the override symbol fill.",
+                "minimum": -1,
+                "maximum": 255
             }
         },
         "additionalProperties": false
+    },
+    "StairStructureSymbolSettings": {
+        "type": "object",
+        "description": "The line types, pens and fills of one structure symbol of a Stair that CreateStairs and ModifyStairs write (API_StairStructureSymbolData of API_StairType::structSymbData), for one structure type and view. Only the given fields are changed; GetDetailsOfElements reads them back in structureSymbols, with the same keys.",
+        "properties": {
+            "structureType": {
+                "type": "string",
+                "description": "The structure the symbol is for: the structure under the stair or the stringers.",
+                "enum": ["UnderStructure", "Stringer"]
+            },
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the symbol is for (Unknown is refused)."
+            },
+            "visibleLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the visible structure lines: a line type of the project."
+            },
+            "visibleLinePen": {
+                "type": "integer",
+                "description": "Pen of the visible structure lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "hiddenLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the hidden structure lines: a line type of the project."
+            },
+            "hiddenLinePen": {
+                "type": "integer",
+                "description": "Pen of the hidden structure lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "visibleFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the visible structure: a fill type of the project."
+            },
+            "visibleFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the visible structure fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "visibleFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the visible structure fill.",
+                "minimum": -1,
+                "maximum": 255
+            },
+            "hiddenFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the hidden structure: a fill type of the project."
+            },
+            "hiddenFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the hidden structure fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "hiddenFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the hidden structure fill.",
+                "minimum": -1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": ["structureType", "view"]
+    },
+    "StairMonolithStructureSymbolSettings": {
+        "type": "object",
+        "description": "The line types, pens and fills of one symbol of a Stair's monolithic structure that CreateStairs and ModifyStairs write (API_StairMonolithStructureSymbolData of API_StairType::monolithStructureSymbolData), for one view and visible or hidden part. Only the given fields are changed; GetDetailsOfElements reads them back in monolithStructureSymbols, with the same keys.",
+        "properties": {
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the symbol is for (Unknown is refused)."
+            },
+            "part": {
+                "$ref": "#/StairSymbolPart",
+                "description": "The visible or the hidden part of the structure (Unknown is refused)."
+            },
+            "goingLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the going lines: a line type of the project."
+            },
+            "goingLinePen": {
+                "type": "integer",
+                "description": "Pen of the going lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "goingNosingLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the nosing lines: a line type of the project."
+            },
+            "goingNosingLinePen": {
+                "type": "integer",
+                "description": "Pen of the nosing lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "connectionLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the connection lines: a line type of the project."
+            },
+            "connectionLinePen": {
+                "type": "integer",
+                "description": "Pen of the connection lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "connectionDetailLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the connection lines on detail views: a line type of the project."
+            },
+            "connectionDetailLinePen": {
+                "type": "integer",
+                "description": "Pen of the connection lines on detail views.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "drainingFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the draining: a fill type of the project."
+            },
+            "drainingFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the draining fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "drainingFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the draining fill.",
+                "minimum": -1,
+                "maximum": 255
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the contour lines: a line type of the project."
+            },
+            "contourLinePen": {
+                "type": "integer",
+                "description": "Pen of the contour lines.",
+                "minimum": 1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": ["view", "part"]
+    },
+    "StairStructureVisibilitySettings": {
+        "type": "object",
+        "description": "Which structure symbols of a Stair are shown on which of its relevant stories, for one view, that CreateStairs and ModifyStairs write (API_StairStructureComponentSettingsVisibility of API_StairType::structureVisibilityOnStories). Only the given fields of the given items are changed; GetDetailsOfElements reads them back in structureVisibilityOnStories, with the same keys.",
+        "properties": {
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the visibility is for (Unknown is refused)."
+            },
+            "uniformSymbolRepresentationEnabled": {
+                "type": "boolean",
+                "description": "Whether one structure symbol representation is used on every story (Archicad's uniform symbol representation) instead of the settings per story range."
+            },
+            "stories": {
+                "type": "array",
+                "description": "The visibility per story range relative to the stair's relevant stories (API_StairStructSymbRelevantStoriesID). Only the given story ranges are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "relevantStories": {
+                            "type": "string",
+                            "description": "The story range: every story, the stories below the relevant stories, the bottom, middle and top relevant story, or the stories above them.",
+                            "enum": ["AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant"]
+                        },
+                        "structures": {
+                            "type": "array",
+                            "description": "Whether the lines of each structure are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structure": {
+                                        "type": "string",
+                                        "description": "The structure: beam, cantilevered, stringer or monolithic.",
+                                        "enum": ["Beam", "Cantilevered", "Stringer", "Monolith"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its lines are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structure", "visible"]
+                            }
+                        },
+                        "fills": {
+                            "type": "array",
+                            "description": "Whether the fills of each structure type are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structureType": {
+                                        "type": "string",
+                                        "description": "The structure under the stair or the stringers.",
+                                        "enum": ["UnderStructure", "Stringer"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its fill is shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structureType", "visible"]
+                            }
+                        },
+                        "monolithParts": {
+                            "type": "array",
+                            "description": "Which parts of a monolithic structure are shown, per visible or hidden part. Only the given fields are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "connectionVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the connection lines are shown."
+                                    },
+                                    "drainingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the draining is shown."
+                                    },
+                                    "landingLineVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the landing lines are shown."
+                                    },
+                                    "structureGoingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the going lines of the structure are shown."
+                                    },
+                                    "structureGoingNosingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the nosing lines of the structure are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["relevantStories"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["view"]
     },
     "StairLayout": {
         "type": "object",

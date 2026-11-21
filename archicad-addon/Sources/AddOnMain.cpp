@@ -1101,7 +1101,7 @@ GSErrCode Initialize (void)
             "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge "
             "and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, "
             "the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
-            "and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components); "
+            "and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides), and the line types, pens and fills of the structure symbols (structureSymbols, monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories); "
             "settings not given come from the Stair tool defaults or the favorite."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
@@ -1397,10 +1397,12 @@ GSErrCode Initialize (void)
             "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, "
             "and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), "
             "and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on "
-            "and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. "
+            "and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) "
+            "and the line type, pen and symbol fill overrides, and the line types, pens and fills of the structure symbols per structure type and view (structureSymbols) and of the monolithic structure per view and visible or hidden part (monolithStructureSymbols), and which structures, fills and monolithic parts are shown on each range of the relevant stories, per view (structureVisibilityOnStories); "
+            "these are read back, and one Archicad did not apply is reported as an error. "
             "CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. "
             "A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. "
-            "Not written by this command: the baseline with its landings and winders, and the break marks, lines and fills of the floor plan symbol; "
+            "Not written by this command: the baseline with its landings and winders; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
         err |= RegisterCommand<RecreateStairsCommand> (
