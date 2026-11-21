@@ -114,7 +114,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "primaryPattern",
       "set": "primaryPattern",
       "apiMember": "API_ElementMemo::cWSegPrimaryPattern",
       "apiDescription": "Curtain Wall primary segment pattern.",
@@ -124,7 +124,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "secondaryPattern",
       "set": "secondaryPattern",
       "apiMember": "API_ElementMemo::cWSegSecondaryPattern",
       "apiDescription": "Curtain Wall secondary segment pattern.",
@@ -134,7 +134,7 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "cells",
       "set": "cells",
       "apiMember": "API_ElementMemo::cWSegPatternCells",
       "apiDescription": "Curtain Wall segment pattern cells.",

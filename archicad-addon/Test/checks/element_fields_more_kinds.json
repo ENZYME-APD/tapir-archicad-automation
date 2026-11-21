@@ -1,0 +1,293 @@
+{
+  "title": "GetElementFields, SetElementFields and the defaults commands read and write the optional pens and materials (API_OverriddenPen, API_OverriddenAttribute) as {hasValue, value}, the text of a dimension note through its GS::UniString pointer (note1.contentUStr), and the two-dimensional arrays of a stair (structSymbData)",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "create a wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1700.0, "y": 1700.0 }, "endCoordinate": { "x": 1706.0, "y": 1700.0 }, "floorIndex": 0, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "a surface",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": { "surface": "attributes[0].index" },
+      "expect": [
+        { "path": "attributes[0].index", "exists": true, "name": "the project has a surface" }
+      ]
+    },
+    {
+      "id": "read the wall's optional materials and cut fill pens",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ], "fields": [ "refMat", "oppMat", "sidMat", "cutFillPen", "cutFillBackgroundPen", "height" ] },
+      "expect": [
+        { "path": "elementFields[0].missingFields", "exists": false, "name": "the optional materials and pens are in the wall's table" },
+        { "path": "elementFields[0].fields.refMat.hasValue", "exists": true, "name": "an OverriddenAttribute is read as an object with hasValue" },
+        { "path": "elementFields[0].fields.refMat.value", "exists": true, "name": "and value" },
+        { "path": "elementFields[0].fields.cutFillPen.hasValue", "exists": true, "name": "an OverriddenPen is read as an object with hasValue" },
+        { "path": "elementFields[0].fields.cutFillPen.value", "exists": true, "name": "and value" },
+        { "path": "elementFields[0].fields.height", "approx": 3.0, "name": "the other kinds are read as before" }
+      ]
+    },
+    {
+      "id": "SetElementFields: override the reference side material and the cut fill pen",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${w}" }, "fields": { "refMat": { "hasValue": true, "value": "${surface}" }, "cutFillPen": { "hasValue": true, "value": 7 } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "both overrides kept by Archicad" }
+      ]
+    },
+    {
+      "id": "the wall after the change",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ], "fields": [ "refMat", "cutFillPen" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.refMat.hasValue", "eq": true, "name": "the material is overridden" },
+        { "path": "elementFields[0].fields.refMat.value", "eq": "${surface}", "name": "by the given surface" },
+        { "path": "elementFields[0].fields.cutFillPen.hasValue", "eq": true, "name": "the cut fill pen is overridden" },
+        { "path": "elementFields[0].fields.cutFillPen.value", "eq": 7, "name": "by pen 7" }
+      ]
+    },
+    {
+      "id": "SetElementFields: hasValue alone turns the material override off",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${w}" }, "fields": { "refMat": { "hasValue": false } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the override is turned off" }
+      ]
+    },
+    {
+      "id": "the material override is off, the pen override is kept",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ], "fields": [ "refMat", "cutFillPen" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.refMat.hasValue", "eq": false, "name": "the material is not overridden any more" },
+        { "path": "elementFields[0].fields.cutFillPen.value", "eq": 7, "name": "the pen override is unchanged" }
+      ]
+    },
+    {
+      "id": "SetElementFields dry run: a value given alone turns the override on",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${w}" }, "fields": { "sidMat": { "value": "${surface}" } } }
+        ],
+        "dryRun": true
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the dry run is accepted" },
+        { "path": "executionResults[0].wouldChange.newValue.sidMat.hasValue", "eq": true, "name": "a value given without hasValue sets hasValue" },
+        { "path": "executionResults[0].wouldChange.newValue.sidMat.value", "eq": "${surface}", "name": "to the given surface" }
+      ]
+    },
+    {
+      "id": "create a level dimension with the custom text FBOK",
+      "command": "CreateLevelDimensions",
+      "params": {
+        "levelDimensionsData": [
+          { "position": { "x": 1720.0, "y": 1700.0 }, "level": 0.5, "floorIndex": 0, "customText": "FBOK" }
+        ]
+      },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read the text of the level dimension through its GS::UniString pointer",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ], "fields": [ "note1.contentUStr", "note2.contentUStr", "note1.contentType", "pen" ] },
+      "expect": [
+        { "path": "elementFields[0].structName", "eq": "API_LevelDimensionType", "name": "read from the level dimension struct" },
+        { "path": "elementFields[0].missingFields", "exists": false, "name": "the GS::UniString pointers are in the table" },
+        { "path": "elementFields[0].inactiveFields", "exists": false, "name": "and are read" },
+        { "path": "elementFields[0].fields.pen", "exists": true, "name": "the other kinds are read as before" }
+      ]
+    },
+    {
+      "id": "SetElementFields: a new custom text through note1.contentUStr",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${l}" }, "fields": { "note1.contentType": 1, "note1.contentUStr": "TAPIR UNISTRING" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the text is kept: it is read back through the pointer and compared with the one written" }
+      ]
+    },
+    {
+      "id": "the level dimension's text after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Custom", "name": "custom content" },
+        { "path": "detailsOfElements[0].details.customText", "eq": "TAPIR UNISTRING", "name": "the text written through note1.contentUStr" }
+      ]
+    },
+    {
+      "id": "SetElementFields: values that do not fit the new kinds are refused",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${w}" }, "fields": { "refMat": 5 } },
+          { "elementId": { "guid": "${w}" }, "fields": { "cutFillPen": { "hasValue": true, "value": 70000 } } },
+          { "elementId": { "guid": "${l}" }, "fields": { "note1.contentUStr": 3 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "a number for an optional material refused" },
+        { "path": "executionResults[0].error.message", "contains": "hasValue", "name": "the message gives the object's members" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a pen out of range refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a number for a text refused" }
+      ]
+    },
+    {
+      "id": "the refused values changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.customText", "eq": "TAPIR UNISTRING", "name": "the text is unchanged" }
+      ]
+    },
+    {
+      "id": "create a stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 1740.0, "y": 1700.0 }, { "x": 1744.64, "y": 1700.0 } ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.1,
+            "stepNum": 16,
+            "riserHeight": 0.175,
+            "treadDepth": 0.29
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "read items of the stair's two-dimensional arrays",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${s}" } } ],
+        "fields": [
+          "structSymbData[0][0].visibleLinePen",
+          "structSymbData[1][1].hiddenFillPen",
+          "monolithStructureSymbolData[1][1].contourLinePen",
+          "structureVisibilityOnStories[0].structureVisibilityOnStories[0].structureVisibility[1][3]",
+          "structure[1][2].thickness"
+        ]
+      },
+      "expect": [
+        { "path": "elementFields[0].structName", "eq": "API_StairType", "name": "read from the stair struct" },
+        { "path": "elementFields[0].missingFields", "exists": false, "name": "the items of the two-dimensional arrays are in the table" }
+      ]
+    },
+    {
+      "id": "SetElementFields: a pen of the stair's structure symbol data",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${s}" }, "fields": { "structSymbData[0][0].visibleLinePen": 7 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the pen is kept: it is read back and compared with the one written" }
+      ]
+    },
+    {
+      "id": "SetElementFields: the structType of a stair's default structure is read-only",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${s}" }, "fields": { "structure[0][0].structType": 1 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the field that chooses the union member is refused" },
+        { "path": "executionResults[0].error.message", "contains": "read-only", "name": "the message says it is read-only" }
+      ]
+    },
+    {
+      "id": "the optional cut fill pen of the Wall defaults",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Wall", "LevelDimension" ], "fields": [ "cutFillPen", "note1.contentUStr" ] },
+      "save": {
+        "penHas0": "fieldsOfElementDefaults[0].fields.cutFillPen.hasValue",
+        "penValue0": "fieldsOfElementDefaults[0].fields.cutFillPen.value"
+      },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].fields.cutFillPen.hasValue", "exists": true, "name": "the defaults' optional pen is read as an object" },
+        { "path": "fieldsOfElementDefaults[0].missingFields[0]", "eq": "note1.contentUStr", "name": "a wall has no note1.contentUStr" },
+        { "path": "fieldsOfElementDefaults[1].structName", "eq": "API_LevelDimensionType", "name": "the Level Dimension defaults are read with their GS::UniString pointers" },
+        { "path": "fieldsOfElementDefaults[1].missingFields[0]", "eq": "cutFillPen", "name": "a level dimension has no cutFillPen" }
+      ]
+    },
+    {
+      "id": "SetFieldsOfElementDefaults: override the cut fill pen of the Wall defaults",
+      "command": "SetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "fieldsOfElementDefaults": [ { "elementType": "Wall", "fields": { "cutFillPen": { "hasValue": true, "value": 9 } } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the override is kept by Archicad" }
+      ]
+    },
+    {
+      "id": "the Wall defaults after the change",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "Wall" ], "fields": [ "cutFillPen" ] },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].fields.cutFillPen.hasValue", "eq": true, "name": "the cut fill pen is overridden" },
+        { "path": "fieldsOfElementDefaults[0].fields.cutFillPen.value", "eq": 9, "name": "by pen 9" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetFieldsOfElementDefaults",
+      "params": { "fieldsOfElementDefaults": [ { "elementType": "Wall", "fields": { "cutFillPen": { "hasValue": "${penHas0}", "value": "${penValue0}" } } } ] }
+    }
+  ]
+}

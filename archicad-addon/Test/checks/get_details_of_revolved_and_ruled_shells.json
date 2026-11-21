@@ -1,0 +1,108 @@
+{
+  "title": "GetDetailsOfElements reads the profile, axis and angles of a revolved shell and both profiles and planes of a ruled shell (#2859)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "half-turn revolved shell and ruled shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Revolved",
+            "floorIndex": 0,
+            "thickness": 0.1,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1104.0, "y": 1064.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 2.0, "y": 0.0 }, { "x": 2.0, "y": 3.0 } ]
+            },
+            "revolutionAngle": 3.141592653589793,
+            "beginAngle": 0.5,
+            "segmentsByCircle": 24
+          },
+          {
+            "shellClass": "Ruled",
+            "floorIndex": 0,
+            "thickness": 0.1,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1112.0, "y": 1068.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ]
+            },
+            "profilePlane": { "origin": { "x": 0.0, "y": 0.0, "z": 0.0 } },
+            "secondProfile": {
+              "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 1.5, "y": 0.25 }, { "x": 3.0, "y": 0.5 } ]
+            },
+            "secondProfilePlane": { "origin": { "x": 0.0, "y": 0.0, "z": 3.0 } },
+            "morphingRule": "Smooth"
+          }
+        ]
+      },
+      "save": {
+        "rev": "elements[0].elementId.guid",
+        "rul": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "revolved shell created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "ruled shell created" }
+      ]
+    },
+    {
+      "id": "the revolved shell's geometry",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rev}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Revolved" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.x", "approx": 1104.0, "name": "base plane (x)" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.y", "approx": 1064.0, "name": "base plane (y)" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 2, "name": "profile: the two points given" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[0].x", "approx": 2.0, "name": "profile radius at the bottom" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].x", "approx": 2.0, "name": "profile radius at the top" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].y", "approx": 3.0, "name": "profile height" },
+        { "path": "detailsOfElements[0].details.profile.closed", "eq": false, "name": "profile open" },
+        { "path": "detailsOfElements[0].details.axis.zAxis.y", "approx": 1.0, "tol": 1e-6, "name": "default axis: the base plane's Y axis" },
+        { "path": "detailsOfElements[0].details.revolutionAngle", "approx": 3.141592653589793, "tol": 1e-6, "name": "half turn read back" },
+        { "path": "detailsOfElements[0].details.beginAngle", "approx": 0.5, "tol": 1e-6, "name": "begin angle read back" },
+        { "path": "detailsOfElements[0].details.segmentsByCircle", "eq": 24, "name": "segments read back" },
+        { "path": "detailsOfElements[0].details.segmentType", "eq": "ByCircle" },
+        { "path": "detailsOfElements[0].details.distortionAngle", "exists": true },
+        { "path": "detailsOfElements[0].details.slantAngle", "exists": true },
+        { "path": "detailsOfElements[0].details.extrusionVector", "exists": false, "name": "no extrusion on a revolved shell" },
+        { "path": "detailsOfElements[0].details.secondProfile", "exists": false, "name": "no second profile on a revolved shell" }
+      ]
+    },
+    {
+      "id": "the ruled shell's geometry",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rul}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Ruled" },
+        { "path": "detailsOfElements[0].details.basePlane.origin.x", "approx": 1112.0, "name": "base plane (x)" },
+        { "path": "detailsOfElements[0].details.profile.coordinates", "len": 2, "name": "first profile: two points" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].x", "approx": 3.0, "name": "first profile end (x)" },
+        { "path": "detailsOfElements[0].details.profile.coordinates[1].y", "approx": 0.0, "name": "first profile end (y)" },
+        { "path": "detailsOfElements[0].details.secondProfile.coordinates", "len": 3, "name": "second profile: three points" },
+        { "path": "detailsOfElements[0].details.secondProfile.coordinates[2].x", "approx": 3.0, "name": "second profile end (x)" },
+        { "path": "detailsOfElements[0].details.secondProfile.coordinates[2].y", "approx": 0.5, "name": "second profile end (y)" },
+        { "path": "detailsOfElements[0].details.profilePlane.origin.z", "approx": 0.0, "name": "first profile plane at z 0" },
+        { "path": "detailsOfElements[0].details.secondProfilePlane.origin.z", "approx": 3.0, "name": "second profile plane at z 3" },
+        { "path": "detailsOfElements[0].details.secondProfilePlane.zAxis.z", "approx": 1.0, "tol": 1e-6, "name": "second profile plane horizontal" },
+        { "path": "detailsOfElements[0].details.morphingRule", "eq": "Smooth" },
+        { "path": "detailsOfElements[0].details.axis", "exists": false, "name": "no axis on a ruled shell" },
+        { "path": "detailsOfElements[0].details.revolutionAngle", "exists": false, "name": "no revolution angle on a ruled shell" }
+      ]
+    },
+    {
+      "id": "no shell was added by reading",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Shell" },
+      "expect": [
+        { "path": "elements", "len": 2 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,400 @@
+{
+  "title": "GetDetailsOfElements reads and ModifyRoofs writes the edge types of a multi-plane roof's contour, keeping its contour, pivot polygon and planes (#2454)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [
+    "Roof"
+  ],
+  "steps": [
+    {
+      "id": "a multi-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              {
+                "x": 940.0,
+                "y": 900.0
+              },
+              {
+                "x": 948.0,
+                "y": 900.0
+              },
+              {
+                "x": 948.0,
+                "y": 906.0
+              },
+              {
+                "x": 940.0,
+                "y": 906.0
+              }
+            ],
+            "eavesOverhang": 0.3,
+            "levels": [
+              {
+                "levelHeight": 10.0,
+                "levelAngle": 0.5
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "r": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "multi-plane roof created"
+        }
+      ]
+    },
+    {
+      "id": "one edge type per contour edge",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${r}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "cx": "detailsOfElements[0].details.polygonOutline[2].x",
+        "cy": "detailsOfElements[0].details.polygonOutline[2].y"
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.roofClass",
+          "eq": "MultiPlane"
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes",
+          "len": 4,
+          "name": "one edge type per contour edge"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline",
+          "len": 5,
+          "name": "the contour has four edges"
+        }
+      ]
+    },
+    {
+      "id": "Eaves and Gable on the contour; refused items",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${r}"
+            },
+            "edgeTypes": [
+              "Eaves",
+              "Gable",
+              "Eaves",
+              "Gable"
+            ]
+          },
+          {
+            "elementId": {
+              "guid": "${r}"
+            },
+            "edgeTypes": [
+              "Eaves",
+              "Gable"
+            ]
+          },
+          {
+            "elementId": {
+              "guid": "${r}"
+            },
+            "edgeTypes": [
+              "Eaves",
+              "Eaves",
+              "Eaves",
+              "Eaves"
+            ],
+            "pivotEdges": [
+              {},
+              {},
+              {},
+              {}
+            ]
+          },
+          {
+            "elementId": {
+              "guid": "${r}"
+            },
+            "edgeTypes": [
+              "Eaves",
+              "Eaves",
+              "Eaves",
+              "Eaves"
+            ],
+            "contourPolygon": {
+              "polygonOutline": [
+                {
+                  "x": 939.0,
+                  "y": 899.0
+                },
+                {
+                  "x": 949.0,
+                  "y": 899.0
+                },
+                {
+                  "x": 949.0,
+                  "y": 907.0
+                },
+                {
+                  "x": 939.0,
+                  "y": 907.0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults",
+          "len": 4,
+          "name": "one result per item"
+        },
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "edge types written and read back"
+        },
+        {
+          "path": "executionResults[1].success",
+          "eq": false,
+          "name": "wrong edge count refused"
+        },
+        {
+          "path": "executionResults[2].success",
+          "eq": false,
+          "name": "edge types with pivotEdges refused"
+        },
+        {
+          "path": "executionResults[3].success",
+          "eq": false,
+          "name": "edge types with contourPolygon refused"
+        }
+      ]
+    },
+    {
+      "id": "the edge types are read back; the roof is unchanged",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${r}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.edgeTypes",
+          "len": 4
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[0]",
+          "eq": "Eaves"
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[1]",
+          "eq": "Gable"
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[2]",
+          "eq": "Eaves"
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[3]",
+          "eq": "Gable"
+        },
+        {
+          "path": "detailsOfElements[0].details.roofClass",
+          "eq": "MultiPlane",
+          "name": "still a multi-plane roof"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotPolygonOutline",
+          "len": 5,
+          "name": "pivot polygon kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotPolygonOutline[2].x",
+          "approx": 948.0,
+          "name": "pivot corner kept (x)"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotPolygonOutline[2].y",
+          "approx": 906.0,
+          "name": "pivot corner kept (y)"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline",
+          "len": 5,
+          "name": "contour kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline[2].x",
+          "approx": "${cx}",
+          "name": "contour corner kept (x)"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline[2].y",
+          "approx": "${cy}",
+          "name": "contour corner kept (y)"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotEdges",
+          "len": 4,
+          "name": "pivot edges kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.eavesOverhang",
+          "approx": 0.3,
+          "name": "overhang kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.levels",
+          "len": 1,
+          "name": "levels kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.levels[0].levelAngle",
+          "approx": 0.5,
+          "name": "plane angle (cut) kept"
+        }
+      ]
+    },
+    {
+      "id": "swap them",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${r}"
+            },
+            "edgeTypes": [
+              "Gable",
+              "Eaves",
+              "Gable",
+              "Eaves"
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "edge types changed again"
+        }
+      ]
+    },
+    {
+      "id": "the swapped edge types are read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${r}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[0]",
+          "eq": "Gable"
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[1]",
+          "eq": "Eaves"
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[2]",
+          "eq": "Gable"
+        },
+        {
+          "path": "detailsOfElements[0].details.edgeTypes[3]",
+          "eq": "Eaves"
+        },
+        {
+          "path": "detailsOfElements[0].details.roofClass",
+          "eq": "MultiPlane",
+          "name": "still a multi-plane roof"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotPolygonOutline",
+          "len": 5,
+          "name": "pivot polygon kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotPolygonOutline[2].x",
+          "approx": 948.0,
+          "name": "pivot corner kept (x)"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotPolygonOutline[2].y",
+          "approx": 906.0,
+          "name": "pivot corner kept (y)"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline",
+          "len": 5,
+          "name": "contour kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline[2].x",
+          "approx": "${cx}",
+          "name": "contour corner kept (x)"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline[2].y",
+          "approx": "${cy}",
+          "name": "contour corner kept (y)"
+        },
+        {
+          "path": "detailsOfElements[0].details.pivotEdges",
+          "len": 4,
+          "name": "pivot edges kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.eavesOverhang",
+          "approx": 0.3,
+          "name": "overhang kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.levels",
+          "len": 1,
+          "name": "levels kept"
+        },
+        {
+          "path": "detailsOfElements[0].details.levels[0].levelAngle",
+          "approx": 0.5,
+          "name": "plane angle (cut) kept"
+        }
+      ]
+    }
+  ]
+}

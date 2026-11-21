@@ -1,0 +1,165 @@
+{
+  "title": "Associative dimensions: textStyle font and bold/italic/underline on create and modify, read back per witness point, the other styles kept (#2839)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the index of Arial",
+      "command": "GetFontsByName",
+      "creates": false,
+      "params": { "fontNames": [ "Arial" ] },
+      "save": { "f": "fonts[0].fontIndex" },
+      "expect": [
+        { "path": "fonts[0].fontIndex", "gt": 0, "name": "Arial is loaded" }
+      ]
+    },
+    {
+      "id": "create a linear dimension in Arial, bold",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 820.0, "y": 799.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 820.0, "y": 800.0 } },
+              { "coordinate": { "x": 823.0, "y": 800.0 } },
+              { "coordinate": { "x": 825.0, "y": 800.0 } }
+            ],
+            "textHeight": 2.5,
+            "textStyle": { "fontName": "Arial", "bold": true, "italic": false, "underline": false }
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "the settings of the new dimension",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "dFont": "detailsOfElements[0].details.textStyle.fontIndex" },
+      "expect": [
+        { "expr": "${dFont} - ${f}", "eq": 0, "name": "font is Arial" },
+        { "path": "detailsOfElements[0].details.textStyle.fontName", "contains": "Arial", "name": "font name read back" },
+        { "path": "detailsOfElements[0].details.textStyle.bold", "eq": true, "name": "bold" },
+        { "path": "detailsOfElements[0].details.textStyle.italic", "eq": false, "name": "not italic" },
+        { "path": "detailsOfElements[0].details.textStyle.underline", "eq": false, "name": "not underlined" }
+      ]
+    },
+    {
+      "id": "the witness points of the new dimension",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "p0Font": "dimensionsData[0].witnessPoints[0].textStyle.fontIndex", "p2Font": "dimensionsData[0].witnessPoints[2].textStyle.fontIndex" },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints", "len": 3, "name": "three witness points" },
+        { "expr": "${p0Font} - ${f}", "eq": 0, "name": "first point in Arial" },
+        { "expr": "${p2Font} - ${f}", "eq": 0, "name": "last point in Arial" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.bold", "eq": true, "name": "middle point bold" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.italic", "eq": false, "name": "middle point not italic" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: italic and underlined, not bold",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textStyle": { "bold": false, "italic": true, "underline": true } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "style change accepted" }
+      ]
+    },
+    {
+      "id": "witness points after the style change",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "p1Font": "dimensionsData[0].witnessPoints[1].textStyle.fontIndex" },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.bold", "eq": false, "name": "first point no longer bold" },
+        { "path": "dimensionsData[0].witnessPoints[0].textStyle.italic", "eq": true, "name": "first point italic" },
+        { "path": "dimensionsData[0].witnessPoints[2].textStyle.underline", "eq": true, "name": "last point underlined" },
+        { "expr": "${p1Font} - ${f}", "eq": 0, "name": "font kept" },
+        { "path": "dimensionsData[0].witnessPoints[1].textHeight", "approx": 2.5, "name": "text height kept" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: only underline off",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textStyle": { "underline": false } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "underline change accepted" }
+      ]
+    },
+    {
+      "id": "the other styles are kept",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.underline", "eq": false, "name": "underline off" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.italic", "eq": true, "name": "still italic" },
+        { "path": "dimensionsData[0].witnessPoints[1].textStyle.bold", "eq": false, "name": "still not bold" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: a font no loaded font has",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textStyle": { "fontName": "Tapir Check No Such Font" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown font refused" }
+      ]
+    },
+    {
+      "id": "GetFontsByName: the refused font is still not loaded",
+      "command": "GetFontsByName",
+      "creates": false,
+      "params": { "fontNames": [ "Tapir Check No Such Font" ] },
+      "expect": [
+        { "path": "fonts[0].error", "exists": true, "name": "unknown font not found after a refusal" },
+        { "path": "fonts[0].fontIndex", "exists": false, "name": "no index for the unknown font" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: the same unknown font again",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textStyle": { "fontName": "Tapir Check No Such Font" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown font refused the second time" }
+      ]
+    },
+    {
+      "id": "the refused font changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "afterFont": "detailsOfElements[0].details.textStyle.fontIndex" },
+      "expect": [
+        { "expr": "${afterFont} - ${f}", "eq": 0, "name": "still Arial" }
+      ]
+    }
+  ]
+}

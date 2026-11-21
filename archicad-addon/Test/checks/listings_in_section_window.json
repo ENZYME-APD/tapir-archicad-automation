@@ -1,0 +1,147 @@
+{
+  "title": "GetElementsByType and GetElementsByCriteria find a wall from a Section window, as GetAllElements does, and GetElementsByCriteria takes databases (#2948)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "CutPlane" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "a wall along +x",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 940.0, "y": 940.0 }, "endCoordinate": { "x": 946.0, "y": 940.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "a section across the wall",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          { "startCoordinate": { "x": 943.0, "y": 937.0 }, "endCoordinate": { "x": 943.0, "y": 943.0 }, "name": "TapirCheck 2948", "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "its viewpoint",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Section" ] },
+      "save": { "sectionDb": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases", "len": 1 },
+        { "path": "databases[0].databaseId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the Section window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${sectionDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "GetAllElements reports the wall, the owner of its section element",
+      "command": "GetAllElements",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "the section shows something" }
+      ]
+    },
+    {
+      "id": "GetElementsByType Wall finds the same wall (was empty)",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one wall, not none" },
+        { "path": "elements[0].elementId.guid", "eq": "${w1}", "name": "the wall itself, not its section element" }
+      ]
+    },
+    {
+      "id": "GetElementsByType Slab still finds nothing",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Slab" },
+      "expect": [
+        { "path": "elements", "len": 0, "name": "only owners of the asked type" }
+      ]
+    },
+    {
+      "id": "GetElementsByCriteria with one type (was count 0)",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": { "types": [ "Wall" ] },
+      "expect": [
+        { "path": "count", "eq": 1, "name": "one wall" },
+        { "path": "elements[0].elementId.guid", "eq": "${w1}", "name": "the wall itself" }
+      ]
+    },
+    {
+      "id": "GetElementsByCriteria with two types (was count 0)",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": { "types": [ "Wall", "Door" ] },
+      "expect": [
+        { "path": "count", "eq": 1, "name": "the wall, no doors" },
+        { "path": "elements[0].elementId.guid", "eq": "${w1}", "name": "the wall itself" }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "GetElementsByCriteria in the floor plan",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": { "types": [ "Wall" ] },
+      "expect": [
+        { "path": "count", "eq": 1, "name": "one wall" },
+        { "path": "elements[0].elementId.guid", "eq": "${w1}" },
+        { "path": "executionResultForDatabases", "exists": false, "name": "no database results without databases" }
+      ]
+    },
+    {
+      "id": "GetElementsByCriteria with the section database, from the floor plan",
+      "command": "GetElementsByCriteria",
+      "creates": false,
+      "params": { "types": [ "Wall" ], "databases": [ { "databaseId": { "guid": "${sectionDb}" } } ] },
+      "expect": [
+        { "path": "executionResultForDatabases", "len": 1 },
+        { "path": "executionResultForDatabases[0].success", "eq": true, "name": "the section database was read" },
+        { "path": "count", "eq": 1, "name": "one wall" },
+        { "path": "elements[0].elementId.guid", "eq": "${w1}", "name": "the wall itself" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    }
+  ]
+}
