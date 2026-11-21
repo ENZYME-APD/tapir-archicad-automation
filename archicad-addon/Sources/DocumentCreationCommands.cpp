@@ -857,6 +857,59 @@ GS::ObjectState CreateLayoutCommand::Execute (const GS::ObjectState& parameters,
     return CreateDatabasesResponse (databases);
 }
 
+// Writes the subset settings given in item (CreateLayoutSubset's fields, all optional) into subSet;
+// the fields that are not given keep their value. Shared by CreateLayoutSubset, which starts from the
+// subset defaults, and ChangeLayoutSubsetSettings, which starts from the subset's own settings.
+static void ApplyLayoutSubsetSettings (const GS::ObjectState& item, API_SubSet& subSet)
+{
+    SetUCharProperty (&item, "name", subSet.name);
+
+    // ownPrefix — backward compat: if ownPrefix string given without explicit addOwnPrefix, set it true
+    if (item.Contains ("ownPrefix")) {
+        subSet.addOwnPrefix = true;
+        SetUCharProperty (&item, "ownPrefix", subSet.ownPrefix);
+    }
+    bool addOwnPrefixExplicit = false;
+    if (item.Get ("addOwnPrefix", addOwnPrefixExplicit)) {
+        subSet.addOwnPrefix = addOwnPrefixExplicit;
+    }
+
+    // customNumber — backward compat: if customNumber string given without explicit customNumbering, set it true
+    if (item.Contains ("customNumber")) {
+        subSet.customNumbering = true;
+        SetUCharProperty (&item, "customNumber", subSet.customNumber);
+    }
+    bool customNumberingExplicit = false;
+    if (item.Get ("customNumbering", customNumberingExplicit)) {
+        subSet.customNumbering = customNumberingExplicit;
+    }
+
+    // numberingStyle
+    GS::UniString numberingStyleStr;
+    if (item.Get ("numberingStyle", numberingStyleStr)) {
+        if      (numberingStyleStr == "abc")  subSet.numberingStyle = API_NS_abc;
+        else if (numberingStyleStr == "ABC")  subSet.numberingStyle = API_NS_ABC;
+        else if (numberingStyleStr == "1")    subSet.numberingStyle = API_NS_1;
+        else if (numberingStyleStr == "01")   subSet.numberingStyle = API_NS_01;
+        else if (numberingStyleStr == "001")  subSet.numberingStyle = API_NS_001;
+        else if (numberingStyleStr == "0001") subSet.numberingStyle = API_NS_0001;
+        else if (numberingStyleStr == "noID") subSet.numberingStyle = API_NS_noID;
+        else                                  subSet.numberingStyle = API_NS_Undefined;
+    }
+
+    item.Get ("startAt",           subSet.startAt);
+    item.Get ("continueNumbering", subSet.continueNumbering);
+    item.Get ("useUpperPrefix",    subSet.useUpperPrefix);
+
+    // includeToIDSequence is the positive form of the Subset Settings dialog's
+    // "Do not include this Subset in ID sequence" checkbox, which API_SubSet
+    // stores negated
+    bool includeToIDSequence = false;
+    if (item.Get ("includeToIDSequence", includeToIDSequence)) {
+        subSet.doNotInclude = !includeToIDSequence;
+    }
+}
+
 CreateLayoutSubsetCommand::CreateLayoutSubsetCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -933,52 +986,7 @@ GS::ObjectState CreateLayoutSubsetCommand::Execute (const GS::ObjectState& param
             continue;
         }
 
-        SetUCharProperty (&item, "name", subSet.name);
-
-        // ownPrefix — backward compat: if ownPrefix string given without explicit addOwnPrefix, set it true
-        if (item.Contains ("ownPrefix")) {
-            subSet.addOwnPrefix = true;
-            SetUCharProperty (&item, "ownPrefix", subSet.ownPrefix);
-        }
-        bool addOwnPrefixExplicit = false;
-        if (item.Get ("addOwnPrefix", addOwnPrefixExplicit)) {
-            subSet.addOwnPrefix = addOwnPrefixExplicit;
-        }
-
-        // customNumber — backward compat: if customNumber string given without explicit customNumbering, set it true
-        if (item.Contains ("customNumber")) {
-            subSet.customNumbering = true;
-            SetUCharProperty (&item, "customNumber", subSet.customNumber);
-        }
-        bool customNumberingExplicit = false;
-        if (item.Get ("customNumbering", customNumberingExplicit)) {
-            subSet.customNumbering = customNumberingExplicit;
-        }
-
-        // numberingStyle
-        GS::UniString numberingStyleStr;
-        if (item.Get ("numberingStyle", numberingStyleStr)) {
-            if      (numberingStyleStr == "abc")  subSet.numberingStyle = API_NS_abc;
-            else if (numberingStyleStr == "ABC")  subSet.numberingStyle = API_NS_ABC;
-            else if (numberingStyleStr == "1")    subSet.numberingStyle = API_NS_1;
-            else if (numberingStyleStr == "01")   subSet.numberingStyle = API_NS_01;
-            else if (numberingStyleStr == "001")  subSet.numberingStyle = API_NS_001;
-            else if (numberingStyleStr == "0001") subSet.numberingStyle = API_NS_0001;
-            else if (numberingStyleStr == "noID") subSet.numberingStyle = API_NS_noID;
-            else                                  subSet.numberingStyle = API_NS_Undefined;
-        }
-
-        item.Get ("startAt",           subSet.startAt);
-        item.Get ("continueNumbering", subSet.continueNumbering);
-        item.Get ("useUpperPrefix",    subSet.useUpperPrefix);
-
-        // includeToIDSequence is the positive form of the Subset Settings dialog's
-        // "Do not include this Subset in ID sequence" checkbox, which API_SubSet
-        // stores negated
-        bool includeToIDSequence = false;
-        if (item.Get ("includeToIDSequence", includeToIDSequence)) {
-            subSet.doNotInclude = !includeToIDSequence;
-        }
+        ApplyLayoutSubsetSettings (item, subSet);
 
         const GS::ObjectState* parent = item.Get ("parentNavigatorItemId");
         const API_Guid* parentGuidPtr = nullptr;
@@ -1120,6 +1128,276 @@ GS::ObjectState GetLayoutSubsetSettingsCommand::Execute (const GS::ObjectState& 
             "addOwnPrefix",        subSet.addOwnPrefix));
     }
 
+    return response;
+}
+
+ChangeLayoutSubsetSettingsCommand::ChangeLayoutSubsetSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ChangeLayoutSubsetSettingsCommand::GetName () const
+{
+    return "ChangeLayoutSubsetSettings";
+}
+
+GS::Optional<GS::UniString> ChangeLayoutSubsetSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "subsets": {
+                "type": "array",
+                "description": "The Layout Book subsets to change, each with the settings to change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "The subset to change, from GetNavigatorItemTree or CreateLayoutSubset."
+                        },
+                        "settings": {
+                            "$ref": "#/LayoutSubsetSettingsData",
+                            "description": "The settings to change. The ones not given keep the value the subset has."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "navigatorItemId",
+                        "settings"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "subsets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ChangeLayoutSubsetSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "subsets": {
+                "type": "array",
+                "description": "One item per input subset, in the same order: the subset that now has the settings and the layouts, and the old subset, left empty, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The new subset, with the new settings, holding the layouts and subsets of the old one in their order, right after the old one in the Layout Book."
+                                },
+                                "oldNavigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The old subset, now empty. The Archicad API cannot delete a subset: delete it in Archicad."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "navigatorItemId",
+                                "oldNavigatorItemId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "subsets"
+        ]
+    })";
+}
+
+// The guids of the Layout Book items directly in parentGuid, in their order.
+static GSErrCode GetLayoutBookChildGuids (const API_Guid& parentGuid, GS::Array<API_Guid>& childGuids)
+{
+    childGuids.Clear ();
+    API_NavigatorItem parent = {};
+    GSErrCode err = GetNavigatorItemOfGuid (parentGuid, parent);
+    if (err != NoError) {
+        return err;
+    }
+    parent.mapId = API_LayoutMap;
+    GS::Array<API_NavigatorItem> children;
+    err = ACAPI_Navigator_GetNavigatorChildrenItems (&parent, &children);
+    if (err != NoError) {
+        return err;
+    }
+    for (const API_NavigatorItem& child : children) {
+        childGuids.Push (child.guid);
+    }
+    return NoError;
+}
+
+// Moves itemGuids, in their order, into parentGuid: the first one to the first place, each next one
+// right after the one before. movedCount says how many were moved when it fails. The parent is read
+// back after each move, since ACAPI_Navigator_SetNavigatorItemPosition can answer NoError and leave
+// the item where it was (see MoveNavigatorItem).
+static GSErrCode MoveLayoutBookItemsInto (const GS::Array<API_Guid>& itemGuids, const API_Guid& parentGuid, USize& movedCount)
+{
+    movedCount = 0;
+    const GS::Guid parent = APIGuid2GSGuid (parentGuid);
+    for (UIndex i = 0; i < itemGuids.GetSize (); ++i) {
+        const GS::Guid source = APIGuid2GSGuid (itemGuids[i]);
+        const GS::Guid previous = i > 0 ? APIGuid2GSGuid (itemGuids[i - 1]) : GS::Guid ();
+        GSErrCode err = ACAPI_Navigator_SetNavigatorItemPosition (&source, &parent, i > 0 ? &previous : nullptr);
+        if (err != NoError) {
+            return err;
+        }
+        GS::Array<API_Guid> children;
+        err = GetLayoutBookChildGuids (parentGuid, children);
+        if (err != NoError) {
+            return err;
+        }
+        const UIndex index = children.FindFirst (itemGuids[i]);
+        if (index == MaxUIndex || (i > 0 && (index == 0 || children[index - 1] != itemGuids[i - 1]))) {
+            return APIERR_REFUSEDPAR;
+        }
+        ++movedCount;
+    }
+    return NoError;
+}
+
+// ChangeLayoutSubsetSettings for one subset. The Archicad API has no function that changes the settings
+// of an existing subset (only ACAPI_Navigator_CreateSubSet and ACAPI_Navigator_GetSubSet), nor one that
+// deletes a subset, so a new subset is created with the old one's settings changed as asked, put right
+// after the old one, and the old one's layouts and subsets are moved into it in their order. These are
+// non-undoable functions: when a move fails, the items moved before are moved back.
+static GS::ObjectState ChangeOneLayoutSubset (const GS::ObjectState& item)
+{
+    const GS::ObjectState* idOS = item.Get ("navigatorItemId");
+    const GS::ObjectState* settingsOS = item.Get ("settings");
+    if (idOS == nullptr || settingsOS == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "navigatorItemId and settings are required. Nothing was changed.");
+    }
+    const API_Guid oldGuid = GetGuidFromObjectState (*idOS);
+
+    API_NavigatorItem oldItem = {};
+    GSErrCode err = GetNavigatorItemOfGuid (oldGuid, oldItem);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the navigator item. Nothing was changed.");
+    }
+    if (oldItem.itemType != API_SubSetNavItem) {
+        return CreateErrorResponse (APIERR_BADID, "The navigator item is not a Layout Book subset. Nothing was changed.");
+    }
+    API_SubSet subSet = {};
+    err = ACAPI_Navigator_GetSubSet (&oldGuid, &subSet);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the subset settings. Nothing was changed.");
+    }
+    API_NavigatorItem parentItem = {};
+    err = ACAPI_Navigator_GetNavigatorParentItem (&oldGuid, &parentItem);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the parent of the subset in the Layout Book. Nothing was changed.");
+    }
+    GS::Array<API_Guid> children;
+    err = GetLayoutBookChildGuids (oldGuid, children);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the layouts of the subset. Nothing was changed.");
+    }
+
+    ApplyLayoutSubsetSettings (*settingsOS, subSet);
+
+    // 1. The new subset, found as CreateLayoutSubset finds it. It is created inside the old subset and
+    // then moved out next to it: ACAPI_Navigator_SetNavigatorItemPosition answers NoError and leaves an
+    // item where it is when it is moved within its own parent (see MoveNavigatorItem), which is what
+    // happened in Archicad 29 to a new subset created under the old one's parent.
+    const GS::Array<API_Guid> subsetsBefore = GetLayoutSubsetGuids ();
+    err = ACAPI_Navigator_CreateSubSet (&subSet, &oldGuid);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create the subset with the new settings. Nothing was changed.");
+    }
+    const GS::Optional<API_Guid> newGuid = FindNewLayoutSubsetGuid (subsetsBefore);
+    if (!newGuid.HasValue ()) {
+        return CreateErrorResponse (APIERR_GENERAL, "The subset with the new settings was created in the old one but could not be found, so nothing was moved into it. Delete the new, empty subset in Archicad: the Archicad API cannot delete a subset.");
+    }
+    const GS::UniString newLeftMessage = " The new, empty subset (navigatorItemId " + APIGuidToString (newGuid.Get ()) +
+        ") was left in the Layout Book: the Archicad API cannot delete a subset, delete it in Archicad.";
+
+    // The moves run in a command scope, as MoveNavigatorItem runs them.
+    GS::Optional<GS::ObjectState> result;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Change Layout Subset Settings", [&] () -> GSErrCode {
+        // 2. Out of the old subset, right after it, so the layout numbering goes on as before.
+        const GS::Guid newSource = APIGuid2GSGuid (newGuid.Get ());
+        const GS::Guid parent = APIGuid2GSGuid (parentItem.guid);
+        const GS::Guid oldPrevious = APIGuid2GSGuid (oldGuid);
+        GSErrCode moveErr = ACAPI_Navigator_SetNavigatorItemPosition (&newSource, &parent, &oldPrevious);
+        GS::Array<API_Guid> siblings;
+        if (moveErr == NoError) {
+            moveErr = GetLayoutBookChildGuids (parentItem.guid, siblings);
+        }
+        const UIndex newIndex = siblings.FindFirst (newGuid.Get ());
+        if (moveErr == NoError && (newIndex == MaxUIndex || newIndex == 0 || siblings[newIndex - 1] != oldGuid)) {
+            moveErr = APIERR_REFUSEDPAR;
+        }
+        if (moveErr != NoError) {
+            result = CreateErrorResponse (moveErr, "Failed to place the subset with the new settings right after the old one, so nothing was moved into it." + newLeftMessage);
+            return NoError;
+        }
+
+        // 3. The layouts and subsets of the old one, in their order.
+        USize movedCount = 0;
+        moveErr = MoveLayoutBookItemsInto (children, newGuid.Get (), movedCount);
+        if (moveErr != NoError) {
+            GS::Array<API_Guid> movedItems;
+            for (UIndex i = 0; i < movedCount; ++i) {
+                movedItems.Push (children[i]);
+            }
+            USize movedBackCount = 0;
+            const GSErrCode backErr = MoveLayoutBookItemsInto (movedItems, oldGuid, movedBackCount);
+            GS::UniString message = "Failed to move the layouts into the subset with the new settings.";
+            message += backErr == NoError
+                ? GS::UniString (" The ones moved before are back in the old subset, in their order.")
+                : GS::UniString (" Some of the ones moved before could not be moved back into the old subset: check the Layout Book.");
+            message += newLeftMessage;
+            result = CreateErrorResponse (moveErr, message);
+            return NoError;
+        }
+
+        // 4. Read back: the old subset is empty.
+        GS::Array<API_Guid> oldChildren;
+        moveErr = GetLayoutBookChildGuids (oldGuid, oldChildren);
+        if (moveErr != NoError || !oldChildren.IsEmpty ()) {
+            result = CreateErrorResponse (moveErr != NoError ? moveErr : APIERR_GENERAL, "The layouts were moved into the subset with the new settings (navigatorItemId " + APIGuidToString (newGuid.Get ()) +
+                "), but the old subset is not empty: check the Layout Book.");
+            return NoError;
+        }
+
+        GS::ObjectState success;
+        success.Add ("navigatorItemId", CreateGuidObjectState (newGuid.Get ()));
+        success.Add ("oldNavigatorItemId", CreateGuidObjectState (oldGuid));
+        result = success;
+        return NoError;
+    });
+    if (!result.HasValue ()) {
+        return CreateErrorResponse (undoErr != NoError ? undoErr : APIERR_GENERAL, "Failed to open a command to move the layouts, so nothing was moved." + newLeftMessage);
+    }
+    return *result;
+}
+
+GS::ObjectState ChangeLayoutSubsetSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    GS::ObjectState errorResponse;
+    if (!GetItems (parameters, "subsets", items, errorResponse)) {
+        return errorResponse;
+    }
+
+    GS::ObjectState response;
+    const auto& subsets = response.AddList<GS::ObjectState> ("subsets");
+    for (const GS::ObjectState& item : items) {
+        subsets (ChangeOneLayoutSubset (item));
+    }
     return response;
 }
 
