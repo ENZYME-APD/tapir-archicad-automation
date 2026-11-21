@@ -14244,7 +14244,7 @@
             },
             "polygonCoordinates": {
                 "type": "array",
-                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given. Where a level line (sublines) crosses the new outline or a hole, Archicad adds a point; each given point keeps its own z, and an added point gets the z interpolated along the edge between the given points next to it.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 },
