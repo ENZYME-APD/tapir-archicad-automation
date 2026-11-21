@@ -12402,41 +12402,43 @@ GS::ObjectState RecreateStairFailure (const char* step, GSErrCode err)
     return CreateErrorResponse (err, GS::UniString (step) + ". Nothing was changed.");
 }
 
-// Reads everything RecreateStairs carries over, and lists what it cannot. Returns the error text.
-GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, StairDataToCarry& data, GSErrCode& err)
+// Reads everything RecreateStairs and RecreateRailings carry over, and lists what they cannot.
+// typeName names the element type in messages ("Stair"), noun the element ("stair"). Returns the
+// error text.
+GS::Optional<GS::UniString> ReadElementDataToCarry (const API_Guid& stairGuid, API_ElemTypeID expectedType, const GS::UniString& typeName, const GS::UniString& noun, StairDataToCarry& data, GSErrCode& err)
 {
     data.element.header.guid = stairGuid;
     err = ACAPI_Element_Get (&data.element);
     if (err != NoError) {
-        return GS::UniString ("The stair was not found.");
+        return "The " + noun + " was not found.";
     }
-    if (GetElemTypeId (data.element.header) != API_StairID) {
+    if (GetElemTypeId (data.element.header) != expectedType) {
         err = APIERR_BADID;
-        return GS::UniString ("The element is not a Stair.");
+        return "The element is not a " + typeName + ".";
     }
     if (data.element.header.hotlinkGuid != APINULLGuid || !ACAPI_Element_Filter (stairGuid, APIFilt_IsEditable)) {
         err = APIERR_NOACCESSRIGHT;
-        return GS::UniString ("The stair cannot be deleted: it is in a hotlink, on a locked or hidden layer, locked, or not reserved in Teamwork.");
+        return "The " + noun + " cannot be deleted: it is in a hotlink, on a locked or hidden layer, locked, or not reserved in Teamwork.";
     }
 
     err = GetElementId (stairGuid, data.elementId);
     if (err != NoError) {
-        return GS::UniString ("Failed to read the Element ID of the stair.");
+        return "Failed to read the Element ID of the " + noun + ".";
     }
 
     err = ACAPI_Element_GetClassificationItems (stairGuid, data.classifications);
     if (err != NoError) {
-        return GS::UniString ("Failed to read the classifications of the stair.");
+        return "Failed to read the classifications of the " + noun + ".";
     }
 
-    // The user-defined property values the stair has of its own, as CreateFavoritesFromElements reads them.
+    // The user-defined property values the element has of its own, as CreateFavoritesFromElements reads them.
     GS::Array<API_PropertyDefinition> definitions;
     err = ACAPI_Element_GetPropertyDefinitions (stairGuid, API_PropertyDefinitionFilter_UserDefined, definitions);
     if (err == NoError) {
         err = ACAPI_Element_GetPropertyValues (stairGuid, definitions, data.properties);
     }
     if (err != NoError) {
-        return GS::UniString ("Failed to read the property values of the stair.");
+        return "Failed to read the property values of the " + noun + ".";
     }
     for (UIndex ii = data.properties.GetSize (); ii >= 1; --ii) {
         const API_Property& p = data.properties[ii - 1];
@@ -12445,7 +12447,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
         }
     }
 
-    // A category whose value cannot be read does not apply to stairs, so there is nothing to carry.
+    // A category whose value cannot be read does not apply to this element type, so there is nothing to carry.
     GS::Array<API_ElemCategory> categories;
     if (TAPIR_GetElementCategories (categories) == NoError) {
         for (const API_ElemCategory& category : categories) {
@@ -12466,7 +12468,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
             if (ACAPI_Element_SolidLink_GetOperation (stairGuid, operatorGuid, &link.operation) != NoError ||
                 ACAPI_Element_SolidLink_GetFlags (stairGuid, operatorGuid, &link.flags) != NoError) {
                 err = APIERR_GENERAL;
-                return GS::UniString ("Failed to read a solid element operation of the stair.");
+                return "Failed to read a solid element operation of the " + noun + ".";
             }
             data.operatorsOfStair.Push (link);
         }
@@ -12479,7 +12481,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
             if (ACAPI_Element_SolidLink_GetOperation (targetGuid, stairGuid, &link.operation) != NoError ||
                 ACAPI_Element_SolidLink_GetFlags (targetGuid, stairGuid, &link.flags) != NoError) {
                 err = APIERR_GENERAL;
-                return GS::UniString ("Failed to read a solid element operation of the stair.");
+                return "Failed to read a solid element operation of the " + noun + ".";
             }
             data.targetsOfStair.Push (link);
         }
@@ -12492,7 +12494,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
             trim.trimming = trimmingGuid;
             err = ACAPI_Element_Trim_GetTrimType (stairGuid, trimmingGuid, &trim.trimType);
             if (err != NoError) {
-                return GS::UniString ("Failed to read a trim of the stair.");
+                return "Failed to read a trim of the " + noun + ".";
             }
             data.trims.Push (trim);
         }
@@ -12544,13 +12546,13 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
     return {};
 }
 
+GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err);
+
 // Creates the new stair and moves everything over; runs inside the undoable command. Returns the
 // error response, with err set, when a step failed: the caller returns err from the command, which
 // rolls back every step before it.
 GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, const GS::ObjectState& item, const Stories& stories, API_Guid& newGuid, GSErrCode& err)
 {
-    const API_Guid oldGuid = data.element.header.guid;
-
     // The CreateStairs path: the Stair tool defaults and their memo, the stair settings, then the
     // baseline from SetTypeSpecificParameters. The settings are the old stair's whole API_StairType,
     // as CreateStairs with favoriteName creates from the settings of a Favorite captured from a stair.
@@ -12604,11 +12606,25 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
     }
     newGuid = element.header.guid;
 
-    // Classifications: the old stair's items, and none of the defaults' in other systems.
+    return CarryOverAndDeleteOld (data, newGuid, "stair", err);
+}
+
+// Moves what ReadElementDataToCarry read from the old element onto the new one (newGuid), deletes
+// the old element and gives the new one its Element ID. Shared by RecreateStairs and
+// RecreateRailings; runs inside their undoable command. Returns the error response, with err set,
+// when a step failed.
+GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err)
+{
+    const API_Guid oldGuid = data.element.header.guid;
+    const auto failure = [] (const GS::UniString& step, GSErrCode stepErr) {
+        return CreateErrorResponse (stepErr, step + ". Nothing was changed.");
+    };
+
+    // Classifications: the old element's items, and none of the defaults' in other systems.
     GS::Array<GS::Pair<API_Guid, API_Guid>> newClassifications;
     err = ACAPI_Element_GetClassificationItems (newGuid, newClassifications);
     if (err != NoError) {
-        return RecreateStairFailure ("Failed to read the classifications of the new stair", err);
+        return failure ("Failed to read the classifications of the new " + noun, err);
     }
     for (const GS::Pair<API_Guid, API_Guid>& newPair : newClassifications) {
         bool systemOfOld = false;
@@ -12618,41 +12634,41 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
         if (!systemOfOld) {
             err = ACAPI_Element_RemoveClassificationItem (newGuid, newPair.second);
             if (err != NoError) {
-                return RecreateStairFailure ("Failed to remove a default classification from the new stair", err);
+                return failure ("Failed to remove a default classification from the new " + noun, err);
             }
         }
     }
     for (const GS::Pair<API_Guid, API_Guid>& oldPair : data.classifications) {
         err = ACAPI_Element_AddClassificationItem (newGuid, oldPair.second);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to classify the new stair as the old one", err);
+            return failure ("Failed to classify the new " + noun + " as the old one", err);
         }
     }
 
     for (const API_ElemCategoryValue& value : data.categoryValues) {
         err = TAPIR_Element_SetCategoryValue (newGuid, value);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to set a category value (Structural Function, Position, Renovation Status ...) of the new stair", err);
+            return failure ("Failed to set a category value (Structural Function, Position, Renovation Status ...) of the new " + noun, err);
         }
     }
 
     if (!data.properties.IsEmpty ()) {
         err = ACAPI_Element_SetProperties (newGuid, data.properties);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to set the property values of the new stair", err);
+            return failure ("Failed to set the property values of the new " + noun, err);
         }
     }
 
     for (const StairSolidLink& link : data.operatorsOfStair) {
         err = ACAPI_Element_SolidLink_Create (newGuid, link.other, link.operation, link.flags);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to link a solid element operator to the new stair", err);
+            return failure ("Failed to link a solid element operator to the new " + noun, err);
         }
     }
     for (const StairSolidLink& link : data.targetsOfStair) {
         err = ACAPI_Element_SolidLink_Create (link.other, newGuid, link.operation, link.flags);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to link the new stair as a solid element operator", err);
+            return failure ("Failed to link the new " + noun + " as a solid element operator", err);
         }
     }
 
@@ -12661,7 +12677,7 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
         toTrim.Push (newGuid);
         err = ACAPI_Element_Trim_ElementsWith (toTrim, trim.trimming, trim.trimType);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to trim the new stair with a roof or shell", err);
+            return failure ("Failed to trim the new " + noun + " with a roof or shell", err);
         }
     }
 
@@ -12669,14 +12685,14 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
     toDelete.Push (oldGuid);
     err = ACAPI_Element_Delete (toDelete);
     if (err != NoError) {
-        return RecreateStairFailure ("Failed to delete the old stair", err);
+        return failure ("Failed to delete the old " + noun, err);
     }
 
-    // The Element ID last, once the old stair is gone. ChangeElementId reads it back.
+    // The Element ID last, once the old element is gone. ChangeElementId reads it back.
     if (!data.elementId.IsEmpty ()) {
         err = ChangeElementId (newGuid, data.elementId);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to give the new stair the Element ID of the old one", err);
+            return failure ("Failed to give the new " + noun + " the Element ID of the old one", err);
         }
     }
 
@@ -12710,7 +12726,7 @@ GS::ObjectState RecreateStairsCommand::Execute (const GS::ObjectState& parameter
 
         StairDataToCarry data;
         GSErrCode err = NoError;
-        const GS::Optional<GS::UniString> readError = ReadStairDataToCarry (oldGuid, data, err);
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_StairID, "Stair", "stair", data, err);
         if (readError.HasValue ()) {
             results (CreateErrorResponse (err, *readError + " Nothing was changed."));
             continue;
@@ -12731,6 +12747,285 @@ GS::ObjectState RecreateStairsCommand::Execute (const GS::ObjectState& parameter
         }
         if (commandErr != NoError) {
             results (CreateErrorResponse (commandErr, "Failed to recreate the stair."));
+            continue;
+        }
+
+        API_Element newElement = {};
+        newElement.header.guid = newGuid;
+        if (ACAPI_Element_Get (&newElement) == NoError) {
+            notification = {};
+            notification.notifID = APINotifyElement_New;
+            notification.elemHead = newElement.header;
+            AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+        }
+
+        GS::ObjectState result;
+        result.Add ("oldElementId", CreateGuidObjectState (oldGuid));
+        result.Add ("elementId", CreateGuidObjectState (newGuid));
+        const auto& notCarriedOver = result.AddList<GS::ObjectState> ("notCarriedOver");
+        for (const GS::Pair<GS::UniString, API_Guid>& lost : data.notCarriedOver) {
+            GS::ObjectState lostOs ("relation", lost.first);
+            if (lost.second != APINULLGuid) {
+                lostOs.Add ("elementId", CreateGuidObjectState (lost.second));
+            }
+            notCarriedOver (lostOs);
+        }
+        results (result);
+    }
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    return response;
+}
+
+// ============================================================================
+// RecreateRailings
+// The reference line of an existing railing cannot be changed through the Archicad API (see the
+// templateElementId of CreateRailings), so a railing gets a new one - with more or fewer nodes and
+// segments - by being created again with itself as template, and deleted. As RecreateStairs, it
+// carries over the Element ID, classifications, categories, properties, solid element operations
+// and trims, in one undoable command per railing that leaves the old railing as it was on failure.
+// ============================================================================
+
+RecreateRailingsCommand::RecreateRailingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateRailingsCommand::GetName () const
+{
+    return "RecreateRailings";
+}
+
+GS::Optional<GS::UniString> RecreateRailingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "railings": {
+                "type": "array",
+                "description": "The railings to recreate on a new reference line.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The railing to recreate."
+                        },
+                        "coordinates": {
+                            "type": "array",
+                            "description": "The new reference line on the floor plan, as CreateRailings takes it: one node per point, one segment per pair of consecutive points. The railing keeps its bottom offset. Give this or polylineCoordinates.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "polylineCoordinates": {
+                            "type": "array",
+                            "description": "The new reference line with an elevation per node, as CreateRailingsFromPolyline takes it (z relative to the railing's home story). Give this or coordinates.",
+                            "items": { "$ref": "#/Coordinate3D" },
+                            "minItems": 2
+                        },
+                        "polylineArcs": {
+                            "type": "array",
+                            "description": "Optional arc segments of polylineCoordinates, as CreateRailingsFromPolyline takes them.",
+                            "items": { "$ref": "#/PolyArc" }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["railings"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateRailingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item per input railing: the new railing, or an error. After an error nothing was changed for that railing.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "oldElementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The railing that was deleted."
+                                },
+                                "elementId": {
+                                    "$ref": "#/ElementId",
+                                    "description": "The new railing."
+                                },
+                                "notCarriedOver": {
+                                    "type": "array",
+                                    "description": "What was linked to the old railing and could not be moved to the new one: its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group. Only the dimensions of the current database (the active window) are listed. The link of a railing to the slab or stair it was placed on cannot be read through the Archicad API, so it is not listed: the new railing has none.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "relation": {
+                                                "type": "string",
+                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"]
+                                            },
+                                            "elementId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The label or dimension, as it was before the old railing was deleted. Not given for Group."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": ["relation"]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["oldElementId", "elementId", "notCarriedOver"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    })";
+}
+
+GS::ObjectState RecreateRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> railings;
+    parameters.Get ("railings", railings);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const Stories stories = GetStories ();
+
+    // ACAPI_Element_Create puts a new railing on the story active in the floor plan (see
+    // CreateRailingsCommand::Execute), so the old railing's home story is made active while it is
+    // recreated, and the story active before is put back at the end.
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    const short originalActStory = storyErr == NoError ? storyInfo.actStory : 0;
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (storyErr == NoError && activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    for (const GS::ObjectState& item : railings) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId is missing."));
+            continue;
+        }
+        const bool has2D = item.Contains ("coordinates");
+        const bool has3D = item.Contains ("polylineCoordinates");
+        if (has2D == has3D) {
+            results (CreateErrorResponse (APIERR_BADPARS, "Give either coordinates or polylineCoordinates. Nothing was changed."));
+            continue;
+        }
+        if (has2D && item.Contains ("polylineArcs")) {
+            results (CreateErrorResponse (APIERR_BADPARS, "polylineArcs goes with polylineCoordinates, not with coordinates. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_RailingID, "Railing", "railing", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        const short homeStory = data.element.header.floorInd;
+        if (storyErr == NoError && homeStory != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = homeStory;
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                results (CreateErrorResponse (err, "Failed to activate the home story of the railing, where it is recreated. Nothing was changed."));
+                continue;
+            }
+            activeStory = homeStory;
+        }
+
+        // The item of CreateRailings or CreateRailingsFromPolyline: the new reference line, with
+        // the old railing as template for everything else.
+        GS::ObjectState createItem;
+        createItem.Add ("templateElementId", CreateGuidObjectState (oldGuid));
+        for (const char* key : { "coordinates", "polylineCoordinates", "polylineArcs" }) {
+            GS::Array<GS::ObjectState> values;
+            if (item.Get (key, values)) {
+                const auto& list = createItem.AddList<GS::ObjectState> (key);
+                for (const GS::ObjectState& value : values) {
+                    list (value);
+                }
+            }
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Railing", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_RailingID;
+#else
+            element.header.typeID = API_RailingID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Railing defaults. Nothing was changed.");
+                return stepErr;
+            }
+            stepError = has3D
+                ? CreateRailingsFromPolylineCommand ().SetTypeSpecificParameters (element, memo, stories, createItem)
+                : CreateRailingsCommand ().SetTypeSpecificParameters (element, memo, stories, createItem);
+            if (stepError.HasValue ()) {
+                stepErr = APIERR_BADPARS;
+                return stepErr;
+            }
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a railing on the new reference line with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "railing", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the railing."));
             continue;
         }
 
