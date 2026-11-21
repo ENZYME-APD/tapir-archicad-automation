@@ -8274,8 +8274,8 @@ static const char* StairSettingsSchemaProperties = R"(
                         "uniformDrainings": { "type": "boolean", "description": "Whether the flights and the landings share one draining setting." },
                         "structureVisibility": { "type": "boolean", "description": "Whether the structure of the stair is shown." },
                         "stairDisplayType": { "type": "string", "enum": ["Custom", "ByModelViewOptions"], "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them." },
-                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on and its visible components. Independent of reflectedCeilingPlanLayout." },
-                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout." },
+                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of reflectedCeilingPlanLayout." },
+                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of floorPlanLayout." },
                         "treads": {
                             "type": "array",
                             "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
@@ -10131,6 +10131,272 @@ static bool StairStoryVisibilityFromString (const GS::UniString& str, API_StairS
     return false;
 }
 
+// The symbol drawn on each story (API_StairGridTypeID), with the names GetDetailsOfElements returns
+// (the same values in AC25 to AC30).
+struct StairGridTypeEntry {
+    const char*         name;
+    API_StairGridTypeID type;
+};
+
+static const StairGridTypeEntry StairGridTypeNames[] = {
+    { "NotRelevant",                   APIStairGrid_NotRelevant },
+    { "WithSingleBreaklineFull",       APIStairGrid_WithSingleBreaklineFull },
+    { "NoBreaklineFull",               APIStairGrid_NoBreaklineFull },
+    { "BelowBreakline",                APIStairGrid_BelowBreakline },
+    { "AboveBreakline",                APIStairGrid_AboveBreakline },
+    { "MiddleBreakline",               APIStairGrid_MiddleBreakline },
+    { "MiddleBreaklineFull",           APIStairGrid_MiddleBreaklineFull },
+    { "NoBreakMarkHidden",             APIStairGrid_NoBreakMarkHidden },
+    { "AboveBreakMarkHidden",          APIStairGrid_AboveBreakMarkHidden },
+    { "BelowBreakMarkHidden",          APIStairGrid_BelowBreakMarkHidden },
+    { "Multistory2DAllVisible",        APIStairGrid_Multistory2DAllVisible },
+    { "Multistory2DHiddenVisible",     APIStairGrid_Multistory2DHiddenVisible },
+    { "Multistory2DNoneVisibleHidden", APIStairGrid_Multistory2DNoneVisibleHidden },
+    { "WithBreakMarkAllVisible",       APIStairGrid_WithBreakMarkAllVisible },
+    { "WithBreakMarkHiddenVisible",    APIStairGrid_WithBreakMarkHiddenVisible }
+};
+
+static GS::UniString StairGridTypeName (API_StairGridTypeID type)
+{
+    for (const StairGridTypeEntry& entry : StairGridTypeNames) {
+        if (entry.type == type) {
+            return entry.name;
+        }
+    }
+    return GS::UniString::Printf ("%d", static_cast<int> (type));
+}
+
+// The grid type, break line and override members of API_StairLayoutData that ApplyStairLayoutSettings
+// writes (#2848), so the layout is applied and read back from one list.
+enum class StairLayoutFieldKind {
+    GridType,
+    BreakLineAngleType,
+    BreakLinePositionType,
+    Number,
+    PositiveInteger,
+    NonNegativeInteger,
+    Boolean,
+    Pen,
+    BackgroundPen,
+    LineType,
+    Fill
+};
+
+struct StairLayoutField {
+    const char*          name;
+    StairLayoutFieldKind kind;
+};
+
+static const StairLayoutField StairLayoutFields[] = {
+    { "gridTypeAbove",                  StairLayoutFieldKind::GridType },
+    { "gridTypeTop",                    StairLayoutFieldKind::GridType },
+    { "gridTypeMiddle",                 StairLayoutFieldKind::GridType },
+    { "gridTypeBottom",                 StairLayoutFieldKind::GridType },
+    { "gridTypeBelow",                  StairLayoutFieldKind::GridType },
+    { "breakLineAngleType",             StairLayoutFieldKind::BreakLineAngleType },
+    { "breakLineAngle",                 StairLayoutFieldKind::Number },
+    { "breakLineAngleNumberOfGoings",   StairLayoutFieldKind::PositiveInteger },
+    { "breakLineDistance",              StairLayoutFieldKind::Number },
+    { "breakLinePositionType",          StairLayoutFieldKind::BreakLinePositionType },
+    { "upperBreakLineCustomPosition",   StairLayoutFieldKind::Number },
+    { "lowerBreakLineCustomPosition",   StairLayoutFieldKind::Number },
+    { "upperBreakLineNthRiserPosition", StairLayoutFieldKind::NonNegativeInteger },
+    { "lowerBreakLineNthRiserPosition", StairLayoutFieldKind::NonNegativeInteger },
+    { "overrideLineType",               StairLayoutFieldKind::Boolean },
+    { "lineTypeId",                     StairLayoutFieldKind::LineType },
+    { "overridePen",                    StairLayoutFieldKind::Boolean },
+    { "pen",                            StairLayoutFieldKind::Pen },
+    { "overrideSymbolFill",             StairLayoutFieldKind::Boolean },
+    { "symbolFillId",                   StairLayoutFieldKind::Fill },
+    { "symbolFillPen",                  StairLayoutFieldKind::Pen },
+    { "symbolFillBackgroundPen",        StairLayoutFieldKind::BackgroundPen }
+};
+
+// Writes one given field of StairLayoutFields into layout and marks it in layoutMask; the value is
+// checked first, and nothing is written when it is wrong.
+static GS::Optional<GS::UniString> ApplyStairLayoutField (const GS::ObjectState& layoutOs, const char* layoutName, const StairLayoutField& field, API_StairLayoutData& layout, API_StairLayoutData& layoutMask)
+{
+    const GS::UniString where = GS::UniString (layoutName) + "." + field.name;
+    const GS::String key (field.name);
+
+    switch (field.kind) {
+        case StairLayoutFieldKind::GridType: {
+            GS::UniString str;
+            const StairGridTypeEntry* found = nullptr;
+            if (layoutOs.Get (key, str)) {
+                for (const StairGridTypeEntry& entry : StairGridTypeNames) {
+                    if (str == entry.name) {
+                        found = &entry;
+                    }
+                }
+            }
+            if (found == nullptr) {
+                return where + " is not a stair symbol type (StairGridType).";
+            }
+            if (key == "gridTypeAbove") {
+                layout.gridTypeAbove = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeAbove);
+            } else if (key == "gridTypeTop") {
+                layout.gridTypeTop = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeTop);
+            } else if (key == "gridTypeMiddle") {
+                layout.gridTypeMiddle = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeMiddle);
+            } else if (key == "gridTypeBottom") {
+                layout.gridTypeBottom = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeBottom);
+            } else {
+                layout.gridTypeBelow = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeBelow);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::BreakLineAngleType: {
+            GS::UniString str;
+            layoutOs.Get (key, str);
+            if (str == "AngleToVertical") {
+                layout.breakLineAngleType = APIBreakLineAngle_AngleToVertical;
+            } else if (str == "AngleToHorizontal") {
+                layout.breakLineAngleType = APIBreakLineAngle_AngleToHorizontal;
+            } else if (str == "NumberOfGoings") {
+                layout.breakLineAngleType = APIBreakLineAngle_NumberOfGoings;
+            } else {
+                return where + " must be AngleToVertical, AngleToHorizontal or NumberOfGoings.";
+            }
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineAngleType);
+            return {};
+        }
+        case StairLayoutFieldKind::BreakLinePositionType: {
+            GS::UniString str;
+            layoutOs.Get (key, str);
+            if (str == "FloorPlanCutPlaneHeight") {
+                layout.breakLinePositionType = APIBreakLinePosition_FloorPlanCutPlaneHeight;
+            } else if (str == "CustomHeight") {
+                layout.breakLinePositionType = APIBreakLinePosition_CustomHeight;
+            } else if (str == "AtNthRiser") {
+                layout.breakLinePositionType = APIBreakLinePosition_AtNthRiser;
+            } else {
+                return where + " must be FloorPlanCutPlaneHeight, CustomHeight or AtNthRiser.";
+            }
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLinePositionType);
+            return {};
+        }
+        case StairLayoutFieldKind::Number: {
+            const GS::Optional<double> value = GetOptionalDouble (layoutOs, field.name);
+            if (!value.HasValue ()) {
+                return where + " must be a number.";
+            }
+            if (key == "breakLineAngle") {
+                layout.breakLineAngle = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineAngle);
+            } else if (key == "breakLineDistance") {
+                layout.breakLineDistance = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineDistance);
+            } else if (key == "upperBreakLineCustomPosition") {
+                layout.upperBreakLineCustomPosition = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, upperBreakLineCustomPosition);
+            } else {
+                layout.lowerBreakLineCustomPosition = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, lowerBreakLineCustomPosition);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::PositiveInteger:
+        case StairLayoutFieldKind::NonNegativeInteger: {
+            Int32 value = 0;
+            const Int32 minimum = field.kind == StairLayoutFieldKind::PositiveInteger ? 1 : 0;
+            if (!layoutOs.Get (key, value) || value < minimum) {
+                return where + (minimum == 1 ? " must be a positive integer." : " must be a non-negative integer.");
+            }
+            if (key == "breakLineAngleNumberOfGoings") {
+                layout.breakLineAngleNumberOfGoings = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineAngleNumberOfGoings);
+            } else if (key == "upperBreakLineNthRiserPosition") {
+                layout.upperBreakLineNthRiserPosition = static_cast<UInt32> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, upperBreakLineNthRiserPosition);
+            } else {
+                layout.lowerBreakLineNthRiserPosition = static_cast<UInt32> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, lowerBreakLineNthRiserPosition);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::Boolean: {
+            bool value = false;
+            if (!layoutOs.Get (key, value)) {
+                return where + " must be a boolean.";
+            }
+            if (key == "overrideLineType") {
+                layout.overrideLineType = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, overrideLineType);
+            } else if (key == "overridePen") {
+                layout.overridePen = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, overridePen);
+            } else {
+                layout.overrideSymbolFill = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, overrideSymbolFill);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::Pen:
+        case StairLayoutFieldKind::BackgroundPen: {
+            Int32 value = 0;
+            const Int32 minimum = field.kind == StairLayoutFieldKind::BackgroundPen ? -1 : 1;
+            if (!layoutOs.Get (key, value) || value < minimum || value > 255) {
+                return where + (minimum == 1 ? " must be a pen index between 1 and 255." : " must be a pen index between -1 and 255.");
+            }
+            if (key == "pen") {
+                layout.pen = static_cast<short> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, pen);
+            } else if (key == "symbolFillPen") {
+                layout.symbolFillPen = static_cast<short> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, symbolFillPen);
+            } else {
+                layout.symbolFillBkgPen = static_cast<short> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, symbolFillBkgPen);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::LineType:
+        case StairLayoutFieldKind::Fill: {
+            const bool isLineType = field.kind == StairLayoutFieldKind::LineType;
+            const GS::ObjectState* attributeId = layoutOs.Get (key);
+            const API_AttributeIndex index = attributeId != nullptr ?
+                GetAttributeIndexFromGuid (isLineType ? API_LinetypeID : API_FilltypeID, GetGuidFromObjectState (*attributeId)) :
+                ACAPI_CreateAttributeIndex (-1);
+            if (index == ACAPI_CreateAttributeIndex (-1)) {
+                return where + (isLineType ? " is not a line type of the project." : " is not a fill type of the project.");
+            }
+            if (isLineType) {
+                layout.lineType = index;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, lineType);
+            } else {
+                layout.symbolFill = index;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, symbolFill);
+            }
+            return {};
+        }
+    }
+    return {};
+}
+
+// The symbol of the stair on each story, its break line and the line type, pen and fill overrides
+// (#2848), with the keys GetDetailsOfElements returns in floorPlanLayout and reflectedCeilingPlanLayout.
+// Archicad's input validation does not refuse a wrong value inside a definition the schema refers to
+// (the bad storyVisibility of the #2530 check was not refused), so every value is checked here.
+static GS::Optional<GS::UniString> ApplyStairLayoutSymbolSettings (const GS::ObjectState& layoutOs, const char* name, API_StairLayoutData& layout, API_StairLayoutData& layoutMask)
+{
+    for (const StairLayoutField& field : StairLayoutFields) {
+        if (!layoutOs.Contains (field.name)) {
+            continue;
+        }
+        const GS::Optional<GS::UniString> error = ApplyStairLayoutField (layoutOs, name, field, layout, layoutMask);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    return {};
+}
+
 // The floor plan or reflected ceiling plan display of a Stair (#2530), from a StairLayoutSettings
 // object into fpdLayout or rcpdLayout, with layoutMask the same member of the mask. A storyVisibility
 // is written with the story visibility it stands for: the AllRelevant... values are worked out by
@@ -10185,7 +10451,7 @@ static GS::Optional<GS::UniString> ApplyStairLayoutSettings (const GS::ObjectSta
     if (layoutOs.Get ("showStructure", layout.showStructure)) {
         ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, showStructure);
     }
-    return {};
+    return ApplyStairLayoutSymbolSettings (layoutOs, name, layout, layoutMask);
 }
 
 // Defined with the roof and shell surfaces below.
@@ -10856,7 +11122,89 @@ static GS::UniString StairLayoutNotApplied (const char* name, const API_StairLay
     if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure) && got.showStructure != want.showStructure) {
         notApplied += GS::UniString (" ") + name + ".showStructure is " + boolName (got.showStructure) + ".";
     }
+
+    // The symbol, break line and overrides (#2848).
+    const auto gridType = [&] (const char* field, bool masked, API_StairGridTypeID wantType, API_StairGridTypeID gotType) {
+        if (masked && gotType != wantType) {
+            notApplied += GS::UniString (" ") + name + "." + field + " is " + StairGridTypeName (gotType) + ".";
+        }
+    };
+    gridType ("gridTypeAbove", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeAbove), want.gridTypeAbove, got.gridTypeAbove);
+    gridType ("gridTypeTop", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeTop), want.gridTypeTop, got.gridTypeTop);
+    gridType ("gridTypeMiddle", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeMiddle), want.gridTypeMiddle, got.gridTypeMiddle);
+    gridType ("gridTypeBottom", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBottom), want.gridTypeBottom, got.gridTypeBottom);
+    gridType ("gridTypeBelow", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBelow), want.gridTypeBelow, got.gridTypeBelow);
+
+    const auto number = [&] (const char* field, bool masked, double wantValue, double gotValue) {
+        if (masked && std::fabs (gotValue - wantValue) > 1e-6) {
+            notApplied += GS::UniString (" ") + name + "." + field + GS::UniString::Printf (" is %g.", gotValue);
+        }
+    };
+    const auto integer = [&] (const char* field, bool masked, Int64 wantValue, Int64 gotValue) {
+        if (masked && gotValue != wantValue) {
+            notApplied += GS::UniString (" ") + name + "." + field + GS::UniString::Printf (" is %lld.", static_cast<long long> (gotValue));
+        }
+    };
+    const auto boolean = [&] (const char* field, bool masked, bool wantValue, bool gotValue) {
+        if (masked && gotValue != wantValue) {
+            notApplied += GS::UniString (" ") + name + "." + field + " is " + boolName (gotValue) + ".";
+        }
+    };
+    integer ("breakLineAngleType", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleType), want.breakLineAngleType, got.breakLineAngleType);
+    number ("breakLineAngle", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngle), want.breakLineAngle, got.breakLineAngle);
+    integer ("breakLineAngleNumberOfGoings", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleNumberOfGoings), want.breakLineAngleNumberOfGoings, got.breakLineAngleNumberOfGoings);
+    number ("breakLineDistance", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineDistance), want.breakLineDistance, got.breakLineDistance);
+    integer ("breakLinePositionType", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLinePositionType), want.breakLinePositionType, got.breakLinePositionType);
+    number ("upperBreakLineCustomPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineCustomPosition), want.upperBreakLineCustomPosition, got.upperBreakLineCustomPosition);
+    number ("lowerBreakLineCustomPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineCustomPosition), want.lowerBreakLineCustomPosition, got.lowerBreakLineCustomPosition);
+    integer ("upperBreakLineNthRiserPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineNthRiserPosition), want.upperBreakLineNthRiserPosition, got.upperBreakLineNthRiserPosition);
+    integer ("lowerBreakLineNthRiserPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineNthRiserPosition), want.lowerBreakLineNthRiserPosition, got.lowerBreakLineNthRiserPosition);
+    boolean ("overrideLineType", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideLineType), want.overrideLineType, got.overrideLineType);
+    boolean ("overridePen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overridePen), want.overridePen, got.overridePen);
+    integer ("pen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, pen), want.pen, got.pen);
+    boolean ("overrideSymbolFill", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideSymbolFill), want.overrideSymbolFill, got.overrideSymbolFill);
+    integer ("symbolFillPen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillPen), want.symbolFillPen, got.symbolFillPen);
+    integer ("symbolFillBackgroundPen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillBkgPen), want.symbolFillBkgPen, got.symbolFillBkgPen);
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lineType) && got.lineType != want.lineType) {
+        notApplied += GS::UniString (" ") + name + ".lineTypeId is another line type.";
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFill) && got.symbolFill != want.symbolFill) {
+        notApplied += GS::UniString (" ") + name + ".symbolFillId is another fill type.";
+    }
     return notApplied;
+}
+
+// Whether the mask marks any member of the stair layout that ApplyStairLayoutSettings writes.
+static bool IsAnyStairLayoutMasked (const API_StairLayoutData& layoutMask)
+{
+    return ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, storyVisibility) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showWalkingLine) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showNumbering) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showUpDownText) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showDescription) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeAbove) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeTop) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeMiddle) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBottom) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBelow) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngle) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleNumberOfGoings) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineDistance) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLinePositionType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineCustomPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineCustomPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineNthRiserPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineNthRiserPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideLineType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lineType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overridePen) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, pen) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideSymbolFill) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFill) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillPen) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillBkgPen);
 }
 
 // Reads the stair back after ModifyStairs changed it and names the floor plan display settings
@@ -10867,15 +11215,7 @@ static GS::UniString CheckStairDisplayApplied (const API_Element& wanted, const 
     const bool hasDisplayType = ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, stairDisplayType);
     const API_StairLayoutData& fpdMask = mask.stair.fpdLayout;
     const API_StairLayoutData& rcpdMask = mask.stair.rcpdLayout;
-    const auto hasLayout = [] (const API_StairLayoutData& layoutMask) {
-        return ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, storyVisibility) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showWalkingLine) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showNumbering) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showUpDownText) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showDescription) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure);
-    };
-    if (!hasDisplayType && !hasLayout (fpdMask) && !hasLayout (rcpdMask)) {
+    if (!hasDisplayType && !IsAnyStairLayoutMasked (fpdMask) && !IsAnyStairLayoutMasked (rcpdMask)) {
         return {};
     }
 

@@ -16476,7 +16476,7 @@
     },
     "StairLayoutSettings": {
         "type": "object",
-        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (part of API_StairLayoutData). Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout.",
+        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (API_StairLayoutData without its visibility and isAutoOnStoryVisibility, which storyVisibility sets): the shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides. Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout, with the same keys.",
         "properties": {
             "storyVisibility": {
                 "type": "string",
@@ -16502,6 +16502,105 @@
             "showStructure": {
                 "type": "boolean",
                 "description": "Whether the stair structures are shown."
+            },
+            "gridTypeAbove": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories above the stair's relevant stories (Unknown is refused)."
+            },
+            "gridTypeTop": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the top relevant story (Unknown is refused)."
+            },
+            "gridTypeMiddle": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the middle relevant stories (Unknown is refused)."
+            },
+            "gridTypeBottom": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the bottom relevant story (Unknown is refused)."
+            },
+            "gridTypeBelow": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories below the stair's relevant stories (Unknown is refused)."
+            },
+            "breakLineAngleType": {
+                "type": "string",
+                "description": "How the angle of the break line is given: by breakLineAngle to the vertical or to the horizontal, or worked out from breakLineAngleNumberOfGoings.",
+                "enum": ["AngleToVertical", "AngleToHorizontal", "NumberOfGoings"]
+            },
+            "breakLineAngle": {
+                "type": "number",
+                "description": "The angle of the break line, used when breakLineAngleType is AngleToVertical or AngleToHorizontal."
+            },
+            "breakLineAngleNumberOfGoings": {
+                "type": "integer",
+                "description": "The number of goings the break line crosses, used when breakLineAngleType is NumberOfGoings.",
+                "minimum": 1
+            },
+            "breakLineDistance": {
+                "type": "number",
+                "description": "The gap of the break line."
+            },
+            "breakLinePositionType": {
+                "type": "string",
+                "description": "Where the break line is: at the floor plan cut plane height, at a custom height or at a given riser.",
+                "enum": ["FloorPlanCutPlaneHeight", "CustomHeight", "AtNthRiser"]
+            },
+            "upperBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the upper break line, used when breakLinePositionType is CustomHeight."
+            },
+            "lowerBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the lower break line, used when breakLinePositionType is CustomHeight."
+            },
+            "upperBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the upper break line, used when breakLinePositionType is AtNthRiser.",
+                "minimum": 0
+            },
+            "lowerBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the lower break line, used when breakLinePositionType is AtNthRiser.",
+                "minimum": 0
+            },
+            "overrideLineType": {
+                "type": "boolean",
+                "description": "Whether lineTypeId overrides the line types of the stair's components."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The override line type: a line type of the project."
+            },
+            "overridePen": {
+                "type": "boolean",
+                "description": "Whether pen overrides the line pens of the stair's components."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The override line pen.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "overrideSymbolFill": {
+                "type": "boolean",
+                "description": "Whether symbolFillId and its pens override the symbol fills of the stair's components."
+            },
+            "symbolFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The override symbol fill: a fill type of the project."
+            },
+            "symbolFillPen": {
+                "type": "integer",
+                "description": "The foreground pen of the override symbol fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "symbolFillBackgroundPen": {
+                "type": "integer",
+                "description": "The background pen of the override symbol fill.",
+                "minimum": -1,
+                "maximum": 255
             }
         },
         "additionalProperties": false
