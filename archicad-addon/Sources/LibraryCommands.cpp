@@ -5237,6 +5237,10 @@ GS::Optional<GS::UniString> GetLibraryPartFileInfoCommand::GetInputParametersSch
             "password": {
                 "type": "string",
                 "description": "The password of password protected library parts. Reading a script of a protected part without the right password is an error for that file."
+            },
+            "includeParameters": {
+                "type": "boolean",
+                "description": "Also returns the parameters of each file with their default values and descriptions, in the format of GetLibraryPartParameterValues. Default is false, so a caller that only wants the scripts gets them even when the parameters of a file cannot be read."
             }
         },
         "additionalProperties": false,
@@ -5291,6 +5295,9 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
     GS::UniString password;
     parameters.Get ("password", password);
 
+    bool includeParameters = false;
+    parameters.Get ("includeParameters", includeParameters);
+
     auto libraryManager = ACAPI::Library::GetLibraryManager ();
     if (libraryManager.IsErr ()) {
         return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
@@ -5325,6 +5332,25 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
             continue;
         }
 
+        // The parameters as stored in the file, read the way GetLibraryPartParameterValues reads those of a
+        // loaded part (#1265), when asked for. A file whose parameters cannot be read is then an error, not a file
+        // without parameters.
+        GS::Array<GS::ObjectState> parametersOut;
+        if (includeParameters) {
+            auto gdlParameters = object.GetParameters ();
+            if (gdlParameters.IsErr ()) {
+                filesOut (CreateErrorResponse (gdlParameters.UnwrapErr ().kind, "Failed to read the parameters of the file '" + path + "'" + GetResultErrorText (gdlParameters.UnwrapErr ()) + "."));
+                continue;
+            }
+            // The parameters are still returned when their descriptions cannot be read, only without them.
+            std::vector<GS::UniString> descriptions;
+            auto parameterDescriptions = object.GetParameterDescriptions ();
+            if (parameterDescriptions.IsOk ()) {
+                descriptions = parameterDescriptions.Unwrap ();
+            }
+            parametersOut = LibPartParametersToObjectStates (gdlParameters.Unwrap (), descriptions);
+        }
+
         GS::ObjectState fileOut;
         fileOut.Add ("path", path);
         auto unID = object.GetUnID ();
@@ -5336,6 +5362,12 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
             fileOut.Add ("subTypeUnID", subTypeUnID.Unwrap ().ToUniString ());
         }
         fileOut.Add ("scripts", scriptsOut);
+        if (includeParameters) {
+            const auto& parametersAdder = fileOut.AddList<GS::ObjectState> ("parameters");
+            for (const GS::ObjectState& parameter : parametersOut) {
+                parametersAdder (parameter);
+            }
+        }
         filesOut (fileOut);
     }
 

@@ -25520,6 +25520,9 @@
                 "additionalProperties": {
                     "$ref": "#/LibraryPartScript"
                 }
+            },
+            "parameters": {
+                "$ref": "#/LibraryPartParameterValueList"
             }
         },
         "additionalProperties": false,
@@ -25652,6 +25655,61 @@
             "isServerLibraryPart"
         ]
     },
+    "LibraryPartParameterValueList": {
+        "type": "array",
+        "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The name of the parameter."
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Integer",
+                        "Length",
+                        "Angle",
+                        "RealNumber",
+                        "LightSwitch",
+                        "RGBColor",
+                        "Intensity",
+                        "LineType",
+                        "Material",
+                        "FillPattern",
+                        "PenColor",
+                        "String",
+                        "Boolean",
+                        "BuildingMaterial",
+                        "Profile"
+                    ],
+                    "description": "The type of the parameter."
+                },
+                "dimension1": {
+                    "type": "integer",
+                    "description": "The 1st dimension of an array parameter."
+                },
+                "dimension2": {
+                    "type": "integer",
+                    "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
+                },
+                "value": {
+                    "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "type",
+                "value"
+            ]
+        }
+    },
     "LibraryPartParameterValues": {
         "type": "object",
         "properties": {
@@ -25660,59 +25718,7 @@
                 "description": "The name of the library part, as given."
             },
             "parameters": {
-                "type": "array",
-                "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the parameter."
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "Integer",
-                                "Length",
-                                "Angle",
-                                "RealNumber",
-                                "LightSwitch",
-                                "RGBColor",
-                                "Intensity",
-                                "LineType",
-                                "Material",
-                                "FillPattern",
-                                "PenColor",
-                                "String",
-                                "Boolean",
-                                "BuildingMaterial",
-                                "Profile"
-                            ],
-                            "description": "The type of the parameter."
-                        },
-                        "dimension1": {
-                            "type": "integer",
-                            "description": "The 1st dimension of an array parameter."
-                        },
-                        "dimension2": {
-                            "type": "integer",
-                            "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
-                        },
-                        "value": {
-                            "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
-                        },
-                        "description": {
-                            "type": "string",
-                            "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "type",
-                        "value"
-                    ]
-                }
+                "$ref": "#/LibraryPartParameterValueList"
             }
         },
         "additionalProperties": false,
