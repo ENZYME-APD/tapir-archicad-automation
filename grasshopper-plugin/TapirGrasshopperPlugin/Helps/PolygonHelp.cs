@@ -121,6 +121,102 @@ namespace TapirGrasshopperPlugin.Helps
             return true;
         }
 
+        // The baseline of a stair from an open (or closed) curve: the points
+        // of its corners plus one arc ({"begIndex", "endIndex", "arcAngle"},
+        // 0-based, endIndex = begIndex + 1) per arc segment, as CreateStairs,
+        // RecreateStairs and SolveStairBaseline take them in baseLinePoints
+        // and baseLineArcs. Line and arc segments are kept as they are,
+        // anything else is approximated with a polyline. Only X and Y are
+        // used.
+        //
+        // The sign of arcAngle is taken from the side the arc bulges to:
+        // positive when the middle of the arc lies to the right of the chord
+        // from its start to its end (API_PolyArc), which is how ToCurve reads
+        // it back, so a baseline returned by SolveStairBaseline or
+        // GetDetailsOfElements can be fed back unchanged.
+        public static bool TryToBaseLine(
+            Curve curve,
+            out JArray coordinates,
+            out JArray arcs,
+            out string error)
+        {
+            coordinates = new JArray();
+            arcs = new JArray();
+            error = null;
+
+            if (curve == null)
+            {
+                error = "a curve is null";
+                return false;
+            }
+
+            var segments = curve is PolyCurve polyCurve
+                ? polyCurve.DuplicateSegments()
+                : curve.TryGetPolyline(out Polyline polyline)
+                    ? polyline.GetSegments().Select(s => (Curve) new LineCurve(s)).ToArray()
+                    : new[] { curve };
+
+            if (segments == null || segments.Length == 0)
+            {
+                error = "a curve has no segments";
+                return false;
+            }
+
+            foreach (var segment in segments)
+            {
+                var nodeIndex = coordinates.Count;
+                var start = segment.PointAtStart;
+                var end = segment.PointAtEnd;
+                AddCoordinate(coordinates, start);
+
+                if (segment.IsLinear())
+                {
+                    continue;
+                }
+
+                // A closed arc (a circle) has no chord, so it cannot be one
+                // baseline arc; it is approximated like any other curve.
+                if (!segment.IsClosed &&
+                    segment.TryGetArc(out Rhino.Geometry.Arc arc))
+                {
+                    var middle = segment.PointAt(segment.Domain.Mid);
+                    var side = (end.X - start.X) * (middle.Y - start.Y) -
+                               (end.Y - start.Y) * (middle.X - start.X);
+                    arcs.Add(new JObject
+                    {
+                        ["begIndex"] = nodeIndex,
+                        ["endIndex"] = nodeIndex + 1,
+                        ["arcAngle"] = side < 0.0 ? arc.Angle : -arc.Angle
+                    });
+                    continue;
+                }
+
+                var tessellated = segment.ToPolyline(0, 0, 0.05, 0.0, 0.0, 0.01, 0.0, 0.0, true)?.ToPolyline();
+                if (tessellated == null)
+                {
+                    error = "a curve segment could not be approximated with a polyline";
+                    return false;
+                }
+
+                // The segment's start is already in and its end is the next
+                // segment's start, so only the points in between are added.
+                for (var i = 1; i < tessellated.Count - 1; i++)
+                {
+                    AddCoordinate(coordinates, tessellated[i]);
+                }
+            }
+
+            AddCoordinate(coordinates, segments[segments.Length - 1].PointAtEnd);
+
+            if (coordinates.Count < 2)
+            {
+                error = "a baseline needs at least two points";
+                return false;
+            }
+
+            return true;
+        }
+
         // The curve of an Add-On polygon or polyline at the given Z; null when
         // it has fewer than two coordinates.
         public static Curve ToCurve(

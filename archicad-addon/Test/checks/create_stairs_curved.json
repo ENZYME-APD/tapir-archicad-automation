@@ -1,0 +1,148 @@
+{
+  "title": "CreateStairs and RecreateStairs take curved baseline edges (baseLineArcs) and GetDetailsOfElements reads them back (#2933)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "[an arc that skips a point]",
+      "command": "CreateStairs",
+      "creates": false,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 900.0, "y": 900.0 }, { "x": 902.0, "y": 900.0 }, { "x": 904.0, "y": 900.0 } ],
+            "baseLineArcs": [ { "begIndex": 0, "endIndex": 2, "arcAngle": 1.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.message", "contains": "baseLineArcs", "name": "refused" }
+      ]
+    },
+    {
+      "id": "[an arc beyond the last point]",
+      "command": "CreateStairs",
+      "creates": false,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 900.0, "y": 900.0 }, { "x": 904.0, "y": 900.0 } ],
+            "baseLineArcs": [ { "begIndex": 1, "endIndex": 2, "arcAngle": 1.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.message", "contains": "baseLineArcs", "name": "refused" }
+      ]
+    },
+    {
+      "id": "curved stair: one flight on an arc bulging to the right of its chord",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 900.0, "y": 900.0 }, { "x": 904.0, "y": 900.0 } ],
+            "baseLineArcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 1.2 } ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.1
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curved stair created" }
+      ]
+    },
+    {
+      "id": "read the curved stair",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Stair" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 900.0, "tol": 0.001, "name": "the baseline starts at the first point" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].y", "approx": 900.0, "tol": 0.001 },
+        { "path": "detailsOfElements[0].details.baseLineArcs", "len": 1, "name": "the baseline has one arc" },
+        { "path": "detailsOfElements[0].details.baseLineArcs[0].begIndex", "eq": 0, "name": "on the first edge (0-based)" },
+        { "path": "detailsOfElements[0].details.baseLineArcs[0].endIndex", "eq": 1 },
+        { "path": "detailsOfElements[0].details.baseLineArcs[0].arcAngle", "gt": 0.0, "name": "bulging to the side given" }
+      ]
+    },
+    {
+      "id": "recreate it on an arc bulging the other way",
+      "command": "RecreateStairs",
+      "creates": false,
+      "params": {
+        "stairs": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "baseLinePoints": [ { "x": 900.0, "y": 900.0 }, { "x": 904.0, "y": 900.0 } ],
+            "baseLineArcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.2 } ]
+          }
+        ]
+      },
+      "save": { "s2": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results", "len": 1, "name": "one result" },
+        { "path": "results[0].oldElementId.guid", "eq": "${s1}", "name": "maps the old stair" },
+        { "path": "results[0].elementId.guid", "ne": "${s1}", "name": "to a new stair" }
+      ]
+    },
+    {
+      "id": "read the recreated stair",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Stair" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.1, "tol": 0.001, "name": "the old flight width" },
+        { "path": "detailsOfElements[0].details.baseLineArcs", "len": 1, "name": "the new baseline has one arc" },
+        { "path": "detailsOfElements[0].details.baseLineArcs[0].begIndex", "eq": 0 },
+        { "path": "detailsOfElements[0].details.baseLineArcs[0].arcAngle", "lt": 0.0, "name": "bulging to the other side now" }
+      ]
+    },
+    {
+      "id": "recreate it on a straight baseline",
+      "command": "RecreateStairs",
+      "creates": false,
+      "params": {
+        "stairs": [
+          {
+            "elementId": { "guid": "${s2}" },
+            "baseLinePoints": [ { "x": 900.0, "y": 900.0 }, { "x": 904.0, "y": 900.0 } ]
+          }
+        ]
+      },
+      "save": { "s3": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "ne": "${s2}", "name": "a new stair" }
+      ]
+    },
+    {
+      "id": "the straight one has no arcs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s3}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Stair" },
+        { "path": "detailsOfElements[0].details.baseLineArcs", "exists": false, "name": "without baseLineArcs every edge is straight" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteElements",
+      "params": { "elements": [ { "elementId": { "guid": "${s3}" } } ] }
+    }
+  ]
+}

@@ -700,11 +700,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetElementsByTypeCommand> (
             elementCommands, "1.0.7",
-            "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
+            "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Without databases it lists the current database: in a section or elevation window the model elements of the type that the window shows, the same elements GetAllElements reports there; pass the floor plan's database (GetDatabases) to list every one."
         );
         err |= RegisterCommand<GetAllElementsCommand> (
             elementCommands, "1.0.7",
-            "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
+            "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Without databases it lists the current database: in a section or elevation window the model elements that the window shows (and its own 2D elements); pass the floor plan's database (GetDatabases) to list every model element."
         );
         err |= RegisterCommand<CaptureElementStateCommand> (
             elementCommands, "1.8.0",
@@ -748,15 +748,15 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetElementsByCriteriaCommand> (
             elementCommands, "2.0.0",
-            "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
+            "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. It searches the current database, as GetElementsByType does (in a section or elevation window the model elements the window shows), or the given databases."
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. A Stair returns the structure settings of each part and side (structures, with the monolith or side stringer data of its type), and a StairStructure subelement returns the same keys. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
+            "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. A Stair returns the structure settings of each part and side (structures, with the monolith or side stringer data of its type), and a StairStructure subelement returns the same keys. A Stair also returns its plan outline (its left and right boundary lines) and its walking lines. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
-            "Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special, fill orientation, fill category and contour line type; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too."
+            "Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special, fill orientation, fill category and contour line type; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands, and the name, ID and clip polygon of Detail and Worksheet markers by ModifyDetailMarkers: typeSpecificDetails given for a Detail or Worksheet marker fail the item, and nothing of it is changed. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too."
         );
         err |= RegisterCommand<SetElementInfoStringsCommand> (
             elementCommands, "1.8.0",
@@ -840,7 +840,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
-            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call."
+            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment, Stair. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call."
         );
         err |= RegisterCommand<TriangulatePolygonsOfElementsCommand> (
             elementCommands, "1.7.3",
@@ -1033,6 +1033,8 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetGDLParametersOfElementsCommand> (
             elementCommands, "1.5.7",
             "Gets all the GDL parameters (name, type, value) of the given elements. "
+            "parameterNames returns only the named parameters, and includePossibleValues false leaves out the value lists "
+            "(which for font parameters list every installed font), for a much smaller answer. "
             "For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), "
             "which have no parameter session in the Archicad API, the parameters are read from the component itself: "
             "isLocked is then always false and possibleValues is not given."
@@ -1046,11 +1048,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetMarkerParametersOfElementsCommand> (
             elementCommands, "1.7.1",
-            "Gets the marker library part and the marker's GDL parameters (name, type, value) of the given Window and Door elements. The marker is the stamp drawn next to the opening on the floor plan; its parameters are separate from the opening's own GDL parameters, which GetGDLParametersOfElements returns."
+            "Gets the marker library part and the marker's GDL parameters (name, type, value) of the given Window, Door and Change Marker elements. The marker of an opening is the stamp drawn next to it on the floor plan; its parameters are separate from the opening's own GDL parameters, which GetGDLParametersOfElements returns. The marker of a Change Marker is its marker head, e.g. with the texts typed into it; a Change Marker with only a cloud has no marker and gets an error. GetDetailsOfElements gives the Change a Change Marker is linked to."
         );
         err |= RegisterCommand<SetMarkerParametersOfElementsCommand> (
             elementCommands, "1.7.1",
-            "Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's own settings and the other marker parameters are left as they are."
+            "Sets the given GDL parameters of the marker of the given Window, Door and Change Marker elements (the marker head of a Change Marker). The element's own settings and the other marker parameters are left as they are."
         );
         err |= RegisterCommand<GetURLReferencesOfElementsCommand> (
             elementCommands, "1.8.0",
@@ -1097,14 +1099,14 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateStairsCommand> (
             elementCommands, "1.5.0",
             "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge "
-            "and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, "
+            "and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, "
             "the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
-            "and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides); "
+            "and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides), and the line types, pens and fills of the structure symbols (structureSymbols, monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories); "
             "settings not given come from the Stair tool defaults or the favorite."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
             elementCommands, "1.7.3",
-            "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. "
+            "Runs the Archicad stair solver on the given Stair baselines (straight or with curved edges) and parameters without creating any element. "
             "Returns for each one whether the baseline was already correct, could be solved or could not be solved, "
             "with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, "
             "2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. "
@@ -1396,15 +1398,16 @@ GSErrCode Initialize (void)
             "and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), "
             "and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on "
             "and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) "
-            "and the line type, pen and symbol fill overrides; these are read back, and one Archicad did not apply is reported as an error. "
+            "and the line type, pen and symbol fill overrides, and the line types, pens and fills of the structure symbols per structure type and view (structureSymbols) and of the monolithic structure per view and visible or hidden part (monolithStructureSymbols), and which structures, fills and monolithic parts are shown on each range of the relevant stories, per view (structureVisibilityOnStories); "
+            "these are read back, and one Archicad did not apply is reported as an error. "
             "CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. "
             "A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. "
-            "Not written by this command: the baseline with its landings and winders, and the line types, pens and fills of the structure symbols with their visibility on the stories; "
+            "Not written by this command: the baseline with its landings and winders; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
         err |= RegisterCommand<RecreateStairsCommand> (
             elementCommands, "2.0.1",
-            "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. "
+            "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. "
             "The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, "
             "and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. "
             "The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in)."
@@ -3465,7 +3468,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAnalyticalMemberTypesOfElementsCommand> (
             analyticalCommands, "1.8.0",
-            "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements."
+            "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements from the Complementary Project, the structural analysis project exchanged with Archicad. Without a Complementary Project every element reads Unknown. An element that does not exist gets an error item."
         );
         err |= RegisterCommand<GetAnalyticalLoadGroupsCommand> (
             analyticalCommands, "1.8.0",
