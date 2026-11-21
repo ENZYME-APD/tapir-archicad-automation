@@ -1264,6 +1264,11 @@
             "modelViewOptions": {
                 "type": "object",
                 "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
+                "properties": {
+                    "railing": {
+                        "$ref": "#/RailingModelViewOptions"
+                    }
+                },
                 "additionalProperties": true
             },
             "onScreenViewOptions": {
@@ -1280,16 +1285,42 @@
     },
     "ViewOptionsUpdate": {
         "type": "object",
-        "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well.",
+        "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well. The options are read back, and a given field Archicad did not keep fails the call with the value it kept.",
         "properties": {
             "modelViewOptions": {
                 "type": "object",
+                "properties": {
+                    "railing": {
+                        "$ref": "#/RailingModelViewOptions",
+                        "description": "The railing options to change; the ones left out keep their value. Archicad 29 does not keep the railing2DDisplayComp* fields, which SetViewOptions then reports."
+                    }
+                },
                 "additionalProperties": true
             },
             "onScreenViewOptions": {
                 "type": "object",
                 "additionalProperties": true
             }
+        },
+        "additionalProperties": false
+    },
+    "RailingModelViewOptions": {
+        "type": "object",
+        "description": "The railing options of the model view options (API_RailingModelViewOptions; Model View Options > Railing Options), every field by its API name: the railing components shown in the floor plan and the schematic 3D display. GetViewOptions and GetModelViewOptionDetails return all of them; SetViewOptions takes any of them and reads them back. Archicad 29 does not keep the railing2DDisplayComp* fields changed through ACAPI_Navigator_ChangeViewOptions, so SetViewOptions reports such a change as not kept.",
+        "properties": {
+            "railing3DDetailLevel": { "type": "integer", "description": "The detail level of railings in the 3D display, the numeric API constant." },
+            "railing2DDisplayCompPosts": { "type": "boolean", "description": "Whether the posts are shown in the floor plan." },
+            "railing2DDisplayCompTopRail": { "type": "boolean", "description": "Whether the top rails are shown in the floor plan." },
+            "railing2DDisplayCompHandrails": { "type": "boolean", "description": "Whether the handrails are shown in the floor plan." },
+            "railing2DDisplayCompRails": { "type": "boolean", "description": "Whether the rails are shown in the floor plan." },
+            "railing2DDisplayCompInnerPosts": { "type": "boolean", "description": "Whether the inner posts are shown in the floor plan." },
+            "railing2DDisplayCompBalusters": { "type": "boolean", "description": "Whether the balusters are shown in the floor plan." },
+            "railing2DDisplayCompPanels": { "type": "boolean", "description": "Whether the panels are shown in the floor plan." },
+            "railingSchemeSurfaceIndex": { "type": "integer", "description": "The index of the surface used by the schematic 3D display." },
+            "railingSchemeCutLineIndex": { "type": "integer", "description": "The index of the line type of the cut lines of the schematic 3D display." },
+            "railingSchemeCutLinePenIndex": { "type": "integer", "description": "The pen of the cut lines of the schematic 3D display." },
+            "railingSchemeUncutLineIndex": { "type": "integer", "description": "The index of the line type of the uncut lines of the schematic 3D display." },
+            "railingSchemeUncutLinePenIndex": { "type": "integer", "description": "The pen of the uncut lines of the schematic 3D display." }
         },
         "additionalProperties": false
     },

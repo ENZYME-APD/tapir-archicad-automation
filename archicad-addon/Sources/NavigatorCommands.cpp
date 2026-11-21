@@ -1032,6 +1032,47 @@ struct ViewOptionsReader {
     }
 };
 
+// Compares the given fields of a JSON object with an API_ViewOptions read back after the change, and
+// names each one that differs ("modelViewOptions.railing.railing2DDisplayCompPosts is true.").
+struct ViewOptionsChecker {
+    const GS::ObjectState* current;
+    GS::UniString path;
+    GS::UniString notKept;
+
+    template<class F>
+    void Group (const char* name, F check)
+    {
+        const GS::ObjectState* child = current->Get (name);
+        if (child == nullptr) {
+            return;
+        }
+        const GS::ObjectState* parent = current;
+        const GS::UniString parentPath = path;
+        current = child;
+        path = parentPath + name + ".";
+        check ();
+        current = parent;
+        path = parentPath;
+    }
+    void Number (const char* name, char& value) { CompareNumber (name, (Int32) value); }
+    void Number (const char* name, short& value) { CompareNumber (name, (Int32) value); }
+    void Flag (const char* name, bool& value)
+    {
+        bool wanted = false;
+        if (current->Get (name, wanted) && wanted != value) {
+            notKept += " " + path + name + (value ? " is true." : " is false.");
+        }
+    }
+    void Attribute (const char* name, API_AttributeIndex& value) { CompareNumber (name, (Int32) GetAttributeIndex (value)); }
+    void CompareNumber (const char* name, Int32 value)
+    {
+        Int32 wanted = 0;
+        if (current->Get (name, wanted) && wanted != value) {
+            notKept += " " + path + name + GS::UniString::Printf (" is %d.", (int) value);
+        }
+    }
+};
+
 // The one list of the model view option fields shared by reading and writing, used for the current
 // window (VisitViewOptions) and for the stored combinations (GetModelViewOptionDetails). The
 // gdlOptions pointer and the fillers are left out.
@@ -1226,6 +1267,11 @@ GS::Optional<GS::UniString> GetModelViewOptionDetailsCommand::GetRawResponseSche
                             "modelViewOptions": {
                                 "type": "object",
                                 "description": "The fields of API_ModelViewOptions stored in the combination, with the curtainWall, stair and railing parts as nested objects: the same fields as viewOptions.modelViewOptions of GetViewOptions. Values are the numeric API constants; attribute indices are plain integers.",
+                                "properties": {
+                                    "railing": {
+                                        "$ref": "#/RailingModelViewOptions"
+                                    }
+                                },
                                 "additionalProperties": true
                             },
                             "gdlOptions": {
@@ -1635,6 +1681,30 @@ GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameter
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to change the view options. Check the model view option index and that a plan window is open.");
+    }
+
+    // The options are read back, so a given field Archicad did not keep is reported instead of a
+    // success. With an index the combination's model view options apply, not the given ones, so
+    // only the on-screen view options are compared then.
+    if (viewOptionsOS != nullptr) {
+        API_ViewOptions changed = {};
+        short changedIndex = 0;
+        err = ACAPI_Navigator_GetViewOptions (&changed, &changedIndex);
+        if (err != NoError) {
+            DisposeViewOptions (changed);
+            return CreateErrorResponse (err, "Failed to read the view options back after the change.");
+        }
+        GS::ObjectState onScreenOnly;
+        const GS::ObjectState* onScreenOS = viewOptionsOS->Get ("onScreenViewOptions");
+        if (onScreenOS != nullptr) {
+            onScreenOnly.Add ("onScreenViewOptions", *onScreenOS);
+        }
+        ViewOptionsChecker checker { switchCombination ? &onScreenOnly : viewOptionsOS, GS::UniString (), GS::UniString () };
+        VisitViewOptions (checker, changed);
+        DisposeViewOptions (changed);
+        if (!checker.notKept.IsEmpty ()) {
+            return CreateErrorResponse (APIERR_GENERAL, "Archicad did not keep every given view option:" + checker.notKept);
+        }
     }
 
     return {};

@@ -1734,6 +1734,436 @@ void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& ele
     details.Add ("onlyDimensionText", radial.onlyDimensionText);
 }
 
+// ============================================================================
+// CreateRadialDimensions (#2660)
+// ACAPI_Element_Create lists API_RadialDimensionID without notes, and the DevKit only edits a radial
+// dimension placed by hand (Do_RadialDimension_Edit). So the dimension is linked to the measured
+// element the way the read side (AddRadialDimensionDetails) finds it stored: base.base holds the
+// element's type and guid, with inIndex and line as given (1 and true, the line of the element,
+// when not given), base.loc the point of the arc the dimension starts from, endC the end of the
+// dimension line. The new dimension is read back, so a link or a radius Archicad did not make is
+// reported with the values it stored instead of a success.
+// ============================================================================
+
+// How far the hotspots of a wall near its ends (the corners of its faces, ACAPI_Element_GetHotspots)
+// are from the radial lines through its ends seen from center: the sum of the sines of the angles,
+// and in count how many hotspots were measured. Near 0 for the wall's own centre.
+static double WallEndHotspotDeviation (const GS::Array<API_ElementHotspot>& hotspots, const API_WallType& wall, const API_Coord& center, Int32& count)
+{
+    const double nearEnd = std::max (wall.thickness, wall.thickness1) + 1e-3;
+    const API_Coord ends[2] = { wall.begC, wall.endC };
+    double deviation = 0.0;
+    count = 0;
+    for (const API_ElementHotspot& hotspot : hotspots) {
+        for (const API_Coord& end : ends) {
+            const double toPointX = hotspot.second.x - end.x;
+            const double toPointY = hotspot.second.y - end.y;
+            const double distance = std::hypot (toPointX, toPointY);
+            const double radialX = end.x - center.x;
+            const double radialY = end.y - center.y;
+            const double radialLength = std::hypot (radialX, radialY);
+            if (distance < 1e-6 || distance > nearEnd || radialLength < 1e-9) {
+                continue;
+            }
+            deviation += std::fabs (radialX * toPointY - radialY * toPointX) / (radialLength * distance);
+            ++count;
+        }
+    }
+    return deviation;
+}
+
+// The centre and the radius of the arc a radial dimension measures: an arc or a circle (not an
+// elliptic one), or a curved wall. A wall's centre is on the perpendicular bisector of the chord
+// from begC to endC, on its left or on its right: the DevKit does not document the sign of
+// API_WallType::angle (its Element_Test example computes it both ways), so the centre is the one
+// whose radial lines through the wall's ends pass through the wall's hotspots near those ends, and
+// the one on the left of the chord for a positive angle (counterclockwise, as the arcs of polygons)
+// when the hotspots tell neither. Returns the reason for another element.
+static GS::Optional<GS::UniString> GetRadialDimensionOwnerArc (const API_Element& owner, API_Coord& center, double& radius)
+{
+    const API_ElemTypeID typeId = GetElemTypeId (owner.header);
+    if (typeId == API_ArcID || typeId == API_CircleID) {
+        if (std::fabs (owner.arc.ratio - 1.0) > 1e-9) {
+            return GS::UniString ("elementId is an elliptic arc or circle, which has no single radius.");
+        }
+        center = owner.arc.origC;
+        radius = owner.arc.r;
+        return {};
+    }
+    if (typeId == API_WallID) {
+        const double angle = owner.wall.angle;
+        const double chordX = owner.wall.endC.x - owner.wall.begC.x;
+        const double chordY = owner.wall.endC.y - owner.wall.begC.y;
+        const double chord = std::hypot (chordX, chordY);
+        if (owner.wall.type == APIWtyp_Poly || std::fabs (angle) < 1e-9 || chord < 1e-9) {
+            return GS::UniString ("elementId is a straight or polygonal wall; only a curved wall has a radius.");
+        }
+        const double toCenter = chord / (2.0 * std::tan (angle / 2.0));
+        const double midX = (owner.wall.begC.x + owner.wall.endC.x) / 2.0;
+        const double midY = (owner.wall.begC.y + owner.wall.endC.y) / 2.0;
+        API_Coord leftCenter = {};
+        leftCenter.x = midX - chordY / chord * toCenter;
+        leftCenter.y = midY + chordX / chord * toCenter;
+        API_Coord rightCenter = {};
+        rightCenter.x = midX + chordY / chord * toCenter;
+        rightCenter.y = midY - chordX / chord * toCenter;
+        center = leftCenter;
+        GS::Array<API_ElementHotspot> hotspots;
+        if (ACAPI_Element_GetHotspots (owner.header.guid, &hotspots) == NoError) {
+            Int32 leftCount = 0;
+            Int32 rightCount = 0;
+            const double leftDeviation = WallEndHotspotDeviation (hotspots, owner.wall, leftCenter, leftCount);
+            const double rightDeviation = WallEndHotspotDeviation (hotspots, owner.wall, rightCenter, rightCount);
+            if (rightCount > 0 && rightDeviation + 1e-3 < leftDeviation) {
+                center = rightCenter;
+            }
+        }
+        radius = chord / (2.0 * std::fabs (std::sin (angle / 2.0)));
+        return {};
+    }
+    return GS::UniString ("elementId must be an arc, a circle or a curved wall.");
+}
+
+static bool RadialDimensionTextPositionFromName (const GS::UniString& name, API_TextPosID& textPos)
+{
+    if (name == "Above") { textPos = APIPos_Above; return true; }
+    if (name == "In")    { textPos = APIPos_In;    return true; }
+    if (name == "Below") { textPos = APIPos_Below; return true; }
+    return false;
+}
+
+static bool RadialDimensionTextDirectionFromName (const GS::UniString& name, API_DirID& textWay)
+{
+    if (name == "Horizontal") { textWay = APIDir_Horizontal; return true; }
+    if (name == "Vertical")   { textWay = APIDir_Vertical;   return true; }
+    if (name == "Radial")     { textWay = APIDir_Radial;     return true; }
+    return false;
+}
+
+CreateRadialDimensionsCommand::CreateRadialDimensionsCommand () :
+    CreateElementsCommandBase ("CreateRadialDimensions", API_RadialDimensionID, "radialDimensionsData")
+{
+}
+
+GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "radialDimensionsData": {
+            "type": "array",
+            "description": "Array of data to create Radial Dimensions (the Radial Dimension tool), each measuring the radius of an arc, a circle or a curved wall. They are created in the current database (the floor plan, or the worksheet or detail whose window is active), or in the one given by databaseId, which must hold the measured element.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Radial Dimension. It is linked to the measured element, so Archicad measures its radius and keeps the dimension up to date. Each new dimension is read back: when Archicad did not link it to the element, measured another radius, moved its dimension line off the given direction, or did not keep a given setting, the item fails with the values Archicad stored and the dimension is deleted again.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a Radial Dimension favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "elementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The measured element: an arc or a circle (not an elliptic one), or a curved wall. The dimension is placed on its story. Archicad stores the link to a circle with the type Arc, so GetDetailsOfElements returns ownerElementType Arc for it."
+                    },
+                    "dimensionLineEnd": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The end of the dimension line (API_RadialDimensionType endC), as GetDetailsOfElements returns it. It must not be the centre of the arc. Archicad may lengthen the line along the same direction so that its text fits (Archicad 29 made a 0.5 m line 0.966 m long); GetDetailsOfElements returns the end it kept."
+                    },
+                    "basePoint": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "Optional. The point of the arc the dimension starts from (base.loc), as GetDetailsOfElements returns it. By default the point of the arc (of its full circle) towards dimensionLineEnd, seen from the centre."
+                    },
+                    "ownerElementInIndex": {
+                        "type": "integer",
+                        "description": "Optional. The index of the measured part of the element (base.base.inIndex), as GetDetailsOfElements returns it for a radial dimension placed by hand. The Archicad API does not document it for radial dimensions. When not given: -1 for a curved wall (what Archicad 29 stores for a dimension placed by hand on one, and the only value it takes), 1 for an arc or a circle."
+                    },
+                    "ownerElementLine": {
+                        "type": "boolean",
+                        "description": "Optional. Whether the dimension is linked to the line of the element (base.base.line: the arc or the circle itself, the wall's line) rather than to a node, as GetDetailsOfElements returns it. true when not given."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Optional. Layer attribute index to place the dimension on. By default the layer of the favorite or the Radial Dimension tool default is used."
+                    },
+                    "linePen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension line."
+                    },
+                    "marker": {
+                        "$ref": "#/DimensionMarker",
+                        "description": "Optional. The marker at the end of the dimension line: any of its type, pen and size."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Optional. The height of the dimension text in millimeters (paper size)."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension text."
+                    },
+                    "textPosition": {
+                        "type": "string",
+                        "enum": ["Above", "In", "Below"],
+                        "description": "Optional. Where the text is, relative to the dimension line (textPos)."
+                    },
+                    "textDirection": {
+                        "type": "string",
+                        "enum": ["Horizontal", "Vertical", "Radial"],
+                        "description": "Optional. The direction of the text (textWay)."
+                    },
+                    "customText": {
+                        "type": "string",
+                        "description": "Optional. A custom text shown instead of the measured radius (textContent Custom in GetDetailsOfElements)."
+                    },
+                    "showOrigin": {
+                        "type": "boolean",
+                        "description": "Optional. Whether the centre of the arc is marked (showOrigo)."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId",
+                    "dimensionLineEnd"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet or a detail (see GetDatabases), which must hold the measured elements. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "radialDimensionsData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreateRadialDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories& /*stories*/, const GS::ObjectState& parameters) const
+{
+    API_Element owner = {};
+    owner.header.guid = GetGuidFromArrayItem ("elementId", parameters);
+    if (owner.header.guid == APINULLGuid || ACAPI_Element_Get (&owner) != NoError) {
+        return CreateErrorResponse (APIERR_BADID, "elementId is not an element of the database the dimension is created in.");
+    }
+    API_Coord center = {};
+    double radius = 0.0;
+    const GS::Optional<GS::UniString> ownerError = GetRadialDimensionOwnerArc (owner, center, radius);
+    if (ownerError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *ownerError);
+    }
+
+    const GS::ObjectState* endOs = parameters.Get ("dimensionLineEnd");
+    if (endOs == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Missing 'dimensionLineEnd'.");
+    }
+    const API_Coord dimensionLineEnd = Get2DCoordinateFromObjectState (*endOs);
+    const double endDistance = std::hypot (dimensionLineEnd.x - center.x, dimensionLineEnd.y - center.y);
+    if (endDistance < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, "'dimensionLineEnd' is the centre of the arc; it must be away from it.");
+    }
+    API_Coord basePoint = {};
+    const GS::ObjectState* basePointOs = parameters.Get ("basePoint");
+    if (basePointOs != nullptr) {
+        basePoint = Get2DCoordinateFromObjectState (*basePointOs);
+    } else {
+        basePoint.x = center.x + (dimensionLineEnd.x - center.x) / endDistance * radius;
+        basePoint.y = center.y + (dimensionLineEnd.y - center.y) / endDistance * radius;
+    }
+
+    API_RadialDimensionType& radial = element.radialDimension;
+#ifdef ServerMainVers_2600
+    radial.base.base.type = owner.header.type;
+#else
+    radial.base.base.typeID = owner.header.typeID;
+#endif
+    radial.base.base.guid = owner.header.guid;
+    radial.base.base.line = true;
+    parameters.Get ("ownerElementLine", radial.base.base.line);
+    // A radial dimension placed by hand on a curved wall in Archicad 29 stores inIndex -1, and
+    // ACAPI_Element_Create refuses a wall with any other value tried (1, 2, 10, 11, 20, 21 and the
+    // inIndex of every wall hotspot). Arcs and circles take 1.
+    Int32 inIndex = GetElemTypeId (owner.header) == API_WallID ? -1 : 1;
+    parameters.Get ("ownerElementInIndex", inIndex);
+    radial.base.base.inIndex = inIndex;
+    radial.base.base.special = 0;
+    radial.base.base.node_id = 0;
+    radial.base.base.node_status = 0;
+    radial.base.base.node_typ = 0;
+    radial.base.loc = basePoint;
+    radial.base.loc3D.x = basePoint.x;
+    radial.base.loc3D.y = basePoint.y;
+    radial.base.loc3D.z = 0.0;
+    radial.endC = dimensionLineEnd;
+    element.header.floorInd = owner.header.floorInd;
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
+    Int32 linePen = 0;
+    if (parameters.Get ("linePen", linePen)) {
+        if (linePen < 1 || linePen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'linePen' must be between 1 and 255.");
+        }
+        radial.linPen = static_cast<short> (linePen);
+    }
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        GS::UniString markerTypeName;
+        if (marker->Get ("type", markerTypeName)) {
+            API_MarkerID markerType = APIMark_CrossLine;
+            if (!ParseDimensionMarkerName (markerTypeName, markerType)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown marker 'type' value: " + markerTypeName);
+            }
+            radial.markerData.markerType = markerType;
+        }
+        Int32 markerPen = 0;
+        if (marker->Get ("pen", markerPen)) {
+            if (markerPen < 1 || markerPen > 255) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'pen' must be between 1 and 255.");
+            }
+            radial.markerData.markerPen = static_cast<short> (markerPen);
+        }
+        double markerSize = 0.0;
+        if (marker->Get ("size", markerSize)) {
+            if (markerSize <= 0.0) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'size' must be greater than 0.");
+            }
+            radial.markerData.markerSize = markerSize;
+        }
+    }
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0.");
+        }
+        radial.note.noteSize = textHeight;
+    }
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255.");
+        }
+        radial.note.notePen = static_cast<short> (textPen);
+    }
+    GS::UniString textPosition;
+    if (parameters.Get ("textPosition", textPosition) && !RadialDimensionTextPositionFromName (textPosition, radial.textPos)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid textPosition: it must be Above, In or Below.");
+    }
+    GS::UniString textDirection;
+    if (parameters.Get ("textDirection", textDirection) && !RadialDimensionTextDirectionFromName (textDirection, radial.textWay)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid textDirection: it must be Horizontal, Vertical or Radial.");
+    }
+    parameters.Get ("showOrigin", radial.showOrigo);
+
+    // ACAPI_Element_Create reads the custom text after this returns, so it is kept in the command.
+    customText.Clear ();
+    if (parameters.Get ("customText", customText)) {
+        radial.note.contentType = API_NoteContent_Custom;
+        radial.note.contentUStr = &customText;
+    }
+    return {};
+}
+
+GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& failureReason) const
+{
+    // With a section or elevation window active, ACAPI_Element_Create of a dimension can report
+    // success and hand back a GUID although no element was created (#510).
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    if (ACAPI_Element_Get (&created) != NoError || GetElemTypeId (created.header) != API_RadialDimensionID) {
+        failureReason = "Archicad returned a radial dimension that cannot be read back";
+        return APIERR_GENERAL;
+    }
+    const API_RadialDimensionType& want = requestedElement.radialDimension;
+    const API_RadialDimensionType& got = created.radialDimension;
+
+    GS::UniString notKept;
+    if (got.base.base.guid != want.base.base.guid) {
+        notKept += got.base.base.guid == APINULLGuid ? GS::UniString (" it is not linked to an element.") : " it is linked to the element " + APIGuidToString (got.base.base.guid) + ".";
+    }
+    // The radius Archicad measured, against the one of the element. A wall may be measured on one
+    // of its faces rather than on its reference line, so it may differ by up to the wall's thickness.
+    API_Element owner = {};
+    owner.header.guid = want.base.base.guid;
+    API_Coord center = {};
+    double radius = 0.0;
+    if (ACAPI_Element_Get (&owner) == NoError && !GetRadialDimensionOwnerArc (owner, center, radius).HasValue ()) {
+        const double tolerance = GetElemTypeId (owner.header) == API_WallID ? std::max (owner.wall.thickness, owner.wall.thickness1) + 1e-6 : 1e-6;
+        if (std::fabs (got.dimVal - radius) > tolerance) {
+            notKept += GS::UniString::Printf (" the radius is %g, the element's radius is %g.", got.dimVal, radius);
+        }
+        // Archicad may lengthen the dimension line so that its text fits (Archicad 29: a 0.5 m line
+        // of a 1.5 m arc became 0.966 m long), along the same direction from the centre. So only a
+        // line end Archicad moved off that direction is reported.
+        const double wantX = want.endC.x - center.x;
+        const double wantY = want.endC.y - center.y;
+        const double gotX = got.endC.x - center.x;
+        const double gotY = got.endC.y - center.y;
+        const double lengths = std::hypot (wantX, wantY) * std::hypot (gotX, gotY);
+        if (lengths < 1e-12 || std::fabs (wantX * gotY - wantY * gotX) > 1e-6 * lengths || wantX * gotX + wantY * gotY <= 0.0) {
+            notKept += GS::UniString::Printf (" dimensionLineEnd is (%g, %g), off the direction of the given one from the centre.", got.endC.x, got.endC.y);
+        }
+    }
+    if (parameters.Contains ("linePen") && got.linPen != want.linPen) {
+        notKept += GS::UniString::Printf (" linePen is %d.", (int) got.linPen);
+    }
+    if (parameters.Contains ("textPen") && got.note.notePen != want.note.notePen) {
+        notKept += GS::UniString::Printf (" textPen is %d.", (int) got.note.notePen);
+    }
+    if (parameters.Contains ("textHeight") && std::fabs (got.note.noteSize - want.note.noteSize) > 1e-6) {
+        notKept += GS::UniString::Printf (" textHeight is %g.", got.note.noteSize);
+    }
+    if (parameters.Contains ("textPosition") && got.textPos != want.textPos) {
+        notKept += " textPosition is " + RadialDimensionTextPositionName (got.textPos) + ".";
+    }
+    if (parameters.Contains ("textDirection") && got.textWay != want.textWay) {
+        notKept += " textDirection is " + RadialDimensionTextDirectionName (got.textWay) + ".";
+    }
+    if (parameters.Contains ("showOrigin") && got.showOrigo != want.showOrigo) {
+        notKept += got.showOrigo ? GS::UniString (" showOrigin is true.") : GS::UniString (" showOrigin is false.");
+    }
+    if (parameters.Contains ("customText") && got.note.contentType != API_NoteContent_Custom) {
+        notKept += " the text is the measured radius, not customText.";
+    }
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        if (marker->Contains ("type") && got.markerData.markerType != want.markerData.markerType) {
+            notKept += " marker.type is " + DimensionMarkerName (got.markerData.markerType) + ".";
+        }
+        if (marker->Contains ("pen") && got.markerData.markerPen != want.markerData.markerPen) {
+            notKept += GS::UniString::Printf (" marker.pen is %d.", (int) got.markerData.markerPen);
+        }
+        if (marker->Contains ("size") && std::fabs (got.markerData.markerSize - want.markerData.markerSize) > 1e-6) {
+            notKept += GS::UniString::Printf (" marker.size is %g.", got.markerData.markerSize);
+        }
+    }
+    if (notKept.IsEmpty ()) {
+        return NoError;
+    }
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID storedTypeId = GetElemTypeId (got.base.base.type);
+#else
+    const API_ElemTypeID storedTypeId = GetElemTypeId (got.base.base.typeID);
+#endif
+    failureReason = "Archicad did not make the radial dimension as given:" + notKept +
+        GS::UniString::Printf (" It stored ownerElementInIndex %d, ownerElementLine %s, basePoint (%g, %g) and owner type ",
+            (int) got.base.base.inIndex, got.base.base.line ? "true" : "false", got.base.loc.x, got.base.loc.y) +
+        GetElementTypeNonLocalizedName (storedTypeId);
+    return APIERR_GENERAL;
+}
+
 namespace {
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
