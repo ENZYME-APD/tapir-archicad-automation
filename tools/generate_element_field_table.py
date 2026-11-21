@@ -2,10 +2,15 @@
 API_Element union, for the GetElementFields, SetElementFields and GetElementFieldDefinitions commands.
 
 The headers of one DevKit are parsed; each leaf field (a number, a bool, an enum, an attribute index,
-a guid or a character array) becomes one row with its path, written as C++ so that the compiler
-computes its offset and size (offsetof, sizeof): a path that does not exist makes the build fail
-instead of reading the wrong bytes. Nested structs, named and anonymous unions and small fixed
-arrays are expanded; pointers, memo handles, GS containers, reserved and filler members are left out.
+a guid, a character array, an optional pen or attribute override, or a GS::UniString pointer) becomes
+one row with its path, written as C++ so that the compiler computes its offset and size (offsetof,
+sizeof): a path that does not exist makes the build fail instead of reading the wrong bytes. Nested
+structs, named and anonymous unions and small fixed arrays (also two-dimensional ones, such as the
+symbol data of a stair's structures) are expanded. An optional override (API_OverriddenPen,
+API_OverriddenAttribute: APIOptional<T> of the API) is one row, read and written as an object with
+hasValue and value. A GS::UniString* (e.g. note.contentUStr, the text of a dimension note) is one row
+outside unions: the commands point it to a string they own before Archicad reads or writes it. Other
+pointers, memo handles, GS containers, reserved and filler members are left out.
 
 Standard library only. Usage, with the DevKits of devkits.json (the releases the build checks use):
 
@@ -15,6 +20,9 @@ Each version's table is generated from its own headers and compiled only for tha
 (#if ServerMainVers_xx00); a version with no table makes the commands answer that it is not available.
 """
 
+import collections
+import itertools
+import math
 import pathlib
 import re
 import sys
@@ -155,6 +163,8 @@ def build_block (support):
         aliases.setdefault (m.group (2), ' '.join (m.group (1).split ()))
     for m in re.finditer (r'\busing\s+(\w+)\s*=\s*([\w:\s]+?)\s*;', allt):
         aliases.setdefault (m.group (1), ' '.join (m.group (2).split ()))
+    # The optional types of the API: "using API_OverriddenPen = APIOptional<API_PenIndex>;".
+    optionals = {m.group (1): m.group (2) for m in re.finditer (r'\busing\s+(\w+)\s*=\s*APIOptional\s*<\s*(\w+)\s*>\s*;', allt)}
     defines = {m.group (1): int (m.group (2)) for m in re.finditer (r'#define\s+(\w+)\s+\(?\s*(\d+)\s*\)?\s*$', allt, re.M)}
     for m in re.finditer (r'\b(?:constexpr|const)\s+[\w:]+\s+(\w+)\s*=\s*(\d+)\s*;', allt):
         defines.setdefault (m.group (1), int (m.group (2)))
@@ -212,41 +222,61 @@ def build_block (support):
             return 'AttributeIndex'
         if t == 'API_Guid' or r == 'API_Guid':
             return 'Guid'
+        # APIOptional<API_PenIndex> is API_OverriddenPen and APIOptional<API_AttributeIndex> is
+        # API_OverriddenAttribute, the types the commands read and write them as.
+        m = re.match (r'^APIOptional\s*<\s*(\w+)\s*>$', t)
+        inner = m.group (1) if m else optionals.get (t, optionals.get (r))
+        if inner == 'API_PenIndex':
+            return 'OverriddenPen'
+        if inner == 'API_AttributeIndex':
+            return 'OverriddenAttribute'
         return None
 
     # variant: the member of a named union the field is in ("u.revolvedShell"), or None. The members of
     # a union share their bytes, so only the one the element uses holds its values.
+    # A row is (path, kind, member name, variant, the struct the member is declared in).
     def expand (typ, path, depth, rows, variant=None):
         in_union = typ in union_types
         for mtype, mname, arrays, ptr in structs.get (typ, []):
-            if ptr or re.match (r'^(filler|reserved|dummy|unused|head$)', mname, re.I) or 'GS::' in mtype and mtype not in UCHARS | SIGNED | UNSIGNED | REAL:
+            if re.match (r'^(filler|reserved|dummy|unused|head$)', mname, re.I):
                 continue
             p = f'{path}.{mname}' if path else mname
             v = p if in_union else variant
+            if ptr:
+                # A GS::UniString* outside any union (the text of a dimension note): the commands
+                # point it to a string they own. In a union, setting the pointer would overwrite the
+                # member the element uses; other pointers are left out.
+                if mtype == 'GS::UniString' and not arrays and v is None:
+                    rows.append ((p, 'UniStringPointer', mname, v, typ))
+                continue
+            if 'GS::' in mtype and mtype not in UCHARS | SIGNED | UNSIGNED | REAL:
+                continue
             r = resolve (mtype)
             if arrays:
                 if len (arrays) == 1 and (r in CHARS or mtype in CHARS):
-                    rows.append ((p, 'CString', mname, v))
+                    rows.append ((p, 'CString', mname, v, typ))
                     continue
                 if len (arrays) == 1 and (mtype in UCHARS or r == 'GS::uchar_t') and mtype != 'unsigned short':
-                    rows.append ((p, 'UString', mname, v))
+                    rows.append ((p, 'UString', mname, v, typ))
                     continue
-                if len (arrays) != 1:
+                sizes = [array_size (a) for a in arrays]
+                if None in sizes or math.prod (sizes) > MAX_ARRAY:
                     continue
-                n = array_size (arrays[0])
-                if n is None or n > MAX_ARRAY:
+                # Arrays of strings with more than one dimension are left out (the element structs have none).
+                if len (sizes) > 1 and (r in CHARS or mtype in CHARS or 'GS::uchar_t' in (r, mtype)):
                     continue
-                for k in range (n):
-                    q = f'{p}[{k}]'
-                    kind = leaf_kind (mtype)
+                kind = leaf_kind (mtype)
+                # Every item, e.g. structure[0][0] to structure[1][2] of "structure[2][3]".
+                for index in itertools.product (*(range (n) for n in sizes)):
+                    q = p + ''.join (f'[{k}]' for k in index)
                     if kind and kind != 'Guid':
-                        rows.append ((q, kind, mname, v))
+                        rows.append ((q, kind, mname, v, typ))
                     elif (mtype in structs or r in structs) and depth < MAX_DEPTH:
                         expand (mtype if mtype in structs else r, q, depth + 1, rows, v)
                 continue
             kind = leaf_kind (mtype)
             if kind:
-                rows.append ((p, kind, mname, v))
+                rows.append ((p, kind, mname, v, typ))
             elif (mtype in structs or r in structs) and depth < MAX_DEPTH:
                 expand (mtype if mtype in structs else r, p, depth + 1, rows, v)
 
@@ -275,17 +305,19 @@ def build_block (support):
 
     # The fields that choose which member of a union, or which shape, an element has. Changing one
     # without the data of the other shape breaks the element: Archicad 29 quit when a roof's
-    # roofClass was changed through SetElementFields, and a wall's type is issue #1914.
+    # roofClass was changed through SetElementFields, and a wall's type is issue #1914. They are
+    # found by the struct they are declared in, so the structType of a stair's default structures
+    # (structure[0][0].structType of API_StairType) is read-only too.
     shape_selectors = {
         ('API_RoofType', 'roofClass'), ('API_ShellType', 'shellClass'), ('API_LabelType', 'labelClass'),
         ('API_StairStructureType', 'structType'), ('API_WallType', 'type'),
     }
 
-    def read_only (path, kind, leaf, struct):
+    def read_only (path, kind, leaf, owner):
         # Owners and counts are computed by Archicad; other guids (e.g. symbID, the library part of a
         # railing component) are settings and stay writable.
         return (leaf in ('owner', 'guid', 'ownerGuid') or re.match (r'^n[A-Z]', leaf) is not None or
-                (struct, path) in shape_selectors)
+                (owner, leaf) in shape_selectors)
 
     lines = [
         'namespace ElementFields {',
@@ -293,15 +325,17 @@ def build_block (support):
     ]
     total = 0
     max_anc = 0
+    kinds = collections.Counter ()
     for eid, etype, emember, rows in tables:
         lines.append (f'static const FieldInfo Fields_{eid}[] = {{')
-        for p, kind, leaf, variant in rows:
+        for p, kind, leaf, variant, owner in rows:
             anc = ancestors (p)
             max_anc = max (max_anc, len (anc))
             anc_code = ', '.join (f'TF_OFF ({etype}, {a})' for a in anc)
             var_code = f'"{variant}"' if variant else 'nullptr'
-            lines.append (f'    {{ "{p}", TF_OFF ({etype}, {p}), TF_SIZE ({etype}, {p}), FieldKind::{kind}, {"true" if read_only (p, kind, leaf, etype) else "false"}, '
+            lines.append (f'    {{ "{p}", TF_OFF ({etype}, {p}), TF_SIZE ({etype}, {p}), FieldKind::{kind}, {"true" if read_only (p, kind, leaf, owner) else "false"}, '
                           f'{var_code}, {len (anc)}, {{ {anc_code} }} }},')
+            kinds[kind] += 1
         lines.append ('};')
         lines.append ('')
         total += len (rows)
@@ -322,7 +356,7 @@ def build_block (support):
     lines.append ('}')
     lines.append ('')
     lines.append ('}')
-    return lines, len (tables), total
+    return lines, len (tables), total, kinds
 
 
 def main ():
@@ -350,14 +384,14 @@ def main ():
         '',
     ]
     for i, (version, support) in enumerate (sorted (devkits)):
-        block, ntables, total = build_block (support)
+        block, ntables, total, kinds = build_block (support)
         keyword = '#if' if i == 0 else '#elif'
         lines.append (f'{keyword} defined (ServerMainVers_{version}00) && !defined (ServerMainVers_{version + 1}00)')
         lines.append (f'// Archicad {version}, from {support.parent.name}')
         lines.append ('')
         lines += block
         lines.append ('')
-        print (f'Archicad {version}: {ntables} element types, {total} fields')
+        print (f'Archicad {version}: {ntables} element types, {total} fields (' + ', '.join (f'{n} {k}' for k, n in sorted (kinds.items ())) + ')')
     lines += [
         '#else',
         '',

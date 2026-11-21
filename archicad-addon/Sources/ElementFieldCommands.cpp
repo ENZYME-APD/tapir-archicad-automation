@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <deque>
 #include <limits>
 
 using namespace ElementFields;
@@ -17,14 +18,17 @@ const char* NotAvailableMessage = "The element field table is not available in t
 const char* GetKindName (FieldKind kind)
 {
     switch (kind) {
-        case FieldKind::Real:           return "Real";
-        case FieldKind::Bool:           return "Bool";
-        case FieldKind::SignedInt:      return "SignedInt";
-        case FieldKind::UnsignedInt:    return "UnsignedInt";
-        case FieldKind::CString:        return "CString";
-        case FieldKind::UString:        return "UString";
-        case FieldKind::AttributeIndex: return "AttributeIndex";
-        case FieldKind::Guid:           return "Guid";
+        case FieldKind::Real:                   return "Real";
+        case FieldKind::Bool:                   return "Bool";
+        case FieldKind::SignedInt:              return "SignedInt";
+        case FieldKind::UnsignedInt:            return "UnsignedInt";
+        case FieldKind::CString:                return "CString";
+        case FieldKind::UString:                return "UString";
+        case FieldKind::AttributeIndex:         return "AttributeIndex";
+        case FieldKind::Guid:                   return "Guid";
+        case FieldKind::OverriddenPen:          return "OverriddenPen";
+        case FieldKind::OverriddenAttribute:    return "OverriddenAttribute";
+        case FieldKind::UniStringPointer:       return "UniStringPointer";
     }
     return "";
 }
@@ -33,17 +37,150 @@ const char* GetKindName (FieldKind kind)
 const char* GetJsonTypeName (FieldKind kind)
 {
     switch (kind) {
-        case FieldKind::Real:           return "number";
-        case FieldKind::Bool:           return "boolean";
+        case FieldKind::Real:                   return "number";
+        case FieldKind::Bool:                   return "boolean";
         case FieldKind::SignedInt:
         case FieldKind::UnsignedInt:
-        case FieldKind::AttributeIndex: return "integer";
+        case FieldKind::AttributeIndex:         return "integer";
         case FieldKind::CString:
         case FieldKind::UString:
-        case FieldKind::Guid:           return "string";
+        case FieldKind::Guid:
+        case FieldKind::UniStringPointer:       return "string";
+        case FieldKind::OverriddenPen:
+        case FieldKind::OverriddenAttribute:    return "object";
     }
     return "";
 }
+
+// The strings the GS::UniString* fields of elements (FieldKind::UniStringPointer, e.g.
+// note.contentUStr) point to. Archicad fills such a string in ACAPI_Element_Get and reads it in
+// ACAPI_Element_Change only through the pointer the caller sets, as the DevKit's Element_Test does
+// with the text of dimension notes, and never owns it. The store owns the strings, at addresses that
+// stay valid as long as it lives (std::deque never moves its items when one is added at its end), so
+// a store must outlive every element that points to its strings.
+class UniStringStore
+{
+public:
+    GS::UniString* Add (const GS::UniString& value)
+    {
+        strings.push_back (value);
+        return &strings.back ();
+    }
+
+private:
+    std::deque<GS::UniString> strings;
+};
+
+const GS::UniString* GetUniStringPointer (const char* p)
+{
+    const GS::UniString* s = nullptr;
+    std::memcpy (&s, p, sizeof (s));
+    return s;
+}
+
+void SetUniStringPointer (char* p, const GS::UniString* s)
+{
+    std::memcpy (p, &s, sizeof (s));
+}
+
+// The text a UniStringPointer field points to, empty for nullptr. The pointer is always one the
+// commands set to a string of a UniStringStore, or nullptr (see ReadUniStrings).
+GS::UniString ReadUniStringPointer (const char* p)
+{
+    const GS::UniString* s = GetUniStringPointer (p);
+    return s != nullptr ? *s : GS::UniString ();
+}
+
+// The members of an OverriddenPen or OverriddenAttribute field: an APIOptional of the API (from the
+// Archicad 27 API; the tables are only generated for Archicad 29 and 30).
+struct OptionalValue
+{
+    bool    hasValue = false;
+    Int64   value = 0;
+};
+
+OptionalValue ReadOptionalValue (const char* p, FieldKind kind)
+{
+    OptionalValue result;
+#if defined (ServerMainVers_2900)
+    if (kind == FieldKind::OverriddenPen) {
+        API_OverriddenPen pen = {};
+        std::memcpy (&pen, p, sizeof (pen));
+        result.hasValue = pen.hasValue;
+        result.value = pen.value;
+    } else {
+        API_OverriddenAttribute attribute = {};
+        std::memcpy (&attribute, p, sizeof (attribute));
+        result.hasValue = attribute.hasValue;
+        result.value = GetAttributeIndex (attribute.value);
+    }
+#else
+    (void) p;
+    (void) kind;
+#endif
+    return result;
+}
+
+void WriteOptionalValue (char* p, FieldKind kind, const OptionalValue& value)
+{
+#if defined (ServerMainVers_2900)
+    if (kind == FieldKind::OverriddenPen) {
+        API_OverriddenPen pen = {};
+        std::memcpy (&pen, p, sizeof (pen));
+        pen.hasValue = value.hasValue;
+        pen.value = static_cast<API_PenIndex> (value.value);
+        std::memcpy (p, &pen, sizeof (pen));
+    } else {
+        API_OverriddenAttribute attribute = {};
+        std::memcpy (&attribute, p, sizeof (attribute));
+        attribute.hasValue = value.hasValue;
+        attribute.value = ACAPI_CreateAttributeIndex (static_cast<Int32> (value.value));
+        std::memcpy (p, &attribute, sizeof (attribute));
+    }
+#else
+    (void) p;
+    (void) kind;
+    (void) value;
+#endif
+}
+
+GS::ObjectState OptionalValueToObjectState (const OptionalValue& value)
+{
+    return GS::ObjectState ("hasValue", value.hasValue, "value", value.value);
+}
+
+#if defined (ServerMainVers_2900)
+// "structure[1][2].data.monolith" (a union member of a stair's default structures) -> role 1, side 2
+// and "data.monolith"; nullptr for another text.
+const char* ParseStairStructureVariant (const char* variant, UInt32& role, UInt32& side)
+{
+    const char* prefix = "structure[";
+    const size_t prefixLength = std::strlen (prefix);
+    if (std::strncmp (variant, prefix, prefixLength) != 0) {
+        return nullptr;
+    }
+    const char* c = variant + prefixLength;
+    const auto parseIndex = [&c] (UInt32& index) -> bool {
+        if (*c < '0' || *c > '9') {
+            return false;
+        }
+        index = 0;
+        while (*c >= '0' && *c <= '9') {
+            index = index * 10 + static_cast<UInt32> (*c - '0');
+            ++c;
+        }
+        return true;
+    };
+    if (!parseIndex (role) || std::strncmp (c, "][", 2) != 0) {
+        return nullptr;
+    }
+    c += 2;
+    if (!parseIndex (side) || std::strncmp (c, "].", 2) != 0) {
+        return nullptr;
+    }
+    return c + 2;
+}
+#endif
 
 // Whether the union member a field is in (FieldInfo::variant) is the one the element uses. The
 // members of a union share their bytes: reading another one gives meaningless values, and writing
@@ -59,6 +196,18 @@ bool IsVariantActive (API_ElemTypeID typeId, const API_Element& element, const c
     // versions ElementFieldTable has tables for; other versions have no table, so no variant.
     const GS::String v (variant);
     switch (typeId) {
+        case API_StairID: {
+            // The default structures of a stair, structure[role][side], each with its own structType.
+            UInt32 role = 0;
+            UInt32 side = 0;
+            const char* member = ParseStairStructureVariant (variant, role, side);
+            if (member == nullptr || role >= static_cast<UInt32> (API_StairPartRoleNum) || side >= static_cast<UInt32> (API_StairStructureSideNum)) {
+                return false;
+            }
+            const API_StairStructureTypeID structType = element.stair.structure[role][side].structType;
+            return (std::strcmp (member, "data.sideStair") == 0 && structType == APIST_Side) ||
+                   (std::strcmp (member, "data.monolith") == 0 && structType == APIST_Monolith);
+        }
         case API_RoofID:
             return (v == "u.planeRoof" && element.roof.roofClass == API_PlaneRoofID) ||
                    (v == "u.polyRoof" && element.roof.roofClass == API_PolyRoofID);
@@ -158,6 +307,9 @@ void AddFieldValue (GS::ObjectState& os, const FieldInfo& field, const API_Eleme
         case FieldKind::UString:        os.Add (field.path, ReadUString (p, field.size)); break;
         case FieldKind::AttributeIndex: os.Add (field.path, static_cast<Int64> (GetAttributeIndex (*reinterpret_cast<const API_AttributeIndex*> (p)))); break;
         case FieldKind::Guid:           os.Add (field.path, APIGuidToString (*reinterpret_cast<const API_Guid*> (p))); break;
+        case FieldKind::OverriddenPen:
+        case FieldKind::OverriddenAttribute: os.Add (field.path, OptionalValueToObjectState (ReadOptionalValue (p, field.kind))); break;
+        case FieldKind::UniStringPointer: os.Add (field.path, ReadUniStringPointer (p)); break;
     }
 }
 
@@ -174,6 +326,12 @@ GS::UniString FieldValueToString (const FieldInfo& field, const API_Element& ele
         case FieldKind::UString:        return GS::UniString ("\"") + ReadUString (p, field.size) + "\"";
         case FieldKind::AttributeIndex: return GS::UniString::Printf ("%d", static_cast<int> (GetAttributeIndex (*reinterpret_cast<const API_AttributeIndex*> (p))));
         case FieldKind::Guid:           return APIGuidToString (*reinterpret_cast<const API_Guid*> (p));
+        case FieldKind::OverriddenPen:
+        case FieldKind::OverriddenAttribute: {
+            const OptionalValue value = ReadOptionalValue (p, field.kind);
+            return GS::UniString ("{\"hasValue\": ") + (value.hasValue ? "true" : "false") + GS::UniString::Printf (", \"value\": %lld}", static_cast<long long> (value.value));
+        }
+        case FieldKind::UniStringPointer: return GS::UniString ("\"") + ReadUniStringPointer (p) + "\"";
     }
     return GS::UniString ();
 }
@@ -197,6 +355,15 @@ bool IsSameFieldValue (const FieldInfo& field, const API_Element& a, const API_E
             return ReadUString (pa, field.size) == ReadUString (pb, field.size);
         case FieldKind::AttributeIndex:
             return GetAttributeIndex (*reinterpret_cast<const API_AttributeIndex*> (pa)) == GetAttributeIndex (*reinterpret_cast<const API_AttributeIndex*> (pb));
+        case FieldKind::OverriddenPen:
+        case FieldKind::OverriddenAttribute: {
+            // The value means nothing while hasValue is false.
+            const OptionalValue va = ReadOptionalValue (pa, field.kind);
+            const OptionalValue vb = ReadOptionalValue (pb, field.kind);
+            return va.hasValue == vb.hasValue && (!va.hasValue || va.value == vb.value);
+        }
+        case FieldKind::UniStringPointer:
+            return ReadUniStringPointer (pa) == ReadUniStringPointer (pb);
         default:
             return std::memcmp (pa, pb, field.size) == 0;
     }
@@ -218,8 +385,11 @@ bool GetWholeNumber (const GS::ObjectState& os, const GS::String& key, Int64& va
     return false;
 }
 
-// Writes the value given for a field into element and sets the field in mask. Returns an error text, or nothing.
-GS::Optional<GS::UniString> WriteFieldValue (const GS::ObjectState& fields, const GS::String& key, const FieldInfo& field, API_Element& element, API_Element& mask)
+// Writes the value given for a field into element and sets the field in mask. A UniStringPointer field
+// is pointed to a new string of store, which keeps the text until Archicad has read it; the element it
+// pointed to before (a copy of element made before) keeps its own string. Returns an error text, or nothing.
+GS::Optional<GS::UniString> WriteFieldValue (const GS::ObjectState& fields, const GS::String& key, const FieldInfo& field, API_Element& element, API_Element& mask,
+                                             UniStringStore& store)
 {
     char* p = reinterpret_cast<char*> (&element) + field.offset;
     const GS::UniString name (key.ToCStr ());
@@ -337,6 +507,57 @@ GS::Optional<GS::UniString> WriteFieldValue (const GS::ObjectState& fields, cons
             *reinterpret_cast<API_Guid*> (p) = guid;
             break;
         }
+        case FieldKind::OverriddenPen:
+        case FieldKind::OverriddenAttribute: {
+            const bool isPen = field.kind == FieldKind::OverriddenPen;
+            const GS::UniString shape = name + " must be an object with hasValue (true or false) and value (" + (isPen ? "a pen index" : "an attribute index") +
+                                        "), e.g. {\"hasValue\": true, \"value\": 3}; a member left out keeps its value.";
+            GS::ObjectState given;
+            if (!fields.Get (key, given)) {
+                return shape;
+            }
+            bool unknownMember = false;
+            given.EnumerateFields ([&] (const GS::String& member) {
+                if (!(member == "hasValue") && !(member == "value")) {
+                    unknownMember = true;
+                }
+            });
+            const bool givesHasValue = given.Contains ("hasValue");
+            const bool givesValue = given.Contains ("value");
+            if (unknownMember || (!givesHasValue && !givesValue)) {
+                return shape;
+            }
+            OptionalValue value = ReadOptionalValue (p, field.kind);
+            if (givesHasValue && !given.Get ("hasValue", value.hasValue)) {
+                return shape;
+            }
+            if (givesValue) {
+                Int64 v = 0;
+                if (!GetWholeNumber (given, "value", v)) {
+                    return shape;
+                }
+                const Int64 minValue = isPen ? std::numeric_limits<Int16>::min () : std::numeric_limits<Int32>::min ();
+                const Int64 maxValue = isPen ? std::numeric_limits<Int16>::max () : std::numeric_limits<Int32>::max ();
+                if (v < minValue || v > maxValue) {
+                    return name + GS::UniString::Printf (".value must be between %lld and %lld.", static_cast<long long> (minValue), static_cast<long long> (maxValue));
+                }
+                value.value = v;
+                // As assigning a value to an APIOptional in C++: a value given alone is used.
+                if (!givesHasValue) {
+                    value.hasValue = true;
+                }
+            }
+            WriteOptionalValue (p, field.kind, value);
+            break;
+        }
+        case FieldKind::UniStringPointer: {
+            GS::UniString v;
+            if (!fields.Get (key, v)) {
+                return name + " must be a string.";
+            }
+            SetUniStringPointer (p, store.Add (v));
+            break;
+        }
     }
     char* maskBytes = reinterpret_cast<char*> (&mask);
     std::memset (maskBytes + field.offset, 0xFF, field.size);
@@ -348,7 +569,73 @@ GS::Optional<GS::UniString> WriteFieldValue (const GS::ObjectState& fields, cons
     return GS::NoValue;
 }
 
-GS::Optional<API_ElemTypeID> GetElementTypeId (const API_Guid& guid, API_Element& element, GSErrCode& err)
+bool HasUniStringPointers (const FieldTable& table)
+{
+    for (UInt32 i = 0; i < table.count; ++i) {
+        if (table.fields[i].kind == FieldKind::UniStringPointer) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Points the GS::UniString* fields of element (read before, with them nullptr) to the texts Archicad
+// gives through them: a second read, with read (ACAPI_Element_Get or ACAPI_Element_GetDefaults), of
+// a copy of request (the element's guid or the defaults' type) whose GS::UniString* fields point to
+// new strings of store, as the DevKit's Element_Test reads the text of a dimension note. Every other
+// field of element stays as the first read gave it. The generator only makes these fields outside
+// unions, so setting them overwrites no other member. A pointer Archicad did not keep is left
+// nullptr in element: the add-on never reads or frees memory it did not allocate.
+template <typename ReadFunction>
+GSErrCode ReadUniStrings (const FieldTable& table, const API_Element& request, API_Element& element, UniStringStore& store, const ReadFunction& read)
+{
+    API_Element withStrings = request;
+    char* bytes = reinterpret_cast<char*> (&withStrings);
+    GS::Array<const GS::UniString*> ownStrings;
+    for (UInt32 i = 0; i < table.count; ++i) {
+        if (table.fields[i].kind == FieldKind::UniStringPointer) {
+            GS::UniString* s = store.Add (GS::UniString ());
+            SetUniStringPointer (bytes + table.fields[i].offset, s);
+            ownStrings.Push (s);
+        }
+    }
+    const GSErrCode err = read (withStrings);
+    UIndex k = 0;
+    for (UInt32 i = 0; i < table.count; ++i) {
+        if (table.fields[i].kind == FieldKind::UniStringPointer) {
+            const bool kept = err == NoError && GetUniStringPointer (bytes + table.fields[i].offset) == ownStrings[k];
+            SetUniStringPointer (reinterpret_cast<char*> (&element) + table.fields[i].offset, kept ? ownStrings[k] : nullptr);
+            ++k;
+        }
+    }
+    return err;
+}
+
+// Sets to nullptr the GS::UniString* fields of element that were not written, as they are when an
+// element is read without them: the DevKit's Element_Test changes the text of a note through
+// contentUStr with only note.content in the mask, so a pointer left to the text that was read could
+// override a change of note.content.
+void ClearUnwrittenUniStrings (const FieldTable& table, const GS::Array<const FieldInfo*>& written, API_Element& element)
+{
+    for (UInt32 i = 0; i < table.count; ++i) {
+        const FieldInfo& field = table.fields[i];
+        if (field.kind != FieldKind::UniStringPointer) {
+            continue;
+        }
+        bool isWritten = false;
+        for (const FieldInfo* w : written) {
+            isWritten = isWritten || w == &field;
+        }
+        if (!isWritten) {
+            SetUniStringPointer (reinterpret_cast<char*> (&element) + field.offset, nullptr);
+        }
+    }
+}
+
+// Reads an element. When its type has GS::UniString* fields (the text of dimension notes), they are
+// read a second time, pointing to strings of store (see ReadUniStrings): the type, and so the fields,
+// is only known after the first read.
+GS::Optional<API_ElemTypeID> GetElementTypeId (const API_Guid& guid, API_Element& element, UniStringStore& store, GSErrCode& err)
 {
     element = {};
     element.header.guid = guid;
@@ -356,7 +643,17 @@ GS::Optional<API_ElemTypeID> GetElementTypeId (const API_Guid& guid, API_Element
     if (err != NoError) {
         return GS::NoValue;
     }
-    return GetElemTypeId (element.header);
+    const API_ElemTypeID typeId = GetElemTypeId (element.header);
+    const FieldTable* table = GetFieldTable (typeId);
+    if (table != nullptr && HasUniStringPointers (*table)) {
+        API_Element request = {};
+        request.header.guid = guid;
+        err = ReadUniStrings (*table, request, element, store, [] (API_Element& e) { return ACAPI_Element_Get (&e); });
+        if (err != NoError) {
+            return GS::NoValue;
+        }
+    }
+    return typeId;
 }
 
 // The components of a railing, whose tool defaults Archicad 29 and 30 do not change.
@@ -387,8 +684,9 @@ bool IsRailingComponentType (API_ElemTypeID typeId)
     }
 }
 
-// Reads the tool defaults of an element type (its generic variation), without the memo.
-GSErrCode GetDefaultsOfType (API_ElemTypeID typeId, API_Element& defaults)
+// Reads the tool defaults of an element type (its generic variation), without the memo, and the
+// texts of its GS::UniString* fields into strings of store (see ReadUniStrings).
+GSErrCode GetDefaultsOfType (API_ElemTypeID typeId, API_Element& defaults, UniStringStore& store)
 {
     defaults = {};
 #ifdef ServerMainVers_2600
@@ -396,7 +694,13 @@ GSErrCode GetDefaultsOfType (API_ElemTypeID typeId, API_Element& defaults)
 #else
     defaults.header.typeID = typeId;
 #endif
-    return ACAPI_Element_GetDefaults (&defaults, nullptr);
+    const API_Element request = defaults;
+    const GSErrCode err = ACAPI_Element_GetDefaults (&defaults, nullptr);
+    const FieldTable* table = GetFieldTable (typeId);
+    if (err != NoError || table == nullptr || !HasUniStringPointers (*table)) {
+        return err;
+    }
+    return ReadUniStrings (*table, request, defaults, store, [] (API_Element& e) { return ACAPI_Element_GetDefaults (&e, nullptr); });
 }
 
 // Adds to result the fields of element (every field, or only the wanted paths), with the asked paths
@@ -439,7 +743,7 @@ void AddFieldsOf (GS::ObjectState& result, const FieldTable& table, API_ElemType
 // a path is unknown or read-only, a value does not fit its field, or a field is in a union member
 // the element does not use; nothing otherwise.
 GS::UniString WriteFieldValues (const GS::ObjectState& fields, const FieldTable& table, API_ElemTypeID typeId, API_Element& wanted, API_Element& mask,
-                                GS::Array<const FieldInfo*>& written, GS::ObjectState& oldValues, GS::ObjectState& newValues)
+                                GS::Array<const FieldInfo*>& written, GS::ObjectState& oldValues, GS::ObjectState& newValues, UniStringStore& store)
 {
     ACAPI_ELEMENT_MASK_CLEAR (mask);
     GS::UniString error;
@@ -457,7 +761,7 @@ GS::UniString WriteFieldValues (const GS::ObjectState& fields, const FieldTable&
             error = GS::UniString (key.ToCStr ()) + " is read-only: Archicad computes it, or it chooses the shape of the element (see GetElementFieldDefinitions).";
             return;
         }
-        GS::Optional<GS::UniString> writeError = WriteFieldValue (fields, key, *field, wanted, mask);
+        GS::Optional<GS::UniString> writeError = WriteFieldValue (fields, key, *field, wanted, mask, store);
         if (writeError.HasValue ()) {
             error = writeError.Get ();
             return;
@@ -542,25 +846,25 @@ GS::Optional<GS::UniString> GetElementFieldDefinitionsCommand::GetRawResponseSch
                         },
                         "type": {
                             "type": "string",
-                            "enum": [ "number", "boolean", "integer", "string" ],
-                            "description": "The JSON type of the field's value."
+                            "enum": [ "number", "boolean", "integer", "string", "object" ],
+                            "description": "The JSON type of the field's value: object for an OverriddenPen or OverriddenAttribute (see ElementFieldOptionalValue)."
                         },
                         "kind": {
                             "type": "string",
-                            "enum": [ "Real", "Bool", "SignedInt", "UnsignedInt", "CString", "UString", "AttributeIndex", "Guid" ],
-                            "description": "The C++ kind of the field: an enum is a SignedInt, an AttributeIndex is the index of an attribute (pen tables excepted, pens are plain integers)."
+                            "enum": [ "Real", "Bool", "SignedInt", "UnsignedInt", "CString", "UString", "AttributeIndex", "Guid", "OverriddenPen", "OverriddenAttribute", "UniStringPointer" ],
+                            "description": "The C++ kind of the field: an enum is a SignedInt, an AttributeIndex is the index of an attribute (pen tables excepted, pens are plain integers). OverriddenPen and OverriddenAttribute are the optional pens and attributes of the API (API_OverriddenPen, API_OverriddenAttribute, e.g. cutFillPen and refMat of a wall), read and written as an object with hasValue and value. A UniStringPointer is a GS::UniString* through which Archicad passes a text (e.g. note.contentUStr, the text of a dimension note): it is read and written as a string, the commands pointing it to a string of their own."
                         },
                         "size": {
                             "type": "integer",
-                            "description": "The size of the field in bytes (for a string, the room in bytes including the closing zero)."
+                            "description": "The size of the field in bytes (for a string, the room in bytes including the closing zero; for a UniStringPointer, the size of the pointer)."
                         },
                         "readOnly": {
                             "type": "boolean",
-                            "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit): SetElementFields refuses them."
+                            "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, also in the default structures of a stair such as structure[0][0].structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit): SetElementFields refuses them."
                         },
                         "variant": {
                             "type": "string",
-                            "description": "For a field in a union, the member it is in, e.g. u.revolvedShell or u.planeRoof. Only the member the element uses holds values (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType): GetElementFields leaves the others out and SetElementFields refuses them."
+                            "description": "For a field in a union, the member it is in, e.g. u.revolvedShell, u.planeRoof or structure[0][1].data.monolith. Only the member the element uses holds values (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, the structType of that default structure of a stair): GetElementFields leaves the others out and SetElementFields refuses them."
                         }
                     },
                     "additionalProperties": false,
@@ -668,7 +972,7 @@ GS::Optional<GS::UniString> GetElementFieldsCommand::GetRawResponseSchema () con
                                     "type": "object",
                                     "description": "The value of each field, by its path.",
                                     "additionalProperties": {
-                                        "type": [ "number", "integer", "boolean", "string" ]
+                                        "$ref": "#/ElementFieldValue"
                                     }
                                 },
                                 "missingFields": {
@@ -713,6 +1017,8 @@ GS::ObjectState GetElementFieldsCommand::Execute (const GS::ObjectState& paramet
     GS::Array<GS::UniString> wanted;
     const bool hasWanted = parameters.Get ("fields", wanted);
 
+    // The texts of the GS::UniString* fields: they must outlive the elements read.
+    UniStringStore strings;
     GS::ObjectState response;
     const auto& results = response.AddList<GS::ObjectState> ("elementFields");
     for (const GS::ObjectState& item : elements) {
@@ -723,7 +1029,7 @@ GS::ObjectState GetElementFieldsCommand::Execute (const GS::ObjectState& paramet
         }
         API_Element element = {};
         GSErrCode err = NoError;
-        const GS::Optional<API_ElemTypeID> typeId = GetElementTypeId (GetGuidFromObjectState (*elementId), element, err);
+        const GS::Optional<API_ElemTypeID> typeId = GetElementTypeId (GetGuidFromObjectState (*elementId), element, strings, err);
         if (!typeId.HasValue ()) {
             results (CreateErrorResponse (err, "Failed to get the element."));
             continue;
@@ -771,9 +1077,9 @@ GS::Optional<GS::UniString> SetElementFieldsCommand::GetInputParametersSchema ()
                         },
                         "fields": {
                             "type": "object",
-                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"note.noteFont\": 3, \"note.frame\": true}. Only these fields change: they are written with ACAPI_Element_Change and a mask of exactly their bytes, then read back.",
+                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"note.noteFont\": 3, \"note.frame\": true, \"note.contentUStr\": \"A\"}, or {\"refMat\": {\"hasValue\": true, \"value\": 12}} for a wall. Only these fields change: they are written with ACAPI_Element_Change and a mask of exactly their bytes, then read back.",
                             "additionalProperties": {
-                                "type": [ "number", "integer", "boolean", "string" ]
+                                "$ref": "#/ElementFieldValue"
                             },
                             "minProperties": 1
                         }
@@ -825,7 +1131,8 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
     GS::Array<GS::ObjectState> items;
     parameters.Get ("elementsWithFields", items);
 
-    // Everything is checked and prepared before the undoable command.
+    // Everything is checked and prepared before the undoable command. The texts of the GS::UniString*
+    // fields are in strings, which outlives the copies of the elements in prepared and the change.
     struct Prepared {
         bool                            ok = false;
         GS::ObjectState                 result;
@@ -833,6 +1140,7 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
         API_Element                     mask = {};
         GS::Array<const FieldInfo*>     fields;
     };
+    UniStringStore strings;
     GS::Array<Prepared> prepared;
     for (const GS::ObjectState& item : items) {
         Prepared p;
@@ -844,7 +1152,7 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
             continue;
         }
         GSErrCode err = NoError;
-        const GS::Optional<API_ElemTypeID> typeId = GetElementTypeId (GetGuidFromObjectState (*elementId), p.wanted, err);
+        const GS::Optional<API_ElemTypeID> typeId = GetElementTypeId (GetGuidFromObjectState (*elementId), p.wanted, strings, err);
         if (!typeId.HasValue ()) {
             p.result = CreateFailedExecutionResult (err, "Failed to get the element.");
             prepared.Push (p);
@@ -858,12 +1166,13 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
         }
         GS::ObjectState oldValues;
         GS::ObjectState newValues;
-        const GS::UniString error = WriteFieldValues (fields, *table, *typeId, p.wanted, p.mask, p.fields, oldValues, newValues);
+        const GS::UniString error = WriteFieldValues (fields, *table, *typeId, p.wanted, p.mask, p.fields, oldValues, newValues, strings);
         if (!error.IsEmpty ()) {
             p.result = CreateFailedExecutionResult (APIERR_BADPARS, error);
             prepared.Push (p);
             continue;
         }
+        ClearUnwrittenUniStrings (*table, p.fields, p.wanted);
         p.ok = true;
         if (dryRun) {
             p.result = CreateWouldChangeExecutionResult (GS::ObjectState ("oldValue", oldValues, "newValue", newValues));
@@ -906,8 +1215,8 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
             } else {
                 // Read back after the undoable command, as some values are only updated once it is over.
                 API_Element got = {};
-                got.header.guid = p.wanted.header.guid;
-                if (ACAPI_Element_Get (&got) != NoError) {
+                GSErrCode getErr = NoError;
+                if (!GetElementTypeId (p.wanted.header.guid, got, strings, getErr).HasValue ()) {
                     p.result = CreateFailedExecutionResult (APIERR_GENERAL, "The element was changed but could not be read back.");
                 } else {
                     const GS::UniString notApplied = DescribeNotKept (p.fields, p.wanted, got);
@@ -991,7 +1300,7 @@ GS::Optional<GS::UniString> GetFieldsOfElementDefaultsCommand::GetRawResponseSch
                                     "type": "object",
                                     "description": "The value of each field of the tool defaults, by its path.",
                                     "additionalProperties": {
-                                        "type": [ "number", "integer", "boolean", "string" ]
+                                        "$ref": "#/ElementFieldValue"
                                     }
                                 },
                                 "missingFields": {
@@ -1036,6 +1345,8 @@ GS::ObjectState GetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
     GS::Array<GS::UniString> wanted;
     const bool hasWanted = parameters.Get ("fields", wanted);
 
+    // The texts of the GS::UniString* fields: they must outlive the defaults read.
+    UniStringStore strings;
     GS::ObjectState response;
     const auto& results = response.AddList<GS::ObjectState> ("fieldsOfElementDefaults");
     for (const GS::UniString& typeName : elementTypes) {
@@ -1046,7 +1357,7 @@ GS::ObjectState GetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
             continue;
         }
         API_Element defaults = {};
-        const GSErrCode err = GetDefaultsOfType (typeId, defaults);
+        const GSErrCode err = GetDefaultsOfType (typeId, defaults, strings);
         if (err != NoError) {
             results (CreateErrorResponse (err, GS::UniString ("Failed to read the tool defaults of ") + typeName + "."));
             continue;
@@ -1089,9 +1400,9 @@ GS::Optional<GS::UniString> SetFieldsOfElementDefaultsCommand::GetInputParameter
                         },
                         "fields": {
                             "type": "object",
-                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"thickness\": 0.25, \"height\": 2.7}. Only these fields change: they are written with ACAPI_Element_ChangeDefaults and a mask of exactly their bytes, then read back.",
+                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"thickness\": 0.25, \"height\": 2.7, \"cutFillPen\": {\"hasValue\": true, \"value\": 5}}. Only these fields change: they are written with ACAPI_Element_ChangeDefaults and a mask of exactly their bytes, then read back.",
                             "additionalProperties": {
-                                "type": [ "number", "integer", "boolean", "string" ]
+                                "$ref": "#/ElementFieldValue"
                             },
                             "minProperties": 1
                         }
@@ -1143,6 +1454,8 @@ GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
     GS::Array<GS::ObjectState> items;
     parameters.Get ("fieldsOfElementDefaults", items);
 
+    // The texts of the GS::UniString* fields: they must outlive the defaults and their change.
+    UniStringStore strings;
     GS::ObjectState response;
     const auto& results = response.AddList<GS::ObjectState> ("executionResults");
     for (const GS::ObjectState& item : items) {
@@ -1159,7 +1472,7 @@ GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
             continue;
         }
         API_Element wanted = {};
-        GSErrCode err = GetDefaultsOfType (typeId, wanted);
+        GSErrCode err = GetDefaultsOfType (typeId, wanted, strings);
         if (err != NoError) {
             results (CreateFailedExecutionResult (err, GS::UniString ("Failed to read the tool defaults of ") + typeName + "."));
             continue;
@@ -1169,7 +1482,7 @@ GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
         GS::Array<const FieldInfo*> written;
         GS::ObjectState oldValues;
         GS::ObjectState newValues;
-        const GS::UniString error = WriteFieldValues (fields, *table, typeId, wanted, mask, written, oldValues, newValues);
+        const GS::UniString error = WriteFieldValues (fields, *table, typeId, wanted, mask, written, oldValues, newValues, strings);
         if (!error.IsEmpty ()) {
             results (CreateFailedExecutionResult (APIERR_BADPARS, error));
             continue;
@@ -1179,9 +1492,10 @@ GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
             continue;
         }
         // The tool defaults are not part of the undo history, as in the settings dialogs of the tools.
+        ClearUnwrittenUniStrings (*table, written, wanted);
         const GSErrCode changeErr = ACAPI_Element_ChangeDefaults (&wanted, nullptr, &mask);
         API_Element got = {};
-        err = GetDefaultsOfType (typeId, got);
+        err = GetDefaultsOfType (typeId, got, strings);
         if (changeErr != NoError) {
             GS::UniString message = GS::UniString ("Archicad refused the change of the tool defaults of ") + typeName + ".";
             // Seen on Archicad 30: a refused change can still have written the other given fields.
