@@ -12553,8 +12553,6 @@ GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& dat
 // rolls back every step before it.
 GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, const GS::ObjectState& item, const Stories& stories, API_Guid& newGuid, GSErrCode& err)
 {
-    const API_Guid oldGuid = data.element.header.guid;
-
     // The CreateStairs path: the Stair tool defaults and their memo, the stair settings, then the
     // baseline from SetTypeSpecificParameters. The settings are the old stair's whole API_StairType,
     // as CreateStairs with favoriteName creates from the settings of a Favorite captured from a stair.
