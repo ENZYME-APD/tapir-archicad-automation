@@ -13942,7 +13942,7 @@
             },
             "angle": {
                 "type": "number",
-                "description": "The rotation angle of the curtain wall in radians."
+                "description": "The slant angle of the curtain wall plane in degrees, measured from the horizontal (API_CurtainWallType::angle): 90 is vertical, less than 90 leans to the left of the reference line, more than 90 to the right, as CreateCurtainWalls takes it."
             },
             "displayOption": {
                 "$ref": "#/DisplayOption"
