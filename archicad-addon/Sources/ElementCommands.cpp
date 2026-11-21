@@ -4886,6 +4886,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.stair.walkingLinePosition == APILP_Right ? "Right" :
                     elem.stair.walkingLinePosition == APILP_Center ? "Center" : "Auto"));
                 typeSpecificDetails.Add ("walkingLineOffset", elem.stair.walkingLineOffset);
+                typeSpecificDetails.Add ("walkingLineSymbolPosition", GS::UniString (
+                    elem.stair.walkLineSymbPos == APISP_Center ? "Center" :
+                    elem.stair.walkLineSymbPos == APISP_Custom ? "Custom" : "Auto"));
                 typeSpecificDetails.Add ("numberingType", GS::UniString (elem.stair.numberingType == APISN_Risers ? "Risers" : "Treads"));
                 typeSpecificDetails.Add ("uniformFinish", elem.stair.uniformFinish);
                 typeSpecificDetails.Add ("uniformMonolithAttributes", elem.stair.uniformMonolithAttributes);

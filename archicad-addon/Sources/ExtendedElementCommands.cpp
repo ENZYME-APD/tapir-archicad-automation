@@ -8398,6 +8398,7 @@ static const char* StairSettingsSchemaProperties = R"(
                         "extraBottomTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its bottom." },
                         "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto)." },
                         "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto." },
+                        "walkingLineSymbolPosition": { "type": "string", "enum": ["Auto", "Center", "Custom"], "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos): by Archicad (Auto), centered, or where it was placed by hand (Custom)." },
                         "numberingType": { "type": "string", "enum": ["Treads", "Risers"], "description": "Whether the steps are numbered on their treads or on their risers." },
                         "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward)." },
                         "uniformFinish": { "type": "boolean", "description": "Whether the flights and the landings share one finish setting." },
@@ -11450,6 +11451,19 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     if (walkingLineOffset.HasValue ()) {
         stair.walkingLineOffset = walkingLineOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, walkingLineOffset);
+    }
+    GS::UniString walkingLineSymbolPosition;
+    if (details.Get ("walkingLineSymbolPosition", walkingLineSymbolPosition)) {
+        if (walkingLineSymbolPosition == "Auto") {
+            stair.walkLineSymbPos = APISP_Auto;
+        } else if (walkingLineSymbolPosition == "Center") {
+            stair.walkLineSymbPos = APISP_Center;
+        } else if (walkingLineSymbolPosition == "Custom") {
+            stair.walkLineSymbPos = APISP_Custom;
+        } else {
+            return GS::UniString ("Invalid walkingLineSymbolPosition: it must be Auto, Center or Custom.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, walkLineSymbPos);
     }
     GS::UniString numberingType;
     if (details.Get ("numberingType", numberingType)) {
