@@ -1704,7 +1704,7 @@ class LanguageTests (unittest.TestCase):
 
     def testUnprintableCharactersAreReplaced (self):
         # A Japanese text printed to a console that cannot show it.
-        stream = io.TextIOWrapper (io.BytesIO (), encoding = 'cp1252')
+        stream = io.TextIOWrapper (io.BytesIO (), encoding = 'cp1252', newline = '\n')
         with unittest.mock.patch.object (sys, 'stdout', stream), unittest.mock.patch.object (sys, 'stderr', None):
             tapir_installer.ReplaceUnprintableCharacters ()
             tapir_installer.SetLanguage ('JPN')
