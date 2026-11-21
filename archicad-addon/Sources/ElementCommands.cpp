@@ -4849,6 +4849,45 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
+                // The other settings CreateStairs and ModifyStairs write (ApplyStairSettings), read
+                // back with the same keys and values. The structure settings are left to the stair
+                // structure reading, inputDirection to the baseline reading below.
+                typeSpecificDetails.Add ("extraTopTread", elem.stair.extraTopTread);
+                typeSpecificDetails.Add ("extraBottomTread", elem.stair.extraBottomTread);
+                typeSpecificDetails.Add ("walkingLinePosition", GS::UniString (
+                    elem.stair.walkingLinePosition == APILP_Left ? "Left" :
+                    elem.stair.walkingLinePosition == APILP_Right ? "Right" :
+                    elem.stair.walkingLinePosition == APILP_Center ? "Center" : "Auto"));
+                typeSpecificDetails.Add ("walkingLineOffset", elem.stair.walkingLineOffset);
+                typeSpecificDetails.Add ("numberingType", GS::UniString (elem.stair.numberingType == APISN_Risers ? "Risers" : "Treads"));
+                typeSpecificDetails.Add ("uniformFinish", elem.stair.uniformFinish);
+                typeSpecificDetails.Add ("uniformMonolithAttributes", elem.stair.uniformMonolithAttributes);
+                typeSpecificDetails.Add ("uniformDrainings", elem.stair.uniformDrainings);
+                {
+                    const auto& treads = typeSpecificDetails.AddList<GS::ObjectState> ("treads");
+                    const auto& risers = typeSpecificDetails.AddList<GS::ObjectState> ("risers");
+                    for (const API_StairPartRoleID role : { APISR_Run, APISR_Landing }) {
+                        const GS::UniString roleName (role == APISR_Landing ? "Landing" : "Run");
+                        const API_StairTreadType& tread = elem.stair.tread[role];
+                        GS::ObjectState treadOS ("role", roleName);
+                        treadOS.Add ("visible", tread.visible);
+                        treadOS.Add ("thickness", tread.thickness);
+                        treadOS.Add ("offset", tread.offset);
+                        treadOS.Add ("nosingType", GS::UniString (tread.nosingType == APITN_BySlanting ? "BySlanting" : "ByValue"));
+                        treadOS.Add ("nosingValue", tread.nosingValue);
+                        treadOS.Add ("nosingSlant", tread.nosingSlant);
+                        treads (treadOS);
+                        const API_StairRiserType& riser = elem.stair.riser[role];
+                        GS::ObjectState riserOS ("role", roleName);
+                        riserOS.Add ("visible", riser.visible);
+                        riserOS.Add ("thickness", riser.thickness);
+                        riserOS.Add ("offset", riser.offset);
+                        riserOS.Add ("crossSection", GS::UniString (riser.crossSect == APIRCS_Slanted ? "Slanted" : "Simple"));
+                        riserOS.Add ("angle", riser.angle);
+                        riserOS.Add ("position", GS::UniString (riser.riserPosition == APIRP_BehindTread ? "BehindTread" : "OnTread"));
+                        risers (riserOS);
+                    }
+                }
                 AddStairBaseLineFromMemo (elem.header.guid, elem.stair.basePlane, typeSpecificDetails);
                 typeSpecificDetails.Add ("basePlane", GS::ObjectState (
                     "origin", Create3DCoordinateObjectState (elem.stair.basePlane.basePoint),
