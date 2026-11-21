@@ -5586,6 +5586,26 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             hasMemoChanges = true;
                         }
                     } break;
+                    case API_DetailID:
+                    case API_WorksheetID: {
+                        // A marker's own settings (name, ID, clip polygon, marker) are written by
+                        // ModifyDetailMarkers, not here. They used to be dropped with success (#1377), so
+                        // the item fails instead and nothing of it is changed. An empty
+                        // typeSpecificDetails changes nothing and is let through.
+                        if (!typeSpecificDetails->IsEmpty ()) {
+                            GS::UniString givenFields;
+                            for (const GS::String& fieldName : typeSpecificDetails->GetFieldNames ()) {
+                                if (!givenFields.IsEmpty ()) {
+                                    givenFields += ", ";
+                                }
+                                givenFields += GS::UniString (fieldName.ToCStr ());
+                            }
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                                GS::UniString ("A Detail or Worksheet marker takes no typeSpecificDetails in SetDetailsOfElements: change its name, ID and clip polygon with ModifyDetailMarkers. Not applied: ") + givenFields));
+                            continue;
+                        }
+                    } break;
                     default:
                     break;
                 }
