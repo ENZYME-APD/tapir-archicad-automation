@@ -8381,6 +8381,11 @@ GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, 
 // the two describe differently, and ApplyStairSettings (defined with ModifyStairs below) writes
 // them all into the Stair element. The tread, riser and structure settings are the Stair's own
 // per-part defaults (tread[role], riser[role], structure[role][side]), not its subelements.
+// The items of treads and risers are written out here, as the same shape as the
+// StairTreadPartSettings and StairRiserPartSettings definitions GetDetailsOfElements returns:
+// Archicad (tested on 29.0.0 5101) does not check anything behind a "$ref": "#/<Name>" of an input
+// schema, so through the $ref a bad role or nosing type reached ApplyStairSettings instead of being
+// refused by the schema, as it was before the definitions existed. Change both together.
 static const char* StairSettingsSchemaProperties = R"(
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
@@ -8393,6 +8398,7 @@ static const char* StairSettingsSchemaProperties = R"(
                         "extraBottomTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its bottom." },
                         "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto)." },
                         "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto." },
+                        "walkingLineSymbolPosition": { "type": "string", "enum": ["Auto", "Center", "Custom"], "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos): by Archicad (Auto), centered, or where it was placed by hand (Custom)." },
                         "numberingType": { "type": "string", "enum": ["Treads", "Risers"], "description": "Whether the steps are numbered on their treads or on their risers." },
                         "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward)." },
                         "uniformFinish": { "type": "boolean", "description": "Whether the flights and the landings share one finish setting." },
@@ -8419,9 +8425,10 @@ static const char* StairSettingsSchemaProperties = R"(
                         },
                         "treads": {
                             "type": "array",
-                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in treads.",
                             "items": {
                                 "type": "object",
+                                "description": "The tread settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::tread[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
                                 "properties": {
                                     "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
                                     "visible": { "type": "boolean", "description": "Whether the treads are present." },
@@ -8437,9 +8444,10 @@ static const char* StairSettingsSchemaProperties = R"(
                         },
                         "risers": {
                             "type": "array",
-                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in risers.",
                             "items": {
                                 "type": "object",
+                                "description": "The riser settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::riser[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
                                 "properties": {
                                     "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
                                     "visible": { "type": "boolean", "description": "Whether the risers are present." },
@@ -11443,6 +11451,19 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     if (walkingLineOffset.HasValue ()) {
         stair.walkingLineOffset = walkingLineOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, walkingLineOffset);
+    }
+    GS::UniString walkingLineSymbolPosition;
+    if (details.Get ("walkingLineSymbolPosition", walkingLineSymbolPosition)) {
+        if (walkingLineSymbolPosition == "Auto") {
+            stair.walkLineSymbPos = APISP_Auto;
+        } else if (walkingLineSymbolPosition == "Center") {
+            stair.walkLineSymbPos = APISP_Center;
+        } else if (walkingLineSymbolPosition == "Custom") {
+            stair.walkLineSymbPos = APISP_Custom;
+        } else {
+            return GS::UniString ("Invalid walkingLineSymbolPosition: it must be Auto, Center or Custom.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, walkLineSymbPos);
     }
     GS::UniString numberingType;
     if (details.Get ("numberingType", numberingType)) {
