@@ -2392,19 +2392,46 @@ GS::Optional<GS::UniString> CheckAssociativeDimensionPoints (
         return {};
     }
 
+    // Archicad may reorder the witness points (along the dimension line), so a given point is
+    // paired with a stored one by its element, not by its position: first one on the same
+    // element with the same inIndex and line, else any one on the same element. Each stored
+    // point is paired once.
     const UIndex nDimElems = static_cast<UIndex> (BMhGetSize (reinterpret_cast<GSHandle> (memo.dimElems)) / sizeof (API_DimElem));
-    for (UIndex pointIndex = 0; pointIndex < points.GetSize () && pointIndex < nDimElems; ++pointIndex) {
+    GS::Array<bool> used;
+    for (UIndex i = 0; i < nDimElems; ++i) {
+        used.Push (false);
+    }
+    const auto findDimElem = [&] (const AssociativeDimensionPoint& point, bool exact) -> GS::Optional<UIndex> {
+        for (UIndex i = 0; i < nDimElems; ++i) {
+            const API_DimElem& candidate = (*memo.dimElems)[i];
+            if (used[i] || candidate.base.base.guid != point.elementGuid) {
+                continue;
+            }
+            if (exact && (candidate.base.base.inIndex != point.inIndex || candidate.base.base.line != point.line)) {
+                continue;
+            }
+            return i;
+        }
+        return {};
+    };
+
+    for (UIndex pointIndex = 0; pointIndex < points.GetSize (); ++pointIndex) {
         const AssociativeDimensionPoint& point = points[pointIndex];
-        if (point.isStatic) {
+        if (point.isStatic || point.elementGuid == APINULLGuid) {
             continue;
         }
-        const API_DimElem& dimElem = (*memo.dimElems)[pointIndex];
-        if (dimElem.base.base.guid == APINULLGuid) {
+        GS::Optional<UIndex> dimElemIndex = findDimElem (point, true);
+        if (!dimElemIndex.HasValue ()) {
+            dimElemIndex = findDimElem (point, false);
+        }
+        if (!dimElemIndex.HasValue ()) {
             return GS::UniString::Printf (
                 "Witness point %d was not attached to its element, so the dimension was not created. "
                 "On a polygon element (a Slab, for example) give inIndex and nodeId together: the index and the vertexId "
                 "of the vertex, as GetPolygonVertexIdsOfElements returns them.", (int) pointIndex);
         }
+        used[dimElemIndex.Get ()] = true;
+        const API_DimElem& dimElem = (*memo.dimElems)[dimElemIndex.Get ()];
         const bool polygonElement = point.elementType == API_SlabID || point.elementType == API_ZoneID ||
             point.elementType == API_RoofID || point.elementType == API_MeshID || point.elementType == API_HatchID;
         if (polygonElement && point.line && !point.hasCoordinate && dimElem.base.loc.x == 0.0 && dimElem.base.loc.y == 0.0) {
