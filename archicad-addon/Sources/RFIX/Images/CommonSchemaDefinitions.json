@@ -1264,6 +1264,11 @@
             "modelViewOptions": {
                 "type": "object",
                 "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
+                "properties": {
+                    "railing": {
+                        "$ref": "#/RailingModelViewOptions"
+                    }
+                },
                 "additionalProperties": true
             },
             "onScreenViewOptions": {
@@ -1280,16 +1285,42 @@
     },
     "ViewOptionsUpdate": {
         "type": "object",
-        "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well.",
+        "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well. The options are read back, and a given field Archicad did not keep fails the call with the value it kept.",
         "properties": {
             "modelViewOptions": {
                 "type": "object",
+                "properties": {
+                    "railing": {
+                        "$ref": "#/RailingModelViewOptions",
+                        "description": "The railing options to change; the ones left out keep their value. Archicad 29 does not keep the railing2DDisplayComp* fields, which SetViewOptions then reports."
+                    }
+                },
                 "additionalProperties": true
             },
             "onScreenViewOptions": {
                 "type": "object",
                 "additionalProperties": true
             }
+        },
+        "additionalProperties": false
+    },
+    "RailingModelViewOptions": {
+        "type": "object",
+        "description": "The railing options of the model view options (API_RailingModelViewOptions; Model View Options > Railing Options), every field by its API name: the railing components shown in the floor plan and the schematic 3D display. GetViewOptions and GetModelViewOptionDetails return all of them; SetViewOptions takes any of them and reads them back. Archicad 29 does not keep the railing2DDisplayComp* fields changed through ACAPI_Navigator_ChangeViewOptions, so SetViewOptions reports such a change as not kept.",
+        "properties": {
+            "railing3DDetailLevel": { "type": "integer", "description": "The detail level of railings in the 3D display, the numeric API constant." },
+            "railing2DDisplayCompPosts": { "type": "boolean", "description": "Whether the posts are shown in the floor plan." },
+            "railing2DDisplayCompTopRail": { "type": "boolean", "description": "Whether the top rails are shown in the floor plan." },
+            "railing2DDisplayCompHandrails": { "type": "boolean", "description": "Whether the handrails are shown in the floor plan." },
+            "railing2DDisplayCompRails": { "type": "boolean", "description": "Whether the rails are shown in the floor plan." },
+            "railing2DDisplayCompInnerPosts": { "type": "boolean", "description": "Whether the inner posts are shown in the floor plan." },
+            "railing2DDisplayCompBalusters": { "type": "boolean", "description": "Whether the balusters are shown in the floor plan." },
+            "railing2DDisplayCompPanels": { "type": "boolean", "description": "Whether the panels are shown in the floor plan." },
+            "railingSchemeSurfaceIndex": { "type": "integer", "description": "The index of the surface used by the schematic 3D display." },
+            "railingSchemeCutLineIndex": { "type": "integer", "description": "The index of the line type of the cut lines of the schematic 3D display." },
+            "railingSchemeCutLinePenIndex": { "type": "integer", "description": "The pen of the cut lines of the schematic 3D display." },
+            "railingSchemeUncutLineIndex": { "type": "integer", "description": "The index of the line type of the uncut lines of the schematic 3D display." },
+            "railingSchemeUncutLinePenIndex": { "type": "integer", "description": "The pen of the uncut lines of the schematic 3D display." }
         },
         "additionalProperties": false
     },
@@ -15894,6 +15925,59 @@
                 "$ref": "#/StairRules",
                 "description": "The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied."
             },
+            "extraTopTread": {
+                "type": "boolean",
+                "description": "Whether the stair has an extra tread at its top, as CreateStairs and ModifyStairs take it."
+            },
+            "extraBottomTread": {
+                "type": "boolean",
+                "description": "Whether the stair has an extra tread at its bottom, as CreateStairs and ModifyStairs take it."
+            },
+            "walkingLinePosition": {
+                "type": "string",
+                "enum": [ "Left", "Right", "Center", "Auto" ],
+                "description": "Where the walking line runs on the flight, as CreateStairs and ModifyStairs take it."
+            },
+            "walkingLineOffset": {
+                "type": "number",
+                "description": "The offset of the walking line from the side walkingLinePosition names, as CreateStairs and ModifyStairs take it."
+            },
+            "walkingLineSymbolPosition": {
+                "type": "string",
+                "enum": [ "Auto", "Center", "Custom" ],
+                "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos), as CreateStairs and ModifyStairs take it."
+            },
+            "numberingType": {
+                "type": "string",
+                "enum": [ "Treads", "Risers" ],
+                "description": "Whether the steps are numbered on their treads or on their risers, as CreateStairs and ModifyStairs take it."
+            },
+            "uniformFinish": {
+                "type": "boolean",
+                "description": "Whether the flights and the landings share one finish setting."
+            },
+            "uniformMonolithAttributes": {
+                "type": "boolean",
+                "description": "Whether the monolithic structures of the flights and the landings share one set of attributes."
+            },
+            "uniformDrainings": {
+                "type": "boolean",
+                "description": "Whether the flights and the landings share one draining setting."
+            },
+            "treads": {
+                "type": "array",
+                "description": "The tread settings of the flights (Run) and of the landings (Landing), the stair's own per-part defaults its treads are built from (API_StairType::tread), as CreateStairs and ModifyStairs take them. The treads themselves are subelements (GetSubelementsOfHierarchicalElements).",
+                "items": {
+                    "$ref": "#/StairTreadPartSettings"
+                }
+            },
+            "risers": {
+                "type": "array",
+                "description": "The riser settings of the flights (Run) and of the landings (Landing), the stair's own per-part defaults its risers are built from (API_StairType::riser), as CreateStairs and ModifyStairs take them.",
+                "items": {
+                    "$ref": "#/StairRiserPartSettings"
+                }
+            },
             "headroom": {
                 "$ref": "#/StairHeadroom",
                 "description": "The headroom of the stair (Stair Settings > Headroom), as stored in the stair. Whether the headroom body is shown is a Model View Option, not part of the stair."
@@ -16703,6 +16787,36 @@
         "type": "string",
         "description": "Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).",
         "enum": ["Visible", "Hidden", "Unknown"]
+    },
+    "StairTreadPartSettings": {
+        "type": "object",
+        "description": "The tread settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::tread[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
+        "properties": {
+            "role": { "type": "string", "enum": [ "Run", "Landing" ], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+            "visible": { "type": "boolean", "description": "Whether the treads are present." },
+            "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the treads." },
+            "offset": { "type": "number", "description": "The offset of the treads." },
+            "nosingType": { "type": "string", "enum": [ "ByValue", "BySlanting" ], "description": "Whether the nosing is given by its length (nosingValue) or by the slant of the riser (nosingSlant)." },
+            "nosingValue": { "type": "number", "description": "The length of the nosing." },
+            "nosingSlant": { "type": "number", "description": "The slant of the nosing in radians." }
+        },
+        "additionalProperties": false,
+        "required": [ "role" ]
+    },
+    "StairRiserPartSettings": {
+        "type": "object",
+        "description": "The riser settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::riser[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
+        "properties": {
+            "role": { "type": "string", "enum": [ "Run", "Landing" ], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+            "visible": { "type": "boolean", "description": "Whether the risers are present." },
+            "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the risers." },
+            "offset": { "type": "number", "description": "The offset of the risers." },
+            "crossSection": { "type": "string", "enum": [ "Simple", "Slanted" ], "description": "The cross section of the risers." },
+            "angle": { "type": "number", "description": "The angle of a slanted riser in radians." },
+            "position": { "type": "string", "enum": [ "OnTread", "BehindTread" ], "description": "Whether the risers stand on the treads or behind them." }
+        },
+        "additionalProperties": false,
+        "required": [ "role" ]
     },
     "StairRules": {
         "type": "object",
