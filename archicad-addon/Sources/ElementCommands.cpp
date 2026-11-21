@@ -411,9 +411,11 @@ static GS::UniString RoofEdgeTypeToString (API_RoofEdgeTypeID edgeType)
     }
 }
 
-// The edge type of each edge of a Single-plane Roof's polygon (APIMemoMask_RoofEdgeTypes, the
-// Edge Type of the Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and
-// edgeTrims (#2436). A roof without stored edge types has every edge Undefined.
+// The edge type of each edge of a roof's polygon (APIMemoMask_RoofEdgeTypes, the Edge Type of the
+// Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and edgeTrims (#2436).
+// On a Multi-plane Roof the memo's polygon is the contour, as the DevKit documents the mask: "the
+// edge types of the contour polygon of a roof element" (#2454). A roof without stored edge types
+// has every edge Undefined.
 static void AddRoofEdgeTypesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -4568,9 +4570,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
                 AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
-                if (elem.roof.roofClass == API_PlaneRoofID) {
-                    AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
-                }
+                AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_ShellID: {
