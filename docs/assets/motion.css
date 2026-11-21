@@ -48,15 +48,17 @@
 /* 5. Figures count up (motion.js), and their number gets a short ochre underline */
 .motion .figures strong { display: inline-block }
 
-/* 6. Timeline, Legacy look only: under each step's number an ochre segment runs down to 12px above
-   the next number and fills as you scroll to that step. It is placed in the number column (grid
-   column 1, so it is centred at every width), and motion.js measures where it starts and ends
-   (--seg-top, --seg-h) from the numbers and how far it is filled (--prog). The Standard look has none. */
+/* 6. Timeline, Legacy look only: each step is a card (#2942), and under its number an ochre segment
+   runs down to 12px above the bottom of the card's text and fills as you scroll through that step.
+   It is placed in the number column (grid column 1, so it is centred at every width), and motion.js
+   measures where it starts and ends (--seg-top, --seg-h) and how far it is filled (--prog). On phones
+   the number is above the text, so there is none; nor in the Standard look. */
 .motion .timeline { position: relative }
 :root[data-style="legacy"].motion .timeline > li { position: relative }
-:root[data-style="legacy"].motion .timeline > li:not(:last-child)::after { content: ""; position: absolute; grid-column: 1 / 2; grid-row: auto;
+:root[data-style="legacy"].motion .timeline > li::after { content: ""; position: absolute; grid-column: 1 / 2; grid-row: auto;
     left: 50%; top: var(--seg-top, 0); width: 2px; height: var(--seg-h, 0); transform: translateX(-50%); pointer-events: none;
     background: linear-gradient(var(--ochre), var(--ochre)) no-repeat; background-size: 2px var(--prog, 0%); opacity: .5 }
+@media (max-width: 640px) { :root[data-style="legacy"].motion .timeline > li::after { display: none } }
 .motion .timeline .n { transition: transform .6s var(--ease), color .4s } .motion .timeline > li.rv:not(.in) .n { transform: scale(.6) }
 
 /* 7. Terminal: the code is typed in line by line once it is on screen */

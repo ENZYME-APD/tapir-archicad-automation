@@ -1,0 +1,211 @@
+{
+  "title": "GetTypedPropertyValuesOfElements returns property values in JSON's own types: a length as a number in meters, a boolean, an integer, the options of a multiple choice as a list, isDefault, and notAvailable for an element the property is not available for (#285)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "thickness property id",
+      "command": "API.GetPropertyIds",
+      "creates": false,
+      "params": { "properties": [ { "type": "BuiltIn", "nonLocalizedName": "General_Thickness" } ] },
+      "save": { "thickness": "properties[0].propertyId.guid" },
+      "expect": [
+        { "path": "properties[0].propertyId.guid", "exists": true, "name": "thickness property found" }
+      ]
+    },
+    {
+      "id": "classification system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "TapirCheck typed values system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "system": "classificationSystemIds[0].classificationSystemId.guid" }
+    },
+    {
+      "id": "classification item",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          {
+            "classificationSystemId": { "guid": "${system}" },
+            "classificationItemDetails": { "id": "TTV1", "name": "TapirCheck typed values item", "description": "" }
+          }
+        ]
+      },
+      "save": { "item": "classificationItemIds[0].classificationItemId.guid" }
+    },
+    {
+      "id": "property group",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [ { "propertyGroup": { "name": "TapirCheck typed values group", "description": "" } } ]
+      },
+      "save": { "group": "propertyGroupIds[0].propertyGroupId.guid" }
+    },
+    {
+      "id": "a boolean, an integer and a multiple choice property, available for the item",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "TapirCheck typed boolean", "description": "", "type": "boolean", "isEditable": true,
+              "defaultValue": { "basicDefaultValue": { "type": "boolean", "status": "normal", "value": true } },
+              "availability": [ { "classificationItemId": { "guid": "${item}" } } ],
+              "group": { "propertyGroupId": { "guid": "${group}" } }
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "TapirCheck typed integer", "description": "", "type": "integer", "isEditable": true,
+              "defaultValue": { "basicDefaultValue": { "type": "integer", "status": "normal", "value": 5 } },
+              "availability": [ { "classificationItemId": { "guid": "${item}" } } ],
+              "group": { "propertyGroupId": { "guid": "${group}" } }
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "TapirCheck typed finish", "description": "", "type": "multiEnum", "isEditable": true,
+              "availability": [ { "classificationItemId": { "guid": "${item}" } } ],
+              "group": { "propertyGroupId": { "guid": "${group}" } },
+              "possibleEnumValues": [
+                { "enumValue": { "displayValue": "Plaster" } },
+                { "enumValue": { "displayValue": "Tiles" } },
+                { "enumValue": { "displayValue": "Paint" } }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "pBool": "propertyIds[0].propertyId.guid", "pInt": "propertyIds[1].propertyId.guid", "pMulti": "propertyIds[2].propertyId.guid" },
+      "expect": [
+        { "path": "propertyIds[0].propertyId.guid", "exists": true, "name": "boolean property created" },
+        { "path": "propertyIds[1].propertyId.guid", "exists": true, "name": "integer property created" },
+        { "path": "propertyIds[2].propertyId.guid", "exists": true, "name": "multiple choice property created" }
+      ]
+    },
+    {
+      "id": "two walls, 0.3 m thick",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 720, "y": 700 }, "endCoordinate": { "x": 723, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.3 },
+          { "begCoordinate": { "x": 720, "y": 702 }, "endCoordinate": { "x": 723, "y": 702 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.3 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "classify wall 1, wall 2 gets no custom property",
+      "command": "API.SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${w1}" }, "classificationId": { "classificationSystemId": { "guid": "${system}" }, "classificationItemId": { "guid": "${item}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "wall 1 classified" }
+      ]
+    },
+    {
+      "id": "wall 1: the boolean false, two options of the multiple choice",
+      "command": "API.SetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elementPropertyValues": [
+          {
+            "elementId": { "guid": "${w1}" }, "propertyId": { "guid": "${pBool}" },
+            "propertyValue": { "type": "boolean", "status": "normal", "value": false }
+          },
+          {
+            "elementId": { "guid": "${w1}" }, "propertyId": { "guid": "${pMulti}" },
+            "propertyValue": {
+              "type": "multiEnum", "status": "normal",
+              "value": [
+                { "enumValueId": { "type": "displayValue", "displayValue": "Plaster" } },
+                { "enumValueId": { "type": "displayValue", "displayValue": "Tiles" } }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "boolean set" },
+        { "path": "executionResults[1].success", "eq": true, "name": "options set" }
+      ]
+    },
+    {
+      "id": "read the typed values",
+      "command": "GetTypedPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "properties": [
+          { "propertyId": { "guid": "${thickness}" } },
+          { "propertyId": { "guid": "${pBool}" } },
+          { "propertyId": { "guid": "${pInt}" } },
+          { "propertyId": { "guid": "${pMulti}" } }
+        ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements", "len": 2, "name": "one item per element" },
+        { "path": "propertyValuesForElements[0].propertyValues", "len": 4, "name": "one item per property" },
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.type", "eq": "length", "name": "thickness is a length" },
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.status", "eq": "normal" },
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.value", "approx": 0.3, "name": "thickness as a number in meters, not a formatted text" },
+        { "path": "propertyValuesForElements[0].propertyValues[1].propertyValue.type", "eq": "boolean" },
+        { "path": "propertyValuesForElements[0].propertyValues[1].propertyValue.value", "eq": false, "name": "the boolean as false, not a localized text" },
+        { "path": "propertyValuesForElements[0].propertyValues[1].isDefault", "eq": false, "name": "the boolean was set for the element" },
+        { "path": "propertyValuesForElements[0].propertyValues[2].propertyValue.type", "eq": "integer" },
+        { "path": "propertyValuesForElements[0].propertyValues[2].propertyValue.value", "eq": 5, "name": "the integer as a number" },
+        { "path": "propertyValuesForElements[0].propertyValues[2].isDefault", "eq": true, "name": "the integer is the default" },
+        { "path": "propertyValuesForElements[0].propertyValues[3].propertyValue.type", "eq": "multiEnum" },
+        { "path": "propertyValuesForElements[0].propertyValues[3].propertyValue.value", "len": 2, "name": "the two chosen options as a list, not one joined text" },
+        { "path": "propertyValuesForElements[0].propertyValues[3].propertyValue.value[0].enumValueId.displayValue", "eq": "Plaster" },
+        { "path": "propertyValuesForElements[0].propertyValues[3].propertyValue.value[1].enumValueId.displayValue", "eq": "Tiles" },
+        { "path": "propertyValuesForElements[1].propertyValues[0].propertyValue.value", "approx": 0.3, "name": "wall 2 thickness" },
+        { "path": "propertyValuesForElements[1].propertyValues[1].propertyValue.status", "eq": "notAvailable", "name": "custom property not available for wall 2" },
+        { "path": "propertyValuesForElements[1].propertyValues[1].propertyValue.type", "eq": "boolean", "name": "a notAvailable value still names its type" },
+        { "path": "propertyValuesForElements[1].propertyValues[1].propertyValue.value", "exists": false, "name": "no value when not available" },
+        { "path": "propertyValuesForElements[1].propertyValues[1].isDefault", "exists": false, "name": "no isDefault when not available" }
+      ]
+    },
+    {
+      "id": "[bogus element]",
+      "command": "GetTypedPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }, { "elementId": { "guid": "${w1}" } } ],
+        "properties": [ { "propertyId": { "guid": "${pInt}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements", "len": 2, "name": "one item per element" },
+        { "path": "propertyValuesForElements[0].error", "exists": true, "name": "unknown element: an error, not a crash" },
+        { "path": "propertyValuesForElements[1].propertyValues[0].propertyValue.value", "eq": 5, "name": "the next element is still read" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeletePropertyDefinitions",
+      "params": { "propertyIds": [ { "propertyId": { "guid": "${pBool}" } }, { "propertyId": { "guid": "${pInt}" } }, { "propertyId": { "guid": "${pMulti}" } } ] }
+    },
+    {
+      "command": "DeletePropertyGroups",
+      "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${group}" } } ] }
+    },
+    {
+      "command": "DeleteClassificationSystems",
+      "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${system}" } } ] }
+    }
+  ]
+}

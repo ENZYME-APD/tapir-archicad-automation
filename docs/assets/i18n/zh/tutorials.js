@@ -10,6 +10,24 @@
     'Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.':
         '展示 Tapir 在 Archicad 和 Grasshopper 中实际使用的短视频（英文），全部收录在 YouTube 的一个播放列表中。',
 
+    // Written tutorials
+    'Written <em>tutorials.</em>': '<em>图文</em>教程。',
+    'Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.':
+        '针对大家关于 Archicad 自动化的常见问题，分步讲解，每个问题都用 Tapir 现有的功能解决。',
+    'Export Archicad element properties to Excel with Python': '用 Python 将 Archicad 元素属性导出到 Excel',
+    'Property values to an Excel or CSV file, one row per element, and the edited values back.':
+        '把属性值导出到 Excel 或 CSV 文件（每个元素一行），再把编辑后的值写回。',
+    'Read the tutorial': '阅读教程',
+    'Connect Grasshopper to Archicad': '将 Grasshopper 连接到 Archicad',
+    'Install the tapir package, read a wall and change its height.': '安装 tapir 包，读取一面墙并更改它的高度。',
+    'Batch rename views in Archicad': '在 Archicad 中批量重命名视图',
+    'Find and replace, a prefix or a counter in the names of the views.': '在视图名称中查找替换、添加前缀或计数器。',
+    'Elements': '元素',
+    'Number doors and windows by room in Archicad': '在 Archicad 中按房间为门窗编号',
+    'Element IDs such as 1.04-D1, from the zone each door or window opens into.': '根据每扇门或窗开向的区域，生成 1.04-D1 这样的 Element ID。',
+    'Your first Archicad Python script': '您的第一个 Archicad Python 脚本',
+    'A few lines that call one Tapir command, run from the Tapir palette.': '几行调用一个 Tapir 命令的代码，从 Tapir 面板运行。',
+
     // The videos
     'Videos': '视频',
     'Getting started': '入门',

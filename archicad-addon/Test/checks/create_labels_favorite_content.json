@@ -1,0 +1,96 @@
+{
+  "title": "CreateLabels keeps the text content of the favorite given in favoriteName when neither text nor runs is given (#2946)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "text label to make the favorite from",
+      "command": "CreateLabels",
+      "params": {
+        "labelsData": [
+          { "labelClass": "Text", "text": "Tapir favorite content",
+            "begCoordinate": { "x": 1500, "y": 1500 }, "midCoordinate": { "x": 1501, "y": 1501 }, "endCoordinate": { "x": 1503, "y": 1501 } }
+        ]
+      },
+      "save": { "source": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "source label created" }
+      ]
+    },
+    {
+      "id": "favorite from the label",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${source}" }, "favorite": "Tapir check label favorite content" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "label favorite created" }
+      ]
+    },
+    {
+      "id": "[favorite without text, favorite with text, favorite without text but with a style]",
+      "command": "CreateLabels",
+      "params": {
+        "labelsData": [
+          { "favoriteName": "Tapir check label favorite content",
+            "begCoordinate": { "x": 1510, "y": 1500 }, "midCoordinate": { "x": 1511, "y": 1501 }, "endCoordinate": { "x": 1513, "y": 1501 } },
+          { "favoriteName": "Tapir check label favorite content", "text": "Tapir override",
+            "begCoordinate": { "x": 1520, "y": 1500 }, "midCoordinate": { "x": 1521, "y": 1501 }, "endCoordinate": { "x": 1523, "y": 1501 } },
+          { "favoriteName": "Tapir check label favorite content", "style": { "height": 4.5 },
+            "begCoordinate": { "x": 1530, "y": 1500 }, "midCoordinate": { "x": 1531, "y": 1501 }, "endCoordinate": { "x": 1533, "y": 1501 } }
+        ]
+      },
+      "save": {
+        "kept": "elements[0].elementId.guid",
+        "overridden": "elements[1].elementId.guid",
+        "styled": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 3, "name": "one result per label" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "label without text created from the favorite" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "label with text created from the favorite" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "label with a style created from the favorite" }
+      ]
+    },
+    {
+      "id": "read the new labels",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${kept}" } }, { "elementId": { "guid": "${overridden}" } }, { "elementId": { "guid": "${styled}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.labelClass", "eq": "Text", "name": "label 1 is a text label" },
+        { "path": "detailsOfElements[0].details.text", "eq": "Tapir favorite content", "name": "label 1 kept the favorite's content" },
+        { "path": "detailsOfElements[1].details.text", "eq": "Tapir override", "name": "label 2: the given text replaced it" },
+        { "path": "detailsOfElements[2].details.text", "eq": "Tapir favorite content", "name": "label 3 kept the favorite's content" },
+        { "path": "detailsOfElements[2].details.style.height", "approx": 4.5, "tol": 0.001, "name": "label 3 got the given height" }
+      ]
+    },
+    {
+      "id": "[no favorite and no text]",
+      "command": "CreateLabels",
+      "creates": false,
+      "params": {
+        "labelsData": [
+          { "labelClass": "Text",
+            "begCoordinate": { "x": 1540, "y": 1500 }, "midCoordinate": { "x": 1541, "y": 1501 }, "endCoordinate": { "x": 1543, "y": 1501 } }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one result per label" },
+        { "path": "elements[0].error", "exists": true, "name": "refused: a text label without a favorite needs text or runs" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteFavorites",
+      "params": {
+        "favorites": [ "Tapir check label favorite content" ]
+      }
+    }
+  ]
+}

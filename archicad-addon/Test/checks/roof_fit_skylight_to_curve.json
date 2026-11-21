@@ -1,0 +1,116 @@
+{
+  "title": "CreateRoofs and ModifyRoofs write fitSkylightToCurve of a multi-plane roof, GetDetailsOfElements reads it, and single-plane roofs refuse it (#2867)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "multi-plane roof with one curved pivot edge and fitSkylightToCurve true, and a single-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic", "eavesOverhang": 0.3,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5235988 } ],
+            "polygonCoordinates": [ { "x": 940, "y": 720 }, { "x": 946, "y": 720 }, { "x": 946, "y": 726 }, { "x": 940, "y": 726 } ],
+            "polygonArcs": [ { "begIndex": 1, "endIndex": 2, "arcAngle": 1.0 } ],
+            "fitSkylightToCurve": true
+          },
+          {
+            "level": 3.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 960, "y": 720 }, { "x": 966, "y": 720 }, { "x": 966, "y": 724 }, { "x": 960, "y": 724 } ],
+            "pivotLine": { "begCoordinate": { "x": 960, "y": 720 }, "endCoordinate": { "x": 966, "y": 720 } },
+            "angle": 0.2617994
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid", "r2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "the new roof has fitSkylightToCurve true",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane" },
+        { "path": "detailsOfElements[0].details.fitSkylightToCurve", "eq": true, "name": "written by CreateRoofs" }
+      ]
+    },
+    {
+      "id": "switch fitSkylightToCurve off",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${r1}" }, "fitSkylightToCurve": false } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "written and read back" }
+      ]
+    },
+    {
+      "id": "fitSkylightToCurve is false, the rest is kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.fitSkylightToCurve", "eq": false, "name": "written by ModifyRoofs" },
+        { "path": "detailsOfElements[0].details.pivotPolygonArcs", "len": 1, "name": "the arc is kept" },
+        { "path": "detailsOfElements[0].details.eavesOverhang", "approx": 0.3, "name": "the overhang is kept" }
+      ]
+    },
+    {
+      "id": "switch it on again together with the segmentation",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${r1}" }, "fitSkylightToCurve": true, "segmentType": "SegmentsByArc", "segmentsByArc": 5 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "both written and read back" }
+      ]
+    },
+    {
+      "id": "fitSkylightToCurve is true and the segmentation applied",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.fitSkylightToCurve", "eq": true },
+        { "path": "detailsOfElements[0].details.segmentType", "eq": "SegmentsByArc" },
+        { "path": "detailsOfElements[0].details.segmentsByArc", "eq": 5 }
+      ]
+    },
+    {
+      "id": "fitSkylightToCurve on a single-plane roof is refused",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${r2}" }, "fitSkylightToCurve": true } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "multi-plane roofs only" }
+      ]
+    },
+    {
+      "id": "the single-plane roof has no fitSkylightToCurve",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "SinglePlane" },
+        { "path": "detailsOfElements[0].details.fitSkylightToCurve", "exists": false }
+      ]
+    },
+    {
+      "id": "CreateRoofs refuses fitSkylightToCurve on a single-plane roof",
+      "command": "CreateRoofs",
+      "creates": false,
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 980, "y": 720 }, { "x": 986, "y": 720 }, { "x": 986, "y": 724 }, { "x": 980, "y": 724 } ],
+            "pivotLine": { "begCoordinate": { "x": 980, "y": 720 }, "endCoordinate": { "x": 986, "y": 720 } },
+            "angle": 0.2617994,
+            "fitSkylightToCurve": true
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "multi-plane roofs only, no roof made" }
+      ]
+    }
+  ]
+}

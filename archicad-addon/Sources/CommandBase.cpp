@@ -162,6 +162,26 @@ GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item)
     return ACAPI_Navigator_GetNavigatorItem (&itemGuid, &item);
 }
 
+// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with
+// custom settings (as the DevKit's Navigator_Test example does).
+void FreeNavigatorView (API_NavigatorView& navigatorView)
+{
+    if (navigatorView.modelViewOpt != nullptr) {
+        ACAPI_FreeGDLModelViewOptionsPtr (&navigatorView.modelViewOpt->gdlOptions);
+        BMKillPtr ((GSPtr*) &navigatorView.modelViewOpt);
+    }
+#ifdef ServerMainVers_2700
+    delete navigatorView.layerStats;
+    navigatorView.layerStats = nullptr;
+    delete navigatorView.pens;
+    navigatorView.pens = nullptr;
+#else
+    BMKillHandle ((GSHandle*) &navigatorView.layerStats);
+    BMKillPtr ((GSPtr*) &navigatorView.pens);
+#endif
+    BMKillPtr ((GSPtr*) &navigatorView.dimPrefs);
+}
+
 bool IsDryRun (const GS::ObjectState& parameters)
 {
     bool dryRun = false;
@@ -1348,6 +1368,7 @@ void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows)
 #ifdef ServerMainVers_2900
     os.Add ("startArrow", CreateLineArrowObjectState (arrows.start.arrowVisibility, arrows.start.arrowType, arrows.start.arrowSize, arrows.start.arrowPen));
     os.Add ("endArrow", CreateLineArrowObjectState (arrows.end.arrowVisibility, arrows.end.arrowType, arrows.end.arrowSize, arrows.end.arrowPen));
+    os.Add ("linkedArrowAttributes", arrows.linked);
 #else
     os.Add ("startArrow", CreateLineArrowObjectState (arrows.data.begArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
     os.Add ("endArrow", CreateLineArrowObjectState (arrows.data.endArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
@@ -1411,11 +1432,23 @@ GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, 
     if (error.HasValue ()) {
         return error;
     }
-    if (!start.given && !end.given) {
+    bool linkedRequested = false;
+    const bool linkedGiven = parameters.Get ("linkedArrowAttributes", linkedRequested);
+    if (!start.given && !end.given && !linkedGiven) {
         return {};
     }
 
 #ifdef ServerMainVers_2900
+    // Linked ends share their size and pen: a size or pen given for one end only applies to both.
+    if (linkedGiven && linkedRequested) {
+        if (start.size.HasValue () && end.size.HasValue () && start.size.Get () != end.size.Get ()) {
+            return GS::UniString ("Linked arrowheads share one size: with linkedArrowAttributes true, startArrow.size and endArrow.size must be the same.");
+        }
+        if (start.pen.HasValue () && end.pen.HasValue () && start.pen.Get () != end.pen.Get ()) {
+            return GS::UniString ("Linked arrowheads share one pen: with linkedArrowAttributes true, startArrow.pen and endArrow.pen must be the same.");
+        }
+    }
+
     const auto apply = [] (const RequestedLineArrow& requested, API_ArrowData& data) {
         if (!requested.given) {
             return;
@@ -1433,11 +1466,30 @@ GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, 
     };
     apply (start, arrows.start);
     apply (end, arrows.end);
-    // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
-    if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+    if (linkedGiven && linkedRequested) {
+        // The end that was given a size or pen sets it for both; otherwise the start's is used.
+        if (end.size.HasValue () && !start.size.HasValue ()) {
+            arrows.start.arrowSize = arrows.end.arrowSize;
+        } else {
+            arrows.end.arrowSize = arrows.start.arrowSize;
+        }
+        if (end.pen.HasValue () && !start.pen.HasValue ()) {
+            arrows.start.arrowPen = arrows.end.arrowPen;
+        } else {
+            arrows.end.arrowPen = arrows.start.arrowPen;
+        }
+        arrows.linked = true;
+    } else if (linkedGiven) {
+        arrows.linked = false;
+    } else if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+        // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
         arrows.linked = false;
     }
 #else
+    // Both ends always share one size and pen before Archicad 29, so they cannot be unlinked.
+    if (linkedGiven && !linkedRequested) {
+        return GS::UniString ("Before Archicad 29 both ends of a line always share one arrowhead size and pen: linkedArrowAttributes cannot be false.");
+    }
     // Both ends share one type, size and pen before Archicad 29.
     if (start.type.HasValue () && end.type.HasValue () && start.type.Get () != end.type.Get ()) {
         return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead type: startArrow.type and endArrow.type must be the same.");
@@ -1830,6 +1882,8 @@ GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
     return name;
 }
 
+static bool IsFontAddedBySearch (short fontIndex);
+
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
 {
     GS::Array<short> fontIndices;
@@ -1849,7 +1903,7 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
     GS::Optional<short> caseInsensitiveMatch;
     for (const short fontIndex : fontIndices) {
         const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
-        if (!name.HasValue ()) {
+        if (!name.HasValue () || IsFontAddedBySearch (fontIndex)) {
             continue;
         }
         if (*name == fontName) {
@@ -1884,6 +1938,25 @@ static Int32 GetLoadedFontCount ()
 #endif
 }
 
+// The fonts Archicad's search added to the font list for a name no font has, with the name they
+// got: a later search for that name finds them as if they were loaded (#2839, Archicad 30).
+static std::map<short, GS::UniString>& FontsAddedBySearch ()
+{
+    static std::map<short, GS::UniString> fonts;
+    return fonts;
+}
+
+static bool IsFontAddedBySearch (short fontIndex)
+{
+    const std::map<short, GS::UniString>& fonts = FontsAddedBySearch ();
+    const auto found = fonts.find (fontIndex);
+    if (found == fonts.end ()) {
+        return false;
+    }
+    const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
+    return name.HasValue () && *name == found->second;
+}
+
 GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
 {
     // Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
@@ -1909,7 +1982,15 @@ GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
     // Only an index of a font that was loaded before the search is returned: on Archicad 26 and 28
     // (German) a name no font has was answered with NoError and a new index (1907, 1908), as if
     // the search had added the font to the list (#2470).
-    if (foundIndex < 1 || foundIndex > loadedFontCount || !GetFontNameFromIndex (foundIndex).HasValue ()) {
+    // Archicad 30 keeps the added font in the list, so it is remembered and refused again later.
+    if (foundIndex > loadedFontCount) {
+        const GS::Optional<GS::UniString> addedName = GetFontNameFromIndex (foundIndex);
+        if (addedName.HasValue ()) {
+            FontsAddedBySearch ()[foundIndex] = *addedName;
+        }
+        return GS::NoValue;
+    }
+    if (foundIndex < 1 || !GetFontNameFromIndex (foundIndex).HasValue () || IsFontAddedBySearch (foundIndex)) {
         return GS::NoValue;
     }
     return foundIndex;
@@ -2220,12 +2301,14 @@ GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id)
     return NoError;
 }
 
-GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+static GSErrCode WriteElementId (const API_Guid& elementGuid, const GS::UniString& id)
 {
     // Not the elemInfoString memo part: writing it answers NoError on polylines and
     // splines and leaves their ID empty (#2470). Before Archicad 27 MigrationHelper.hpp
     // calls APIDb_ChangeElementInfoStringID.
     GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elementGuid, &id);
+    // That call's refusal, kept when the memo part below is tried instead.
+    GSErrCode infoStringRefusal = NoError;
     if (err == APIERR_BADID || err == APIERR_BADELEMENTTYPE) {
         // Some element types are not handled by that call although they have an ID: it answers
         // APIERR_BADID for an Opening (#2629). Their ID is written through the elemInfoString
@@ -2238,6 +2321,7 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
         if (memoErr != NoError) {
             return err;
         }
+        infoStringRefusal = err;
         err = NoError;
     }
     if (err != NoError) {
@@ -2245,12 +2329,44 @@ GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
     }
 
     // Read back: an ID Archicad answered NoError for but did not keep is a failure, so a
-    // caller never reports an ID the element does not have.
+    // caller never reports an ID the element does not have. When the memo part was only the
+    // second try, the first call's refusal says why: lines, arcs, circles, polylines, splines
+    // and hotspots have no Element ID in Archicad 29 (APIERR_BADELEMENTTYPE, #2762), and the memo
+    // write answers NoError on them and keeps nothing.
     GS::UniString written;
     if (GetElementId (elementGuid, written) != NoError || written != id) {
-        return APIERR_REFUSEDPAR;
+        return infoStringRefusal != NoError ? infoStringRefusal : APIERR_REFUSEDPAR;
     }
     return NoError;
+}
+
+GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
+{
+    const GSErrCode err = WriteElementId (elementGuid, id);
+#ifdef ServerMainVers_2900
+    // Lines, arcs, circles, polylines, splines and hotspots have no Element ID in Archicad 29, and
+    // the Create* commands document that an id on them is refused with APIERR_BADELEMENTTYPE
+    // (#2762). On Archicad 29.0.0 5101 the write answered APIERR_REFUSEDPAR instead (the read back's
+    // code: the memo write answered NoError and kept nothing), so any failed write on these types
+    // answers the documented code, whichever step refused it.
+    if (err != NoError && err != APIERR_BADELEMENTTYPE) {
+        API_Elem_Head head = {};
+        if (LoadElementHeaderByGuid (elementGuid, head)) {
+            switch (GetElemTypeId (head)) {
+                case API_LineID:
+                case API_ArcID:
+                case API_CircleID:
+                case API_PolyLineID:
+                case API_SplineID:
+                case API_HotspotID:
+                    return APIERR_BADELEMENTTYPE;
+                default:
+                    break;
+            }
+        }
+    }
+#endif
+    return err;
 }
 
 GS::UniString DeleteUnfinishedElement (const API_Guid& elementGuid)

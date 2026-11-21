@@ -153,6 +153,16 @@
       "subgroup": null
     },
     {
+      "get": "boundaryMethod",
+      "set": null,
+      "apiMember": "API_ZoneType::refLineFlag",
+      "apiDescription": "How an automatic zone finds its boundary: by the reference line or the inner edge of the walls.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "polygonOutline",
       "set": null,
       "apiMember": "API_ZoneType::poly",

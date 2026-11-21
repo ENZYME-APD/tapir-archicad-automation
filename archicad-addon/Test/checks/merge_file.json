@@ -1,0 +1,118 @@
+{
+  "title": "MergeFile merges a module file at an origin as ordinary elements and leaves no hotlink; it refuses a missing file and a file the project already hotlinks",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "the temporary folder",
+      "command": "GetSpecialFolders",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "folderTypes": [ "Temporary" ] },
+      "save": { "tmp": "folderPaths[0].path" },
+      "expect": [ { "path": "folderPaths[0].path", "exists": true, "name": "a temporary folder" } ]
+    },
+    {
+      "id": "a wall to save as a module",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [ { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 704, "y": 700 }, "zCoordinate": 0, "height": 3.0, "thickness": 0.2 } ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "save the wall as a module",
+      "command": "SaveAsModuleFile",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "moduleFilePath": "${tmp}/TapirCheckMergeFile.mod", "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [ { "path": "success", "eq": true, "name": "module saved" } ]
+    },
+    {
+      "id": "merge the module 10 m north",
+      "command": "MergeFile",
+      "params": { "sourceLocation": "${tmp}/TapirCheckMergeFile.mod", "origin": { "x": 0, "y": 10 } },
+      "save": { "m1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one merged element, the wall" }
+      ]
+    },
+    {
+      "id": "two walls now",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [ { "path": "elements", "len": 2, "name": "the wall and the merged copy" } ]
+    },
+    {
+      "id": "the merged wall is 10 m north of the original",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Wall", "name": "a wall" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 700, "name": "x as saved" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 710, "name": "y moved by the origin" }
+      ]
+    },
+    {
+      "id": "no hotlink is left",
+      "command": "GetHotlinks",
+      "creates": false,
+      "params": {},
+      "expect": [ { "path": "hotlinks", "len": 0, "name": "the hotlink was broken" } ]
+    },
+    {
+      "id": "the merged wall is not in a hotlink",
+      "command": "GetHotlinkOwnersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${m1}" } } ] },
+      "expect": [ { "path": "hotlinkOwners[0].isInHotlink", "eq": false, "name": "an ordinary element" } ]
+    },
+    {
+      "id": "[a file that does not exist]",
+      "command": "MergeFile",
+      "creates": false,
+      "params": { "sourceLocation": "${tmp}/TapirCheckNoSuchFile.mod" },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "an error" },
+        { "path": "elements", "exists": false, "name": "nothing merged" }
+      ]
+    },
+    {
+      "id": "hotlink node of the module",
+      "command": "CreateHotlinkNodes",
+      "creates": false,
+      "params": { "hotlinkNodes": [ { "sourceLocation": "${tmp}/TapirCheckMergeFile.mod" } ] },
+      "save": { "node": "hotlinkNodes[0].hotlinkNodeId.guid" },
+      "expect": [ { "path": "hotlinkNodes[0].hotlinkNodeId.guid", "exists": true, "name": "node created" } ]
+    },
+    {
+      "id": "[a file the project already hotlinks]",
+      "command": "MergeFile",
+      "creates": false,
+      "params": { "sourceLocation": "${tmp}/TapirCheckMergeFile.mod" },
+      "expect": [
+        { "path": "error.message", "contains": "already hotlinked", "name": "refused, saying why" },
+        { "path": "elements", "exists": false, "name": "nothing merged" }
+      ]
+    },
+    {
+      "id": "still two walls",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [ { "path": "elements", "len": 2, "name": "the refused merges added nothing" } ]
+    },
+    {
+      "id": "delete the hotlink node",
+      "command": "DeleteHotlinkNodes",
+      "creates": false,
+      "params": { "hotlinkNodes": [ { "hotlinkNodeId": { "guid": "${node}" } } ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "node deleted" } ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteHotlinkNodes", "params": { "hotlinkNodes": [ { "hotlinkNodeId": { "guid": "${node}" } } ] } }
+  ]
+}

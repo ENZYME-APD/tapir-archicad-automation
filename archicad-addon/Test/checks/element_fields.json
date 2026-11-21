@@ -1,0 +1,120 @@
+{
+  "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields read and write the fields of an element's struct, set the enclosing members in the mask (begC.y), and refuse read-only fields and union members the element does not use",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "the fields of a wall",
+      "command": "GetElementFieldDefinitions",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "structName", "eq": "API_WallType", "name": "the wall struct" },
+        { "path": "fields[0].path", "exists": true, "name": "the wall has fields" }
+      ]
+    },
+    {
+      "id": "create a wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700.0, "y": 700.0 }, "endCoordinate": { "x": 706.0, "y": 700.0 }, "floorIndex": 0, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "read the wall's begC and height",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ], "fields": [ "begC.x", "begC.y", "height", "noSuchField" ] },
+      "expect": [
+        { "path": "elementFields[0].elementType", "eq": "Wall", "name": "it is a wall" },
+        { "path": "elementFields[0].structName", "eq": "API_WallType", "name": "read from the wall struct" },
+        { "path": "elementFields[0].missingFields", "len": 1, "name": "one asked path is unknown" },
+        { "path": "elementFields[0].missingFields[0]", "eq": "noSuchField", "name": "the unknown path is listed as missing" }
+      ]
+    },
+    {
+      "id": "SetElementFields: only begC.y and height of the wall",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": { "elementsWithFields": [ { "elementId": { "guid": "${w}" }, "fields": { "begC.y": 701.0, "height": 2.7 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "begC.y and height kept by Archicad" }
+      ]
+    },
+    {
+      "id": "the wall after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 701.0, "name": "begC.y changed: the first byte of begC is set in the mask too" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 700.0, "name": "begC.x kept" },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.7, "name": "height changed" }
+      ]
+    },
+    {
+      "id": "SetElementFields: bad values are refused before anything is written",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${w}" }, "fields": { "noSuchField": 1 } },
+          { "elementId": { "guid": "${w}" }, "fields": { "height": "high" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "an unknown field refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a string for a number refused" }
+      ]
+    },
+    {
+      "id": "create an extruded shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "basePlane": { "origin": { "x": 900.0, "y": 900.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 }
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "shell created" }
+      ]
+    },
+    {
+      "id": "the shell reads its own union member only",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ], "fields": [ "u.extrudedShell.slantAngle", "u.revolvedShell.segmentedSurfaces" ] },
+      "expect": [
+        { "path": "elementFields[0].inactiveFields", "len": 1, "name": "one asked field is in a member the shell does not use" },
+        { "path": "elementFields[0].inactiveFields[0]", "eq": "u.revolvedShell.segmentedSurfaces", "name": "a revolved shell field of an extruded shell is not read" }
+      ]
+    },
+    {
+      "id": "SetElementFields: a union member the shell does not use is refused",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": { "elementsWithFields": [ { "elementId": { "guid": "${s}" }, "fields": { "u.revolvedShell.segmentedSurfaces": true } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "writing u.revolvedShell into an extruded shell is refused (it overwrote the shell and made Archicad 29 quit)" },
+        { "path": "executionResults[0].error.message", "contains": "u.revolvedShell", "name": "the message names the union member" }
+      ]
+    }
+  ]
+}

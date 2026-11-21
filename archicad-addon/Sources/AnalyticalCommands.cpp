@@ -2706,7 +2706,7 @@ GS::Optional<GS::UniString> GetAnalyticalMemberTypesOfElementsCommand::GetRawRes
         "properties": {
             "memberTypesOfElements": {
                 "type": "array",
-                "description": "The analytical member type of each element, in the order of the input. An element the type cannot be got for is represented by an error object.",
+                "description": "The analytical member type of each element, in the order of the input, as the Complementary Project (the structural analysis project exchanged with Archicad) gives it: Unknown for every element when the project has none. An element that does not exist, or whose type cannot be got, is represented by an error object.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -2751,8 +2751,16 @@ GS::ObjectState GetAnalyticalMemberTypesOfElementsCommand::Execute (const GS::Ob
             continue;
         }
 
+        // The API answers Unknown, not an error, for a guid that is no element, so check it first.
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            memberTypesOfElements (CreateErrorResponse (APIERR_BADID, "The element does not exist."));
+            continue;
+        }
+
         API_AnalyticalMemberType memberType = {};
-        const GSErrCode err = TAPIR_GetComplementaryProjectMemberType (GetGuidFromObjectState (*elementId), memberType);
+        const GSErrCode err = TAPIR_GetComplementaryProjectMemberType (elemHead.guid, memberType);
         if (err != NoError) {
             memberTypesOfElements (CreateErrorResponse (err, "Failed to get the analytical member type of the element."));
             continue;

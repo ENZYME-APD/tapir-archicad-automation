@@ -1,0 +1,2 @@
+# The tests read the command reference of the repository, which the package does not carry.
+prune tests

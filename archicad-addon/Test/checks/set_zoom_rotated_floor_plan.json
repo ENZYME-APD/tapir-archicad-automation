@@ -1,0 +1,211 @@
+{
+  "title": "SetZoom shows the whole model box in a rotated floor plan window, and keeps the box as it is in an unrotated one (#2846)",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "a wall so that the view has an extent",
+      "command": "CreateWalls",
+      "stopOnFail": true,
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 500, "y": 530 }, "endCoordinate": { "x": 520, "y": 530 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "a story of the Project Map",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "navigatorMapId": "ProjectMap"
+      },
+      "save": {
+        "story": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.type", "eq": "StoryItem", "name": "first item of the first Project Map group is a story" }
+      ]
+    },
+    {
+      "id": "the story's floor plan window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "navigatorItemId": { "guid": "${story}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "zoom the unrotated floor plan",
+      "command": "SetZoom",
+      "creates": false,
+      "params": {
+        "zoomBox": { "xMin": 500, "yMin": 530, "xMax": 520, "yMax": 545 }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the unrotated window shows the box, widened only",
+      "command": "GetView2DTransformations",
+      "creates": false,
+      "params": {},
+      "save": {
+        "uxMin": "transformations[0].zoom.xMin",
+        "uyMin": "transformations[0].zoom.yMin",
+        "uxMax": "transformations[0].zoom.xMax",
+        "uyMax": "transformations[0].zoom.yMax"
+      },
+      "expect": [
+        { "path": "transformations[0].rotation", "approx": 0, "tol": 0.000001, "name": "floor plan not rotated" },
+        { "expr": "(${uxMin} + ${uxMax}) / 2", "approx": 510, "tol": 0.01, "name": "centred on the box (x)" },
+        { "expr": "(${uyMin} + ${uyMax}) / 2", "approx": 537.5, "tol": 0.01, "name": "centred on the box (y)" },
+        { "expr": "${uxMax} - ${uxMin}", "gt": 19.99, "name": "at least the box width" },
+        { "expr": "${uyMax} - ${uyMin}", "gt": 14.99, "name": "at least the box height" }
+      ]
+    },
+    {
+      "id": "folder at the View Map root",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "folderName": "TapirCheck SetZoom rotated folder"
+      },
+      "save": {
+        "folder": "navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemId.guid", "exists": true, "name": "folder created" }
+      ]
+    },
+    {
+      "id": "view of the story",
+      "command": "CreateViewsInViewMap",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "viewsData": [
+          { "navigatorItemId": { "guid": "${story}" }, "parentNavigatorItemId": { "guid": "${folder}" }, "name": "TapirCheck SetZoom rotated view" }
+        ]
+      },
+      "save": {
+        "view": "navigatorItems[0].navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItems[0].navigatorItemId.guid", "exists": true, "name": "view created" }
+      ]
+    },
+    {
+      "id": "rotate the view by 1 rad",
+      "command": "SetViewRotation",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "navigatorItemIdsWithRotation": [
+          { "navigatorItemId": { "guid": "${view}" }, "rotation": 1.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "open the rotated view",
+      "command": "ChangeWindow",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "navigatorItemId": { "guid": "${view}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the window is rotated",
+      "command": "GetView2DTransformations",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {},
+      "expect": [
+        { "path": "transformations[0].rotation", "ne": 0, "name": "the opened view is rotated" }
+      ]
+    },
+    {
+      "id": "zoom the rotated floor plan",
+      "command": "SetZoom",
+      "creates": false,
+      "params": {
+        "zoomBox": { "xMin": 500, "yMin": 530, "xMax": 520, "yMax": 545 }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the box corners are on the screen; the box centre is the window centre, so no corner is beyond twice the centre",
+      "command": "ModelToScreen",
+      "creates": false,
+      "params": {
+        "coordinates": [
+          { "x": 500, "y": 530, "z": 0 },
+          { "x": 520, "y": 530, "z": 0 },
+          { "x": 520, "y": 545, "z": 0 },
+          { "x": 500, "y": 545, "z": 0 },
+          { "x": 510, "y": 537.5, "z": 0 }
+        ]
+      },
+      "save": {
+        "h0": "screenPoints[0].h", "v0": "screenPoints[0].v",
+        "h1": "screenPoints[1].h", "v1": "screenPoints[1].v",
+        "h2": "screenPoints[2].h", "v2": "screenPoints[2].v",
+        "h3": "screenPoints[3].h", "v3": "screenPoints[3].v",
+        "hc": "screenPoints[4].h", "vc": "screenPoints[4].v"
+      },
+      "expect": [
+        { "path": "screenPoints[0].h", "gt": -3, "name": "corner 1 not left of the window" },
+        { "path": "screenPoints[0].v", "gt": -3, "name": "corner 1 not above the window" },
+        { "path": "screenPoints[1].h", "gt": -3, "name": "corner 2 not left of the window" },
+        { "path": "screenPoints[1].v", "gt": -3, "name": "corner 2 not above the window" },
+        { "path": "screenPoints[2].h", "gt": -3, "name": "corner 3 not left of the window" },
+        { "path": "screenPoints[2].v", "gt": -3, "name": "corner 3 not above the window" },
+        { "path": "screenPoints[3].h", "gt": -3, "name": "corner 4 not left of the window" },
+        { "path": "screenPoints[3].v", "gt": -3, "name": "corner 4 not above the window" },
+        { "expr": "2 * ${hc} - ${h0} - ${h2}", "approx": 0, "tol": 3, "name": "box centre is the centre of its corners (h)" },
+        { "expr": "2 * ${vc} - ${v1} - ${v3}", "approx": 0, "tol": 3, "name": "box centre is the centre of its corners (v)" },
+        { "expr": "2 * ${hc} - ${h0}", "gt": -3, "name": "corner 1 not right of the window" },
+        { "expr": "2 * ${vc} - ${v0}", "gt": -3, "name": "corner 1 not below the window" },
+        { "expr": "2 * ${hc} - ${h1}", "gt": -3, "name": "corner 2 not right of the window" },
+        { "expr": "2 * ${vc} - ${v1}", "gt": -3, "name": "corner 2 not below the window" },
+        { "expr": "2 * ${hc} - ${h2}", "gt": -3, "name": "corner 3 not right of the window" },
+        { "expr": "2 * ${vc} - ${v2}", "gt": -3, "name": "corner 3 not below the window" },
+        { "expr": "2 * ${hc} - ${h3}", "gt": -3, "name": "corner 4 not right of the window" },
+        { "expr": "2 * ${vc} - ${v3}", "gt": -3, "name": "corner 4 not below the window" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "navigatorItemId": { "guid": "${story}" } }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${view}" } } ] }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${folder}" } } ] }
+    }
+  ]
+}
