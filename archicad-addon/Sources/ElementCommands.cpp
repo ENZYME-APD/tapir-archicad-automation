@@ -4429,6 +4429,13 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     elem.cwFrame.classID == APICWFrameClass_Boundary ? "Boundary" :
                     elem.cwFrame.classID == APICWFrameClass_Corner ? "Corner" :
                     elem.cwFrame.classID == APICWFrameClass_Division ? "Division" : "Custom");
+                // type above is the frame's class; ModifyCurtainWallFrames takes the class as
+                // classIndex and its "type" is the object type, so both are read as it takes them.
+                typeSpecificDetails.Add ("classIndex", elem.cwFrame.classID == APICWFrameClass_Customized ? -1 : static_cast<Int32> (elem.cwFrame.classID));
+                typeSpecificDetails.Add ("objectType", GS::UniString (
+                    elem.cwFrame.objectType == APICWFrObjectType_Invisible ? "Invisible" :
+                    elem.cwFrame.objectType == APICWFrObjectType_GDL ? "GDL" :
+                    elem.cwFrame.objectType == APICWFrObjectType_InvisibleConnectedTurning ? "InvisibleConnectedTurning" : "InvisibleConnectedStill"));
                 AddCurtainWallHomeStoryLevel (elem.cwFrame.owner, stories, typeSpecificDetails);
             } break;
 
