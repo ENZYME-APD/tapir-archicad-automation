@@ -1,0 +1,109 @@
+{
+  "title": "CreateStairs and ModifyStairs read the walking direction and walking line back and fail an item whose value Archicad did not keep (#2940; reported on Archicad 29, which keeps neither an Inverse inputDirection nor a Left walking line, so the check runs from Archicad 29; a failure on a later version means it keeps them)",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "create an upward stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 760.0, "y": 720.0 },
+              { "x": 766.0, "y": 720.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "treadDepth": 0.28,
+            "inputDirection": "Upward"
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "an Upward stair is created, as Archicad keeps Upward" },
+        { "path": "elements[0].error", "exists": false, "name": "no error for the kept direction" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: the direction the stair already has",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "inputDirection": "Upward" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "a kept direction still succeeds" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: an Inverse direction",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "inputDirection": "Inverse" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the direction Archicad did not keep fails the item instead of success" },
+        { "path": "executionResults[0].error.message", "contains": "inputDirection is Upward", "name": "the error names what the stair still has" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: a Left walking line",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "walkingLinePosition": "Left", "walkingLineOffset": 0.35 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the walking line Archicad did not keep fails the item instead of success" },
+        { "path": "executionResults[0].error.message", "contains": "walkingLinePosition is", "name": "the error names the walking line position the stair still has" }
+      ]
+    },
+    {
+      "id": "CreateStairs: an Inverse stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 760.0, "y": 730.0 },
+              { "x": 766.0, "y": 730.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "treadDepth": 0.28,
+            "inputDirection": "Inverse"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.message", "contains": "inputDirection is Upward", "name": "the item fails, naming the direction Archicad made of it" },
+        { "path": "elements[0].elementId", "exists": false, "name": "no stair is returned for it" }
+      ]
+    },
+    {
+      "id": "the Inverse stair was deleted again",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Stair" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "only the upward stair is in the project" },
+        { "path": "elements[0].elementId.guid", "eq": "${s}", "name": "and it is the first one" }
+      ]
+    }
+  ]
+}
