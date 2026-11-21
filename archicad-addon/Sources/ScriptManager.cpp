@@ -13,6 +13,10 @@
 #include "ObjectStateJSONConversion.hpp"
 #include "FileSystem.hpp"
 #include "File.hpp"
+#include "DGMenu.hpp"
+#include "DGMenuItem.hpp"
+#include "DGCommandDescriptor.hpp"
+#include "DGCommandEvent.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -71,6 +75,10 @@ static constexpr short ScriptNameTab = 1;
 static constexpr short ScriptSummaryTab = 2;
 static constexpr short ScriptVersionTab = 3;
 static constexpr short ScriptTabCount = 3;
+// Below this client width the window has one column instead of three; it cannot be made smaller than the minimum.
+static constexpr short NarrowWidth = 780;
+static constexpr short MinWidth = 360;
+static constexpr short MinHeight = 520;
 
 // The texts of the user interface, from the localized resources (RINT/AddOn.grc, see LOCALIZATION.md)
 static GS::UniString ManagerText (Int32 index)
@@ -96,6 +104,21 @@ static GS::UniString ToLowerCased (const GS::UniString& text)
     return text.ToLowerCase ();
 #endif
 }
+
+
+// The commands of the Scripts tab's right-click menu. Each is a DG::Command of Tapir's 'MDID' (RFIX/AddOnFix.grc), so
+// that it is never taken for a command of Archicad or another add-on.
+static constexpr ULong TapirDeveloperId = 826567491;
+static constexpr ULong TapirLocalId = 368333322;
+enum LocalMenuCommand : ULong {
+    RunCommand = 1,
+    StopCommand,
+    AssignShortcutCommand,
+    EditCommand,
+    ShowInFolderCommand,
+    OpenOnGitHubCommand,
+    RemoveCommand
+};
 
 static void OpenWebpage (const GS::UniString& webpage)
 {
@@ -373,15 +396,16 @@ static GS::UniString FormatCatalogueTime (std::time_t time)
     return GS::UniString (buffer);
 }
 
-// "28, 29, 30"
-static GS::UniString JoinArchicadVersions (const std::vector<int>& versions)
+// "28, 29, 30": the catalogue's versions (std::vector<int>) or a header's (GS::Array<Int32>).
+template <typename Versions>
+static GS::UniString JoinArchicadVersions (const Versions& versions)
 {
     GS::UniString text;
-    for (size_t i = 0; i < versions.size (); ++i) {
-        if (i > 0) {
+    for (const auto version : versions) {
+        if (!text.IsEmpty ()) {
             text += ", ";
         }
-        text += GS::UniString::Printf ("%d", versions[i]);
+        text += GS::UniString::Printf ("%d", static_cast<int> (version));
     }
     return text;
 }
@@ -607,12 +631,21 @@ ScriptManager::ScriptManager ()
     , updateButton (GetReference (), ID_SCRIPT_MANAGER_UPDATE)
     , updateAllButton (GetReference (), ID_SCRIPT_MANAGER_UPDATE_ALL)
     , readmeBrowser (GetReference (), ID_SCRIPT_MANAGER_README)
+    , scriptsTab (GetReference (), ID_SCRIPT_MANAGER_SCRIPTS_TAB)
+    , resultText (GetReference (), ID_SCRIPT_MANAGER_RESULT)
+    , runButton (GetReference (), ID_SCRIPT_MANAGER_RUN)
+    , stopButton (GetReference (), ID_SCRIPT_MANAGER_STOP)
+    , outputButton (GetReference (), ID_SCRIPT_MANAGER_OUTPUT)
+    , fixButton (GetReference (), ID_SCRIPT_MANAGER_FIX)
+    , addScriptButton (GetReference (), ID_SCRIPT_MANAGER_ADD_SCRIPT)
+    , categoryPopUp (GetReference (), ID_SCRIPT_MANAGER_CATEGORY_POPUP)
 {
     SetGrowType (DG::Dialog::HVGrow);
-    SetMinClientSize (GetOriginalClientWidth (), GetOriginalClientHeight ());
+    SetMinClientSize (MinWidth, MinHeight);
 
-    availableTab.Select ();
+    scriptsTab.Select ();
     fitsCheckBox.Check ();
+    licenceLabelText = licenceLabel.GetText ();
     scriptsPageButton.Hide ();
 
     // The categories: "All categories", then the 12 categories, each with the number of scripts beside it.
@@ -627,10 +660,16 @@ ScriptManager::ScriptManager ()
             ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES + category));
     }
     categoryList.SelectItem (AllCategoriesItem);
+    for (short category = 0; category <= CategoryCount; ++category) {
+        categoryPopUp.AppendItem ();   // RefreshCategoryList gives the items their texts and counts
+    }
 
     SetupScriptListColumns ();
-    // The installed scripts are listed even when no catalogue can be loaded.
+    // The scripts of the Tapir Palette are listed first, and the installed ones even when no catalogue can be loaded.
+    localActions = TapirPalette::Instance ().GetLocalScriptActions ();
+    LoadLocalScripts ();
     LoadInstalls ();
+    LayoutItems ();
     RefreshAll ();
 
     // Attached once the controls are set up, so that setting them up sends no change events here.
@@ -641,10 +680,17 @@ ScriptManager::ScriptManager ()
     updateButton.Attach (*this);
     updateAllButton.Attach (*this);
     searchEdit.Attach (*this);
+    scriptsTab.Attach (*this);
     availableTab.Attach (*this);
     installedTab.Attach (*this);
     updatesTab.Attach (*this);
     refreshButton.Attach (*this);
+    runButton.Attach (*this);
+    stopButton.Attach (*this);
+    outputButton.Attach (*this);
+    fixButton.Attach (*this);
+    addScriptButton.Attach (*this);
+    categoryPopUp.Attach (*this);
     categoryList.Attach (*this);
     fitsCheckBox.Attach (*this);
     scriptList.Attach (*this);
@@ -652,12 +698,26 @@ ScriptManager::ScriptManager ()
     scriptsPageButton.Attach (*this);
     closeButton.Attach (*this);
 
+    // A script that was started from the bar, a shortcut or this window changes the result line shown here.
+    ScriptRunResults::Instance ().SetChangedHandler ([this] () { ShowRunResult (); });
+
+    // Without this DG sends no drag and drop events, and a .py file dropped on the Scripts tab's list does nothing
+    EnableDragAndDropEvent ();
+
     BeginEventProcessing ();
 }
 
 ScriptManager::~ScriptManager ()
 {
+    ScriptRunResults::Instance ().SetChangedHandler (nullptr);
     searchEdit.Detach (*this);
+    scriptsTab.Detach (*this);
+    runButton.Detach (*this);
+    stopButton.Detach (*this);
+    outputButton.Detach (*this);
+    fixButton.Detach (*this);
+    addScriptButton.Detach (*this);
+    categoryPopUp.Detach (*this);
     availableTab.Detach (*this);
     installedTab.Detach (*this);
     updatesTab.Detach (*this);
@@ -702,6 +762,9 @@ void ScriptManager::Show ()
         return;
     }
     DG::Palette::Show ();
+    // Archicad gives the window the size it had when it was last closed, which sends no resize event
+    LayoutItems ();
+    LocalScriptsChanged ();
     LoadCatalogue ();
 }
 
@@ -863,6 +926,9 @@ void ScriptManager::NotifyPalette () const
 
 ScriptManager::Tab ScriptManager::GetCurrentTab () const
 {
+    if (scriptsTab.IsSelected ()) {
+        return Tab::Scripts;
+    }
     if (installedTab.IsSelected ()) {
         return Tab::Installed;
     }
@@ -922,11 +988,29 @@ bool ScriptManager::MatchesSearch (const Script& script, const GS::UniString& lo
     return false;
 }
 
+// The Scripts tab's search: the name, the file name, what the script does and where it comes from.
+static bool MatchesLocalSearch (const LocalScript& script, const GS::UniString& lowerCasedSearch)
+{
+    return lowerCasedSearch.IsEmpty () || ToLowerCased (script.name).Contains (lowerCasedSearch) ||
+        ToLowerCased (script.fileName).Contains (lowerCasedSearch) || ToLowerCased (script.info.summary).Contains (lowerCasedSearch) ||
+        ToLowerCased (script.source).Contains (lowerCasedSearch);
+}
+
+// The scripts of the current tab and search: indexes into localScripts on the Scripts tab, into scripts on the others.
 std::vector<size_t> ScriptManager::GetScriptsOfTabAndSearch () const
 {
     std::vector<size_t> result;
     const Tab tab = GetCurrentTab ();
     const GS::UniString search = ToLowerCased (searchEdit.GetText ());
+    if (tab == Tab::Scripts) {
+        for (UIndex i = 0; i < localScripts.GetSize (); ++i) {
+            const LocalScript& script = localScripts[i];
+            if (MatchesLocalSearch (script, search)) {
+                result.push_back (i);
+            }
+        }
+        return result;
+    }
     const bool onlyFitting = fitsCheckBox.IsChecked ();
     for (size_t i = 0; i < scripts.size (); ++i) {
         if (!MatchesSearch (scripts[i], search)) {
@@ -981,25 +1065,43 @@ void ScriptManager::RefreshTabTexts ()
             ++updatesCount;
         }
     }
+    int scriptsCount = 0;
+    for (const LocalScript& script : localScripts) {
+        if (MatchesLocalSearch (script, search)) {
+            ++scriptsCount;
+        }
+    }
+    scriptsTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_SCRIPTS_TAB), scriptsCount));
     availableTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_AVAILABLE_TAB), availableCount));
     installedTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_INSTALLED_TAB), installedCount));
     updatesTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_UPDATES_TAB), updatesCount));
-    fitsCheckBox.SetVisibility (GetCurrentTab () == Tab::Available);
+    const Tab tab = GetCurrentTab ();
+    fitsCheckBox.SetVisibility (tab == Tab::Available);
+    // The catalogue is the marketplace's: its time and Refresh do not belong to the Scripts tab.
+    catalogueTimeText.SetVisibility (tab != Tab::Scripts && !isNarrow);
+    refreshButton.SetVisibility (tab != Tab::Scripts);
 }
 
 void ScriptManager::RefreshCategoryList ()
 {
     const std::vector<size_t> tabScripts = GetScriptsOfTabAndSearch ();
-    categoryList.SetTabItemText (AllCategoriesItem, CategoryCountTab, GS::UniString::Printf ("%d", static_cast<int> (tabScripts.size ())));
+    const int allCount = static_cast<int> (tabScripts.size ());
+    categoryList.SetTabItemText (AllCategoriesItem, CategoryCountTab, GS::UniString::Printf ("%d", allCount));
+    categoryPopUp.SetItemText (AllCategoriesItem, GS::UniString::Printf ("%T (%d)", ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES).ToPrintf (), allCount));
+    const bool onScriptsTab = GetCurrentTab () == Tab::Scripts;
     for (short category = 0; category < CategoryCount; ++category) {
         int count = 0;
         for (size_t index : tabScripts) {
-            if (scripts[index].category == CategoryKeys[category]) {
+            const GS::UniString& scriptCategory = onScriptsTab ? localScripts[static_cast<UIndex> (index)].info.category : scripts[index].category;
+            if (scriptCategory == CategoryKeys[category]) {
                 ++count;
             }
         }
-        categoryList.SetTabItemText (static_cast<short> (AllCategoriesItem + 1 + category), CategoryCountTab, GS::UniString::Printf ("%d", count));
+        const short item = static_cast<short> (AllCategoriesItem + 1 + category);
+        categoryList.SetTabItemText (item, CategoryCountTab, GS::UniString::Printf ("%d", count));
+        categoryPopUp.SetItemText (item, GS::UniString::Printf ("%T (%d)", ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES + 1 + category).ToPrintf (), count));
     }
+    categoryPopUp.SelectItem (categoryList.GetSelectedItem () > 0 ? categoryList.GetSelectedItem () : AllCategoriesItem);
 }
 
 void ScriptManager::SetupScriptListColumns ()
@@ -1015,12 +1117,13 @@ void ScriptManager::SetupScriptListColumns ()
 void ScriptManager::LayoutScriptListColumns ()
 {
     const bool updates = GetCurrentTab () == Tab::Updates;
+    const bool listsScripts = GetCurrentTab () == Tab::Scripts;
     scriptList.SetHeaderItemText (ScriptNameTab, ManagerText (ID_SCRIPT_MANAGER_STRINGS_NAME_COLUMN));
     scriptList.SetHeaderItemText (ScriptSummaryTab, ManagerText (updates ? ID_SCRIPT_MANAGER_STRINGS_INSTALLED_COLUMN : ID_SCRIPT_MANAGER_STRINGS_SUMMARY_COLUMN));
-    scriptList.SetHeaderItemText (ScriptVersionTab, ManagerText (updates ? ID_SCRIPT_MANAGER_STRINGS_NEW_COLUMN : ID_SCRIPT_MANAGER_STRINGS_VERSION_COLUMN));
+    scriptList.SetHeaderItemText (ScriptVersionTab, ManagerText (updates ? ID_SCRIPT_MANAGER_STRINGS_NEW_COLUMN : (listsScripts ? ID_SCRIPT_MANAGER_STRINGS_SOURCE_COLUMN : ID_SCRIPT_MANAGER_STRINGS_VERSION_COLUMN)));
 
     const short width = scriptList.GetItemWidth ();
-    constexpr short versionWidth = 58;
+    const short versionWidth = listsScripts ? 92 : 58;
     const short versionStart = static_cast<short> (width - versionWidth);
     const short nameWidth = updates ? static_cast<short> (versionStart - versionWidth) : static_cast<short> (140);
     scriptList.SetTabFieldProperties (ScriptNameTab, 0, nameWidth, DG::ListBox::Left, DG::ListBox::EndTruncate, false);
@@ -1033,6 +1136,10 @@ void ScriptManager::LayoutScriptListColumns ()
 
 void ScriptManager::RefreshScriptList ()
 {
+    if (GetCurrentTab () == Tab::Scripts) {
+        RefreshLocalScriptList ();
+        return;
+    }
     // The selected script stays selected when it is still listed (selectedSlug, as the rows may point into a list
     // that was replaced since).
     const Tab currentTab = GetCurrentTab ();
@@ -1105,6 +1212,35 @@ const ScriptManager::Script* ScriptManager::GetSelectedScript () const
 
 void ScriptManager::RefreshDetails ()
 {
+    RefreshDetailsOfTab ();
+    ApplyNarrowVisibility ();
+}
+
+void ScriptManager::ApplyNarrowVisibility ()
+{
+    if (!isNarrow) {
+        return;
+    }
+    for (DG::Item* item : { static_cast<DG::Item*> (&archicadLabel), static_cast<DG::Item*> (&archicadValue), static_cast<DG::Item*> (&tapirLabel),
+                            static_cast<DG::Item*> (&tapirValue), static_cast<DG::Item*> (&licenceLabel), static_cast<DG::Item*> (&licenceValue),
+                            static_cast<DG::Item*> (&whatIsNewTitle), static_cast<DG::Item*> (&changelogText), static_cast<DG::Item*> (&catalogueTimeText) }) {
+        item->SetVisibility (false);
+    }
+}
+
+void ScriptManager::RefreshDetailsOfTab ()
+{
+    if (GetCurrentTab () == Tab::Scripts) {
+        RefreshLocalDetails ();
+        return;
+    }
+    // The controls of the Scripts tab, and the label it renamed, are the marketplace's again.
+    for (DG::Item* item : { static_cast<DG::Item*> (&resultText), static_cast<DG::Item*> (&runButton), static_cast<DG::Item*> (&stopButton),
+                            static_cast<DG::Item*> (&outputButton), static_cast<DG::Item*> (&fixButton), static_cast<DG::Item*> (&addScriptButton) }) {
+        item->SetVisibility (false);
+    }
+    licenceLabel.SetText (licenceLabelText);
+    summaryText.SetVisibility (true);
     const Script* script = GetSelectedScript ();
     DG::Item* const detailItems[] = {
         &nameText, &bylineText, &summaryText, &changesLabel, &changesValue, &archicadLabel, &archicadValue,
@@ -1424,47 +1560,566 @@ bool ScriptManager::Remove (const Script& script)
     return true;
 }
 
+// ---- The Scripts tab ----
+
+void ScriptManager::LoadLocalScripts ()
+{
+    localScripts = localActions.getScripts ();
+}
+
+void ScriptManager::LocalScriptsChanged ()
+{
+    if (!IsVisible ()) {
+        return;   // Show loads them again
+    }
+    LoadLocalScripts ();
+    RefreshAll ();
+}
+
+const LocalScript* ScriptManager::GetLocalScriptOfRow (short row) const
+{
+    if (row <= 0 || row > scriptList.GetItemCount ()) {
+        return nullptr;
+    }
+    const DGUserData value = scriptList.GetItemValue (row);
+    if (value <= 0 || static_cast<UIndex> (value) > localScripts.GetSize ()) {
+        return nullptr;
+    }
+    return &localScripts[static_cast<UIndex> (value - 1)];
+}
+
+const LocalScript* ScriptManager::GetSelectedLocalScript () const
+{
+    if (GetCurrentTab () != Tab::Scripts) {
+        return nullptr;
+    }
+    return GetLocalScriptOfRow (scriptList.GetSelectedItem ());
+}
+
+// The scripts of the Tapir Palette's list, by category and search; the row's value is the script's index + 1.
+void ScriptManager::RefreshLocalScriptList ()
+{
+    LayoutScriptListColumns ();   // the columns of the other tabs differ
+    const GS::UniString category = GetSelectedCategory ();
+    scriptList.DisableDraw ();
+    if (scriptList.GetItemCount () > 0) {
+        scriptList.DeleteItem (DG::ListBox::AllItems);
+    }
+    short itemToSelect = 0;
+    for (size_t index : GetScriptsOfTabAndSearch ()) {
+        const LocalScript& script = localScripts[static_cast<UIndex> (index)];
+        if (!category.IsEmpty () && script.info.category != category) {
+            continue;
+        }
+        scriptList.AppendItem ();
+        const short item = scriptList.GetItemCount ();
+        scriptList.SetTabItemText (item, ScriptNameTab, script.name);
+        scriptList.SetTabItemText (item, ScriptSummaryTab, script.info.summary);
+        scriptList.SetTabItemText (item, ScriptVersionTab, script.source);
+        scriptList.SetItemValue (item, static_cast<DGUserData> (index + 1));
+        if (!selectedLocalLocation.IsEmpty () && script.fileLocation == selectedLocalLocation) {
+            itemToSelect = item;
+        }
+    }
+    if (itemToSelect == 0 && scriptList.GetItemCount () > 0) {
+        itemToSelect = 1;
+    }
+    if (itemToSelect > 0) {
+        scriptList.SelectItem (itemToSelect);
+    }
+    scriptList.EnableDraw ();
+    scriptList.Redraw ();
+
+    RefreshLocalDetails ();
+}
+
+static GS::UniString HtmlEscaped (const GS::UniString& text)
+{
+    const std::string bytes (text.ToCStr (CC_UTF8).Get ());
+    std::string escaped;
+    for (const char c : bytes) {
+        switch (c) {
+            case '&': escaped += "&amp;"; break;
+            case '<': escaped += "&lt;"; break;
+            case '>': escaped += "&gt;"; break;
+            default: escaped += c; break;
+        }
+    }
+    return GS::UniString (escaped.c_str (), CC_UTF8);
+}
+
+// What the selected script does, in the browser control that shows a marketplace script's README.
+void ScriptManager::RefreshLocalDetails ()
+{
+    const LocalScript* script = GetSelectedLocalScript ();
+
+    // The details of a marketplace script that the Scripts tab does not use.
+    for (DG::Item* item : { static_cast<DG::Item*> (&summaryText), static_cast<DG::Item*> (&enabledCheckBox), static_cast<DG::Item*> (&installButton),
+                            static_cast<DG::Item*> (&removeButton), static_cast<DG::Item*> (&updateButton), static_cast<DG::Item*> (&updateAllButton) }) {
+        item->SetVisibility (false);
+    }
+    addScriptButton.SetVisibility (true);
+    for (DG::Item* item : { static_cast<DG::Item*> (&nameText), static_cast<DG::Item*> (&bylineText), static_cast<DG::Item*> (&licenceLabel),
+                            static_cast<DG::Item*> (&licenceValue), static_cast<DG::Item*> (&whatIsNewTitle), static_cast<DG::Item*> (&changelogText) }) {
+        item->SetVisibility (script != nullptr);
+    }
+    if (script == nullptr) {
+        for (DG::Item* item : { static_cast<DG::Item*> (&changesLabel), static_cast<DG::Item*> (&changesValue), static_cast<DG::Item*> (&archicadLabel),
+                                static_cast<DG::Item*> (&archicadValue), static_cast<DG::Item*> (&tapirLabel), static_cast<DG::Item*> (&tapirValue) }) {
+            item->SetVisibility (false);
+        }
+        readmeBrowser.SetVisibility (false);
+        shownReadmeFolder = GS::EmptyUniString;
+        ShowRunResult ();
+        return;
+    }
+    selectedLocalLocation = script->fileLocation;
+
+    nameText.SetText (script->name);
+    GS::UniString byline;
+    if (!script->info.author.IsEmpty ()) {
+        byline = GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_BY_AUTHOR), script->info.author.ToPrintf ());
+    }
+    if (!script->info.version.IsEmpty ()) {
+        if (!byline.IsEmpty ()) {
+            byline += ", ";
+        }
+        byline += GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_VERSION), script->info.version.ToPrintf ());
+    }
+    bylineText.SetText (byline);
+
+    // What it changes, and the Archicad and Tapir versions it names; a row without a value is left out.
+    const GS::UniString badge = GetChangesBadge (script->info.changes);
+    changesLabel.SetVisibility (!badge.IsEmpty ());
+    changesValue.SetVisibility (!badge.IsEmpty ());
+    changesValue.SetText (badge);
+    const bool hasArchicad = !script->info.archicadVersions.IsEmpty ();
+    archicadLabel.SetVisibility (hasArchicad);
+    archicadValue.SetVisibility (hasArchicad);
+    archicadValue.SetText (JoinArchicadVersions (script->info.archicadVersions));
+    const bool hasTapir = !script->info.minTapirVersion.IsEmpty ();
+    tapirLabel.SetVisibility (hasTapir);
+    tapirValue.SetVisibility (hasTapir);
+    tapirValue.SetText (hasTapir ? GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_OR_NEWER), script->info.minTapirVersion.ToPrintf ()) : GS::EmptyUniString);
+
+    // Where it comes from, and its file.
+    licenceLabel.SetText (ManagerText (ID_SCRIPT_MANAGER_STRINGS_SOURCE_LABEL));
+    licenceValue.SetText (script->source);
+    whatIsNewTitle.SetText (ManagerText (ID_SCRIPT_MANAGER_STRINGS_FILE_LABEL));
+    changelogText.SetText (script->fileName);
+
+    // The description, whole.
+    GS::UniString filePath;
+    script->fileLocation.ToPath (&filePath);
+    const GS::UniString pageKey = "local:" + filePath;
+    readmeBrowser.SetVisibility (!script->info.summary.IsEmpty ());
+    if (pageKey != shownReadmeFolder) {
+        shownReadmeFolder = pageKey;
+        readmeBrowser.LoadHTML (GS::UniString (
+            "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>"
+            "html,body{margin:0;padding:0;background:#fff;color:#263238;}"
+            "body{font:12px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;padding:6px;}"
+            "p{margin:0;white-space:pre-wrap;word-wrap:break-word;}"
+            "</style></head><body><p>") + HtmlEscaped (script->info.summary) + GS::UniString ("</p></body></html>"));
+    }
+    ShowRunResult ();
+}
+
+// The Run and Stop buttons and the result of the selected script's last run, wherever it was started.
+void ScriptManager::ShowRunResult ()
+{
+    const bool onScriptsTab = GetCurrentTab () == Tab::Scripts;
+    const LocalScript* script = GetSelectedLocalScript ();
+    const bool hasScript = onScriptsTab && script != nullptr;
+    const bool isRunning = hasScript && localActions.isRunning (script->fileLocation);
+
+    runButton.SetVisibility (onScriptsTab);
+    stopButton.SetVisibility (onScriptsTab);
+    resultText.SetVisibility (onScriptsTab);
+    runButton.SetStatus (hasScript && !isRunning);
+    stopButton.SetStatus (isRunning);
+
+    ScriptRunResults::Display display;
+    if (hasScript) {
+        display = ScriptRunResults::Instance ().Describe (script->fileLocation, isRunning);
+    }
+    resultText.SetText (display.text);
+    if (display.fixTextIndex != 0) {
+        fixButton.SetText (LocalScriptText (display.fixTextIndex));
+    }
+    outputButton.SetVisibility (onScriptsTab && display.showOutputButton);
+    fixButton.SetVisibility (onScriptsTab && display.fixTextIndex != 0);
+}
+
+// Run, Stop, Details, the fix button and Add script. True when the button was one of them.
+bool ScriptManager::HandleLocalButton (const DG::ButtonClickEvent& ev)
+{
+    if (ev.GetSource () == &addScriptButton) {
+        localActions.addScriptWithDialog ();   // refills the palette's list, and with it this one
+        return true;
+    }
+    const bool isRunButton = ev.GetSource () == &runButton;
+    const bool isStopButton = ev.GetSource () == &stopButton;
+    const bool isOutputButton = ev.GetSource () == &outputButton;
+    const bool isFixButton = ev.GetSource () == &fixButton;
+    if (!isRunButton && !isStopButton && !isOutputButton && !isFixButton) {
+        return false;
+    }
+
+    const LocalScript* script = GetSelectedLocalScript ();
+    if (script == nullptr) {
+        return true;
+    }
+    // A copy: running or stopping the script changes the results.
+    // run and stop do nothing when the script already runs or does not run.
+    const IO::Location fileLocation = script->fileLocation;
+
+    if (isRunButton) {
+        localActions.run (fileLocation);
+    } else if (isStopButton) {
+        localActions.stop (fileLocation);
+    } else {
+        const ScriptRunResults::RunResult* result = ScriptRunResults::Instance ().Find (fileLocation);
+        if (result == nullptr) {
+            return true;
+        }
+        if (isOutputButton) {
+            ScriptRunResults::Instance ().ShowOutputDetails (*result);
+        } else {
+            switch (result->failure) {
+                case ScriptRunResults::Failure::UvMissing:
+                    localActions.openWebpage ("https://docs.astral.sh/uv/getting-started/installation/");
+                    break;
+                case ScriptRunResults::Failure::ConnectionBusy:
+                    localActions.run (fileLocation);
+                    break;
+                case ScriptRunResults::Failure::NotStarted:
+                case ScriptRunResults::Failure::ScriptError:
+                    ScriptRunResults::Instance ().ReportProblem (*result, localActions.openWebpage);
+                    break;
+                case ScriptRunResults::Failure::None:
+                    break;
+            }
+        }
+    }
+    ShowRunResult ();
+    return true;
+}
+
+void ScriptManager::ListBoxContextMenuRequested (const DG::ListBoxContextMenuEvent& ev, bool* processed)
+{
+    if (ev.GetSource () != &scriptList || GetCurrentTab () != Tab::Scripts) {
+        return;
+    }
+    // The script under the mouse becomes the selected one, so the details show what the menu acts on.
+    const short row = ev.GetItem ();
+    const LocalScript* script = GetLocalScriptOfRow (row);
+    if (script == nullptr) {
+        return;
+    }
+    selectedLocalLocation = script->fileLocation;
+    scriptList.SelectItem (row);
+    RefreshDetails ();
+
+    // A copy: a command may refill the list (Remove) and with it the scripts.
+    const LocalScript clickedScript = *script;
+    ShowLocalContextMenu (clickedScript);
+    if (processed != nullptr) {
+        *processed = true;
+    }
+}
+
+// Run (Stop while it runs), Assign Shortcut, Edit and Show in Folder for a local file or Open on GitHub for a
+// repository's script, and Remove for a script the user added.
+void ScriptManager::ShowLocalContextMenu (const LocalScript& script)
+{
+    const bool isRunning = localActions.isRunning (script.fileLocation);
+    const bool isLocalFile = script.webUrl.IsEmpty ();
+
+    DG::Menu menu ("-");
+    DG::CommandTable commandTable;
+    const auto addCommand = [&menu, &commandTable] (ULong commandId, Int32 textIndex) {
+        const DG::Command command (commandId, TapirDeveloperId, TapirLocalId);
+        commandTable.Add (command, new DG::CommandDescriptor (command, LocalScriptText (textIndex)));
+        menu.AddMenuItem (DG::MenuSimpleItem (command));
+    };
+    if (isRunning) {
+        addCommand (StopCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_STOP);
+    } else {
+        addCommand (RunCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_RUN);
+    }
+    addCommand (AssignShortcutCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_ASSIGN_SHORTCUT);
+    menu.AddMenuItem (DG::MenuSeparatorItem ());
+    if (isLocalFile) {
+        addCommand (EditCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_EDIT);
+        addCommand (ShowInFolderCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_SHOW_IN_FOLDER);
+    } else {
+        addCommand (OpenOnGitHubCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_OPEN_ON_GITHUB);
+    }
+    if (script.isAdded) {
+        menu.AddMenuItem (DG::MenuSeparatorItem ());
+        addCommand (RemoveCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_REMOVE);
+    }
+
+    ULong chosenCommand = 0;
+    {
+        DG::ContextMenu contextMenu ("-", &menu);
+        contextMenu.SetEnabledCommands (commandTable);
+        DG::MousePosData mousePos;
+        mousePos.Retrieve ();
+        DG::CommandEvent* commandEvent = contextMenu.Display (mousePos.GetMouseOffsetInNativeUnits ());
+        if (commandEvent != nullptr) {
+            chosenCommand = commandEvent->GetCommand ().GetCommandId ();
+            delete commandEvent;
+        }
+    }
+    for (auto it = commandTable.EnumerateValues (); it != nullptr; ++it) {
+        delete *it;
+    }
+
+    switch (chosenCommand) {
+        case RunCommand:
+            localActions.run (script.fileLocation);
+            break;
+        case StopCommand:
+            localActions.stop (script.fileLocation);
+            break;
+        case AssignShortcutCommand:
+            localActions.openShortcuts ();
+            break;
+        case EditCommand:
+            localActions.editFile (script.fileLocation);
+            break;
+        case ShowInFolderCommand:
+            localActions.showInFolder (script.fileLocation);
+            break;
+        case OpenOnGitHubCommand:
+            localActions.openWebpage (script.webUrl);
+            break;
+        case RemoveCommand:
+            localActions.remove (script.fileLocation);   // refills the palette's list, and with it this one
+            break;
+        default:
+            break;
+    }
+    ShowRunResult ();
+}
+
+GS::Array<IO::Location> ScriptManager::GetDroppedScripts (const DG::ListBoxDropTargetEvent& ev)
+{
+    GS::Array<IO::Location> files;
+    const ULong count = ev.GetLocationCount ();
+    for (ULong i = 0; i < count; ++i) {
+        IO::Location location;
+        IO::Name name;
+        if (!ev.GetLocation (i, location) || location.GetLastLocalName (&name) != NoError) {
+            continue;
+        }
+        if (ToLowerCased (name.ToString ()).EndsWith (GS::UniString (".py"))) {
+            files.Push (location);
+        }
+    }
+    return files;
+}
+
+// Copy when .py files are dragged over the Scripts tab's list, else Reject.
+DG::DragDrop::Effect ScriptManager::GetDropEffect (const DG::ListBoxDropTargetEvent& ev) const
+{
+    return (GetCurrentTab () == Tab::Scripts && !GetDroppedScripts (ev).IsEmpty ()) ? DG::DragDrop::Effect::Copy : DG::DragDrop::Effect::Reject;
+}
+
+void ScriptManager::ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool*)
+{
+    if (ev.GetSource () == &scriptList && effect != nullptr) {
+        *effect = GetDropEffect (ev);
+    }
+}
+
+void ScriptManager::ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool* defBehaviour, bool*)
+{
+    ListBoxDragEntered (ev, effect, defBehaviour);
+}
+
+void ScriptManager::ListBoxDragMoved (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, DG::DragDrop::Feedback* denyFeedback)
+{
+    if (ev.GetSource () != &scriptList) {
+        return;
+    }
+    // A file is dropped on the list, not between its rows: no insertion mark.
+    if (denyFeedback != nullptr) {
+        *denyFeedback = DG::DragDrop::RejectSelAndIns;
+    }
+    if (effect != nullptr) {
+        *effect = GetDropEffect (ev);
+    }
+}
+
+void ScriptManager::ListBoxDropped (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect)
+{
+    if (ev.GetSource () != &scriptList) {
+        return;
+    }
+    const GS::Array<IO::Location> files = GetDroppedScripts (ev);
+    const bool accepted = GetCurrentTab () == Tab::Scripts && !files.IsEmpty ();
+    if (effect != nullptr) {
+        *effect = accepted ? DG::DragDrop::Effect::Copy : DG::DragDrop::Effect::Reject;
+    }
+    if (accepted) {
+        localActions.addScripts (files);   // refills the palette's list, and with it this one
+    }
+}
+
 void ScriptManager::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool* accepted)
 {
     Hide ();
     *accepted = true;
 }
 
-void ScriptManager::PanelResized (const DG::PanelResizeEvent& ev)
+void ScriptManager::PanelResized (const DG::PanelResizeEvent&)
 {
-    const short h = ev.GetHorizontalChange ();
-    const short v = ev.GetVerticalChange ();
+    LayoutItems ();
+}
 
-    BeginMoveResizeItems ();
-    // The top bar's right end, the list in the middle and the details on the right follow the window's width; the
-    // lists and the README follow its height, the buttons at the bottom stay at the bottom.
-    catalogueTimeText.Move (h, 0);
-    refreshButton.Move (h, 0);
-    categoryList.Resize (0, v);
-    scriptList.Resize (h, v);
-    DG::Item* const detailItems[] = {
-        &nameText, &bylineText, &summaryText, &changesLabel, &changesValue, &archicadLabel, &archicadValue,
-        &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle, &changelogText
+// Wide: the categories on the left, the list in the middle and the details on the right; the list and the README follow
+// the window's size, the buttons stay at its right and bottom edges. Narrow: one column, so that the window can be
+// docked in a side panel: the search and the tabs on top, the categories as a dropdown, the list, then the details and
+// the buttons under it.
+void ScriptManager::LayoutItems ()
+{
+    const short width = GetClientWidth ();
+    const short height = GetClientHeight ();
+    const bool wasNarrow = isNarrow;
+    isNarrow = width < NarrowWidth;
+
+    const auto place = [] (DG::Item& item, short x, short y, short w, short h) {
+        item.SetPosition (x, y);
+        item.SetSize (w, h);
     };
-    for (DG::Item* item : detailItems) {
-        item->Move (h, 0);
-    }
-    readmeBrowser.MoveAndResize (h, 0, 0, v);
-    shareButton.Move (0, v);
-    scriptsPageButton.Move (0, v);
-    closeButton.Move (h, v);
-    enabledCheckBox.Move (h, v);
-    installButton.Move (h, v);
-    removeButton.Move (h, v);
-    updateButton.Move (h, v);
-    updateAllButton.Move (h, v);   // right-aligned under the list, which follows the width
-    EndMoveResizeItems ();
 
+    // Not between BeginMoveResizeItems and EndMoveResizeItems: moves there are applied twice
+    if (!isNarrow) {
+        place (searchEdit, 10, 10, 220, 22);
+        place (scriptsTab, 240, 12, 108, 18);
+        place (availableTab, 350, 12, 108, 18);
+        place (installedTab, 460, 12, 108, 18);
+        place (updatesTab, 570, 12, 108, 18);
+        place (catalogueTimeText, static_cast<short> (width - 256), 12, 142, 18);
+        place (refreshButton, static_cast<short> (width - 110), 9, 100, 24);
+        place (categoryList, 10, 44, 200, static_cast<short> (height - 94));
+        place (fitsCheckBox, 220, 44, 410, 18);
+        place (scriptList, 220, 66, static_cast<short> (width - 530), static_cast<short> (height - 116));
+        const short x = static_cast<short> (width - 300);
+        const short valueX = static_cast<short> (x + 105);
+        place (nameText, x, 44, 290, 20);
+        place (bylineText, x, 66, 290, 32);
+        place (summaryText, x, 100, 290, 48);
+        place (changesLabel, x, 152, 100, 18);
+        place (changesValue, valueX, 152, 185, 18);
+        place (archicadLabel, x, 172, 100, 18);
+        place (archicadValue, valueX, 172, 185, 18);
+        place (tapirLabel, x, 192, 100, 18);
+        place (tapirValue, valueX, 192, 185, 18);
+        place (licenceLabel, x, 212, 100, 18);
+        place (licenceValue, valueX, 212, 185, 18);
+        place (whatIsNewTitle, x, 238, 290, 18);
+        place (changelogText, x, 258, 290, 48);
+        place (readmeBrowser, x, 312, 290, static_cast<short> (height - 414));
+        place (shareButton, 10, static_cast<short> (height - 40), 140, 24);
+        place (scriptsPageButton, 160, static_cast<short> (height - 40), 200, 24);
+        place (closeButton, static_cast<short> (width - 110), static_cast<short> (height - 40), 100, 24);
+        place (enabledCheckBox, x, static_cast<short> (height - 96), 290, 18);
+        place (resultText, x, static_cast<short> (height - 96), 290, 18);
+        place (installButton, static_cast<short> (width - 110), static_cast<short> (height - 74), 100, 24);
+        place (removeButton, static_cast<short> (width - 110), static_cast<short> (height - 74), 100, 24);
+        place (updateButton, static_cast<short> (width - 220), static_cast<short> (height - 74), 100, 24);
+        place (updateAllButton, static_cast<short> (width - 430), static_cast<short> (height - 40), 120, 24);
+        place (runButton, x, static_cast<short> (height - 74), 64, 24);
+        place (stopButton, static_cast<short> (x + 68), static_cast<short> (height - 74), 64, 24);
+        place (outputButton, static_cast<short> (x + 136), static_cast<short> (height - 74), 70, 24);
+        place (fixButton, x, static_cast<short> (height - 40), 170, 24);
+        place (addScriptButton, static_cast<short> (width - 430), static_cast<short> (height - 40), 120, 24);
+    } else {
+        constexpr short margin = 8;
+        const short contentWidth = static_cast<short> (width - 2 * margin);
+        place (searchEdit, margin, margin, contentWidth, 22);
+        const short tabWidth = static_cast<short> (contentWidth / 4);
+        place (scriptsTab, margin, 36, tabWidth, 18);
+        place (availableTab, static_cast<short> (margin + tabWidth), 36, tabWidth, 18);
+        place (installedTab, static_cast<short> (margin + 2 * tabWidth), 36, tabWidth, 18);
+        place (updatesTab, static_cast<short> (margin + 3 * tabWidth), 36, tabWidth, 18);
+        place (categoryPopUp, margin, 62, static_cast<short> (contentWidth - 88), 22);
+        place (refreshButton, static_cast<short> (width - margin - 80), 61, 80, 24);
+
+        // The bottom rows: what the selected script's tab offers, the buttons, and Share, Update all and Close.
+        const short rowC = static_cast<short> (height - 34);
+        const short rowB = static_cast<short> (height - 62);
+        const short rowA = static_cast<short> (height - 86);
+        const short bottomTop = static_cast<short> (rowA - 4);
+        constexpr short listTop = 90;
+        constexpr short detailsHeader = 94;   // name, author line, summary and what it changes
+        short listHeight = static_cast<short> ((bottomTop - listTop - detailsHeader - 6) * 55 / 100);
+        if (listHeight < 70) {
+            listHeight = 70;
+        }
+        place (scriptList, margin, listTop, contentWidth, listHeight);
+        const short detailsTop = static_cast<short> (listTop + listHeight + 6);
+        place (nameText, margin, detailsTop, contentWidth, 20);
+        place (bylineText, margin, static_cast<short> (detailsTop + 20), contentWidth, 16);
+        place (summaryText, margin, static_cast<short> (detailsTop + 38), contentWidth, 32);
+        place (changesLabel, margin, static_cast<short> (detailsTop + 72), 100, 18);
+        place (changesValue, static_cast<short> (margin + 105), static_cast<short> (detailsTop + 72), static_cast<short> (contentWidth - 105), 18);
+        const short browserTop = static_cast<short> (detailsTop + detailsHeader);
+        short browserHeight = static_cast<short> (bottomTop - browserTop);
+        if (browserHeight < 40) {
+            browserHeight = 40;
+        }
+        place (readmeBrowser, margin, browserTop, contentWidth, browserHeight);
+
+        place (resultText, margin, rowA, static_cast<short> (contentWidth - 138), 20);
+        place (fixButton, static_cast<short> (width - margin - 130), static_cast<short> (rowA - 2), 130, 24);
+        place (enabledCheckBox, margin, rowA, contentWidth, 18);
+        place (fitsCheckBox, margin, rowA, contentWidth, 18);
+        place (runButton, margin, rowB, 64, 24);
+        place (stopButton, static_cast<short> (margin + 68), rowB, 64, 24);
+        place (outputButton, static_cast<short> (margin + 136), rowB, 70, 24);
+        place (addScriptButton, static_cast<short> (width - margin - 120), rowB, 120, 24);
+        place (installButton, static_cast<short> (width - margin - 100), rowB, 100, 24);
+        place (removeButton, static_cast<short> (width - margin - 100), rowB, 100, 24);
+        place (updateButton, static_cast<short> (width - margin - 208), rowB, 100, 24);
+        place (shareButton, margin, rowC, 150, 24);
+        place (scriptsPageButton, margin, rowC, 150, 24);
+        place (updateAllButton, static_cast<short> (width - margin - 80 - 4 - 110), rowC, 110, 24);
+        place (closeButton, static_cast<short> (width - margin - 80), rowC, 80, 24);
+    }
+    categoryList.SetVisibility (!isNarrow);
+    categoryPopUp.SetVisibility (isNarrow);
+    if (wasNarrow != isNarrow) {
+        // The rows and the header that only one of the layouts has.
+        RefreshTabTexts ();
+        RefreshDetails ();
+    }
+    ApplyNarrowVisibility ();
     LayoutScriptListColumns ();
+
+    // DG does not repaint the items that were moved or resized by itself: without this part of the window keeps what
+    // the other layout drew.
+    DG::Item* const allItems[] = {
+        &searchEdit, &scriptsTab, &availableTab, &installedTab, &updatesTab, &catalogueTimeText, &refreshButton, &categoryList,
+        &categoryPopUp, &fitsCheckBox, &scriptList, &nameText, &bylineText, &summaryText, &changesLabel, &changesValue,
+        &archicadLabel, &archicadValue, &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle, &changelogText,
+        &shareButton, &scriptsPageButton, &closeButton, &enabledCheckBox, &installButton, &removeButton, &updateButton,
+        &updateAllButton, &readmeBrowser, &resultText, &runButton, &stopButton, &outputButton, &fixButton, &addScriptButton
+    };
+    for (DG::Item* item : allItems) {
+        item->Invalidate ();
+    }
 }
 
 void ScriptManager::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
+    if (HandleLocalButton (ev)) {
+        return;
+    }
     if (ev.GetSource () == &refreshButton) {
         LoadCatalogue ();
     } else if (ev.GetSource () == &shareButton) {
@@ -1548,6 +2203,15 @@ void ScriptManager::CheckItemChanged (const DG::CheckItemChangeEvent& ev)
 void ScriptManager::RadioItemChanged (const DG::RadioItemChangeEvent&)
 {
     RefreshAll ();
+}
+
+void ScriptManager::PopUpChanged (const DG::PopUpChangeEvent& ev)
+{
+    if (ev.GetSource () != &categoryPopUp) {
+        return;
+    }
+    categoryList.SelectItem (categoryPopUp.GetSelectedItem ());
+    RefreshScriptList ();
 }
 
 GSErrCode ScriptManager::PaletteControlCallBack (Int32, API_PaletteMessageID messageID, GS::IntPtr param)

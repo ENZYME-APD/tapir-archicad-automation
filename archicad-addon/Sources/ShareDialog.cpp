@@ -1,4 +1,5 @@
 #include "ShareDialog.hpp"
+#include "WebLinks.hpp"
 
 #include "APIEnvir.h"
 #include "ACAPinc.h"
@@ -17,20 +18,11 @@
 #include "File.hpp"
 #include "FileSystem.hpp"
 #include "FileTypeManager.hpp"
-#include "Process.hpp"
 
 #include <cstring>
 #include <ctime>
 #include <functional>
 #include <vector>
-
-#if defined (WINDOWS)
-#pragma warning (push)
-#pragma warning (disable : 4995 4091)   // as in the DevKit's Win32ShellInterface.hpp
-#include <shellapi.h>
-#pragma warning (pop)
-#pragma comment (lib, "shell32.lib")
-#endif
 
 // The share service. The "shareServiceUrl" key of Documents/Tapir/config.json overrides it, e.g. with
 // "http://localhost:8787" to test against a local server.
@@ -254,25 +246,6 @@ static GS::UniString CurrentUtcTime ()
     return GS::UniString (buffer);
 }
 
-// Opens an http(s) link in the default browser, without a shell, so no character of it is interpreted.
-static void OpenUrl (const GS::UniString& url)
-{
-    if (!url.BeginsWith ("https://") && !url.BeginsWith ("http://")) {
-        return;
-    }
-#if defined (WINDOWS)
-    const auto urlUStr = url.ToUStr ();
-    ShellExecuteW (nullptr, L"open", reinterpret_cast<LPCWSTR> (urlUStr.Get ()), nullptr, nullptr, SW_SHOWNORMAL);
-#else
-    try {
-        GS::Array<GS::UniString> arguments;
-        arguments.Push (url);
-        GS::Process::Create ("/usr/bin/open", arguments, GS::Process::CreateNoWindow);
-    } catch (...) {
-    }
-#endif
-}
-
 // Splits "https://host[:port][/base]" into "https://host[:port]" and "/base" (empty when there is none).
 static bool SplitServiceUrl (GS::UniString url, GS::UniString& origin, GS::UniString& basePath)
 {
@@ -305,25 +278,6 @@ static GS::UniString GetShareServiceUrl ()
         serviceUrl = DefaultShareServiceUrl;
     }
     return serviceUrl;
-}
-
-// Percent-encodes a path segment or query value (RFC 3986: only the unreserved characters are kept).
-static GS::UniString EncodeUrlComponent (const GS::UniString& text)
-{
-    static const char* HexDigits = "0123456789ABCDEF";
-    const auto utf8 = text.ToCStr (CC_UTF8);
-    GS::UniString encoded;
-    for (const char* p = utf8.Get (); *p != '\0'; ++p) {
-        const unsigned char c = static_cast<unsigned char> (*p);
-        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '.' || c == '_' || c == '~') {
-            encoded.Append (GS::UniChar (static_cast<char> (c)));
-        } else {
-            encoded.Append (GS::UniChar ('%'));
-            encoded.Append (GS::UniChar (HexDigits[c >> 4]));
-            encoded.Append (GS::UniChar (HexDigits[c & 0x0F]));
-        }
-    }
-    return encoded;
 }
 
 enum class ServiceCallResult {
