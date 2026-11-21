@@ -1,0 +1,158 @@
+{
+  "title": "CreateMeshes, CreateSlabs and CreateWalls create model elements on the floor plan while a 3D Document is the active window (#2956)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Mesh", "Slab", "Wall" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "a 3D Document",
+      "command": "Create3DDocuments",
+      "creates": false,
+      "params": {
+        "documentsData": [
+          { "name": "TapirCheck 3D Document 2956", "referenceId": "TC3D-2956" }
+        ]
+      },
+      "save": {
+        "docDb": "databases[0].databaseId.guid",
+        "docNav": "databases[0].navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "databases[0].databaseId.guid", "exists": true, "name": "3D Document created" }
+      ]
+    },
+    {
+      "id": "activate the 3D Document",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${docDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "it is a 3D Document window",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "eq": "3DDocument" }
+      ]
+    },
+    {
+      "id": "the mesh of the issue, sent from the 3D Document",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "skirtLevel": 1,
+            "polygonCoordinates": [
+              { "x": 1040.0, "y": 1000.0, "z": 0.0 },
+              { "x": 1042.0, "y": 1000.0, "z": 0.0 },
+              { "x": 1040.0, "y": 1002.0, "z": 0.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "mesh": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error", "exists": false, "name": "not refused from the 3D Document" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "mesh created" }
+      ]
+    },
+    {
+      "id": "a slab, sent from the 3D Document",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "polygonCoordinates": [
+              { "x": 1050.0, "y": 1000.0 },
+              { "x": 1053.0, "y": 1000.0 },
+              { "x": 1053.0, "y": 1003.0 },
+              { "x": 1050.0, "y": 1003.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "slab": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error", "exists": false, "name": "not refused from the 3D Document" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "a wall, sent from the 3D Document",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1060.0, "y": 1000.0 }, "endCoordinate": { "x": 1063.0, "y": 1000.0 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error", "exists": false, "name": "not refused from the 3D Document" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "the 3D Document is still the active window",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "eq": "3DDocument", "name": "the current window was put back" },
+        { "path": "databaseId.guid", "eq": "${docDb}", "name": "the 3D Document's database is current again" }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the mesh, the slab and the wall are model elements with their geometry",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } }, { "elementId": { "guid": "${slab}" } }, { "elementId": { "guid": "${wall}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Mesh" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates", "len": 4, "name": "three corners and the closing point" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[1].x", "approx": 1042.0, "name": "second corner x kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].y", "approx": 1002.0, "name": "third corner y kept" },
+        { "path": "detailsOfElements[1].type", "eq": "Slab" },
+        { "path": "detailsOfElements[2].type", "eq": "Wall" },
+        { "path": "detailsOfElements[2].details.endCoordinate.x", "approx": 1063.0, "name": "wall end x kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${docNav}" } } ] }
+    }
+  ]
+}

@@ -10,6 +10,8 @@
         'ダウンロードから最初のスクリプトまで約 10 分。ステップ 1〜3 にプログラミングは不要です。',
     '<strong class="callout-label"><span aria-hidden="true">▶</span> Video</strong> Prefer watching? The <a href="../tutorials/">Tapir video tutorials</a> walk through installing Tapir and using it.':
         '<strong class="callout-label"><span aria-hidden="true">▶</span> 動画</strong> 動画で見たい方は、<a href="../tutorials/">Tapir の動画チュートリアル</a>（英語）で Tapir のインストールと使い方を順に紹介しています。',
+    '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Tutorials</strong> Written tutorials, step by step: <a href="../tutorials/export-properties-to-excel/">properties to Excel</a>, <a href="../tutorials/connect-grasshopper-to-archicad/">Grasshopper</a>, <a href="../tutorials/batch-rename-views/">renaming views</a>, <a href="../tutorials/number-doors-and-windows-by-zone/">numbering doors and windows</a> and <a href="../tutorials/first-python-script/">your first Python script</a>.':
+        '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> チュートリアル</strong> 順を追って解説するチュートリアル記事（英語）：<a href="../tutorials/export-properties-to-excel/">プロパティを Excel へ</a>、<a href="../tutorials/connect-grasshopper-to-archicad/">Grasshopper</a>、<a href="../tutorials/batch-rename-views/">ビューの名前変更</a>、<a href="../tutorials/number-doors-and-windows-by-zone/">ドアと窓の番号付け</a>、<a href="../tutorials/first-python-script/">はじめての Python スクリプト</a>。',
 
     // 1. Install
     'Install Tapir': 'Tapir をインストール',
@@ -51,6 +53,8 @@
         '必要に応じて、正規表現の <code>includePattern</code> と <code>excludePattern</code> で、フォルダー内のどのファイルをパレットに表示するかを選べます。',
     'The palette lists the folder\'s scripts next to the built-in ones the next time it loads its scripts.':
         '次にパレットがスクリプトを読み込むとき、そのフォルダーのスクリプトが組み込みスクリプトと並んで表示されます。',
+    'Many scripts use the helpers of the built-in scripts, the <code>utilities</code> and <code>aclib</code> folders. A Tapir newer than 2.0.0 gives them to every script it runs, so nothing more is needed. With Tapir 2.0.0 or older, copy those two folders from <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts">builtin-scripts</a> next to the script.':
+        '多くのスクリプトは、組み込みスクリプトのヘルパーである <code>utilities</code> と <code>aclib</code> フォルダを使います。2.0.0 より新しい Tapir は、実行するすべてのスクリプトにこれらを提供するので、ほかに何もする必要はありません。Tapir 2.0.0 以前では、<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts">builtin-scripts</a> からこの 2 つのフォルダをスクリプトと同じ場所にコピーしてください。',
 
     // 4. Python
     'Write a script of your own': '自分のスクリプトを書く',

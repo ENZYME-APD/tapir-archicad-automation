@@ -45,6 +45,29 @@ GS::Optional<GS::UniString> CreateElementsCommandBase::GetRawResponseSchema () c
     })";
 }
 
+// The element types of these Create* commands that exist only in the model (floor plan and 3D),
+// never in a worksheet, detail, layout, section or 3D Document. Objects and lamps are left out:
+// they can also be placed in a 2D database (their databaseId).
+static bool IsFloorPlanOnlyModelElementType (API_ElemTypeID elemTypeID)
+{
+    switch (elemTypeID) {
+        case API_WallID:
+        case API_BeamID:
+        case API_StairID:
+        case API_ShellID:
+        case API_SkylightID:
+        case API_ColumnID:
+        case API_SlabID:
+        case API_ZoneID:
+        case API_MeshID:
+        case API_RailingID:
+        case API_CurtainWallID:
+            return true;
+        default:
+            return false;
+    }
+}
+
 GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> dataArray;
@@ -77,6 +100,34 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
         }
     }
     GSErrCode databaseErr = NoError;
+
+    // Model elements that only live on the floor plan (and in the 3D window) cannot be created
+    // while a 2D database is current: from a 3D Document, ACAPI_Element_Create refused
+    // CreateMeshes, while the identical request worked once the floor plan was active (#2956).
+    // So, as CreateWindows and CreateDoors do (#532, SwitchCurrentDatabaseToFloorPlan), the
+    // CURRENT DATABASE - not the visible window - is switched to the floor plan around the
+    // create and put back on every exit path. From the floor plan and the 3D window nothing is
+    // touched, so the path that worked stays exactly as it was.
+    API_DatabaseInfo modelPreviousDatabase = {};
+    bool modelDatabaseSwitched = false;
+    const GS::OnExit restoreModelDatabase ([&] () {
+        if (modelDatabaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&modelPreviousDatabase);
+        }
+    });
+    if (databaseIdOs == nullptr && IsFloorPlanOnlyModelElementType (elemTypeID)) {
+        API_DatabaseInfo currentDatabase = {};
+        if (ACAPI_Database_GetCurrentDatabase (&currentDatabase) == NoError &&
+            currentDatabase.typeID != APIWind_FloorPlanID &&
+            currentDatabase.typeID != APIWind_3DModelID)
+        {
+            const GSErrCode switchErr = SwitchCurrentDatabaseToFloorPlan (modelPreviousDatabase, modelDatabaseSwitched);
+            if (switchErr != NoError) {
+                return CreateErrorResponse (switchErr, "Failed to activate the floor plan database, which is needed to create a " +
+                    elemTypeName + ", so nothing was created. Activate the floor plan in Archicad and run the command again.");
+            }
+        }
+    }
 
     API_NotifyElementType notification = {};
     notification.notifID = APINotifyElement_BeginEvents;
@@ -2080,6 +2131,10 @@ static const char* LineArrowsSchemaProperties = R"(
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
                     },)";
 
 static GS::Optional<GS::ObjectState> SetLineArrowsParameters (const GS::ObjectState& parameters, const LineArrows& arrows)
@@ -2106,6 +2161,35 @@ static void SetLineFamilySettingsParameters (const GS::ObjectState& parameters, 
     parameters.Get ("roomSeparator", roomSeparator);
 }
 
+// The settings CreatePolylines and ModifyPolylines both take beside the polygon and the
+// arrowheads, written by ApplyPolylineSettings with the keys GetDetailsOfElements returns.
+// penWeightMm, which ApplyPolylineSettings writes too, is only in the schema of CreatePolylines:
+// Archicad 29 (29.0.0 5101) did not keep a pen weight written with ACAPI_Element_Change, so
+// ModifyPolylines does not offer it.
+static const char* PolylineSettingsSchemaProperties = R"(
+                    "linePenIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the polyline contour. Optional parameter."
+                    },
+                    "lineTypeIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Line type attribute index of the polyline contour. Optional parameter, ignored when lineTypeId is given."
+                    },
+                    "lineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it and GetDetailsOfElements returns it. Takes precedence over lineTypeIndex."
+                    },
+                    "roomSeparator": {
+                        "type": "boolean",
+                        "description": "Is this a zone boundary line? Optional parameter."
+                    },
+                    "drawSegmentMode": {
+                        "$ref": "#/PolylineDrawSegmentMode"
+                    },)";
+
 CreatePolylinesCommand::CreatePolylinesCommand () :
     CreateElementsCommandBase ("CreatePolylines", API_PolyLineID, "polylinesData")
 {
@@ -2118,7 +2202,7 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
     "properties": {
         "polylinesData": {
             "type": "array",
-            "description": "Array of data to create Polylines.",
+            "description": "Array of data to create Polylines. The settings left out come from the Polyline tool defaults, or from the favorite given by favoriteName.",
             "items": {
                 "type": "object",
                 "description" : "The parameters of the new Polyline.",
@@ -2139,29 +2223,11 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                         "type": "integer",
                         "description" : "Layer attribute index to place the polyline on. Optional parameter, by default the current layer is used."
                     },
-                    "linePenIndex": {
-                        "type": "integer",
-                        "description" : "Pen index of the polyline contour. Optional parameter, by default the current pen is used."
-                    },
-                    "lineTypeIndex": {
-                        "type": "integer",
-                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used. Ignored when lineTypeId is given."
-                    },
-                    "lineTypeId": {
-                        "$ref": "#/AttributeId",
-                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it. Takes precedence over lineTypeIndex. By default the current line type is used."
-                    },
+)") + PolylineSettingsSchemaProperties + LineArrowsSchemaProperties + R"(
                     "penWeightMm": {
                         "type": "number",
-                        "description" : "Optional pen weight override in mm."
+                        "description": "Optional pen weight override in mm, greater than 0; -1 uses the weight of the pen."
                     },
-                    "roomSeparator": {
-                        "type": "boolean",
-                        "description": "Is this a zone boundary line? Optional, defaults to false."
-                    },
-                    "drawSegmentMode": {
-                        "$ref": "#/PolylineDrawSegmentMode"
-                    },)") + LineArrowsSchemaProperties + R"(
                     "coordinates": {
                         "type": "array",
                         "description": "The 2D coordinates of the polyline.",
@@ -2222,6 +2288,104 @@ static void AddPolyToMemo (const GS::Array<GS::ObjectState>& coordinates,
     }
 }
 
+// Defined with the object commands below.
+static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrTypeID attributeType, API_AttributeIndex& attributeIndex);
+
+static bool AttributeIndexExists (API_AttrTypeID attributeType, Int32 index)
+{
+    API_Attribute attribute = {};
+    attribute.header.typeID = attributeType;
+    attribute.header.index = ACAPI_CreateAttributeIndex (index);
+    if (ACAPI_Attribute_Get (&attribute) != NoError) {
+        return false;
+    }
+    DisposeAttribute (attribute);
+    return true;
+}
+
+// ACAPI_ELEMENT_MASK_SET marks a member by its first byte, so both members of an
+// API_ExtendedPenType are marked, the color override too.
+#define TAPIR_MASK_SET_EXTENDED_PEN(mask, typ, varnam)                   \
+    do {                                                                 \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.penIndex);             \
+        ACAPI_ELEMENT_MASK_SET (mask, typ, varnam.colorOverridePenIndex); \
+    } while (false)
+
+// Writes the settings of PolylineSettingsSchemaProperties and the arrowheads (startArrow, endArrow)
+// given in parameters to element.polyLine: for CreatePolylines on the tool defaults (mask nullptr),
+// and for ModifyPolylines on the element read from the project, with the given fields marked in mask.
+// A given pen clears the color override of the pen, so the pen shows. Returns the error response of
+// an invalid value; element is then partly written and must not be used.
+static GS::Optional<GS::ObjectState> ApplyPolylineSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    API_PolyLineType& polyLine = element.polyLine;
+
+    Int32 linePenIndex = 0;
+    if (parameters.Get ("linePenIndex", linePenIndex)) {
+        if (linePenIndex < 1 || linePenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'linePenIndex' must be between 1 and 255.");
+        }
+        polyLine.linePen.penIndex = static_cast<short> (linePenIndex);
+        polyLine.linePen.colorOverridePenIndex = 0;
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_EXTENDED_PEN (*mask, API_PolyLineType, linePen);
+        }
+    }
+
+    const GS::ObjectState* lineTypeId = parameters.Get ("lineTypeId");
+    Int32 lineTypeIndex = 0;
+    const bool hasLineTypeIndex = parameters.Get ("lineTypeIndex", lineTypeIndex);
+    if (lineTypeId != nullptr) {
+        if (!ResolveAttributeIndex (*lineTypeId, API_LinetypeID, polyLine.ltypeInd)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'lineTypeId' is not a line type of the project.");
+        }
+    } else if (hasLineTypeIndex) {
+        if (lineTypeIndex < 1 || !AttributeIndexExists (API_LinetypeID, lineTypeIndex)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'lineTypeIndex' is not the index of a line type of the project.");
+        }
+        polyLine.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+    }
+    if ((lineTypeId != nullptr || hasLineTypeIndex) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, ltypeInd);
+    }
+
+    double penWeightMm = 0.0;
+    if (parameters.Get ("penWeightMm", penWeightMm)) {
+        if (penWeightMm <= 0.0 && std::abs (penWeightMm - API_DefPenWeigth) > 1e-9) {
+            return CreateErrorResponse (APIERR_BADPARS, "'penWeightMm' must be greater than 0, or -1 for the weight of the pen.");
+        }
+        polyLine.penWeight = penWeightMm;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, penWeight);
+        }
+    }
+
+    if (parameters.Get ("roomSeparator", polyLine.roomSeparator) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, roomSeparator);
+    }
+
+    GS::UniString drawSegmentMode;
+    if (parameters.Get ("drawSegmentMode", drawSegmentMode)) {
+        if (!PolylineDrawSegmentModeFromString (drawSegmentMode, polyLine.drawSegmentMode)) {
+            return CreateErrorResponse (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_PolyLineType, drawSegmentMode);
+        }
+    }
+
+    bool arrowsChanged = false;
+    const GS::Optional<GS::UniString> arrowsError = ApplyLineArrows (parameters, GetLineArrows (polyLine), arrowsChanged);
+    if (arrowsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, arrowsError.Get ());
+    }
+    if (arrowsChanged && mask != nullptr) {
+        SetLineArrowsMask (GetLineArrows (mask->polyLine));
+    }
+
+    return {};
+}
+
 GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorInd", element.header.floorInd);
@@ -2231,36 +2395,9 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
         element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
     }
 
-    short linePenIndex = 0;
-    if (parameters.Get ("linePenIndex", linePenIndex) && linePenIndex > 0) {
-        element.polyLine.linePen.penIndex = linePenIndex;
-        element.polyLine.linePen.colorOverridePenIndex = 0;
-    }
-
-    const GS::ObjectState* lineTypeId = parameters.Get ("lineTypeId");
-    Int32 lineTypeIndex = 0;
-    if (lineTypeId != nullptr) {
-        element.polyLine.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeId));
-    } else if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
-        element.polyLine.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
-    }
-
-    double penWeightMm = API_DefPenWeigth;
-    if (parameters.Get ("penWeightMm", penWeightMm)) {
-        element.polyLine.penWeight = penWeightMm;
-    }
-
-    parameters.Get ("roomSeparator", element.polyLine.roomSeparator);
-
-    GS::UniString drawSegmentMode;
-    if (parameters.Get ("drawSegmentMode", drawSegmentMode) &&
-        !PolylineDrawSegmentModeFromString (drawSegmentMode, element.polyLine.drawSegmentMode)) {
-        return CreateErrorResponse (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous.");
-    }
-
-    GS::Optional<GS::ObjectState> arrowsError = SetLineArrowsParameters (parameters, GetLineArrows (element.polyLine));
-    if (arrowsError.HasValue ()) {
-        return arrowsError;
+    const GS::Optional<GS::ObjectState> settingsError = ApplyPolylineSettings (parameters, element, nullptr);
+    if (settingsError.HasValue ()) {
+        return settingsError;
     }
 
     GS::Array<GS::ObjectState> coordinates;
@@ -2274,6 +2411,367 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
                   memo);
 
     return {};
+}
+
+// The optional databaseId of ModifyPolylines and ModifyHatches, handled as CreateElementsCommandBase::Execute
+// and ModifyPictures handle it: the database is switched inside the undoable command and switched back
+// afterwards, so the front window stays as it is; modify runs in the undoable command, in that database.
+// Returns the error response when Archicad cannot switch to it; nothing is changed then.
+static GS::Optional<GS::ObjectState> CallUndoableModifyInDatabase (const GS::ObjectState& parameters, const GS::UniString& undoName, const std::function<void ()>& modify)
+{
+    const GS::ObjectState* databaseIdOs = parameters.Get ("databaseId");
+    API_DatabaseInfo startingDatabase = {};
+    if (databaseIdOs != nullptr) {
+        API_WindowInfo startingWindow = {};
+        const bool hasStartingWindow = ACAPI_Window_GetCurrentWindow (&startingWindow) == NoError;
+        if (OpenDatabaseIfNeverOpened (GetGuidFromObjectState (*databaseIdOs)) && hasStartingWindow) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingWindow);
+            ACAPI_Window_ChangeWindow (&startingWindow);
+        }
+        const GSErrCode currentErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+        if (currentErr != NoError) {
+            return CreateErrorResponse (currentErr, "Failed to get the current database.");
+        }
+    }
+    GSErrCode databaseErr = NoError;
+
+    ACAPI_CallUndoableCommand (undoName, [&] () -> GSErrCode {
+        if (databaseIdOs != nullptr) {
+            databaseErr = ChangeCurrentDatabaseTo (GetGuidFromObjectState (*databaseIdOs));
+            if (databaseErr != NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+                return NoError;
+            }
+        }
+        const GS::OnExit databaseGuard ([&] () {
+            if (databaseIdOs != nullptr) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+            }
+        });
+        modify ();
+        return NoError;
+    });
+
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr, "Failed to switch to the database given by databaseId, so nothing was changed. A worksheet or detail whose window was never opened can be opened once with ChangeWindow by its databaseId.");
+    }
+    return {};
+}
+
+// The memo layout of a new polyline polygon for ACAPI_Element_Change, the one SetDetailsOfElements
+// writes: the open-polyline dummy coords[0] (-1, 0), one subpolygon, and vertexIDs numbered from 1
+// with vertexIDs[0] the largest of them, without which the change fails with APIERR_BADPOLY.
+// Returns false when the memo handles could not be allocated.
+static bool BuildPolylineChangeMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, API_Polygon& poly, API_ElementMemo& memo)
+{
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+    const Int32 nCoords = static_cast<Int32> (coordinates.GetSize ());
+
+    memo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    memo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.vertexIDs == nullptr || (memo.parcs == nullptr && !polyArcs.IsEmpty ())) {
+        return false;
+    }
+
+    (*memo.coords)[0] = { -1.0, 0.0 };
+    (*memo.vertexIDs)[0] = static_cast<UInt32> (nCoords);
+    for (Int32 i = 0; i < nCoords; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+        (*memo.vertexIDs)[i + 1] = static_cast<UInt32> (i + 1);
+    }
+    (*memo.pends)[0] = 0;
+    (*memo.pends)[1] = nCoords;
+    Int32 iArc = 0;
+    for (const API_PolyArc& arc : polyArcs) {
+        (*memo.parcs)[iArc++] = arc;
+    }
+
+    poly.nCoords   = nCoords;
+    poly.nSubPolys = 1;
+    poly.nArcs     = static_cast<Int32> (polyArcs.GetSize ());
+    return true;
+}
+
+// The arcs of a polygon outline of nCoords points join two neighbouring points: endIndex is begIndex + 1,
+// both between 0 and lastIndex (the last point of a polyline; for a closed outline the closing point, nCoords).
+static GS::Optional<GS::UniString> CheckOutlineArcs (const GS::Array<GS::ObjectState>& arcs, Int32 lastIndex)
+{
+    for (const GS::ObjectState& arc : arcs) {
+        Int32 begIndex = -1;
+        Int32 endIndex = -1;
+        arc.Get ("begIndex", begIndex);
+        arc.Get ("endIndex", endIndex);
+        if (begIndex < 0 || endIndex != begIndex + 1 || endIndex > lastIndex) {
+            return GS::UniString::Printf ("The arc from %d to %d does not join two neighbouring points of the coordinates: endIndex must be begIndex + 1, and both between 0 and %d.", begIndex, endIndex, lastIndex);
+        }
+    }
+    return {};
+}
+
+// Whether the arrowheads read back (kept) are those written (given): the same visibility of both ends,
+// and the same type, size and pen of a shown arrowhead. Archicad 29 (29.0.0 5101) normalizes a hidden
+// arrowhead (a hidden start arrowhead that the change did not touch read back EmptyCircle, size 0 and
+// pen 1), so its type, size and pen are not compared while it is hidden.
+static bool IsSameLineArrows (const LineArrows& kept, const LineArrows& given)
+{
+#ifdef ServerMainVers_2900
+    const auto isSame = [] (const API_ArrowData& keptData, const API_ArrowData& givenData) {
+        if (keptData.arrowVisibility != givenData.arrowVisibility) {
+            return false;
+        }
+        return !givenData.arrowVisibility ||
+               (keptData.arrowType == givenData.arrowType && keptData.arrowPen == givenData.arrowPen &&
+                std::abs (keptData.arrowSize - givenData.arrowSize) < 1e-6);
+    };
+    return isSame (kept.start, given.start) && isSame (kept.end, given.end);
+#else
+    // Before Archicad 29 both ends share one type, size and pen: compared when either end is shown.
+    if (kept.data.begArrow != given.data.begArrow || kept.data.endArrow != given.data.endArrow) {
+        return false;
+    }
+    return (!given.data.begArrow && !given.data.endArrow) ||
+           (kept.data.arrowType == given.data.arrowType && kept.data.arrowPen == given.data.arrowPen &&
+            std::abs (kept.data.arrowSize - given.data.arrowSize) < 1e-6);
+#endif
+}
+
+// Whether a pen read back is the pen written: the same pen index, and no color override of another
+// pen. Only a colorOverridePenIndex above 0 is an override (API_ExtendedPenType::IsOverriden), and
+// Archicad 29 (29.0.0 5101) reads back another value than the 0 written to clear it, so the raw field
+// is not compared: a polyline whose pen alone was changed was reported as not changed.
+static bool IsSamePenWithoutOverride (const API_ExtendedPenType& kept, const API_ExtendedPenType& given)
+{
+    const short keptColorIndex = kept.colorOverridePenIndex > 0 ? kept.colorOverridePenIndex : kept.penIndex;
+    return kept.penIndex == given.penIndex && keptColorIndex == given.penIndex;
+}
+
+// Points closer than this (in meters) are taken as the same when a new polygon is read back.
+static constexpr double PolygonReadBackTolerance = 1e-5;
+
+ModifyPolylinesCommand::ModifyPolylinesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyPolylinesCommand::GetName () const
+{
+    return "ModifyPolylines";
+}
+
+GS::Optional<GS::UniString> ModifyPolylinesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "polylinesWithDetails": {
+            "type": "array",
+            "description": "The Polylines to change, each with the settings to change. Only the given settings are changed; the keys are those CreatePolylines takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs. The pen weight override (penWeightMm of CreatePolylines) is not taken: Archicad did not keep a pen weight changed on an existing polyline.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },)") + PolylineSettingsSchemaProperties + R"(
+                    "startArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional new arrowhead at the start. Given, it is shown unless its visible is false; the type, size and pen left out are kept."
+                    },
+                    "endArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional new arrowhead at the end. Given, it is shown unless its visible is false; the type, size and pen left out are kept."
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The new points of the polyline, replacing all of its points, as CreatePolylines takes them and GetDetailsOfElements returns them. Optional parameter.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 2
+                    },
+                    "arcs": {
+                        "type": "array",
+                        "description": "The arcs of the new polygon, with indices into coordinates (endIndex is begIndex + 1). Only taken with coordinates; without it the new polygon has straight segments only.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database the polylines are in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), as CreatePolylines takes it. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the polylines are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "polylinesWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyPolylinesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// Changes one polyline: the settings through ApplyPolylineSettings, as in CreatePolylines, and the
+// polygon through the memo (ACAPI_Element_Change edits the polygon data of a polyline, ACAPinc.h),
+// in one ACAPI_Element_Change. The polyline is read back, so a value Archicad did not keep is
+// reported as a failure.
+static GS::ObjectState ModifyOnePolyline (const GS::ObjectState& item)
+{
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+    }
+
+    API_Element element = {};
+    element.header.guid = GetGuidFromObjectState (*elementId);
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to find the element");
+    }
+    if (GetElemTypeId (element.header) != API_PolyLineID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Polyline.");
+    }
+    if (item.GetFieldCount () <= 1) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No polyline settings to modify.");
+    }
+
+    GS::Array<GS::ObjectState> coordinates;
+    const bool hasCoordinates = item.Get ("coordinates", coordinates);
+    GS::Array<GS::ObjectState> arcs;
+    const bool hasArcs = item.Get ("arcs", arcs);
+    if (hasArcs && !hasCoordinates) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'arcs' is only taken with 'coordinates': the polygon is replaced as a whole.");
+    }
+    if (hasCoordinates) {
+        if (coordinates.GetSize () < 2) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "'coordinates' needs at least 2 points.");
+        }
+        const GS::Optional<GS::UniString> arcsError = CheckOutlineArcs (arcs, static_cast<Int32> (coordinates.GetSize ()) - 1);
+        if (arcsError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, arcsError.Get ());
+        }
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    const GS::Optional<GS::ObjectState> settingsError = ApplyPolylineSettings (item, element, &mask);
+    if (settingsError.HasValue ()) {
+        return CreateFailedExecutionResult (settingsError.Get ());
+    }
+
+    // ACAPI_Element_Change may answer NoError on a hidden or locked layer and change nothing.
+    GS::UniString layerReason;
+    err = GetLayerChangeError (element.header.layer, layerReason);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The polyline was not changed, because " + layerReason + ".");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    UInt64 memoMask = 0;
+    if (hasCoordinates) {
+        if (!BuildPolylineChangeMemo (coordinates, arcs, element.polyLine.poly, memo)) {
+            return CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the polygon of the polyline.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, poly);
+        memoMask = APIMemoMask_Polygon;
+    }
+
+    err = ACAPI_Element_Change (&element, &mask, memoMask != 0 ? &memo : nullptr, memoMask, true);
+    if (err != NoError) {
+        const GS::UniString refusal = DescribeElementEditRefusal (err, element.header);
+        return CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to modify the polyline.") : "Failed to modify the polyline, because " + refusal + ".");
+    }
+
+    // Read back, so a value Archicad did not take is reported instead of a success.
+    API_Element changed = {};
+    changed.header.guid = element.header.guid;
+    err = ACAPI_Element_Get (&changed);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the polyline back after the change.");
+    }
+    const API_PolyLineType& given = element.polyLine;
+    const API_PolyLineType& kept = changed.polyLine;
+    GS::UniString notApplied;
+    if (item.Contains ("linePenIndex") && !IsSamePenWithoutOverride (kept.linePen, given.linePen)) {
+        notApplied += " linePenIndex";
+    }
+    if ((item.Contains ("lineTypeId") || item.Contains ("lineTypeIndex")) && GetAttributeIndex (kept.ltypeInd) != GetAttributeIndex (given.ltypeInd)) {
+        notApplied += item.Contains ("lineTypeId") ? " lineTypeId" : " lineTypeIndex";
+    }
+    if (item.Contains ("roomSeparator") && kept.roomSeparator != given.roomSeparator) {
+        notApplied += " roomSeparator";
+    }
+    if (item.Contains ("drawSegmentMode") && kept.drawSegmentMode != given.drawSegmentMode) {
+        notApplied += " drawSegmentMode";
+    }
+    if ((item.Contains ("startArrow") || item.Contains ("endArrow")) && !IsSameLineArrows (GetLineArrows (changed.polyLine), GetLineArrows (element.polyLine))) {
+        notApplied += " arrowheads";
+    }
+    if (hasCoordinates) {
+        bool polygonKept = kept.poly.nCoords == given.poly.nCoords && kept.poly.nArcs == given.poly.nArcs;
+        if (polygonKept) {
+            const std::vector<PolygonData> polygons = GetPolygonsFromMemoCoords (changed.header.guid);
+            polygonKept = !polygons.empty () && polygons[0].coords.size () == coordinates.GetSize ();
+            for (UIndex i = 0; polygonKept && i < coordinates.GetSize (); ++i) {
+                const API_Coord point = Get2DCoordinateFromObjectState (coordinates[i]);
+                polygonKept = std::abs (polygons[0].coords[i].x - point.x) < PolygonReadBackTolerance &&
+                              std::abs (polygons[0].coords[i].y - point.y) < PolygonReadBackTolerance;
+            }
+        }
+        if (!polygonKept) {
+            notApplied += hasArcs ? " coordinates arcs" : " coordinates";
+        }
+    }
+    if (!notApplied.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + ".");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+GS::ObjectState ModifyPolylinesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("polylinesWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    const GS::Optional<GS::ObjectState> databaseError = CallUndoableModifyInDatabase (parameters, "ModifyPolylines", [&] () {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState result = ModifyOnePolyline (item);
+            changeReporter.MarkChangedIfSucceeded (item, result);
+            executionResults (result);
+        }
+    });
+    if (databaseError.HasValue ()) {
+        return databaseError.Get ();
+    }
+
+    changeReporter.Report ();
+
+    return response;
 }
 
 CreateLineElementsCommand::CreateLineElementsCommand () :
@@ -3017,6 +3515,66 @@ GS::Optional<GS::ObjectState> CreatePicturesCommand::SetTypeSpecificParameters (
     return {};
 }
 
+// The settings CreateHatches and ModifyHatches both take beside the polygon, written by
+// ApplyHatchSettings with the keys GetDetailsOfElements returns.
+static const char* HatchSettingsSchemaProperties = R"(
+                    "contourPenIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "Optional pen index for the contour; 0 switches the contour off."
+                    },
+                    "contourLineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type of the contour."
+                    },
+                    "fillPenIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill. It switches off the RGB color of the fill foreground (foregroundColor), unless that is given too."
+                    },
+                    "fillBackgroundPenIndex": {
+                        "type": "integer",
+                        "minimum": -1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color. It switches off the RGB color of the fill background (backgroundColor), unless that is given too."
+                    },
+                    "foregroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
+                    },
+                    "backgroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
+                    },
+                    "fillId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional fill attribute. Given without buildingMaterialId, it makes the hatch a fill hatch; given with it, the hatch keeps its type (fill or building material) and both are written."
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material attribute, whose cut fill the hatch shows. Given without fillId, it makes the hatch a building material hatch."
+                    },
+                    "roomSpecial": {
+                        "type": "integer",
+                        "minimum": -128,
+                        "maximum": 100,
+                        "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
+                    },
+                    "showArea": {
+                        "type": "boolean",
+                        "description": "Optional: show the area text of the hatch."
+                    },
+                    "fillOrientation": {
+                        "$ref": "#/HatchOrientation",
+                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the current ones (the tool defaults for a new hatch). A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
+                    },
+                    "fillCategory": {
+                        "$ref": "#/HatchFillCategory",
+                        "description": "Optional fill category: Drafting, Cut or Cover."
+                    })";
+
 CreateHatchesCommand::CreateHatchesCommand () :
     CreateElementsCommandBase ("CreateHatches", API_HatchID, "hatchesData")
 {
@@ -3024,12 +3582,12 @@ CreateHatchesCommand::CreateHatchesCommand () :
 
 GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "hatchesData": {
             "type": "array",
-            "description": "Array of data to create Hatches.",
+            "description": "Array of data to create Hatches. The settings left out come from the Fill tool defaults, or from the favorite given by favoriteName.",
             "items": {
                 "type": "object",
                 "description": "The parameters of the new Hatch.",
@@ -3068,53 +3626,7 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     "holes": {
                         "$ref": "#/Holes2D",
                         "description": "Optional holes of the hatch, each with its polygonOutline and optional polygonArcs (arc indices are relative to the hole's own outline). The same format SetDetailsOfElements accepts and GetDetailsOfElements returns for hatches."
-                    },
-                    "contourPenIndex": {
-                        "type": "integer",
-                        "description": "Optional pen index for the contour; 0 switches the contour off. By default the current pen is used."
-                    },
-                    "contourLineTypeId": {
-                        "$ref": "#/AttributeId",
-                        "description": "Optional line type of the contour. By default the current line type is used."
-                    },
-                    "fillPenIndex": {
-                        "type": "integer",
-                        "description": "Optional pen index for the fill. By default the current pen is used."
-                    },
-                    "fillBackgroundPenIndex": {
-                        "type": "integer",
-                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color."
-                    },
-                    "foregroundColor": {
-                        "$ref": "#/ColorRGB",
-                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
-                    },
-                    "backgroundColor": {
-                        "$ref": "#/ColorRGB",
-                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
-                    },
-                    "fillId": {
-                        "$ref": "#/AttributeId",
-                        "description": "Optional fill attribute. By default the current fill is used."
-                    },
-                    "buildingMaterialId": {
-                        "$ref": "#/AttributeId"
-                    },
-                    "roomSpecial": {
-                        "type": "integer",
-                        "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
-                    },
-                    "showArea": {
-                        "type": "boolean"
-                    },
-                    "fillOrientation": {
-                        "$ref": "#/HatchOrientation",
-                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the default ones. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
-                    },
-                    "fillCategory": {
-                        "$ref": "#/HatchFillCategory",
-                        "description": "Optional fill category: Drafting, Cut or Cover. By default the current one is used."
-                    }
+                    },)") + HatchSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -3132,6 +3644,140 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
         "hatchesData"
     ]
 })";
+}
+
+// Writes the settings of HatchSettingsSchemaProperties given in parameters to element.hatch: for
+// CreateHatches on the tool defaults (mask nullptr), and for ModifyHatches on the element read from the
+// project, with the given fields marked in mask. A given pen index clears the matching RGB override,
+// which the element or the tool defaults may carry, so the pen actually shows; a given color sets the
+// override and wins over the pen. The hatch type decides which of fillInd and buildingMaterial Archicad
+// uses, so a given attribute alone also switches the type; when both are given the type is kept, as
+// SetDetailsOfElements does, so the details read can be written back unchanged. Returns the error
+// response of an invalid value; element is then partly written and must not be used.
+static GS::Optional<GS::ObjectState> ApplyHatchSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    API_HatchType& hatch = element.hatch;
+
+    Int32 contourPenIndex = 0;
+    if (parameters.Get ("contourPenIndex", contourPenIndex)) {
+        if (contourPenIndex < 0 || contourPenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'contourPenIndex' must be between 0 (no contour) and 255.");
+        }
+        hatch.contPen.penIndex = static_cast<short> (contourPenIndex);
+        hatch.contPen.colorOverridePenIndex = 0;
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_EXTENDED_PEN (*mask, API_HatchType, contPen);
+        }
+    }
+    const GS::ObjectState* contourLineTypeId = parameters.Get ("contourLineTypeId");
+    if (contourLineTypeId != nullptr) {
+        if (!ResolveAttributeIndex (*contourLineTypeId, API_LinetypeID, hatch.ltypeInd)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'contourLineTypeId' is not a line type of the project.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, ltypeInd);
+        }
+    }
+
+    Int32 fillPenIndex = 0;
+    if (parameters.Get ("fillPenIndex", fillPenIndex)) {
+        if (fillPenIndex < 1 || fillPenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'fillPenIndex' must be between 1 and 255.");
+        }
+        hatch.fillPen.penIndex = static_cast<short> (fillPenIndex);
+        hatch.fillPen.colorOverridePenIndex = 0;
+        hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_EXTENDED_PEN (*mask, API_HatchType, fillPen);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+    Int32 fillBackgroundPenIndex = 0;
+    if (parameters.Get ("fillBackgroundPenIndex", fillBackgroundPenIndex)) {
+        if (fillBackgroundPenIndex < -1 || fillBackgroundPenIndex > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'fillBackgroundPenIndex' must be between -1 (window background) and 255; 0 is transparent.");
+        }
+        hatch.fillBGPen = static_cast<short> (fillBackgroundPenIndex);
+        hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, fillBGPen);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+    if (GetColor (parameters, "foregroundColor", hatch.foregroundRGB)) {
+        hatch.hatchFlags |= APIHatch_HasFgRGBColor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, foregroundRGB);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+    if (GetColor (parameters, "backgroundColor", hatch.backgroundRGB)) {
+        hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, backgroundRGB);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchFlags);
+        }
+    }
+
+    const GS::ObjectState* fillId = parameters.Get ("fillId");
+    const GS::ObjectState* buildingMaterialId = parameters.Get ("buildingMaterialId");
+    if (fillId != nullptr) {
+        if (!ResolveAttributeIndex (*fillId, API_FilltypeID, hatch.fillInd)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'fillId' is not a fill of the project.");
+        }
+        if (buildingMaterialId == nullptr) {
+            hatch.hatchType = API_FillHatch;
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, fillInd);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchType);
+        }
+    }
+    if (buildingMaterialId != nullptr) {
+        if (!ResolveAttributeIndex (*buildingMaterialId, API_BuildingMaterialID, hatch.buildingMaterial)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'buildingMaterialId' is not a building material of the project.");
+        }
+        if (fillId == nullptr) {
+            hatch.hatchType = API_BuildingMaterialHatch;
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, buildingMaterial);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, hatchType);
+        }
+    }
+
+    Int32 roomSpecial = 0;
+    if (parameters.Get ("roomSpecial", roomSpecial)) {
+        if (roomSpecial < -128 || roomSpecial > 100) {
+            return CreateErrorResponse (APIERR_BADPARS, "'roomSpecial' must be a percentage between 1 and 100, or negative to switch it off.");
+        }
+        hatch.roomSpecial = static_cast<char> (roomSpecial);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, roomSpecial);
+        }
+    }
+    if (parameters.Get ("showArea", hatch.showArea) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, showArea);
+    }
+
+    GS::ObjectState fillOrientationOs;
+    if (parameters.Get ("fillOrientation", fillOrientationOs)) {
+        ApplyHatchFillOrientation (fillOrientationOs, hatch.hatchOrientation);
+        if (mask != nullptr) {
+            TAPIR_MASK_SET_HATCH_ORIENTATION (*mask, API_HatchType, hatchOrientation);
+        }
+    }
+    GS::UniString fillCategory;
+    if (parameters.Get ("fillCategory", fillCategory)) {
+        if (!HatchFillCategoryFromString (fillCategory, hatch.determination)) {
+            return CreateErrorResponse (APIERR_BADPARS, "fillCategory must be Drafting, Cut or Cover.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_HatchType, determination);
+        }
+    }
+
+    return {};
 }
 
 GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
@@ -3162,64 +3808,326 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         return CreateErrorResponse (APIERR_MEMFULL, "Failed to allocate the polygon of the hatch.");
     }
 
-    short contourPenIndex = 0;
-    if (parameters.Get ("contourPenIndex", contourPenIndex)) {
-        element.hatch.contPen.penIndex = contourPenIndex;
-        element.hatch.contPen.colorOverridePenIndex = 0;
-    }
-    // A given pen index clears the matching RGB override, which the tool defaults may carry,
-    // so the pen actually shows. A given color sets the override and wins over the pen.
-    short fillPenIndex = 0;
-    if (parameters.Get ("fillPenIndex", fillPenIndex)) {
-        element.hatch.fillPen.penIndex = fillPenIndex;
-        element.hatch.fillPen.colorOverridePenIndex = 0;
-        element.hatch.hatchFlags &= ~APIHatch_HasFgRGBColor;
-    }
-    if (parameters.Get ("fillBackgroundPenIndex", element.hatch.fillBGPen)) {
-        element.hatch.hatchFlags &= ~APIHatch_HasBkgRGBColor;
-    }
-    if (GetColor (parameters, "foregroundColor", element.hatch.foregroundRGB)) {
-        element.hatch.hatchFlags |= APIHatch_HasFgRGBColor;
-    }
-    if (GetColor (parameters, "backgroundColor", element.hatch.backgroundRGB)) {
-        element.hatch.hatchFlags |= APIHatch_HasBkgRGBColor;
-    }
-    // The hatch type decides which of fillInd and buildingMaterial Archicad uses, so a given
-    // attribute alone also switches the type; when both are given the default type is kept,
-    // as SetDetailsOfElements does.
-    const GS::ObjectState* fillId = parameters.Get ("fillId");
-    const GS::ObjectState* buildingMaterialId = parameters.Get ("buildingMaterialId");
-    if (fillId != nullptr) {
-        element.hatch.fillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (*fillId));
-        if (buildingMaterialId == nullptr) {
-            element.hatch.hatchType = API_FillHatch;
+    return ApplyHatchSettings (parameters, element, nullptr);
+}
+
+ModifyHatchesCommand::ModifyHatchesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyHatchesCommand::GetName () const
+{
+    return "ModifyHatches";
+}
+
+GS::Optional<GS::UniString> ModifyHatchesCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "hatchesWithDetails": {
+            "type": "array",
+            "description": "The Hatches (Fills) to change, each with the settings to change. Only the given settings are changed; the keys are those CreateHatches takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs and holes.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The new outline of the hatch, replacing the whole polygon, as CreateHatches takes it. The first point may be repeated at the end, as in the closed outline GetDetailsOfElements returns; that last point is then ignored. Optional parameter.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 3
+                    },
+                    "arcs": {
+                        "type": "array",
+                        "description": "The arcs of the new outline, with indices into coordinates. Only taken with coordinates; without it the new outline has straight edges only.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "holes": {
+                        "$ref": "#/Holes2D",
+                        "description": "The holes of the new polygon, each with its polygonOutline and optional polygonArcs (arc indices are relative to the hole's own outline), in the format GetDetailsOfElements returns. Only taken with coordinates; without it the new polygon has no holes."
+                    },)") + HatchSettingsSchemaProperties + R"(
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database the hatches are in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), as CreateHatches takes it. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the hatches are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
         }
+    },
+    "additionalProperties": false,
+    "required": [
+        "hatchesWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyHatchesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// Whether a hatch shows the orientation of its fill pattern: a fill hatch whose fill is not Solid
+// (Archicad ignores the orientation of Solid fills). The orientation of a building material hatch
+// depends on the building material's cut fill, so it is not compared either.
+static bool HatchKeepsFillOrientation (const API_HatchType& hatch)
+{
+    if (hatch.hatchType != API_FillHatch) {
+        return false;
     }
-    if (buildingMaterialId != nullptr) {
-        element.hatch.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialId));
-        if (fillId == nullptr) {
-            element.hatch.hatchType = API_BuildingMaterialHatch;
-        }
+    API_Attribute fill = {};
+    fill.header.typeID = API_FilltypeID;
+    fill.header.index = hatch.fillInd;
+    if (ACAPI_Attribute_Get (&fill) != NoError) {
+        return false;
     }
-    Int32 roomSpecial = 0;
-    if (parameters.Get ("roomSpecial", roomSpecial)) {
-        element.hatch.roomSpecial = (char) roomSpecial;
-    }
-    parameters.Get ("showArea", element.hatch.showArea);
-    GS::ObjectState fillOrientationOs;
-    if (parameters.Get ("fillOrientation", fillOrientationOs)) {
-        ApplyHatchFillOrientation (fillOrientationOs, element.hatch.hatchOrientation);
-    }
-    GS::UniString fillCategory;
-    if (parameters.Get ("fillCategory", fillCategory)) {
-        HatchFillCategoryFromString (fillCategory, element.hatch.determination);
-    }
-    const GS::ObjectState* contourLineTypeId = parameters.Get ("contourLineTypeId");
-    if (contourLineTypeId != nullptr) {
-        element.hatch.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+    const bool isSolid = fill.filltype.subType == APIFill_Solid;
+    DisposeAttribute (fill);
+    return !isSolid;
+}
+
+static bool IsSameColor (const API_RGBColor& color1, const API_RGBColor& color2)
+{
+    const double tolerance = 1e-4;
+    return std::abs (color1.f_red - color2.f_red) < tolerance &&
+           std::abs (color1.f_green - color2.f_green) < tolerance &&
+           std::abs (color1.f_blue - color2.f_blue) < tolerance;
+}
+
+// Changes one hatch: the settings through ApplyHatchSettings, as in CreateHatches, and the polygon
+// through the memo in the layout BuildHatchPolygonMemo writes for CreateHatches and SetDetailsOfElements
+// (ACAPI_Element_Change edits the polygon of a hatch, ACAPinc.h), in one ACAPI_Element_Change. The hatch
+// is read back, so a value Archicad did not keep is reported as a failure. Archicad may store a new
+// outline from another point or in the other direction, so the polygon is compared by its bounding box,
+// its number of contours (the outline and the holes) and its number of arcs.
+static GS::ObjectState ModifyOneHatch (const GS::ObjectState& item)
+{
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
     }
 
-    return {};
+    API_Element element = {};
+    element.header.guid = GetGuidFromObjectState (*elementId);
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to find the element");
+    }
+    if (GetElemTypeId (element.header) != API_HatchID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Hatch.");
+    }
+    if (item.GetFieldCount () <= 1) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No hatch settings to modify.");
+    }
+
+    GS::Array<GS::ObjectState> coordinates;
+    const bool hasCoordinates = item.Get ("coordinates", coordinates);
+    GS::Array<GS::ObjectState> arcs;
+    const bool hasArcs = item.Get ("arcs", arcs);
+    GS::Array<GS::ObjectState> holes;
+    const bool hasHoles = item.Get ("holes", holes);
+    if ((hasArcs || hasHoles) && !hasCoordinates) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'arcs' and 'holes' are only taken with 'coordinates': the polygon is replaced as a whole.");
+    }
+    GS::Array<GS::ObjectState> outline;
+    if (hasCoordinates) {
+        outline = GetOpenHatchOutline (coordinates);
+        if (outline.GetSize () < 3) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "The hatch outline must contain at least 3 coordinates, not counting a last one that repeats the first.");
+        }
+        const GS::Optional<GS::UniString> arcsError = CheckOutlineArcs (arcs, static_cast<Int32> (outline.GetSize ()));
+        if (arcsError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, arcsError.Get ());
+        }
+        const GS::Optional<GS::UniString> holesError = ValidateHoles (holes);
+        if (holesError.HasValue ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, holesError.Get ());
+        }
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    const GS::Optional<GS::ObjectState> settingsError = ApplyHatchSettings (item, element, &mask);
+    if (settingsError.HasValue ()) {
+        return CreateFailedExecutionResult (settingsError.Get ());
+    }
+
+    // ACAPI_Element_Change may answer NoError on a hidden or locked layer and change nothing.
+    GS::UniString layerReason;
+    err = GetLayerChangeError (element.header.layer, layerReason);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The hatch was not changed, because " + layerReason + ".");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    UInt64 memoMask = 0;
+    if (hasCoordinates) {
+        if (!BuildHatchPolygonMemo (coordinates, arcs, holes, element.hatch.poly, memo)) {
+            return CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the polygon of the hatch.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, poly);
+        memoMask = APIMemoMask_Polygon;
+    }
+
+    err = ACAPI_Element_Change (&element, &mask, memoMask != 0 ? &memo : nullptr, memoMask, true);
+    if (err != NoError) {
+        const GS::UniString refusal = DescribeElementEditRefusal (err, element.header);
+        return CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to modify the hatch.") : "Failed to modify the hatch, because " + refusal + ".");
+    }
+
+    // Read back, so a value Archicad did not take is reported instead of a success.
+    API_Element changed = {};
+    changed.header.guid = element.header.guid;
+    err = ACAPI_Element_Get (&changed);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the hatch back after the change.");
+    }
+    const API_HatchType& given = element.hatch;
+    const API_HatchType& kept = changed.hatch;
+    GS::UniString notApplied;
+    if (item.Contains ("contourPenIndex") && !IsSamePenWithoutOverride (kept.contPen, given.contPen)) {
+        notApplied += " contourPenIndex";
+    }
+    if (item.Contains ("contourLineTypeId") && GetAttributeIndex (kept.ltypeInd) != GetAttributeIndex (given.ltypeInd)) {
+        notApplied += " contourLineTypeId";
+    }
+    if (item.Contains ("fillPenIndex") &&
+        (!IsSamePenWithoutOverride (kept.fillPen, given.fillPen) ||
+         (!item.Contains ("foregroundColor") && (kept.hatchFlags & APIHatch_HasFgRGBColor) != 0))) {
+        notApplied += " fillPenIndex";
+    }
+    if (item.Contains ("fillBackgroundPenIndex") &&
+        (kept.fillBGPen != given.fillBGPen || (!item.Contains ("backgroundColor") && (kept.hatchFlags & APIHatch_HasBkgRGBColor) != 0))) {
+        notApplied += " fillBackgroundPenIndex";
+    }
+    if (item.Contains ("foregroundColor") && ((kept.hatchFlags & APIHatch_HasFgRGBColor) == 0 || !IsSameColor (kept.foregroundRGB, given.foregroundRGB))) {
+        notApplied += " foregroundColor";
+    }
+    if (item.Contains ("backgroundColor") && ((kept.hatchFlags & APIHatch_HasBkgRGBColor) == 0 || !IsSameColor (kept.backgroundRGB, given.backgroundRGB))) {
+        notApplied += " backgroundColor";
+    }
+    if (item.Contains ("fillId") && (GetAttributeIndex (kept.fillInd) != GetAttributeIndex (given.fillInd) || kept.hatchType != given.hatchType)) {
+        notApplied += " fillId";
+    }
+    if (item.Contains ("buildingMaterialId") && (GetAttributeIndex (kept.buildingMaterial) != GetAttributeIndex (given.buildingMaterial) || kept.hatchType != given.hatchType)) {
+        notApplied += " buildingMaterialId";
+    }
+    // Archicad may store another negative value for "off" than the one given.
+    if (item.Contains ("roomSpecial") && (given.roomSpecial < 0 ? kept.roomSpecial >= 0 : kept.roomSpecial != given.roomSpecial)) {
+        notApplied += " roomSpecial";
+    }
+    if (item.Contains ("showArea") && kept.showArea != given.showArea) {
+        notApplied += " showArea";
+    }
+    if (item.Contains ("fillCategory") && kept.determination != given.determination) {
+        notApplied += " fillCategory";
+    }
+    if (item.Contains ("fillOrientation") && HatchKeepsFillOrientation (kept)) {
+        const API_HatchOrientation& givenOrientation = given.hatchOrientation;
+        const API_HatchOrientation& keptOrientation = kept.hatchOrientation;
+        const double tolerance = 1e-6;
+        // A Global fill follows the project origin and axes, so only its type is compared; the origin
+        // of a fill snapped to the project origin (GlobalOrigo) is not used, so it is not compared.
+        const bool compareOrigin = (givenOrientation.flags & APIHatchOrinFlag_GlobalOrigo) == 0;
+        if (keptOrientation.type != givenOrientation.type ||
+            (givenOrientation.type != API_HatchGlobal && (
+            (compareOrigin && std::abs (keptOrientation.origo.x - givenOrientation.origo.x) > tolerance) ||
+            (compareOrigin && std::abs (keptOrientation.origo.y - givenOrientation.origo.y) > tolerance) ||
+            std::abs (keptOrientation.matrix00 - givenOrientation.matrix00) > tolerance ||
+            std::abs (keptOrientation.matrix10 - givenOrientation.matrix10) > tolerance ||
+            std::abs (keptOrientation.matrix01 - givenOrientation.matrix01) > tolerance ||
+            std::abs (keptOrientation.matrix11 - givenOrientation.matrix11) > tolerance))) {
+            notApplied += " fillOrientation";
+        }
+    }
+    if (hasCoordinates) {
+        bool polygonKept = kept.poly.nSubPolys == given.poly.nSubPolys && kept.poly.nArcs == given.poly.nArcs;
+        if (polygonKept) {
+            const std::vector<PolygonData> polygons = GetPolygonsFromMemoCoords (changed.header.guid);
+            polygonKept = !polygons.empty () && !polygons[0].coords.empty ();
+            if (polygonKept) {
+                API_Coord givenMin = Get2DCoordinateFromObjectState (outline[0]);
+                API_Coord givenMax = givenMin;
+                for (const GS::ObjectState& point : outline) {
+                    const API_Coord c = Get2DCoordinateFromObjectState (point);
+                    givenMin.x = GS::Min (givenMin.x, c.x);
+                    givenMin.y = GS::Min (givenMin.y, c.y);
+                    givenMax.x = GS::Max (givenMax.x, c.x);
+                    givenMax.y = GS::Max (givenMax.y, c.y);
+                }
+                API_Coord keptMin = polygons[0].coords[0];
+                API_Coord keptMax = keptMin;
+                for (const API_Coord& c : polygons[0].coords) {
+                    keptMin.x = GS::Min (keptMin.x, c.x);
+                    keptMin.y = GS::Min (keptMin.y, c.y);
+                    keptMax.x = GS::Max (keptMax.x, c.x);
+                    keptMax.y = GS::Max (keptMax.y, c.y);
+                }
+                polygonKept = std::abs (keptMin.x - givenMin.x) < PolygonReadBackTolerance && std::abs (keptMin.y - givenMin.y) < PolygonReadBackTolerance &&
+                              std::abs (keptMax.x - givenMax.x) < PolygonReadBackTolerance && std::abs (keptMax.y - givenMax.y) < PolygonReadBackTolerance;
+            }
+        }
+        if (!polygonKept) {
+            notApplied += " coordinates";
+            if (hasArcs) {
+                notApplied += " arcs";
+            }
+            if (hasHoles) {
+                notApplied += " holes";
+            }
+        }
+    }
+    if (!notApplied.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + ".");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+GS::ObjectState ModifyHatchesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("hatchesWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    const GS::Optional<GS::ObjectState> databaseError = CallUndoableModifyInDatabase (parameters, "ModifyHatches", [&] () {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState result = ModifyOneHatch (item);
+            changeReporter.MarkChangedIfSucceeded (item, result);
+            executionResults (result);
+        }
+    });
+    if (databaseError.HasValue ()) {
+        return databaseError.Get ();
+    }
+
+    changeReporter.Report ();
+
+    return response;
 }
 
 CreateSplinesCommand::CreateSplinesCommand () :
@@ -5429,19 +6337,10 @@ GS::Optional<GS::UniString> CreateRailingsCommand::GetInputParametersSchema () c
 })";
 }
 
-GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+// templateElementId of CreateRailings and CreateRailingsFromPolyline (see the comment inside). Returns the
+// error response of a template that is not a railing or whose settings could not be taken over.
+static GS::Optional<GS::ObjectState> ApplyRailingTemplate (const GS::ObjectState& parameters, API_Element& element, API_ElementMemo& memo)
 {
-    GS::Array<GS::ObjectState> coordinates;
-    parameters.Get ("coordinates", coordinates);
-    if (coordinates.GetSize () < 2) {
-        return CreateErrorResponse (APIERR_BADPARS, "coordinates must have at least 2 points.");
-    }
-    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
-        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
-            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
-        }
-    }
-
     // templateElementId: the settings of an existing railing replace the tool defaults. Part of them is held by
     // API_RailingType (defNode, defSegment, the pens, the story visibility), but Archicad generates the posts,
     // rails, handrails, toprails, panels and balusters from the subelement defaults in the memo as well, so copying
@@ -5500,6 +6399,28 @@ GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (
         element.railing.bottomOffset = templ.railing.bottomOffset;
         element.header.layer = templ.header.layer;
         element.header.floorInd = templ.header.floorInd;
+    }
+    return {};
+}
+
+GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    GS::Array<GS::ObjectState> coordinates;
+    parameters.Get ("coordinates", coordinates);
+    if (coordinates.GetSize () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "coordinates must have at least 2 points.");
+    }
+    for (UIndex i = 1; i < coordinates.GetSize (); ++i) {
+        if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
+        }
+    }
+
+    {
+        const GS::Optional<GS::ObjectState> templateError = ApplyRailingTemplate (parameters, element, memo);
+        if (templateError.HasValue ()) {
+            return templateError;
+        }
     }
 
     short floorIndex = 0;
@@ -5587,6 +6508,10 @@ GS::Optional<GS::UniString> CreateRailingsFromPolylineCommand::GetInputParameter
                         "type": "number",
                         "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "templateElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional existing Railing whose settings the new railing takes instead of the tool defaults (or the favorite), as in CreateRailings: its node and segment settings, from which the posts, rails, handrails, toprails, panels and balusters are generated, its story visibility, pens, layer and home story. floorIndex and height given here override them. With itself as template, a railing is given a new 3D reference line by creating it again and deleting the old one."
                     }
                 },
                 "additionalProperties": false,
@@ -5623,6 +6548,13 @@ GS::Optional<GS::ObjectState> CreateRailingsFromPolylineCommand::SetTypeSpecific
     for (const API_PolyArc& arc : polyArcs) {
         if (arc.begIndex < 1 || arc.endIndex > nCoords || arc.endIndex != arc.begIndex + 1) {
             return CreateErrorResponse (APIERR_BADPARS, "Each item of polylineArcs must connect two consecutive points of polylineCoordinates.");
+        }
+    }
+
+    {
+        const GS::Optional<GS::ObjectState> templateError = ApplyRailingTemplate (parameters, element, memo);
+        if (templateError.HasValue ()) {
+            return templateError;
         }
     }
 
@@ -5707,6 +6639,12 @@ GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema 
                         "type": "number",
                         "description": "Optional height of the curtain wall. When omitted, the height of the favorite (or of the Curtain Wall tool defaults) is kept.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Optional slant angle of the curtain wall plane in degrees, measured from the horizontal: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first coordinate), more than 90 to the right. It is the value GetDetailsOfElements returns as angle. A slanted curtain wall needs a straight reference line (exactly 2 coordinates); height stays its vertical height, and zCoordinate the elevation of its reference line (Archicad raises the bottom of the panels by offset times the cosine of the angle). Give it even with a slanted favorite: Archicad does not take the slant of a favorite or of the tool defaults on creation, so without angle the curtain wall comes out vertical (seen in Archicad 29).",
+                        "exclusiveMinimum": 0.0,
+                        "exclusiveMaximum": 180.0
                     },
                     "primaryPattern": {
                         "$ref": "#/CurtainWallPattern",
@@ -5996,8 +6934,69 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
         element.curtainWall.height = height;
     }
 
+    // The slant. ACAPI_Element_Create ignores API_CurtainWallType::angle (and so the angle of a
+    // slanted favorite or of the tool defaults), and a later ACAPI_Element_Change ignores the
+    // angle, the segments' extrusion and their contours alike - all confirmed in Archicad 29. It
+    // does take planeMatrix: the plane of the curtain wall, in which memo.coords are local
+    // coordinates and height is measured along the plane. A curtain wall drawn slanted in
+    // Archicad has its x axis along the reference line, its z axis (up the plane) leaning by
+    // 90 - angle degrees towards the left of the reference line, and its origin on the first
+    // point of the reference line. A vertical curtain wall has the identity matrix, which an
+    // angle of 90 writes; without angle the element is left as the defaults made it.
+    double angle = 90.0;
+    const bool hasAngle = parameters.Get ("angle", angle);
+    const bool slanted = hasAngle && std::fabs (angle - 90.0) > 1e-9;
+    if (slanted && coordinates.GetSize () != 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "A slanted curtain wall (angle other than 90) lies in one plane, so its coordinates must be the 2 points of a straight reference line.");
+    }
+    const API_Coord begC = Get2DCoordinateFromObjectState (coordinates[0]);
+    double sinA = 1.0;
+    double cosA = 0.0;
+    double dirX = 1.0;
+    double dirY = 0.0;
+    if (slanted) {
+        const API_Coord endC = Get2DCoordinateFromObjectState (coordinates[1]);
+        const double length = std::hypot (endC.x - begC.x, endC.y - begC.y);
+        dirX = (endC.x - begC.x) / length;
+        dirY = (endC.y - begC.y) / length;
+        const double angleRad = angle * std::acos (-1.0) / 180.0;
+        sinA = std::sin (angleRad);
+        cosA = std::cos (angleRad);
+    }
+    API_Tranmat& planeMatrix = element.curtainWall.planeMatrix;
+    if (hasAngle) {
+        element.curtainWall.angle = angle;
+        planeMatrix = {};
+    }
+    if (slanted) {
+        // Columns: x along the reference line, y across the plane, z up the plane; the left
+        // normal of the reference line is (-dirY, dirX).
+        const double normalX = -dirY;
+        const double normalY = dirX;
+        // Archicad moves the plane by planeOffset along its own z axis, so on a slanted plane the
+        // offset of the base from the home story would also shift it sideways and come out
+        // planeOffset * sin (angle) high (zCoordinate 1.5 gave a base at 1.299 m, 0.75 m to the
+        // left, in Archicad 29). The offset is stretched along the plane and the origin is moved
+        // back by its sideways part, so the reference line stays where it was given, at the
+        // given elevation.
+        const double baseOffset = element.curtainWall.planeOffset;
+        const double sideways = baseOffset * cosA / sinA;
+        element.curtainWall.planeOffset = baseOffset / sinA;
+        planeMatrix.tmx[0] = dirX;  planeMatrix.tmx[1] = normalX * sinA; planeMatrix.tmx[2] = normalX * cosA;  planeMatrix.tmx[3] = begC.x - normalX * sideways;
+        planeMatrix.tmx[4] = dirY;  planeMatrix.tmx[5] = normalY * sinA; planeMatrix.tmx[6] = normalY * cosA;  planeMatrix.tmx[7] = begC.y - normalY * sideways;
+        planeMatrix.tmx[8] = 0.0;   planeMatrix.tmx[9] = -cosA;          planeMatrix.tmx[10] = sinA;           planeMatrix.tmx[11] = 0.0;
+        // height is the vertical height; Archicad measures it along the plane.
+        element.curtainWall.height /= sinA;
+    } else if (hasAngle) {
+        planeMatrix.tmx[0] = 1.0;
+        planeMatrix.tmx[5] = 1.0;
+        planeMatrix.tmx[10] = 1.0;
+    }
+
     // The reference polyline: memo.coords holds the vertices from index 1 (index 0 is unused,
-    // as in every polygon memo), and every pair of consecutive vertices is one segment.
+    // as in every polygon memo), and every pair of consecutive vertices is one segment. They are
+    // in the coordinates of the plane: the floor plan itself for a vertical curtain wall, the
+    // distance along the reference line for a slanted one.
     const UInt32 nCoords = coordinates.GetSize ();
     if (memo.coords != nullptr) {
         BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
@@ -6007,7 +7006,8 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
     }
     memo.coords = reinterpret_cast<API_Coord**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
     for (UIndex i = 0; i < nCoords; ++i) {
-        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+        const API_Coord c = Get2DCoordinateFromObjectState (coordinates[i]);
+        (*memo.coords)[i + 1] = slanted ? API_Coord { (c.x - begC.x) * dirX + (c.y - begC.y) * dirY, 0.0 } : c;
     }
     element.curtainWall.nSegments = nCoords - 1;
 
@@ -6071,7 +7071,7 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
-                        "description" : "The parent element if the label is an associative label."
+                        "description" : "The parent element if the label is an associative label. In a section, elevation, interior elevation or 3D document (the current window, or databaseId) give the model element: the label is attached to the section element that shows it there, which GetDetailsOfElements reports as the model element in ownerElementId. A section element of GetSectionElements is taken as it is. There, the label is placed at its default position unless begCoordinate, midCoordinate and endCoordinate are all given."
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
@@ -6083,11 +7083,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given. A text label needs 'text' or 'runs', unless favoriteName is given: then the label keeps the text content of the favorite, autotext included, with the fields of 'style' applied to it."
                     },
                     "runs": {
                         "type": "array",
-                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given. Like 'text', it replaces the content of the favorite given in favoriteName.",
                         "items": { "$ref": "#/TextRunDetails" },
                         "minItems": 1
                     },
@@ -7289,6 +8289,100 @@ static void RemoveDictionaryParameters (API_AddParType**& params)
     params = filtered;
 }
 
+// In a section, elevation, interior elevation or 3D document a model element is drawn by a section
+// element (API_SectElemID) of that database, and an associative label there belongs to that section
+// element: the DevKit's Element_Test (Do_CreateLabel_Associative) creates one with the clicked section
+// element as parent and API_SectElemID as parentType. Given the model element itself as parent there,
+// the label was placed as an independent one (#2876). Returns the section element of the model element
+// in the current database, or APINULLGuid when the current database is no such view or does not show it.
+static API_Guid FindSectionElementOfModelElement (const API_Guid& modelElemGuid)
+{
+    API_DatabaseInfo currentDatabase = {};
+    if (ACAPI_Database_GetCurrentDatabase (&currentDatabase) != NoError) {
+        return APINULLGuid;
+    }
+    if (currentDatabase.typeID != APIWind_SectionID &&
+        currentDatabase.typeID != APIWind_ElevationID &&
+        currentDatabase.typeID != APIWind_InteriorElevationID &&
+        currentDatabase.typeID != APIWind_DocumentFrom3DID) {
+        return APINULLGuid;
+    }
+
+    GS::Array<API_Guid> sectionElements;
+    if (ACAPI_Element_GetElemList (API_SectElemID, &sectionElements) != NoError) {
+        return APINULLGuid;
+    }
+    for (const API_Guid& sectionElementGuid : sectionElements) {
+        API_Element sectionElement = {};
+        sectionElement.header.guid = sectionElementGuid;
+        if (ACAPI_Element_Get (&sectionElement) == NoError && sectionElement.sectElem.parentGuid == modelElemGuid) {
+            return sectionElementGuid;
+        }
+    }
+    return APINULLGuid;
+}
+
+// Whether the memo of the Label tool defaults holds any text content. Before Archicad 28 the
+// content is a char handle, 8-bit or UTF-16 by the defaults' charCode, so it is not empty when
+// either of its first two bytes is set (an empty content is a terminator only).
+static bool HasTextContent (const API_ElementMemo& memo)
+{
+#ifdef ServerMainVers_2800
+    return memo.textContent != nullptr && !memo.textContent->IsEmpty ();
+#else
+    if (memo.textContent == nullptr || *memo.textContent == nullptr) {
+        return false;
+    }
+    const GSSize byteSize = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.textContent));
+    const char* bytes = *memo.textContent;
+    return (byteSize > 0 && bytes[0] != 0) || (byteSize > 1 && bytes[1] != 0);
+#endif
+}
+
+// Keeps the content of the defaults' memo (a favorite's content) and applies to it the style
+// fields that 'style' changed: Archicad reads the pen, font, face, effects and size of a
+// multistyle label from its runs and the justification and spacing from its paragraphs, not from
+// API_TextType, so a changed field is written to every run or paragraph. The rest of the runs,
+// their ranges and the content, stay as the favorite has them.
+static void KeepTextContentWithStyle (API_ElementMemo& memo, const API_TextType& before, const API_TextType& after)
+{
+    if (memo.paragraphs == nullptr || *memo.paragraphs == nullptr) {
+        return;
+    }
+    const GSSize paragraphCount = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.paragraphs)) / sizeof (API_ParagraphType);
+    for (GSSize p = 0; p < paragraphCount; ++p) {
+        API_ParagraphType& paragraph = (*memo.paragraphs)[p];
+        if (after.just != before.just) {
+            paragraph.just = after.just;
+        }
+        if (after.spacing != before.spacing) {
+            paragraph.spacing = after.spacing;
+        }
+        if (paragraph.run == nullptr) {
+            continue;
+        }
+        const GSSize runCount = BMGetPtrSize (reinterpret_cast<GSPtr> (paragraph.run)) / sizeof (API_RunType);
+        for (GSSize r = 0; r < runCount; ++r) {
+            API_RunType& run = paragraph.run[r];
+            if (after.pen != before.pen) {
+                run.pen = after.pen;
+            }
+            if (after.font != before.font) {
+                run.font = after.font;
+            }
+            if (after.faceBits != before.faceBits) {
+                run.faceBits = after.faceBits;
+            }
+            if (after.effectsBits != before.effectsBits) {
+                run.effectBits = static_cast<unsigned short> (after.effectsBits);
+            }
+            if (after.size != before.size) {
+                run.size = after.size;
+            }
+        }
+    }
+}
+
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
     const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
@@ -7304,23 +8398,44 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
 
     element.label.parent = GetGuidFromArrayItem ("parentElementId", parameters);
     API_Elem_Head parentElemHead = {};
+    bool parentIsSectionElement = false;
     if (element.label.parent != APINULLGuid) {
         parentElemHead.guid = element.label.parent;
-        if (ACAPI_Element_GetHeader (&parentElemHead) == NoError) {
-#ifdef ServerMainVers_2600
-            element.label.parentType = parentElemHead.type;
-#else
-            element.label.parentType = parentElemHead.typeID;
-#endif
-        } else {
+        if (ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
             return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
         }
 
+        // In a section, elevation, interior elevation or 3D document the label belongs to the
+        // section element that draws the model element there, see FindSectionElementOfModelElement.
+        if (GetElemTypeId (parentElemHead) != API_SectElemID) {
+            const API_Guid sectionElementGuid = FindSectionElementOfModelElement (parentElemHead.guid);
+            if (sectionElementGuid != APINULLGuid) {
+                parentElemHead = {};
+                parentElemHead.guid = sectionElementGuid;
+                if (ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+                    return CreateErrorResponse (APIERR_BADPARS, "Failed to read the section element that shows the parent element in this window.");
+                }
+                element.label.parent = sectionElementGuid;
+            }
+        }
+        parentIsSectionElement = GetElemTypeId (parentElemHead) == API_SectElemID;
+
+#ifdef ServerMainVers_2600
+        element.label.parentType = parentElemHead.type;
+#else
+        element.label.parentType = parentElemHead.typeID;
+#endif
         element.header.floorInd = parentElemHead.floorInd;
     }
 
     if (begCOS != nullptr) {
         element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
+    } else if (parentIsSectionElement) {
+        // The bounds of a section element are not read: ACAPI_Element_CalcBounds goes through the
+        // window's 2D drawing (see CalcLabelParentBounds). At the default position begC is not used.
+        if (midCOS != nullptr && endCOS != nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "Give 'begCoordinate' together with 'midCoordinate' and 'endCoordinate' for a label of an element in a section, elevation, interior elevation or 3D document.");
+        }
     } else if (parentElemHead.guid != APINULLGuid) {
         API_Box3D box = {};
         CalcLabelParentBounds (parentElemHead, box);
@@ -7377,6 +8492,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
         // element.label.u.text.pen/faceBits/font/size at the time ApplyTextContent runs, and
         // Archicad ignores those top-level fields afterwards for a multistyle (paragraph-based)
         // element - only the run's own copies matter once paragraphs exist.
+        const API_TextType textBeforeStyle = element.label.u.text;
         const GS::ObjectState* styleOS = parameters.Get ("style");
         if (styleOS != nullptr) {
             auto styleErr = TextLabelDetails::ApplyTextStyleSettableDetails (*styleOS, element.label.u.text, nullptr, true);
@@ -7384,6 +8500,20 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
                 return styleErr;
             }
         }
+
+        // A favorite carries the content of its label, autotext included, in the memo of the
+        // defaults it was applied to (the DevKit's Element_Test example creates its labels from
+        // that memo too). Without 'text' and 'runs' that content is kept as it is (#2946).
+        GS::UniString favoriteName;
+        const bool fromFavorite = parameters.Get ("favoriteName", favoriteName) && !favoriteName.IsEmpty ();
+        if (fromFavorite && !parameters.Contains ("text") && !parameters.Contains ("runs")) {
+            if (!HasTextContent (memo)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Missing 'text' (or 'runs') parameter: the favorite '" + favoriteName + "' has no text content to keep.");
+            }
+            KeepTextContentWithStyle (memo, textBeforeStyle, element.label.u.text);
+            return {};
+        }
+
         auto err = TextLabelDetails::ApplyTextContent (memo, element.label.u.text, parameters);
         if (err.HasValue ()) {
             return err;
@@ -7471,13 +8601,44 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
-GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
+// The text anchor given in style.anchor, written once more after the create: a new text label was
+// reported to keep the anchor of the Label tool default instead (#2876). Written the way ModifyLabels
+// writes it, without a memo, and only when the new label has another anchor.
+static GSErrCode KeepLabelTextAnchor (const API_Guid& labelGuid, API_AnchorID anchor)
+{
+    API_Element element = {};
+    element.header.guid = labelGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (element.label.labelClass != APILblClass_Text || element.label.u.text.anchor == anchor) {
+        return NoError;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.anchor);
+    element.label.u.text.anchor = anchor;
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
 {
     if (requestedElement.label.labelClass != APILblClass_Text) {
         return NoError;
     }
     // The factors of the style, the favorite or the tool defaults: the create with the content memo leaves them at 1.
-    return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.label.u.text.widthFactor, requestedElement.label.u.text.charSpaceFactor);
+    GSErrCode err = TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.label.u.text.widthFactor, requestedElement.label.u.text.charSpaceFactor);
+    if (err != NoError) {
+        return err;
+    }
+
+    const GS::ObjectState* styleOS = parameters.Get ("style");
+    if (styleOS != nullptr && styleOS->Contains (GS::String ("anchor"))) {
+        err = KeepLabelTextAnchor (newElementGuid, requestedElement.label.u.text.anchor);
+    }
+    return err;
 }
 
 CreateTextsCommand::CreateTextsCommand () :
@@ -8236,6 +9397,80 @@ static GS::Optional<GS::ObjectState> GetAngleDimensionLine (const GS::ObjectStat
     return {};
 }
 
+// Writes the two measured lines and the arc position of a static angle dimension, as
+// Do_CreateStaticAngleDimension of the DevKit's Element_Test example creates it: the four
+// reference points, the arc position and its center, the intersection of the two (infinite)
+// lines, as the Angle Dimension tool puts it. Shared by CreateAngleDimensions and
+// ModifyAngleDimensions. Returns the error response of a geometry that has no angle.
+static GS::Optional<GS::ObjectState> SetAngleDimensionGeometry (API_Element& element, const API_Coord& a1, const API_Coord& a2, const API_Coord& b1, const API_Coord& b2, const API_Coord& arcPosition)
+{
+    const double d1x = a2.x - a1.x, d1y = a2.y - a1.y;
+    const double d2x = b2.x - b1.x, d2y = b2.y - b1.y;
+    const double cross = d1x * d2y - d1y * d2x;
+    if (std::fabs (cross) < 1e-9 * std::hypot (d1x, d1y) * std::hypot (d2x, d2y)) {
+        return CreateErrorResponse (APIERR_BADPARS, "'firstLine' and 'secondLine' are parallel, so they have no angle to dimension.");
+    }
+    const double t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / cross;
+    API_Coord origo = {};
+    origo.x = a1.x + t * d1x;
+    origo.y = a1.y + t * d1y;
+    if (std::hypot (arcPosition.x - origo.x, arcPosition.y - origo.y) < 1e-9) {
+        return CreateErrorResponse (APIERR_BADPARS, "'arcPosition' is the intersection of the two lines; it must be away from it, on the dimension arc.");
+    }
+
+    element.angleDimension.base[0].loc = a1;
+    element.angleDimension.base[1].loc = a2;
+    element.angleDimension.base[2].loc = b1;
+    element.angleDimension.base[3].loc = b2;
+    element.angleDimension.pos = arcPosition;
+    element.angleDimension.origo = origo;
+    return {};
+}
+
+// The settings CreateAngleDimensions and ModifyAngleDimensions both take beside the geometry:
+// smallArc, pen, textHeight and textPen. Sets their bits in mask when it is not nullptr.
+static GS::Optional<GS::ObjectState> ApplyAngleDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    if (parameters.Get ("smallArc", element.angleDimension.smallArc) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, smallArc);
+    }
+
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
+        }
+        element.angleDimension.linPen = static_cast<short> (pen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, linPen);
+        }
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
+        }
+        element.angleDimension.note.noteSize = textHeight;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, note.noteSize);
+        }
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
+        }
+        element.angleDimension.note.notePen = static_cast<short> (textPen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, note.notePen);
+        }
+    }
+
+    return {};
+}
+
 GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
 {
     API_Coord a1 = {}, a2 = {}, b1 = {}, b2 = {};
@@ -8258,32 +9493,10 @@ GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParam
     }
     const API_Coord arcPosition = Get2DCoordinateFromObjectState (*arcPositionOS);
 
-    // The center of the dimension arc is the intersection of the two (infinite) lines,
-    // as the Angle Dimension tool puts it.
-    const double d1x = a2.x - a1.x, d1y = a2.y - a1.y;
-    const double d2x = b2.x - b1.x, d2y = b2.y - b1.y;
-    const double cross = d1x * d2y - d1y * d2x;
-    if (std::fabs (cross) < 1e-9 * std::hypot (d1x, d1y) * std::hypot (d2x, d2y)) {
-        return CreateErrorResponse (APIERR_BADPARS, "'firstLine' and 'secondLine' are parallel, so they have no angle to dimension.");
+    const auto geometryError = SetAngleDimensionGeometry (element, a1, a2, b1, b2, arcPosition);
+    if (geometryError.HasValue ()) {
+        return geometryError;
     }
-    const double t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / cross;
-    API_Coord origo = {};
-    origo.x = a1.x + t * d1x;
-    origo.y = a1.y + t * d1y;
-    if (std::hypot (arcPosition.x - origo.x, arcPosition.y - origo.y) < 1e-9) {
-        return CreateErrorResponse (APIERR_BADPARS, "'arcPosition' is the intersection of the two lines; it must be away from it, on the dimension arc.");
-    }
-
-    // A static angle dimension, as Do_CreateStaticAngleDimension of the DevKit's Element_Test
-    // example creates it: the four reference points, the arc position and its center.
-    element.angleDimension.base[0].loc = a1;
-    element.angleDimension.base[1].loc = a2;
-    element.angleDimension.base[2].loc = b1;
-    element.angleDimension.base[3].loc = b2;
-    element.angleDimension.pos = arcPosition;
-    element.angleDimension.origo = origo;
-
-    parameters.Get ("smallArc", element.angleDimension.smallArc);
 
     Int32 floorIndex = 0;
     if (parameters.Get ("floorIndex", floorIndex)) {
@@ -8295,31 +9508,7 @@ GS::Optional<GS::ObjectState> CreateAngleDimensionsCommand::SetTypeSpecificParam
         return layerError;
     }
 
-    Int32 pen = 0;
-    if (parameters.Get ("pen", pen)) {
-        if (pen < 1 || pen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
-        }
-        element.angleDimension.linPen = static_cast<short> (pen);
-    }
-
-    double textHeight = 0.0;
-    if (parameters.Get ("textHeight", textHeight)) {
-        if (textHeight <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
-        }
-        element.angleDimension.note.noteSize = textHeight;
-    }
-
-    Int32 textPen = 0;
-    if (parameters.Get ("textPen", textPen)) {
-        if (textPen < 1 || textPen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
-        }
-        element.angleDimension.note.notePen = static_cast<short> (textPen);
-    }
-
-    return {};
+    return ApplyAngleDimensionSettings (parameters, element, nullptr);
 }
 
 // With a section or elevation window active, ACAPI_Element_Create of a dimension can report
@@ -8330,6 +9519,168 @@ GSErrCode CreateAngleDimensionsCommand::AfterCreate (const API_Element& /*reques
     API_Element created = {};
     created.header.guid = newElementGuid;
     return ACAPI_Element_Get (&created) == NoError ? NoError : APIERR_GENERAL;
+}
+
+ModifyAngleDimensionsCommand::ModifyAngleDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyAngleDimensionsCommand::GetName () const
+{
+    return "ModifyAngleDimensions";
+}
+
+GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "angleDimensionsWithDetails": {
+            "type": "array",
+            "description": "The Angle Dimensions to change, each with the settings to change. Only the given settings are changed; the keys are those CreateAngleDimensions takes and GetDetailsOfElements returns. The lines and the arc position cannot be changed: Archicad keeps them as they are, so delete the dimension and create it again with CreateAngleDimensions.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "smallArc": {
+                        "type": "boolean",
+                        "description": "Measure the smaller angle between the lines (inner dimension) rather than the larger one (outer dimension). Optional parameter."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension and witness lines. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "angleDimensionsWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// The settings go through ApplyAngleDimensionSettings, as in CreateAngleDimensions. The geometry is
+// not taken: Archicad 29 (29.0.0 5101) keeps the points (base[].loc), the arc position (pos) and the
+// radius of an angle dimension as they were through ACAPI_Element_Change, also with every point
+// marked in the mask, so a new geometry means deleting the dimension and creating it again. The
+// element is read back, so a value Archicad did not take is reported as a failure.
+GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("angleDimensionsWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    ACAPI_CallUndoableCommand ("ModifyAngleDimensions", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_AngleDimensionID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not an Angle Dimension."));
+                continue;
+            }
+            if (item.GetFieldCount () <= 1) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No angle dimension settings to modify."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            const auto settingsError = ApplyAngleDimensionSettings (item, element, &mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (settingsError.Get ()));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the angle dimension."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read the angle dimension back after the change."));
+                continue;
+            }
+            const double tolerance = 1e-6;
+            GS::UniString notApplied;
+            if (item.Contains ("smallArc") && changed.angleDimension.smallArc != element.angleDimension.smallArc) {
+                notApplied += " smallArc";
+            }
+            if (item.Contains ("pen") && changed.angleDimension.linPen != element.angleDimension.linPen) {
+                notApplied += " pen";
+            }
+            if (item.Contains ("textHeight") && std::abs (changed.angleDimension.note.noteSize - element.angleDimension.note.noteSize) > tolerance) {
+                notApplied += " textHeight";
+            }
+            if (item.Contains ("textPen") && changed.angleDimension.note.notePen != element.angleDimension.note.notePen) {
+                notApplied += " textPen";
+            }
+            if (!notApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply:" + notApplied + "."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :

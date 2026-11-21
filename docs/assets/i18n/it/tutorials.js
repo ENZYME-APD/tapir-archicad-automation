@@ -10,6 +10,29 @@
     'Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.':
         'Brevi video (in inglese) che mostrano Tapir al lavoro in Archicad e Grasshopper, tutti in una playlist su YouTube.',
 
+    // Written tutorials
+    'Written <em>tutorials.</em>': 'Tutorial <em>scritti.</em>',
+    'Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.':
+        'Passo dopo passo, per domande che si fanno sull’automazione di Archicad, ciascuna risolta con ciò che Tapir ha già.',
+    'Export Archicad element properties to Excel with Python':
+        'Esportare le proprietà degli elementi di Archicad in Excel con Python',
+    'Property values to an Excel or CSV file, one row per element, and the edited values back.':
+        'I valori delle proprietà in un file Excel o CSV, una riga per elemento, e i valori modificati di ritorno.',
+    'Read the tutorial': 'Leggi il tutorial',
+    'Connect Grasshopper to Archicad': 'Collegare Grasshopper ad Archicad',
+    'Install the tapir package, read a wall and change its height.':
+        'Installare il pacchetto tapir, leggere un muro e cambiarne l’altezza.',
+    'Batch rename views in Archicad': 'Rinominare le viste in blocco in Archicad',
+    'Find and replace, a prefix or a counter in the names of the views.':
+        'Trova e sostituisci, un prefisso o un contatore nei nomi delle viste.',
+    'Elements': 'Elementi',
+    'Number doors and windows by room in Archicad': 'Numerare porte e finestre per locale in Archicad',
+    'Element IDs such as 1.04-D1, from the zone each door or window opens into.':
+        'ID elemento come 1.04-D1, dalla zona verso cui si apre ogni porta o finestra.',
+    'Your first Archicad Python script': 'Il tuo primo script Python per Archicad',
+    'A few lines that call one Tapir command, run from the Tapir palette.':
+        'Poche righe che chiamano un comando Tapir, eseguite dalla palette di Tapir.',
+
     // The videos
     'Videos': 'Video',
     'Getting started': 'Primi passi',

@@ -59,7 +59,9 @@
         { key: 'size', attribute: 'data-size', legend: 'Text size', inContrast: true, options: [['100', '100%'], ['115', '115%'], ['130', '130%'], ['90', '90%']] },
         { key: 'font', attribute: 'data-font', legend: 'Font', inContrast: true, options: [['look', 'Inter', 'Fraunces & Inter'], ['system', 'System'], ['readable', 'Readable']] },
         { key: 'spacing', attribute: 'data-spacing', legend: 'Spacing', inContrast: true, options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
-        { key: 'motion', attribute: 'data-motion', legend: 'Motion', inContrast: true, options: [['system', 'System'], ['reduced', 'Reduced'], ['full', 'Full']] }
+        { key: 'motion', attribute: 'data-motion', legend: 'Motion', inContrast: true, options: [['system', 'System'], ['reduced', 'Reduced'], ['full', 'Full']] },
+        // The M key's Measure tool (#2779); Off turns the single-key shortcut off (WCAG 2.1.4).
+        { key: 'measure', attribute: 'data-measure', legend: 'Measure tool (M key)', inContrast: true, options: [['on', 'On'], ['off', 'Off']] }
     ];
     // The browser bar colour (the header's): [under prefers-color-scheme: dark, otherwise].
     var THEME_COLORS = { legacy: ['#2D3A30', '#2D3A30'], contrast: ['#FFFFFF', '#FFFFFF'], standard: { system: ['#11161D', '#FFFFFF'], light: ['#FFFFFF', '#FFFFFF'], dark: ['#11161D', '#11161D'] } };
@@ -1441,6 +1443,301 @@
         });
     }
 
+    // ---- Measure tool: the M key, as in Archicad (#2779) ----
+
+    // M (outside text fields, without Ctrl, Cmd or Alt) turns the tool on and off, Escape cancels the
+    // measurement or leaves it. Two clicks draw a dimension line in page coordinates, so it stays on the
+    // page when it scrolls, and the Tracker next to the cursor shows the distance, the angle
+    // (counterclockwise from the x axis, as in Archicad) and the x and y differences in CSS pixels. While
+    // the tool is on, clicks only set points: they do not follow links or press buttons. The Display menu's
+    // "Measure tool (M key)" Off turns the shortcut off.
+    function setUpMeasureTool () {
+        var SVG_NS = 'http://www.w3.org/2000/svg';
+        var FREEZE_MS = 3000;
+        var active = false;
+        var start = null;
+        var end = null;
+        var frozen = false;
+        var frozenTimer = null;
+        var pointer = null;
+        var overlay = null;
+        var line = null;
+        var ticks = [];
+        var origin = null;
+        var tracker = null;
+        var status = null;
+
+        function text (english) {
+            return translate (english) || english;
+        }
+
+        function shortcutOff () {
+            return root.getAttribute ('data-measure') === 'off';
+        }
+
+        function svg (name, className) {
+            var element = document.createElementNS (SVG_NS, name);
+            element.setAttribute ('class', className);
+            return element;
+        }
+
+        function build () {
+            if (overlay) {
+                return;
+            }
+            overlay = svg ('svg', 'measure-overlay');
+            overlay.setAttribute ('aria-hidden', 'true');
+            overlay.setAttribute ('focusable', 'false');
+            line = svg ('line', 'measure-line');
+            ticks = [svg ('line', 'measure-tick'), svg ('line', 'measure-tick')];
+            origin = svg ('circle', 'measure-origin');
+            origin.setAttribute ('r', '3');
+            overlay.appendChild (line);
+            overlay.appendChild (ticks[0]);
+            overlay.appendChild (ticks[1]);
+            overlay.appendChild (origin);
+            tracker = document.createElement ('div');
+            tracker.className = 'measure-tracker';
+            tracker.setAttribute ('aria-hidden', 'true');
+            status = document.createElement ('div');
+            status.className = 'visually-hidden';
+            status.setAttribute ('role', 'status');
+            document.body.appendChild (overlay);
+            document.body.appendChild (tracker);
+            document.body.appendChild (status);
+        }
+
+        // The overlay covers the whole document; its own position on the page turns page coordinates
+        // into its coordinates, whatever offsets the body has.
+        function sizeOverlay () {
+            // The overlay itself counts in the document's size: shrink it first, so the page can get
+            // narrower again after a resize.
+            overlay.style.width = '0';
+            overlay.style.height = '0';
+            var width = Math.max (root.scrollWidth, root.clientWidth);
+            var height = Math.max (root.scrollHeight, root.clientHeight);
+            overlay.setAttribute ('width', width);
+            overlay.setAttribute ('height', height);
+            overlay.style.width = width + 'px';
+            overlay.style.height = height + 'px';
+        }
+
+        function local (point) {
+            var rect = overlay.getBoundingClientRect ();
+            return { x: point.x - (rect.left + window.pageXOffset), y: point.y - (rect.top + window.pageYOffset) };
+        }
+
+        function setLine (element, a, b) {
+            element.setAttribute ('x1', a.x.toFixed (1));
+            element.setAttribute ('y1', a.y.toFixed (1));
+            element.setAttribute ('x2', b.x.toFixed (1));
+            element.setAttribute ('y2', b.y.toFixed (1));
+        }
+
+        function draw () {
+            sizeOverlay ();
+            var shown = start !== null;
+            origin.style.display = shown ? '' : 'none';
+            var drawn = shown && end !== null && (end.x !== start.x || end.y !== start.y);
+            line.style.display = drawn ? '' : 'none';
+            ticks[0].style.display = ticks[1].style.display = drawn ? '' : 'none';
+            if (!shown) {
+                return;
+            }
+            var a = local (start);
+            origin.setAttribute ('cx', a.x.toFixed (1));
+            origin.setAttribute ('cy', a.y.toFixed (1));
+            if (!drawn) {
+                return;
+            }
+            var b = local (end);
+            setLine (line, a, b);
+            // An end tick across the line at each end, 12 px long.
+            var length = Math.sqrt ((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+            var nx = -(b.y - a.y) / length * 6;
+            var ny = (b.x - a.x) / length * 6;
+            setLine (ticks[0], { x: a.x - nx, y: a.y - ny }, { x: a.x + nx, y: a.y + ny });
+            setLine (ticks[1], { x: b.x - nx, y: b.y - ny }, { x: b.x + nx, y: b.y + ny });
+        }
+
+        function readout () {
+            if (start === null) {
+                return text ('Click the start point');
+            }
+            var to = end || start;
+            var dx = to.x - start.x;
+            // Up is positive, as in Archicad; the page's y grows downwards.
+            var dy = start.y - to.y;
+            var angle = Math.atan2 (dy, dx) * 180 / Math.PI;
+            if (angle < 0) {
+                angle += 360;
+            }
+            return 'D: ' + Math.round (Math.sqrt (dx * dx + dy * dy)) + ' px\nA: ' + angle.toFixed (1) + '°\nX: ' +
+                Math.round (dx) + ' px | Y: ' + Math.round (dy) + ' px' + (frozen ? '' : '\n' + text ('Click the end point'));
+        }
+
+        // The Tracker follows the cursor, below and right of it, and stays inside the window.
+        function placeTracker () {
+            tracker.textContent = readout ();
+            if (!pointer) {
+                tracker.style.left = '16px';
+                tracker.style.top = '16px';
+                return;
+            }
+            var width = tracker.offsetWidth;
+            var height = tracker.offsetHeight;
+            var left = pointer.clientX + 16;
+            var top = pointer.clientY + 16;
+            if (left + width > root.clientWidth - 4) {
+                left = Math.max (4, pointer.clientX - 16 - width);
+            }
+            if (top + height > root.clientHeight - 4) {
+                top = Math.max (4, pointer.clientY - 16 - height);
+            }
+            tracker.style.left = left + 'px';
+            tracker.style.top = top + 'px';
+        }
+
+        function update () {
+            draw ();
+            placeTracker ();
+        }
+
+        function clearMeasurement () {
+            if (frozenTimer !== null) {
+                window.clearTimeout (frozenTimer);
+                frozenTimer = null;
+            }
+            start = null;
+            end = null;
+            frozen = false;
+        }
+
+        function announce (message) {
+            status.textContent = '';
+            window.setTimeout (function () {
+                status.textContent = message;
+            }, 50);
+        }
+
+        function turnOn () {
+            build ();
+            active = true;
+            clearMeasurement ();
+            root.classList.add ('measure-active');
+            overlay.style.display = '';
+            tracker.style.display = '';
+            update ();
+            announce (text ('Measure tool on. Click two points to measure them; press M or Escape to leave.'));
+        }
+
+        function turnOff () {
+            if (!active) {
+                return;
+            }
+            active = false;
+            clearMeasurement ();
+            root.classList.remove ('measure-active');
+            overlay.style.display = 'none';
+            tracker.style.display = 'none';
+            announce (text ('Measure tool off.'));
+        }
+
+        function pagePoint (event) {
+            return { x: event.pageX, y: event.pageY };
+        }
+
+        document.addEventListener ('keydown', function (event) {
+            if (event.key === 'Escape' || event.key === 'Esc') {
+                if (!active) {
+                    return;
+                }
+                if (start !== null) {
+                    clearMeasurement ();
+                    update ();
+                } else {
+                    turnOff ();
+                }
+                return;
+            }
+            if (event.key !== 'm' && event.key !== 'M') {
+                return;
+            }
+            var target = event.target;
+            var typing = target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test (target.tagName));
+            if (typing || event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented || event.repeat) {
+                return;
+            }
+            if (active) {
+                turnOff ();
+            } else if (!shortcutOff ()) {
+                turnOn ();
+            } else {
+                return;
+            }
+            event.preventDefault ();
+        });
+
+        document.addEventListener ('mousemove', function (event) {
+            if (!active) {
+                return;
+            }
+            pointer = { clientX: event.clientX, clientY: event.clientY };
+            if (start !== null && !frozen) {
+                end = pagePoint (event);
+            }
+            update ();
+        }, { passive: true });
+
+        // A click sets a point and does nothing else: captured before the page's own handlers. A click
+        // made with the keyboard (Enter or Space on a link or button, detail 0) still activates it.
+        document.addEventListener ('click', function (event) {
+            if (!active || event.button !== 0 || event.detail === 0) {
+                return;
+            }
+            event.preventDefault ();
+            event.stopPropagation ();
+            pointer = { clientX: event.clientX, clientY: event.clientY };
+            if (start === null || frozen) {
+                clearMeasurement ();
+                start = pagePoint (event);
+                end = start;
+            } else {
+                end = pagePoint (event);
+                frozen = true;
+                frozenTimer = window.setTimeout (function () {
+                    clearMeasurement ();
+                    update ();
+                }, FREEZE_MS);
+            }
+            update ();
+        }, true);
+
+        // The line stays where it was drawn on the page; while it follows the cursor, its free end moves
+        // with the page under the cursor.
+        window.addEventListener ('scroll', function () {
+            if (!active) {
+                return;
+            }
+            if (start !== null && !frozen && pointer) {
+                end = { x: pointer.clientX + window.pageXOffset, y: pointer.clientY + window.pageYOffset };
+            }
+            update ();
+        }, { passive: true });
+
+        window.addEventListener ('resize', function () {
+            if (active) {
+                update ();
+            }
+        });
+
+        document.addEventListener ('tapir-display-change', function () {
+            if (shortcutOff ()) {
+                turnOff ();
+            }
+        });
+    }
+
     function init () {
         // The rest reads the translated labels and fills the translated live figures, so it waits.
         loadTranslations (language, function () {
@@ -1460,6 +1757,7 @@
             setUpMenu ();
             setUpCopyButtons ();
             setUpLiveFigures ();
+            setUpMeasureTool ();
             translationReady = true;
             readyCallbacks.splice (0).forEach (function (callback) {
                 try {

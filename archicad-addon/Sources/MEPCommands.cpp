@@ -2777,6 +2777,62 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetRawResponseSchem
     })";
 }
 
+#ifdef ServerMainVers_2800
+
+// The refusal of a nodePositions change that moves an end node of the route away from the tee
+// (Branch) the route is connected to at that end, or nothing. Each node move is its own undoable
+// modification, after which Archicad reconnects the routes at the node; with the tee left at the
+// old point, Archicad 30 crashed there (TryMergeRoutingElementsAtNodes, #2929), and Tapir has no
+// command that moves a tee. Checked before anything of the item is changed. An end node that keeps
+// its position (within a millimeter) is not refused, so the other nodes of such a route still move.
+static std::optional<GS::UniString> FindEndNodeMovedAwayFromTee (RoutingElement& routingElement, const std::vector<ACAPI::MEP::UniqueID>& nodeIds, const GS::Array<GS::ObjectState>& nodePositions)
+{
+    if (nodeIds.empty () || nodePositions.GetSize () != nodeIds.size ()) {
+        return std::nullopt;
+    }
+    const struct {
+        USize                                   nodeIndex;
+        std::optional<ACAPI::MEP::UniqueID>     portId;
+        const char*                             end;
+    } routeEnds[] = {
+        { 0, routingElement.GetLogicallyConnectedPortIdAtRouteBegin (), "first" },
+        { nodePositions.GetSize () - 1, routingElement.GetLogicallyConnectedPortIdAtRouteEnd (), "last" }
+    };
+    for (const auto& routeEnd : routeEnds) {
+        if (!routeEnd.portId.has_value ()) {
+            continue;
+        }
+        ACAPI::Result<Port> port = Port::Get (routeEnd.portId.value ());
+        if (port.IsErr ()) {
+            continue;
+        }
+        const ACAPI::MEP::UniqueID connectedElementId = port->GetMEPElementId ();
+        if (ACAPI::MEP::Branch::Get (connectedElementId).IsErr ()) {
+            continue;
+        }
+        ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeIds[routeEnd.nodeIndex]);
+        if (node.IsErr ()) {
+            continue;
+        }
+        const API_Coord3D oldPosition = node->GetPosition ();
+        const API_Coord3D newPosition = Get3DCoordinateFromObjectState (nodePositions[routeEnd.nodeIndex]);
+        const double dx = newPosition.x - oldPosition.x;
+        const double dy = newPosition.y - oldPosition.y;
+        const double dz = newPosition.z - oldPosition.z;
+        if (std::sqrt (dx * dx + dy * dy + dz * dz) <= 0.001) {
+            continue;
+        }
+        return GS::UniString::Printf ("Node %u, the %s node of the route, is connected to the tee (Branch) %T and would move away from it. "
+            "Moving a route end away from its tee can crash Archicad, and Tapir cannot move a tee, so nothing was changed. "
+            "Keep that node at its current position; the route's other nodes can still be moved.",
+            static_cast<UInt32> (routeEnd.nodeIndex), routeEnd.end,
+            APIGuidToString (MEPUniqueIDToAPIGuid (connectedElementId)).ToPrintf ());
+    }
+    return std::nullopt;
+}
+
+#endif
+
 GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
@@ -2869,6 +2925,24 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         if (mepSystemId != nullptr && mepSystem == ACAPI_CreateAttributeIndex (-1)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'mepSystemId' is not an MEP system attribute."));
             continue;
+        }
+
+        // The node positions are checked before anything is changed: a count that does not match
+        // the route, and an end node moved away from its tee (#2929).
+        GS::Array<GS::ObjectState> nodePositions;
+        const bool hasNodePositions = routingElementData.Get ("nodePositions", nodePositions);
+        std::vector<ACAPI::MEP::UniqueID> nodeIds;
+        if (hasNodePositions) {
+            nodeIds = routingElement->GetRoutingNodeIds ();
+            if (nodePositions.GetSize () != nodeIds.size ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The size of 'nodePositions' must match the number of nodes of the route."));
+                continue;
+            }
+            const std::optional<GS::UniString> teeRefusal = FindEndNodeMovedAwayFromTee (*routingElement, nodeIds, nodePositions);
+            if (teeRefusal.has_value ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_REFUSEDPAR, teeRefusal.value ()));
+                continue;
+            }
         }
 
         bool success = true;
@@ -3003,13 +3077,7 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             }
         }
 
-        GS::Array<GS::ObjectState> nodePositions;
-        if (routingElementData.Get ("nodePositions", nodePositions)) {
-            const std::vector<ACAPI::MEP::UniqueID> nodeIds = routingElement->GetRoutingNodeIds ();
-            if (nodePositions.GetSize () != nodeIds.size ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The size of 'nodePositions' must match the number of nodes of the route."));
-                continue;
-            }
+        if (hasNodePositions) {
             for (USize i = 0; i < nodePositions.GetSize (); ++i) {
                 ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeIds[i]);
                 if (node.IsErr ()) {

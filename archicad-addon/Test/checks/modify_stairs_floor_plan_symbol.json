@@ -1,0 +1,172 @@
+{
+  "title": "CreateStairs and ModifyStairs write the stair symbol of the floor plan and the reflected ceiling plan: symbol per story, break line and line type, pen and fill overrides (#2848)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a line type of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "line": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a line type" }
+      ]
+    },
+    {
+      "id": "a fill of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Fill" },
+      "save": { "fill": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a fill" }
+      ]
+    },
+    {
+      "id": "create a straight stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 780.0, "y": 720.0 },
+              { "x": 786.0, "y": 720.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "set the floor plan symbol, break line and overrides, and a different RCP symbol",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "stairDisplayType": "Custom",
+            "floorPlanLayout": {
+              "gridTypeBottom": "NoBreaklineFull",
+              "breakLineAngleType": "AngleToHorizontal",
+              "breakLineAngle": 0.6,
+              "breakLineDistance": 0.15,
+              "breakLinePositionType": "CustomHeight",
+              "lowerBreakLineCustomPosition": 1.1,
+              "upperBreakLineCustomPosition": 1.4,
+              "overrideLineType": true,
+              "lineTypeId": { "guid": "${line}" },
+              "overridePen": true,
+              "pen": 7,
+              "overrideSymbolFill": true,
+              "symbolFillId": { "guid": "${fill}" },
+              "symbolFillPen": 5,
+              "symbolFillBackgroundPen": 3
+            },
+            "reflectedCeilingPlanLayout": {
+              "gridTypeBottom": "NoBreakMarkHidden",
+              "breakLineDistance": 0.05,
+              "overridePen": false
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "symbol settings accepted and read back as given" }
+      ]
+    },
+    {
+      "id": "read the symbol settings back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.floorPlanLayout.gridTypeBottom", "eq": "NoBreaklineFull", "name": "floor plan bottom story symbol" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.breakLineAngleType", "eq": "AngleToHorizontal", "name": "break line angle type" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.breakLineAngle", "approx": 0.6, "name": "break line angle" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.breakLineDistance", "approx": 0.15, "name": "break line gap" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.breakLinePositionType", "eq": "CustomHeight", "name": "break line at a custom height" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.lowerBreakLineCustomPosition", "approx": 1.1, "name": "lower break line height" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.upperBreakLineCustomPosition", "approx": 1.4, "name": "upper break line height" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.overrideLineType", "eq": true, "name": "line type overridden" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.lineTypeId.guid", "eq": "${line}", "name": "override line type" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.overridePen", "eq": true, "name": "pen overridden" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.pen", "eq": 7, "name": "override pen" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.overrideSymbolFill", "eq": true, "name": "symbol fill overridden" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.symbolFillId.guid", "eq": "${fill}", "name": "override symbol fill" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.symbolFillPen", "eq": 5, "name": "symbol fill pen" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.symbolFillBackgroundPen", "eq": 3, "name": "symbol fill background pen" },
+        { "path": "detailsOfElements[0].details.reflectedCeilingPlanLayout.gridTypeBottom", "eq": "NoBreakMarkHidden", "name": "RCP bottom story symbol set independently" },
+        { "path": "detailsOfElements[0].details.reflectedCeilingPlanLayout.breakLineDistance", "approx": 0.05, "name": "RCP break line gap set independently" },
+        { "path": "detailsOfElements[0].details.reflectedCeilingPlanLayout.overridePen", "eq": false, "name": "RCP pen not overridden" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "name": "flight width unchanged" }
+      ]
+    },
+    {
+      "id": "a bad symbol type is refused",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "floorPlanLayout": { "gridTypeTop": "Sideways", "breakLineDistance": 0.3 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "nothing of the refused change is written",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.floorPlanLayout.breakLineDistance", "approx": 0.15, "name": "break line gap kept" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.gridTypeBottom", "eq": "NoBreaklineFull", "name": "bottom story symbol kept" }
+      ]
+    },
+    {
+      "id": "create a stair with a floor plan symbol",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 780.0, "y": 726.0 },
+              { "x": 786.0, "y": 726.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "stairDisplayType": "Custom",
+            "floorPlanLayout": { "gridTypeBottom": "NoBreaklineFull", "breakLineDistance": 0.12, "overridePen": true, "pen": 9 }
+          }
+        ]
+      },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "the created stair has the symbol",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.floorPlanLayout.gridTypeBottom", "eq": "NoBreaklineFull", "name": "created with the bottom story symbol" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.breakLineDistance", "approx": 0.12, "name": "created with the break line gap" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.overridePen", "eq": true, "name": "created with the pen overridden" },
+        { "path": "detailsOfElements[0].details.floorPlanLayout.pen", "eq": 9, "name": "created with the override pen" }
+      ]
+    }
+  ]
+}

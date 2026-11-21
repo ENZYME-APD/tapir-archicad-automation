@@ -77,6 +77,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ModifyChangeMarkersCommand : public CommandBase
+{
+public:
+    ModifyChangeMarkersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 // The names of the Change Marker enums, as GetDetailsOfElements returns and CreateChangeMarkers takes them.
 GS::UniString ChangeMarkerLinkTypeToString (API_ChangeMarkerLinkType linkType);
 GS::UniString ChangeMarkerComponentToString (API_ChangeMarkerComponentType markerComponent);

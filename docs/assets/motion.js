@@ -166,19 +166,20 @@
         }) ();
     }
 
-    // 6. Timeline, Legacy look only: each step's segment runs from 12px below its number to 12px
-    //    above the next one (measured from the layout, so transforms of the reveal do not move it)
-    //    and fills as the reading line, 60% down the window, passes it. The Standard look has none.
+    // 6. Timeline, Legacy look only: each step is a card, and its segment runs from 12px below its
+    //    number to 12px above the bottom of the card's text (measured from the layout, so transforms of
+    //    the reveal do not move it) and fills as the reading line, 60% down the window, passes it.
+    //    The Standard look has none.
     var steps = [].slice.call (document.querySelectorAll ('.timeline > li'));
     function placeSteps () {
         if (root.getAttribute ('data-style') !== 'legacy') return;
         var reading = innerHeight * 0.6;
         steps.forEach (function (li) {
-            var next = li.nextElementSibling, n = li.querySelector (':scope > .n'), nextN = next && next.querySelector (':scope > .n');
-            if (!n || !nextN) return;
+            var n = li.querySelector (':scope > .n');
+            if (!n) return;
             // In li's padding box, where the segment is positioned (li and the timeline are positioned).
             var top = n.offsetTop + n.offsetHeight + 12;
-            var end = (next.offsetTop + next.clientTop) - (li.offsetTop + li.clientTop) + nextN.offsetTop - 12;
+            var end = li.clientHeight - (parseFloat (getComputedStyle (li).paddingBottom) || 0) - 12;
             var h = Math.max (0, end - top);
             var p = h ? Math.max (0, Math.min (1, (reading - (li.getBoundingClientRect ().top + li.clientTop + top)) / h)) : 0;
             li.style.setProperty ('--seg-top', top + 'px');
