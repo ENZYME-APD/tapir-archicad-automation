@@ -761,6 +761,341 @@ GS::ObjectState GetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
     return response;
 }
 
+// ---- GetTypedPropertyValuesOfElements (#285) ----
+//
+// The same values as GetPropertyValuesOfElements, but in JSON's own types instead of display
+// strings: each value is a PropertyValueDetails ({type, status, value}, the shape Graphisoft's
+// own API and CreatePropertyDefinitions use), with isDefault next to it. Measured values stay in
+// the SI units the API keeps them in (meters, square meters, cubic meters, radians), so the
+// project's working units and language do not change what a script reads.
+
+// The PropertyDataType of a property definition ("length", "integerList", "multiEnum" ...), the
+// way PropertyTypeDictionary names them; empty for a type that has no name there (a Guid value).
+static GS::UniString GetPropertyDataTypeString (const API_PropertyDefinition& definition)
+{
+    if (definition.collectionType == API_PropertySingleChoiceEnumerationCollectionType) {
+        return definition.valueType == API_PropertyStringValueType ? GS::UniString ("singleEnum") : GS::EmptyUniString;
+    }
+    if (definition.collectionType == API_PropertyMultipleChoiceEnumerationCollectionType) {
+        return definition.valueType == API_PropertyStringValueType ? GS::UniString ("multiEnum") : GS::EmptyUniString;
+    }
+    const bool isList = definition.collectionType == API_PropertyListCollectionType;
+    if (!isList && definition.collectionType != API_PropertySingleCollectionType) {
+        return GS::EmptyUniString;
+    }
+
+    GS::UniString dataType;
+    switch (definition.valueType) {
+        case API_PropertyIntegerValueType: dataType = "integer"; break;
+        case API_PropertyStringValueType:  dataType = "string"; break;
+        case API_PropertyBooleanValueType: dataType = "boolean"; break;
+        case API_PropertyRealValueType:
+            switch (definition.measureType) {
+                case API_PropertyLengthMeasureType: dataType = "length"; break;
+                case API_PropertyAreaMeasureType:   dataType = "area"; break;
+                case API_PropertyVolumeMeasureType: dataType = "volume"; break;
+                case API_PropertyAngleMeasureType:  dataType = "angle"; break;
+                default:                            dataType = "number"; break;
+            }
+            break;
+        default:
+            return GS::EmptyUniString;
+    }
+    if (isList) {
+        dataType.Append ("List");
+    }
+    return dataType;
+}
+
+// The EnumValueId of the option a key variant refers to: its nonLocalizedValue when it has one (the
+// same in every language), else its displayValue. False when the definition has no such option.
+static bool CreateEnumValueIdObjectState (const API_PropertyDefinition& definition, const API_Variant& keyVariant, GS::ObjectState& enumValueId)
+{
+    for (const API_SingleEnumerationVariant& option : definition.possibleEnumValues) {
+        if (option.keyVariant.guidValue != keyVariant.guidValue) {
+            continue;
+        }
+        if (option.nonLocalizedValue.HasValue () && !option.nonLocalizedValue->IsEmpty ()) {
+            enumValueId.Add ("type", "nonLocalizedValue");
+            enumValueId.Add ("nonLocalizedValue", *option.nonLocalizedValue);
+        } else {
+            enumValueId.Add ("type", "displayValue");
+            enumValueId.Add ("displayValue", option.displayVariant.uniStringValue);
+        }
+        return true;
+    }
+    return false;
+}
+
+// Adds the normal value of a property under "value" of propertyValue, in the JSON type of its
+// PropertyValueDetails. Returns an error text for a value that has no JSON form (a real that is not
+// finite, an option that is not in the definition), and an empty one when the value was added.
+static GS::UniString AddTypedPropertyValue (const API_Property& property, GS::ObjectState& propertyValue)
+{
+    const API_PropertyDefinition& definition = property.definition;
+    switch (definition.collectionType) {
+        case API_PropertySingleCollectionType: {
+            const API_Variant& variant = property.value.singleVariant.variant;
+            switch (definition.valueType) {
+                case API_PropertyIntegerValueType: propertyValue.Add ("value", variant.intValue); break;
+                case API_PropertyStringValueType:  propertyValue.Add ("value", variant.uniStringValue); break;
+                case API_PropertyBooleanValueType: propertyValue.Add ("value", variant.boolValue); break;
+                case API_PropertyRealValueType:
+                    if (!std::isfinite (variant.doubleValue)) {
+                        return "The value of the property is not a finite number.";
+                    }
+                    propertyValue.Add ("value", variant.doubleValue);
+                    break;
+                default:
+                    return "The value type of the property has no typed form.";
+            }
+        } break;
+        case API_PropertyListCollectionType: {
+            const GS::Array<API_Variant>& variants = property.value.listVariant.variants;
+            switch (definition.valueType) {
+                case API_PropertyIntegerValueType: {
+                    const auto& values = propertyValue.AddList<Int32> ("value");
+                    for (const API_Variant& variant : variants) {
+                        values (variant.intValue);
+                    }
+                } break;
+                case API_PropertyStringValueType: {
+                    const auto& values = propertyValue.AddList<GS::UniString> ("value");
+                    for (const API_Variant& variant : variants) {
+                        values (variant.uniStringValue);
+                    }
+                } break;
+                case API_PropertyBooleanValueType: {
+                    const auto& values = propertyValue.AddList<bool> ("value");
+                    for (const API_Variant& variant : variants) {
+                        values (variant.boolValue);
+                    }
+                } break;
+                case API_PropertyRealValueType: {
+                    for (const API_Variant& variant : variants) {
+                        if (!std::isfinite (variant.doubleValue)) {
+                            return "A value of the property is not a finite number.";
+                        }
+                    }
+                    const auto& values = propertyValue.AddList<double> ("value");
+                    for (const API_Variant& variant : variants) {
+                        values (variant.doubleValue);
+                    }
+                } break;
+                default:
+                    return "The value type of the property has no typed form.";
+            }
+        } break;
+        case API_PropertySingleChoiceEnumerationCollectionType: {
+            GS::ObjectState enumValueId;
+            if (!CreateEnumValueIdObjectState (definition, property.value.singleVariant.variant, enumValueId)) {
+                return "The chosen option is not one of the property's options.";
+            }
+            propertyValue.Add ("value", enumValueId);
+        } break;
+        case API_PropertyMultipleChoiceEnumerationCollectionType: {
+            GS::Array<GS::ObjectState> enumValueIds;
+            for (const API_Variant& variant : property.value.listVariant.variants) {
+                GS::ObjectState enumValueId;
+                if (!CreateEnumValueIdObjectState (definition, variant, enumValueId)) {
+                    return "A chosen option is not one of the property's options.";
+                }
+                enumValueIds.Push (GS::ObjectState ("enumValueId", enumValueId));
+            }
+            const auto& values = propertyValue.AddList<GS::ObjectState> ("value");
+            for (const GS::ObjectState& enumValueId : enumValueIds) {
+                values (enumValueId);
+            }
+        } break;
+        default:
+            return "The collection type of the property has no typed form.";
+    }
+    return GS::EmptyUniString;
+}
+
+// One TypedPropertyValue or error per requested property, in the order of the request, from the
+// properties fetched for one element.
+static GS::ObjectState CreateTypedPropertyValuesObjectState (const GS::Array<GS::ObjectState>& properties, const GS::Array<API_Property>& fetchedProperties)
+{
+    GS::HashTable<API_Guid, const API_Property*> propertyMap;
+    for (const API_Property& prop : fetchedProperties) {
+        if (!propertyMap.ContainsKey (prop.definition.guid)) {
+            propertyMap.Add (prop.definition.guid, &prop);
+        }
+    }
+
+    GS::ObjectState propertyValuesForElement;
+    const auto& propertyValues = propertyValuesForElement.AddList<GS::ObjectState> ("propertyValues");
+
+    for (const GS::ObjectState& property : properties) {
+        const GS::ObjectState* propertyId = property.Get ("propertyId");
+        if (propertyId == nullptr) {
+            propertyValues (CreateErrorResponse (APIERR_BADPARS, "The 'propertyId' field is missing"));
+            continue;
+        }
+
+        const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
+        if (!propertyMap.ContainsKey (propertyGuid)) {
+            propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "Property not found or invalid"));
+            continue;
+        }
+
+        const API_Property& fetched = *propertyMap[propertyGuid];
+        const GS::UniString dataType = GetPropertyDataTypeString (fetched.definition);
+        if (dataType.IsEmpty ()) {
+            propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "The type of the property has no typed form (for example a Guid value); GetPropertyValuesOfElements returns it as text."));
+            continue;
+        }
+
+        GS::ObjectState propertyValue;
+        propertyValue.Add ("type", dataType);
+
+        if (fetched.status == API_Property_NotAvailable) {
+            propertyValue.Add ("status", "notAvailable");
+            propertyValues (GS::ObjectState ("propertyValue", propertyValue));
+            continue;
+        }
+        if (fetched.status != API_Property_HasValue) {
+            propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "The property could not be evaluated for the element."));
+            continue;
+        }
+
+        if (fetched.value.variantStatus == API_VariantStatusUserUndefined) {
+            propertyValue.Add ("status", "userUndefined");
+        } else if (fetched.value.variantStatus == API_VariantStatusNormal) {
+            propertyValue.Add ("status", "normal");
+            const GS::UniString valueError = AddTypedPropertyValue (fetched, propertyValue);
+            if (!valueError.IsEmpty ()) {
+                propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, valueError));
+                continue;
+            }
+        } else {
+            propertyValues (CreateErrorResponse (APIERR_BADPROPERTY, "The property has no valid value for the element."));
+            continue;
+        }
+
+        GS::ObjectState item ("propertyValue", propertyValue);
+        item.Add ("isDefault", fetched.isDefault);
+        propertyValues (item);
+    }
+
+    return propertyValuesForElement;
+}
+
+GetTypedPropertyValuesOfElementsCommand::GetTypedPropertyValuesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetTypedPropertyValuesOfElementsCommand::GetName () const
+{
+    return "GetTypedPropertyValuesOfElements";
+}
+
+GS::Optional<GS::UniString> GetTypedPropertyValuesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "properties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetTypedPropertyValuesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "propertyValuesForElements": {
+                "type": "array",
+                "description": "One item per given element, in their order: the values of the element's properties, or an error for an element that was not found.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyValues": {
+                                    "type": "array",
+                                    "description": "One item per given property, in their order: the typed value, or an error for a property that was not found, could not be evaluated for the element or has no typed form.",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/TypedPropertyValue"
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyValues"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValuesForElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetTypedPropertyValuesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::Array<GS::ObjectState> properties;
+    parameters.Get ("properties", properties);
+
+    GS::ObjectState response;
+    const auto& propertyValuesForElements = response.AddList<GS::ObjectState> ("propertyValuesForElements");
+
+    const GS::Array<API_Guid> propertyGuids = GetPropertyGuids (properties);
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            propertyValuesForElements (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+
+        GS::Array<API_Property> fetchedProperties;
+        const GSErrCode err = ACAPI_Element_GetPropertyValuesByGuid (elemGuid, propertyGuids, fetchedProperties);
+        if (err != NoError) {
+            propertyValuesForElements (CreateErrorResponse (err, "Failed to get property values for element"));
+            continue;
+        }
+
+        propertyValuesForElements (CreateTypedPropertyValuesObjectState (properties, fetchedProperties));
+    }
+
+    return response;
+}
+
 // Element components (API_ElemComponentID): the building material skins or profile parts of an
 // element. A component guid identifies the component only together with its element, so the
 // JSON id always carries both: {elementComponentId: {elementId: {guid}, componentId: {guid}}}.
