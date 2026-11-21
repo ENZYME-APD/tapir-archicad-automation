@@ -162,6 +162,26 @@ GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item)
     return ACAPI_Navigator_GetNavigatorItem (&itemGuid, &item);
 }
 
+// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with
+// custom settings (as the DevKit's Navigator_Test example does).
+void FreeNavigatorView (API_NavigatorView& navigatorView)
+{
+    if (navigatorView.modelViewOpt != nullptr) {
+        ACAPI_FreeGDLModelViewOptionsPtr (&navigatorView.modelViewOpt->gdlOptions);
+        BMKillPtr ((GSPtr*) &navigatorView.modelViewOpt);
+    }
+#ifdef ServerMainVers_2700
+    delete navigatorView.layerStats;
+    navigatorView.layerStats = nullptr;
+    delete navigatorView.pens;
+    navigatorView.pens = nullptr;
+#else
+    BMKillHandle ((GSHandle*) &navigatorView.layerStats);
+    BMKillPtr ((GSPtr*) &navigatorView.pens);
+#endif
+    BMKillPtr ((GSPtr*) &navigatorView.dimPrefs);
+}
+
 bool IsDryRun (const GS::ObjectState& parameters)
 {
     bool dryRun = false;

@@ -9,9 +9,11 @@
 
    Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
    same header and footer (between the site-header and site-footer comments), and the head's
-   site-assets block: the favicon, two theme-color metas that colour a phone's browser bars like the
-   header (the dark one first, as a browser takes the first that matches; Standard's surface colours,
-   which the head's display script changes for a stored look or mode, and site.js when it changes):
+   site-assets block: the favicons (favicon.ico and apple-touch-icon.png at the root, for browsers
+   that cannot show the SVG one, and assets/favicon.svg), two theme-color metas that colour a phone's
+   browser bars like the header (the dark one first, as a browser takes the first that matches;
+   Standard's surface colours, which the head's display script changes for a stored look or mode,
+   and site.js when it changes):
        <meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
        <meta name="theme-color" content="#FFFFFF">
    the fonts (Inter and JetBrains Mono; the display script adds Fraunces for Legacy's own font only,
@@ -514,6 +516,18 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :lang(hi) { letter-spacing: normal !important }
 /* The floor plan's labels (their font-family attribute names Inter only). */
 .plan-card svg text[data-i18n]:lang(hi) { font-family: var(--body) }
+
+/* The Measure tool (site.js, the M key, #2779), drawn by both looks: a dimension line with end ticks
+   on a page-sized overlay and the Tracker next to the cursor, which never take a click; the cursor is a
+   crosshair and text cannot be selected while it is on. Its text is --fg on --surface, the page's own
+   text pair, and the line is --link, the accent for thin marks. */
+:root.measure-active, :root.measure-active * { cursor: crosshair !important; -webkit-user-select: none !important; user-select: none !important }
+.measure-overlay { position: absolute; left: 0; top: 0; z-index: 9999; pointer-events: none; overflow: visible }
+.measure-line, .measure-tick { stroke: var(--link); stroke-width: 1px; shape-rendering: crispEdges }
+.measure-origin { fill: var(--surface); stroke: var(--link); stroke-width: 1px }
+.measure-tracker { position: fixed; z-index: 10000; pointer-events: none; padding: 4px 8px; white-space: pre;
+    background: var(--surface); color: var(--fg); border: 1px solid var(--link); border-radius: 2px;
+    font: 500 0.8125rem/1.45 var(--mono) }
 
 /* ======================================================================================================
    The Standard look, the default: plain white surfaces, Inter for everything (JetBrains Mono only for

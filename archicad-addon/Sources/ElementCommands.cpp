@@ -411,9 +411,11 @@ static GS::UniString RoofEdgeTypeToString (API_RoofEdgeTypeID edgeType)
     }
 }
 
-// The edge type of each edge of a Single-plane Roof's polygon (APIMemoMask_RoofEdgeTypes, the
-// Edge Type of the Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and
-// edgeTrims (#2436). A roof without stored edge types has every edge Undefined.
+// The edge type of each edge of a roof's polygon (APIMemoMask_RoofEdgeTypes, the Edge Type of the
+// Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and edgeTrims (#2436).
+// On a Multi-plane Roof the memo's polygon is the contour, as the DevKit documents the mask: "the
+// edge types of the contour polygon of a roof element" (#2454). A roof without stored edge types
+// has every edge Undefined.
 static void AddRoofEdgeTypesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -990,6 +992,18 @@ static void AddStairFloorPlanDetails (const API_StairType& stair, GS::ObjectStat
     }
 }
 
+// The baseline position of a stair, with the names CreateStairs takes (Auto only on reading).
+static const char* StairLinePositionToString (API_LinePositionID position)
+{
+    switch (position) {
+        case APILP_Left:   return "Left";
+        case APILP_Right:  return "Right";
+        case APILP_Center: return "Center";
+        case APILP_Auto:   return "Auto";
+        default:           return "Unknown";
+    }
+}
+
 static const char* StairPartRoleToString (API_StairPartRoleID role)
 {
     switch (role) {
@@ -1169,8 +1183,8 @@ static void AddStairBaseLineSegmentsFromMemo (const API_StairPolylineData& baseL
 // the way CalculateStairBounds and GetSubelementsOfHierarchicalElements already read the
 // Stair's memo in this file. The arcs come back with the same 0-based indices as the
 // polygon arcs of the other element types.
-// On a placed stair the coords are relative to the stair's basePlane.basePoint (a stair
-// created at (110, 0) reads its baseline from (0, 0), #1561), so they are moved by origin
+// On a placed stair the coords are in the stair's basePlane (a stair created at (110, 0)
+// reads its baseline from (0, 0), #1561), so they are transformed by it (StairPlanToModel)
 // to report them in the same coordinates as CreateStairs takes them.
 // The going of a Stair (#823). API_StairType::treadDepth is not kept in step with the modeled
 // treads (Archicad 29 reads 0 on every placed stair, whatever its going, and 1 on some), so it
@@ -1239,7 +1253,29 @@ static GS::Optional<double> GetStairGoing (const API_Guid& guid, const API_Stair
     return length / stair.treadNum;
 }
 
-static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& origin, GS::ObjectState& os)
+// The memo polylines of a stair (baseline, boundaries, walking lines) are in the stair's own
+// coordinate system, basePlane: a point is basePoint + x * axisX + y * axisY in model coordinates.
+// Adding only basePoint was right for a stair that is neither rotated nor mirrored; a mirrored
+// stair (axisY reversed) came back mirrored about its start point. A mirrored stair (axisX and
+// axisY of the opposite handedness) also bends its arcs the other way.
+static API_Coord StairPlanToModel (const API_Plane3D& plane, const API_Coord& c)
+{
+    return { plane.basePoint.x + c.x * plane.axisX.x + c.y * plane.axisY.x,
+             plane.basePoint.y + c.x * plane.axisX.y + c.y * plane.axisY.y };
+}
+
+static bool IsStairPlaneMirrored (const API_Plane3D& plane)
+{
+    return plane.axisX.x * plane.axisY.y - plane.axisX.y * plane.axisY.x < 0.0;
+}
+
+static GS::ObjectState CreateStairPlanArcObjectState (const API_Plane3D& plane, const API_PolyArc& arc)
+{
+    const double arcAngle = IsStairPlaneMirrored (plane) ? -arc.arcAngle : arc.arcAngle;
+    return GS::ObjectState ("begIndex", arc.begIndex - 1, "endIndex", arc.endIndex - 1, "arcAngle", arcAngle);
+}
+
+static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Plane3D& plane, GS::ObjectState& os)
 {
     const auto& coords = os.AddList<GS::ObjectState> ("baseLinePoints");
 
@@ -1256,8 +1292,7 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
         last = (*baseLine.pends)[1];
     }
     for (GSIndex i = 1; i <= last && i < nCoords; ++i) {
-        const API_Coord& coord = (*baseLine.coords)[i];
-        coords (Create2DCoordinateObjectState ({ coord.x + origin.x, coord.y + origin.y }));
+        coords (Create2DCoordinateObjectState (StairPlanToModel (plane, (*baseLine.coords)[i])));
     }
 
     AddStairBaseLineSegmentsFromMemo (baseLine, last < nCoords ? last : nCoords - 1, os);
@@ -1271,8 +1306,98 @@ static void AddStairBaseLineFromMemo (const API_Guid& guid, const API_Coord& ori
     }
     const auto& arcs = os.AddList<GS::ObjectState> ("baseLineArcs");
     for (GSIndex i = 0; i < nArcs; ++i) {
-        arcs (CreatePolyArcObjectState ((*baseLine.parcs)[i]));
+        arcs (CreateStairPlanArcObjectState (plane, (*baseLine.parcs)[i]));
     }
+}
+
+// The last point of the first (and only) polyline of a stair memo polyline: pends[1] when
+// given, else the last coord. Like the baseline, the coords are 1-based with slot 0 unused.
+static GSIndex GetStairMemoPolylineLast (API_Coord** coords, Int32** pends)
+{
+    if (coords == nullptr) {
+        return 0;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (coords)) / sizeof (API_Coord);
+    GSIndex last = nCoords - 1;
+    if (pends != nullptr && BMhGetSize (reinterpret_cast<GSHandle> (pends)) / sizeof (Int32) > 1 && (*pends)[1] < nCoords) {
+        last = (*pends)[1];
+    }
+    return last;
+}
+
+// The arcs of a stair memo polyline whose both ends are within its first polyline.
+static void AddStairMemoPolylineArcs (const API_Plane3D& plane, API_PolyArc** parcs, GSIndex last, GS::ObjectState& os)
+{
+    const auto& arcs = os.AddList<GS::ObjectState> ("arcs");
+    if (parcs == nullptr) {
+        return;
+    }
+    const GSSize nArcs = BMhGetSize (reinterpret_cast<GSHandle> (parcs)) / sizeof (API_PolyArc);
+    for (GSIndex i = 0; i < nArcs; ++i) {
+        const API_PolyArc& arc = (*parcs)[i];
+        if (arc.begIndex >= 1 && arc.endIndex <= last) {
+            arcs (CreateStairPlanArcObjectState (plane, arc));
+        }
+    }
+}
+
+// A walking line of a stair (memo stairWalkingLine, stairCustomWalkLine, stairCenterWalkLine):
+// its points in model coordinates like the baseline, and its arcs.
+// Not added when the memo has no such line.
+static void AddStairWalkingLineFromMemo (const API_StairPolylineData& line, const API_Plane3D& plane, const char* name, GS::ObjectState& os)
+{
+    const GSIndex last = GetStairMemoPolylineLast (line.coords, line.pends);
+    if (last < 1) {
+        return;
+    }
+    GS::ObjectState lineOs;
+    const auto& points = lineOs.AddList<GS::ObjectState> ("points");
+    for (GSIndex i = 1; i <= last; ++i) {
+        points (Create2DCoordinateObjectState (StairPlanToModel (plane, (*line.coords)[i])));
+    }
+    AddStairMemoPolylineArcs (plane, line.parcs, last, lineOs);
+    os.Add (name, lineOs);
+}
+
+// The left (index 0) or right (index 1) boundary of a stair (memo stairBoundary): the outline of
+// the stair on that side, and whether each edge is visible (edgeData, aligned the way the baseline's
+// edgeData is). The vertexData zValue is not reported: Archicad 29 reads 0 at every point of a
+// rising stair, so it is not the elevation of the point.
+static void AddStairBoundaryFromMemo (const API_StairBoundaryData& boundary, const API_Plane3D& plane, const char* name, GS::ObjectState& os)
+{
+    const GSIndex last = GetStairMemoPolylineLast (boundary.coords, boundary.pends);
+    if (last < 1) {
+        return;
+    }
+    const GSSize nEdgeData = boundary.edgeData != nullptr ? BMGetPtrSize (reinterpret_cast<GSPtr> (boundary.edgeData)) / sizeof (API_StairBoundaryEdgeData) : 0;
+
+    GS::ObjectState boundaryOs;
+    boundaryOs.Add ("isCustom", boundary.isCustom);
+    const auto& points = boundaryOs.AddList<GS::ObjectState> ("points");
+    for (GSIndex i = 1; i <= last; ++i) {
+        points (Create2DCoordinateObjectState (StairPlanToModel (plane, (*boundary.coords)[i])));
+    }
+    AddStairMemoPolylineArcs (plane, boundary.parcs, last, boundaryOs);
+    const auto& edges = boundaryOs.AddList<GS::ObjectState> ("edges");
+    for (GSIndex i = 1; i < last && i < nEdgeData; ++i) {
+        edges (GS::ObjectState ("visible", boundary.edgeData[i].visible));
+    }
+    os.Add (name, boundaryOs);
+}
+
+// The plan geometry of a stair that is not its baseline: its two boundaries and its walking lines.
+static void AddStairOutlineFromMemo (const API_Guid& guid, const API_Plane3D& plane, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_All) != NoError) {
+        return;
+    }
+    AddStairBoundaryFromMemo (memo.stairBoundary[0], plane, "leftBoundary", os);
+    AddStairBoundaryFromMemo (memo.stairBoundary[1], plane, "rightBoundary", os);
+    AddStairWalkingLineFromMemo (memo.stairWalkingLine, plane, "walkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCustomWalkLine, plane, "customWalkingLine", os);
+    AddStairWalkingLineFromMemo (memo.stairCenterWalkLine, plane, "centerWalkingLine", os);
 }
 
 // The section line and the depth line of a Section (CutPlane), or of an Elevation, live in the memo's
@@ -1567,6 +1692,12 @@ static void AddDrawingManagerDetails (const API_Guid& drawingGuid, GS::ObjectSta
     os.Add ("linkType", DrawingLinkTypeToString (linkInfo.linkTypeID));
     if (linkInfo.linkPath != nullptr) {
         os.Add ("linkPath", linkInfo.linkPath->ToDisplayText ());
+    }
+    // The navigator item the drawing shows: the same guid as the sourceNavigatorItemId of the
+    // drawing's Layout Book item (see FindDrawingOfNavigatorItemInCurrentDatabase), so it can be
+    // passed to GetViewSettings - unlike navigatorItemId, which is the drawing's own link item.
+    if (linkInfo.linkGuid != APINULLGuid) {
+        os.Add ("sourceNavigatorItemId", CreateGuidObjectState (linkInfo.linkGuid));
     }
 }
 
@@ -3578,6 +3709,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     // The point an automatic zone was placed from (CreateZones geometry.referencePosition);
                     // the stamp is often moved away from it, so it is the only way to recreate the zone as it was.
                     typeSpecificDetails.Add ("referencePosition", Create2DCoordinateObjectState (elem.zone.refPos));
+                    // refLineFlag: surrounded by the walls' reference lines, not their side lines; it tells
+                    // whether polygonDisplay has an effect (#2631).
+                    typeSpecificDetails.Add ("boundaryMethod", GS::UniString (elem.zone.refLineFlag ? "ReferenceLine" : "InnerEdge"));
                 }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.zone.roomBaseLev, stories));
                 AddZoneContourAndCoverFill (elem.zone, typeSpecificDetails);
@@ -3721,7 +3855,16 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
 
             case API_LabelID: {
-                AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
+                // A label in a section, elevation, interior elevation or 3D document belongs to the section
+                // element that shows its model element there; the owner is reported as that model element,
+                // the way the element listing commands report a section element (#2876).
+                API_Guid labelOwner = elem.label.parent;
+                API_ElemTypeID labelOwnerType = GetElemTypeId (elem.label.parentType);
+                if (labelOwnerType == API_SectElemID) {
+                    labelOwner = GetParentElemOfSectElem (labelOwner);
+                    labelOwnerType = API_ZombieElemID; // read from the owner's header
+                }
+                AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), labelOwner, labelOwnerType);
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.label.begC));
                 typeSpecificDetails.Add ("midCoordinate", Create2DCoordinateObjectState (elem.label.midC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.label.endC));
@@ -4445,9 +4588,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
                 AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
-                if (elem.roof.roofClass == API_PlaneRoofID) {
-                    AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
-                }
+                AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_ShellID: {
@@ -4522,7 +4663,26 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
-                AddStairBaseLineFromMemo (elem.header.guid, { basePoint.x, basePoint.y }, typeSpecificDetails);
+                AddStairBaseLineFromMemo (elem.header.guid, elem.stair.basePlane, typeSpecificDetails);
+                typeSpecificDetails.Add ("basePlane", GS::ObjectState (
+                    "origin", Create3DCoordinateObjectState (elem.stair.basePlane.basePoint),
+                    "xAxis", Create3DCoordinateObjectState ({ elem.stair.basePlane.axisX.x, elem.stair.basePlane.axisX.y, elem.stair.basePlane.axisX.z }),
+                    "yAxis", Create3DCoordinateObjectState ({ elem.stair.basePlane.axisY.x, elem.stair.basePlane.axisY.y, elem.stair.basePlane.axisY.z }),
+                    "zAxis", Create3DCoordinateObjectState ({ elem.stair.basePlane.axisZ.x, elem.stair.basePlane.axisZ.y, elem.stair.basePlane.axisZ.z })));
+                typeSpecificDetails.Add ("isMirrored", IsStairPlaneMirrored (elem.stair.basePlane));
+                typeSpecificDetails.Add ("baselinePosition", StairLinePositionToString (elem.stair.baselinePosition));
+                typeSpecificDetails.Add ("baselineOffset", elem.stair.baselineOffset);
+                typeSpecificDetails.Add ("inputDirection", GS::UniString (elem.stair.inputDirection == APISD_Inverse ? "Inverse" : "Upward"));
+                AddStairOutlineFromMemo (elem.header.guid, elem.stair.basePlane, typeSpecificDetails);
+                {
+                    GS::ObjectState linkOS;
+                    linkOS.Add ("homeStoryDifference", (Int32) elem.stair.linkToSettings.homeStoryDifference);
+                    linkOS.Add ("newCreationMode", elem.stair.linkToSettings.newCreationMode);
+                    typeSpecificDetails.Add ("linkToSettings", linkOS);
+                }
+                typeSpecificDetails.Add ("uniformLeftRightSideSupports", GS::ObjectState (
+                    "run", elem.stair.uniformLeftRightSideSupports[APISR_Run],
+                    "landing", elem.stair.uniformLeftRightSideSupports[APISR_Landing]));
                 AddStairFloorPlanDetails (elem.stair, typeSpecificDetails);
                 AddStairStructures (elem.stair, typeSpecificDetails);
             } break;
@@ -5442,6 +5602,26 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
                             memoMask = TextContentMemoMask;
                             hasMemoChanges = true;
+                        }
+                    } break;
+                    case API_DetailID:
+                    case API_WorksheetID: {
+                        // A marker's own settings (name, ID, clip polygon, marker) are written by
+                        // ModifyDetailMarkers, not here. They used to be dropped with success (#1377), so
+                        // the item fails instead and nothing of it is changed. An empty
+                        // typeSpecificDetails changes nothing and is let through.
+                        if (!typeSpecificDetails->IsEmpty ()) {
+                            GS::UniString givenFields;
+                            for (const GS::String& fieldName : typeSpecificDetails->GetFieldNames ()) {
+                                if (!givenFields.IsEmpty ()) {
+                                    givenFields += ", ";
+                                }
+                                givenFields += GS::UniString (fieldName.ToCStr ());
+                            }
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                                GS::UniString ("A Detail or Worksheet marker takes no typeSpecificDetails in SetDetailsOfElements: change its name, ID and clip polygon with ModifyDetailMarkers. Not applied: ") + givenFields));
+                            continue;
                         }
                     } break;
                     default:
@@ -12952,7 +13132,7 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
+                "description": "The elements to delete, of any database (the floor plan, a section, a worksheet, a layout, ...): each is deleted in the database that contains it, whichever window is the current one, and the current window stays. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
             },
             "dryRun": {
                 "$ref": "#/DryRun"
@@ -13007,35 +13187,63 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     // with the walls listed before their zone opened that dialog, while deleting the
     // zone first in a call of its own did not; so the zones get a call of their own,
     // before the rest, within the same undoable command.
+    //
+    // Each element is checked and deleted with the database that contains it as the
+    // current database, and the starting database is put back at the end, so the front
+    // window stays: ACAPI_Element_Delete did not delete a Dimension of the floor plan
+    // while the 3D window was the current one, nor a Text of a worksheet while another
+    // worksheet was (#1473). So the elements other than zones get one call for each
+    // database that contains some of them.
+    API_DatabaseInfo startingDatabase = {};
+    const bool hasStartingDatabase = ACAPI_Database_GetCurrentDatabase (&startingDatabase) == NoError;
+    API_DatabaseInfo currentDatabase = startingDatabase;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (hasStartingDatabase) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        }
+    });
+    const auto changeToContainingDatabase = [&] (const API_Guid& elemGuid) {
+        if (hasStartingDatabase) {
+            ChangeToContainingDatabase (elemGuid, currentDatabase);
+        }
+    };
+
     GS::Array<bool> existedBeforeDelete;
     GS::Array<API_Guid> zoneGuids;
-    GS::Array<API_Guid> otherGuids;
+    GS::Array<API_Guid> databaseIdsOfOtherGuids;
+    GS::HashTable<API_Guid, GS::Array<API_Guid>> otherGuidsByDatabaseId;
+    ElementChangeReporter changeReporter;
     for (const API_Guid& elemGuid : elemGuids) {
+        changeToContainingDatabase (elemGuid);
         API_Elem_Head elemHead = {};
         const bool exists = LoadElementHeaderByGuid (elemGuid, elemHead);
         existedBeforeDelete.Push (exists);
         if (!exists) {
             continue;
         }
+        changeReporter.Add (elemGuid);
         if (GetElemTypeId (elemHead) == API_ZoneID) {
             zoneGuids.Push (elemGuid);
         } else {
-            otherGuids.Push (elemGuid);
+            const API_Guid databaseId = DatabaseIdResolver::Instance ().GetIdOfDatabase (currentDatabase);
+            if (!otherGuidsByDatabaseId.ContainsKey (databaseId)) {
+                databaseIdsOfOtherGuids.Push (databaseId);
+                otherGuidsByDatabaseId.Add (databaseId, {});
+            }
+            otherGuidsByDatabaseId[databaseId].Push (elemGuid);
         }
     }
 
-    ElementChangeReporter changeReporter (zoneGuids);
-    for (const API_Guid& elemGuid : otherGuids) {
-        changeReporter.Add (elemGuid);
-    }
-
     GSErrCode deleteErr = NoError;
-    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
+    if (!zoneGuids.IsEmpty () || !databaseIdsOfOtherGuids.IsEmpty ()) {
         CallUndoableCommandUnlessDryRun (dryRun, "DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
+                changeToContainingDatabase (zoneGuids.GetFirst ());
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
             }
-            if (!otherGuids.IsEmpty ()) {
+            for (const API_Guid& databaseId : databaseIdsOfOtherGuids) {
+                const GS::Array<API_Guid>& otherGuids = otherGuidsByDatabaseId[databaseId];
+                changeToContainingDatabase (otherGuids.GetFirst ());
                 const GSErrCode otherErr = ACAPI_Element_Delete (otherGuids);
                 if (deleteErr == NoError) {
                     deleteErr = otherErr;
@@ -13068,6 +13276,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
         // With dryRun every existing element is still there, and the checks below say
         // whether the deletion would skip it.
         const API_Guid& elemGuid = elemGuids[i];
+        changeToContainingDatabase (elemGuid);
         API_Elem_Head elemHead = {};
         if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
             executionResults (CreateSuccessfulExecutionResult ());
@@ -14414,6 +14623,7 @@ static bool AreQuantitiesSupported (API_ElemTypeID typeID)
         case API_ZoneID:
         case API_ColumnSegmentID:
         case API_BeamSegmentID:
+        case API_StairID:
             return true;
         default:
             return false;
@@ -14605,6 +14815,19 @@ static void AddTypeSpecificQuantities (API_ElemTypeID typeID, const API_ElementQ
             quantities.Add ("rightSurface", q.rightSurface);
             quantities.Add ("endSurface", q.endSurface);
             quantities.Add ("holesSurface", q.holesSurface);
+            break;
+        }
+        case API_StairID: {
+            // The fields API_StairQuantity has in both the Archicad 27 and 29 DevKits (Archicad 27
+            // also has a length, which Archicad 29 no longer has).
+            const auto& q = elementQuantity.stair;
+            quantities.Add ("area", q.area);
+            quantities.Add ("volume", q.volume);
+            quantities.Add ("height", q.height);
+            quantities.Add ("walkingLineLength", q.walklineLength);
+            quantities.Add ("gradient", q.gradient);
+            quantities.Add ("numberOfRisers", static_cast<Int32> (q.numOfRisers));
+            quantities.Add ("numberOfTreads", static_cast<Int32> (q.numOfTreads));
             break;
         }
         default:

@@ -40,6 +40,7 @@ must respect:
 | `data-font` | none, `system`, `readable` | The font stacks (`--body`, `--mono`, `--display`). |
 | `data-spacing` | none, `compact` | The row padding of the long lists only. |
 | `data-motion` | none (follows the system), `reduced`, `full` | Animations and transitions. |
+| `data-measure` | none (on), `off` | Whether the M key starts the Measure tool (`site.js`, #2779); while it is on, `<html>` has the class `measure-active`. |
 
 So a page **must**: take every colour, font and shadow from a custom property (section 3), size text in
 `rem` (section 4), give its own colours for dark mode and High contrast when it has any, and check its
@@ -62,7 +63,9 @@ new parts in Light, Dark and High contrast, in both looks, and at Text size 130 
   font or a label case in the Legacy part has its Standard counterpart there.
 - Every page repeats, byte for byte, the blocks between these comments, copied from an existing page
   (paths adjusted with `../`):
-  - `<!-- site-assets -->` … `<!-- /site-assets -->` in the head: the favicon, the two `theme-color`
+  - `<!-- site-assets -->` … `<!-- /site-assets -->` in the head: the favicons (`favicon.ico` at the
+    site root with `sizes="32x32"`, then `assets/favicon.svg`, then `apple-touch-icon.png` at the site
+    root; the ICO and the PNG are for browsers that cannot show an SVG favicon, #2967), the two `theme-color`
     metas (`#11161D` for dark first, then `#FFFFFF`), the Google Fonts link for Inter (400, 500, 600, 700)
     and JetBrains Mono (400, 500, 700), `site.css`, the inline Display script, the inline translation
     script, `site.js`, `motion.css` with `motion.js`, and the inline splash script.

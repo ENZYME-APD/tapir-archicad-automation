@@ -8274,8 +8274,23 @@ static const char* StairSettingsSchemaProperties = R"(
                         "uniformDrainings": { "type": "boolean", "description": "Whether the flights and the landings share one draining setting." },
                         "structureVisibility": { "type": "boolean", "description": "Whether the structure of the stair is shown." },
                         "stairDisplayType": { "type": "string", "enum": ["Custom", "ByModelViewOptions"], "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them." },
-                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on and its visible components. Independent of reflectedCeilingPlanLayout." },
-                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout." },
+                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of reflectedCeilingPlanLayout." },
+                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of floorPlanLayout." },
+                        "structureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the structure symbol, per structure type (UnderStructure, Stringer) and view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureSymbolSettings" }
+                        },
+                        "monolithStructureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the monolithic structure's symbol, per view (FloorPlan, CeilingPlan) and part (Visible, Hidden), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairMonolithStructureSymbolSettings" }
+                        },
+                        "structureVisibilityOnStories": {
+                            "type": "array",
+                            "description": "Which structure symbols are shown on which of the stair's relevant stories, per view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns: whether one representation is used on every story, and per story range the visible structures, fills and monolithic parts. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureVisibilitySettings" }
+                        },
                         "treads": {
                             "type": "array",
                             "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
@@ -10131,6 +10146,272 @@ static bool StairStoryVisibilityFromString (const GS::UniString& str, API_StairS
     return false;
 }
 
+// The symbol drawn on each story (API_StairGridTypeID), with the names GetDetailsOfElements returns
+// (the same values in AC25 to AC30).
+struct StairGridTypeEntry {
+    const char*         name;
+    API_StairGridTypeID type;
+};
+
+static const StairGridTypeEntry StairGridTypeNames[] = {
+    { "NotRelevant",                   APIStairGrid_NotRelevant },
+    { "WithSingleBreaklineFull",       APIStairGrid_WithSingleBreaklineFull },
+    { "NoBreaklineFull",               APIStairGrid_NoBreaklineFull },
+    { "BelowBreakline",                APIStairGrid_BelowBreakline },
+    { "AboveBreakline",                APIStairGrid_AboveBreakline },
+    { "MiddleBreakline",               APIStairGrid_MiddleBreakline },
+    { "MiddleBreaklineFull",           APIStairGrid_MiddleBreaklineFull },
+    { "NoBreakMarkHidden",             APIStairGrid_NoBreakMarkHidden },
+    { "AboveBreakMarkHidden",          APIStairGrid_AboveBreakMarkHidden },
+    { "BelowBreakMarkHidden",          APIStairGrid_BelowBreakMarkHidden },
+    { "Multistory2DAllVisible",        APIStairGrid_Multistory2DAllVisible },
+    { "Multistory2DHiddenVisible",     APIStairGrid_Multistory2DHiddenVisible },
+    { "Multistory2DNoneVisibleHidden", APIStairGrid_Multistory2DNoneVisibleHidden },
+    { "WithBreakMarkAllVisible",       APIStairGrid_WithBreakMarkAllVisible },
+    { "WithBreakMarkHiddenVisible",    APIStairGrid_WithBreakMarkHiddenVisible }
+};
+
+static GS::UniString StairGridTypeName (API_StairGridTypeID type)
+{
+    for (const StairGridTypeEntry& entry : StairGridTypeNames) {
+        if (entry.type == type) {
+            return entry.name;
+        }
+    }
+    return GS::UniString::Printf ("%d", static_cast<int> (type));
+}
+
+// The grid type, break line and override members of API_StairLayoutData that ApplyStairLayoutSettings
+// writes (#2848), so the layout is applied and read back from one list.
+enum class StairLayoutFieldKind {
+    GridType,
+    BreakLineAngleType,
+    BreakLinePositionType,
+    Number,
+    PositiveInteger,
+    NonNegativeInteger,
+    Boolean,
+    Pen,
+    BackgroundPen,
+    LineType,
+    Fill
+};
+
+struct StairLayoutField {
+    const char*          name;
+    StairLayoutFieldKind kind;
+};
+
+static const StairLayoutField StairLayoutFields[] = {
+    { "gridTypeAbove",                  StairLayoutFieldKind::GridType },
+    { "gridTypeTop",                    StairLayoutFieldKind::GridType },
+    { "gridTypeMiddle",                 StairLayoutFieldKind::GridType },
+    { "gridTypeBottom",                 StairLayoutFieldKind::GridType },
+    { "gridTypeBelow",                  StairLayoutFieldKind::GridType },
+    { "breakLineAngleType",             StairLayoutFieldKind::BreakLineAngleType },
+    { "breakLineAngle",                 StairLayoutFieldKind::Number },
+    { "breakLineAngleNumberOfGoings",   StairLayoutFieldKind::PositiveInteger },
+    { "breakLineDistance",              StairLayoutFieldKind::Number },
+    { "breakLinePositionType",          StairLayoutFieldKind::BreakLinePositionType },
+    { "upperBreakLineCustomPosition",   StairLayoutFieldKind::Number },
+    { "lowerBreakLineCustomPosition",   StairLayoutFieldKind::Number },
+    { "upperBreakLineNthRiserPosition", StairLayoutFieldKind::NonNegativeInteger },
+    { "lowerBreakLineNthRiserPosition", StairLayoutFieldKind::NonNegativeInteger },
+    { "overrideLineType",               StairLayoutFieldKind::Boolean },
+    { "lineTypeId",                     StairLayoutFieldKind::LineType },
+    { "overridePen",                    StairLayoutFieldKind::Boolean },
+    { "pen",                            StairLayoutFieldKind::Pen },
+    { "overrideSymbolFill",             StairLayoutFieldKind::Boolean },
+    { "symbolFillId",                   StairLayoutFieldKind::Fill },
+    { "symbolFillPen",                  StairLayoutFieldKind::Pen },
+    { "symbolFillBackgroundPen",        StairLayoutFieldKind::BackgroundPen }
+};
+
+// Writes one given field of StairLayoutFields into layout and marks it in layoutMask; the value is
+// checked first, and nothing is written when it is wrong.
+static GS::Optional<GS::UniString> ApplyStairLayoutField (const GS::ObjectState& layoutOs, const char* layoutName, const StairLayoutField& field, API_StairLayoutData& layout, API_StairLayoutData& layoutMask)
+{
+    const GS::UniString where = GS::UniString (layoutName) + "." + field.name;
+    const GS::String key (field.name);
+
+    switch (field.kind) {
+        case StairLayoutFieldKind::GridType: {
+            GS::UniString str;
+            const StairGridTypeEntry* found = nullptr;
+            if (layoutOs.Get (key, str)) {
+                for (const StairGridTypeEntry& entry : StairGridTypeNames) {
+                    if (str == entry.name) {
+                        found = &entry;
+                    }
+                }
+            }
+            if (found == nullptr) {
+                return where + " is not a stair symbol type (StairGridType).";
+            }
+            if (key == "gridTypeAbove") {
+                layout.gridTypeAbove = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeAbove);
+            } else if (key == "gridTypeTop") {
+                layout.gridTypeTop = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeTop);
+            } else if (key == "gridTypeMiddle") {
+                layout.gridTypeMiddle = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeMiddle);
+            } else if (key == "gridTypeBottom") {
+                layout.gridTypeBottom = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeBottom);
+            } else {
+                layout.gridTypeBelow = found->type;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, gridTypeBelow);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::BreakLineAngleType: {
+            GS::UniString str;
+            layoutOs.Get (key, str);
+            if (str == "AngleToVertical") {
+                layout.breakLineAngleType = APIBreakLineAngle_AngleToVertical;
+            } else if (str == "AngleToHorizontal") {
+                layout.breakLineAngleType = APIBreakLineAngle_AngleToHorizontal;
+            } else if (str == "NumberOfGoings") {
+                layout.breakLineAngleType = APIBreakLineAngle_NumberOfGoings;
+            } else {
+                return where + " must be AngleToVertical, AngleToHorizontal or NumberOfGoings.";
+            }
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineAngleType);
+            return {};
+        }
+        case StairLayoutFieldKind::BreakLinePositionType: {
+            GS::UniString str;
+            layoutOs.Get (key, str);
+            if (str == "FloorPlanCutPlaneHeight") {
+                layout.breakLinePositionType = APIBreakLinePosition_FloorPlanCutPlaneHeight;
+            } else if (str == "CustomHeight") {
+                layout.breakLinePositionType = APIBreakLinePosition_CustomHeight;
+            } else if (str == "AtNthRiser") {
+                layout.breakLinePositionType = APIBreakLinePosition_AtNthRiser;
+            } else {
+                return where + " must be FloorPlanCutPlaneHeight, CustomHeight or AtNthRiser.";
+            }
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLinePositionType);
+            return {};
+        }
+        case StairLayoutFieldKind::Number: {
+            const GS::Optional<double> value = GetOptionalDouble (layoutOs, field.name);
+            if (!value.HasValue ()) {
+                return where + " must be a number.";
+            }
+            if (key == "breakLineAngle") {
+                layout.breakLineAngle = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineAngle);
+            } else if (key == "breakLineDistance") {
+                layout.breakLineDistance = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineDistance);
+            } else if (key == "upperBreakLineCustomPosition") {
+                layout.upperBreakLineCustomPosition = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, upperBreakLineCustomPosition);
+            } else {
+                layout.lowerBreakLineCustomPosition = value.Get ();
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, lowerBreakLineCustomPosition);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::PositiveInteger:
+        case StairLayoutFieldKind::NonNegativeInteger: {
+            Int32 value = 0;
+            const Int32 minimum = field.kind == StairLayoutFieldKind::PositiveInteger ? 1 : 0;
+            if (!layoutOs.Get (key, value) || value < minimum) {
+                return where + (minimum == 1 ? " must be a positive integer." : " must be a non-negative integer.");
+            }
+            if (key == "breakLineAngleNumberOfGoings") {
+                layout.breakLineAngleNumberOfGoings = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, breakLineAngleNumberOfGoings);
+            } else if (key == "upperBreakLineNthRiserPosition") {
+                layout.upperBreakLineNthRiserPosition = static_cast<UInt32> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, upperBreakLineNthRiserPosition);
+            } else {
+                layout.lowerBreakLineNthRiserPosition = static_cast<UInt32> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, lowerBreakLineNthRiserPosition);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::Boolean: {
+            bool value = false;
+            if (!layoutOs.Get (key, value)) {
+                return where + " must be a boolean.";
+            }
+            if (key == "overrideLineType") {
+                layout.overrideLineType = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, overrideLineType);
+            } else if (key == "overridePen") {
+                layout.overridePen = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, overridePen);
+            } else {
+                layout.overrideSymbolFill = value;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, overrideSymbolFill);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::Pen:
+        case StairLayoutFieldKind::BackgroundPen: {
+            Int32 value = 0;
+            const Int32 minimum = field.kind == StairLayoutFieldKind::BackgroundPen ? -1 : 1;
+            if (!layoutOs.Get (key, value) || value < minimum || value > 255) {
+                return where + (minimum == 1 ? " must be a pen index between 1 and 255." : " must be a pen index between -1 and 255.");
+            }
+            if (key == "pen") {
+                layout.pen = static_cast<short> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, pen);
+            } else if (key == "symbolFillPen") {
+                layout.symbolFillPen = static_cast<short> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, symbolFillPen);
+            } else {
+                layout.symbolFillBkgPen = static_cast<short> (value);
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, symbolFillBkgPen);
+            }
+            return {};
+        }
+        case StairLayoutFieldKind::LineType:
+        case StairLayoutFieldKind::Fill: {
+            const bool isLineType = field.kind == StairLayoutFieldKind::LineType;
+            const GS::ObjectState* attributeId = layoutOs.Get (key);
+            const API_AttributeIndex index = attributeId != nullptr ?
+                GetAttributeIndexFromGuid (isLineType ? API_LinetypeID : API_FilltypeID, GetGuidFromObjectState (*attributeId)) :
+                ACAPI_CreateAttributeIndex (-1);
+            if (index == ACAPI_CreateAttributeIndex (-1)) {
+                return where + (isLineType ? " is not a line type of the project." : " is not a fill type of the project.");
+            }
+            if (isLineType) {
+                layout.lineType = index;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, lineType);
+            } else {
+                layout.symbolFill = index;
+                ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, symbolFill);
+            }
+            return {};
+        }
+    }
+    return {};
+}
+
+// The symbol of the stair on each story, its break line and the line type, pen and fill overrides
+// (#2848), with the keys GetDetailsOfElements returns in floorPlanLayout and reflectedCeilingPlanLayout.
+// Archicad's input validation does not refuse a wrong value inside a definition the schema refers to
+// (the bad storyVisibility of the #2530 check was not refused), so every value is checked here.
+static GS::Optional<GS::UniString> ApplyStairLayoutSymbolSettings (const GS::ObjectState& layoutOs, const char* name, API_StairLayoutData& layout, API_StairLayoutData& layoutMask)
+{
+    for (const StairLayoutField& field : StairLayoutFields) {
+        if (!layoutOs.Contains (field.name)) {
+            continue;
+        }
+        const GS::Optional<GS::UniString> error = ApplyStairLayoutField (layoutOs, name, field, layout, layoutMask);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    return {};
+}
+
 // The floor plan or reflected ceiling plan display of a Stair (#2530), from a StairLayoutSettings
 // object into fpdLayout or rcpdLayout, with layoutMask the same member of the mask. A storyVisibility
 // is written with the story visibility it stands for: the AllRelevant... values are worked out by
@@ -10184,6 +10465,407 @@ static GS::Optional<GS::UniString> ApplyStairLayoutSettings (const GS::ObjectSta
     }
     if (layoutOs.Get ("showStructure", layout.showStructure)) {
         ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, showStructure);
+    }
+    return ApplyStairLayoutSymbolSettings (layoutOs, name, layout, layoutMask);
+}
+
+// The line types, pens and fills of the stair's structure symbols (#2848): API_StairType::structSymbData
+// (per structure type and view) and monolithStructureSymbolData (per view and visible or hidden part),
+// with the keys GetDetailsOfElements returns in structureSymbols and monolithStructureSymbols. Each
+// field is a line type, a fill (attribute) or a pen of one of the two symbol structs.
+enum class StairSymbolFieldKind {
+    LineType,
+    Fill,
+    Pen,
+    BackgroundPen
+};
+
+template <typename Data>
+struct StairSymbolField {
+    const char*                 name;
+    StairSymbolFieldKind        kind;
+    API_AttributeIndex Data::*  attribute;
+    short Data::*               pen;
+};
+
+static const StairSymbolField<API_StairStructureSymbolData> StairStructureSymbolFields[] = {
+    { "visibleLineTypeId",        StairSymbolFieldKind::LineType,      &API_StairStructureSymbolData::visibleLineType, nullptr },
+    { "visibleLinePen",           StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::visibleLinePen },
+    { "hiddenLineTypeId",         StairSymbolFieldKind::LineType,      &API_StairStructureSymbolData::hiddenLineType, nullptr },
+    { "hiddenLinePen",            StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::hiddenLinePen },
+    { "visibleFillId",            StairSymbolFieldKind::Fill,          &API_StairStructureSymbolData::visibleFillType, nullptr },
+    { "visibleFillPen",           StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::visibleFillPen },
+    { "visibleFillBackgroundPen", StairSymbolFieldKind::BackgroundPen, nullptr, &API_StairStructureSymbolData::visibleFillBackgroundPen },
+    { "hiddenFillId",             StairSymbolFieldKind::Fill,          &API_StairStructureSymbolData::hiddenFillType, nullptr },
+    { "hiddenFillPen",            StairSymbolFieldKind::Pen,           nullptr, &API_StairStructureSymbolData::hiddenFillPen },
+    { "hiddenFillBackgroundPen",  StairSymbolFieldKind::BackgroundPen, nullptr, &API_StairStructureSymbolData::hiddenFillBackgroundPen }
+};
+
+static const StairSymbolField<API_StairMonolithStructureSymbolData> StairMonolithStructureSymbolFields[] = {
+    { "goingLineTypeId",            StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::goingLineType, nullptr },
+    { "goingLinePen",               StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::goingLinePen },
+    { "goingNosingLineTypeId",      StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::goingNosingLineType, nullptr },
+    { "goingNosingLinePen",         StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::goingNosingLinePen },
+    { "connectionLineTypeId",       StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::connectionLineType, nullptr },
+    { "connectionLinePen",          StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::connectionLinePen },
+    { "connectionDetailLineTypeId", StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::connectionDetailLineType, nullptr },
+    { "connectionDetailLinePen",    StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::connectionDetailLinePen },
+    { "drainingFillId",             StairSymbolFieldKind::Fill,          &API_StairMonolithStructureSymbolData::drainingFillType, nullptr },
+    { "drainingFillPen",            StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::drainingFillPen },
+    { "drainingFillBackgroundPen",  StairSymbolFieldKind::BackgroundPen, nullptr, &API_StairMonolithStructureSymbolData::drainingFillBackGroundPen },
+    { "contourLineTypeId",          StairSymbolFieldKind::LineType,      &API_StairMonolithStructureSymbolData::contourLineType, nullptr },
+    { "contourLinePen",             StairSymbolFieldKind::Pen,           nullptr, &API_StairMonolithStructureSymbolData::contourLinePen }
+};
+
+// Writes the given fields of one symbol item into data and marks them in dataMask; every value is
+// checked first (Archicad's input validation does not check values inside a definition the schema
+// refers to), and a wrong one returns an error naming it.
+template <typename Data, size_t FieldCount>
+static GS::Optional<GS::UniString> ApplyStairSymbolFields (const GS::ObjectState& symbolOs, const GS::UniString& where, const StairSymbolField<Data> (&fields)[FieldCount], Data& data, Data& dataMask)
+{
+    for (const StairSymbolField<Data>& field : fields) {
+        const GS::String key (field.name);
+        if (!symbolOs.Contains (key)) {
+            continue;
+        }
+        const GS::UniString fieldWhere = where + "." + field.name;
+        if (field.attribute != nullptr) {
+            const bool isLineType = field.kind == StairSymbolFieldKind::LineType;
+            const GS::ObjectState* attributeId = symbolOs.Get (key);
+            const API_AttributeIndex index = attributeId != nullptr ?
+                GetAttributeIndexFromGuid (isLineType ? API_LinetypeID : API_FilltypeID, GetGuidFromObjectState (*attributeId)) :
+                ACAPI_CreateAttributeIndex (-1);
+            if (index == ACAPI_CreateAttributeIndex (-1)) {
+                return fieldWhere + (isLineType ? " is not a line type of the project." : " is not a fill type of the project.");
+            }
+            data.*field.attribute = index;
+            *reinterpret_cast<char*> (&(dataMask.*field.attribute)) = -1;
+        } else {
+            Int32 value = 0;
+            const Int32 minimum = field.kind == StairSymbolFieldKind::BackgroundPen ? -1 : 1;
+            if (!symbolOs.Get (key, value) || value < minimum || value > 255) {
+                return fieldWhere + (minimum == 1 ? " must be a pen index between 1 and 255." : " must be a pen index between -1 and 255.");
+            }
+            data.*field.pen = static_cast<short> (value);
+            *reinterpret_cast<char*> (&(dataMask.*field.pen)) = -1;
+        }
+    }
+    return {};
+}
+
+static bool StairStructSymbTypeFromString (const GS::UniString& str, Int32& type)
+{
+    if (str == "UnderStructure") { type = APIST_UnderStructure; return true; }
+    if (str == "Stringer")       { type = APIST_Stringer;       return true; }
+    return false;
+}
+
+static bool StairStructSymbViewFromString (const GS::UniString& str, Int32& view)
+{
+    if (str == "FloorPlan")   { view = APISV_FloorPlan;   return true; }
+    if (str == "CeilingPlan") { view = APISV_CeilingPlan; return true; }
+    return false;
+}
+
+static bool StairStructSymbPartFromString (const GS::UniString& str, Int32& part)
+{
+    if (str == "Visible") { part = APISP_Visible; return true; }
+    if (str == "Hidden")  { part = APISP_Hidden;  return true; }
+    return false;
+}
+
+// structureSymbols and monolithStructureSymbols of CreateStairs and ModifyStairs (#2848): only the
+// given fields of the given items are written.
+static GS::Optional<GS::UniString> ApplyStairStructureSymbols (const GS::ObjectState& details, API_StairType& stair, API_StairType& stairMask)
+{
+    GS::Array<GS::ObjectState> structureSymbols;
+    details.Get ("structureSymbols", structureSymbols);
+    for (USize i = 0; i < structureSymbols.GetSize (); ++i) {
+        const GS::ObjectState& symbolOs = structureSymbols[i];
+        const GS::UniString where = GS::UniString::Printf ("structureSymbols[%u]", static_cast<unsigned> (i));
+        GS::UniString typeStr;
+        GS::UniString viewStr;
+        Int32 type = 0;
+        Int32 view = 0;
+        if (!symbolOs.Get ("structureType", typeStr) || !StairStructSymbTypeFromString (typeStr, type)) {
+            return where + ".structureType must be UnderStructure or Stringer.";
+        }
+        if (!symbolOs.Get ("view", viewStr) || !StairStructSymbViewFromString (viewStr, view)) {
+            return where + ".view must be FloorPlan or CeilingPlan.";
+        }
+        const GS::Optional<GS::UniString> error = ApplyStairSymbolFields (symbolOs, where, StairStructureSymbolFields, stair.structSymbData[type][view], stairMask.structSymbData[type][view]);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    GS::Array<GS::ObjectState> monolithSymbols;
+    details.Get ("monolithStructureSymbols", monolithSymbols);
+    for (USize i = 0; i < monolithSymbols.GetSize (); ++i) {
+        const GS::ObjectState& symbolOs = monolithSymbols[i];
+        const GS::UniString where = GS::UniString::Printf ("monolithStructureSymbols[%u]", static_cast<unsigned> (i));
+        GS::UniString viewStr;
+        GS::UniString partStr;
+        Int32 view = 0;
+        Int32 part = 0;
+        if (!symbolOs.Get ("view", viewStr) || !StairStructSymbViewFromString (viewStr, view)) {
+            return where + ".view must be FloorPlan or CeilingPlan.";
+        }
+        if (!symbolOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return where + ".part must be Visible or Hidden.";
+        }
+        const GS::Optional<GS::UniString> error = ApplyStairSymbolFields (symbolOs, where, StairMonolithStructureSymbolFields, stair.monolithStructureSymbolData[view][part], stairMask.monolithStructureSymbolData[view][part]);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+    return {};
+}
+
+// Whether any byte of a mask member is set.
+template <typename T>
+static bool IsAnyMaskByteSet (const T& maskMember)
+{
+    const char* bytes = reinterpret_cast<const char*> (&maskMember);
+    for (size_t i = 0; i < sizeof (T); ++i) {
+        if (bytes[i] != 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Sets every byte of a mask member.
+template <typename T>
+static void SetAllMaskBytes (T& maskMember)
+{
+    char* bytes = reinterpret_cast<char*> (&maskMember);
+    for (size_t i = 0; i < sizeof (T); ++i) {
+        bytes[i] = -1;
+    }
+}
+
+// Names the given fields of one symbol item (marked in givenMask) that differ after the change.
+template <typename Data, size_t FieldCount>
+static GS::UniString StairSymbolFieldsNotApplied (const GS::UniString& where, const StairSymbolField<Data> (&fields)[FieldCount], const Data& want, const Data& got, const Data& givenMask)
+{
+    GS::UniString notApplied;
+    for (const StairSymbolField<Data>& field : fields) {
+        if (field.attribute != nullptr) {
+            if (*reinterpret_cast<const char*> (&(givenMask.*field.attribute)) != 0 && got.*field.attribute != want.*field.attribute) {
+                notApplied += GS::UniString (" ") + where + "." + field.name + (field.kind == StairSymbolFieldKind::LineType ? " is another line type." : " is another fill type.");
+            }
+        } else if (*reinterpret_cast<const char*> (&(givenMask.*field.pen)) != 0 && got.*field.pen != want.*field.pen) {
+            notApplied += GS::UniString (" ") + where + "." + field.name + GS::UniString::Printf (" is %d.", static_cast<int> (got.*field.pen));
+        }
+    }
+    return notApplied;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the structure symbol fields given
+// (marked in givenMask) that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairStructureSymbolsApplied (const API_Element& wanted, const API_StairType& givenMask)
+{
+    if (!IsAnyMaskByteSet (givenMask.structSymbData) && !IsAnyMaskByteSet (givenMask.monolithStructureSymbolData)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    static const char* const TypeNames[API_StairStructSymbTypeNum] = { "UnderStructure", "Stringer" };
+    static const char* const ViewNames[API_StairStructSymbViewNum] = { "FloorPlan", "CeilingPlan" };
+    static const char* const PartNames[API_StairStructSymbPartNum] = { "Visible", "Hidden" };
+
+    GS::UniString notApplied;
+    for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+        for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+            const GS::UniString where = GS::UniString ("structureSymbols (") + TypeNames[type] + ", " + ViewNames[view] + ")";
+            notApplied += StairSymbolFieldsNotApplied (where, StairStructureSymbolFields, wanted.stair.structSymbData[type][view], changed.stair.structSymbData[type][view], givenMask.structSymbData[type][view]);
+        }
+    }
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+            const GS::UniString where = GS::UniString ("monolithStructureSymbols (") + ViewNames[view] + ", " + PartNames[part] + ")";
+            notApplied += StairSymbolFieldsNotApplied (where, StairMonolithStructureSymbolFields, wanted.stair.monolithStructureSymbolData[view][part], changed.stair.monolithStructureSymbolData[view][part], givenMask.monolithStructureSymbolData[view][part]);
+        }
+    }
+    return notApplied;
+}
+
+// The visibility of the structure symbols on the stair's relevant stories (#2848):
+// API_StairType::structureVisibilityOnStories, per view, with the keys GetDetailsOfElements returns.
+static bool StairStructSymbVisibilityFromString (const GS::UniString& str, Int32& structure)
+{
+    if (str == "Beam")         { structure = APISV_Beam;         return true; }
+    if (str == "Cantilevered") { structure = APISV_Cantilevered; return true; }
+    if (str == "Stringer")     { structure = APISV_Stringer;     return true; }
+    if (str == "Monolith")     { structure = APISV_Monolith;     return true; }
+    return false;
+}
+
+static bool StairStructSymbRelevantStoriesFromString (const GS::UniString& str, Int32& stories)
+{
+    if (str == "AllStories")     { stories = APISCV_ALL_STORIES;     return true; }
+    if (str == "BelowRelevant")  { stories = APISCV_BELOW_RELEVANT;  return true; }
+    if (str == "BottomRelevant") { stories = APISCV_BOTTOM_RELEVANT; return true; }
+    if (str == "MiddleRelevant") { stories = APISCV_MID_RELEVANT;    return true; }
+    if (str == "TopRelevant")    { stories = APISCV_TOP_RELEVANT;    return true; }
+    if (str == "AboveRelevant")  { stories = APISCV_ABOVE_RELEVANT;  return true; }
+    return false;
+}
+
+static const char* const StairStructSymbViewNames[API_StairStructSymbViewNum] = { "FloorPlan", "CeilingPlan" };
+static const char* const StairStructSymbPartNames[API_StairStructSymbPartNum] = { "Visible", "Hidden" };
+static const char* const StairStructSymbTypeNames[API_StairStructSymbTypeNum] = { "UnderStructure", "Stringer" };
+static const char* const StairStructSymbVisibilityNames[API_StairStructSymbVisibilityNum] = { "Beam", "Cantilevered", "Stringer", "Monolith" };
+static const char* const StairStructSymbRelevantStoriesNames[API_StairStructSymbRelevantStoriesNum] = { "AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant" };
+
+struct StairMonolithPartVisibilityField {
+    const char*                             name;
+    bool API_MonolithPartsVisibilityData::* member;
+};
+
+static const StairMonolithPartVisibilityField StairMonolithPartVisibilityFields[] = {
+    { "connectionVisible",           &API_MonolithPartsVisibilityData::connectionVisible },
+    { "drainingVisible",             &API_MonolithPartsVisibilityData::drainingVisible },
+    { "landingLineVisible",          &API_MonolithPartsVisibilityData::landingLineVisible },
+    { "structureGoingVisible",       &API_MonolithPartsVisibilityData::structureGoingVisible },
+    { "structureGoingNosingVisible", &API_MonolithPartsVisibilityData::structureGoingNosingVisible }
+};
+
+// Reads the required boolean "visible" of a structures or fills item.
+static GS::Optional<GS::UniString> GetStairVisibleFlag (const GS::ObjectState& os, const GS::UniString& where, bool& visible)
+{
+    if (!os.Contains ("visible") || !os.Get ("visible", visible)) {
+        return where + ".visible must be true or false.";
+    }
+    return {};
+}
+
+// The visible structures, fills and monolithic parts of one story range: only the given items and
+// fields are written. Every value is checked first.
+static GS::Optional<GS::UniString> ApplyStairStructureVisibilityOnStory (const GS::ObjectState& storyOs, const GS::UniString& where, API_StairStructureComponentSettingsVisibilityOnStory& onStory, API_StairStructureComponentSettingsVisibilityOnStory& onStoryMask)
+{
+    GS::Array<GS::ObjectState> structures;
+    storyOs.Get ("structures", structures);
+    for (USize i = 0; i < structures.GetSize (); ++i) {
+        const GS::ObjectState& structureOs = structures[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".structures[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        GS::UniString structureStr;
+        Int32 part = 0;
+        Int32 structure = 0;
+        bool visible = false;
+        if (!structureOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        if (!structureOs.Get ("structure", structureStr) || !StairStructSymbVisibilityFromString (structureStr, structure)) {
+            return itemWhere + ".structure must be Beam, Cantilevered, Stringer or Monolith.";
+        }
+        const GS::Optional<GS::UniString> visibleError = GetStairVisibleFlag (structureOs, itemWhere, visible);
+        if (visibleError.HasValue ()) {
+            return visibleError;
+        }
+        onStory.structureVisibility[part][structure] = visible;
+        onStoryMask.structureVisibility[part][structure] = true;
+    }
+
+    GS::Array<GS::ObjectState> fills;
+    storyOs.Get ("fills", fills);
+    for (USize i = 0; i < fills.GetSize (); ++i) {
+        const GS::ObjectState& fillOs = fills[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".fills[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        GS::UniString typeStr;
+        Int32 part = 0;
+        Int32 type = 0;
+        bool visible = false;
+        if (!fillOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        if (!fillOs.Get ("structureType", typeStr) || !StairStructSymbTypeFromString (typeStr, type)) {
+            return itemWhere + ".structureType must be UnderStructure or Stringer.";
+        }
+        const GS::Optional<GS::UniString> visibleError = GetStairVisibleFlag (fillOs, itemWhere, visible);
+        if (visibleError.HasValue ()) {
+            return visibleError;
+        }
+        onStory.fillVisibility[part][type] = visible;
+        onStoryMask.fillVisibility[part][type] = true;
+    }
+
+    GS::Array<GS::ObjectState> monolithParts;
+    storyOs.Get ("monolithParts", monolithParts);
+    for (USize i = 0; i < monolithParts.GetSize (); ++i) {
+        const GS::ObjectState& partOs = monolithParts[i];
+        const GS::UniString itemWhere = where + GS::UniString::Printf (".monolithParts[%u]", static_cast<unsigned> (i));
+        GS::UniString partStr;
+        Int32 part = 0;
+        if (!partOs.Get ("part", partStr) || !StairStructSymbPartFromString (partStr, part)) {
+            return itemWhere + ".part must be Visible or Hidden.";
+        }
+        for (const StairMonolithPartVisibilityField& field : StairMonolithPartVisibilityFields) {
+            const GS::String key (field.name);
+            if (!partOs.Contains (key)) {
+                continue;
+            }
+            bool value = false;
+            if (!partOs.Get (key, value)) {
+                return itemWhere + "." + field.name + " must be true or false.";
+            }
+            onStory.monolithPartsVisibility[part].*field.member = value;
+            onStoryMask.monolithPartsVisibility[part].*field.member = true;
+        }
+    }
+    return {};
+}
+
+// structureVisibilityOnStories of CreateStairs and ModifyStairs (#2848): only the given fields of
+// the given items are written.
+static GS::Optional<GS::UniString> ApplyStairStructureVisibilityOnStories (const GS::ObjectState& details, API_StairType& stair, API_StairType& stairMask)
+{
+    GS::Array<GS::ObjectState> views;
+    details.Get ("structureVisibilityOnStories", views);
+    for (USize i = 0; i < views.GetSize (); ++i) {
+        const GS::ObjectState& viewOs = views[i];
+        const GS::UniString where = GS::UniString::Printf ("structureVisibilityOnStories[%u]", static_cast<unsigned> (i));
+        GS::UniString viewStr;
+        Int32 view = 0;
+        if (!viewOs.Get ("view", viewStr) || !StairStructSymbViewFromString (viewStr, view)) {
+            return where + ".view must be FloorPlan or CeilingPlan.";
+        }
+        API_StairStructureComponentSettingsVisibility& visibility = stair.structureVisibilityOnStories[view];
+        API_StairStructureComponentSettingsVisibility& visibilityMask = stairMask.structureVisibilityOnStories[view];
+
+        if (viewOs.Contains ("uniformSymbolRepresentationEnabled")) {
+            bool uniform = false;
+            if (!viewOs.Get ("uniformSymbolRepresentationEnabled", uniform)) {
+                return where + ".uniformSymbolRepresentationEnabled must be true or false.";
+            }
+            visibility.uniformSymbolRepresentationEnabled = uniform;
+            visibilityMask.uniformSymbolRepresentationEnabled = true;
+        }
+
+        GS::Array<GS::ObjectState> stories;
+        viewOs.Get ("stories", stories);
+        for (USize j = 0; j < stories.GetSize (); ++j) {
+            const GS::ObjectState& storyOs = stories[j];
+            const GS::UniString storyWhere = where + GS::UniString::Printf (".stories[%u]", static_cast<unsigned> (j));
+            GS::UniString storiesStr;
+            Int32 relevantStories = 0;
+            if (!storyOs.Get ("relevantStories", storiesStr) || !StairStructSymbRelevantStoriesFromString (storiesStr, relevantStories)) {
+                return storyWhere + ".relevantStories must be AllStories, BelowRelevant, BottomRelevant, MiddleRelevant, TopRelevant or AboveRelevant.";
+            }
+            const GS::Optional<GS::UniString> error = ApplyStairStructureVisibilityOnStory (storyOs, storyWhere,
+                visibility.structureVisibilityOnStories[relevantStories], visibilityMask.structureVisibilityOnStories[relevantStories]);
+            if (error.HasValue ()) {
+                return error;
+            }
+        }
     }
     return {};
 }
@@ -10454,6 +11136,62 @@ static GS::Optional<GS::UniString> ApplyStairMonolithSettings (const GS::ObjectS
     return {};
 }
 
+static const char* StairVisibleText (bool visible)
+{
+    return visible ? "true" : "false";
+}
+
+// Reads the stair back after ModifyStairs changed it and names the structure visibility fields
+// given (marked in givenMask) that differ now. Empty when none were given or all were applied.
+static GS::UniString CheckStairStructureVisibilityOnStoriesApplied (const API_Element& wanted, const API_StairType& givenMask)
+{
+    if (!IsAnyMaskByteSet (givenMask.structureVisibilityOnStories)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    GS::UniString notApplied;
+    for (Int32 view = 0; view < API_StairStructSymbViewNum; ++view) {
+        const API_StairStructureComponentSettingsVisibility& want = wanted.stair.structureVisibilityOnStories[view];
+        const API_StairStructureComponentSettingsVisibility& got = changed.stair.structureVisibilityOnStories[view];
+        const API_StairStructureComponentSettingsVisibility& given = givenMask.structureVisibilityOnStories[view];
+        const GS::UniString viewWhere = GS::UniString ("structureVisibilityOnStories (") + StairStructSymbViewNames[view] + ")";
+        if (given.uniformSymbolRepresentationEnabled && got.uniformSymbolRepresentationEnabled != want.uniformSymbolRepresentationEnabled) {
+            notApplied += GS::UniString (" ") + viewWhere + ".uniformSymbolRepresentationEnabled is " + StairVisibleText (got.uniformSymbolRepresentationEnabled) + ".";
+        }
+        for (Int32 stories = 0; stories < API_StairStructSymbRelevantStoriesNum; ++stories) {
+            const API_StairStructureComponentSettingsVisibilityOnStory& wantStory = want.structureVisibilityOnStories[stories];
+            const API_StairStructureComponentSettingsVisibilityOnStory& gotStory = got.structureVisibilityOnStories[stories];
+            const API_StairStructureComponentSettingsVisibilityOnStory& givenStory = given.structureVisibilityOnStories[stories];
+            const GS::UniString where = GS::UniString ("structureVisibilityOnStories (") + StairStructSymbViewNames[view] + ", " + StairStructSymbRelevantStoriesNames[stories] + ")";
+            for (Int32 part = 0; part < API_StairStructSymbPartNum; ++part) {
+                for (Int32 structure = 0; structure < API_StairStructSymbVisibilityNum; ++structure) {
+                    if (givenStory.structureVisibility[part][structure] && gotStory.structureVisibility[part][structure] != wantStory.structureVisibility[part][structure]) {
+                        notApplied += GS::UniString (" ") + where + ".structures (" + StairStructSymbPartNames[part] + ", " + StairStructSymbVisibilityNames[structure] + ").visible is " + StairVisibleText (gotStory.structureVisibility[part][structure]) + ".";
+                    }
+                }
+                for (Int32 type = 0; type < API_StairStructSymbTypeNum; ++type) {
+                    if (givenStory.fillVisibility[part][type] && gotStory.fillVisibility[part][type] != wantStory.fillVisibility[part][type]) {
+                        notApplied += GS::UniString (" ") + where + ".fills (" + StairStructSymbPartNames[part] + ", " + StairStructSymbTypeNames[type] + ").visible is " + StairVisibleText (gotStory.fillVisibility[part][type]) + ".";
+                    }
+                }
+                for (const StairMonolithPartVisibilityField& field : StairMonolithPartVisibilityFields) {
+                    const bool gotValue = gotStory.monolithPartsVisibility[part].*field.member;
+                    if (givenStory.monolithPartsVisibility[part].*field.member && gotValue != wantStory.monolithPartsVisibility[part].*field.member) {
+                        notApplied += GS::UniString (" ") + where + ".monolithParts (" + StairStructSymbPartNames[part] + ")." + field.name + " is " + StairVisibleText (gotValue) + ".";
+                    }
+                }
+            }
+        }
+    }
+    return notApplied;
+}
+
 // The stringer data of one side stair structure (#2866), in the StairSideStructureSettings shape:
 // only the given fields are written into target and marked in targetMask.
 static GS::Optional<GS::UniString> ApplyStairSideStructureSettings (const GS::ObjectState& os, const GS::UniString& prefix, API_SideStairStructData& target, API_SideStairStructData& targetMask)
@@ -10638,6 +11376,14 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
         if (layoutError.HasValue ()) {
             return layoutError;
         }
+    }
+    const GS::Optional<GS::UniString> symbolError = ApplyStairStructureSymbols (details, stair, mask.stair);
+    if (symbolError.HasValue ()) {
+        return symbolError;
+    }
+    const GS::Optional<GS::UniString> visibilityError = ApplyStairStructureVisibilityOnStories (details, stair, mask.stair);
+    if (visibilityError.HasValue ()) {
+        return visibilityError;
     }
 
     GS::Array<GS::ObjectState> treads;
@@ -10856,7 +11602,89 @@ static GS::UniString StairLayoutNotApplied (const char* name, const API_StairLay
     if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure) && got.showStructure != want.showStructure) {
         notApplied += GS::UniString (" ") + name + ".showStructure is " + boolName (got.showStructure) + ".";
     }
+
+    // The symbol, break line and overrides (#2848).
+    const auto gridType = [&] (const char* field, bool masked, API_StairGridTypeID wantType, API_StairGridTypeID gotType) {
+        if (masked && gotType != wantType) {
+            notApplied += GS::UniString (" ") + name + "." + field + " is " + StairGridTypeName (gotType) + ".";
+        }
+    };
+    gridType ("gridTypeAbove", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeAbove), want.gridTypeAbove, got.gridTypeAbove);
+    gridType ("gridTypeTop", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeTop), want.gridTypeTop, got.gridTypeTop);
+    gridType ("gridTypeMiddle", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeMiddle), want.gridTypeMiddle, got.gridTypeMiddle);
+    gridType ("gridTypeBottom", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBottom), want.gridTypeBottom, got.gridTypeBottom);
+    gridType ("gridTypeBelow", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBelow), want.gridTypeBelow, got.gridTypeBelow);
+
+    const auto number = [&] (const char* field, bool masked, double wantValue, double gotValue) {
+        if (masked && std::fabs (gotValue - wantValue) > 1e-6) {
+            notApplied += GS::UniString (" ") + name + "." + field + GS::UniString::Printf (" is %g.", gotValue);
+        }
+    };
+    const auto integer = [&] (const char* field, bool masked, Int64 wantValue, Int64 gotValue) {
+        if (masked && gotValue != wantValue) {
+            notApplied += GS::UniString (" ") + name + "." + field + GS::UniString::Printf (" is %lld.", static_cast<long long> (gotValue));
+        }
+    };
+    const auto boolean = [&] (const char* field, bool masked, bool wantValue, bool gotValue) {
+        if (masked && gotValue != wantValue) {
+            notApplied += GS::UniString (" ") + name + "." + field + " is " + boolName (gotValue) + ".";
+        }
+    };
+    integer ("breakLineAngleType", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleType), want.breakLineAngleType, got.breakLineAngleType);
+    number ("breakLineAngle", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngle), want.breakLineAngle, got.breakLineAngle);
+    integer ("breakLineAngleNumberOfGoings", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleNumberOfGoings), want.breakLineAngleNumberOfGoings, got.breakLineAngleNumberOfGoings);
+    number ("breakLineDistance", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineDistance), want.breakLineDistance, got.breakLineDistance);
+    integer ("breakLinePositionType", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLinePositionType), want.breakLinePositionType, got.breakLinePositionType);
+    number ("upperBreakLineCustomPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineCustomPosition), want.upperBreakLineCustomPosition, got.upperBreakLineCustomPosition);
+    number ("lowerBreakLineCustomPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineCustomPosition), want.lowerBreakLineCustomPosition, got.lowerBreakLineCustomPosition);
+    integer ("upperBreakLineNthRiserPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineNthRiserPosition), want.upperBreakLineNthRiserPosition, got.upperBreakLineNthRiserPosition);
+    integer ("lowerBreakLineNthRiserPosition", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineNthRiserPosition), want.lowerBreakLineNthRiserPosition, got.lowerBreakLineNthRiserPosition);
+    boolean ("overrideLineType", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideLineType), want.overrideLineType, got.overrideLineType);
+    boolean ("overridePen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overridePen), want.overridePen, got.overridePen);
+    integer ("pen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, pen), want.pen, got.pen);
+    boolean ("overrideSymbolFill", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideSymbolFill), want.overrideSymbolFill, got.overrideSymbolFill);
+    integer ("symbolFillPen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillPen), want.symbolFillPen, got.symbolFillPen);
+    integer ("symbolFillBackgroundPen", ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillBkgPen), want.symbolFillBkgPen, got.symbolFillBkgPen);
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lineType) && got.lineType != want.lineType) {
+        notApplied += GS::UniString (" ") + name + ".lineTypeId is another line type.";
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFill) && got.symbolFill != want.symbolFill) {
+        notApplied += GS::UniString (" ") + name + ".symbolFillId is another fill type.";
+    }
     return notApplied;
+}
+
+// Whether the mask marks any member of the stair layout that ApplyStairLayoutSettings writes.
+static bool IsAnyStairLayoutMasked (const API_StairLayoutData& layoutMask)
+{
+    return ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, storyVisibility) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showWalkingLine) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showNumbering) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showUpDownText) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showDescription) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeAbove) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeTop) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeMiddle) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBottom) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, gridTypeBelow) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngle) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineAngleNumberOfGoings) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLineDistance) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, breakLinePositionType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineCustomPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineCustomPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, upperBreakLineNthRiserPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lowerBreakLineNthRiserPosition) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideLineType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, lineType) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overridePen) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, pen) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, overrideSymbolFill) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFill) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillPen) ||
+           ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, symbolFillBkgPen);
 }
 
 // Reads the stair back after ModifyStairs changed it and names the floor plan display settings
@@ -10867,15 +11695,7 @@ static GS::UniString CheckStairDisplayApplied (const API_Element& wanted, const 
     const bool hasDisplayType = ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, stairDisplayType);
     const API_StairLayoutData& fpdMask = mask.stair.fpdLayout;
     const API_StairLayoutData& rcpdMask = mask.stair.rcpdLayout;
-    const auto hasLayout = [] (const API_StairLayoutData& layoutMask) {
-        return ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, storyVisibility) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showWalkingLine) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showNumbering) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showUpDownText) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showDescription) ||
-               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure);
-    };
-    if (!hasDisplayType && !hasLayout (fpdMask) && !hasLayout (rcpdMask)) {
+    if (!hasDisplayType && !IsAnyStairLayoutMasked (fpdMask) && !IsAnyStairLayoutMasked (rcpdMask)) {
         return {};
     }
 
@@ -10934,19 +11754,8 @@ static GS::UniString CheckStairRulesApplied (const API_Element& wanted, const AP
     return notApplied;
 }
 
-// Whether any byte of a mask member is set: the per-field mask bytes of the monolith and side
-// stair data of one structure (#2866).
-template <typename T>
-static bool IsAnyMaskByteSet (const T& maskMember)
-{
-    const char* bytes = reinterpret_cast<const char*> (&maskMember);
-    for (size_t i = 0; i < sizeof (T); ++i) {
-        if (bytes[i] != 0) {
-            return true;
-        }
-    }
-    return false;
-}
+// IsAnyMaskByteSet (defined with the structure symbols above) tells whether the per-field mask
+// bytes of the monolith and side stair data of one structure (#2866) are set.
 
 #define STAIR_MASKED(maskRec, typ, varnam) (*reinterpret_cast<const char*> (&(maskRec).varnam) != 0)
 
@@ -11241,6 +12050,23 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 }
             }
 
+            // The structure symbols (#2848) the same way: Archicad may take structSymbData and
+            // monolithStructureSymbolData by the mask byte of the whole member, as it took the rules,
+            // so a given symbol field marks the whole member; element holds the stair's own symbols
+            // from ACAPI_Element_Get, so the ones not given are written back as they are. The given
+            // fields are read back after the change.
+            const API_StairType givenSymbolMask = mask.stair;
+            if (IsAnyMaskByteSet (mask.stair.structSymbData)) {
+                SetAllMaskBytes (mask.stair.structSymbData);
+            }
+            if (IsAnyMaskByteSet (mask.stair.monolithStructureSymbolData)) {
+                SetAllMaskBytes (mask.stair.monolithStructureSymbolData);
+            }
+            // And the visibility of the structure symbols on the stories (#2848).
+            if (IsAnyMaskByteSet (mask.stair.structureVisibilityOnStories)) {
+                SetAllMaskBytes (mask.stair.structureVisibilityOnStories);
+            }
+
             // No memo is passed, so the baseline and the position of the stair are kept.
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             if (err != NoError) {
@@ -11260,6 +12086,17 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString rulesNotApplied = CheckStairRulesApplied (element, givenRulesMask);
             if (!rulesNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every rule:" + rulesNotApplied));
+                continue;
+            }
+            // And for the structure symbols (#2848).
+            const GS::UniString symbolsNotApplied = CheckStairStructureSymbolsApplied (element, givenSymbolMask);
+            if (!symbolsNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure symbol setting:" + symbolsNotApplied));
+                continue;
+            }
+            const GS::UniString visibilityNotApplied = CheckStairStructureVisibilityOnStoriesApplied (element, givenSymbolMask);
+            if (!visibilityNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every structure visibility setting:" + visibilityNotApplied));
                 continue;
             }
             // The same for the monolith and side stair data of the structures (#2866).
@@ -12521,7 +13358,7 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () co
                                         "yAxis": { "$ref": "#/Coordinate3D", "description": "The Y axis of the plane of the opening's polygon." },
                                         "polygon": {
                                             "type": "array",
-                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis. Left out when the opening has no polygon.",
+                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis, measured from anchorPoint (the origin of the opening's own coordinate system). Left out when the opening has no polygon.",
                                             "items": { "$ref": "#/Coordinate2D" }
                                         }
                                     },
@@ -12981,13 +13818,13 @@ GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema (
                         },
                         "polygon": {
                             "type": "array",
-                            "description": "The new polygon of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails.",
+                            "description": "The new shape of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails. Archicad keeps only the shape: it places the polygon on the opening's anchor point by the opening's anchor (extrusionParameters.anchor), so with the Center anchor the polygon is centred on the anchor point, and an offset in the given coordinates is dropped. The polygon does not move the opening; GetOpeningDetails reads it back measured from the anchor point.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
                         "transformation": {
                             "type": "array",
-                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] moves the opening by 1 along X.",
+                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] is a translation by 1 along X. The matrix goes to Archicad as it is, and Archicad refuses a 3x3 part that is not orthogonal or that scales with the error 'Can transform only with ortogonal matrix with no scaling.' Archicad 29 has also been reported to refuse a pure translation with that error (#2957); the cause is not known yet.",
                             "items": { "type": "number" },
                             "minItems": 12,
                             "maxItems": 12
@@ -17510,6 +18347,32 @@ static GS::Optional<GS::UniString> CheckRoofEdgeSideMaterials (const API_Guid& g
     return {};
 }
 
+// Reads the edge types of a roof back after ModifyRoofs wrote them (see ApplyRoofEdgeTypes), in
+// the order of GetPolygonEdgeIndices; an edge without a stored type is Undefined (#2454).
+static GS::Optional<GS::UniString> CheckRoofEdgeTypes (const API_Guid& guid, const GS::Array<GS::UniString>& edgeTypes)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&]() {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_Polygon | APIMemoMask_RoofEdgeTypes) != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+        return GS::UniString ("Modified the roof, but failed to read its edge types back.");
+    }
+    const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
+    if (edgeIndices.GetSize () != edgeTypes.GetSize ()) {
+        return GS::UniString::Printf ("Archicad did not apply edgeTypes: the roof's polygon has %u edges after writing instead of %u.", (unsigned) edgeIndices.GetSize (), (unsigned) edgeTypes.GetSize ());
+    }
+    const GSSize nEdgeTypes = memo.roofEdgeTypes == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.roofEdgeTypes) / sizeof (API_RoofEdgeTypeID);
+    for (UIndex k = 0; k < edgeTypes.GetSize (); ++k) {
+        const GS::Optional<API_RoofEdgeTypeID> expected = RoofEdgeTypeFromString (edgeTypes[k]);
+        const API_RoofEdgeTypeID actual = edgeIndices[k] < nEdgeTypes ? memo.roofEdgeTypes[edgeIndices[k]] : APIRoofEdgeType_Undefined;
+        if (!expected.HasValue () || expected.Get () != actual) {
+            return GS::UniString::Printf ("Archicad did not keep edgeTypes[%u]: the edge has another edge type after writing.", (unsigned) k);
+        }
+    }
+    return {};
+}
+
 // The curve resolution of a multi-plane roof's curved pivot edges (segmentType, segmentsByArc
 // and segmentsByCircle of API_PolyRoofData, see ModifyRoofs) (#2582). given tells whether any
 // of them was in the item. Changes nothing on an error.
@@ -17887,7 +18750,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTypes": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline or holes.",
+                            "description": "The Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges; on a multi-plane roof of its contour (GetDetailsOfElements' polygonOutline, the edges Archicad makes from the pivot polygon and the eaves overhang), not of the pivot polygon. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts; on a multi-plane roof the pivot polygon, pivotEdges and the edge surfaces are sent back unchanged and the edge types are read back after writing. Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with eavesOverhang, pivotEdges or the segmentation, which make the contour again.",
                             "items": {
                                 "$ref": "#/RoofEdgeType"
                             }
@@ -17954,23 +18817,25 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'contourPolygon' cannot be combined with 'polygonOutline', 'holes', 'pivotEdges', 'eavesOverhang', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour from the pivot polygon."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine' and 'edgeTypes' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle' and 'pivotLine' are only valid for single-plane roofs."));
                 continue;
             }
-            // A multi-plane roof's edge surfaces belong to the edges of its contour, which
-            // eavesOverhang, pivotEdges and the segmentation make again from the pivot polygon (#2582).
-            if (!isPlaneRoof && item.Contains ("edgeSideMaterials") && (item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") ||
-                                                                        item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeSideMaterials' cannot be combined with 'eavesOverhang', 'pivotEdges', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour again; send them in separate calls."));
+            // A multi-plane roof's edge surfaces and edge types belong to the edges of its contour,
+            // which eavesOverhang, pivotEdges and the segmentation make again from the pivot polygon
+            // (#2582, #2454).
+            if (!isPlaneRoof && (item.Contains ("edgeSideMaterials") || item.Contains ("edgeTypes")) &&
+                (item.Contains ("eavesOverhang") || item.Contains ("pivotEdges") ||
+                 item.Contains ("segmentType") || item.Contains ("segmentsByArc") || item.Contains ("segmentsByCircle"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeSideMaterials' and 'edgeTypes' cannot be combined with 'eavesOverhang', 'pivotEdges', 'segmentType', 'segmentsByArc' or 'segmentsByCircle', which make the contour again; send them in separate calls."));
                 continue;
             }
             if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("contourPolygon"))) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', 'holes' or 'contourPolygon', which make new edges."));
                 continue;
             }
-            if (item.Contains ("edgeTypes") && (item.Contains ("polygonOutline") || item.Contains ("holes"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline' or 'holes', which make new edges."));
+            if (item.Contains ("edgeTypes") && (item.Contains ("polygonOutline") || item.Contains ("holes") || item.Contains ("contourPolygon"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline', 'holes' or 'contourPolygon', which make new edges."));
                 continue;
             }
             // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
@@ -18225,8 +19090,9 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     // Do_Roof_Edit example (Element_Modify_ModelElements.cpp) writes a multi-plane roof's
                     // edited contour: with ACAPI_Element_Change, the contour's counts in the element and
                     // only the polygon handles and the edge data in the memo, unchanged but for the
-                    // given trims and side surfaces, so the edge types and the pivot polygon stay
-                    // (#2435, #2582). The overhang type is not in the mask, so it stays too.
+                    // given trims, edge types and side surfaces, so the rest of the edge data and the
+                    // pivot polygon stay (#2435, #2582, #2454). The overhang type is not in the mask,
+                    // so it stays too.
                     element.roof.u.polyRoof.contourPolygon.nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
                     element.roof.u.polyRoof.contourPolygon.nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
                     element.roof.u.polyRoof.contourPolygon.nArcs = memo.parcs == nullptr ? 0 : (Int32) (BMGetHandleSize ((GSHandle) memo.parcs) / sizeof (API_PolyArc));
@@ -18252,8 +19118,17 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     }
                     err = ACAPI_Element_Change (&element, &mask, &contourMemo, contourMask, true);
                     if (err != NoError) {
-                        results.Push (CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : "Failed to modify the edge surfaces of the roof."));
+                        results.Push (CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : hasEdgeTypes ? "Failed to modify the edge types of the roof." : "Failed to modify the edge surfaces of the roof."));
                         continue;
+                    }
+                    // Archicad makes the contour of a multi-plane roof again from its pivot polygon,
+                    // so the edge types are read back rather than trusted (#2454).
+                    if (hasEdgeTypes) {
+                        auto checkError = CheckRoofEdgeTypes (element.header.guid, edgeTypes);
+                        if (checkError.HasValue ()) {
+                            results.Push (CreateFailedExecutionResult (APIERR_GENERAL, checkError.Get ()));
+                            continue;
+                        }
                     }
                     if (hasEdgeSideMaterials) {
                         auto checkError = CheckRoofEdgeSideMaterials (element.header.guid, edgeSideMaterials);
@@ -21577,6 +22452,132 @@ void BuildMeshSublinesMemoFromGeometry (
     }
 }
 
+// When the level lines of a mesh cross its new outline or holes, ACAPI_Element_Change inserts a
+// vertex at each crossing, but keeps the heights (meshPolyZ) by index, so every height after an
+// inserted vertex lands on the wrong point (#2958). This reads the stored polygon back and gives each
+// vertex the height of the requested point at the same xy; an inserted vertex gets the height
+// interpolated along its contour between the nearest requested points before and after it. Does
+// nothing when every vertex already has its requested height.
+static GS::Optional<GS::UniString> RestoreRequestedMeshPolyHeights (const API_Guid& meshGuid, const GS::Array<API_Coord3D>& requestedPoints, GSErrCode& err)
+{
+    const double kEps = 1e-5;
+
+    API_Element elem = {};
+    elem.header.guid = meshGuid;
+    err = ACAPI_Element_Get (&elem);
+    if (err != NoError) {
+        return GS::UniString ("The outline was changed, but the mesh could not be read back to check its point heights.");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (meshGuid, &memo, APIMemoMask_Polygon | APIMemoMask_MeshPolyZ);
+    if (err != NoError) {
+        return GS::UniString ("The outline was changed, but the mesh polygon could not be read back to check its point heights.");
+    }
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.meshPolyZ == nullptr) {
+        return {};
+    }
+
+    const Int32 nCoords   = elem.mesh.poly.nCoords;
+    const Int32 nSubPolys = elem.mesh.poly.nSubPolys;
+    if ((Int32) (BMGetHandleSize (reinterpret_cast<GSHandle> (memo.meshPolyZ)) / sizeof (double)) < nCoords + 1) {
+        memo.meshPolyZ = reinterpret_cast<double**> (
+            BMReallocHandle (reinterpret_cast<GSHandle> (memo.meshPolyZ), (nCoords + 1) * sizeof (double), REALLOC_CLEAR, 0));
+        if (memo.meshPolyZ == nullptr) {
+            err = APIERR_MEMFULL;
+            return GS::UniString ("The outline was changed, but its point heights could not be set.");
+        }
+    }
+
+    bool changed = false;
+    for (Int32 sub = 1; sub <= nSubPolys; ++sub) {
+        const Int32 begin = (*memo.pends)[sub - 1] + 1;
+        const Int32 end   = (*memo.pends)[sub];   // the closing copy of the contour's first vertex
+        const Int32 count = end - begin;
+        if (count <= 0) {
+            continue;
+        }
+
+        GS::Array<bool>   matched;
+        GS::Array<double> heights;
+        bool anyMatched = false;
+        for (Int32 i = begin; i < end; ++i) {
+            const API_Coord& c = (*memo.coords)[i];
+            bool found = false;
+            double z = (*memo.meshPolyZ)[i];
+            for (const API_Coord3D& p : requestedPoints) {
+                if (fabs (p.x - c.x) < kEps && fabs (p.y - c.y) < kEps) {
+                    found = true;
+                    z = p.z;
+                    break;
+                }
+            }
+            matched.Push (found);
+            heights.Push (z);
+            anyMatched = anyMatched || found;
+        }
+        if (!anyMatched) {
+            continue;
+        }
+
+        const auto coordAt = [&] (Int32 j) -> const API_Coord& { return (*memo.coords)[begin + j]; };
+        const auto dist = [&] (Int32 a, Int32 b) {
+            const double dx = coordAt (b).x - coordAt (a).x;
+            const double dy = coordAt (b).y - coordAt (a).y;
+            return sqrt (dx * dx + dy * dy);
+        };
+
+        GS::Array<double> finalHeights = heights;
+        for (Int32 j = 0; j < count; ++j) {
+            if (matched[j]) {
+                continue;
+            }
+            double distPrev = 0.0;
+            Int32 prev = j;
+            do {
+                const Int32 before = (prev + count - 1) % count;
+                distPrev += dist (before, prev);
+                prev = before;
+            } while (!matched[prev]);
+            double distNext = 0.0;
+            Int32 next = j;
+            do {
+                const Int32 after = (next + 1) % count;
+                distNext += dist (next, after);
+                next = after;
+            } while (!matched[next]);
+            const double total = distPrev + distNext;
+            finalHeights[j] = total > kEps
+                ? heights[prev] + (heights[next] - heights[prev]) * distPrev / total
+                : heights[prev];
+        }
+
+        for (Int32 j = 0; j < count; ++j) {
+            if (fabs ((*memo.meshPolyZ)[begin + j] - finalHeights[j]) > kEps) {
+                (*memo.meshPolyZ)[begin + j] = finalHeights[j];
+                changed = true;
+            }
+        }
+        if (fabs ((*memo.meshPolyZ)[end] - finalHeights[0]) > kEps) {
+            (*memo.meshPolyZ)[end] = finalHeights[0];
+            changed = true;
+        }
+    }
+
+    if (!changed) {
+        return {};
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&elem, &mask, &memo, APIMemoMask_Polygon | APIMemoMask_MeshPolyZ, true);
+    if (err != NoError) {
+        return GS::UniString ("The outline was changed, but Archicad added points where level lines cross it, and the heights of its points could not be set.");
+    }
+    return {};
+}
+
 ModifyMeshesCommand::ModifyMeshesCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -21852,6 +22853,31 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to modify mesh"));
                 continue;
+            }
+
+            if (hasPolyGeom) {
+                // Archicad inserts a vertex where a level line crosses the new outline or a hole,
+                // and keeps the heights by index; give every vertex its requested height (#2958).
+                GS::Array<API_Coord3D> requestedPoints;
+                for (const GS::ObjectState& coord : polygonCoordinates) {
+                    requestedPoints.Push (Get3DCoordinateFromObjectState (coord));
+                }
+                for (const GS::ObjectState& hole : holes) {
+                    GS::Array<GS::ObjectState> holeCoords;
+                    GS::Array<GS::ObjectState> holeArcs;
+                    if (GetHoleGeometry (hole, holeCoords, holeArcs)) {
+                        for (const GS::ObjectState& coord : holeCoords) {
+                            requestedPoints.Push (Get3DCoordinateFromObjectState (coord));
+                        }
+                    }
+                }
+                GSErrCode heightErr = NoError;
+                const GS::Optional<GS::UniString> heightError = RestoreRequestedMeshPolyHeights (elem.header.guid, requestedPoints, heightErr);
+                if (heightError.HasValue ()) {
+                    changeReporter.MarkChanged (elem.header.guid);
+                    executionResults (CreateFailedExecutionResult (heightErr != NoError ? heightErr : APIERR_GENERAL, heightError.Get ()));
+                    continue;
+                }
             }
 
             changeReporter.MarkChanged (elem.header.guid);

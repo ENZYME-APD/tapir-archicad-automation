@@ -8,8 +8,11 @@ else they said.
 
 How it fits together:
 
-- `api/interactions.js` is a Vercel function (no dependencies) that Discord calls for each use of
-  the command. It stores nothing: its public answer is the record.
+- `api/interactions.js` is a Vercel function that Discord calls for each use of the command. It
+  answers at once with "thinking…" (Discord allows 3 s, which a cold start plus the OpenStreetMap
+  lookup can exceed) and then edits that answer to name the town (`@vercel/functions`' `waitUntil`).
+  It stores nothing: its public answer is the record. Each request is logged (Vercel > the project
+  > Logs), which shows whether Discord reaches it.
 - `tools/generate_user_map.py` (Site Data job) reads those answers every night, by the command's
   name and the person who used it, and places the town in bold.
 - `.github/workflows/discord_commands.yml`, run by hand, registers the command with Discord.

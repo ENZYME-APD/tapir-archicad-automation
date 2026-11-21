@@ -2,7 +2,7 @@
 
 The script's geometry functions do not talk to Archicad; this loads the script from
 marketplace/zones-to-walls-and-slabs/ (its Archicad and window code only runs from its main())
-and checks the walls, slabs, terraces and balustrades it plans for small sets of zones, each with
+and checks the walls, slabs, terraces, balustrades and doors it plans for small sets of zones, each with
 the expected result written out.
 Lengths are in metres; the zones are drawn the way Archicad gives them, in either orientation.
 
@@ -319,6 +319,93 @@ class TerracesTest (unittest.TestCase):
     def test_narrow_misfit_is_no_terrace (self):
         # the upper zone is drawn 5 cm short of the lower one, less than the tolerance
         self.assertEqual (self.plan ({0: [rectangle (0, 0, 8, 4)], 1: [rectangle (0, 0, 8, 3.95)]}), {})
+
+
+DOOR = 0.9
+MARGIN = 0.1
+
+
+class DoorsTest (unittest.TestCase):
+
+    def plan (self, zones, door_width = DOOR, tolerance = PARTITION):
+        walls, _ = script.plan_walls (zones, PARTITION, EXTERNAL, tolerance)
+        doors, skipped = script.plan_doors (zones, walls, door_width, MARGIN, tolerance)
+        return walls, doors, skipped
+
+    def assertDoor (self, walls, door, zones, center):
+        """ The door is between the given zones, in a partition, its middle at center, and its
+        centerOffset is that point's distance from the wall's start along the wall. """
+        wall = walls[door['wall']]
+        self.assertEqual (wall['kind'], 'partition')
+        self.assertEqual (door['zones'], zones)
+        self.assertAlmostEqual (door['center'][0], center[0])
+        self.assertAlmostEqual (door['center'][1], center[1])
+        u = script._unit (wall['start'], wall['end'])
+        placed = (wall['start'][0] + door['centerOffset'] * u[0], wall['start'][1] + door['centerOffset'] * u[1])
+        self.assertAlmostEqual (placed[0], center[0])
+        self.assertAlmostEqual (placed[1], center[1])
+
+    def test_two_rooms_side_by_side (self):
+        # one door, in the middle of the partition: the shared edge runs from y 0 to 3, and the
+        # partition from the bottom wall's reference line (-H) to the top one's (3 + H)
+        zones = [rectangle (0, 0, 4, 3), rectangle (4, 0, 8, 3, clockwise = True)]
+        walls, doors, skipped = self.plan (zones)
+        self.assertEqual (skipped, [])
+        self.assertEqual (len (doors), 1)
+        self.assertDoor (walls, doors[0], (0, 1), (4, 1.5))
+        self.assertAlmostEqual (doors[0]['centerOffset'], 1.5 + H)
+
+    def test_three_rooms_in_a_row (self):
+        zones = [rectangle (0, 0, 4, 3), rectangle (4, 0, 8, 3), rectangle (8, 0, 12, 3)]
+        walls, doors, skipped = self.plan (zones)
+        self.assertEqual (skipped, [])
+        self.assertEqual (len (doors), 2)
+        self.assertDoor (walls, doors[0], (0, 1), (4, 1.5))
+        self.assertDoor (walls, doors[1], (1, 2), (8, 1.5))
+        self.assertNotEqual (doors[0]['wall'], doors[1]['wall'])
+
+    def test_two_rooms_on_a_corridor_share_its_wall (self):
+        # the corridor's partition is one wall along both rooms: each room gets its own door in it,
+        # in the middle of its own stretch
+        zones = [rectangle (0, 0, 4, 3), rectangle (4, 0, 8, 3), rectangle (0, 3, 8, 5)]
+        walls, doors, skipped = self.plan (zones)
+        self.assertEqual (skipped, [])
+        self.assertEqual ([d['zones'] for d in doors], [(0, 1), (0, 2), (1, 2)])
+        self.assertDoor (walls, doors[1], (0, 2), (2, 3))
+        self.assertDoor (walls, doors[2], (1, 2), (6, 3))
+        self.assertEqual (doors[1]['wall'], doors[2]['wall'])
+
+    def test_pair_sharing_two_segments_gets_one_door_in_the_longer (self):
+        # B has a notch in the edge it shares with A: they share y 0 to 1.5 and y 2 to 4
+        a = rectangle (0, 0, 4, 4)
+        b = {'outline': [(4, 0), (8, 0), (8, 4), (4, 4), (4, 2), (4.5, 2), (4.5, 1.5), (4, 1.5)]}
+        walls, doors, skipped = self.plan ([a, b])
+        self.assertEqual (skipped, [])
+        self.assertEqual (len (doors), 1)
+        self.assertDoor (walls, doors[0], (0, 1), (4, 3))
+
+    def test_shared_edge_shorter_than_the_door_is_skipped (self):
+        # B touches A along 0.8 m only: shorter than the door and the margin at each end
+        zones = [rectangle (0, 0, 4, 3), rectangle (4, 2.2, 8, 6)]
+        walls, doors, skipped = self.plan (zones)
+        self.assertEqual (doors, [])
+        self.assertEqual ([s['zones'] for s in skipped], [(0, 1)])
+        self.assertIn ('0.80 m', skipped[0]['reason'])
+        # a shared edge of exactly the door and the two margins is long enough
+        walls, doors, skipped = self.plan ([rectangle (0, 0, 4, 3), rectangle (4, 3 - (DOOR + 2 * MARGIN), 8, 6)])
+        self.assertEqual ((len (doors), skipped), (1, []))
+
+    def test_rooms_with_a_small_gap (self):
+        # zones 5 cm apart still share their edge: the door is in the partition halfway between them
+        zones = [rectangle (0, 0, 4, 3), rectangle (4.05, 0, 8, 3)]
+        walls, doors, skipped = self.plan (zones)
+        self.assertEqual (len (doors), 1)
+        self.assertDoor (walls, doors[0], (0, 1), (4.025, 1.5))
+
+    def test_no_doors_in_external_walls (self):
+        # a single room and two rooms too far apart get no door
+        self.assertEqual (self.plan ([rectangle (0, 0, 4, 3)])[1:], ([], []))
+        self.assertEqual (self.plan ([rectangle (0, 0, 4, 3), rectangle (4.5, 0, 8, 3)])[1:], ([], []))
 
 
 class HelpersTest (unittest.TestCase):

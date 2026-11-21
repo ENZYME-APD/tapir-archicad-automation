@@ -1156,7 +1156,7 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                         },
                         "position": {
                             "$ref": "#/Coordinate2D",
-                            "description": "Where the Drawing is placed on the layout, in meters; this becomes its pos. Without clipPolygon it is the lower left corner of the Drawing (before rotation). With clipPolygon it is the point where the origin of the source view lands (on a floor plan the project origin): a model point (x, y) appears at position + scale * drawing scale * (x, y), rotated by angle, and the clipPolygon chooses which part is shown."
+                            "description": "Where the Drawing is placed on the layout, in meters; this becomes its pos. Without clipPolygon it is the lower left corner of the Drawing (before rotation). With clipPolygon it is the point where the origin of the source view lands (on a floor plan the project origin), also when the source view stores its zoom: a model point (x, y) appears at position + scale * drawing scale * (x, y), rotated by angle, and the clipPolygon chooses which part is shown."
                         },
                         "scale": {
                             "type": "number",
@@ -1239,6 +1239,32 @@ static API_Coord DrawingVectorOnLayout (const API_DrawingType& drawing, const AP
     const double c = cos (drawing.angle);
     const double s = sin (drawing.angle);
     return { drawing.ratio * (c * v.x - s * v.y), drawing.ratio * (s * v.x + c * v.y) };
+}
+
+// The lower left corner of the zoom box a saved view stores ("saveZoom"), in the Drawing's own
+// coordinates: the box is in model meters, so it is multiplied by the view's drawing scale (1:100
+// gives 0.01), as the model is on the Drawing. A clipped Drawing created from such a view is placed
+// by this corner instead of the clip polygon's (#2928, measured on AC29 with 1:1 views at scale 1
+// and 2). False for a Project Map viewpoint, which stores no zoom, and for a view that stores no
+// zoom or no drawing scale: the clip polygon's corner applies to those, as before. Only reads.
+static bool GetSavedZoomCornerOfView (const API_NavigatorItem& sourceItem, API_Coord& corner)
+{
+    if (sourceItem.mapId != API_PublicViewMap) {
+        return false;
+    }
+    API_NavigatorItem viewItem = sourceItem;
+    API_NavigatorView view = {};
+    if (ACAPI_Navigator_GetNavigatorView (&viewItem, &view) != NoError) {
+        return false;
+    }
+    const GS::OnExit freeView ([&view] () { FreeNavigatorView (view); });
+    if (!view.saveZoom || !view.saveDScale || view.drawingScale <= 0) {
+        return false;
+    }
+    const double modelToDrawing = 1.0 / view.drawingScale;
+    corner.x = view.zoom.xMin * modelToDrawing;
+    corner.y = view.zoom.yMin * modelToDrawing;
+    return true;
 }
 
 // Creates a single Drawing from a "drawingsData"-shaped item (navigatorItemId, position, optional
@@ -1356,12 +1382,18 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item, API_Coord*
             // show nothing (#1654). Adding that corner beforehand leaves pos at position, which
             // for a clipped Drawing is where the source view's origin lands. Archicad also adds
             // the model offset times the drawing scale to pos (see the modelOffset description).
-            API_Coord clipMin = (*memo.coords)[1];
+            // When the source view stores its zoom, Archicad takes off the lower left corner of
+            // that zoom box instead of the clip polygon's (#2928), so that corner is added.
+            API_Coord placementCorner = (*memo.coords)[1];
             for (Int32 i = 2; i <= nClip; ++i) {
-                clipMin.x = std::min (clipMin.x, (*memo.coords)[i].x);
-                clipMin.y = std::min (clipMin.y, (*memo.coords)[i].y);
+                placementCorner.x = std::min (placementCorner.x, (*memo.coords)[i].x);
+                placementCorner.y = std::min (placementCorner.y, (*memo.coords)[i].y);
             }
-            const API_Coord shift = DrawingVectorOnLayout (element.drawing, clipMin);
+            API_Coord zoomCorner = {};
+            if (GetSavedZoomCornerOfView (sourceItem, zoomCorner)) {
+                placementCorner = zoomCorner;
+            }
+            const API_Coord shift = DrawingVectorOnLayout (element.drawing, placementCorner);
             element.drawing.pos.x += shift.x;
             element.drawing.pos.y += shift.y;
         }
