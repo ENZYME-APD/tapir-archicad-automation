@@ -893,7 +893,7 @@ GS::ObjectState ShowIFCExportSettingsCommand::Execute (const GS::ObjectState& pa
     if (parameters.Get ("navigatorItemId", navigatorItemId)) {
         viewGuid = GetGuidFromObjectState (navigatorItemId);
         API_NavigatorItem navItem = {};
-        if (viewGuid == APINULLGuid || ACAPI_Navigator_GetNavigatorItem (&viewGuid, &navItem) != NoError) {
+        if (viewGuid == APINULLGuid || GetNavigatorItemOfGuid (viewGuid, navItem) != NoError) {
             return CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is not a navigator item of the project.");
         }
     }
@@ -931,7 +931,7 @@ GS::ObjectState ShowIFCExportSettingsCommand::Execute (const GS::ObjectState& pa
     GS::ObjectState response ("cancelled", false);
     response.Add ("navigatorItemId", CreateGuidObjectState (viewGuid));
     API_NavigatorItem chosenView = {};
-    if (ACAPI_Navigator_GetNavigatorItem (&viewGuid, &chosenView) == NoError) {
+    if (GetNavigatorItemOfGuid (viewGuid, chosenView) == NoError) {
         response.Add ("viewName", GS::UniString (chosenView.uName));
     }
     response.Add ("translatorName", translator.name);

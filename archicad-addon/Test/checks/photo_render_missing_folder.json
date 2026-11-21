@@ -1,0 +1,38 @@
+{
+  "title": "PhotoRender refuses a missing output folder before rendering and leaves the current window usable (#2688)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the current window answers before the render",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "exists": true, "name": "a current window" }
+      ]
+    },
+    {
+      "id": "PhotoRender into a folder that does not exist",
+      "command": "PhotoRender",
+      "creates": false,
+      "params": {
+        "imageFilePath": "/tapir-check-2688-no-such-folder/no-such-subfolder/render.png",
+        "width": 64,
+        "height": 48
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "the render is refused" },
+        { "path": "error.message", "contains": "does not exist", "name": "the error says the folder is missing" }
+      ]
+    },
+    {
+      "id": "the current window still answers after the refused render",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "exists": true, "name": "no Picture window left current" }
+      ]
+    }
+  ]
+}

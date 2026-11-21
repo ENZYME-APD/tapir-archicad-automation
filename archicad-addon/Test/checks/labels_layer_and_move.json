@@ -1,0 +1,146 @@
+{
+  "title": "CreateLabels puts the label on the given layerIndex and refuses a missing layer; ModifyLabels moves and re-points a label with begCoordinate, midCoordinate and endCoordinate (#2666)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a layer for the labels",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check label layer 2666", "isHidden": false, "isLocked": false }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" },
+      "stopOnFail": true,
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "layer created" }
+      ]
+    },
+    {
+      "id": "its index",
+      "command": "GetLayers",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ] },
+      "save": { "layerIndex": "layers[0].index" },
+      "stopOnFail": true,
+      "expect": [
+        { "path": "layers[0].index", "gt": 1, "name": "a new layer, not the Archicad layer" }
+      ]
+    },
+    {
+      "id": "[label on the layer, label to re-point, label on a missing layer]",
+      "command": "CreateLabels",
+      "params": {
+        "labelsData": [
+          {
+            "labelClass": "Text",
+            "text": "Tapir check 1",
+            "layerIndex": "${layerIndex}",
+            "floorInd": 0,
+            "begCoordinate": { "x": 800.0, "y": 800.0 },
+            "midCoordinate": { "x": 801.0, "y": 801.0 },
+            "endCoordinate": { "x": 803.0, "y": 801.0 }
+          },
+          {
+            "labelClass": "Text",
+            "text": "Tapir check 2",
+            "floorInd": 0,
+            "begCoordinate": { "x": 820.0, "y": 800.0 },
+            "midCoordinate": { "x": 821.0, "y": 801.0 },
+            "endCoordinate": { "x": 823.0, "y": 801.0 }
+          },
+          {
+            "labelClass": "Text",
+            "text": "Tapir check 3",
+            "layerIndex": 99999,
+            "floorInd": 0,
+            "begCoordinate": { "x": 840.0, "y": 800.0 },
+            "midCoordinate": { "x": 841.0, "y": 801.0 },
+            "endCoordinate": { "x": 843.0, "y": 801.0 }
+          }
+        ]
+      },
+      "save": { "l1": "elements[0].elementId.guid", "l2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 3, "name": "one result per label" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "label on the layer created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "second label created" },
+        { "path": "elements[2].error", "exists": true, "name": "missing layer: error, not a label on another layer" }
+      ]
+    },
+    {
+      "id": "read the new labels",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${l1}" } }, { "elementId": { "guid": "${l2}" } } ]
+      },
+      "save": { "l1Layer": "detailsOfElements[0].layerIndex" },
+      "expect": [
+        { "expr": "${l1Layer} - ${layerIndex}", "eq": 0, "name": "layerIndex applied" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 800.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 803.0 },
+        { "path": "detailsOfElements[1].details.begCoordinate.x", "approx": 820.0 }
+      ]
+    },
+    {
+      "id": "[move label 1, re-point label 2, not a label]",
+      "command": "ModifyLabels",
+      "creates": false,
+      "params": {
+        "labelsWithDetails": [
+          {
+            "elementId": { "guid": "${l1}" },
+            "begCoordinate": { "x": 805.0, "y": 810.0 },
+            "midCoordinate": { "x": 806.0, "y": 812.0 },
+            "endCoordinate": { "x": 808.0, "y": 812.0 }
+          },
+          {
+            "elementId": { "guid": "${l2}" },
+            "begCoordinate": { "x": 819.0, "y": 798.0 }
+          },
+          {
+            "elementId": { "guid": "${layer}" },
+            "endCoordinate": { "x": 0.0, "y": 0.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "label 1 moved" },
+        { "path": "executionResults[1].success", "eq": true, "name": "label 2 re-pointed" },
+        { "path": "executionResults[2].success", "eq": false, "name": "not a label: failed" }
+      ]
+    },
+    {
+      "id": "read the moved labels",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${l1}" } }, { "elementId": { "guid": "${l2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 805.0, "name": "label 1 begin x moved" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 810.0, "name": "label 1 begin y moved" },
+        { "path": "detailsOfElements[0].details.midCoordinate.x", "approx": 806.0, "name": "label 1 mid x moved" },
+        { "path": "detailsOfElements[0].details.midCoordinate.y", "approx": 812.0, "name": "label 1 mid y moved" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 808.0, "name": "label 1 end x moved" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 812.0, "name": "label 1 end y moved" },
+        { "path": "detailsOfElements[0].details.text", "eq": "Tapir check 1", "name": "label 1 text kept" },
+        { "path": "detailsOfElements[1].details.begCoordinate.x", "approx": 819.0, "name": "label 2 begin x re-pointed" },
+        { "path": "detailsOfElements[1].details.begCoordinate.y", "approx": 798.0, "name": "label 2 begin y re-pointed" },
+        { "path": "detailsOfElements[1].details.midCoordinate.x", "approx": 821.0, "name": "label 2 mid kept" },
+        { "path": "detailsOfElements[1].details.endCoordinate.x", "approx": 823.0, "name": "label 2 end x kept" },
+        { "path": "detailsOfElements[1].details.endCoordinate.y", "approx": 801.0, "name": "label 2 end y kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ] }
+    }
+  ]
+}

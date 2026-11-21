@@ -8,6 +8,10 @@ GSErrCode WriteLibPartSection (Int32 nByte, GSConstPtr data);
 GSErrCode EndLibPartSection ();
 GSErrCode SetLibPartDetails (const API_LibPart* libPart, GSHandle paramHdl, const API_LibPartDetails* details);
 
+// The error response when the resolved parent subtype (parentUnID) cannot be the parent of a
+// new library part, before the part is created; used by CreateLibraryParts too.
+GS::Optional<GS::ObjectState> CheckParentSubtypeCanBeInherited (const char* parentUnID);
+
 class CreateLibraryPartFromElementsCommand : public CommandBase
 {
 public:

@@ -54,6 +54,8 @@ terminalId = terminal['elements'][0].get ('elementId')
 if terminalId is not None:
     placedIds.append (terminalId)
     ModifyAndReport ('Move the terminal', [{'elementId': terminalId, 'anchorPoint': {'x': 1.0, 'y': -40.0, 'z': 2.8}}])
+    # The library part's size needs Archicad 30; its connection size is set with ModifyMEPPorts.
+    ModifyAndReport ('Resize the terminal', [{'elementId': terminalId, 'xSize': 0.5, 'ySize': 0.5}])
     ports = aclib.RunTapirCommand ('GetMEPPorts', {'elements': [{'elementId': terminalId}]})
     for port in ports['elementPorts'][0].get ('ports', []):
         print (f"Terminal port {port['portId']}: {port['shape']} at {port['position']}")

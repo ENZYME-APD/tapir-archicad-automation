@@ -1,0 +1,137 @@
+{
+  "title": "CreateCameraSets creates Camera Sets and ModifyCameraSets renames them and switches the active set (#2657)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create set A, active, and set B",
+      "command": "CreateCameraSets",
+      "params": {
+        "cameraSets": [
+          { "name": "Tapir check set A", "isActive": true },
+          { "name": "Tapir check set B" }
+        ]
+      },
+      "save": {
+        "setA": "elements[0].elementId.guid",
+        "setB": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 2 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "set A created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "set B created" }
+      ]
+    },
+    {
+      "id": "both are Camera Sets",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${setA}" } },
+          { "elementId": { "guid": "${setB}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CamSet" },
+        { "path": "detailsOfElements[1].type", "eq": "CamSet" }
+      ]
+    },
+    {
+      "id": "set A is the active set",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "activeCameraSetElementId.guid", "eq": "${setA}" }
+      ]
+    },
+    {
+      "id": "rename set B and make it active",
+      "command": "ModifyCameraSets",
+      "creates": false,
+      "params": {
+        "cameraSets": [
+          { "cameraSetElementId": { "guid": "${setB}" }, "name": "Tapir check set B renamed", "isActive": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "set B is now the active set",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "activeCameraSetElementId.guid", "eq": "${setB}" }
+      ]
+    },
+    {
+      "id": "refused: isActive false, nothing to change, not a Camera Set",
+      "command": "ModifyCameraSets",
+      "creates": false,
+      "params": {
+        "cameraSets": [
+          { "cameraSetElementId": { "guid": "${setA}" }, "isActive": false },
+          { "cameraSetElementId": { "guid": "${setA}" } },
+          { "cameraSetElementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "nothing" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3 },
+        { "path": "executionResults[0].success", "eq": false },
+        { "path": "executionResults[1].success", "eq": false },
+        { "path": "executionResults[2].success", "eq": false }
+      ]
+    },
+    {
+      "id": "rename set A only",
+      "command": "ModifyCameraSets",
+      "creates": false,
+      "params": {
+        "cameraSets": [
+          { "cameraSetElementId": { "guid": "${setA}" }, "name": "Tapir check set A renamed" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "renaming set A kept set B active",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "activeCameraSetElementId.guid", "eq": "${setB}" }
+      ]
+    },
+    {
+      "id": "DeleteElements deletes set A",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${setA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "set A is gone",
+      "command": "ModifyCameraSets",
+      "creates": false,
+      "params": {
+        "cameraSets": [
+          { "cameraSetElementId": { "guid": "${setA}" }, "name": "gone" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false }
+      ]
+    }
+  ]
+}

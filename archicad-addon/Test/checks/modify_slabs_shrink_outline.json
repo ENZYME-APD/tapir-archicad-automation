@@ -1,0 +1,527 @@
+{
+  "title": "ModifySlabs shrinks a slab outline whose intermediate polygons would cross themselves, without crashing Archicad (#2504)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [
+    "Slab"
+  ],
+  "steps": [
+    {
+      "id": "four slabs: 20, 11, 11 and 8 points",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.15,
+            "polygonCoordinates": [
+              {
+                "x": 960.195,
+                "y": 960.545
+              },
+              {
+                "x": 960.545,
+                "y": 960.545
+              },
+              {
+                "x": 960.545,
+                "y": 960.195
+              },
+              {
+                "x": 965.63,
+                "y": 960.195
+              },
+              {
+                "x": 965.63,
+                "y": 960.545
+              },
+              {
+                "x": 965.81,
+                "y": 960.545
+              },
+              {
+                "x": 965.81,
+                "y": 964.16
+              },
+              {
+                "x": 965.66,
+                "y": 964.16
+              },
+              {
+                "x": 965.66,
+                "y": 964.555
+              },
+              {
+                "x": 963.955,
+                "y": 964.555
+              },
+              {
+                "x": 963.955,
+                "y": 965.155
+              },
+              {
+                "x": 963.93,
+                "y": 965.155
+              },
+              {
+                "x": 963.93,
+                "y": 965.18
+              },
+              {
+                "x": 963.045,
+                "y": 965.18
+              },
+              {
+                "x": 963.045,
+                "y": 964.555
+              },
+              {
+                "x": 961.235,
+                "y": 964.555
+              },
+              {
+                "x": 961.235,
+                "y": 964.855
+              },
+              {
+                "x": 960.545,
+                "y": 964.855
+              },
+              {
+                "x": 960.545,
+                "y": 964.13
+              },
+              {
+                "x": 960.195,
+                "y": 964.13
+              }
+            ]
+          },
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.15,
+            "polygonCoordinates": [
+              {
+                "x": 1000,
+                "y": 1000
+              },
+              {
+                "x": 1000,
+                "y": 1010.5
+              },
+              {
+                "x": 1001.343242065,
+                "y": 1010.5
+              },
+              {
+                "x": 1001.343242065,
+                "y": 1022.555
+              },
+              {
+                "x": 1021.483242065,
+                "y": 1022.555
+              },
+              {
+                "x": 1021.483242065,
+                "y": 1010.225
+              },
+              {
+                "x": 1009.858242065,
+                "y": 1010.225
+              },
+              {
+                "x": 1009.858242065,
+                "y": 1008.615
+              },
+              {
+                "x": 1016.898242065,
+                "y": 1008.615
+              },
+              {
+                "x": 1016.898242065,
+                "y": 1000
+              },
+              {
+                "x": 1006.473245507,
+                "y": 1000
+              }
+            ]
+          },
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.15,
+            "polygonCoordinates": [
+              {
+                "x": 1030,
+                "y": 1000
+              },
+              {
+                "x": 1030,
+                "y": 1010.5
+              },
+              {
+                "x": 1031.343242065,
+                "y": 1010.5
+              },
+              {
+                "x": 1031.343242065,
+                "y": 1022.555
+              },
+              {
+                "x": 1051.483242065,
+                "y": 1022.555
+              },
+              {
+                "x": 1051.483242065,
+                "y": 1010.225
+              },
+              {
+                "x": 1039.858242065,
+                "y": 1010.225
+              },
+              {
+                "x": 1039.858242065,
+                "y": 1008.615
+              },
+              {
+                "x": 1046.898242065,
+                "y": 1008.615
+              },
+              {
+                "x": 1046.898242065,
+                "y": 1000
+              },
+              {
+                "x": 1036.473245507,
+                "y": 1000
+              }
+            ]
+          },
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.15,
+            "polygonCoordinates": [
+              {
+                "x": 980,
+                "y": 960
+              },
+              {
+                "x": 986,
+                "y": 960
+              },
+              {
+                "x": 986,
+                "y": 964
+              },
+              {
+                "x": 984,
+                "y": 964
+              },
+              {
+                "x": 984,
+                "y": 963
+              },
+              {
+                "x": 982,
+                "y": 963
+              },
+              {
+                "x": 982,
+                "y": 964
+              },
+              {
+                "x": 980,
+                "y": 964
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "s20": "elements[0].elementId.guid",
+        "s11a": "elements[1].elementId.guid",
+        "s11b": "elements[2].elementId.guid",
+        "s8": "elements[3].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[3].elementId.guid",
+          "exists": true,
+          "name": "four slabs created"
+        }
+      ]
+    },
+    {
+      "id": "20 -> 8 points (crashed Archicad 29 and 30)",
+      "command": "ModifySlabs",
+      "creates": false,
+      "timeout": 60,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${s20}"
+            },
+            "polygonOutline": [
+              {
+                "x": 964.104,
+                "y": 964.555
+              },
+              {
+                "x": 964.104,
+                "y": 960.195
+              },
+              {
+                "x": 965.63,
+                "y": 960.195
+              },
+              {
+                "x": 965.63,
+                "y": 960.545
+              },
+              {
+                "x": 965.81,
+                "y": 960.545
+              },
+              {
+                "x": 965.81,
+                "y": 964.16
+              },
+              {
+                "x": 965.66,
+                "y": 964.16
+              },
+              {
+                "x": 965.66,
+                "y": 964.555
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "outline changed"
+        }
+      ]
+    },
+    {
+      "id": "11 -> 4 points (crashed Archicad 29)",
+      "command": "ModifySlabs",
+      "creates": false,
+      "timeout": 60,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${s11a}"
+            },
+            "polygonOutline": [
+              {
+                "x": 1016.27323862,
+                "y": 1018.26
+              },
+              {
+                "x": 1006.55324551,
+                "y": 1018.26
+              },
+              {
+                "x": 1006.55324551,
+                "y": 1022.555
+              },
+              {
+                "x": 1016.27323862,
+                "y": 1022.555
+              }
+            ],
+            "holes": []
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "outline changed"
+        }
+      ]
+    },
+    {
+      "id": "11 -> 8 points (failed with APIERR_BADPOLY)",
+      "command": "ModifySlabs",
+      "creates": false,
+      "timeout": 60,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${s11b}"
+            },
+            "polygonOutline": [
+              {
+                "x": 1031.28824207,
+                "y": 1010.5
+              },
+              {
+                "x": 1031.28824207,
+                "y": 1004.78
+              },
+              {
+                "x": 1036.34824551,
+                "y": 1004.78
+              },
+              {
+                "x": 1036.34824551,
+                "y": 1001.445
+              },
+              {
+                "x": 1046.89824207,
+                "y": 1001.445
+              },
+              {
+                "x": 1046.89824207,
+                "y": 1000
+              },
+              {
+                "x": 1030,
+                "y": 1000
+              },
+              {
+                "x": 1030,
+                "y": 1010.5
+              }
+            ],
+            "holes": []
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "outline changed"
+        }
+      ]
+    },
+    {
+      "id": "a notched rectangle -> its rectangle (DeletePolyNode refused a zero-area polygon)",
+      "command": "ModifySlabs",
+      "creates": false,
+      "timeout": 60,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${s8}"
+            },
+            "polygonOutline": [
+              {
+                "x": 980,
+                "y": 960
+              },
+              {
+                "x": 986,
+                "y": 960
+              },
+              {
+                "x": 986,
+                "y": 964
+              },
+              {
+                "x": 980,
+                "y": 964
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "outline changed"
+        }
+      ]
+    },
+    {
+      "id": "the new outlines read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${s20}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${s11a}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${s11b}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${s8}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.polygonOutline",
+          "len": 9,
+          "name": "20 -> 8: eight points and the closing one"
+        },
+        {
+          "path": "detailsOfElements[0].details.polygonOutline[1].x",
+          "approx": 964.104,
+          "name": "20 -> 8: the new points"
+        },
+        {
+          "path": "detailsOfElements[1].details.polygonOutline",
+          "len": 5,
+          "name": "11 -> 4: four points and the closing one"
+        },
+        {
+          "path": "detailsOfElements[1].details.polygonOutline[0].y",
+          "approx": 1018.26,
+          "name": "11 -> 4: the new points"
+        },
+        {
+          "path": "detailsOfElements[2].details.polygonOutline",
+          "len": 9,
+          "name": "11 -> 8: eight points and the closing one"
+        },
+        {
+          "path": "detailsOfElements[2].details.polygonOutline[1].y",
+          "approx": 1004.78,
+          "name": "11 -> 8: the new points"
+        },
+        {
+          "path": "detailsOfElements[3].details.polygonOutline",
+          "len": 5,
+          "name": "8 -> 4: four points and the closing one"
+        },
+        {
+          "path": "detailsOfElements[3].details.polygonOutline[2].x",
+          "approx": 986.0,
+          "name": "8 -> 4: the new points"
+        }
+      ]
+    }
+  ]
+}

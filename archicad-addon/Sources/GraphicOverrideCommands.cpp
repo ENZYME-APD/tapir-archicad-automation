@@ -535,6 +535,23 @@ GS::ObjectState GetGraphicOverrideRulesByNameCommand::Execute (const GS::ObjectS
 #endif
 }
 
+// Archicad throws an exception out of ACAPI_GraphicalOverride_CreateOverrideRule and
+// ACAPI_GraphicalOverride_ChangeOverrideRule for a criterion it cannot use, e.g. "is not" on a
+// multiple choice option set property (found on Archicad 29). Uncaught, it ended the undoable
+// command: the rules written before it were undone while the response still listed them, and the
+// rules after it got no result at all. Caught here, that one rule gets an error result.
+template <typename ApiCall>
+static GSErrCode CallCatchingArchicadException (const ApiCall& apiCall, bool& outThrown)
+{
+    outThrown = false;
+    try {
+        return apiCall ();
+    } catch (...) {
+        outThrown = true;
+        return APIERR_GENERAL;
+    }
+}
+
 CreateGraphicOverrideRulesCommand::CreateGraphicOverrideRulesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -651,7 +668,12 @@ GS::ObjectState CreateGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
                 graphicOverrideRuleIdsList (CreateErrorResponse (err, "Failed to find or create the rule group '" + ruleGroupName + "'."));
                 continue;
             }
-            err = ACAPI_GraphicalOverride_CreateOverrideRule (rule, ruleGroupGuid);
+            bool thrown = false;
+            err = CallCatchingArchicadException ([&] () { return ACAPI_GraphicalOverride_CreateOverrideRule (rule, ruleGroupGuid); }, thrown);
+            if (thrown) {
+                graphicOverrideRuleIdsList (CreateErrorResponse (err, "Archicad refused the rule '" + rule.name + "': it cannot use its criterion."));
+                continue;
+            }
             if (err != NoError) {
                 graphicOverrideRuleIdsList (CreateErrorResponse (err, "Failed to create the rule '" + rule.name + "'. Its name must be unique and not empty."));
                 continue;
@@ -784,7 +806,12 @@ GS::ObjectState ModifyGraphicOverrideRulesCommand::Execute (const GS::ObjectStat
                 }
             }
 
-            err = ACAPI_GraphicalOverride_ChangeOverrideRule (rule);
+            bool thrown = false;
+            err = CallCatchingArchicadException ([&] () { return ACAPI_GraphicalOverride_ChangeOverrideRule (rule); }, thrown);
+            if (thrown) {
+                executionResults (CreateFailedExecutionResult (err, "Archicad refused the rule '" + rule.name + "': it cannot use its criterion."));
+                continue;
+            }
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to modify the rule '" + rule.name + "'. Its name must be unique and not empty."));
                 continue;

@@ -183,6 +183,18 @@
       ]
     },
     {
+      "id": "the spline favorite is in the root",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder spline favorite" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].elementType", "eq": "Spline" },
+        { "path": "favoriteSettings[0].folder", "len": 0 }
+      ]
+    },
+    {
       "id": "[favorite 1 to folder B, a favorite that does not exist]",
       "command": "MoveFavorites",
       "creates": false,

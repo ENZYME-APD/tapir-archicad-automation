@@ -32,6 +32,13 @@
     'Motion': '动画',
     'Reduced': '减少',
     'Full': '全部',
+    'Measure tool (M key)': '测量工具（M 键）',
+    'On': '开',
+    'Off': '关',
+    'Click the start point': '单击起点',
+    'Click the end point': '单击终点',
+    'Measure tool on. Click two points to measure them; press M or Escape to leave.': '测量工具已打开。单击两个点进行测量；按 M 或 Esc 退出。',
+    'Measure tool off.': '测量工具已关闭。',
     'Reset to defaults': '恢复默认设置',
     'Done': '完成',
     'Language': '语言',
@@ -58,5 +65,17 @@
     'Roadmap': '路线图',
     'About Tapir': '关于 Tapir',
     'Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.':
-        '本项目与 Graphisoft 无隶属关系。Archicad 是 Graphisoft SE 的商标。'
+        '本项目与 Graphisoft 无隶属关系。Archicad 是 Graphisoft SE 的商标。',
+    'Search': '搜索',
+    'Search the site': '搜索本站',
+    'Search pages, commands and scripts': '搜索页面、命令和脚本',
+    'Loading…': '正在加载…',
+    'The search could not be loaded. Check your connection and try again.': '无法加载搜索。请检查网络连接后重试。',
+    'Nothing found.': '未找到结果。',
+    '1 result': '1 个结果',
+    'results': '个结果',
+    'Page': '页面',
+    'Section': '章节',
+    'Command': '命令',
+    'Built-in script': '内置脚本'
 });

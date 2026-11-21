@@ -15,7 +15,14 @@
    stacks commits, issues opened plus pull requests merged, and Discord messages per month, and
    draws discordMembers (the members at the end of each month) as a line on its own scale on the
    right. A series is drawn only when every month has a whole number of at least 0 for it; the
-   table under the chart lists every number.
+   table under the chart lists every number. The chart reads out one month at a time: the pointer
+   or a finger snaps to the nearest month, the Left/Right arrow keys move month by month, Home and
+   End jump to the first and last month, and Esc, or a tap or click elsewhere, hides it. It shows a
+   guide line, a dot on each drawn series and a tooltip with the month's values (a value the data
+   does not have reads "–", never 0) and the total of the stack; a key or a tap also writes them to
+   the aria-live region #growth-readout. It rests on the latest month when the page opens. Each
+   legend entry is a toggle button (aria-pressed) that hides or shows its series, and the stack and
+   its left scale are drawn again for the layers shown; the last stacked layer shown stays on.
    totals: each figure is shown only when it is a whole number of at least 0. discordMembersChange
    is the change in members between the two member counts compared, "days" apart ("+23 in 30
    days"); it is left out unless both are whole numbers and days is at least 1.
@@ -32,7 +39,7 @@
    When the file cannot be read, or a part of it does not look right, that part stays hidden: a
    number that can't be read is left out, not shown wrong. Every text shown is in the page's HTML
    (data-change, data-commit(s), data-report(s), data-test(s), data-chart-label, data-months and
-   data-month-label among them), and assets/site.js translates it
+   data-month-label and data-total-label among them), and assets/site.js translates it
    (assets/i18n/<language>/community.js), so this starts once the page is translated
    (TapirI18n.ready) and then reads the page's language and those texts. */
 (function () {
@@ -271,9 +278,11 @@
         });
 
         // The line on its own, linear right scale.
+        var lineMax = 1;
+        var yLine = null;
         if (withLine) {
-            var lineMax = niceMax (Math.max.apply (null, months.map (function (month) { return month[LINE]; })));
-            var yLine = function (value) { return bottom - (bottom - top) * value / lineMax; };
+            lineMax = niceMax (Math.max.apply (null, months.map (function (month) { return month[LINE]; })));
+            yLine = function (value) { return bottom - (bottom - top) * value / lineMax; };
             [0.5, 1].forEach (function (share) {
                 svg.appendChild (svgElement ('text', { 'class': 'line-scale', x: width - right + 6, y: (yLine (lineMax * share) + 4).toFixed (1) }, shortNumber (lineMax * share)));
             });
@@ -300,8 +309,23 @@
             }
         });
 
+        // The read-out's guide line and dots, drawn on top and moved by showReadout ().
+        var readout = svgElement ('g', { 'class': 'readout', 'aria-hidden': 'true', visibility: 'hidden' });
+        readout.appendChild (svgElement ('line', { 'class': 'guide', x1: 0, x2: 0, y1: top, y2: bottom }));
+        layers.forEach (function (key) {
+            readout.appendChild (svgElement ('circle', { 'class': 'focus-dot focus-' + key, 'data-key': key, r: 4 }));
+        });
+        if (withLine) {
+            readout.appendChild (svgElement ('circle', { 'class': 'focus-dot focus-' + LINE, 'data-key': LINE, r: 4 }));
+        }
+        svg.appendChild (readout);
+
         container.textContent = '';
         container.appendChild (svg);
+        return {
+            svg: svg, readout: readout, months: months, layers: layers, withLine: withLine, stacks: stacks,
+            width: width, left: left, plotWidth: plotWidth, x: x, y: y, yLine: withLine ? yLine : null
+        };
     }
 
     function fillTable (months, keys) {
@@ -323,22 +347,243 @@
         });
     }
 
+    // ---- The read-out: the numbers of one month, by pointer, touch or keyboard ----
+
+    // The series the legend hides (key: true), the month the read-out shows (its index, or null),
+    // the chart drawn last (what drawGrowth returns) and the series the data has.
+    var hiddenKeys = {};
+    var selected = null;
+    var chart = null;
+    var drawable = { layers: [], withLine: false };
+
+    // The name of a series as the page writes it: the table's heading, or the legend's for the
+    // stacked issues and pull requests.
+    function seriesName (key) {
+        var element = key === 'github' ?
+            section.querySelector ('.growth-legend [data-key="github"] button') :
+            table.tHead.querySelector ('th[data-key="' + key + '"]');
+        return element ? element.textContent.replace (/\s+/g, ' ').trim () : key;
+    }
+
+    function readoutValue (value) {
+        return value === null ? '–' : value.toLocaleString (LOCALE);
+    }
+
+    // The rows of the read-out for one month: every series drawn, and a series the data has for
+    // only some months, whose missing months read "–", never 0. Then the total of the stack drawn.
+    function readoutRows (index) {
+        var month = chart.months[index];
+        var rows = [];
+        LAYERS.concat ([LINE]).forEach (function (key) {
+            var drawn = key === LINE ? chart.withLine : chart.layers.indexOf (key) >= 0;
+            var partial = drawable.layers.indexOf (key) < 0 && !(key === LINE && drawable.withLine) &&
+                chart.months.some (function (entry) { return valueOf (entry, key) !== null; });
+            if (drawn || partial) {
+                rows.push ({ key: key, name: seriesName (key), value: valueOf (month, key) });
+            }
+        });
+        var stack = chart.stacks[index];
+        rows.push ({ key: null, name: section.getAttribute ('data-total-label') || 'Total', value: stack[stack.length - 1][1] });
+        return rows;
+    }
+
+    function swatch (key) {
+        var element = document.createElement ('i');
+        element.className = key === LINE ? 'swatch swatch-line' : 'swatch layer-' + key;
+        return element;
+    }
+
+    // Shows the numbers of month index (the guide line, the dots and the tooltip); announce: also
+    // writes them to the live region, for a screen reader.
+    function showReadout (index, announce) {
+        var count = chart.months.length;
+        index = Math.max (0, Math.min (count - 1, index));
+        selected = index;
+        var at = chart.x (index);
+        var guide = chart.readout.querySelector ('.guide');
+        guide.setAttribute ('x1', at.toFixed (1));
+        guide.setAttribute ('x2', at.toFixed (1));
+        Array.prototype.forEach.call (chart.readout.querySelectorAll ('.focus-dot'), function (dot) {
+            var key = dot.getAttribute ('data-key');
+            var level = key === LINE ? chart.yLine (chart.months[index][LINE]) : chart.y (chart.stacks[index][chart.layers.indexOf (key)][1]);
+            dot.setAttribute ('cx', at.toFixed (1));
+            dot.setAttribute ('cy', level.toFixed (1));
+        });
+        chart.readout.setAttribute ('visibility', 'visible');
+
+        var label = monthLabel (chart.months[index].month);
+        var rows = readoutRows (index);
+        var tip = document.getElementById ('growth-tip');
+        tip.textContent = '';
+        var title = document.createElement ('strong');
+        title.textContent = label;
+        tip.appendChild (title);
+        rows.forEach (function (row) {
+            var line = document.createElement ('span');
+            line.className = row.key ? 'tip-row' : 'tip-row tip-total';
+            var name = document.createElement ('span');
+            name.className = 'tip-name';
+            if (row.key) {
+                name.appendChild (swatch (row.key));
+            }
+            name.appendChild (document.createTextNode (row.name));
+            var value = document.createElement ('span');
+            value.className = 'tip-value';
+            value.textContent = readoutValue (row.value);
+            line.appendChild (name);
+            line.appendChild (value);
+            tip.appendChild (line);
+        });
+        // Beside the guide line, never over it, and inside the chart: on its right, or on its left
+        // in the right half, and at most as wide as the room on that side.
+        var share = at / chart.width * 100;
+        var flip = share > 50;
+        var room = flip ? share : 100 - share;
+        tip.style.left = flip ? 'auto' : 'calc(' + share.toFixed (2) + '% + 10px)';
+        tip.style.right = flip ? 'calc(' + (100 - share).toFixed (2) + '% + 10px)' : 'auto';
+        tip.style.maxWidth = 'calc(' + room.toFixed (2) + '% - 14px)';
+        tip.hidden = false;
+
+        if (announce) {
+            document.getElementById ('growth-readout').textContent = label + ': ' + rows.map (function (row) {
+                return row.name + ' ' + readoutValue (row.value);
+            }).join ('; ');
+        }
+    }
+
+    function hideReadout () {
+        selected = null;
+        if (chart) {
+            chart.readout.setAttribute ('visibility', 'hidden');
+        }
+        var tip = document.getElementById ('growth-tip');
+        if (tip) {
+            tip.hidden = true;
+        }
+    }
+
+    // The month nearest to a pointer.
+    function monthAt (event) {
+        var box = chart.svg.getBoundingClientRect ();
+        if (!box.width) {
+            return null;
+        }
+        var position = (event.clientX - box.left) * chart.width / box.width;
+        var count = chart.months.length;
+        return count > 1 ? Math.round ((position - chart.left) / chart.plotWidth * (count - 1)) : 0;
+    }
+
+    function listenToChart (frame) {
+        frame.addEventListener ('pointermove', function (event) {
+            if (!chart || (event.pointerType !== 'mouse' && event.buttons === 0)) {
+                return;
+            }
+            var index = monthAt (event);
+            if (index !== null && index !== selected) {
+                showReadout (index, false);
+            }
+        });
+        frame.addEventListener ('pointerdown', function (event) {
+            var index = chart ? monthAt (event) : null;
+            if (index !== null) {
+                showReadout (index, true);
+            }
+        });
+        frame.addEventListener ('pointerleave', function (event) {
+            if (event.pointerType === 'mouse' && document.activeElement !== frame) {
+                hideReadout ();
+            }
+        });
+        frame.addEventListener ('keydown', function (event) {
+            if (!chart) {
+                return;
+            }
+            var last = chart.months.length - 1;
+            var from = selected === null ? last : selected;
+            var index = null;
+            if (event.key === 'ArrowLeft') {
+                index = selected === null ? last : from - 1;
+            } else if (event.key === 'ArrowRight') {
+                index = selected === null ? last : from + 1;
+            } else if (event.key === 'Home') {
+                index = 0;
+            } else if (event.key === 'End') {
+                index = last;
+            } else if (event.key === 'Escape') {
+                if (selected !== null) {
+                    hideReadout ();
+                    document.getElementById ('growth-readout').textContent = '';
+                    event.preventDefault ();
+                }
+                return;
+            } else {
+                return;
+            }
+            event.preventDefault ();
+            showReadout (index, true);
+        });
+        // A tap or a click anywhere else hides it.
+        document.addEventListener ('pointerdown', function (event) {
+            if (selected !== null && !frame.contains (event.target) && !event.target.closest ('.growth-legend')) {
+                hideReadout ();
+            }
+        });
+    }
+
+    // A legend entry hides or shows its series; at least one stacked layer stays shown.
+    function listenToLegend () {
+        Array.prototype.forEach.call (section.querySelectorAll ('.growth-legend [data-key] button'), function (button) {
+            button.addEventListener ('click', function () {
+                var key = button.closest ('[data-key]').getAttribute ('data-key');
+                if (!hiddenKeys[key] && key !== LINE) {
+                    var shown = drawable.layers.filter (function (layer) { return !hiddenKeys[layer]; });
+                    if (shown.length <= 1) {
+                        return;
+                    }
+                }
+                hiddenKeys[key] = !hiddenKeys[key];
+                render ();
+            });
+        });
+    }
+
     function render () {
         if (!allMonths) {
             return;
         }
         var months = allMonths;
-        var layers = LAYERS.filter (function (key) { return complete (months, key); });
-        var withLine = complete (months, LINE);
-        if (layers.length === 0) {
+        drawable = {
+            layers: LAYERS.filter (function (key) { return complete (months, key); }),
+            withLine: complete (months, LINE)
+        };
+        if (drawable.layers.length === 0) {
             section.hidden = true;
             return;
         }
+        var layers = drawable.layers.filter (function (key) { return !hiddenKeys[key]; });
+        var withLine = drawable.withLine && !hiddenKeys[LINE];
+        var shownLayers = layers.length;
         Array.prototype.forEach.call (section.querySelectorAll ('.growth-legend [data-key]'), function (item) {
             var key = item.getAttribute ('data-key');
-            item.hidden = key === LINE ? !withLine : layers.indexOf (key) < 0;
+            item.hidden = key === LINE ? !drawable.withLine : drawable.layers.indexOf (key) < 0;
+            var button = item.querySelector ('button');
+            if (button) {
+                button.setAttribute ('aria-pressed', hiddenKeys[key] ? 'false' : 'true');
+                // The last stacked layer shown cannot be hidden.
+                button.setAttribute ('aria-disabled', key !== LINE && !hiddenKeys[key] && shownLayers <= 1 ? 'true' : 'false');
+            }
         });
-        drawGrowth (document.getElementById ('growth-chart'), months, layers, withLine);
+        var frame = document.getElementById ('growth-chart');
+        chart = drawGrowth (frame, months, layers, withLine);
+        var tip = document.createElement ('div');
+        tip.id = 'growth-tip';
+        tip.className = 'growth-tip';
+        tip.setAttribute ('aria-hidden', 'true');
+        tip.hidden = true;
+        frame.appendChild (tip);
+        if (selected !== null) {
+            showReadout (selected, false);
+        }
         var keys = ['commits', 'issuesOpened', 'pullRequestsMerged', 'discordMessages', LINE].filter (function (key) {
             return months.every (function (month) { return isCount (month[key]); });
         });
@@ -496,7 +741,13 @@
                 momentum.hidden = true;
             }
             allMonths = readMonths (data);
+            // The first frame already shows numbers: the read-out rests on the latest month.
+            if (allMonths) {
+                selected = allMonths.length - 1;
+            }
             render ();
+            listenToChart (document.getElementById ('growth-chart'));
+            listenToLegend ();
             if (phone.addEventListener) {
                 phone.addEventListener ('change', render);
             } else if (phone.addListener) {

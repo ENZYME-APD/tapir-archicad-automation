@@ -1,0 +1,132 @@
+{
+  "title": "CreateWindows and CreateDoors set the given id and layerIndex, and refuse a nonexistent layer (#2576)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Window", "Door" ],
+  "steps": [
+    {
+      "id": "layer for the openings",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check window door layer", "isHidden": false, "isLocked": false }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "index of the layer",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ],
+        "fields": [ "isHidden" ]
+      },
+      "save": { "layerIndex": "layers[0].index" },
+      "expect": [
+        { "path": "layers[0].index", "gt": 1, "name": "a layer other than the Archicad Layer" }
+      ]
+    },
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 920.0, "y": 920.0 },
+            "endCoordinate": { "x": 929.0, "y": 920.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "window with id and layerIndex, and one on a nonexistent layer",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 1.5,
+            "sillHeight": 0.9,
+            "width": 1.0,
+            "height": 1.2,
+            "id": "CHK-W-01",
+            "layerIndex": "${layerIndex}"
+          },
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 4.5,
+            "sillHeight": 0.9,
+            "width": 1.0,
+            "height": 1.2,
+            "layerIndex": 99999
+          }
+        ]
+      },
+      "save": { "window": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "window created" },
+        { "path": "elements[1].error.code", "exists": true, "name": "nonexistent layer refused" }
+      ]
+    },
+    {
+      "id": "door with id and layerIndex",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 7.5,
+            "sillHeight": 0.0,
+            "width": 0.9,
+            "height": 2.1,
+            "id": "CHK-D-01",
+            "layerIndex": "${layerIndex}"
+          }
+        ]
+      },
+      "save": { "door": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "door created" }
+      ]
+    },
+    {
+      "id": "only the valid window was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Window" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "read the window and the door back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${window}" } }, { "elementId": { "guid": "${door}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Window" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-W-01", "name": "window id applied" },
+        { "path": "detailsOfElements[0].layerIndex", "eq": "${layerIndex}", "name": "window layerIndex applied" },
+        { "path": "detailsOfElements[1].type", "eq": "Door" },
+        { "path": "detailsOfElements[1].id", "eq": "CHK-D-01", "name": "door id applied" },
+        { "path": "detailsOfElements[1].layerIndex", "eq": "${layerIndex}", "name": "door layerIndex applied" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ]
+      }
+    }
+  ]
+}

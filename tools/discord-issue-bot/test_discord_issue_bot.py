@@ -438,13 +438,19 @@ class GroupingTests(NoSleepTestCase):
 class FakeDiscord:
     """Reactions live on the message dicts, as the API returns them."""
 
-    def __init__(self, messages, add_ok=True):
+    def __init__(self, messages, add_ok=True, channel_name="general", files=None):
         self.messages = messages
         self.add_ok = add_ok
+        self.channel_name = channel_name
+        self.files = files or {}
         self.calls = []
+        self.replies = []
 
     def get_channel(self, channel_id):
-        return {"name": "general", "guild_id": "g"}
+        return {"name": self.channel_name, "guild_id": "g"}
+
+    def download_attachment(self, url, max_bytes):
+        return self.files.get(url)
 
     def recent_messages(self, channel_id, since, max_pages=20):
         return self.messages
@@ -468,6 +474,7 @@ class FakeDiscord:
 
     def reply(self, channel_id, message_id, content):
         self.calls.append(("reply", message_id))
+        self.replies.append(content)
 
     def seen(self):
         return [m["id"] for m in self.messages if self.has_mark(m, bot.SEEN_MARK)]
@@ -495,14 +502,27 @@ class FakeGitHub:
     def __init__(self, search=None):
         self.search = search
         self.created = []
+        self.labels = []
+        self.ensured = []
+        self.added = []
 
     def find_issue_for_message(self, message_id):
         return self.search
 
+    def ensure_label(self, name, color, description):
+        self.ensured.append(name)
+        return True
+
+    def add_labels(self, issue_number, labels):
+        self.added.append((issue_number, labels))
+        return True
+
     def create_issue(self, title, body, labels):
         self.created.append(body)
+        self.labels.append(labels)
         number = len(self.created)
-        return {"number": number, "html_url": "https://x/{}".format(number)}
+        return {"number": number, "html_url": "https://x/{}".format(number),
+                "labels": [{"name": name} for name in labels]}
 
 
 class CheckpointTests(NoSleepTestCase):
@@ -514,6 +534,8 @@ class CheckpointTests(NoSleepTestCase):
         max_issues_per_run = 5
         lookback_minutes = 1440
         dry_run = False
+        share_channel_ids = []
+        share_channel_name = "share-a-script"
 
     def message(self, message_id, author="a", minutes_ago=60, seen=False, content=None):
         message = {"id": message_id, "type": 0, "channel_id": "c",
@@ -524,8 +546,9 @@ class CheckpointTests(NoSleepTestCase):
             message["reactions"] = [{"emoji": {"name": bot.SEEN_MARK}, "me": True}]
         return message
 
-    def run_channel(self, messages, verdicts=None, github=None, config=None, add_ok=True):
-        discord = FakeDiscord(messages, add_ok)
+    def run_channel(self, messages, verdicts=None, github=None, config=None, add_ok=True,
+                    channel_name="general", files=None):
+        discord = FakeDiscord(messages, add_ok, channel_name, files)
         classifier = FakeClassifier(verdicts or {})
         github = github or FakeGitHub()
         state = {"created": 0, "created_numbers": [], "unreadable_channels": 0,
@@ -695,6 +718,278 @@ class IntentDetectionTests(NoSleepTestCase):
                         or message.get("attachments") or message.get("embeds"))
         self.assertFalse(blank.get("content", "").strip()
                          or blank.get("attachments") or blank.get("embeds"))
+
+
+
+class ShareChannelTests(CheckpointTests):
+    """A script posted in the share channel is filed as a script-share issue
+    with the whole file, without the classifier."""
+
+    SCRIPT = "import aclib\n\nprint('hello')\n"
+
+    def script_message(self, message_id, filename="walls.py", content="Counts walls by type",
+                       size=40):
+        # One author per message: consecutive messages of one author are read as one.
+        message = self.message(message_id, author="u" + message_id)
+        message["content"] = content
+        message["attachments"] = [{"id": "x" + message_id, "filename": filename,
+                                   "size": size, "url": "https://cdn/" + message_id}]
+        return message
+
+    def share(self, messages, files, channel_name="share-a-script", **kwargs):
+        return self.run_channel(messages, files=files, channel_name=channel_name, **kwargs)
+
+    def test_a_py_attachment_becomes_a_script_share_issue(self):
+        discord, classifier, github = self.share(
+            [self.script_message("1")], {"https://cdn/1": self.SCRIPT.encode()})
+        self.assertEqual(github.labels, [["script-share", "discord"]])
+        body = github.created[0]
+        self.assertIn("```python\nimport aclib\n\nprint('hello')\n```", body)
+        self.assertIn("> Counts walls by type", body)
+        self.assertIn("`walls.py` (3 lines)", body)
+        self.assertIn("{} 1`".format(bot.ISSUE_MARKER_PREFIX), body)
+        self.assertEqual(self.state["created_numbers"], [1])
+        self.assertIn(("reply", "1"), discord.calls)
+        self.assertIn("MIT", discord.replies[0])
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_the_label_is_made_before_the_first_share_and_only_once(self):
+        _, _, github = self.share(
+            [self.script_message("1"), self.script_message("2", content="Another script one")],
+            {"https://cdn/1": self.SCRIPT.encode(), "https://cdn/2": self.SCRIPT.encode()})
+        self.assertEqual(github.ensured, ["script-share"])
+        self.assertEqual(github.added, [])
+
+    def test_a_missing_label_on_the_created_issue_is_added(self):
+        class Unlabelled(FakeGitHub):
+            def create_issue(self, title, body, labels):
+                issue = FakeGitHub.create_issue(self, title, body, labels)
+                issue["labels"] = []
+                return issue
+        github = Unlabelled()
+        self.share([self.script_message("1")], {"https://cdn/1": self.SCRIPT.encode()},
+                   github=github)
+        self.assertEqual(github.added, [(1, ["script-share"])])
+
+    def test_the_classifier_is_never_asked(self):
+        _, classifier, _ = self.share(
+            [self.script_message("1")], {"https://cdn/1": self.SCRIPT.encode()})
+        self.assertEqual(classifier.classified, [])
+
+    def test_an_attachment_without_text_is_still_shared(self):
+        _, _, github = self.share(
+            [self.script_message("1", content="")], {"https://cdn/1": self.SCRIPT.encode()})
+        self.assertEqual(len(github.created), 1)
+        self.assertIn("> (no text)", github.created[0])
+
+    def test_chat_in_the_share_channel_files_nothing_and_is_checked(self):
+        discord, _, github = self.share(
+            [self.message("1", content="Thanks, will try this at the office")], {})
+        self.assertEqual(github.created, [])
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_another_channel_is_not_a_share_channel(self):
+        _, classifier, github = self.share(
+            [self.script_message("1")], {"https://cdn/1": self.SCRIPT.encode()},
+            channel_name="general")
+        self.assertEqual(classifier.classified, ["1"])
+        self.assertNotIn(["script-share", "discord"], github.labels)
+
+    def test_a_channel_id_in_the_list_is_a_share_channel(self):
+        class Listed(self.Config):
+            share_channel_ids = ["c"]
+        _, _, github = self.share(
+            [self.script_message("1")], {"https://cdn/1": self.SCRIPT.encode()},
+            channel_name="anything", config=Listed)
+        self.assertEqual(github.labels, [["script-share", "discord"]])
+
+    def test_a_failed_download_is_retried_not_dropped(self):
+        discord, _, github = self.share([self.script_message("1")], {})
+        self.assertEqual(github.created, [])
+        self.assertEqual(discord.seen(), [])
+
+    def test_a_failed_download_stops_the_scan_even_when_a_later_script_works(self):
+        messages = [self.script_message("1"), self.script_message("2", content="Second one ok")]
+        discord, _, github = self.share(messages, {"https://cdn/2": self.SCRIPT.encode()})
+        self.assertEqual(github.created, [])
+        self.assertEqual(discord.seen(), [])
+
+    def test_scripts_before_a_failed_download_are_filed_and_checked(self):
+        messages = [self.script_message("1"), self.script_message("2", content="Fails to load"),
+                    self.script_message("3", content="Third one is fine")]
+        discord, _, github = self.share(
+            messages, {"https://cdn/1": self.SCRIPT.encode(), "https://cdn/3": self.SCRIPT.encode()})
+        self.assertEqual(len(github.created), 1)
+        self.assertIn("{} 1`".format(bot.ISSUE_MARKER_PREFIX), github.created[0])
+        self.assertEqual(discord.seen(), ["1"])
+
+    def test_a_very_long_file_name_cannot_make_the_title_too_long(self):
+        name = "w" * 400 + ".py"
+        message = self.script_message("1", filename=name)
+        reader = bot.ShareScriptReader({"1": bot.merge_group([message])}, FakeDiscord(
+            [message], files={"https://cdn/1": self.SCRIPT.encode()}))
+        result = reader.classify_batch([{"id": "1"}])["1"]
+        self.assertLessEqual(len(result["title"]), 250)
+        self.assertTrue(result["title"].startswith("Script share: www"))
+
+    def test_a_file_that_is_not_python_is_chat(self):
+        _, _, github = self.share(
+            [self.script_message("1", filename="notes.txt")], {"https://cdn/1": b"x"})
+        self.assertEqual(github.created, [])
+
+    def test_a_too_large_file_is_not_shared(self):
+        _, _, github = self.share(
+            [self.script_message("1", size=bot.MAX_SCRIPT_BYTES + 1)],
+            {"https://cdn/1": self.SCRIPT.encode()})
+        self.assertEqual(github.created, [])
+
+    def test_a_binary_file_is_not_shared(self):
+        _, _, github = self.share(
+            [self.script_message("1")], {"https://cdn/1": b"abc\x00def"})
+        self.assertEqual(github.created, [])
+
+    def test_a_long_pasted_code_block_is_shared(self):
+        code = "\n".join("x{} = {}".format(i, i) for i in range(8))
+        message = self.message("1", content="My script:\n```python\n" + code + "\n```")
+        _, _, github = self.share([message], {})
+        self.assertEqual(github.labels, [["script-share", "discord"]])
+        self.assertIn("`pasted-script.py` (8 lines)", github.created[0])
+        self.assertIn("> My script:", github.created[0])
+
+    def test_a_short_snippet_is_not_a_script(self):
+        message = self.message("1", content="Try this one:\n```python\nprint(1)\n```")
+        _, _, github = self.share([message], {})
+        self.assertEqual(github.created, [])
+
+    def test_an_existing_issue_for_the_message_is_not_filed_again(self):
+        _, _, github = self.share(
+            [self.script_message("1")], {"https://cdn/1": self.SCRIPT.encode()},
+            github=FakeGitHub(search={"number": 9}))
+        self.assertEqual(github.created, [])
+
+
+class ShareHelperTests(unittest.TestCase):
+    MESSAGE = {"id": "1", "channel_id": "c", "author": {"username": "u"},
+               "content": "", "type": 0}
+
+    def test_the_fence_is_longer_than_any_backtick_run_in_the_script(self):
+        self.assertEqual(bot.code_fence("x = '`````'"), "``````")
+        self.assertEqual(bot.code_fence("print(1)"), "```")
+
+    def test_a_script_cannot_forge_the_duplicate_marker(self):
+        script = "# {} 99999\nprint(1)".format(bot.ISSUE_MARKER_PREFIX)
+        body = bot.build_share_issue_body(self.MESSAGE, {"name": "n"}, [("a.py", script)])
+        self.assertEqual(body.count("{} 99999".format(bot.ISSUE_MARKER_PREFIX)), 0)
+        self.assertIn("{} 1`".format(bot.ISSUE_MARKER_PREFIX), body)
+
+    def test_a_script_with_backticks_cannot_close_the_fence(self):
+        body = bot.build_share_issue_body(
+            self.MESSAGE, {"name": "n"}, [("a.py", "x = '```'\n# @everyone")])
+        self.assertIn("````python\nx = '```'", body)
+
+    def test_mentions_in_the_description_are_neutralized(self):
+        message = dict(self.MESSAGE, content="ping @everyone")
+        body = bot.build_share_issue_body(message, {"name": "n"}, [("a.py", "x")])
+        self.assertNotIn("@everyone", body)
+
+    def test_only_the_discord_cdn_is_fetched(self):
+        client = discord_client(None)
+        self.assertIsNone(client.download_attachment("https://evil.example/a.py", 10))
+        self.assertIsNone(client.download_attachment("http://cdn.discordapp.com/a.py", 10))
+
+    def test_share_channel_detection(self):
+        class C:
+            share_channel_ids = ["7"]
+            share_channel_name = "share-a-script"
+        self.assertTrue(bot.is_share_channel({"name": "share-a-script"}, "1", C))
+        self.assertTrue(bot.is_share_channel({"name": "Share-A-Script"}, "1", C))
+        self.assertTrue(bot.is_share_channel({"name": "other"}, "7", C))
+        self.assertFalse(bot.is_share_channel({"name": "general"}, "1", C))
+        self.assertFalse(bot.is_share_channel(None, "1", C))
+
+    def test_config_reads_the_share_channels(self):
+        env = {"DISCORD_BOT_TOKEN": "t", "DISCORD_CHANNEL_IDS": "1,2",
+               "GITHUB_TOKEN": "g", "GITHUB_REPOSITORY": "o/r",
+               "CLAUDE_CODE_OAUTH_TOKEN": "c", "DISCORD_SHARE_CHANNEL_IDS": " 3, 2 ",
+               "SHARE_CHANNEL_NAME": "Scripts"}
+        old = dict(os.environ)
+        try:
+            os.environ.update(env)
+            config, _ = bot.Config.from_env()
+        finally:
+            os.environ.clear()
+            os.environ.update(old)
+        self.assertEqual(config.share_channel_ids, ["3", "2"])
+        self.assertEqual(config.share_channel_name, "scripts")
+        self.assertEqual(bot.scanned_channel_ids(config), ["1", "2", "3"])
+
+
+
+class EnsureLabelTests(unittest.TestCase):
+    class Session:
+        def __init__(self, response):
+            self.response, self.posted = response, []
+
+        def post(self, url, json=None, timeout=None):
+            self.posted.append((url, json))
+            return self.response
+
+    def test_a_new_label_is_created(self):
+        session = self.Session(FakeResponse(201))
+        self.assertTrue(github_client(session).ensure_label("script-share", "0e8a16", "d"))
+        self.assertEqual(session.posted[0][0], "https://api.github.com/repos/owner/repo/labels")
+        self.assertEqual(session.posted[0][1]["name"], "script-share")
+
+    def test_an_existing_label_is_fine(self):
+        session = self.Session(FakeResponse(422, text='{"errors":[{"code":"already_exists"}]}'))
+        self.assertTrue(github_client(session).ensure_label("script-share", "0e8a16", "d"))
+
+    def test_a_refused_label_is_reported(self):
+        session = self.Session(FakeResponse(403))
+        self.assertFalse(github_client(session).ensure_label("script-share", "0e8a16", "d"))
+
+
+class DownloadTests(unittest.TestCase):
+    URL = "https://cdn.discordapp.com/attachments/1/2/a.py"
+
+    class Streamed:
+        def __init__(self, chunks, ok=True, status=200):
+            self.chunks, self.ok, self.status_code = chunks, ok, status
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def iter_content(self, size):
+            return iter(self.chunks)
+
+    def download(self, response, max_bytes=10, error=None):
+        original = bot.requests.get
+
+        def fake_get(url, **kwargs):
+            self.assertNotIn("headers", kwargs)  # the bot token is never sent
+            if error:
+                raise error
+            return response
+        bot.requests.get = fake_get
+        try:
+            return discord_client(None).download_attachment(self.URL, max_bytes)
+        finally:
+            bot.requests.get = original
+
+    def test_the_bytes_are_returned(self):
+        self.assertEqual(self.download(self.Streamed([b"abc", b"def"])), b"abcdef")
+
+    def test_a_download_over_the_limit_is_dropped(self):
+        self.assertIsNone(self.download(self.Streamed([b"x" * 6, b"x" * 6])))
+
+    def test_an_error_status_returns_none(self):
+        self.assertIsNone(self.download(self.Streamed([b"x"], ok=False, status=404)))
+
+    def test_a_network_error_returns_none(self):
+        self.assertIsNone(self.download(None, error=requests.ConnectionError("down")))
 
 
 if __name__ == "__main__":

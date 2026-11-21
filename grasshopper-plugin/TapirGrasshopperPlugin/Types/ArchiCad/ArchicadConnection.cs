@@ -2,8 +2,11 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TapirGrasshopperPlugin.Types.ArchiCad
@@ -97,37 +100,121 @@ namespace TapirGrasshopperPlugin.Types.ArchiCad
                         parameters = commandParameters
                     });
 
-                var client = new HttpClient();
-                client.BaseAddress = new Uri(
+                // The port can change between calls (ConnectionSettings.Port),
+                // so the address is built per request, not set as BaseAddress
+                // of the shared client.
+                var requestUri = new Uri(
                     string.Format(
-                        "http://127.0.0.1:{0}",
+                        "http://127.0.0.1:{0}/",
                         mPort));
 
-                HttpContent requestContent = new StringContent(
-                    commandObject.ToString(),
-                    Encoding.UTF8,
-                    "application/json");
-                var response = await client.PostAsync(
-                    "",
-                    requestContent);
-                var responseString = await response.Content.ReadAsStringAsync();
+                using (HttpContent requestContent = new StringContent(
+                           commandObject.ToString(),
+                           Encoding.UTF8,
+                           "application/json"))
+                using (var response = await Client.PostAsync(
+                           requestUri,
+                           requestContent))
+                {
+                    var responseString =
+                        await response.Content.ReadAsStringAsync();
 
-                return JsonConvert.DeserializeObject<CommandResponse>(
-                    responseString);
+                    return JsonConvert.DeserializeObject<CommandResponse>(
+                        responseString);
+                }
             }
-            catch (Exception)
+            catch (Exception e)
+            {
+                return CreateErrorResponse(e);
+            }
+        }
+
+        public const int ConnectionFailedErrorCode = 100;
+        public const string ConnectionFailedErrorMessage =
+            "Failed to connect to Archicad.";
+        public const int CommunicationFailedErrorCode = 101;
+        public const string CommunicationFailedErrorMessage =
+            "Archicad was reached, but the command failed while communicating with it: ";
+
+        // One client for every command: a new HttpClient per call opens a new
+        // connection that is only released by the garbage collector. Commands
+        // wait as long as Archicad takes (some run for minutes on large
+        // projects), as aclib does, instead of HttpClient's default 100 s.
+        internal static readonly HttpClient Client = new HttpClient()
+        {
+            Timeout = Timeout.InfiniteTimeSpan
+        };
+
+        // Archicad not running or not listening on the port keeps code 100 and
+        // its message, which saved definitions may rely on; any other failure
+        // (the connection dropped, an answer that is not valid JSON, ...) gets
+        // its own code and says what went wrong.
+        internal static CommandResponse CreateErrorResponse(
+            Exception e)
+        {
+            if (IsConnectionFailure(e))
             {
                 return new CommandResponse()
                 {
                     Succeeded = false,
                     Error = new CommandError()
                     {
-                        Code = 100,
-                        Message = "Failed to connect to Archicad."
+                        Code = ConnectionFailedErrorCode,
+                        Message = ConnectionFailedErrorMessage
                     },
                     Result = null
                 };
             }
+
+            return new CommandResponse()
+            {
+                Succeeded = false,
+                Error = new CommandError()
+                {
+                    Code = CommunicationFailedErrorCode,
+                    Message = CommunicationFailedErrorMessage +
+                              e.GetBaseException().Message
+                },
+                Result = null
+            };
+        }
+
+        internal static bool IsConnectionFailure(
+            Exception e)
+        {
+            for (var current = e; current != null; current = current.InnerException)
+            {
+                if (current is AggregateException aggregate &&
+                    aggregate.InnerExceptions.Any(IsConnectionFailure))
+                {
+                    return true;
+                }
+
+                if (current is SocketException socketException)
+                {
+                    switch (socketException.SocketErrorCode)
+                    {
+                        case SocketError.ConnectionRefused:
+                        case SocketError.HostUnreachable:
+                        case SocketError.NetworkUnreachable:
+                        case SocketError.HostNotFound:
+                        case SocketError.AddressNotAvailable:
+                            return true;
+                    }
+                }
+
+                // .NET Framework's HttpClient reports a failed connect as a
+                // WebException.
+                if (current is WebException webException &&
+                    (webException.Status == WebExceptionStatus.ConnectFailure ||
+                     webException.Status ==
+                     WebExceptionStatus.NameResolutionFailure))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private async Task<CommandResponse> SendAddOnCommandAsync(

@@ -12,9 +12,11 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
     // settings of the Curtain Wall Settings dialog, from
     // ToolSettings/CurtainWall.json. ReferenceLine defines a new curtain wall
     // (a polyline; only X and Y are used; each pair of consecutive vertices is
-    // one segment). CreateCurtainWalls and ModifyCurtainWalls take the same
-    // fields (ModifyCurtainWalls keeps the number of segments), so Create can
-    // update the curtain walls it made before.
+    // one segment). ModifyCurtainWalls takes the fields of CreateCurtainWalls
+    // (keeping the number of segments), so Create can update the curtain walls
+    // it made before, and also flipped, offset and nominalWidth and the floor
+    // plan display settings, which Create writes with ModifyCurtainWalls right
+    // after making a new curtain wall.
     public class CurtainWallsComponent : ElementToolComponent
     {
         protected override string ToolName => "CurtainWall";
@@ -31,13 +33,18 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // (ExtendedElementCommands.cpp).
         private static readonly ISet<string> CreateCurtainWallsKeys = new HashSet<string>
         {
-            "cells", "coordinates", "favoriteName", "floorIndex", "height", "id", "primaryPattern",
+            "angle", "cells", "coordinates", "favoriteName", "floorIndex", "height", "id", "primaryPattern",
             "secondaryPattern", "zCoordinate"
         };
 
         private static readonly ISet<string> ModifyCurtainWallsKeys = new HashSet<string>
         {
-            "cells", "coordinates", "floorIndex", "height", "primaryPattern", "secondaryPattern", "zCoordinate"
+            "aboveViewLinePen", "aboveViewLineTypeId", "belowViewLinePen", "belowViewLineTypeId", "cells",
+            "coordinates", "cutProjectionMode", "displayOption", "flipped", "floorIndex", "frameCutLinePen",
+            "frameCutLineTypeId", "height", "isAutoOnStoryVisibility", "nominalWidth", "offset",
+            "overheadProjectionMode", "panelCutLinePen", "panelCutLineTypeId", "pen", "primaryPattern",
+            "secondaryPattern", "uncutProjectionMode", "useFrameTypesAttributes", "usePanelTypesAttributes",
+            "viewDepthLimitation", "visibility", "zCoordinate"
         };
 
         // ModifyCurtainWalls takes the reference line (with the same number of
@@ -64,11 +71,15 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 "Curtain Wall Settings dialog as one JSON object per dialog panel. A new curtain wall starts from " +
                 "the Curtain Wall tool defaults, or from FavoriteName, and the given settings override them; the " +
                 "frame and panel classes come from there. The column and row patterns (Columns, Rows) and the " +
-                "cells are written as in CreateCurtainWalls, but not read back. Create updates the curtain walls " +
+                "cells are read and written as in CreateCurtainWalls: one pattern for the whole curtain wall, " +
+                "which Archicad applies to every segment. Create updates the curtain walls " +
                 "this component created before (kept in the .gh file) instead of creating new ones; their " +
                 "reference line can move, but keeps its number of vertices, and a curtain wall deleted since " +
                 "then is reported in Errors, not created again. Switch this off or forget the curtain walls in " +
-                "the component menu.")
+                "the component menu. Slant Angle only applies when a curtain wall is created: Archicad cannot " +
+                "change the slant of an existing curtain wall, so Create leaves the slant of the curtain walls " +
+                "it updates as it is (forget them in the component menu to create them again with the new " +
+                "Slant Angle).")
         {
         }
 

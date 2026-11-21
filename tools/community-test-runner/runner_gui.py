@@ -19,6 +19,20 @@ from tkinter import ttk
 import runner_bench
 import tapir_test_runner as r
 
+# The Tapir icon (docs/assets/favicon.svg at 64 pixels) for the window, instead of Tk's feather (#2735).
+ICON_FILE = Path(__file__).with_name("tapir_icon.png")
+
+
+def set_tapir_icon(root: tk.Misc):
+    """Gives root, and the windows opened after it, the Tapir icon. Returns the image, which the caller
+    keeps; None when it cannot be shown (the icon is cosmetic)."""
+    try:
+        image = tk.PhotoImage(master=root, file=str(ICON_FILE))
+        root.iconphoto(True, image)
+        return image
+    except tk.TclError:
+        return None
+
 
 class RunnerWindow:
     def __init__(self, root: tk.Tk, cfg: dict):
@@ -260,6 +274,7 @@ class RunnerWindow:
 
 def run(cfg: dict) -> int:
     root = tk.Tk()
+    icon = set_tapir_icon(root)  # noqa: F841 - kept while the window is open
     RunnerWindow(root, cfg)
     root.mainloop()
     return 0

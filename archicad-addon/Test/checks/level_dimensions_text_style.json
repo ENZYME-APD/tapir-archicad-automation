@@ -1,0 +1,107 @@
+{
+  "title": "CreateLevelDimensions and ModifyLevelDimensions: text font and bold/italic/underline, read back by GetDetailsOfElements (#2656)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a static level dimension with font Arial, bold and underlined",
+      "command": "CreateLevelDimensions",
+      "params": {
+        "levelDimensionsData": [
+          { "position": { "x": 820.0, "y": 800.0 }, "level": 0.5, "floorIndex": 0, "textHeight": 2.5, "fontName": "Arial", "bold": true, "italic": false, "underline": true }
+        ]
+      },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read the text style back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "save": { "font": "detailsOfElements[0].details.fontIndex" },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "LevelDimension", "name": "a level dimension" },
+        { "path": "detailsOfElements[0].details.fontName", "eq": "Arial", "name": "font as created" },
+        { "path": "detailsOfElements[0].details.bold", "eq": true, "name": "bold as created" },
+        { "path": "detailsOfElements[0].details.italic", "eq": false, "name": "not italic as created" },
+        { "path": "detailsOfElements[0].details.underline", "eq": true, "name": "underlined as created" },
+        { "path": "detailsOfElements[0].details.textHeight", "approx": 2.5, "name": "text height as created" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: italic on, bold off, underline left out",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "bold": false, "italic": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "style change accepted" }
+      ]
+    },
+    {
+      "id": "style after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.bold", "eq": false, "name": "bold off" },
+        { "path": "detailsOfElements[0].details.italic", "eq": true, "name": "italic on" },
+        { "path": "detailsOfElements[0].details.underline", "eq": true, "name": "underline kept" },
+        { "path": "detailsOfElements[0].details.fontName", "eq": "Arial", "name": "font kept" },
+        { "path": "detailsOfElements[0].details.position.x", "approx": 820.0, "name": "position kept" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: the font by its index",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "fontIndex": "${font}", "underline": false }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "font index accepted" }
+      ]
+    },
+    {
+      "id": "font after the change by index",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.fontName", "eq": "Arial", "name": "same font by index" },
+        { "path": "detailsOfElements[0].details.underline", "eq": false, "name": "underline off" },
+        { "path": "detailsOfElements[0].details.italic", "eq": true, "name": "italic kept" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: an unknown font name",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "fontName": "No Such Font 2656", "bold": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown font refused" }
+      ]
+    },
+    {
+      "id": "the refused item changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.fontName", "eq": "Arial", "name": "font unchanged" },
+        { "path": "detailsOfElements[0].details.bold", "eq": false, "name": "bold unchanged" }
+      ]
+    }
+  ]
+}

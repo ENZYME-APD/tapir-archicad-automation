@@ -64,7 +64,7 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
                          ToolSettings/ (API field -> Archicad GUI label tables per tool)
 builtin-scripts/         Bundled automation scripts
 marketplace/             Shared scripts, one <slug>/ folder each (format in its README.md)
-branding/                Logos, diagrams
+branding/                Logos, diagrams, WEBSITE_STYLE.md (the website's style rules)
 docs/                    Generated docs (archicad-addon command reference),
                          api-coverage/ page of the Archicad API coverage checklist,
                          gh-coverage/ page of the Grasshopper coverage checklist,
@@ -90,6 +90,7 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          site copies for AI assistants (generate_llm_files.py),
                          release notes summary (release_notes.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
+    triage-command/      The Discord /triage slash command (Cloudflare Worker that starts that workflow)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
 ```
@@ -420,8 +421,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (see Versioning for which version it ships); first regenerates
   `docs/archicad-addon` with `tools/generate_addon_docs.py`, then the site's copies
   for AI assistants with `tools/generate_llm_files.py` (`llms.txt`, `llms-full.txt`,
-  `commands.json`/`.md` with every command's schemas, Grasshopper components and
-  example, each page as `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
+  `commands.json`/`.md`, an index with one file per command group under `docs/commands/`
+  that holds every command's schemas, Grasshopper components and example, each page as
+  `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
   warns), and pushes them to `main` when they changed (never hand-edit those docs).
   Run both scripts yourself to update them earlier; `--check` reports stale files.
   The release notes are the installer links, a short summary written by
@@ -551,6 +553,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   no workflow on their own; see
   [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)). It is
   scheduled at :13 and :43, off the full and half hour that GitHub drops most.
+  `/triage` in Discord starts it on demand through the Worker in
+  [tools/discord-issue-bot/triage-command/](tools/discord-issue-bot/triage-command/README.md).
 - `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
   to `main`, a release, issue events, hourly (which picks up pull request changes)
   and by hand, it runs
@@ -596,7 +600,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   marketplace scripts, read by `docs/scripts/scripts.js` and the site's live
   script count) to the same branch with `tools/generate_catalogue.py`, which needs
   the full history for each version's commit, URL and SHA-256; a push run writes
-  only that and leaves `community.json` as it is. Its runs never cancel each
+  only that and leaves `community.json` as it is. Daily and by hand it also writes
+  `user-map.json` with `tools/generate_user_map.py`: the towns people name on Discord
+  (the /where slash command of tools/discord-where/, answers to the location question in #welcome-and-rules, and "I'm from ..." anywhere),
+  placed with OpenStreetMap's Nominatim and counted per town, never a name or a message,
+  read by `docs/community/user-map.js` (the map); it needs the bot's Message Content
+  Intent, and `tools/user_map_overrides.json` corrects a message it misreads. Its runs never cancel each
   other. It never runs on pull request events and never checks out pull request
   code; `SITE_DATA=false` turns it off.
 
@@ -626,6 +635,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   checks as done elsewhere.
 - Cross-platform: code must compile on both Windows and macOS; resources are compiled
   via `Tools/CompileResources.py`.
+- A change to a website page or stylesheet under `docs/` follows
+  [branding/WEBSITE_STYLE.md](branding/WEBSITE_STYLE.md): the looks and modes every page must keep
+  working, the colour, type and spacing scales, the page structure, the components, numbering,
+  wording and its checklist. A change that removes an item of its "Known inconsistencies" list
+  strikes it from that list.
 - When a bot or a person finds that the DevKit has no function for something people ask
   for, add a row to [docs/limits/index.html](docs/limits/index.html) ("What the Archicad API
   can't do") in the same pull request: what people want, the status, what to do instead, the
@@ -642,7 +656,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - Grasshopper coverage of the Tapir commands: <https://archicad-api.com/gh-coverage/>
   (same branch and workflow)
 - For AI assistants: <https://archicad-api.com/llms.txt> (the index), `llms-full.txt`
-  (everything in one file) and `commands.json` (every command, machine-readable)
+  (everything in one file) and `commands.json` (every command, machine-readable: an index,
+  with one file per command group under `docs/commands/`)
 - Developer docs (wiki): <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki>
 - Add-On development guide: <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development>
 - Roadmap: <https://github.com/orgs/ENZYME-APD/projects/4/views/1>

@@ -13,6 +13,8 @@ Non-orthogonal Wall Finder
 
 Lists the walls that are not aligned to the allowed angle grid (every 90° or
 every 45°), highlights them in red and selects them in Archicad on request.
+Optionally checks only the walls shown in the current view, so only the
+active design options of the floor plan (Archicad 29 or newer).
 
 by Daniel Alexander Kovacs for tapir
 https://kadsolutions.co.uk/
@@ -81,6 +83,13 @@ class OrthoWallFinder:
                         variable=self.use_view_rotation, command=self.window.guarded(self.refresh)).grid(
             row=3, column=0, columnspan=4, sticky="w", pady=(6, 0))
 
+        # Walls hidden by the design option combination of the current view (Archicad 29 or newer)
+        # fail the IsVisibleByRenovation filter, as do the walls the renovation filter hides.
+        self.only_shown = tk.BooleanVar(value=False)
+        ttk.Checkbutton(options, text="Only walls shown in the current view (active design options, renovation filter)",
+                        variable=self.only_shown, command=self.window.guarded(self.refresh)).grid(
+            row=4, column=0, columnspan=4, sticky="w", pady=(6, 0))
+
         summary = ttk.Frame(body, padding=(0, 10, 0, 6))
         summary.grid(row=1, column=0, sticky="ew")
         self.count_label = ttk.Label(summary, text="–", style="Big.TLabel")
@@ -120,6 +129,8 @@ class OrthoWallFinder:
             filters = ["IsVisibleByLayer"]
             if self.scope.get() == "story":
                 filters.append("OnActualFloor")
+            if self.only_shown.get():
+                filters.append("IsVisibleByRenovation")
             walls = run_tapir("GetElementsByType", {"elementType": "Wall", "filters": filters}).get("elements", [])
 
             view_rotation = 0.0
@@ -154,6 +165,8 @@ class OrthoWallFinder:
 
         count = len(self.faulty_walls)
         scope = "on the current story" if self.scope.get() == "story" else "in the project"
+        if self.only_shown.get():
+            scope += " shown in the current view"
         self.count_label.configure(text=str(count), foreground="#c62828" if count else "#1b7f3b")
         self.summary_label.configure(text=f"non-orthogonal wall{'s' if count != 1 else ''} {scope}")
         self.detail_label.configure(text=f"{len(walls)} visible walls checked against {step:g}° steps")

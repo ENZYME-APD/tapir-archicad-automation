@@ -1,0 +1,120 @@
+{
+  "title": "CreateZones puts the new zone on the layer given by layerIndex and refuses a nonexistent or locked layer (#2631)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Zone" ],
+  "steps": [
+    {
+      "id": "an open and a locked layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check zone layer open", "isHidden": false, "isLocked": false },
+          { "name": "Tapir check zone layer locked", "isHidden": false, "isLocked": true }
+        ]
+      },
+      "save": { "layerOpen": "attributeIds[0].attributeId.guid", "layerLocked": "attributeIds[1].attributeId.guid" }
+    },
+    {
+      "id": "indices of the two layers",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerOpen}" } }, { "attributeId": { "guid": "${layerLocked}" } } ],
+        "fields": [ "isLocked" ]
+      },
+      "save": { "indexOpen": "layers[0].index", "indexLocked": "layers[1].index" },
+      "expect": [
+        { "path": "layers[1].isLocked", "eq": true, "name": "second layer is locked" }
+      ]
+    },
+    {
+      "id": "zone on the open layer",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck layer zone",
+            "numberStr": "L1",
+            "floorIndex": 0,
+            "layerIndex": "${indexOpen}",
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 940.0, "y": 720.0 },
+                { "x": 944.0, "y": 720.0 },
+                { "x": 944.0, "y": 723.0 },
+                { "x": 940.0, "y": 723.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created, layerIndex accepted" }
+      ]
+    },
+    {
+      "id": "read the new zone's layer",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "save": { "zoneLayer": "detailsOfElements[0].layerIndex" },
+      "expect": [
+        { "path": "detailsOfElements[0].layerIndex", "exists": true },
+        { "expr": "${zoneLayer} - ${indexOpen}", "eq": 0, "name": "zone is on the given layer" }
+      ]
+    },
+    {
+      "id": "zones on a nonexistent and on a locked layer",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck no layer zone",
+            "numberStr": "L2",
+            "floorIndex": 0,
+            "layerIndex": 99999,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 950.0, "y": 720.0 },
+                { "x": 954.0, "y": 720.0 },
+                { "x": 954.0, "y": 723.0 },
+                { "x": 950.0, "y": 723.0 }
+              ]
+            }
+          },
+          {
+            "name": "TapirCheck locked layer zone",
+            "numberStr": "L3",
+            "floorIndex": 0,
+            "layerIndex": "${indexLocked}",
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 960.0, "y": 720.0 },
+                { "x": 964.0, "y": 720.0 },
+                { "x": 964.0, "y": 723.0 },
+                { "x": 960.0, "y": 723.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "one result per item" },
+        { "path": "elements[0].error.code", "exists": true, "name": "nonexistent layer refused" },
+        { "path": "elements[1].error.code", "exists": true, "name": "locked layer refused" }
+      ]
+    },
+    {
+      "id": "only the zone on the open layer was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Zone" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 """Renames and renumbers the first zone and changes its contour line pen with ModifyZones, reads it back, then restores them.
 
-Needs at least one Zone. Only the given fields change; the polygon is kept. ModifyZones takes the
-same settings as CreateZones, contourLine and coverFill included.
+Needs at least one Zone. Only the given fields change; the polygon is kept unless geometry is given
+(the new polygonCoordinates, polygonArcs and holes of a manual zone, as in CreateZones). ModifyZones
+takes the same settings as CreateZones, contourLine and coverFill included.
 """
 import aclib
 

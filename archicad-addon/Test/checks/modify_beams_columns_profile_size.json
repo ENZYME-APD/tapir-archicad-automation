@@ -1,0 +1,255 @@
+{
+  "title": "ModifyColumns and ModifyBeams fail an item whose width/height a custom profile ignores, and still apply its other fields (#2554)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Column", "Beam" ],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bm": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "a 0.12 x 0.24 profile for beams and columns",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2554",
+            "wallType": false,
+            "beamType": true,
+            "coluType": true,
+            "handrailType": false,
+            "otherGDLObjectType": false,
+            "newSkins": [
+              {
+                "contours": [ { "polygonCoordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.12, "y": 0.0 }, { "x": 0.12, "y": 0.24 }, { "x": 0.0, "y": 0.24 } ] } ],
+                "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+                "isCore": true,
+                "isFinish": false
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "p1": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": false, "name": "profile created" }
+      ]
+    },
+    {
+      "id": "a basic 0.30 x 0.30 column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 900.0, "y": 900.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "axisRotationAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "depth": 0.3,
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "switch the column to the profile",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "profileId": { "attributeId": { "guid": "${p1}" } } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "profile set" }
+      ]
+    },
+    {
+      "id": "the profiled column's size",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "save": { "cw0": "detailsOfElements[0].details.width", "cd0": "detailsOfElements[0].details.depth" }
+    },
+    {
+      "id": "width and depth on the profiled column, with a rotation",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c1}" },
+            "axisRotationAngle": 0.3,
+            "isWidthAndHeightLinked": false,
+            "width": 0.45,
+            "depth": 0.55
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "not a silent success" },
+        { "path": "executionResults[0].error.message", "contains": "not applied", "name": "says the size was not applied" },
+        { "path": "executionResults[0].error.message", "contains": "TapirCheck Profile 2554", "name": "names the profile" }
+      ]
+    },
+    {
+      "id": "the size stayed, the rotation applied",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "save": { "cw1": "detailsOfElements[0].details.width", "cd1": "detailsOfElements[0].details.depth" },
+      "expect": [
+        { "expr": "${cw1} - ${cw0}", "approx": 0, "name": "width is still the profile's" },
+        { "expr": "${cd1} - ${cd0}", "approx": 0, "name": "depth is still the profile's" },
+        { "path": "detailsOfElements[0].details.axisRotationAngle", "approx": 0.3, "name": "other field applied" }
+      ]
+    },
+    {
+      "id": "width and depth with buildingMaterialId make it basic",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          {
+            "elementId": { "guid": "${c1}" },
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+            "isWidthAndHeightLinked": false,
+            "width": 0.45,
+            "depth": 0.55
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "basic size applied" }
+      ]
+    },
+    {
+      "id": "the basic column has the size",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 0.45 },
+        { "path": "detailsOfElements[0].details.depth", "approx": 0.55 }
+      ]
+    },
+    {
+      "id": "a basic beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 920.0 },
+            "endCoordinate": { "x": 906.0, "y": 920.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "height": 0.5,
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "switch the beam to the profile",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b1}" }, "profileId": { "attributeId": { "guid": "${p1}" } } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "profile set" }
+      ]
+    },
+    {
+      "id": "the profiled beam's size",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "save": { "bw0": "detailsOfElements[0].details.width", "bh0": "detailsOfElements[0].details.height" }
+    },
+    {
+      "id": "width and height on the profiled beam, with offset and profile angle",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "offset": 0.07,
+            "profileAngle": 0.12,
+            "isWidthAndHeightLinked": false,
+            "width": 0.31,
+            "height": 0.43
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "not a silent success" },
+        { "path": "executionResults[0].error.message", "contains": "not applied", "name": "says the size was not applied" },
+        { "path": "executionResults[0].error.message", "contains": "TapirCheck Profile 2554", "name": "names the profile" }
+      ]
+    },
+    {
+      "id": "the size stayed, offset and profile angle applied",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "save": { "bw1": "detailsOfElements[0].details.width", "bh1": "detailsOfElements[0].details.height" },
+      "expect": [
+        { "expr": "${bw1} - ${bw0}", "approx": 0, "name": "width is still the profile's" },
+        { "expr": "${bh1} - ${bh0}", "approx": 0, "name": "height is still the profile's" },
+        { "path": "detailsOfElements[0].details.offset", "approx": 0.07, "name": "offset applied" },
+        { "path": "detailsOfElements[0].details.profileAngle", "approx": 0.12, "name": "profile angle applied" }
+      ]
+    },
+    {
+      "id": "width and height with buildingMaterialId make it basic",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+            "isWidthAndHeightLinked": false,
+            "width": 0.31,
+            "height": 0.43
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "basic size applied" }
+      ]
+    },
+    {
+      "id": "the basic beam has the size",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 0.31 },
+        { "path": "detailsOfElements[0].details.height", "approx": 0.43 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Profile", "attributeId": { "attributeId": { "guid": "${p1}" } } } ] }
+    }
+  ]
+}

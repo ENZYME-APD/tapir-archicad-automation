@@ -1,0 +1,4 @@
+{
+ "_about": "Corrections for the Community page's map (tools/generate_user_map.py). Key: a Discord message id (right-click the message, Copy Message ID). Value: the place it means, as \"Town, Country\", or null to leave the message out. Keys starting with _ are ignored.",
+ "_example": "Maribor, Slovenia"
+}

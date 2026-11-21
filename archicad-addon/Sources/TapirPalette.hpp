@@ -80,6 +80,7 @@ private:
         GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
         GS::UniString baseDisplayText;   // label as computed by PrepareScript, before any shortcut-slot suffix
         GS::UniString uvProjectPath;     // the folder of the uv project (uvProject in the config) the script runs in; empty: run it with --script
+        GS::UniString customFolderName;  // the subfolder of the custom-scripts folder the script is in, shown as its heading; empty: directly in it
         ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by PrepareScript
 
         explicit PopUpItemData (
@@ -144,25 +145,34 @@ private:
     GS::UInt32 startedScriptCount = 0;   // numbers the TAPIR_SCRIPT_ID of each started script
     // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the favourites and a
     // separator when there is one, the scripts the user added, a separator when hasAddedScript, the scripts of the
-    // custom-scripts folder, a separator when hasCustomScript, the scripts of the local folders and repositories, then,
+    // custom-scripts folder (with a heading before each subfolder's), a separator when hasCustomScript, the scripts of the local folders and repositories, then,
     // when marketplaceScripts is not empty, a separator, the disabled "Marketplace" heading and the marketplace scripts,
     // and last a separator and "Reload scripts...". A search shows only the scripts that match it (BuildVisibleItems).
     using ScriptList = GS::Array<GS::Ref<PopUpItemData>>;
     ScriptList addedScripts;    // added with the Add button, saved in the preferences; the newest first
-    ScriptList customScripts;   // Documents/Tapir/custom-scripts
+    // Documents/Tapir/custom-scripts: its files first, then the .py files of each subfolder, by folder and file name,
+    // each subfolder's under a heading with its name (#2963)
+    ScriptList customScripts;
     ScriptList listedScripts;   // localFolders and repositories of the config
     ScriptList marketplaceScripts;   // the enabled scripts installed with the Script Manager, by name (#2408)
     bool hasCustomScript = false;   // the custom-scripts section and its separator are shown
     bool hasAddedScript = false;    // the added section and its separator are shown
+    // A configured repository could not be listed at the last load (AddScriptsFromRepositories). The palette is
+    // created while Archicad starts, maybe before the network is up, so the load is tried once more when the palette
+    // is first opened (#2731).
+    bool repositoryListingFailed = false;
+    bool repositoryListingRetried = false;
 
     // One item of scriptSelectionPopUp. Every reader of the dropdown goes through visibleItems: item i of the
     // dropdown is visibleItems[i - 1], so nothing counts sections and separators to find a script.
     struct VisibleItem
     {
-        // NoMatch: "No matching scripts", disabled; Heading: the disabled "Marketplace" heading (#2408)
+        // NoMatch: "No matching scripts", disabled; Heading: a disabled heading, the "Marketplace" one (#2408) or
+        // the name of a subfolder of the custom-scripts folder (#2963)
         enum class Kind { Script, Separator, Reload, NoMatch, Heading };
         Kind kind = Kind::Separator;
         GS::Ref<PopUpItemData> script;   // set for Kind::Script only
+        GS::UniString headingText;       // Kind::Heading only; empty: the "Marketplace" heading
 
         VisibleItem () = default;
         VisibleItem (Kind _kind, const GS::Ref<PopUpItemData>& _script = GS::Ref<PopUpItemData> ())

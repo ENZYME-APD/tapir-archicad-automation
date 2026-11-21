@@ -1,0 +1,75 @@
+{
+  "title": "CreateMorphs and ModifyMorphs place the morph at level above its home story instead of ignoring it (#2628)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Morph" ],
+  "steps": [
+    {
+      "id": "a box morph on story 1 with basePoint z 0 and level 0.5, and one on story 0 with level 1.25",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "floorIndex": 1,
+            "basePoint": { "x": 880.0, "y": 720.0, "z": 0.0 },
+            "size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+            "level": 0.5
+          },
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 885.0, "y": 720.0, "z": 0.0 },
+            "size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+            "level": 1.25
+          }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid", "b": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "morph on story 1 created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "morph on story 0 created" }
+      ]
+    },
+    {
+      "id": "read the morphs back: level is what was given, not basePoint z minus the story",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${a}" } }, { "elementId": { "guid": "${b}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 1, "name": "first morph on story 1" },
+        { "path": "detailsOfElements[0].details.level", "approx": 0.5, "name": "level 0.5 applied over basePoint z" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 0, "name": "second morph on story 0" },
+        { "path": "detailsOfElements[1].details.level", "approx": 1.25, "name": "level 1.25 applied over basePoint z" }
+      ]
+    },
+    {
+      "id": "ModifyMorphs: level alone, and level together with a vertical translation",
+      "command": "ModifyMorphs",
+      "creates": false,
+      "params": {
+        "morphsWithDetails": [
+          { "elementId": { "guid": "${a}" }, "level": 2.0 },
+          { "elementId": { "guid": "${b}" }, "translation": { "x": 0.0, "y": 0.0, "z": 5.0 }, "level": 0.75 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the modified morphs back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${a}" } }, { "elementId": { "guid": "${b}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 1, "name": "first morph stays on story 1" },
+        { "path": "detailsOfElements[0].details.level", "approx": 2.0, "name": "ModifyMorphs level 2.0 applied" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 0, "name": "second morph stays on story 0" },
+        { "path": "detailsOfElements[1].details.level", "approx": 0.75, "name": "level decides the height over a vertical translation" }
+      ]
+    }
+  ]
+}

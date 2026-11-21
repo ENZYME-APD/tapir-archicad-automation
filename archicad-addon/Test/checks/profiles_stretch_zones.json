@@ -1,0 +1,162 @@
+{
+  "title": "CreateProfiles sets and removes stretch zones, read back with GetProfiles' stretchZones",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "create a 0.3 x 2.5 wall profile with both stretch zones",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2586 stretch",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 2.5}, {"x": 0.0, "y": 2.5}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "isCore": true
+              }
+            ],
+            "stretchZones": {
+              "horizontal": {"min": 0.05, "max": 0.25},
+              "vertical": {"min": 0.5, "max": 2.0}
+            }
+          }
+        ]
+      },
+      "save": {"p": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back both zones",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["width", "height", "minimumWidth", "minimumHeight", "widthStretchable", "heightStretchable", "stretchZones"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].width", "approx": 0.3, "tol": 0.0001},
+        {"path": "profiles[0].height", "approx": 2.5, "tol": 0.0001},
+        {"path": "profiles[0].widthStretchable", "eq": true, "name": "width stretchable"},
+        {"path": "profiles[0].heightStretchable", "eq": true, "name": "height stretchable"},
+        {"path": "profiles[0].stretchZones.horizontal.min", "approx": 0.05, "tol": 0.0001},
+        {"path": "profiles[0].stretchZones.horizontal.max", "approx": 0.25, "tol": 0.0001},
+        {"path": "profiles[0].stretchZones.vertical.min", "approx": 0.5, "tol": 0.0001},
+        {"path": "profiles[0].stretchZones.vertical.max", "approx": 2.0, "tol": 0.0001},
+        {"path": "profiles[0].minimumWidth", "approx": 0.1, "tol": 0.0001, "name": "minimum width is the width outside the zone"},
+        {"path": "profiles[0].minimumHeight", "approx": 1.0, "tol": 0.0001, "name": "minimum height is the height outside the zone"}
+      ]
+    },
+    {
+      "id": "overwrite: change the horizontal zone, remove the vertical one",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 stretch",
+            "stretchZones": {
+              "horizontal": {"min": 0.1, "max": 0.2},
+              "removeVertical": true
+            }
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the changed zones",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["minimumWidth", "widthStretchable", "heightStretchable", "stretchZones", "skins"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].widthStretchable", "eq": true},
+        {"path": "profiles[0].heightStretchable", "eq": false, "name": "vertical zone removed"},
+        {"path": "profiles[0].stretchZones.vertical", "exists": false, "name": "no vertical zone reported"},
+        {"path": "profiles[0].stretchZones.horizontal.min", "approx": 0.1, "tol": 0.0001, "name": "horizontal min changed"},
+        {"path": "profiles[0].stretchZones.horizontal.max", "approx": 0.2, "tol": 0.0001, "name": "horizontal max changed"},
+        {"path": "profiles[0].minimumWidth", "approx": 0.2, "tol": 0.0001},
+        {"path": "profiles[0].skins", "len": 1, "name": "geometry kept"}
+      ]
+    },
+    {
+      "id": "bad input: a zone and its removal together",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 stretch",
+            "stretchZones": {
+              "horizontal": {"min": 0.0, "max": 0.3},
+              "removeHorizontal": true
+            }
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "rejected"}
+      ]
+    },
+    {
+      "id": "bad input: min not less than max",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 stretch",
+            "stretchZones": {
+              "horizontal": {"min": 0.2, "max": 0.1}
+            }
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "rejected"}
+      ]
+    },
+    {
+      "id": "the rejected inputs changed nothing",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["widthStretchable", "stretchZones"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].widthStretchable", "eq": true, "name": "horizontal zone still there"},
+        {"path": "profiles[0].stretchZones.horizontal.min", "approx": 0.1, "tol": 0.0001},
+        {"path": "profiles[0].stretchZones.horizontal.max", "approx": 0.2, "tol": 0.0001}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${p}"}}}]}
+    }
+  ]
+}

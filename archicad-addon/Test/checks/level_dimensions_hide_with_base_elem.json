@@ -1,0 +1,95 @@
+{
+  "title": "CreateLevelDimensions and ModifyLevelDimensions: hide with associated element, read back by GetDetailsOfElements (#2656)",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "slab for the associative level dimension",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 1.2,
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 830.0, "y": 800.0 }, { "x": 834.0, "y": 800.0 },
+              { "x": 834.0, "y": 804.0 }, { "x": 830.0, "y": 804.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "associative level dimension hidden with the slab",
+      "command": "CreateLevelDimensions",
+      "params": {
+        "levelDimensionsData": [
+          { "position": { "x": 832.0, "y": 802.0 }, "parentElementId": { "guid": "${s}" }, "hideWithBaseElem": true }
+        ]
+      },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read it back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.hideWithBaseElem", "eq": true, "name": "hide with associated element on" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s}", "name": "owned by the slab" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: hide with associated element off",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "hideWithBaseElem": false }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted" }
+      ]
+    },
+    {
+      "id": "after switching it off",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.hideWithBaseElem", "eq": false, "name": "hide with associated element off" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s}", "name": "still owned by the slab" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: switch it on again",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "hideWithBaseElem": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted" }
+      ]
+    },
+    {
+      "id": "after switching it on",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.hideWithBaseElem", "eq": true, "name": "hide with associated element on again" }
+      ]
+    }
+  ]
+}

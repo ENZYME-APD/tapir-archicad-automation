@@ -1,6 +1,7 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "Location.hpp"
+#include "FileSystem.hpp"
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
@@ -2892,34 +2893,8 @@ static bool IsFileOfOpenProject (const IO::Location& location)
         projectInfo.location->ToDisplayText ().Compare (location.ToDisplayText (), CaseInsensitive) == GS::UniString::Equal;
 }
 
-GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+GSErrCode SaveOpenProjectInPlace ()
 {
-    GS::UniString projectPath;
-    if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
-        IO::Location fileLoc (projectPath);
-        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, fileLoc);
-        if (!overwriteRefusal.IsEmpty ()) {
-            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
-        }
-        // The project's own file takes the plain save below: a Save As to its own location would
-        // also overwrite a project that Archicad opened read-only, which the plain save refuses.
-        if (!IsFileOfOpenProject (fileLoc)) {
-            API_FileSavePars fsp = {};
-            fsp.fileTypeID = APIFType_PlanFile;
-            fsp.file = &fileLoc;
-            GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
-            if (err != NoError) {
-                return CreateFailedExecutionResult (err, "Failed to save the project to the given path.");
-            }
-            return CreateSuccessfulExecutionResult ();
-        }
-    } else {
-        bool overwrite = true;
-        if (parameters.Get ("overwrite", overwrite) && !overwrite) {
-            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite false needs projectPath: a save in place always overwrites the project's own file, nothing was written.");
-        }
-    }
-
     // The parameterless save acts on the current window - "saves the content of
     // the current window", ACAPI_Automate.h - so from a 3D, section or other
     // non-plan window it tries to save that window's content, which has no file
@@ -2947,9 +2922,54 @@ GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, 
         }
     });
 
-    const GSErrCode err = ACAPI_ProjectOperation_Save ();
+    return ACAPI_ProjectOperation_Save ();
+}
+
+// Why a save in place failed, from the errors ACAPI_ProjectOperation_Save documents. The message
+// names the code too, because some clients show only an error's message.
+static GS::UniString DescribeSaveInPlaceFailure (GSErrCode err)
+{
+    switch (err) {
+        case APIERR_READONLY:
+            return "Failed to save the project (APIERR_READONLY): it is open read-only (from an archive, or a file that is locked or open elsewhere) or has never been saved; save it to a new file with projectPath. A save from another window than the Floor Plan also fails this way when the Floor Plan window could not be activated.";
+        case APIERR_REFUSEDCMD:
+            return "Failed to save the project (APIERR_REFUSEDCMD): Archicad refused the command, as it does while another add-on command or an unfinished input such as a selection rectangle is running. Try again when Archicad is idle.";
+        default:
+            return GS::UniString::Printf ("Failed to save the project (error code %d).", err);
+    }
+}
+
+GS::ObjectState SaveProjectCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString projectPath;
+    if (parameters.Get ("projectPath", projectPath) && !projectPath.IsEmpty ()) {
+        IO::Location fileLoc (projectPath);
+        const GS::UniString overwriteRefusal = GetOverwriteRefusal (parameters, fileLoc);
+        if (!overwriteRefusal.IsEmpty ()) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
+        }
+        // The project's own file takes the plain save below: a Save As to its own location would
+        // also overwrite a project that Archicad opened read-only, which the plain save refuses.
+        if (!IsFileOfOpenProject (fileLoc)) {
+            API_FileSavePars fsp = {};
+            fsp.fileTypeID = APIFType_PlanFile;
+            fsp.file = &fileLoc;
+            GSErrCode err = ACAPI_ProjectOperation_Save (&fsp);
+            if (err != NoError) {
+                return CreateFailedExecutionResult (err, GS::UniString::Printf ("Failed to save the project to the given path (error code %d).", err));
+            }
+            return CreateSuccessfulExecutionResult ();
+        }
+    } else {
+        bool overwrite = true;
+        if (parameters.Get ("overwrite", overwrite) && !overwrite) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "overwrite false needs projectPath: a save in place always overwrites the project's own file, nothing was written.");
+        }
+    }
+
+    const GSErrCode err = SaveOpenProjectInPlace ();
     if (err != NoError) {
-        return CreateFailedExecutionResult (err, "Failed to save the project.");
+        return CreateFailedExecutionResult (err, DescribeSaveInPlaceFailure (err));
     }
     return CreateSuccessfulExecutionResult ();
 }
@@ -7658,6 +7678,232 @@ GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetRawResponseSchema () c
 GS::ObjectState DeleteHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     return RemoveHotlinkNodes (parameters, HotlinkNodeRemoval::Delete);
+}
+
+MergeFileCommand::MergeFileCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MergeFileCommand::GetName () const
+{
+    return "MergeFile";
+}
+
+GS::Optional<GS::UniString> MergeFileCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "sourceLocation": {
+                "type": "string",
+                "description": "Absolute path of the file to merge: an Archicad project (.pln, .pla) or module (.mod). It cannot be a file the project already hotlinks: breaking that hotlink would turn its placed instances into ordinary elements too."
+            },
+            "origin": {
+                "$ref": "#/HotlinkOrigin",
+                "description": "Optional. Where the origin of the file lands in the project. Defaults to the project origin; if z is omitted, it is 0."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Optional. Reflects the file's local X axis before the rotation. Defaults to false."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional story of the project that the story with index 0 of the file goes to; the other stories of the file follow it. Defaults to 0, so each story of the file goes to the story with the same index."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sourceLocation"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MergeFileCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements the merge added to the model, every element of the file's model. Archicad leaves them grouped together, as it leaves the elements of a broken hotlink; UngroupElements dissolves the group."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+// The guids of every element of the current database.
+static GS::HashSet<API_Guid> GetElementGuidSetOfCurrentDatabase ()
+{
+    GS::Array<API_Guid> guids;
+    ACAPI_Element_GetElemList (API_ZombieElemID, &guids);
+    GS::HashSet<API_Guid> guidSet;
+    for (const API_Guid& guid : guids) {
+        guidSet.Add (guid);
+    }
+    return guidSet;
+}
+
+GS::ObjectState MergeFileCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString sourcePath;
+    if (!parameters.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "sourceLocation is missing.");
+    }
+    IO::Location sourceLocation (sourcePath);
+    IO::Name lastLocalName;
+    if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
+        return CreateErrorResponse (APIERR_BADPARS, "sourceLocation is not a valid path.");
+    }
+    bool exists = false;
+    if (IO::fileSystem.Contains (sourceLocation, &exists) != NoError || !exists) {
+        return CreateErrorResponse (APIERR_BADPARS, "There is no file at sourceLocation '" + sourcePath + "'. Nothing was changed.");
+    }
+    // Breaking a hotlink node breaks every instance placed from it, so a file the project already
+    // hotlinks would lose its hotlinks as well.
+    const GS::Optional<API_Guid> existingNode = FindHotlinkNodeBySource (sourceLocation);
+    if (existingNode.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "The file is already hotlinked in the project (hotlinkNodeId " + APIGuidToString (existingNode.Get ()) +
+            "): merging it would break that hotlink too. Nothing was changed.");
+    }
+
+    API_Coord3D origin = {};
+    const GS::ObjectState* originOS = parameters.Get ("origin");
+    if (originOS != nullptr) {
+        origin = Get3DCoordinateFromObjectState (*originOS);
+    }
+    double rotationAngle = 0.0;
+    parameters.Get ("rotationAngle", rotationAngle);
+    bool mirrored = false;
+    parameters.Get ("mirrored", mirrored);
+    Int32 floorIndex = 0;
+    parameters.Get ("floorIndex", floorIndex);
+
+    // The model elements are in the floor plan database, whatever window is in front.
+    API_DatabaseInfo previousDatabase = {};
+    bool switchedDatabase = false;
+    GSErrCode err = SwitchCurrentDatabaseToFloorPlan (previousDatabase, switchedDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to make the floor plan the current database. Nothing was changed.");
+    }
+    const GS::OnExit restoreDatabase ([&] () {
+        if (switchedDatabase) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    // The merged elements are the ones that are new after the break.
+    const GS::HashSet<API_Guid> elementsBefore = GetElementGuidSetOfCurrentDatabase ();
+
+    // The Archicad API has no merge (the ACAPI_ProjectOperation functions open, save, close,
+    // print and publish), so the file is placed as a hotlink, as CreateHotlinkNodes and
+    // CreateHotlinkInstances do, and the hotlink is broken, as BreakHotlinkNodes does, which leaves
+    // the placed elements as ordinary elements. One undo step; a step that fails returns its error
+    // from the command, which undoes the steps before it.
+    GS::Array<API_Guid> mergedElements;
+    API_Guid instanceGuid = APINULLGuid;
+    GSErrCode stepErr = NoError;
+    GS::UniString failure;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Merge File", [&] () -> GSErrCode {
+        const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) -> GSErrCode {
+            stepErr = failErr != NoError ? failErr : APIERR_GENERAL;
+            failure = message;
+            return stepErr;
+        };
+
+        // 1. The node, every story of the file, its story 0 as the reference story.
+        API_HotlinkNode hotlinkNode = {};
+        hotlinkNode.type = APIHotlink_Module;
+        hotlinkNode.storyRangeType = APIHotlink_AllStories;
+        hotlinkNode.refFloorInd = 0;
+        const GS::UniString nodeName = lastLocalName.ToString ();
+        GS::ucsncpy (hotlinkNode.name, nodeName.ToUStr (), API_UniLongNameLen - 1);
+        hotlinkNode.name[API_UniLongNameLen - 1] = 0;
+        // API_HotlinkNode's destructor frees sourceLocation (see CreateHotlinkNodes); on failure it is
+        // freed here and nulled.
+        IO::Location* ownedLocation = new IO::Location (sourceLocation);
+        hotlinkNode.sourceLocation = ownedLocation;
+#ifdef ServerMainVers_2800
+        ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
+#endif
+        GSErrCode apiErr = ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
+        if (apiErr != NoError) {
+            delete ownedLocation;
+            hotlinkNode.sourceLocation = nullptr;
+            return fail (apiErr, "Failed to read the file as a hotlink module: it must be an Archicad project or module file that can be read, and not the open project.");
+        }
+        const API_Guid nodeGuid = hotlinkNode.guid;
+
+        // 2. One instance of it. The instance is gone after the break, so it goes on the ARCHICAD
+        // Layer, which cannot be deleted, rather than on a default layer that may be hidden or gone.
+        API_Element instance = {};
+#ifdef ServerMainVers_2600
+        instance.header.type = API_HotlinkID;
+#else
+        instance.header.typeID = API_HotlinkID;
+#endif
+        apiErr = ACAPI_Element_GetDefaults (&instance, nullptr);
+        if (apiErr != NoError) {
+            return fail (apiErr, "Failed to get the hotlink instance defaults.");
+        }
+        instance.header.layer = ACAPI_CreateAttributeIndex (1);
+        instance.header.floorInd = static_cast<short> (floorIndex);
+        instance.hotlink.type = APIHotlink_Module;
+        instance.hotlink.hotlinkNodeGuid = nodeGuid;
+        instance.hotlink.transformation = CreateHotlinkTransformation (origin, rotationAngle, mirrored);
+        apiErr = ACAPI_Element_Create (&instance, nullptr);
+        if (apiErr != NoError) {
+            return fail (apiErr, "Failed to place the file as a hotlink instance (is floorIndex a story of the project?).");
+        }
+        instanceGuid = instance.header.guid;
+
+        // 3. The break: the placed elements become ordinary elements and the node goes.
+        apiErr = ACAPI_Hotlink_BreakHotlinkNode (&nodeGuid);
+        if (apiErr != NoError) {
+            return fail (apiErr, "Failed to break the hotlink, which turns the placed file into ordinary elements.");
+        }
+
+        // 4. Read back: the instance is gone, and the elements that are new are the merged ones.
+        API_Elem_Head instanceHead = {};
+        if (LoadElementHeaderByGuid (instanceGuid, instanceHead)) {
+            return fail (APIERR_GENERAL, "Archicad kept the hotlink instance after breaking the hotlink.");
+        }
+        GS::Array<API_Guid> elementsAfter;
+        ACAPI_Element_GetElemList (API_ZombieElemID, &elementsAfter);
+        for (const API_Guid& guid : elementsAfter) {
+            if (!elementsBefore.Contains (guid)) {
+                mergedElements.Push (guid);
+            }
+        }
+        return NoError;
+    });
+
+    if (stepErr != NoError || undoErr != NoError) {
+        GS::UniString message = stepErr != NoError ? failure : GS::UniString ("Failed to open an undoable command.");
+        // The command was undone; the instance is named when Archicad kept it all the same.
+        API_Elem_Head instanceHead = {};
+        if (instanceGuid != APINULLGuid && LoadElementHeaderByGuid (instanceGuid, instanceHead)) {
+            message += " The hotlink instance was left in the project, with elementId " + APIGuidToString (instanceGuid) + "; delete its node with DeleteHotlinkNodes.";
+        } else {
+            message += " Nothing was merged.";
+        }
+        return CreateErrorResponse (stepErr != NoError ? stepErr : undoErr, message);
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const API_Guid& guid : mergedElements) {
+        elements (CreateElementIdObjectState (guid));
+    }
+    return response;
 }
 
 GetHotlinkOwnersOfElementsCommand::GetHotlinkOwnersOfElementsCommand () :

@@ -5,7 +5,12 @@
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
+#include "Folder.hpp"
+#include "File.hpp"
 #include <memory>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -26,8 +31,84 @@ static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
     return table;
 }
 
+// The saved local or LAN output folder of a publisher set, empty when it publishes elsewhere.
+static IO::Location GetPublisherSetPath (const API_Guid& rootGuid)
+{
+    Int32 numberOfPublisherSets = 0;
+    ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets);
+
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        set.wantsExtraInfo = true;
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&set, &ii);
+
+        // The publishing parameters are allocated by Archicad and owned by the caller.
+        std::unique_ptr<IO::Location> path (set.path);
+        std::unique_ptr<IO::Location> twFileServerPath (set.twFileServerPath);
+        std::unique_ptr<GS::UniString> host (set.host);
+        std::unique_ptr<GS::UniString> dirName (set.dirName);
+
+        if (err == NoError && set.rootGuid == rootGuid) {
+            // For a set published to a BIMcloud/Teamwork file server, path is only the
+            // temporary local folder Archicad uploads from, so no folder is reported.
+            if (path == nullptr || twFileServerPath != nullptr) {
+                return {};
+            }
+            return *path;
+        }
+    }
+
+    return {};
+}
+
+static const UInt32 MaxScannedOutputEntries = 20000;
+
+// Collects the files under the folder with their modification times. Returns false when the
+// folder holds more than MaxScannedOutputEntries entries, so a huge folder is not listed.
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes, UInt32& entryCount)
+{
+    IO::Folder folder (folderLoc);
+    if (folder.GetStatus () != NoError) {
+        return true;
+    }
+
+    bool withinLimit = true;
+    GS::Array<IO::Location> subFolders;
+    folder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+        if (!withinLimit || ++entryCount > MaxScannedOutputEntries) {
+            withinLimit = false;
+            return;
+        }
+
+        const IO::Location entryLoc (folderLoc, name);
+        if (isFolder) {
+            subFolders.Push (entryLoc);
+            return;
+        }
+
+        GSTime modificationTime = 0;
+        IO::File (entryLoc).GetModificationTime (&modificationTime);
+        fileTimes.Put (entryLoc.ToDisplayText (), modificationTime);
+    });
+
+    for (const IO::Location& subFolder : subFolders) {
+        if (!withinLimit || !CollectFileTimes (subFolder, fileTimes, entryCount)) {
+            return false;
+        }
+    }
+
+    return withinLimit;
+}
+
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes)
+{
+    UInt32 entryCount = 0;
+    return CollectFileTimes (folderLoc, fileTimes, entryCount);
+}
+
 PublishPublisherSetCommand::PublishPublisherSetCommand() :
-    CommandBase(CommonSchema::NotUsed)
+    CommandBase(CommonSchema::Used)
 {
 }
 
@@ -53,7 +134,7 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
             },
             "selectedNavigatorItemIds": {
                 "$ref": "#/NavigatorItemIds",
-                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set."
+                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set. Each item wraps its id in navigatorItemId, as the items of GetNavigatorItemTree do: [{\"navigatorItemId\": {\"guid\": \"6E1C3A9B-0F2D-4B8E-9C7A-1D2E3F405162\"}}], not [{\"guid\": \"...\"}]."
             }
         },
         "additionalProperties": false,
@@ -63,25 +144,35 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
     })";
 }
 
+GS::Optional<GS::UniString> PublishPublisherSetCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "outputFolder": {
+                "type": "string",
+                "description": "The local or LAN folder the set was published to: outputPath, else the path saved in the publisher set. Absent when the set publishes elsewhere (to the Internet or a BIMcloud/Teamwork file server)."
+            },
+            "writtenFiles": {
+                "type": "array",
+                "description": "Full paths of the files in outputFolder and its subfolders that were created or changed while the command ran, as found when Archicad reported the publishing finished. Absent when outputFolder is absent or holds more than 20000 files and folders.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString publisherSetName;
     parameters.Get("publisherSetName", publisherSetName);
 
-    const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
-    if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
-        return CreateErrorResponse(Error, "Not valid publisher set name.");
-    }
-
-    API_PublishPars publishPars = {};
-    publishPars.guid = publisherSetNameGuidTable.Get(publisherSetName);
-
-    if (parameters.Contains("outputPath")) {
-        GS::UniString outputPath;
-        parameters.Get("outputPath", outputPath);
-        publishPars.path = new IO::Location(outputPath);
-    }
-
+    // Archicad does not refuse items of the wrong shape by the input schema, so they are checked
+    // here, before the name, and the error says what is wrong with them.
     GS::Array<API_Guid> selectedLinks;
     const GS::Array<API_Guid>* selectedLinksPtr = nullptr;
     if (parameters.Contains("selectedNavigatorItemIds")) {
@@ -91,8 +182,7 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         for (const GS::ObjectState& navigatorItemIdArrayItem : selectedNavigatorItemIds) {
             const API_Guid selectedGuid = GetGuidFromNavigatorItemIdArrayItem(navigatorItemIdArrayItem);
             if (selectedGuid == APINULLGuid) {
-                delete publishPars.path;
-                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing.");
+                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing. Each item must be {\"navigatorItemId\": {\"guid\": \"...\"}}.");
             }
             selectedLinks.Push(selectedGuid);
         }
@@ -102,6 +192,29 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         }
     }
 
+    const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
+    if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
+        return CreateErrorResponse(Error, GS::UniString("Not valid publisher set name: no publisher set is named \"") + publisherSetName + "\". GetPublisherSets lists the names.");
+    }
+
+    API_PublishPars publishPars = {};
+    publishPars.guid = publisherSetNameGuidTable.Get(publisherSetName);
+
+    IO::Location outputFolder;
+    if (parameters.Contains("outputPath")) {
+        GS::UniString outputPath;
+        parameters.Get("outputPath", outputPath);
+        publishPars.path = new IO::Location(outputPath);
+        outputFolder = *publishPars.path;
+    } else {
+        outputFolder = GetPublisherSetPath(publishPars.guid);
+    }
+
+    // The API reports neither the files it writes nor a later end of publishing, so the files
+    // are found by comparing the output folder before and after the call.
+    GS::HashTable<GS::UniString, GSTime> filesBefore;
+    bool canListFiles = !outputFolder.IsEmpty() && CollectFileTimes(outputFolder, filesBefore);
+
     GSErrCode err = ACAPI_ProjectOperation_Publish(&publishPars, selectedLinksPtr);
     delete publishPars.path;
 
@@ -109,7 +222,31 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         return CreateErrorResponse(err, "Publishing failed. Check output path!");
     }
 
-    return {};
+    GS::ObjectState response;
+    if (outputFolder.IsEmpty()) {
+        return response;
+    }
+
+    response.Add("outputFolder", outputFolder.ToDisplayText());
+
+    GS::HashTable<GS::UniString, GSTime> filesAfter;
+    canListFiles = canListFiles && CollectFileTimes(outputFolder, filesAfter);
+    if (canListFiles) {
+        std::vector<GS::UniString> writtenFiles;
+        filesAfter.Enumerate([&](const GS::UniString& path, const GSTime& modificationTime) {
+            if (!filesBefore.ContainsKey(path) || filesBefore.Get(path) != modificationTime) {
+                writtenFiles.push_back(path);
+            }
+        });
+        std::sort(writtenFiles.begin(), writtenFiles.end());
+
+        const auto& writtenFilesList = response.AddList<GS::UniString>("writtenFiles");
+        for (const GS::UniString& path : writtenFiles) {
+            writtenFilesList(path);
+        }
+    }
+
+    return response;
 }
 
 GetPublisherSetsCommand::GetPublisherSetsCommand () :
@@ -432,7 +569,7 @@ GS::ObjectState GetDatabaseIdFromNavigatorItemIdCommand::Execute (const GS::Obje
         }
 
         API_NavigatorItem navigatorItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
 
         if (err != NoError) {
             databases (CreateErrorResponse (err, "Failed to get navigator item from guid"));
@@ -1293,8 +1430,59 @@ GS::ObjectState GetModelViewOptionDetailsCommand::Execute (const GS::ObjectState
 #endif
 }
 
-// Defined at CreateViewsInViewMap below; frees what ACAPI_Navigator_GetNavigatorView allocates.
-static void FreeNavigatorView (API_NavigatorView& navigatorView);
+struct RenovationFilter {
+    API_Guid      guid;
+    GS::UniString name;
+};
+
+// Every renovation filter of the project with its name. A filter whose name cannot be
+// read is still listed, with an empty name, so its guid stays usable.
+static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
+{
+    GS::Array<API_Guid> renovationFilterGuids;
+    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& guid : renovationFilterGuids) {
+        GS::UniString name;
+        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
+            name.Clear ();
+        }
+        renovationFilters.Push ({ guid, name });
+    }
+
+    return NoError;
+}
+
+// The guid of the renovation filter with this name: an exact match first, else the first
+// case-insensitive one. APINULLGuid when there is none; availableNames then lists the
+// names of the project's filters for the error message.
+static API_Guid FindRenovationFilterByName (const GS::Array<RenovationFilter>& renovationFilters, const GS::UniString& name, GS::UniString& availableNames)
+{
+    API_Guid caseInsensitiveMatch = APINULLGuid;
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        if (renovationFilter.name == name) {
+            return renovationFilter.guid;
+        }
+        if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
+            caseInsensitiveMatch = renovationFilter.guid;
+        }
+    }
+    if (caseInsensitiveMatch != APINULLGuid) {
+        return caseInsensitiveMatch;
+    }
+
+    availableNames.Clear ();
+    for (const RenovationFilter& renovationFilter : renovationFilters) {
+        if (!availableNames.IsEmpty ()) {
+            availableNames += ", ";
+        }
+        availableNames += "\"" + renovationFilter.name + "\"";
+    }
+    return APINULLGuid;
+}
 
 GetViewOptionsCommand::GetViewOptionsCommand () :
     CommandBase (CommonSchema::Used)
@@ -1670,6 +1858,11 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // Read once, when the first renovationFilterName is given.
+    GS::Array<RenovationFilter> renovationFilters;
+    bool renovationFiltersRead = false;
+    GSErrCode renovationFiltersErr = NoError;
+
     for (const GS::ObjectState& navigatorItemIdWithViewSetting : navigatorItemIdsWithViewSettings) {
         const GS::ObjectState* viewSettingsOS = navigatorItemIdWithViewSetting.Get ("viewSettings");
         if (viewSettingsOS == nullptr) {
@@ -1685,7 +1878,7 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
 
         API_NavigatorItem navigatorItem = {};
         navigatorItem.mapId = API_PublicViewMap;
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (guid, navigatorItem);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator item from guid"));
             continue;
@@ -1753,9 +1946,44 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             navigatorView.saveStructureDisplay = true;
         }
 
+        API_Guid renovationFilterGuid = APINULLGuid;
         const GS::ObjectState* renovFilterOS = viewSettingsOS->Get ("renovationFilterGuid");
         if (renovFilterOS != nullptr) {
-            navigatorView.renovationFilterGuid = GetGuidFromObjectState (*renovFilterOS);
+            renovationFilterGuid = GetGuidFromObjectState (*renovFilterOS);
+        }
+
+        // A renovation filter given by name is looked up among the project's filters. An
+        // unknown name fails the item before anything is written: Archicad has no name field
+        // for the filter in the view, so the name alone would otherwise be ignored silently.
+        GS::UniString renovationFilterName;
+        const bool renovationFilterNameGiven = viewSettingsOS->Get ("renovationFilterName", renovationFilterName);
+        if (renovationFilterNameGiven) {
+            if (!renovationFiltersRead) {
+                renovationFiltersErr = GetRenovationFilters (renovationFilters);
+                renovationFiltersRead = true;
+            }
+            if (renovationFiltersErr != NoError) {
+                executionResults (CreateFailedExecutionResult (renovationFiltersErr, "Failed to get the renovation filters of the project to look up the renovationFilterName. Nothing was written."));
+                continue;
+            }
+            GS::UniString availableNames;
+            const API_Guid guidOfName = FindRenovationFilterByName (renovationFilters, renovationFilterName, availableNames);
+            if (guidOfName == APINULLGuid) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME,
+                    "The project has no renovation filter named \"" + renovationFilterName + "\". Its renovation filters: " + availableNames +
+                    ". Nothing was written."));
+                continue;
+            }
+            if (renovFilterOS != nullptr && renovationFilterGuid != guidOfName) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                    "renovationFilterGuid and renovationFilterName name different renovation filters. Give only one of them. Nothing was written."));
+                continue;
+            }
+            renovationFilterGuid = guidOfName;
+        }
+
+        if (renovFilterOS != nullptr || renovationFilterNameGiven) {
+            navigatorView.renovationFilterGuid = renovationFilterGuid;
         }
 
         SetUCharProperty (viewSettingsOS, "d3styleName", navigatorView.d3styleName);
@@ -1982,32 +2210,6 @@ GS::ObjectState SetActiveGraphicalOverrideCombinationCommand::Execute (const GS:
 #endif
 }
 
-struct RenovationFilter {
-    API_Guid      guid;
-    GS::UniString name;
-};
-
-// Every renovation filter of the project with its name. A filter whose name cannot be
-// read is still listed, with an empty name, so its guid stays usable.
-static GSErrCode GetRenovationFilters (GS::Array<RenovationFilter>& renovationFilters)
-{
-    GS::Array<API_Guid> renovationFilterGuids;
-    GSErrCode err = ACAPI_Renovation_GetRenovationFilters (&renovationFilterGuids);
-    if (err != NoError) {
-        return err;
-    }
-
-    for (const API_Guid& guid : renovationFilterGuids) {
-        GS::UniString name;
-        if (ACAPI_Renovation_GetRenovationFilterName (&guid, &name) != NoError) {
-            name.Clear ();
-        }
-        renovationFilters.Push ({ guid, name });
-    }
-
-    return NoError;
-}
-
 GetRenovationFiltersCommand::GetRenovationFiltersCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -2136,23 +2338,7 @@ GS::ObjectState SetActiveRenovationFilterCommand::Execute (const GS::ObjectState
         }
 
         GS::UniString availableNames;
-        API_Guid caseInsensitiveMatch = APINULLGuid;
-        for (const RenovationFilter& renovationFilter : renovationFilters) {
-            if (renovationFilter.name == name) {
-                renovationFilterGuid = renovationFilter.guid;
-                break;
-            }
-            if (caseInsensitiveMatch == APINULLGuid && renovationFilter.name.Compare (name, CaseInsensitive) == GS::UniString::Equal) {
-                caseInsensitiveMatch = renovationFilter.guid;
-            }
-            if (!availableNames.IsEmpty ()) {
-                availableNames += ", ";
-            }
-            availableNames += "\"" + renovationFilter.name + "\"";
-        }
-        if (renovationFilterGuid == APINULLGuid) {
-            renovationFilterGuid = caseInsensitiveMatch;
-        }
+        renovationFilterGuid = FindRenovationFilterByName (renovationFilters, name, availableNames);
         if (renovationFilterGuid == APINULLGuid) {
             return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no renovation filter named \"" + name + "\". Its renovation filters: " + availableNames);
         }
@@ -2727,7 +2913,7 @@ GS::ObjectState GetView2DTransformationsCommand::Execute (const GS::ObjectState&
                 continue;
             }
             API_NavigatorItem navigatorItem = {};
-            if (ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem) != NoError) {
+            if (GetNavigatorItemOfGuid (navGuid, navigatorItem) != NoError) {
                 transformations (CreateErrorResponse (APIERR_BADPARS, "Failed to get navigator item"));
                 continue;
             }
@@ -2836,7 +3022,7 @@ GS::ObjectState SetViewRotationCommand::Execute (const GS::ObjectState& paramete
         }
 
         API_NavigatorItem navigatorItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
         if (err != NoError) {
             executionResults (CreateFailedExecutionResult (err, "Failed to get navigator item"));
             continue;
@@ -3094,7 +3280,7 @@ GS::Optional<GS::UniString> SetZoomCommand::GetInputParametersSchema () const
         "properties": {
             "zoomBox": {
                 "$ref": "#/Zoom",
-                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is."
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is; in a rotated window the whole box is shown, so the shown area is larger than the box."
             }
         },
         "additionalProperties": false,
@@ -3109,6 +3295,39 @@ GS::Optional<GS::UniString> SetZoomCommand::GetRawResponseSchema () const
     return R"({
         "$ref": "#/ExecutionResult"
     })";
+}
+
+static bool IsUnrotatedWindowTransformation (const API_Tranmat& tranmat)
+{
+    const double eps = 1e-9;
+    return std::abs (tranmat.tmx[0] - 1.0) < eps && std::abs (tranmat.tmx[1]) < eps &&
+           std::abs (tranmat.tmx[4]) < eps && std::abs (tranmat.tmx[5] - 1.0) < eps;
+}
+
+static API_Box GetZoomBoxInWindowFrame (const API_Box& modelBox, const API_Tranmat& tranmat)
+{
+    if (IsUnrotatedWindowTransformation (tranmat)) {
+        return modelBox;
+    }
+
+    const double cornerX[4] = { modelBox.xMin, modelBox.xMax, modelBox.xMax, modelBox.xMin };
+    const double cornerY[4] = { modelBox.yMin, modelBox.yMin, modelBox.yMax, modelBox.yMax };
+
+    API_Box frameBox = {};
+    for (UInt32 i = 0; i < 4; ++i) {
+        const double x = tranmat.tmx[0] * cornerX[i] + tranmat.tmx[1] * cornerY[i] + tranmat.tmx[3];
+        const double y = tranmat.tmx[4] * cornerX[i] + tranmat.tmx[5] * cornerY[i] + tranmat.tmx[7];
+        if (i == 0) {
+            frameBox.xMin = frameBox.xMax = x;
+            frameBox.yMin = frameBox.yMax = y;
+        } else {
+            frameBox.xMin = GS::Min (frameBox.xMin, x);
+            frameBox.xMax = GS::Max (frameBox.xMax, x);
+            frameBox.yMin = GS::Min (frameBox.yMin, y);
+            frameBox.yMax = GS::Max (frameBox.yMax, y);
+        }
+    }
+    return frameBox;
 }
 
 GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -3145,7 +3364,14 @@ GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::
         return CreateFailedExecutionResult (err, "Failed to get the current zoom and rotation of the current window.");
     }
 
-    err = ACAPI_View_SetZoom (&zoomBox, &currentTranmat);
+    // ACAPI_View_SetZoom takes the box in the window's own frame, which on a rotated
+    // window is the model rotated by the window's transformation (the same frame
+    // ACAPI_View_GetZoom reports the box in), not in model coordinates (issue #2846).
+    // So the four corners of the model box are transformed into that frame and
+    // their bounding box is set, which shows the whole model box. An unrotated
+    // window is left as before, its frame is the model's.
+    API_Box windowFrameBox = GetZoomBoxInWindowFrame (zoomBox, currentTranmat);
+    err = ACAPI_View_SetZoom (&windowFrameBox, &currentTranmat);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the zoom of the current window.");
     }
@@ -3383,26 +3609,6 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetRawResponseSchema ()
     })";
 }
 
-// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with
-// custom settings (as the DevKit's Navigator_Test example does).
-static void FreeNavigatorView (API_NavigatorView& navigatorView)
-{
-    if (navigatorView.modelViewOpt != nullptr) {
-        ACAPI_FreeGDLModelViewOptionsPtr (&navigatorView.modelViewOpt->gdlOptions);
-        BMKillPtr ((GSPtr*) &navigatorView.modelViewOpt);
-    }
-#ifdef ServerMainVers_2700
-    delete navigatorView.layerStats;
-    navigatorView.layerStats = nullptr;
-    delete navigatorView.pens;
-    navigatorView.pens = nullptr;
-#else
-    BMKillHandle ((GSHandle*) &navigatorView.layerStats);
-    BMKillPtr ((GSPtr*) &navigatorView.pens);
-#endif
-    BMKillPtr ((GSPtr*) &navigatorView.dimPrefs);
-}
-
 GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> viewsData;
@@ -3445,7 +3651,7 @@ GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& par
         // onto the new view afterwards. Project Map items have no source.
         API_NavigatorItem sourceView = {};
         bool sourceIsView = false;
-        if (ACAPI_Navigator_GetNavigatorItem (&sourceGuid, &sourceView) == NoError &&
+        if (GetNavigatorItemOfGuid (sourceGuid, sourceView) == NoError &&
             sourceView.sourceGuid != APINULLGuid) {
             sourceIsView = true;
             sourceGuid   = sourceView.sourceGuid;
@@ -3600,7 +3806,7 @@ GS::ObjectState CreateViewMapFolderCommand::Execute (const GS::ObjectState& para
 static bool GetChildrenContaining (const API_Guid& parentGuid, const API_Guid& childGuid, API_NavigatorMapID& mapId, GS::Array<API_Guid>& childGuids)
 {
     API_NavigatorItem parentItem = {};
-    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+    if (GetNavigatorItemOfGuid (parentGuid, parentItem) != NoError) {
         return false;
     }
 
@@ -4187,7 +4393,7 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     const API_Guid guid = GetGuidFromObjectState (*navIdOS);
 
     API_NavigatorItem navItem = {};
-    GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+    GSErrCode err = GetNavigatorItemOfGuid (guid, navItem);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get navigator item.");
     }
@@ -4264,7 +4470,8 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
                     failureMessage = "Failed to read back the navigator item after the change.";
                     return err;
                 }
-                if (GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+                if (GS::UniString (changedItem.uName) != GS::UniString (navItem.uName) &&
+                    GS::UniString (changedItem.uAutoTextedName) != GS::UniString (navItem.uName)) {
                     failureMessage = "Archicad did not apply the new name. The Project Map item kept its old name after the element behind it was renamed, so the change was undone.";
                     err = APIERR_REFUSEDPAR;
                     return err;
@@ -4303,7 +4510,12 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to read back the navigator item after the change.");
         }
-        if (hasNewName && GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+        // A name with autotext tokens (<PROJECTNUMBER>, <SourceID>, ...) is stored as it was given in
+        // uAutoTextedName, while uName holds it with the tokens resolved (#2499), so it is applied
+        // when either of the two reads back as the requested name.
+        if (hasNewName &&
+            GS::UniString (changedItem.uName) != GS::UniString (navItem.uName) &&
+            GS::UniString (changedItem.uAutoTextedName) != GS::UniString (navItem.uName)) {
             return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
                 "Archicad did not apply the new name. The name of this navigator item cannot be changed by this command (e.g. Project Map schedule items are named by their scheme).");
         }
@@ -4466,7 +4678,7 @@ GS::ObjectState DeleteNavigatorItemsCommand::Execute (const GS::ObjectState& par
         }
 
         API_NavigatorItem navItem = {};
-        const GSErrCode getErr = ACAPI_Navigator_GetNavigatorItem (&guid, &navItem);
+        const GSErrCode getErr = GetNavigatorItemOfGuid (guid, navItem);
         if (getErr != NoError) {
             executionResults (CreateFailedExecutionResult (getErr, "Failed to get navigator item."));
             continue;
@@ -4570,7 +4782,7 @@ static bool GetNavigatorChildren (const API_Guid& parentGuid, GS::Array<API_Navi
 {
     API_NavigatorItem parentItem = {};
     parentItem.guid = parentGuid;
-    if (ACAPI_Navigator_GetNavigatorItem (&parentGuid, &parentItem) != NoError) {
+    if (GetNavigatorItemOfGuid (parentGuid, parentItem) != NoError) {
         return false;
     }
     for (API_NavigatorMapID mapId : { API_PublicViewMap, API_LayoutMap, API_ProjectMap }) {
@@ -4717,17 +4929,28 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
     // leaves there is none at all, and the whole call fails rather than reordering only some
     // of them. A container being reordered can't bounce through itself
     // (SetNavigatorItemPosition(x, x, ...) is nonsensical), so a second container is kept as
-    // the fallback bounce target for that one item; with only one container among the
-    // current children, that one item alone fails instead of corrupting the tree.
+    // the fallback bounce target for that one item.
+    // When no other sibling can host the item - a folder holding only views and clone
+    // folders (#2701), whose clone folders Archicad reports as API_UndefinedNavItem and
+    // which can't take a view - the item is bounced through the parent's own parent
+    // instead: out to the grandparent and back in are genuine re-parents too. Only a
+    // direct child of a map's root, which has no parent, is then left without a target.
     GS::Array<API_Guid> containerGuids;
     for (const API_NavigatorItem& child : currentChildren) {
         if (IsContainerNavItemType (child.itemType)) {
             containerGuids.Push (child.guid);
         }
     }
-    if (containerGuids.IsEmpty ()) {
+    API_Guid grandparentGuid = APINULLGuid;
+    {
+        API_NavigatorItem grandparentItem = {};
+        if (ACAPI_Navigator_GetNavigatorParentItem (&parentGuid, &grandparentItem) == NoError) {
+            grandparentGuid = grandparentItem.guid;
+        }
+    }
+    if (containerGuids.IsEmpty () && grandparentGuid == APINULLGuid) {
         return CreateErrorResponse (APIERR_BADPARS,
-            "None of the current children of parentNavigatorItemId can host another item (all are leaves), so there is no sibling to bounce items through.");
+            "None of the current children of parentNavigatorItemId can host another item (all are leaves), and parentNavigatorItemId has no parent of its own, so there is nothing to bounce items through.");
     }
     const GS::Guid parentGsGuid = APIGuid2GSGuid (parentGuid);
 
@@ -4746,8 +4969,8 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
             GSErrCode err = NoError;
             bool strandedInBounce = false;
             if (!alreadyPlaced) {
-                // A container can't bounce through itself; use another container instead, or
-                // fail just this one item when it is the only container among the children.
+                // A container can't bounce through itself; use another container instead, else
+                // the parent's parent, or fail just this one item when there is neither.
                 const API_Guid* bounceGuidPtr = nullptr;
                 for (const API_Guid& candidate : containerGuids) {
                     if (candidate != itemGuid) {
@@ -4755,9 +4978,12 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
                         break;
                     }
                 }
+                if (bounceGuidPtr == nullptr && grandparentGuid != APINULLGuid) {
+                    bounceGuidPtr = &grandparentGuid;
+                }
                 if (bounceGuidPtr == nullptr) {
                     executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
-                        "This item is the only sibling that can host another item, so it cannot be bounced through anything else to reposition it."));
+                        "This item is the only sibling that can host another item and parentNavigatorItemId has no parent of its own, so it cannot be bounced through anything else to reposition it."));
                     continue;
                 }
                 const GS::Guid sourceGsGuid = APIGuid2GSGuid (itemGuid);
@@ -4783,7 +5009,7 @@ GS::ObjectState ReorderNavigatorItemsCommand::Execute (const GS::ObjectState& pa
 
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, strandedInBounce
-                    ? "Failed to move the navigator item to its requested position, and the recovery move back to its parent also failed; the item may still be nested inside a sibling."
+                    ? "Failed to move the navigator item to its requested position, and the recovery move back to its parent also failed; the item may still be nested inside a sibling or in the parent's own parent."
                     : "Failed to move the navigator item to its requested position."));
                 // Leave previousGuidPtr as the last correctly placed item: chaining the next
                 // item after one that is not actually in position would only compound the error.
@@ -4840,6 +5066,14 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     itemOS.Add ("type",            NavigatorItemTypeToString (item.itemType));
     itemOS.Add ("name",            GS::UniString (item.uName));
     itemOS.Add ("navigatorItemId", CreateGuidObjectState (item.guid));
+
+    // The name as it was typed, with its autotext tokens (<PROJECTNUMBER>, <SourceID>, ...),
+    // which name only shows resolved (#2499). Only added when the two differ, so items
+    // without autotext look as they did.
+    const GS::UniString autoTextedName (item.uAutoTextedName);
+    if (!autoTextedName.IsEmpty () && autoTextedName != GS::UniString (item.uName)) {
+        itemOS.Add ("autoTextedName", autoTextedName);
+    }
 
     GS::UniString prefix;
     if (item.itemType == API_StoryNavItem) {

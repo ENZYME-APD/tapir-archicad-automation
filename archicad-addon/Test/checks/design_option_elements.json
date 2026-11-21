@@ -222,6 +222,10 @@
     }
   ],
   "teardown": [
+    { "command": "MoveElementsToDesignOptions", "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${w1}" }, "designOptionId": { "guid": "00000000-0000-0000-0000-000000000000" } } ] } },
+    { "command": "MoveElementsToDesignOptions", "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${w2}" }, "designOptionId": { "guid": "00000000-0000-0000-0000-000000000000" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w2}" } } ] } },
     { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${e1}" } } ] } },
     { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${e2}" } } ] } },
     { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${set}" } } ] } }

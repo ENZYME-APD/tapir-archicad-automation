@@ -1,0 +1,111 @@
+{
+  "title": "SetDetailsOfElements sets the element ID of a duct route and of a pipe route, and GetDetailsOfElements reads it back",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "a duct route and a pipe route",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.4,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -14.0, "z": 3.0 },
+              { "x": 4.0, "y": -14.0, "z": 3.0 },
+              { "x": 4.0, "y": -11.0, "z": 3.0 }
+            ]
+          },
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -5.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "duct": "elements[0].elementId.guid",
+        "pipe": "elements[1].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "duct route created"
+        },
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "pipe route created"
+        }
+      ]
+    },
+    {
+      "id": "set an element ID on each route",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          {
+            "elementId": { "guid": "${duct}" },
+            "details": { "id": "CHK-DUCT-ROUTE-1" }
+          },
+          {
+            "elementId": { "guid": "${pipe}" },
+            "details": { "id": "CHK-PIPE-ROUTE-1" }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "duct route id set"
+        },
+        {
+          "path": "executionResults[1].success",
+          "eq": true,
+          "name": "pipe route id set"
+        }
+      ]
+    },
+    {
+      "id": "the routes have the new element IDs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${duct}" } },
+          { "elementId": { "guid": "${pipe}" } }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].id",
+          "eq": "CHK-DUCT-ROUTE-1",
+          "name": "duct route keeps the id"
+        },
+        {
+          "path": "detailsOfElements[1].id",
+          "eq": "CHK-PIPE-ROUTE-1",
+          "name": "pipe route keeps the id"
+        }
+      ]
+    }
+  ]
+}

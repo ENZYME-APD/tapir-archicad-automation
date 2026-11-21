@@ -85,6 +85,21 @@ ISSUE_MARKER_PREFIX = "discord-message-id:"
 BOT_ISSUE_AUTHOR = "github-actions[bot]"
 SEARCH_FAILED = object()  # the duplicate search errored; "unknown", not "no issue"
 
+# The share channel: a script posted there is not classified. It becomes an
+# issue labelled SHARE_LABEL that holds the whole file, which the issue bot
+# turns into a marketplace pull request (see CLAUDE.md, "Script marketplace").
+SHARE_LABEL = "script-share"
+DEFAULT_SHARE_CHANNEL_NAME = "share-a-script"
+MAX_SCRIPT_FILES = 4
+# GitHub rejects an issue body over 65,536 characters; the rest of the body
+# (author, description, markers) needs well under 15,000 of them.
+MAX_SCRIPT_CHARS = 48000
+MAX_SCRIPT_BYTES = 4 * MAX_SCRIPT_CHARS
+# Attachments are only fetched from Discord's own CDN, never from a URL a
+# message could point anywhere else.
+ATTACHMENT_HOSTS = ("cdn.discordapp.com", "media.discordapp.net")
+MIN_PASTED_SCRIPT_LINES = 5
+
 CLASSIFIER_INSTRUCTIONS = """\
 You triage messages from the community Discord server of Tapir, an
 open-source project that extends Graphisoft Archicad with additional JSON
@@ -197,6 +212,8 @@ class Config:
     min_message_length: int
     dry_run: bool
     cleanup_seen_marks: bool
+    share_channel_ids: list
+    share_channel_name: str
 
     @staticmethod
     def from_env():
@@ -209,6 +226,9 @@ class Config:
         ) if not os.environ.get(name)]
         channel_ids = [c.strip() for c in
                        os.environ.get("DISCORD_CHANNEL_IDS", "").split(",") if c.strip()]
+        share_channel_ids = [c.strip() for c in
+                             os.environ.get("DISCORD_SHARE_CHANNEL_IDS", "").split(",")
+                             if c.strip()]
         if os.environ.get("DISCORD_CHANNEL_IDS") and not channel_ids:
             # A separator-only value ("," or whitespace) would scan nothing
             # forever while every run stays green - the silent state this
@@ -230,6 +250,9 @@ class Config:
             dry_run=os.environ.get("DRY_RUN", "").strip().lower() in ("1", "true", "yes"),
             cleanup_seen_marks=os.environ.get(
                 "CLEANUP_SEEN_MARKS", "").strip().lower() in ("1", "true", "yes"),
+            share_channel_ids=share_channel_ids,
+            share_channel_name=(os.environ.get("SHARE_CHANNEL_NAME", "").strip().lower()
+                                or DEFAULT_SHARE_CHANNEL_NAME),
         )
         return config, []
 
@@ -369,6 +392,31 @@ class DiscordClient:
         messages.reverse()
         return messages
 
+    def download_attachment(self, url, max_bytes):
+        """The bytes of a message attachment, or None. Only Discord's CDN is
+        fetched, and the bot token is not sent: the attachment URLs are
+        public. Stops reading after `max_bytes`."""
+        parsed = urllib.parse.urlparse(url or "")
+        if parsed.scheme != "https" or parsed.hostname not in ATTACHMENT_HOSTS:
+            log("WARNING: attachment URL is not on Discord's CDN, not fetched")
+            return None
+        try:
+            with requests.get(url, stream=True, timeout=30) as response:
+                if not response.ok:
+                    log("WARNING: could not download an attachment: {}".format(
+                        response.status_code))
+                    return None
+                data = b""
+                for chunk in response.iter_content(65536):
+                    data += chunk
+                    if len(data) > max_bytes:
+                        log("WARNING: an attachment is larger than {} bytes".format(max_bytes))
+                        return None
+                return data
+        except requests.RequestException as error:
+            log("WARNING: attachment download failed: {}".format(error))
+            return None
+
     def has_mark(self, message, *emojis):
         """Whether the bot's own reaction with any of the emojis is present."""
         for reaction in message.get("reactions", []):
@@ -484,6 +532,36 @@ class GitHubClient:
             if marker.search(item.get("body") or ""):
                 return item
         return None
+
+    def ensure_label(self, name, color, description):
+        """Create the label unless it exists. An issue created with a label
+        the repository does not have loses it silently, and a script-share
+        issue without its label is never turned into a pull request, so the
+        label is made first. True when the label exists afterwards."""
+        url = GITHUB_API + "/repos/{}/labels".format(self.repository)
+        try:
+            response = self.session.post(
+                url, json={"name": name, "color": color, "description": description},
+                timeout=30)
+        except requests.RequestException as error:
+            log("WARNING: could not create the '{}' label: {}".format(name, error))
+            return False
+        if response.status_code == 422:
+            # "already_exists" is the normal case.
+            return "already_exists" in response.text
+        if not response.ok:
+            log("WARNING: could not create the '{}' label: {} {}".format(
+                name, response.status_code, response.text[:200]))
+        return response.ok
+
+    def add_labels(self, issue_number, labels):
+        url = GITHUB_API + "/repos/{}/issues/{}/labels".format(self.repository, issue_number)
+        try:
+            response = self.session.post(url, json={"labels": labels}, timeout=30)
+        except requests.RequestException as error:
+            log("WARNING: could not label issue #{}: {}".format(issue_number, error))
+            return False
+        return response.ok
 
     def create_issue(self, title, body, labels):
         url = GITHUB_API + "/repos/{}/issues".format(self.repository)
@@ -788,7 +866,7 @@ def note_borderline(line, state):
     append_summary(line)
 
 
-def skip_reason(message, config):
+def skip_reason(message, config, share=False):
     """Why `message` is not classified, for the log, or None when it is."""
     author = message.get("author", {})
     if author.get("bot"):
@@ -802,7 +880,7 @@ def skip_reason(message, config):
         # A screenshot with a short caption is a common way to report a
         # bug, so an attachment exempts the caption from the length gate.
         # A truly caption-less image still has nothing to classify.
-        if message.get("attachments") and not content:
+        if message.get("attachments") and not content and not share:
             return "an attachment without text"
         if not message.get("attachments"):
             return "shorter than MIN_MESSAGE_LENGTH ({} < {} characters)".format(
@@ -883,6 +961,169 @@ def build_issue_body(message, channel, classification):
     )
 
 
+def is_share_channel(channel, channel_id, config):
+    """Whether messages in this channel are scripts to share, not reports:
+    the channel is listed in DISCORD_SHARE_CHANNEL_IDS or has the share
+    channel's name (#share-a-script)."""
+    if str(channel_id) in config.share_channel_ids:
+        return True
+    name = str((channel or {}).get("name", "")).strip().lower().lstrip("#")
+    return name == config.share_channel_name
+
+
+def code_fence(text):
+    """A code fence longer than any backtick run in `text`, so the script
+    cannot close it and spill its own text into the issue as markdown."""
+    longest = max((len(run) for run in re.findall(r"`+", text)), default=0)
+    return "`" * max(3, longest + 1)
+
+
+def protect_markers(text):
+    """The duplicate checks trust a marker at the start of a line. A shared
+    script is untrusted text, so a marker in it is broken with a zero-width
+    space; this is the only change to the script."""
+    for marker in (ISSUE_MARKER_PREFIX.rstrip(":"), BORDERLINE_ISSUE_MARKER):
+        text = text.replace(marker, marker[:-1] + "\u200b" + marker[-1:])
+    return text
+
+
+def script_from_code_block(content):
+    """The longest fenced code block of a message, when it is long enough to
+    be a script and not a snippet, as (name, text), else None."""
+    best = None
+    for match in re.finditer(r"```[ \t]*(?:python|py)?[ \t]*\r?\n(.*?)```", content, re.DOTALL):
+        text = match.group(1)
+        if text.count("\n") + 1 >= MIN_PASTED_SCRIPT_LINES and (
+                best is None or len(text) > len(best)):
+            best = text
+    return ("pasted-script.py", best) if best is not None else None
+
+
+class ShareScriptReader:
+    """Stands where the classifier does for the share channel: every message
+    with a .py file (or a long fenced code block) is a script to share, and
+    nothing else is. The answer has the classifier's shape, so the scan,
+    its checkpoint and its limits work unchanged."""
+
+    def __init__(self, messages_by_id, discord):
+        self.messages_by_id = messages_by_id
+        self.discord = discord
+        self.failed_batches = 0
+        self.completed_batches = 0
+
+    def classify_batch(self, chunk):
+        result = {}
+        for candidate in chunk:
+            message = self.messages_by_id[candidate["id"]]
+            files = self.read_files(message)
+            if files is FAILED_DOWNLOAD:
+                continue  # no answer: the scan retries it, as for the classifier
+            self.completed_batches += 1
+            if not files:
+                result[candidate["id"]] = {
+                    "actionable": False, "confidence": 1.0, "type": None}
+                continue
+            result[candidate["id"]] = {
+                "actionable": True, "confidence": 1.0, "type": "script",
+                # Same cap as a classifier title: GitHub rejects one over 256
+                # characters, and a long file name must not stop the channel.
+                "title": " ".join("Script share: {}".format(files[0][0]).split())[:250],
+                "summary": "", "files": files}
+        return result
+
+    def read_files(self, message):
+        """[(file name, text)] of the message, [] when it shares no script,
+        FAILED_DOWNLOAD when a file could not be fetched."""
+        files = []
+        total = 0
+        for attachment in message.get("attachments", []):
+            name = str(attachment.get("filename", ""))
+            if not name.lower().endswith(".py"):
+                continue
+            if len(files) >= MAX_SCRIPT_FILES:
+                log("  message {}: more than {} .py files, the rest are not "
+                    "shared".format(message["id"], MAX_SCRIPT_FILES))
+                break
+            if attachment.get("size", 0) > MAX_SCRIPT_BYTES:
+                log("  message {}: {} is too large to share here ({} bytes)".format(
+                    message["id"], name, attachment.get("size")))
+                return []
+            data = self.discord.download_attachment(
+                attachment.get("url"), MAX_SCRIPT_BYTES)
+            if data is None:
+                return FAILED_DOWNLOAD
+            try:
+                text = data.decode("utf-8-sig")
+            except UnicodeDecodeError:
+                log("  message {}: {} is not UTF-8 text".format(message["id"], name))
+                return []
+            if "\x00" in text:
+                log("  message {}: {} is not a text file".format(message["id"], name))
+                return []
+            total += len(text)
+            if total > MAX_SCRIPT_CHARS:
+                log("  message {}: the scripts together are larger than {} "
+                    "characters".format(message["id"], MAX_SCRIPT_CHARS))
+                return []
+            # A file name is shown in a code span and used by the bot as a
+            # name: keep only the part after any path, without backticks.
+            files.append((re.sub(r"[`\r\n]", "", name.replace("\\", "/").split("/")[-1])
+                          or "script.py", text))
+        if files:
+            return files
+        block = script_from_code_block(message.get("content", ""))
+        if block is not None and len(block[1]) <= MAX_SCRIPT_CHARS:
+            return [block]
+        return []
+
+
+FAILED_DOWNLOAD = object()
+
+
+def build_share_issue_body(message, channel, files):
+    author = message.get("author", {})
+    author_name = neutralize_mentions(
+        (author.get("global_name") or author.get("username", "unknown")).replace("`", "'"))
+    channel_name = str(channel.get("name", message["channel_id"]) if channel
+                       else message["channel_id"]).replace("`", "'")
+    description = neutralize_mentions(
+        re.sub(r"```.*?```", "(code block: shown below)", message.get("content", ""),
+               flags=re.DOTALL)).strip()
+    quoted = "\n".join("> " + line for line in description.splitlines()) or "> (no text)"
+    parts = []
+    for name, text in files:
+        text = protect_markers(text).rstrip("\n")
+        fence = code_fence(text)
+        parts.append("`{}` ({} lines), exactly as it was sent:\n\n{}python\n{}\n{}\n".format(
+            name, text.count("\n") + 1, fence, text, fence))
+    return (
+        "A script shared on Discord by `{author}` in `#{channel}` "
+        "([jump to message]({url})).\n\n"
+        "**What the author says it does** (their own words, unreviewed):\n\n"
+        "{quoted}\n\n"
+        "{files}\n"
+        "---\n"
+        "_This issue was created automatically from a Discord message by the "
+        "Tapir Discord issue bot, so that the issue bot can prepare it for "
+        "the marketplace: adapt it for any office, list every change in "
+        "plain words and ask the author to confirm. The text above and the "
+        "script are unreviewed user content. Scripts shared this way are "
+        "published under the MIT licence unless the author chose another "
+        "open-source licence "
+        "([details](https://archicad-api.com/scripts/share/))._\n"
+        "`{marker} {message_id}`\n"
+        "<!-- {marker} {message_id} -->\n"
+    ).format(
+        author=author_name,
+        channel=channel_name,
+        url=message_jump_url(message, channel),
+        quoted=quoted,
+        files="\n".join(parts),
+        marker=ISSUE_MARKER_PREFIX,
+        message_id=message["id"],
+    )
+
+
 def process_channel(channel_id, config, discord, github, classifier, state):
     if state["created"] >= config.max_issues_per_run:
         # Classifying candidates whose results could only be discarded
@@ -903,6 +1144,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
                        "check the ID and the bot's access.".format(channel_id))
         return
     channel_name = channel.get("name", channel_id)
+    share = is_share_channel(channel, channel_id, config)
     since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
         minutes=config.lookback_minutes)
     messages = discord.recent_messages(channel_id, since)
@@ -959,6 +1201,12 @@ def process_channel(channel_id, config, discord, github, classifier, state):
     skipped = set()
     groups_by_id = {}
     merged_by_id = {}
+    if share:
+        # Nothing to classify here: a message with a script is shared, any
+        # other message is chat.
+        log("Channel #{} is a share channel: scripts are filed with the {} "
+            "label, nothing is classified".format(channel_name, SHARE_LABEL))
+        classifier = ShareScriptReader(merged_by_id, discord)
     groups = group_messages(after_checkpoint)
     now = datetime.datetime.now(datetime.timezone.utc)
     for group in groups:
@@ -974,7 +1222,7 @@ def process_channel(channel_id, config, discord, github, classifier, state):
         merged = merge_group(group)
         groups_by_id[merged["id"]] = group
         merged_by_id[merged["id"]] = merged
-        reason = skip_reason(merged, config)
+        reason = skip_reason(merged, config, share)
         if reason:
             log("  message {}: skipped, {}".format(merged["id"], reason))
             skipped.add(merged["id"])
@@ -1051,6 +1299,14 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             classifications.update(classifier.classify_batch(chunk))
             classified_until = index + len(chunk)
         classification = classifications.get(candidate["id"])
+        if classification is None and share:
+            # A script that could not be downloaded is not a message the
+            # classifier cannot handle: it is retried, never skipped. The scan
+            # of the channel stops here and the checkpoint stays before it, so
+            # the next run reads the message again (with a fresh attachment URL).
+            log("  message {}: its script could not be downloaded - leaving the "
+                "channel from this message for the next run".format(message["id"]))
+            break
         if classification is None:
             if unclassified is not None:
                 log("  message {}: classifier gave no usable answer again - "
@@ -1117,21 +1373,49 @@ def process_channel(channel_id, config, discord, github, classifier, state):
             checked(message)
             continue
 
-        label = "enhancement" if issue_type == "feature" else "bug"
-        body = build_issue_body(message, channel, classification)
-        issue = github.create_issue(title, body, [label, "discord"])
+        if issue_type == "script":
+            if not state.get("share_label_ready"):
+                state["share_label_ready"] = github.ensure_label(
+                    SHARE_LABEL, "0e8a16",
+                    "A script shared for the marketplace, prepared by the issue bot")
+            labels = [SHARE_LABEL, "discord"]
+            body = build_share_issue_body(message, channel, classification["files"])
+        else:
+            labels = ["enhancement" if issue_type == "feature" else "bug", "discord"]
+            body = build_issue_body(message, channel, classification)
+        issue = github.create_issue(title, body, labels)
         if issue is None:
             state["github_failures"] += 1
             break
+        if issue_type == "script" and SHARE_LABEL not in [
+                label.get("name") for label in issue.get("labels", [])]:
+            # The label is what makes the issue bot prepare the script.
+            log("  WARNING: issue #{} has no '{}' label, adding it".format(
+                issue["number"], SHARE_LABEL))
+            if not github.add_labels(issue["number"], [SHARE_LABEL]):
+                log("  ERROR: could not label issue #{}; it needs the '{}' label by "
+                    "hand".format(issue["number"], SHARE_LABEL))
+                append_summary("- \N{WARNING SIGN} Issue #{} was filed without the "
+                               "`{}` label - add it by hand.".format(
+                                   issue["number"], SHARE_LABEL))
         state["created"] += 1
         state["created_numbers"].append(issue["number"])
         log("  created issue #{}: {}".format(issue["number"], issue["html_url"]))
 
         discord.add_mark(channel_id, message["id"], PROCESSED_MARK)
-        discord.reply(
-            channel_id, message["id"],
-            "Thanks for the report! I filed it as GitHub issue **#{}**: {}".format(
-                issue["number"], issue["html_url"]))
+        if issue_type == "script":
+            discord.reply(
+                channel_id, message["id"],
+                "Thanks for sharing! I filed your script as GitHub issue **#{}**: {}\n"
+                "The Tapir bot will adapt it for any office and open a pull request; "
+                "you will be asked there to confirm it still does what you meant. "
+                "Shared scripts are published under the MIT licence unless you say "
+                "otherwise there.".format(issue["number"], issue["html_url"]))
+        else:
+            discord.reply(
+                channel_id, message["id"],
+                "Thanks for the report! I filed it as GitHub issue **#{}**: {}".format(
+                    issue["number"], issue["html_url"]))
         checked(message)
 
     if not config.dry_run:
@@ -1225,6 +1509,11 @@ def write_created_issues_output(numbers):
         log("  could not write the step output: {}".format(error))
 
 
+def scanned_channel_ids(config):
+    """The watched channels, then the share channels not among them."""
+    return list(dict.fromkeys(list(config.channel_ids) + list(config.share_channel_ids)))
+
+
 def main():
     config, missing = Config.from_env()
     if config is None:
@@ -1272,7 +1561,7 @@ def main():
                            "none.".format(recent))
             config.max_issues_per_run = 0
 
-    for channel_id in config.channel_ids:
+    for channel_id in scanned_channel_ids(config):
         process_channel(channel_id, config, discord, github, classifier, state)
 
     if state["borderline"] and not config.dry_run:
@@ -1282,7 +1571,8 @@ def main():
     # ends red still get their triage.
     write_created_issues_output(state["created_numbers"])
 
-    if config.channel_ids and state["unreadable_channels"] == len(config.channel_ids):
+    scanned = scanned_channel_ids(config)
+    if scanned and state["unreadable_channels"] == len(scanned):
         # A revoked token or missing permission must not leave the scheduled
         # workflow silently green while the bot does nothing.
         log("ERROR: none of the configured channels could be read - check the "

@@ -32,6 +32,13 @@
     'Motion': 'Animazioni',
     'Reduced': 'Ridotte',
     'Full': 'Tutte',
+    'Measure tool (M key)': 'Strumento Misura (tasto M)',
+    'On': 'Attivo',
+    'Off': 'Disattivo',
+    'Click the start point': 'Fai clic sul punto iniziale',
+    'Click the end point': 'Fai clic sul punto finale',
+    'Measure tool on. Click two points to measure them; press M or Escape to leave.': 'Strumento Misura attivo. Fai clic su due punti per misurarli; premi M o Esc per uscire.',
+    'Measure tool off.': 'Strumento Misura disattivato.',
     'Reset to defaults': 'Ripristina i valori predefiniti',
     'Done': 'Fine',
     'Language': 'Lingua',
@@ -58,5 +65,17 @@
     'Roadmap': 'Roadmap',
     'About Tapir': 'Informazioni su Tapir',
     'Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.':
-        'Non affiliato a Graphisoft. Archicad è un marchio di Graphisoft SE.'
+        'Non affiliato a Graphisoft. Archicad è un marchio di Graphisoft SE.',
+    'Search': 'Cerca',
+    'Search the site': 'Cerca nel sito',
+    'Search pages, commands and scripts': 'Cerca pagine, comandi e script',
+    'Loading…': 'Caricamento…',
+    'The search could not be loaded. Check your connection and try again.': 'Impossibile caricare la ricerca. Controlla la connessione e riprova.',
+    'Nothing found.': 'Nessun risultato.',
+    '1 result': '1 risultato',
+    'results': 'risultati',
+    'Page': 'Pagina',
+    'Section': 'Sezione',
+    'Command': 'Comando',
+    'Built-in script': 'Script incluso'
 });

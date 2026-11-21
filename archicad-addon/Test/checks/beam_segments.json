@@ -1,0 +1,156 @@
+{
+  "title": "CreateBeams and ModifyBeams write the cross section, taper and length of single beam segments (#2551)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Beam" ],
+  "steps": [
+    {
+      "id": "beam with a tapered segment",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 660.0, "y": 660.0 },
+            "endCoordinate": { "x": 666.0, "y": 660.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "profileAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.27,
+            "height": 0.53,
+            "segments": [
+              {
+                "geometry": {
+                  "isHomogeneous": false,
+                  "isEndWidthAndHeightLinked": false,
+                  "endWidth": 0.27,
+                  "endHeight": 0.31,
+                  "length": { "lengthType": "Proportional", "lengthProportion": 1.0 }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "the new beam's segment is tapered and keeps the cross section given for all",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].geometry.width", "approx": 0.27, "name": "width given for all segments" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.height", "approx": 0.53, "name": "height given for all segments" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.isHomogeneous", "eq": false, "name": "segment tapered by CreateBeams" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.endHeight", "approx": 0.31, "name": "end height written" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.lengthType", "eq": "Proportional", "name": "length type written" }
+      ]
+    },
+    {
+      "id": "ModifyBeams changes the width of the segment only",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "segments": [
+              { "segmentIndex": 0, "geometry": { "isWidthAndHeightLinked": false, "width": 0.35 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "only the given key changed",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].geometry.width", "approx": 0.35, "name": "segment width written" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.height", "approx": 0.53, "name": "height kept" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.isHomogeneous", "eq": false, "name": "taper kept" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.endHeight", "approx": 0.31, "name": "end height kept" }
+      ]
+    },
+    {
+      "id": "ModifyBeams makes the segment homogeneous again",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "segments": [ { "geometry": { "isHomogeneous": true } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the segment is not tapered",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].geometry.isHomogeneous", "eq": true, "name": "segment picked by its position" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.width", "approx": 0.35, "name": "width kept" }
+      ]
+    },
+    {
+      "id": "a segment the beam does not have fails the item before anything is written",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "width": 0.9,
+            "segments": [ { "segmentIndex": 5, "geometry": { "width": 0.9 } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "segment 5 refused" }
+      ]
+    },
+    {
+      "id": "the refused item changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].geometry.width", "approx": 0.35, "name": "width not changed by the refused item" }
+      ]
+    },
+    {
+      "id": "CreateBeams refuses a segment the defaults do not have",
+      "command": "CreateBeams",
+      "creates": false,
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 660.0, "y": 664.0 },
+            "endCoordinate": { "x": 666.0, "y": 664.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "segments": [ { "segmentIndex": 7, "geometry": { "width": 0.4 } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "no beam with segment 7" }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 /* 中文 (简体): the Community page (community/index.html, with the texts community/community.js reads
    from it). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Community – Archicad automation with Tapir': '社区 – 用 Tapir 实现 Archicad 自动化',
+    'Archicad automation community | Tapir': 'Archicad 自动化社区 | Tapir',
     'Ask on Discord, report a bug, test a fix in your Archicad: how Tapir\'s community and its bots turn a report into a release, and how the project grew.':
         '在 Discord 上提问、报告 bug、在你的 Archicad 中测试修复：Tapir 的社区和它的机器人如何把一份报告变成一次发布，以及这个项目如何成长。',
     '<a href="../">Tapir</a> / Community': '<a href="../">Tapir</a> / 社区',
@@ -28,16 +28,16 @@
     'How the bots <em>work.</em>': '机器人如何<em>工作。</em>',
     'Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.':
         '大多数修复由机器人编写、由人检查。维护者制定规则，并且可以叫停任何改动；修复在你的 Archicad 中是否有效，由你来判断。',
-    '<b>01</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
-        '<b>01</b><strong>发帖</strong><span>在 Discord 或 GitHub 上描述 bug 或想法。在 Discord 上不需要 GitHub 账号。</span>',
-    '<b>02</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
-        '<b>02</b><strong>一个 issue</strong><span>每半小时，看起来像 bug 报告或功能请求的 Discord 帖子会变成 GitHub issue，机器人会回复链接。</span>',
-    '<b>03</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
-        '<b>03</b><strong>修复草案</strong><span>issue 机器人会回答、询问缺少的信息，或者编写修复并创建 pull request。它会为每个 Archicad 版本构建并经过审查。</span>',
-    '<b>04</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
-        '<b>04</b><strong>你来测试</strong><span>pull request 上的一条评论会给出构建好的插件的链接，并请报告问题的人试用。</span>',
-    '<b>05</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
-        '<b>05</b><strong>发布</strong><span>构建通过并经过审查后，除非维护者叫停，它会在三天后合并，并随周一的<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">版本</a>发布。</span>',
+    '<b aria-hidden="true">1</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
+        '<b aria-hidden="true">1</b><strong>发帖</strong><span>在 Discord 或 GitHub 上描述 bug 或想法。在 Discord 上不需要 GitHub 账号。</span>',
+    '<b aria-hidden="true">2</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
+        '<b aria-hidden="true">2</b><strong>一个 issue</strong><span>每半小时，看起来像 bug 报告或功能请求的 Discord 帖子会变成 GitHub issue，机器人会回复链接。</span>',
+    '<b aria-hidden="true">3</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
+        '<b aria-hidden="true">3</b><strong>修复草案</strong><span>issue 机器人会回答、询问缺少的信息，或者编写修复并创建 pull request。它会为每个 Archicad 版本构建并经过审查。</span>',
+    '<b aria-hidden="true">4</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
+        '<b aria-hidden="true">4</b><strong>你来测试</strong><span>pull request 上的一条评论会给出构建好的插件的链接，并请报告问题的人试用。</span>',
+    '<b aria-hidden="true">5</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
+        '<b aria-hidden="true">5</b><strong>发布</strong><span>构建通过并经过审查后，除非维护者叫停，它会在三天后合并，并随周一的<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">版本</a>发布。</span>',
 
     // Report and test
     'Report and test': '报告与测试',
@@ -99,6 +99,9 @@
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': '1月 2月 3月 4月 5月 6月 7月 8月 9月 10月 11月 12月',
     '{month} {year}': '{year}年{month}',
     'Growth': '增长',
+    'Total': '合计',
+    'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
+        '增长图。左右方向键逐月读出数字，Home 和 End 跳到第一个月和最后一个月，Esc 隐藏数字。',
     'Growth since <em>2022.</em>': '自 <em>2022</em> 年以来的增长。',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         '每个月围绕 Tapir 发生的一切，从在 Enzyme 的第一次提交到今天。只统计数字，从不收集消息的内容。',
@@ -132,5 +135,23 @@
         '我们正在围绕 Archicad 自动化建设一个积极而多元的社区。',
     'Say hello on Discord, and tell us what you automate in Archicad.':
         '来 Discord 打个招呼，告诉我们你在 Archicad 中自动化了什么。',
-    'Join the Discord': '加入 Discord'
+    'Join the Discord': '加入 Discord',
+
+    // On the map (user-map.js)
+    "On the map": "地图",
+    "Where Tapir is <em>used.</em>": "Tapir 在哪里<em>被使用。</em>",
+    "The towns people named on Discord, counted per town: never a name or a message. Type <code>/where</code> and your town in any Discord channel to put it on the map.": "大家在 Discord 上提到的城市，按城市计数：从不记录姓名或消息内容。在任意 Discord 频道输入 <code>/where</code> 和你的城市，把它放上地图。",
+    "People on the map": "地图上的人数",
+    "Countries": "国家",
+    "Towns": "城市",
+    "Continents": "大洲",
+    "A dot per town, larger where more people are. Land: Natural Earth.": "每个城市一个点，人越多点越大。陆地数据：Natural Earth。",
+    "Add your town on Discord": "在 Discord 上添加你的城市",
+    "Show the countries": "显示国家",
+    "Hide the countries": "隐藏国家",
+    "{place}, {country}: {count} person": "{place}，{country}：{count} 人",
+    "{place}, {country}: {count} people": "{place}，{country}：{count} 人",
+    "{count} person": "{count} 人",
+    "{count} people": "{count} 人",
+    "World map of where people use Tapir: {people} people in {countries} countries. The list below names every country.": "Tapir 用户分布世界地图：{countries} 个国家的 {people} 人。下方列表列出了每个国家。"
 });

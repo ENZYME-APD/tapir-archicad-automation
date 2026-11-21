@@ -1,6 +1,7 @@
 #include "RenderingCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Folder.hpp"
 
 // The rendering scenes are the entries of the Scene list of the PhotoRendering
 // Settings palette (Document > Creative Imaging). ACAPI_Rendering_GetRenderingSceneNames
@@ -188,7 +189,7 @@ GS::Optional<GS::UniString> PhotoRenderCommand::GetInputParametersSchema () cons
         "properties": {
             "imageFilePath": {
                 "type": "string",
-                "description": "Absolute path of the image file to write. An existing file is overwritten, unless overwrite is false."
+                "description": "Absolute path of the image file to write. Its folder must exist: a missing folder is refused before anything is rendered. An existing file is overwritten, unless overwrite is false."
             },
             "overwrite": {
                 "type": "boolean",
@@ -270,6 +271,14 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
         return CreateFailedExecutionResult (APIERR_BADPARS, overwriteRefusal);
     }
 
+    // Archicad renders the whole image before it writes the file, and a file it cannot
+    // write leaves the image in a new Picture window (#2688), so a missing folder is
+    // refused here, before anything is rendered.
+    IO::Location imageFolderLocation (imageFilePath);
+    if (imageFolderLocation.DeleteLastLocalName () != NoError || IO::Folder (imageFolderLocation).GetStatus () != NoError) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "The folder '" + imageFolderLocation.ToDisplayText () + "' of imageFilePath does not exist: nothing was rendered.");
+    }
+
     GS::UniString sceneName;
     if (parameters.Get ("sceneName", sceneName)) {
         if (sceneName.IsEmpty ()) {
@@ -324,8 +333,24 @@ GS::ObjectState PhotoRenderCommand::Execute (const GS::ObjectState& parameters, 
     photoRenderPars.colorDepth = APIColorDepth_TC24;
 #endif
 
+    // A render whose file cannot be written leaves the image in a new Picture window,
+    // which becomes the current one, so later commands that need the 3D window (or any
+    // current window) fail (#2688). The window current before the render is made current
+    // again whenever the render changed it.
+    API_WindowInfo previousWindow = {};
+    const bool hasPreviousWindow = ACAPI_Window_GetCurrentWindow (&previousWindow) == NoError;
+
     // A print parameter would print the image too; nullptr writes only the file.
     const GSErrCode err = ACAPI_Rendering_PhotoRender (&photoRenderPars, nullptr);
+
+    if (hasPreviousWindow) {
+        API_WindowInfo currentWindow = {};
+        if (ACAPI_Window_GetCurrentWindow (&currentWindow) != NoError ||
+            currentWindow.typeID != previousWindow.typeID ||
+            currentWindow.databaseUnId != previousWindow.databaseUnId) {
+            ACAPI_Window_ChangeWindow (&previousWindow);
+        }
+    }
 
     // Restored whether or not the render succeeded.
     const GSErrCode restoreErr = changeImageSettings ? ChangeImageSettings (originalImageSettings) : NoError;

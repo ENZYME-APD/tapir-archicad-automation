@@ -194,6 +194,19 @@
 /* [ 38] */ "This Tapir Installer does not run on Macs with an Intel processor."
 /* [ 39] */ "Failed to open %T"
 /* [ 40] */ "Cannot create %T"
+/* [ 41] */ "Archicad is restarted without asking to save the project: unsaved changes are lost."
+/* [ 42] */ "Save the project now, or cancel and save it yourself before updating."
+/* [ 43] */ "Save and Update"
+/* [ 44] */ "Cancel"
+/* [ 45] */ "Update Without Saving"
+/* [ 46] */ "Archicad is restarted without asking to send your changes: changes not sent to the Teamwork project are lost."
+/* [ 47] */ "Send your changes now, or cancel and send them yourself before updating."
+/* [ 48] */ "Send and Update"
+/* [ 49] */ "Update Without Sending"
+/* [ 50] */ "Archicad is restarted without asking to save the project: the changes of this untitled project are lost."
+/* [ 51] */ "If it has changes to keep, cancel and save it with File > Save As before updating."
+/* [ 52] */ "Failed to save the project (error %d). Tapir was not updated."
+/* [ 53] */ "Failed to send the changes to the Teamwork project (error %d). Tapir was not updated."
 }
 
 'STR#' ID_SCRIPT_MANAGER_STRINGS "Tapir Script Manager Strings" {
@@ -307,13 +320,16 @@
 /* [ 19] */ "Tapir::Config: Failed to load config file: %T"
 /* [ 20] */ "Tapir::Config: Failed to save config file: %T"
 /* [ 21] */ "Tapir: the %s command could not be registered (error %d)."
+/* [ 22] */ "Tapir: Failed to list %T/%T on GitHub: HTTP status %d"
+/* [ 23] */ "Tapir: Using the scripts of %T/%T downloaded before."
+/* [ 24] */ "Tapir: Failed to download %T: HTTP status %d"
 }
 
-'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
-/* [  1] */ Button                     10  204  180   23    LargePlain "OK"
-/* [  2] */ Icon                       36   10  128  128    ID_TAPIR_LOGO
-/* [  3] */ CenterText                 10  148  180   23    LargeBold vCenter "Tapir Archicad Automation"
-/* [  4] */ CenterText                 10  171  180   23    LargePlain vCenter "Version: %T, Port: %T"
+'GDLG' ID_ABOUT_DIALOG Modal     40   40  280  237  "Tapir" {
+/* [  1] */ Button                     10  204  260   23    LargePlain "OK"
+/* [  2] */ Icon                       76   10  128  128    ID_TAPIR_LOGO
+/* [  3] */ CenterText                 10  148  260   23    LargeBold vCenter "Tapir Archicad Automation"
+/* [  4] */ CenterText                 10  171  260   23    LargePlain vCenter "Version: %T, Port: %T"
 }
 
 'DLGH' ID_ABOUT_DIALOG Tapir_About_Dialog {

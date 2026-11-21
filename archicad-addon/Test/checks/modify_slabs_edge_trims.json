@@ -1,0 +1,166 @@
+{
+  "title": "GetDetailsOfElements reports and ModifySlabs writes the Edge Angle of every edge and of each edge, and the custom surface of one edge of a slab (#2562)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Slab" ],
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surfA": "attributes[0].attributeId.guid",
+        "surfB": "attributes[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "a slab with a hole",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.3,
+            "sideMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
+            "polygonCoordinates": [
+              { "x": 940.0, "y": 940.0 },
+              { "x": 948.0, "y": 940.0 },
+              { "x": 948.0, "y": 946.0 },
+              { "x": 940.0, "y": 946.0 }
+            ],
+            "holes": [
+              {
+                "polygonOutline": [
+                  { "x": 943.0, "y": 942.0 },
+                  { "x": 945.0, "y": 942.0 },
+                  { "x": 945.0, "y": 944.0 },
+                  { "x": 943.0, "y": 944.0 }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "the slab reports one edge surface per edge, outline and hole",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeSideMaterials", "len": 8, "name": "eight edge surfaces" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[5].attributeId.guid", "eq": "${surfA}", "name": "a hole edge shows the slab's side surface" }
+      ]
+    },
+    {
+      "id": "every edge at a custom angle; refused items",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "edgeTrim": { "trimType": "CustomAngle", "angle": 1.2 }
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "edgeTrim": { "trimType": "Horizontal" }
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "edgeTrims": [ {}, {} ]
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "edgeTrim": { "trimType": "Vertical" },
+            "holes": []
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "edgeTrim": { "trimType": "Vertical" },
+            "edgeTrims": [ {}, {}, {}, {}, {}, {}, {}, {} ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 5, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "edge angle of the whole slab written" },
+        { "path": "executionResults[1].success", "eq": false, "name": "Horizontal refused on a slab" },
+        { "path": "executionResults[2].success", "eq": false, "name": "wrong edge count refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "edgeTrim with holes refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "edgeTrim with edgeTrims refused" }
+      ]
+    },
+    {
+      "id": "read the custom angle of every edge",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeTrims", "len": 8, "name": "still eight edges" },
+        { "path": "detailsOfElements[0].details.edgeTrims[0].trimType", "eq": "CustomAngle", "name": "outline edge custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[0].angle", "approx": 1.2, "tol": 0.0001, "name": "outline edge angle" },
+        { "path": "detailsOfElements[0].details.edgeTrims[6].trimType", "eq": "CustomAngle", "name": "hole edge custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[6].angle", "approx": 1.2, "tol": 0.0001, "name": "hole edge angle" },
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "hole kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.3, "name": "thickness kept" }
+      ]
+    },
+    {
+      "id": "one edge back to vertical, another at its own angle, and one edge's custom surface",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "edgeTrims": [
+              { "trimType": "Vertical" },
+              { "angle": 0.9 },
+              {}, {}, {}, {}, {}, {}
+            ],
+            "edgeSideMaterials": [
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": true, "attributeId": { "guid": "${surfB}" } },
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "edge trims and edge surface written" }
+      ]
+    },
+    {
+      "id": "read each edge",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeTrims[0].trimType", "eq": "Vertical", "name": "edge 0 vertical again" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].trimType", "eq": "CustomAngle", "name": "edge 1 still custom" },
+        { "path": "detailsOfElements[0].details.edgeTrims[1].angle", "approx": 0.9, "tol": 0.0001, "name": "edge 1 own angle" },
+        { "path": "detailsOfElements[0].details.edgeTrims[2].angle", "approx": 1.2, "tol": 0.0001, "name": "edge 2 kept its angle" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].overridden", "eq": true, "name": "edge 2 has a custom surface" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].attributeId.guid", "eq": "${surfB}", "name": "edge 2 surface" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[0].overridden", "eq": false, "name": "edge 0 has none" },
+        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfA}", "name": "slab side surface kept" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "outline kept: four corners and the closing point" }
+      ]
+    }
+  ]
+}

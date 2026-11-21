@@ -294,6 +294,166 @@
       "labelSource": null,
       "group": "Floor Plan and Section",
       "subgroup": null
+    },
+    {
+      "get": "verticalLink",
+      "set": "verticalLink",
+      "apiMember": "API_OpeningBaseType::verticalLink",
+      "apiDescription": "The anchor position defining how the window/door element to be kept fixed during elevation changes.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "verticalLinkStoryIndex",
+      "set": "verticalLinkStoryIndex",
+      "apiMember": "API_VerticalLink::linkValue",
+      "apiDescription": "The index of the anchor story if linked to story, 0 otherwise.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "subFloorThickness",
+      "set": "subFloorThickness",
+      "apiMember": "API_OpeningBaseType::subFloorThickness",
+      "apiDescription": "Sub-floor thickness (used to be Parapet correction ppCorr).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "revealDepthLocation",
+      "set": "revealDepthLocation",
+      "apiMember": "API_WindowType::revealDepthLocation",
+      "apiDescription": "The location of the reveal depth reference line.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "surfaceId",
+      "set": "surfaceId",
+      "apiMember": "API_OpeningBaseType::mat",
+      "apiDescription": "Material index.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "useObjectMaterials",
+      "set": "useObjectMaterials",
+      "apiMember": "API_OpeningBaseType::useObjMaterials",
+      "apiDescription": "Use the materials defined in the library part.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "directionType",
+      "set": "directionType",
+      "apiMember": "API_WindowType::directionType",
+      "apiDescription": "Type of the plane orientation of the window placed into slanted wall.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "fixPoint",
+      "set": "fixPoint",
+      "apiMember": "API_WindowType::fixPoint",
+      "apiDescription": "The fixed (placement) point of the window (relative to the owning wall's reference line).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "revealDepthFromSide",
+      "set": null,
+      "apiMember": "API_WindowType::revealDepthFromSide",
+      "apiDescription": "Calculated inset from the clicked side of wall.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "jambDepthHead",
+      "set": null,
+      "apiMember": "API_WindowType::jambDepthHead",
+      "apiDescription": "Inset on top.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "jambDepthSill",
+      "set": null,
+      "apiMember": "API_WindowType::jambDepthSill",
+      "apiDescription": "Inset on bottom.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "jambDepthLeft",
+      "set": null,
+      "apiMember": "API_WindowType::jambDepth",
+      "apiDescription": "Inset on left.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "jambDepthRight",
+      "set": null,
+      "apiMember": "API_WindowType::jambDepth2",
+      "apiDescription": "Inset on right.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "wallCutUsing",
+      "set": null,
+      "apiMember": "API_OpeningBaseType::wallCutUsing",
+      "apiDescription": "True if the window inherits the gables of the owner wall.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "startPoint",
+      "set": null,
+      "apiMember": "API_WindowType::startPoint",
+      "apiDescription": "The location of the center point of the opening. It is measured from the beginning corner of the wall roof etc., rotated into the direction of the wall reference edge starting from the first corner.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "dirVector",
+      "set": null,
+      "apiMember": "API_WindowType::dirVector",
+      "apiDescription": "The direction vector of the opening in a polygonal wall, relative to the wall reference edge starting from the first corner.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
     }
   ]
 }

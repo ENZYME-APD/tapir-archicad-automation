@@ -1,0 +1,136 @@
+{
+  "title": "ModifyRailings changes the inner posts and baluster sets of a segment through its pattern and the posts of a node through its post model (#2572)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a one-segment railing on story 0",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "coordinates": [
+              { "x": 820.0, "y": 820.0 },
+              { "x": 824.0, "y": 820.0 }
+            ],
+            "floorIndex": 0,
+            "bottomOffset": 0.0,
+            "height": 1.0
+          }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" }
+      ]
+    },
+    {
+      "id": "components of the railing before the change",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "subelements[0].railingSegments", "len": 1, "name": "one segment" },
+        { "path": "subelements[0].railingNodes", "len": 2, "name": "two nodes" },
+        { "path": "subelements[0].railingPosts[0].elementId.guid", "exists": true, "name": "the default railing has a post" },
+        { "path": "subelements[0].railingInnerPosts[0].elementId.guid", "exists": true, "name": "the default railing has an inner post" },
+        { "path": "subelements[0].railingBalusterSets[0].elementId.guid", "exists": true, "name": "the default railing has a baluster set" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: the pattern of segment 0 (inner post and baluster set models)",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          {
+            "elementId": { "guid": "${r}" },
+            "segments": [
+              {
+                "index": 0,
+                "pattern": {
+                  "innerPost": { "doublePostOffset": 0.06 },
+                  "balusterSet": { "frame": { "lateralOffset": 0.02 }, "distribution": { "type": "PatternLength", "length": 0.15 } }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pattern change accepted and read back" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: the post model of node 0",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "nodes": [ { "index": 0, "post": { "verticalPosition": { "bottomRailIndex": 0, "topRailIndex": 1 } } } ] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "post model change accepted and read back" }
+      ]
+    },
+    {
+      "id": "components of the railing after the change",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "save": {
+        "post": "subelements[0].railingPosts[0].elementId.guid",
+        "innerPost": "subelements[0].railingInnerPosts[0].elementId.guid",
+        "balusterSet": "subelements[0].railingBalusterSets[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "subelements[0].railingSegments", "len": 1, "name": "still one segment" }
+      ]
+    },
+    {
+      "id": "the generated components follow the models",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${post}" } },
+          { "elementId": { "guid": "${innerPost}" } },
+          { "elementId": { "guid": "${balusterSet}" } },
+          { "elementId": { "guid": "${r}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "RailingPost", "name": "first is a post" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "RailingNode", "name": "the post names its node as owner" },
+        { "path": "detailsOfElements[0].details.verticalPosition.topRailIndex", "eq": 1, "name": "the post of node 0 reaches rail 1" },
+        { "path": "detailsOfElements[1].type", "eq": "RailingInnerPost", "name": "second is an inner post" },
+        { "path": "detailsOfElements[1].details.doublePostOffset", "approx": 0.06, "name": "the inner post got the double post offset of the pattern" },
+        { "path": "detailsOfElements[2].type", "eq": "RailingBalusterSet", "name": "third is a baluster set" },
+        { "path": "detailsOfElements[2].details.frame.lateralOffset", "approx": 0.02, "name": "the baluster set got the lateral offset of the pattern" },
+        { "path": "detailsOfElements[2].details.distribution.type", "eq": "PatternLength", "name": "the baluster set got the distribution type of the pattern" },
+        { "path": "detailsOfElements[2].details.distribution.length", "approx": 0.15, "name": "the baluster set got the distribution length of the pattern" },
+        { "path": "detailsOfElements[3].details.segments[0].height", "approx": 1.0, "name": "the segment height is kept" },
+        { "path": "detailsOfElements[3].details.referenceLine[1].x", "approx": 824.0, "name": "the reference line is kept" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: components and segments the railing does not have, and an empty pattern",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "nodes": [ { "index": 0, "posts": [ { "index": 99, "verticalPosition": { "bottomRailIndex": 0 } } ] } ] },
+          { "elementId": { "guid": "${r}" }, "segments": [ { "index": 0, "innerPosts": [ { "index": 99, "doublePostOffset": 0.1 } ] } ] },
+          { "elementId": { "guid": "${r}" }, "segments": [ { "index": 1, "pattern": { "innerPost": { "doublePostOffset": 0.1 } } } ] },
+          { "elementId": { "guid": "${r}" }, "segments": [ { "index": 0, "pattern": {} } ] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "a post the node does not have refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "an inner post the segment does not have refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a segment the railing does not have refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "a pattern with no fields refused" }
+      ]
+    }
+  ]
+}

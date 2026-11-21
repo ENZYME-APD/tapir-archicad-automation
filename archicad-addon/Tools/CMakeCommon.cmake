@@ -194,6 +194,20 @@ function (GenerateAddOnProject target acVersion devKitDir addOnName addOnSources
     endif ()
 
     set_target_properties (${target} PROPERTIES OUTPUT_NAME ${addOnName})
+    # The git commit the add-on is built from (ADDON_BUILD_COMMIT), shown in the About dialog so
+    # a pull request's build can be told from a release. Read on every build, not only when the
+    # project is generated, so a rebuild never shows an older commit.
+    find_package (Git QUIET)
+    set (AddOnBuildCommitDir "${CMAKE_BINARY_DIR}/BuildCommit")
+    add_custom_target (${target}BuildCommit
+        COMMAND ${CMAKE_COMMAND} "-DGIT_EXECUTABLE=${GIT_EXECUTABLE}" "-DSOURCE_DIR=${AddOnSourcesFolderAbsolute}" "-DOUTPUT_FILE=${AddOnBuildCommitDir}/AddOnBuildCommit.hpp" -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/WriteAddOnBuildCommit.cmake"
+        BYPRODUCTS "${AddOnBuildCommitDir}/AddOnBuildCommit.hpp"
+        COMMENT "Reading the build commit..."
+        VERBATIM
+    )
+    add_dependencies (${target} ${target}BuildCommit)
+    target_include_directories (${target} PRIVATE "${AddOnBuildCommitDir}")
+
     if (WIN32)
         set_target_properties (${target} PROPERTIES SUFFIX ".apx")
         set_target_properties (${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_$<CONFIG> "${CMAKE_BINARY_DIR}/$<CONFIG>")

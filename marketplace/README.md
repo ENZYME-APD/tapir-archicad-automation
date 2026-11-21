@@ -175,14 +175,36 @@ every Tapir user's palette.
 A marketplace script may import the helpers of the built-in scripts,
 [`builtin-scripts/utilities/`](../builtin-scripts/utilities/) and
 [`builtin-scripts/aclib/`](../builtin-scripts/aclib/), like a built-in script
-does. Its folder holds no copies of them; they are imported from the folder the
-script runs in, so:
+does. Its folder holds no copies of them, so:
 
-- Installed by hand (see
-  [Using a marketplace script in the palette](../builtin-scripts/README.md#using-a-marketplace-script-in-the-palette)),
-  copy `utilities/` and `aclib/` from `builtin-scripts/` next to the script.
+- The palette of a Tapir Add-On newer than 2.0.0 runs every Python script with
+  the folder of the built-in scripts it downloaded (the one holding `utilities/`
+  and `aclib/`) on `PYTHONPATH`, after the script's own folder. A script
+  installed by hand (see
+  [Using a marketplace script in the palette](../builtin-scripts/README.md#using-a-marketplace-script-in-the-palette))
+  finds them there; copies next to the script are still used first.
+- With Tapir 2.0.0 or older, copy `utilities/` and `aclib/` from
+  `builtin-scripts/` next to the script.
 - The palette's marketplace window, when it installs a script that imports
   them, puts copies of both folders, from `main`, next to it.
+
+A script that imports them guards the import, so that without the helpers it
+says what to do instead of failing with "No module named 'utilities'":
+
+```python
+import sys
+
+try:
+    from utilities.archicad import run_tapir
+    from utilities.ui import ScriptWindow, require_archicad
+except ModuleNotFoundError as error:
+    # The palette of a Tapir newer than 2.0.0 provides the helpers; an older one needs copies next to the script.
+    if (error.name or "").split(".")[0] not in ("utilities", "aclib"):
+        raise
+    sys.exit("Error: the Tapir helpers utilities and aclib were not found. Update the Tapir Add-On, or copy the "
+             "utilities and aclib folders of builtin-scripts "
+             "(https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts) next to this script.")
+```
 
 So changes to `utilities` and `aclib` stay backward compatible: a function or
 argument a script uses is never removed or changed in meaning.

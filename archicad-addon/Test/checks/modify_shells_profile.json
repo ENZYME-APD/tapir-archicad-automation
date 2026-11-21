@@ -73,7 +73,7 @@
       ]
     },
     {
-      "id": "move one profile point; a revolved shell and a closed two-point profile are refused",
+      "id": "move one profile point; a second profile on an extruded shell and a closed two-point profile are refused",
       "command": "ModifyShells",
       "creates": false,
       "params": {
@@ -83,8 +83,8 @@
             "profile": { "coordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.0, "y": 2.0 }, { "x": 4.0, "y": 2.0 } ] }
           },
           {
-            "elementId": { "guid": "${s2}" },
-            "profile": { "coordinates": [ { "x": 5.0, "y": 0.0 }, { "x": 0.0, "y": 5.0 } ] }
+            "elementId": { "guid": "${s1}" },
+            "secondProfile": { "coordinates": [ { "x": 5.0, "y": 0.0 }, { "x": 0.0, "y": 5.0 } ] }
           },
           {
             "elementId": { "guid": "${s1}" },
@@ -95,7 +95,7 @@
       "expect": [
         { "path": "executionResults", "len": 3, "name": "one result per item" },
         { "path": "executionResults[0].success", "eq": true, "name": "profile replaced" },
-        { "path": "executionResults[1].success", "eq": false, "name": "profile of a revolved shell refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "second profile of an extruded shell refused" },
         { "path": "executionResults[2].success", "eq": false, "name": "closed two-point profile refused" }
       ]
     },

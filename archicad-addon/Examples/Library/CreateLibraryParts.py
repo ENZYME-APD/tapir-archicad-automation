@@ -1,6 +1,6 @@
 """Creates a GDL box object in the embedded library with CreateLibraryParts, then deletes it again.
 
-The parent subtype is the 'General GDL Object' of the loaded Archicad Library. Deleting the part at the
+The parent subtype is the 'Model Element' (the General GDL Object, the root subtype, cannot be a parent). Deleting the part at the
 end requires Archicad 27 or later.
 """
 import aclib
@@ -8,7 +8,7 @@ import aclib
 response = aclib.RunTapirCommand ('CreateLibraryParts', {
     'libraryParts': [{
         'name': 'Tapir Example Box',
-        'parentName': 'General GDL Object',
+        'parentName': 'Model Element',
         'path': 'TapirExamples/Tapir Example Box.gsm',
         'a': 0.6,
         'b': 0.4,

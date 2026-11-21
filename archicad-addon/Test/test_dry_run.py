@@ -55,6 +55,7 @@ DRY_RUN_COMMANDS = {
     'SetClassificationsOfElements',
     'SetCategoryValuesOfElements',
     'SetGDLParametersOfElements',
+    'SetCategoryValuesOfDefaults',
 }
 
 # The bulk setters (part 6 of #2195): their dry run gives wouldChange instead of wouldDelete.
@@ -63,6 +64,7 @@ WOULD_CHANGE_COMMANDS = {
     'SetClassificationsOfElements',
     'SetCategoryValuesOfElements',
     'SetGDLParametersOfElements',
+    'SetCategoryValuesOfDefaults',
 }
 
 # The commands of DRY_RUN_COMMANDS that answer one wouldDelete execution result per target in
@@ -253,6 +255,10 @@ class DryRunTest (unittest.TestCase):
                 'oldValue': {'type': 'Position', 'categoryId': {'guid': GUID}},
                 'newValue': {'type': 'Position', 'categoryId': {'guid': GUID}, 'categoryValueId': {'guid': GUID}, 'name': 'Exterior'},
             },
+            'SetCategoryValuesOfDefaults': {
+                'oldValue': {'type': 'RenovationStatus', 'categoryId': {'guid': GUID}},
+                'newValue': {'type': 'RenovationStatus', 'categoryId': {'guid': GUID}, 'categoryValueId': {'guid': GUID}, 'name': 'New'},
+            },
             'SetGDLParametersOfElements': {
                 'oldValue': [{'name': 'A', 'index': 1, 'type': 'Length', 'value': 1.0}],
                 'newValue': [{'name': 'A', 'index': 1, 'type': 'Length', 'value': 1.2}],
@@ -280,6 +286,7 @@ class DryRunTest (unittest.TestCase):
             'SetPropertyValuesOfElements': {'elementPropertyValues': [{'elementId': elementId, 'propertyId': {'guid': GUID}, 'propertyValue': {'value': 'x'}}]},
             'SetClassificationsOfElements': {'elementClassifications': [{'elementId': elementId, 'classificationId': {'classificationSystemId': {'guid': GUID}}}]},
             'SetCategoryValuesOfElements': {'elementCategoryValues': [{'elementId': elementId, 'type': 'Position', 'categoryValueId': {'guid': GUID}}]},
+            'SetCategoryValuesOfDefaults': {'elementTypes': ['Wall'], 'categoryValues': [{'type': 'RenovationStatus', 'categoryValueId': {'guid': GUID}}]},
             'SetGDLParametersOfElements': {'elementsWithGDLParameters': [{'elementId': elementId, 'gdlParameters': [{'name': 'A', 'value': 1.0}]}]},
         }
         for name, parameters in sorted (inputs.items ()):

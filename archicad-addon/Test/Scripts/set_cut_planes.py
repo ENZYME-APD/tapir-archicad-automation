@@ -4,11 +4,11 @@ import aclib
 
 @dataclass
 class CutPlane:
-    """Defines a plane in 3D space using the plane equation: ax + by + cz + d = 0"""
+    """Defines a plane in 3D space using the plane equation: ax + by + cz = d"""
     pa: float  # a (normal x)
     pb: float  # b (normal y)
     pc: float  # c (normal z)
-    pd: float  # d (offset)
+    pd: float  # d (distance along the normal)
 
 
 def cut_planes_from_aabb(box, offset=0.5):

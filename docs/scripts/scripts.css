@@ -5,24 +5,33 @@
 #builtin-scripts { margin-bottom: 40px }
 
 /* The schedule's filters */
-.script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: .90625rem }
+.script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: .875rem }
 .script-search:hover { background: transparent }
 #version-chips { margin-top: -4px }
+/* The Sort menu, next to the search; its options keep the page's colours in dark mode too. */
+.script-sort { flex: none; max-width: 100%; padding: 9px 12px; font-size: .875rem }
+.script-sort option { background: var(--bg); color: var(--fg) }
 /* The Filters button and the applied filters, only below 720 px wide; wider, the chips show as they are. */
 .filters-toggle, .active-filters { display: none }
 .filters-toggle { white-space: nowrap; flex: none }
 .filters-toggle[aria-expanded="true"] { background: var(--fg); color: var(--bg) }
-.active-filter { display: inline-flex; align-items: center; gap: 6px; background: var(--fg); color: var(--bg); padding: 4px 10px 4px 12px; font-size: .78125rem }
+.active-filter { display: inline-flex; align-items: center; gap: 6px; background: var(--fg); color: var(--bg); padding: 4px 10px 4px 12px; font-size: .8125rem }
 .active-filter:hover { background: var(--fg); opacity: .85 }
 .active-filter span { font-size: .9375rem; line-height: 1 }
 @media (max-width: 719.98px) {
     .filters-toggle { display: inline-block }
     .active-filters { display: flex; margin-top: -6px }
-    .script-search { flex: 1 1 0; max-width: none }
+    /* The search on its own line, the Sort menu and the Filters button below it. */
+    .script-search { flex: 1 1 100%; max-width: none }
+    .script-sort { flex: 1 1 0; min-width: 0 }
     .filters-panel { display: none }
     .filters-panel.open { display: block }
 }
-.script-count { margin: 4px 0 14px; color: var(--muted); font-size: .90625rem }
+/* The schedule is the first thing in the page's body once it replaces the built-in scripts and the
+   "Opening soon" box (hidden, but still before it), so it opens with the same 32 px as every other
+   page's first section (site.css), not the 56 px between sections. */
+.page-body > #scripts-browser { padding-top: 32px }
+.script-count { margin: 4px 0 16px; color: var(--muted); font-size: .875rem }
 .schedule .cell-script { min-width: 240px }
 
 /* One script */
@@ -49,9 +58,9 @@
     .readme .readme-table tr { padding: 12px 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px }
     .readme .readme-table tbody tr:last-child { border-bottom: 0 }
     .readme .readme-table td { padding: 0; border: 0; min-width: 0 }
-    .readme .readme-table td[data-label]::before { content: attr(data-label); display: block; font: 700 .65625rem/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+    .readme .readme-table td[data-label]::before { content: attr(data-label); display: block; font: 700 .75rem/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 }
-.screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px }
+.screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px }
 .screenshots a { display: block; border: 1.5px solid var(--fg); border-radius: 4px; overflow: hidden; background: var(--surface) }
 .screenshots img { display: block; width: 100%; height: auto }
 .shot a { display: block }

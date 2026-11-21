@@ -1,0 +1,68 @@
+{
+  "title": "ScaleElements scales a beam on the plan but keeps its elevation (#2566)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Beam" ],
+  "steps": [
+    {
+      "id": "beam 5.7 m above the project zero",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 100.0 },
+            "endCoordinate": { "x": 910.0, "y": 100.0 },
+            "zCoordinate": 5.7,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "profileAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.24,
+            "height": 0.38
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "read the beam before scaling",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 5.7 },
+        { "path": "detailsOfElements[0].details.level", "approx": 5.7 }
+      ]
+    },
+    {
+      "id": "scale the beam by 1.1 around (920, 90)",
+      "command": "ScaleElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${b1}" } } ],
+        "center": { "x": 920.0, "y": 90.0 },
+        "factor": 1.1
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "beam scaled" }
+      ]
+    },
+    {
+      "id": "the beam is scaled on the plan and stays at its elevation",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 898.0, "name": "begin x scaled" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 101.0, "name": "begin y scaled" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 909.0, "name": "end x scaled" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 101.0, "name": "end y scaled" },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 5.7, "name": "elevation kept, not 6.27" },
+        { "path": "detailsOfElements[0].details.level", "approx": 5.7, "name": "level kept" }
+      ]
+    }
+  ]
+}

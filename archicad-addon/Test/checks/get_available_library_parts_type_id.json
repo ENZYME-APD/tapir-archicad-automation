@@ -1,0 +1,137 @@
+{
+  "title": "GetAvailableLibraryParts, GetLibraryPartTypeDetails and GetUnusedLibraryParts report windows and doors as 'Window' and 'Door', and filterByTypeId 'Window' and 'Door' finds them (#2633)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 940.0, "y": 940.0 },
+            "endCoordinate": { "x": 948.0, "y": 940.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "window with the default library part",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 1.5,
+            "sillHeight": 0.9,
+            "width": 1.0,
+            "height": 1.2
+          }
+        ]
+      },
+      "save": {
+        "window": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "window created" }
+      ]
+    },
+    {
+      "id": "door with the default library part",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 5.5,
+            "sillHeight": 0.0,
+            "width": 0.9,
+            "height": 2.1
+          }
+        ]
+      },
+      "save": {
+        "door": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "door created" }
+      ]
+    },
+    {
+      "id": "library parts of the window and the door",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${window}" } },
+          { "elementId": { "guid": "${door}" } }
+        ]
+      },
+      "save": {
+        "windowPart": "detailsOfElements[0].details.libPart.name",
+        "doorPart": "detailsOfElements[1].details.libPart.name"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.libPart.name", "exists": true, "name": "the window's library part" },
+        { "path": "detailsOfElements[1].details.libPart.name", "exists": true, "name": "the door's library part" }
+      ]
+    },
+    {
+      "id": "[window part, door part] type details",
+      "command": "GetLibraryPartTypeDetails",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "${windowPart}" },
+          { "name": "${doorPart}" }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "one item per input" },
+        { "path": "libraryParts[0].typeId", "eq": "Window", "name": "the window's library part is a Window, not an Object" },
+        { "path": "libraryParts[1].typeId", "eq": "Door", "name": "the door's library part is a Door, not an Object" }
+      ]
+    },
+    {
+      "id": "available windows only",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Window" },
+      "expect": [
+        { "path": "libraryParts[0].typeId", "eq": "Window", "name": "filterByTypeId 'Window' lists windows (it listed none)" }
+      ]
+    },
+    {
+      "id": "available doors only",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Door" },
+      "expect": [
+        { "path": "libraryParts[0].typeId", "eq": "Door", "name": "filterByTypeId 'Door' lists doors" }
+      ]
+    },
+    {
+      "id": "available objects only",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "expect": [
+        { "path": "libraryParts[0].typeId", "eq": "Object", "name": "filterByTypeId 'Object' still lists objects" }
+      ]
+    },
+    {
+      "id": "unused windows only",
+      "command": "GetUnusedLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Window" },
+      "expect": [
+        { "path": "unusedLibraryParts[0].typeId", "eq": "Window", "name": "GetUnusedLibraryParts filters by the same type" }
+      ]
+    }
+  ]
+}

@@ -862,7 +862,10 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
         }
 
         API_NavigatorItem navigatorItem = {};
-        GSErrCode err = ACAPI_Navigator_GetNavigatorItem (&navGuid, &navigatorItem);
+        GSErrCode err = GetNavigatorItemOfGuid (navGuid, navigatorItem);
+        if (err == APIERR_BADID) {
+            return CreateFailedExecutionResult (err, "navigatorItemId is not an item of the Navigator. The databaseId of a window (e.g. as CreateLayout returns it) goes in databaseId.");
+        }
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to get navigator item from guid");
         }
@@ -2590,6 +2593,23 @@ GS::Optional<GS::UniString> Set3DCutawayStatusCommand::GetRawResponseSchema () c
     })";
 }
 
+GSErrCode Set3DCutawayEnabled (bool enabled)
+{
+#ifdef TAPIR_HAS_CUTTING_PLANE
+    auto cuttingPlane = ACAPI::Cutaway::GetCuttingPlane ();
+    if (cuttingPlane.IsErr ()) {
+        return cuttingPlane.UnwrapErr ().kind;
+    }
+    auto result = cuttingPlane->Set3DCutawayStatus (enabled);
+    return result.IsErr () ? result.UnwrapErr ().kind : NoError;
+#elif !defined (ServerMainVers_2800)
+    return ACAPI_CuttingPlane_Set3DCutawayStatus (&enabled);
+#else
+    UNUSED_PARAMETER (enabled);
+    return APIERR_NOTSUPPORTED;
+#endif
+}
+
 GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef TAPIR_HAS_CUTTING_PLANE
@@ -2600,9 +2620,9 @@ GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& param
 
     bool cutawayEnabled = false;
     if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
-        auto result = cuttingPlane->Set3DCutawayStatus (cutawayEnabled);
-        if (result.IsErr ()) {
-            return CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to turn 3D Cutaway on or off.");
+        GSErrCode err = Set3DCutawayEnabled (cutawayEnabled);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to turn 3D Cutaway on or off.");
         }
     }
 
@@ -2619,7 +2639,7 @@ GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& param
     // Archicad 25-27: the C API (AC25/26 through MigrationHelper.hpp).
     bool cutawayEnabled = false;
     if (parameters.Get ("cutawayEnabled", cutawayEnabled)) {
-        GSErrCode err = ACAPI_CuttingPlane_Set3DCutawayStatus (&cutawayEnabled);
+        GSErrCode err = Set3DCutawayEnabled (cutawayEnabled);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to turn 3D Cutaway on or off. Is the 3D window open?");
         }

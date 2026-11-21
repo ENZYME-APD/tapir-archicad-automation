@@ -695,6 +695,12 @@ GS::ObjectState Set3DFilterAndCutSettingsCommand::Execute (const GS::ObjectState
         return CreateErrorResponse (APIERR_BADPARS, input.GetError ());
     }
 
+    // ACAPI_View_Change3DImageSets hides the MEP elements in 3D, whatever else the map holds, even
+    // with only an API_ZombieElemID entry (#2614). MEP elements are external elements, whose element
+    // type is API_ExternalElemID, so that type is shown explicitly. An API_ZombieElemID entry would
+    // override every other entry, so it is never passed.
+    filter.elemTypeFilter.erase (API_ZombieElemID);
+    filter.elemTypeFilter[API_ExternalElemID] = true;
     err = ACAPI_CallUndoableCommand ("Set3DFilterAndCutSettingsCommand", [&] () -> GSErrCode {
         return ACAPI_View_Change3DImageSets (&filter, &mustConvert);
     });

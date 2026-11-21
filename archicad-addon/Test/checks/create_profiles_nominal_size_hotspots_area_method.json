@@ -1,0 +1,217 @@
+{
+  "title": "CreateProfiles sets nominal size lines, adds hotspots and sets the component area method of a skin, read back with GetProfiles (#2586)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "create a 0.2 x 0.25 Profile from newSkins",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2586 part 5",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "isCore": true,
+                "isFinish": false
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"p": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read the new Profile: no area method, nominal size and hotspots are listed",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["skins", "nominalSize", "hotspots"]},
+      "save": {"skin": "profiles[0].skins[0].skinId"},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].skins", "len": 1},
+        {"path": "profiles[0].skins[0].areaMethod.type", "eq": "None", "name": "a new skin has no area method"},
+        {"path": "profiles[0].nominalSize.left", "exists": true, "name": "nominalSize is read"},
+        {"path": "profiles[0].hotspots", "exists": true, "name": "hotspots are read"}
+      ]
+    },
+    {
+      "id": "set the nominal size lines, add a hotspot and set a Line area method",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 part 5",
+            "nominalSize": {"left": 0.02, "right": 0.18, "bottom": 0.01, "top": 0.24},
+            "addHotspots": [{"x": 0.1, "y": 0.125}],
+            "skinOverrides": [
+              {
+                "skinId": "${skin}",
+                "areaMethod": {"type": "Line", "lineBegin": {"x": 0.0, "y": 0.0}, "lineEnd": {"x": 0.2, "y": 0.0}}
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the nominal size, the hotspot and the Line area method",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["width", "height", "skins", "nominalSize", "hotspots"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].nominalSize.left", "approx": 0.02, "tol": 0.0001, "name": "nominal left line"},
+        {"path": "profiles[0].nominalSize.right", "approx": 0.18, "tol": 0.0001, "name": "nominal right line"},
+        {"path": "profiles[0].nominalSize.bottom", "approx": 0.01, "tol": 0.0001, "name": "nominal bottom line"},
+        {"path": "profiles[0].nominalSize.top", "approx": 0.24, "tol": 0.0001, "name": "nominal top line"},
+        {"path": "profiles[0].width", "approx": 0.2, "tol": 0.0001, "name": "shape kept: width"},
+        {"path": "profiles[0].height", "approx": 0.25, "tol": 0.0001, "name": "shape kept: height"},
+        {"path": "profiles[0].hotspots", "eq": [{"x": 0.1, "y": 0.125}], "name": "the added hotspot (a Profile made from newSkins has no other)"},
+        {"path": "profiles[0].skins[0].areaMethod.type", "eq": "Line"},
+        {"path": "profiles[0].skins[0].areaMethod.lineBegin.x", "approx": 0.0, "tol": 0.0001},
+        {"path": "profiles[0].skins[0].areaMethod.lineBegin.y", "approx": 0.0, "tol": 0.0001},
+        {"path": "profiles[0].skins[0].areaMethod.lineEnd.x", "approx": 0.2, "tol": 0.0001},
+        {"path": "profiles[0].skins[0].areaMethod.lineEnd.y", "approx": 0.0, "tol": 0.0001}
+      ]
+    },
+    {
+      "id": "change the nominal size lines again and set a Circle area method",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 part 5",
+            "nominalSize": {"left": 0.0, "right": 0.15, "bottom": 0.0, "top": 0.2},
+            "skinOverrides": [
+              {
+                "skinId": "${skin}",
+                "areaMethod": {"type": "Circle", "center": {"x": 0.1, "y": 0.125}, "radius": 0.05}
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back: nominal size lines replaced, hotspot kept, Circle area method",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["skins", "nominalSize", "hotspots"]},
+      "expect": [
+        {"path": "profiles[0].nominalSize.left", "approx": 0.0, "tol": 0.0001, "name": "nominal left line replaced"},
+        {"path": "profiles[0].nominalSize.right", "approx": 0.15, "tol": 0.0001, "name": "nominal right line replaced"},
+        {"path": "profiles[0].nominalSize.bottom", "approx": 0.0, "tol": 0.0001, "name": "nominal bottom line replaced"},
+        {"path": "profiles[0].nominalSize.top", "approx": 0.2, "tol": 0.0001, "name": "nominal top line replaced"},
+        {"path": "profiles[0].hotspots", "eq": [{"x": 0.1, "y": 0.125}], "name": "hotspot kept"},
+        {"path": "profiles[0].skins[0].areaMethod.type", "eq": "Circle"},
+        {"path": "profiles[0].skins[0].areaMethod.center.x", "approx": 0.1, "tol": 0.0001},
+        {"path": "profiles[0].skins[0].areaMethod.center.y", "approx": 0.125, "tol": 0.0001},
+        {"path": "profiles[0].skins[0].areaMethod.radius", "approx": 0.05, "tol": 0.0001}
+      ]
+    },
+    {
+      "id": "remove the area method with None",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 part 5",
+            "skinOverrides": [{"skinId": "${skin}", "areaMethod": {"type": "None"}}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back: no area method",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["skins"]},
+      "expect": [
+        {"path": "profiles[0].skins[0].areaMethod.type", "eq": "None", "name": "area method removed"}
+      ]
+    },
+    {
+      "id": "bad input: a Line area method without lineEnd",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 part 5",
+            "skinOverrides": [{"skinId": "${skin}", "areaMethod": {"type": "Line", "lineBegin": {"x": 0.0, "y": 0.0}}}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"}
+      ]
+    },
+    {
+      "id": "bad input: nominal size with right left of left",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p}"},
+            "name": "TapirCheck Profile 2586 part 5",
+            "nominalSize": {"left": 0.18, "right": 0.02, "bottom": 0.0, "top": 0.25}
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"}
+      ]
+    },
+    {
+      "id": "the failed calls changed nothing",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p}"}}], "fields": ["skins", "nominalSize"]},
+      "expect": [
+        {"path": "profiles[0].skins[0].areaMethod.type", "eq": "None", "name": "area method unchanged"},
+        {"path": "profiles[0].nominalSize.right", "approx": 0.15, "tol": 0.0001, "name": "nominal size unchanged"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${p}"}}}]}
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
+using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
@@ -89,10 +92,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             inManager.AddTextParameter(
                 "ElementTypesToObserve",
                 "ElementTypesToObserve",
-                ("Only the modification or deletion of elements of these types (e.g. Wall, Column) is notified. " +
-                 "Defaults to every element. Archicad is blocked while it attaches an observer to each element " +
-                 "to observe, for minutes on projects with thousands of elements, so limit the types on large " +
-                 "projects. Optional.")
+                ("Only the modification or deletion of elements of these types (e.g. Wall, Column) is notified, " +
+                 "together with the ElementsToObserve. Defaults to every element when neither is given. Archicad " +
+                 "is blocked while it attaches an observer to each element to observe, for minutes on projects " +
+                 "with thousands of elements, so limit the types, or list the elements in ElementsToObserve, on " +
+                 "large projects. Optional.")
                     .WithTypeName("textList"),
                 GH_ParamAccess.list);
 
@@ -160,7 +164,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 });
+            // Appended last: saved definitions find the inputs by position.
+            InGenerics(
+                "ElementsToObserve",
+                "ElementGuids of the elements whose modification or deletion is notified, together with the " +
+                "elements of ElementTypesToObserve. Only these get an observer, so setting up the client takes " +
+                "time in proportion to their number, not to the size of the project. Elements created later " +
+                "are not covered. An element that does not exist is an error. Optional.");
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
         }
 
         protected override void Solve(
@@ -282,6 +294,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(18, ref notifyOn3DSettingsChanges))
             {
                 parameters["notifyOn3DSettingsChanges"] = notifyOn3DSettingsChanges;
+            }
+
+            if (da.TryGetList(
+                    19,
+                    out List<GH_ObjectWrapper> elementWrappers) &&
+                elementWrappers.Count > 0)
+            {
+                if (!elementWrappers.TryBuildObject(out ElementsObject elementsToObserve))
+                {
+                    this.AddError("Invalid ElementsToObserve.");
+                    return;
+                }
+
+                parameters["elementsToObserve"] = JArray.FromObject(elementsToObserve.Elements);
             }
 
             if (TryGetCadResponse(

@@ -28,7 +28,11 @@ not exist yet. Its list of scripts is built when Archicad starts and again when 
 - **`localFolders`:** folders on your computer or a network drive (`displayName`, `path`). The
   scripts run from where they are; nothing is copied.
 - The `Documents/Tapir/custom-scripts` folder and the scripts added with the palette's
-  *Add Script* button.
+  *Add Script* button. To organize your scripts, put them in subfolders of `custom-scripts`:
+  the `.py` files directly in each subfolder are listed after the folder's own files, under a
+  bold heading with the subfolder's name, by folder and file name (searching for the folder's
+  name finds its scripts). Only one level is read, and folders whose name starts with `.` or
+  `_` and `utilities` folders (helper modules) are skipped.
 
 By default only the `.py` files directly in `relativeLoc` (or the local folder) are listed; files in
 subfolders, like `utilities/` here, are downloaded but not listed. That is how helper modules and
@@ -216,7 +220,10 @@ it, download the script into a folder on your computer and add that folder to `l
 ```
 
 On macOS the path looks like `/Users/me/Documents/Tapir scripts`. A marketplace folder holds no
-copies of `utilities/` or `aclib/`, so a script that imports them needs copies of those folders next
-to it. Then choose *Reload scripts...* in the palette: the script appears as
+copies of `utilities/` or `aclib/`. With a Tapir Add-On newer than 2.0.0 that is fine: the palette
+runs every Python script with the folder of the built-in scripts it downloaded on `PYTHONPATH`, so a
+script that imports them finds the palette's copies (copies next to the script are still used
+first). With 2.0.0 or older, copy `utilities/` and `aclib/` from `builtin-scripts/` next to the
+script, otherwise it stops with "No module named 'utilities'". Then choose *Reload scripts...* in the palette: the script appears as
 `<file name> (Marketplace)`. The website's [Get started](https://archicad-api.com/start/#marketplace)
 page shows the same steps.

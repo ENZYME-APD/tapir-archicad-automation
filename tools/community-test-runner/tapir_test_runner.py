@@ -160,6 +160,15 @@ def evaluate(expression: str, variables: dict) -> float:
     return ev(tree)
 
 
+EXPECTED_VALUE_KEYS = ("eq", "ne", "approx", "lt", "gt", "len", "contains")
+
+
+def substitute_expectation(rule: dict, variables: dict) -> dict:
+    """The expectation with ${name} in its expected value replaced, like params (#2220's checks
+    compare a read-back guid with "eq": "${surface}"). Raises KeyError for an unknown name."""
+    return {k: substitute(v, variables) if k in EXPECTED_VALUE_KEYS else v for k, v in rule.items()}
+
+
 def compare(actual: Any, rule: dict) -> tuple[bool, str]:
     """One expectation; returns (ok, readable expectation)."""
     if "eq" in rule:
@@ -181,6 +190,23 @@ def compare(actual: Any, rule: dict) -> tuple[bool, str]:
     if "exists" in rule:
         return (actual is not None) == bool(rule["exists"]), "exists" if rule["exists"] else "missing"
     raise ValueError(f"unknown expectation: {rule}")
+
+
+def created_guids(answer: dict) -> list[str]:
+    """The guid of every element item in the answer's 'elements'. Error items are skipped, not the
+    whole list: a create step that refuses one item still made the others, and they must be deleted."""
+    items = answer.get("elements")
+    if not isinstance(items, list):
+        return []
+    guids = []
+    for item in items:
+        try:
+            guid = resolve(item, "elementId.guid")
+        except KeyError:
+            continue
+        if isinstance(guid, str):
+            guids.append(guid)
+    return guids
 
 
 class CheckRun:
@@ -213,11 +239,8 @@ class CheckRun:
         if "__envelopeError__" in answer and not step.get("allowEnvelopeError"):
             self._row(label, step["command"], False, f"rejected: {json.dumps(answer['__envelopeError__'])[:200]}")
             return False
-        try:
-            guids = resolve(answer, "elements[*].elementId.guid") if step.get("creates", True) else []
-        except KeyError:
-            guids = []
-        self.created.extend(g for g in guids if isinstance(g, str))
+        if step.get("creates", True):
+            self.created.extend(created_guids(answer))
         for name, path in step.get("save", {}).items():
             try:
                 self.variables[name] = resolve(answer, path)
@@ -238,7 +261,11 @@ class CheckRun:
                 except KeyError:
                     actual = None
                 what = rule["path"]
-            ok, expectation = compare(actual, rule)
+            try:
+                ok, expectation = compare(actual, substitute_expectation(rule, self.variables))
+            except KeyError as exc:
+                self._row(label, rule.get("name", what), False, f"unknown variable {exc} in the expectation")
+                continue
             self._row(label, rule.get("name", what), ok, f"{json.dumps(actual)[:120]} (want {expectation})")
             if not ok and step.get("stopOnFail"):
                 return False

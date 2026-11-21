@@ -1,0 +1,37 @@
+{
+  "title": "SaveProject in place on an untitled project fails with APIERR_READONLY and says why",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "untitled project",
+      "command": "GetProjectInfo",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isUntitled", "eq": true, "name": "untitled" }
+      ]
+    },
+    {
+      "id": "save in place",
+      "command": "SaveProject",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": false, "name": "an untitled project cannot be saved in place" },
+        { "path": "error.code", "eq": -2130312310, "name": "the API's own code, APIERR_READONLY" },
+        { "path": "error.message", "contains": "APIERR_READONLY", "name": "the message names the code" },
+        { "path": "error.message", "contains": "projectPath", "name": "and says how to save it" }
+      ]
+    },
+    {
+      "id": "still untitled",
+      "command": "GetProjectInfo",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isUntitled", "eq": true, "name": "nothing was saved" }
+      ]
+    }
+  ]
+}

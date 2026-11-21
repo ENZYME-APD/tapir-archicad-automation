@@ -118,7 +118,7 @@
           { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] }
         ]
       },
-      "save": { "g1": "groupGuids[0].groupId" },
+      "save": { "g1": "groupGuids[0].groupId", "g1guid": "groupGuids[0].groupId.guid" },
       "expect": [
         { "path": "groupGuids", "len": 1 },
         { "path": "groupGuids[0].groupId.guid", "exists": true, "name": "inner group created" }
@@ -134,7 +134,7 @@
           { "elements": [ { "groupId": "${g1}" }, { "elementId": { "guid": "${w3}" } }, { "elementId": { "guid": "${w4}" } } ] }
         ]
       },
-      "save": { "g2": "groupGuids[0].groupId" },
+      "save": { "g2": "groupGuids[0].groupId", "g2guid": "groupGuids[0].groupId.guid" },
       "expect": [
         { "path": "groupGuids", "len": 1 },
         { "path": "groupGuids[0].groupId.guid", "exists": true, "name": "outer group created" }
@@ -232,6 +232,8 @@
       "save": { "m1": "mainGroups[0].groupId", "m2": "mainGroups[1].groupId" },
       "expect": [
         { "path": "mainGroups", "len": 3 },
+        { "path": "mainGroups[0].groupId.guid", "eq": "${g2guid}", "name": "top level of inner is outer" },
+        { "path": "mainGroups[1].groupId.guid", "eq": "${g2guid}", "name": "top level of outer is itself" },
         { "path": "mainGroups[2].error.code", "exists": true, "name": "no such group" }
       ]
     },
@@ -387,7 +389,7 @@
       "params": { "groups": [ { "groupId": "${g1}" } ] },
       "save": { "m3": "mainGroups[0].groupId" },
       "expect": [
-        { "path": "mainGroups[0].groupId.guid", "exists": true }
+        { "path": "mainGroups[0].groupId.guid", "eq": "${g1guid}", "name": "inner group is its own top level group" }
       ]
     },
     {

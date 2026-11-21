@@ -1,6 +1,9 @@
 # Tapir: Archicad automation
 
+[![Website](https://img.shields.io/badge/Website-archicad--api.com-blue)](https://archicad-api.com/)
 [![Discord](https://img.shields.io/badge/Discord-join-blue?logo=discord&logoColor=fafafa)](https://discord.gg/NAnSennmpY)
+
+**Website: [archicad-api.com](https://archicad-api.com/)** (command reference, scripts, coverage checklists and community)
 
 Tapir adds hundreds of JSON commands to Graphisoft Archicad, on top of the official ones Graphisoft provides, so that the work you do by hand can be automated: reading and changing elements, properties, classifications, attributes, views, layouts, issues and more. You use them from Python scripts, from Grasshopper (Rhino) through the Tapir Grasshopper plugin, or without programming from the Tapir palette inside Archicad, which runs ready-made scripts with one click. Tapir is free and open source, made by ENZYME-APD and its community.
 

@@ -2,6 +2,10 @@
 
 #include "CommandBase.hpp"
 
+// Saves the open solo project to its own file, as File > Save does, from whichever window is current
+// (the parameterless save of SaveProject; the Add-On update also uses it before Archicad is quit).
+GSErrCode SaveOpenProjectInPlace ();
+
 class GetProjectInfoCommand : public CommandBase
 {
 public:
@@ -250,6 +254,16 @@ class DeleteHotlinkNodesCommand : public CommandBase
 {
 public:
     DeleteHotlinkNodesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class MergeFileCommand : public CommandBase
+{
+public:
+    MergeFileCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

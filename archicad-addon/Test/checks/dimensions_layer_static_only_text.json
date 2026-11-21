@@ -1,0 +1,200 @@
+{
+  "title": "Linear dimensions: layerIndex on creation, staticDimension and onlyDimensionText written and read back (#2663 part 1)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "layer for the dimensions",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check dimension layer", "isHidden": false, "isLocked": false }
+        ]
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "index of the layer",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ],
+        "fields": [ "isHidden" ]
+      },
+      "save": { "layerIdx": "layers[0].index" },
+      "expect": [
+        { "path": "layers[0].index", "gt": 0, "name": "layer has an index" }
+      ]
+    },
+    {
+      "id": "linear dimension on the layer, static, only the texts",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "layerIndex": "${layerIdx}",
+            "staticDimension": true,
+            "onlyDimensionText": true,
+            "referencePoint": { "x": 820.0, "y": 819.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 820.0, "y": 820.0 } },
+              { "coordinate": { "x": 823.0, "y": 820.0 } }
+            ],
+            "textHeight": 2.5
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "linear dimension with both checkboxes off",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "staticDimension": false,
+            "onlyDimensionText": false,
+            "referencePoint": { "x": 820.0, "y": 824.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 820.0, "y": 825.0 } },
+              { "coordinate": { "x": 822.0, "y": 825.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "d2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "second dimension created" }
+      ]
+    },
+    {
+      "id": "wall for a wall thickness dimension",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 830.0, "y": 820.0 }, "endCoordinate": { "x": 834.0, "y": 820.0 }, "height": 2.5, "thickness": 0.3, "floorIndex": 0 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "wall thickness dimension on the layer",
+      "command": "CreateWallThicknessDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "layerIndex": "${layerIdx}",
+            "wallId": { "guid": "${wall}" },
+            "referencePoint": { "x": 832.0, "y": 821.0 },
+            "direction": { "x": 0.0, "y": 1.0 }
+          }
+        ]
+      },
+      "save": { "wd": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall thickness dimension created" }
+      ]
+    },
+    {
+      "id": "the dimensions read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } },
+          { "elementId": { "guid": "${wd}" } }
+        ]
+      },
+      "save": { "dLayer": "detailsOfElements[0].layerIndex", "wdLayer": "detailsOfElements[2].layerIndex" },
+      "expect": [
+        { "expr": "${dLayer} - ${layerIdx}", "eq": 0, "name": "dimension on the given layer" },
+        { "path": "detailsOfElements[0].details.staticDimension", "eq": true, "name": "static as created" },
+        { "path": "detailsOfElements[0].details.onlyDimensionText", "eq": true, "name": "only the texts as created" },
+        { "path": "detailsOfElements[1].details.staticDimension", "eq": false, "name": "second not static" },
+        { "path": "detailsOfElements[1].details.onlyDimensionText", "eq": false, "name": "second shows its lines" },
+        { "expr": "${wdLayer} - ${layerIdx}", "eq": 0, "name": "wall thickness dimension on the given layer" }
+      ]
+    },
+    {
+      "id": "GetDimensionData returns the checkboxes",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].staticDimension", "eq": true, "name": "static in GetDimensionData" },
+        { "path": "dimensionsData[0].onlyDimensionText", "eq": true, "name": "only the texts in GetDimensionData" },
+        { "path": "dimensionsData[0].witnessPoints", "len": 2, "name": "two witness points" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions switches both checkboxes",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "staticDimension": false, "onlyDimensionText": false },
+          { "elementId": { "guid": "${d2}" }, "onlyDimensionText": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "first change accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "second change accepted" }
+      ]
+    },
+    {
+      "id": "the checkboxes after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${d2}" } }
+        ]
+      },
+      "save": { "dLayerAfter": "detailsOfElements[0].layerIndex" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.staticDimension", "eq": false, "name": "static off" },
+        { "path": "detailsOfElements[0].details.onlyDimensionText", "eq": false, "name": "lines shown again" },
+        { "expr": "${dLayerAfter} - ${layerIdx}", "eq": 0, "name": "layer kept" },
+        { "path": "detailsOfElements[0].details.witnessPointCount", "eq": 2, "name": "witness points kept" },
+        { "path": "detailsOfElements[1].details.onlyDimensionText", "eq": true, "name": "second shows only the texts" },
+        { "path": "detailsOfElements[1].details.staticDimension", "eq": false, "name": "second static unchanged" }
+      ]
+    },
+    {
+      "id": "a layer index that does not exist is refused",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "layerIndex": 999999,
+            "referencePoint": { "x": 820.0, "y": 829.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 820.0, "y": 830.0 } },
+              { "coordinate": { "x": 822.0, "y": 830.0 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "error item for the bad layer" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ] }
+    }
+  ]
+}

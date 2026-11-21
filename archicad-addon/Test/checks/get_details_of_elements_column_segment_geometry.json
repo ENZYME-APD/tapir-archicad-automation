@@ -1,0 +1,72 @@
+{
+  "title": "GetDetailsOfElements returns the cross section, taper and length of each column segment (#2552)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Column" ],
+  "steps": [
+    {
+      "id": "column with an explicit rectangular cross section",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 640.0, "y": 640.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.1,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.45,
+            "depth": 0.35
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "read the segments of the column",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "one segment" },
+        { "path": "detailsOfElements[0].details.segments[0].width", "approx": 0.45, "name": "segment width" },
+        { "path": "detailsOfElements[0].details.segments[0].depth", "approx": 0.35, "name": "segment depth" },
+        { "path": "detailsOfElements[0].details.segments[0].circleBased", "eq": false },
+        { "path": "detailsOfElements[0].details.segments[0].isWidthAndHeightLinked", "eq": false },
+        { "path": "detailsOfElements[0].details.segments[0].structureType", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].extrusionSurfaceMaterial", "exists": true, "name": "surfaces still returned" },
+        { "path": "detailsOfElements[0].details.segments[0].taper.isHomogeneous", "exists": true, "name": "taper returned" },
+        { "path": "detailsOfElements[0].details.segments[0].taper.endWidth", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].taper.endDepth", "exists": true },
+        { "path": "detailsOfElements[0].details.segments[0].length.lengthType", "exists": true, "name": "length scheme returned" },
+        { "path": "detailsOfElements[0].details.segments[0].length.lengthProportion", "exists": true }
+      ]
+    },
+    {
+      "id": "find the column segment",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "save": { "s1": "subelements[0].columnSegments[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].columnSegments", "len": 1 }
+      ]
+    },
+    {
+      "id": "read the ColumnSegment subelement",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "ColumnSegment" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "exists": true },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.45 },
+        { "path": "detailsOfElements[0].details.depth", "approx": 0.35 },
+        { "path": "detailsOfElements[0].details.taper.isHomogeneous", "exists": true, "name": "taper returned" },
+        { "path": "detailsOfElements[0].details.length.lengthType", "exists": true, "name": "length scheme found through the owner column" }
+      ]
+    }
+  ]
+}

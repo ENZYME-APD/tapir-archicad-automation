@@ -34,6 +34,13 @@
     'Motion': 'एनिमेशन',
     'Reduced': 'कम',
     'Full': 'पूरा',
+    'Measure tool (M key)': 'Measure tool (M की)',
+    'On': 'चालू',
+    'Off': 'बंद',
+    'Click the start point': 'शुरुआती बिंदु पर क्लिक करें',
+    'Click the end point': 'अंतिम बिंदु पर क्लिक करें',
+    'Measure tool on. Click two points to measure them; press M or Escape to leave.': 'Measure tool चालू है। मापने के लिए दो बिंदुओं पर क्लिक करें; बंद करने के लिए M या Escape दबाएँ।',
+    'Measure tool off.': 'Measure tool बंद है।',
     'Reset to defaults': 'डिफ़ॉल्ट पर रीसेट करें',
     'Done': 'हो गया',
     'Language': 'भाषा',
@@ -60,5 +67,17 @@
     'Roadmap': 'रोडमैप',
     'About Tapir': 'Tapir का परिचय',
     'Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.':
-        'Graphisoft से संबद्ध नहीं। Archicad, Graphisoft SE का ट्रेडमार्क है।'
+        'Graphisoft से संबद्ध नहीं। Archicad, Graphisoft SE का ट्रेडमार्क है।',
+    'Search': 'खोजें',
+    'Search the site': 'साइट में खोजें',
+    'Search pages, commands and scripts': 'पेज, commands और scripts खोजें',
+    'Loading…': 'लोड हो रहा है…',
+    'The search could not be loaded. Check your connection and try again.': 'खोज लोड नहीं हो सकी। अपना कनेक्शन जाँचें और फिर से कोशिश करें।',
+    'Nothing found.': 'कुछ नहीं मिला।',
+    '1 result': '1 परिणाम',
+    'results': 'परिणाम',
+    'Page': 'पेज',
+    'Section': 'सेक्शन',
+    'Command': 'Command',
+    'Built-in script': 'पहले से शामिल script'
 });

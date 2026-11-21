@@ -1,0 +1,131 @@
+{
+  "title": "Set3DFilterAndCutSettings with the settings already in force, or with one element type, keeps the MEP routes visible in 3D (#2614)",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "pipe and duct routes",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [
+              { "x": 60.0, "y": 63.5, "z": 2.5 },
+              { "x": 64.0, "y": 63.5, "z": 2.5 }
+            ]
+          },
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 60.0, "y": 60.5, "z": 2.6 },
+              { "x": 64.0, "y": 60.5, "z": 2.6 },
+              { "x": 64.0, "y": 62.0, "z": 2.6 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "pipe": "elements[0].elementId.guid",
+        "duct": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "pipe created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "duct created" }
+      ]
+    },
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "3DModel"
+      }
+    },
+    {
+      "id": "the settings before",
+      "command": "Get3DFilterAndCutSettings",
+      "creates": false,
+      "params": {},
+      "save": {
+        "allStories0": "settings.allStories",
+        "trim0": "settings.trimToStoryRange"
+      },
+      "expect": [
+        { "path": "settings.allStories", "exists": true }
+      ]
+    },
+    {
+      "id": "both routes visible before",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pipe}" } }, { "elementId": { "guid": "${duct}" } } ],
+        "filters": [ "IsVisibleIn3D" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "pipe and duct shown" }
+      ]
+    },
+    {
+      "id": "send the same values back",
+      "command": "Set3DFilterAndCutSettings",
+      "creates": false,
+      "params": {
+        "settings": { "allStories": "${allStories0}", "trimToStoryRange": "${trim0}" },
+        "rebuild": true
+      },
+      "expect": [
+        { "path": "settings.allStories", "exists": true, "name": "answered with the settings" }
+      ]
+    },
+    {
+      "id": "both routes still visible",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pipe}" } }, { "elementId": { "guid": "${duct}" } } ],
+        "filters": [ "IsVisibleIn3D" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "pipe and duct still shown (#2614)" }
+      ]
+    },
+    {
+      "id": "show walls only changes walls",
+      "command": "Set3DFilterAndCutSettings",
+      "creates": false,
+      "params": {
+        "settings": { "elemTypeFilter": [ { "elementType": "Wall", "show": true } ] },
+        "rebuild": true
+      },
+      "expect": [
+        { "path": "settings.filterMode", "exists": true, "name": "answered with the settings" }
+      ]
+    },
+    {
+      "id": "both routes visible after an element type change",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pipe}" } }, { "elementId": { "guid": "${duct}" } } ],
+        "filters": [ "IsVisibleIn3D" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "pipe and duct still shown" }
+      ]
+    }
+  ]
+}

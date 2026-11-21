@@ -1,0 +1,111 @@
+{
+  "title": "GetDetailsOfElements reads back the primaryPattern, secondaryPattern and cells CreateCurtainWalls wrote, and ModifyCurtainWalls takes them back unchanged",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CurtainWall" ],
+  "steps": [
+    {
+      "id": "a one-segment curtain wall with a 2 x 2 pattern unit",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [
+              { "x": 980.0, "y": 980.0 },
+              { "x": 986.0, "y": 980.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.25, 0.75 ], "logic": "BestDivision", "origin": "StartWithPattern", "flexibleIndices": [ 0 ] },
+            "secondaryPattern": { "sizes": [ 1.0, 0.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "cells": [
+              { "columnIndex": 0, "rowIndex": 0, "panelClassIndex": 1, "leftFrameClassIndex": 1, "bottomFrameClassIndex": 1, "crossingFrameType": "None" },
+              { "columnIndex": 1, "rowIndex": 0, "panelClassIndex": 0, "leftFrameClassIndex": 1, "bottomFrameClassIndex": 1, "crossingFrameType": "None" },
+              { "columnIndex": 0, "rowIndex": 1, "panelClassIndex": 1, "leftFrameClassIndex": 1, "bottomFrameClassIndex": 0, "crossingFrameType": "None" },
+              { "columnIndex": 1, "rowIndex": 1, "panelClassIndex": 1, "rightPanelClassIndex": 0, "leftFrameClassIndex": 1, "bottomFrameClassIndex": 1, "crossingFrameType": "FromBottomLeftToTopRight", "crossingFrameClassIndex": 1 }
+            ]
+          }
+        ]
+      },
+      "save": { "cw": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall created" }
+      ]
+    },
+    {
+      "id": "read the patterns and cells back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "save": {
+        "pp": "detailsOfElements[0].details.primaryPattern",
+        "sp": "detailsOfElements[0].details.secondaryPattern",
+        "cells": "detailsOfElements[0].details.cells"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWall", "name": "a curtain wall" },
+        { "path": "detailsOfElements[0].details.primaryPattern.sizes", "len": 2, "name": "two columns in the unit" },
+        { "path": "detailsOfElements[0].details.primaryPattern.sizes[0]", "approx": 1.25, "name": "first column 1.25 m" },
+        { "path": "detailsOfElements[0].details.primaryPattern.sizes[1]", "approx": 0.75, "name": "second column 0.75 m" },
+        { "path": "detailsOfElements[0].details.primaryPattern.logic", "eq": "BestDivision", "name": "column logic as written" },
+        { "path": "detailsOfElements[0].details.primaryPattern.origin", "eq": "StartWithPattern", "name": "column origin as written" },
+        { "path": "detailsOfElements[0].details.primaryPattern.flexibleIndices", "eq": [ 0 ], "name": "only the first column is flexible" },
+        { "path": "detailsOfElements[0].details.secondaryPattern.sizes", "len": 2, "name": "two rows in the unit" },
+        { "path": "detailsOfElements[0].details.secondaryPattern.sizes[0]", "approx": 1.0, "name": "bottom row 1.0 m" },
+        { "path": "detailsOfElements[0].details.secondaryPattern.sizes[1]", "approx": 0.5, "name": "top row 0.5 m" },
+        { "path": "detailsOfElements[0].details.secondaryPattern.logic", "eq": "FixedSizes", "name": "row logic as written" },
+        { "path": "detailsOfElements[0].details.secondaryPattern.origin", "eq": "StartWithPattern", "name": "row origin as written" },
+        { "path": "detailsOfElements[0].details.secondaryPattern.flexibleIndices", "exists": true, "name": "row flexible indices given" },
+        { "path": "detailsOfElements[0].details.cells", "len": 4, "name": "one cell per column and row of the unit" },
+        { "path": "detailsOfElements[0].details.cells[0].columnIndex", "eq": 0, "name": "cell 0 is column 0" },
+        { "path": "detailsOfElements[0].details.cells[0].rowIndex", "eq": 0, "name": "cell 0 is row 0" },
+        { "path": "detailsOfElements[0].details.cells[0].panelClassIndex", "eq": 1, "name": "cell 0,0 has the first panel class" },
+        { "path": "detailsOfElements[0].details.cells[0].crossingFrameType", "eq": "None", "name": "cell 0,0 has no crossing frame" },
+        { "path": "detailsOfElements[0].details.cells[1].columnIndex", "eq": 1, "name": "cell 1 is column 1 (cells go along the row first)" },
+        { "path": "detailsOfElements[0].details.cells[1].rowIndex", "eq": 0, "name": "cell 1 is row 0" },
+        { "path": "detailsOfElements[0].details.cells[1].panelClassIndex", "eq": 0, "name": "cell 1,0 has no panel" },
+        { "path": "detailsOfElements[0].details.cells[2].columnIndex", "eq": 0, "name": "cell 2 is column 0" },
+        { "path": "detailsOfElements[0].details.cells[2].rowIndex", "eq": 1, "name": "cell 2 is row 1" },
+        { "path": "detailsOfElements[0].details.cells[2].leftFrameClassIndex", "eq": 1, "name": "cell 0,1 left frame is the Division frame" },
+        { "path": "detailsOfElements[0].details.cells[2].bottomFrameClassIndex", "eq": 0, "name": "cell 0,1 bottom frame is merged" },
+        { "path": "detailsOfElements[0].details.cells[3].columnIndex", "eq": 1, "name": "cell 3 is column 1" },
+        { "path": "detailsOfElements[0].details.cells[3].rowIndex", "eq": 1, "name": "cell 3 is row 1" },
+        { "path": "detailsOfElements[0].details.cells[3].crossingFrameType", "eq": "FromBottomLeftToTopRight", "name": "cell 1,1 crossing frame as written" },
+        { "path": "detailsOfElements[0].details.cells[3].crossingFrameClassIndex", "eq": 1, "name": "cell 1,1 crossing frame class as written" },
+        { "path": "detailsOfElements[0].details.cells[3].panelClassIndex", "eq": 1, "name": "cell 1,1 left half has the first panel class" },
+        { "path": "detailsOfElements[0].details.cells[3].rightPanelClassIndex", "eq": 0, "name": "cell 1,1 right half has no panel" }
+      ]
+    },
+    {
+      "id": "write the values read back with ModifyCurtainWalls",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          {
+            "elementId": { "guid": "${cw}" },
+            "primaryPattern": "${pp}",
+            "secondaryPattern": "${sp}",
+            "cells": "${cells}"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the read patterns and cells are accepted and read back by ModifyCurtainWalls" }
+      ]
+    },
+    {
+      "id": "read again: nothing changed",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.primaryPattern", "eq": "${pp}", "name": "column pattern unchanged" },
+        { "path": "detailsOfElements[0].details.secondaryPattern", "eq": "${sp}", "name": "row pattern unchanged" },
+        { "path": "detailsOfElements[0].details.cells", "eq": "${cells}", "name": "cells unchanged" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "height unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 986.0, "name": "reference line unchanged" }
+      ]
+    }
+  ]
+}

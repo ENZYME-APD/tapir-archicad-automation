@@ -9,6 +9,12 @@
     "entry": "RoomFinishesFromZones.py",
     "versions": [
         {
+            "version": "1.3.1",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "The window opens smaller (760 x 700, at most 85 % of the screen), can be made as small as 640 x 520: the four finish panels are two by two, and the content scrolls when the window is short."
+        },
+        {
             "version": "1.3.0",
             "archicadVersions": [25, 26, 27, 28, 29, 30],
             "minTapirVersion": "1.8.0",

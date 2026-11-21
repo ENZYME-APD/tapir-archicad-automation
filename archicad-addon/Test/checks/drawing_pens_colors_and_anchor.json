@@ -1,6 +1,6 @@
 {
-  "title": "SetDetailsOfElements writes a Drawing's pen table, color mode, transparent background and anchor, and GetDetailsOfElements reads them back (#2230)",
-  "minTapir": "1.8.1",
+  "title": "SetDetailsOfElements writes a Drawing's pen table, color mode, transparent background and anchor, CreateDrawings places a Drawing by a given anchorPoint, and GetDetailsOfElements reads them back with offset (#2230, #2511)",
+  "minTapir": "2.0.1",
   "minArchicad": "27",
   "steps": [
     {
@@ -198,6 +198,75 @@
         { "path": "detailsOfElements[0].details.isTransparentBackground", "eq": false },
         { "path": "detailsOfElements[0].details.anchorPoint", "eq": "TopRight" },
         { "path": "detailsOfElements[0].details.useOwnOriginAsAnchor", "eq": false, "name": "kept" }
+      ]
+    },
+    {
+      "id": "Drawing created anchored at the top right, not by its own origin",
+      "command": "CreateDrawings",
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": { "guid": "${ws}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" },
+            "position": { "x": 0.2, "y": 0.15 },
+            "scale": 1,
+            "angle": 0,
+            "anchorPoint": "TopRight",
+            "useOwnOriginAsAnchor": false
+          }
+        ]
+      },
+      "save": { "anchored": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the anchor given at creation is kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${anchored}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.anchorPoint", "eq": "TopRight" },
+        { "path": "detailsOfElements[0].details.useOwnOriginAsAnchor", "eq": false },
+        { "path": "detailsOfElements[0].details.pos.x", "approx": 0.2, "tol": 1e-6, "name": "pos is the requested position" },
+        { "path": "detailsOfElements[0].details.pos.y", "approx": 0.15, "tol": 1e-6 },
+        { "path": "detailsOfElements[0].details.offset.x", "exists": true },
+        { "path": "detailsOfElements[0].details.offset.y", "exists": true }
+      ]
+    },
+    {
+      "id": "Drawing created with only an anchorPoint",
+      "command": "CreateDrawings",
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": { "guid": "${ws}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" },
+            "position": { "x": 0.2, "y": 0.15 },
+            "scale": 1,
+            "angle": 0,
+            "anchorPoint": "MiddleLeft"
+          }
+        ]
+      },
+      "save": { "anchorOnly": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "anchorPoint alone places the Drawing by that anchor",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${anchorOnly}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.anchorPoint", "eq": "MiddleLeft" },
+        { "path": "detailsOfElements[0].details.useOwnOriginAsAnchor", "eq": false },
+        { "path": "detailsOfElements[0].details.pos.x", "approx": 0.2, "tol": 1e-6, "name": "pos is the requested position" },
+        { "path": "detailsOfElements[0].details.pos.y", "approx": 0.15, "tol": 1e-6 },
+        { "path": "detailsOfElements[0].details.offset.x", "exists": true },
+        { "path": "detailsOfElements[0].details.offset.y", "exists": true }
       ]
     }
   ],

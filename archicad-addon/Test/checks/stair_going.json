@@ -1,0 +1,72 @@
+{
+  "title": "GetDetailsOfElements reports a stair's going (treadDepth) from its walking line, and none for a stair with a landing",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Stair" ],
+  "steps": [
+    {
+      "id": "straight stairs: going 0.28 without and 0.30 with the extra top tread, and one without a going",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          { "baseLinePoints": [ { "x": 700.0, "y": 700.0 }, { "x": 706.0, "y": 700.0 } ], "zCoordinate": 0.0, "floorIndex": 0, "totalHeight": 2.8, "treadDepth": 0.28, "extraTopTread": false },
+          { "baseLinePoints": [ { "x": 700.0, "y": 710.0 }, { "x": 706.0, "y": 710.0 } ], "zCoordinate": 0.0, "floorIndex": 0, "totalHeight": 2.8, "treadDepth": 0.30, "extraTopTread": true },
+          { "baseLinePoints": [ { "x": 700.0, "y": 720.0 }, { "x": 706.0, "y": 720.0 } ], "zCoordinate": 0.0, "floorIndex": 0, "totalHeight": 2.8 }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid", "s2": "elements[1].elementId.guid", "s3": "elements[2].elementId.guid" },
+      "expect": [
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "three stairs created" }
+      ]
+    },
+    {
+      "id": "an L-shaped stair with winders, going 0.27",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 720.0, "y": 700.0 }, { "x": 723.0, "y": 700.0 }, { "x": 723.0, "y": 703.0 } ],
+            "zCoordinate": 0.0, "floorIndex": 0, "totalHeight": 2.8, "treadDepth": 0.27, "flightWidth": 1.0,
+            "baseLineEdges": [ { "segmentType": "Flight" }, { "segmentType": "Flight" } ],
+            "baseLineVertices": [ { "turnType": "None" }, { "turnType": "Winder" }, { "turnType": "None" } ]
+          }
+        ]
+      },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "winder stair created" }
+      ]
+    },
+    {
+      "id": "a U-shaped stair with a half landing",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 730.0, "y": 700.0 }, { "x": 733.455, "y": 700.0 }, { "x": 733.455, "y": 701.39 }, { "x": 730.0, "y": 701.39 } ],
+            "zCoordinate": 0.0, "floorIndex": 0, "totalHeight": 2.7684, "riserHeight": 0.1538, "treadDepth": 0.24, "flightWidth": 1.15,
+            "baseLineEdges": [ { "segmentType": "Flight" }, { "segmentType": "Landing" }, { "segmentType": "Flight" } ],
+            "baseLineVertices": [ { "turnType": "None" }, { "turnType": "Landing" }, { "turnType": "Landing" }, { "turnType": "None" } ]
+          }
+        ]
+      },
+      "save": { "u": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "landing stair created" }
+      ]
+    },
+    {
+      "id": "read the goings",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } }, { "elementId": { "guid": "${s2}" } }, { "elementId": { "guid": "${s3}" } }, { "elementId": { "guid": "${w}" } }, { "elementId": { "guid": "${u}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.treadDepth", "approx": 0.28, "tol": 0.001, "name": "going 0.28 without the extra top tread (it read 0 before)" },
+        { "path": "detailsOfElements[1].details.treadDepth", "approx": 0.30, "tol": 0.001, "name": "going 0.30 with the extra top tread" },
+        { "path": "detailsOfElements[2].details.treadDepth", "gt": 0.2, "name": "a going Archicad chose itself" },
+        { "path": "detailsOfElements[3].details.treadDepth", "approx": 0.27, "tol": 0.001, "name": "going 0.27 on the winder stair" },
+        { "path": "detailsOfElements[4].details.treadDepth", "exists": false, "name": "no going for the stair with a landing" },
+        { "path": "detailsOfElements[4].details.stepNum", "gt": 0, "name": "the rest of the landing stair is read" }
+      ]
+    }
+  ]
+}

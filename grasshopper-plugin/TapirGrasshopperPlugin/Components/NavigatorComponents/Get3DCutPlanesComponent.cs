@@ -31,7 +31,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             OutNumberList(
                 "PA",
-                "Coefficient of x (x of the plane normal) of each cut plane: pa*x + pb*y + pc*z + pd = 0.");
+                "Coefficient of x (x of the plane normal) of each cut plane: pa*x + pb*y + pc*z = pd.");
 
             OutNumberList(
                 "PB",
@@ -43,7 +43,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             OutNumberList(
                 "PD",
-                "Constant term of each cut plane, in meters.");
+                "Right-hand side of the plane equation of each cut plane, in meters.");
         }
 
         protected override void Solve(
