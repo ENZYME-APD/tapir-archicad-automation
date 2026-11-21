@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-11-21 04:23 UTC",
+ "generatedAt": "2026-11-21 05:21 UTC",
  "counts": {
   "done": 788,
-  "open": 14,
+  "open": 15,
   "merged": 1,
   "not applicable": 1
  },
@@ -4623,7 +4623,7 @@
    "id": "DeleteElements",
    "group": "Element Commands",
    "version": "1.2.1",
-   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it.",
+   "brief": "Deletes elements, each in the database that contains it (the floor plan, a section, a worksheet, a layout, ...), whichever window is the current one; the current window stays. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9678,6 +9678,21 @@
    "issues": []
   },
   {
+   "id": "GetTypedPropertyValuesOfElements",
+   "group": "Property Commands",
+   "version": "2.0.1",
+   "brief": "Returns the property values of the elements in JSON's own types instead of display text: numbers, integers, booleans, strings, lists of them, and the chosen options of an option set as their identifiers (a list for a multiple choice). Each value comes with its type (number, length, area, volume, angle, integer, string, boolean, their lists, singleEnum, multiEnum), its status (normal, userUndefined or notAvailable) and isDefault, in the PropertyValueDetails shape of Graphisoft's API. Measured values are in SI units (meters, square meters, cubic meters, radians) whatever the project's working units and language, and an option is named by its nonLocalizedValue when it has one. A property that is not found, cannot be evaluated for the element or has a Guid value gets an error item.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "SetPropertyValuesOfElements",
    "group": "Property Commands",
    "version": "1.0.6",
@@ -13612,7 +13627,7 @@
    "id": "SetLibraryPartScripts",
    "group": "Library Commands",
    "version": "1.7.3",
-   "brief": "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
+   "brief": "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13634,7 +13649,7 @@
    "id": "SetLibraryPartMetadata",
    "group": "Library Commands",
    "version": "1.8.0",
-   "brief": "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
+   "brief": "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13678,7 +13693,7 @@
    "id": "SetLibraryPartPictures",
    "group": "Library Commands",
    "version": "1.8.0",
-   "brief": "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
+   "brief": "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13730,7 +13745,7 @@
    "id": "SetLibraryPartCustomSection",
    "group": "Library Commands",
    "version": "1.8.0",
-   "brief": "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
+   "brief": "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13853,7 +13868,7 @@
    "id": "SetLibraryPartPictureImages",
    "group": "Library Commands",
    "version": "2.0.0",
-   "brief": "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
+   "brief": "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -13879,7 +13894,7 @@
    "id": "SetLibraryPartParameters",
    "group": "Library Commands",
    "version": "2.0.0",
-   "brief": "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28.",
+   "brief": "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
