@@ -96,6 +96,17 @@
     'Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Legen Sie die Liste einmal in Archicad in ein Publisher Set und veröffentlichen Sie dieses Set dann mit <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.',
 
+    // Library parts and GDL
+    'Library parts and GDL': 'Bibliotheksteile und GDL',
+    'Run a 2D GDL script given as text, as <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> does with a 3D script':
+        'Ein als Text gegebenes 2D-GDL-Skript ausführen, wie es <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> mit einem 3D-Skript tut',
+    'Save the script in a library part with <a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a> (or <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>), then draw its 2D symbol with <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a>.':
+        'Speichern Sie das Skript mit <a href="../archicad-addon/#CreateLibraryParts">CreateLibraryParts</a> (oder <a href="../archicad-addon/#SetLibraryPartScripts">SetLibraryPartScripts</a>) in einem Bibliotheksteil und zeichnen Sie dann sein 2D-Symbol mit <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a>.',
+    'Get the error message and the line number when a GDL script fails':
+        'Die Fehlermeldung und die Zeilennummer erhalten, wenn ein GDL-Skript fehlschlägt',
+    'Check whether the script runs with <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> (3D) or <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> (2D). To see the error, open the library part in Archicad’s GDL editor with <a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> (from Archicad 27).':
+        'Prüfen Sie mit <a href="../archicad-addon/#InterpretGDLScript3D">InterpretGDLScript3D</a> (3D) oder <a href="../archicad-addon/#GetLibraryPart2DPrimitives">GetLibraryPart2DPrimitives</a> (2D), ob das Skript läuft. Um den Fehler zu sehen, öffnen Sie das Bibliotheksteil mit <a href="../archicad-addon/#OpenLibraryPartInEditor">OpenLibraryPartInEditor</a> im GDL-Editor von Archicad (ab Archicad 27).',
+
     // Archicad's interface
     'Archicad\'s interface': 'Die Oberfläche von Archicad',
     'Read the text of the Session Report window': 'Den Text des Fensters Session Report lesen',
