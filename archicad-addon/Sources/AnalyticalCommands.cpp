@@ -2667,7 +2667,7 @@ GS::ObjectState SetAnalyticalVisibilitySettingsCommand::Execute (const GS::Objec
     }
 
     // Read back, so a given field Archicad did not keep is reported instead of a success.
-    API_AM_VisibilitySettings kept;
+    API_AM_VisibilitySettings kept {};
     err = TAPIR_GetAnalyticalVisibilitySettings (kept);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to read the Structural Analytical Model visibility settings back after the change.");
