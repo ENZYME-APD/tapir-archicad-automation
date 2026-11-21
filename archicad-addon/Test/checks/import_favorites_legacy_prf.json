@@ -1,0 +1,93 @@
+{
+  "title": "ImportFavorites with the legacyPRF format overwrites an existing Favorite and Archicad keeps running (#2902)",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 2912.0, "y": 2912.0 }, "endCoordinate": { "x": 2915.0, "y": 2912.0 },
+            "zCoordinate": 0, "height": 2.5, "structureType": "Basic", "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "a wall favorite",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${wall}" }, "favorite": "Tapir check import PRF favorite 2902" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the temporary folder",
+      "command": "GetSpecialFolders",
+      "creates": false,
+      "params": {
+        "folderTypes": [ "Temporary" ]
+      },
+      "expect": [
+        { "path": "folderPaths[0].path", "exists": true }
+      ],
+      "save": {
+        "tmp": "folderPaths[0].path"
+      }
+    },
+    {
+      "id": "export the favorite to a legacy .prf file",
+      "command": "ExportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites2902.prf",
+        "names": [ "Tapir check import PRF favorite 2902" ],
+        "format": "legacyPRF"
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "import it back over the existing favorite (OverwriteExisting)",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites2902.prf",
+        "format": "legacyPRF",
+        "targetFolder": [],
+        "conflictPolicy": "OverwriteExisting"
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "imported without an error" }
+      ]
+    },
+    {
+      "id": "Archicad still answers and the favorite is there",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check import PRF favorite 2902" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].elementType", "eq": "Wall" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteFavorites",
+      "params": {
+        "favorites": [ "Tapir check import PRF favorite 2902" ]
+      }
+    }
+  ]
+}

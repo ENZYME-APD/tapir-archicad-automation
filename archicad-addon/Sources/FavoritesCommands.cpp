@@ -1188,10 +1188,11 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
             }
         }
 
-        // The import changes the project's Favorites, so it runs in an undoable command like every
-        // other Favorites change: outside one, a Teamwork project drops it without an error (#1756).
+        // The import needs a command scope: outside one, a Teamwork project drops it without an
+        // error (#1756). The DevKit requires a NotUndoable scope for these FavoriteManager imports,
+        // like the Favorite folder functions; an undoable one made Archicad quit (#2902).
         GS::UniString importErrorText;
-        const GSErrCode importErr = ACAPI_CallUndoableCommand ("ImportFavorites", [&] () -> GSErrCode {
+        const GSErrCode importErr = ACAPI_CallCommand ("ImportFavorites", [&] () -> GSErrCode {
             const ACAPI::Result<void> importResult = [&] () -> ACAPI::Result<void> {
                 if (format == "legacyPRF") {
                     return manager.ImportFavoritesFromLegacyPRF (location, managerPolicy, targetOrKeep);
@@ -1230,9 +1231,10 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     parameters.Get ("conflictPolicy", policyStr);
     const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
     GS::UniString firstConflictName;
-    // In an undoable command like every other Favorites change: outside one, a Teamwork project
-    // drops the import without an error (#1756).
-    const GSErrCode err = ACAPI_CallUndoableCommand ("ImportFavorites", [&] () -> GSErrCode {
+    // In a command scope: outside one, a Teamwork project drops the import without an error
+    // (#1756). A NotUndoable one, as the import of the Favorites palette is not an undo step: an
+    // undoable scope made Archicad quit a few seconds after the import (#2902).
+    const GSErrCode err = ACAPI_CallCommand ("ImportFavorites", [&] () -> GSErrCode {
         return ACAPI_Favorite_Import (location, targetFolder, importFolders, policy, &firstConflictName);
     });
 

@@ -1,0 +1,127 @@
+{
+  "title": "ImportFavorites overwrites an existing Favorite from a .prefs file and Archicad keeps running (#2902)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 2902.0, "y": 2902.0 }, "endCoordinate": { "x": 2905.0, "y": 2902.0 },
+            "zCoordinate": 0, "height": 2.5, "structureType": "Basic", "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "a wall favorite",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${wall}" }, "favorite": "Tapir check import favorite 2902" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the temporary folder",
+      "command": "GetSpecialFolders",
+      "creates": false,
+      "params": {
+        "folderTypes": [ "Temporary" ]
+      },
+      "expect": [
+        { "path": "folderPaths[0].path", "exists": true }
+      ],
+      "save": {
+        "tmp": "folderPaths[0].path"
+      }
+    },
+    {
+      "id": "export the favorite to a .prefs file",
+      "command": "ExportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites2902.prefs",
+        "names": [ "Tapir check import favorite 2902" ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "import it back over the existing favorite (Overwrite)",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites2902.prefs",
+        "targetFolder": [],
+        "conflictPolicy": "Overwrite"
+      },
+      "expect": [
+        { "path": "error", "exists": false, "name": "imported without an error" },
+        { "path": "firstConflictName", "exists": false, "name": "no conflict reported with Overwrite" }
+      ]
+    },
+    {
+      "id": "Archicad still answers and the favorite is there",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check import favorite 2902" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].elementType", "eq": "Wall" }
+      ]
+    },
+    {
+      "id": "import it again with conflictPolicy Error",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites2902.prefs",
+        "targetFolder": [],
+        "conflictPolicy": "Error"
+      },
+      "expect": [
+        { "path": "firstConflictName", "eq": "Tapir check import favorite 2902", "name": "the name conflict is reported" }
+      ]
+    },
+    {
+      "id": "a file that does not exist",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckNoSuchFavorites2902.prefs",
+        "conflictPolicy": "Overwrite"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "Archicad still answers after the imports",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check import favorite 2902" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].elementType", "eq": "Wall" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteFavorites",
+      "params": {
+        "favorites": [ "Tapir check import favorite 2902" ]
+      }
+    }
+  ]
+}
