@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 01:01 UTC",
+ "generatedAt": "2026-11-21 02:31 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -3038,7 +3038,7 @@
    "id": "SetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.0.7",
-   "brief": "Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special, fill orientation, fill category and contour line type; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.",
+   "brief": "Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special, fill orientation, fill category and contour line type; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands, and the name, ID and clip polygon of Detail and Worksheet markers by ModifyDetailMarkers: typeSpecificDetails given for a Detail or Worksheet marker fail the item, and nothing of it is changed. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5194,7 +5194,7 @@
    "id": "CreateStairs",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
+   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides), and the line types, pens and fills of the structure symbols (structureSymbols, monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories); settings not given come from the Stair tool defaults or the favorite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5204,7 +5204,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 55,
+   "parameterCount": 58,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLineArcs",
@@ -5235,6 +5235,7 @@
     "stairsData.headroom",
     "stairsData.id",
     "stairsData.inputDirection",
+    "stairsData.monolithStructureSymbols",
     "stairsData.numberingType",
     "stairsData.reflectedCeilingPlanLayout",
     "stairsData.relativeTopStory",
@@ -5242,7 +5243,9 @@
     "stairsData.risers.crossSection",
     "stairsData.rules",
     "stairsData.stairDisplayType",
+    "stairsData.structureSymbols",
     "stairsData.structureVisibility",
+    "stairsData.structureVisibilityOnStories",
     "stairsData.structures",
     "stairsData.structures.bottomType",
     "stairsData.structures.horizontalThickness",
@@ -8242,7 +8245,7 @@
    "id": "ModifyStairs",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders, and the break marks, lines and fills of the floor plan symbol; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
+   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) and the line type, pen and symbol fill overrides, and the line types, pens and fills of the structure symbols per structure type and view (structureSymbols) and of the monolithic structure per view and visible or hidden part (monolithStructureSymbols), and which structures, fills and monolithic parts are shown on each range of the relevant stories, per view (structureVisibilityOnStories); these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8252,7 +8255,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 46,
+   "parameterCount": 49,
    "coveredParameters": [
     "stairsWithDetails",
     "stairsWithDetails.elementId",
@@ -8276,6 +8279,7 @@
     "stairsWithDetails.floorPlanLayout",
     "stairsWithDetails.headroom",
     "stairsWithDetails.inputDirection",
+    "stairsWithDetails.monolithStructureSymbols",
     "stairsWithDetails.numberingType",
     "stairsWithDetails.reflectedCeilingPlanLayout",
     "stairsWithDetails.relativeTopStory",
@@ -8283,7 +8287,9 @@
     "stairsWithDetails.risers.crossSection",
     "stairsWithDetails.rules",
     "stairsWithDetails.stairDisplayType",
+    "stairsWithDetails.structureSymbols",
     "stairsWithDetails.structureVisibility",
+    "stairsWithDetails.structureVisibilityOnStories",
     "stairsWithDetails.structures",
     "stairsWithDetails.structures.bottomType",
     "stairsWithDetails.structures.horizontalThickness",
@@ -19700,7 +19706,7 @@
    "id": "GetAnalyticalMemberTypesOfElements",
    "group": "Analytical Commands",
    "version": "1.8.0",
-   "brief": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements.",
+   "brief": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements from the Complementary Project, the structural analysis project exchanged with Archicad. Without a Complementary Project every element reads Unknown. An element that does not exist gets an error item.",
    "status": "done",
    "reason": "",
    "components": [
