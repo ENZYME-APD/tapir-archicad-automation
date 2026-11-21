@@ -747,6 +747,135 @@ static bool RevisionChangeExists (const GS::UniString& changeId)
     return false;
 }
 
+// The settings CreateChangeMarkers and ModifyChangeMarkers both take beside the geometry, written by
+// ApplyChangeMarkerSettings with the keys GetDetailsOfElements returns.
+static const char* ChangeMarkerSettingsSchemaProperties = R"(
+                        "markerComponent": {
+                            "$ref": "#/ChangeMarkerComponent",
+                            "description": "Which parts the marker shows. A new marker gets HeadAndCloud when it is left out."
+                        },
+                        "changeId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "The ID of the Change the marker is linked to. Without createChange it must be the ID of an existing Change (GetRevisionChanges). A new marker created without it is not linked to any Change."
+                        },
+                        "createChange": {
+                            "type": "boolean",
+                            "description": "True: Archicad creates a new Change with changeId and changeDescription, and links the marker to it. A Change with the same ID must not exist yet. Default: false."
+                        },
+                        "changeDescription": {
+                            "type": "string",
+                            "description": "The description (short name) of the new Change. Only with createChange: the description of an existing Change cannot be changed."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "The rotation angle of the marker head in radians (API_ChangeMarkerType::angle), as GetDetailsOfElements returns it. A new marker gets the angle of the Change Marker tool defaults when it is left out."
+                        },
+                        "horizontalMarker": {
+                            "type": "boolean",
+                            "description": "Whether the marker head is always horizontal (API_ChangeMarkerType::horizontalMarker), as GetDetailsOfElements returns it. A new marker gets the setting of the Change Marker tool defaults when it is left out."
+                        },)";
+
+// Writes the link to a Change (changeId, createChange, changeDescription and, for ModifyChangeMarkers,
+// linkType), markerComponent, angle and horizontalMarker given in data to element.changeMarker: for
+// CreateChangeMarkers on the tool defaults (mask nullptr), and for ModifyChangeMarkers on the marker read
+// from the project, with the given fields marked in mask. The link is checked against the Changes of the
+// project first. Returns the error response of an invalid value; element is then partly written and
+// must not be used.
+static GS::Optional<GS::ObjectState> ApplyChangeMarkerSettings (const GS::ObjectState& data, API_Element& element, API_Element* mask)
+{
+    API_ChangeMarkerType& changeMarker = element.changeMarker;
+
+    GS::UniString changeId;
+    const bool hasChangeId = data.Get ("changeId", changeId);
+    bool createChange = false;
+    data.Get ("createChange", createChange);
+    GS::UniString changeDescription;
+    const bool hasChangeDescription = data.Get ("changeDescription", changeDescription);
+    GS::UniString linkType;
+    const bool hasLinkType = data.Get ("linkType", linkType);
+
+    if (hasChangeId && changeId.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "changeId must not be empty.");
+    }
+    if (changeId.GetLength () >= static_cast<USize> (API_UniLongNameLen) || changeDescription.GetLength () >= static_cast<USize> (API_UniLongNameLen)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("changeId and changeDescription can be at most %d characters long.", (int) (API_UniLongNameLen - 1)));
+    }
+    if (createChange && !hasChangeId) {
+        return CreateErrorResponse (APIERR_BADPARS, "createChange needs a changeId.");
+    }
+    if (hasChangeDescription && !createChange) {
+        return CreateErrorResponse (APIERR_BADPARS, "changeDescription is only used with createChange: the description of an existing Change cannot be changed.");
+    }
+    if (hasLinkType) {
+        if (linkType == "Unlinked") {
+            if (hasChangeId || createChange) {
+                return CreateErrorResponse (APIERR_BADPARS, "linkType Unlinked removes the link to the Change, it cannot be given with changeId or createChange.");
+            }
+        } else if (linkType == "Linked") {
+            if (!hasChangeId) {
+                return CreateErrorResponse (APIERR_BADPARS, "linkType Linked needs the changeId of the Change to link the marker to.");
+            }
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown linkType: ") + linkType + ". It must be Linked or Unlinked.");
+        }
+    }
+    if (hasChangeId) {
+        const bool changeExists = RevisionChangeExists (changeId);
+        if (createChange && changeExists) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("A Change with the ID '") + changeId + "' already exists. Omit createChange to link the marker to it.");
+        }
+        if (!createChange && !changeExists) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("There is no Change with the ID '") + changeId + "'. Set createChange to create it.");
+        }
+    }
+
+    API_ChangeMarkerComponentType markerComponent = changeMarker.markerComponent;
+    GS::UniString markerComponentName;
+    const bool hasMarkerComponent = data.Get ("markerComponent", markerComponentName);
+    if (hasMarkerComponent && !StringToChangeMarkerComponent (markerComponentName, markerComponent)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown markerComponent: ") + markerComponentName);
+    }
+
+    if (hasChangeId) {
+        // With APICMLT_CreateNewChange Archicad creates the Change itself; the API has no other way to create one.
+        CopyChangeMarkerString (changeMarker.changeId, changeId);
+        changeMarker.linkType = createChange ? APICMLT_CreateNewChange : APICMLT_Linked;
+        if (createChange) {
+            CopyChangeMarkerString (changeMarker.changeName, changeDescription);
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, linkType);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, changeId);
+            if (createChange) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, changeName);
+            }
+        }
+    } else if (hasLinkType && linkType == "Unlinked") {
+        changeMarker.changeId[0] = 0;
+        changeMarker.linkType = APICMLT_Unlinked;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, linkType);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, changeId);
+        }
+    }
+
+    if (hasMarkerComponent) {
+        changeMarker.markerComponent = markerComponent;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, markerComponent);
+        }
+    }
+    if (data.Get ("angle", changeMarker.angle) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, angle);
+    }
+    if (data.Get ("horizontalMarker", changeMarker.horizontalMarker) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_ChangeMarkerType, horizontalMarker);
+    }
+
+    return {};
+}
+
 CreateChangeMarkersCommand::CreateChangeMarkersCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -759,7 +888,7 @@ GS::String CreateChangeMarkersCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateChangeMarkersCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "changeMarkersData": {
@@ -775,11 +904,7 @@ GS::Optional<GS::UniString> CreateChangeMarkersCommand::GetInputParametersSchema
                                 "$ref": "#/Coordinate2D"
                             },
                             "minItems": 3
-                        },
-                        "markerComponent": {
-                            "$ref": "#/ChangeMarkerComponent",
-                            "description": "Which parts the marker shows. Default: HeadAndCloud."
-                        },
+                        },)") + ChangeMarkerSettingsSchemaProperties + R"(
                         "position": {
                             "$ref": "#/Coordinate2D",
                             "description": "The point the Change Marker points to. Default: the centre of the polygon's bounding box."
@@ -787,19 +912,6 @@ GS::Optional<GS::UniString> CreateChangeMarkersCommand::GetInputParametersSchema
                         "markerPosition": {
                             "$ref": "#/Coordinate2D",
                             "description": "The position of the marker head. Default: position."
-                        },
-                        "changeId": {
-                            "type": "string",
-                            "minLength": 1,
-                            "description": "The ID of the Change the marker is linked to. Without createChange it must be the ID of an existing Change (GetRevisionChanges). When omitted, the marker is not linked to any Change."
-                        },
-                        "createChange": {
-                            "type": "boolean",
-                            "description": "True: Archicad creates a new Change with changeId and changeDescription, and links the marker to it. A Change with the same ID must not exist yet. Default: false."
-                        },
-                        "changeDescription": {
-                            "type": "string",
-                            "description": "The description (short name) of the new Change. Only with createChange."
                         },
                         "layerIndex": {
                             "type": "integer",
@@ -839,11 +951,11 @@ GS::Optional<GS::UniString> CreateChangeMarkersCommand::GetRawResponseSchema () 
 
 // Follows Do_CreateChangeMarker of the DevKit's Element_Test example (#2658): the tool defaults
 // with the main marker, the Change's ID and name with the link type, the cloud polygon in the memo,
-// the marker head's position, then ACAPI_Element_CreateExt. With APICMLT_CreateNewChange Archicad
-// creates the Change itself; the API has no other way to create one.
+// the marker head's position, then ACAPI_Element_CreateExt. The link, the marker components, the
+// angle and horizontalMarker go through ApplyChangeMarkerSettings, as in ModifyChangeMarkers.
 static GS::ObjectState CreateOneChangeMarker (const GS::ObjectState& data)
 {
-    // The input is checked before anything is passed to Archicad.
+    // The polygon is checked before anything is passed to Archicad.
     GS::Array<GS::ObjectState> polygonData;
     data.Get ("polygon", polygonData);
     GS::Array<API_Coord> points;
@@ -865,41 +977,6 @@ static GS::ObjectState CreateOneChangeMarker (const GS::ObjectState& data)
         const API_Coord& c2 = points[(i + 1) % points.GetSize ()];
         if (std::abs (c1.x - c2.x) < ChangeMarkerPointEps && std::abs (c1.y - c2.y) < ChangeMarkerPointEps) {
             return CreateErrorResponse (APIERR_BADPARS, "The polygon has two consecutive points at the same place.");
-        }
-    }
-
-    API_ChangeMarkerComponentType markerComponent = APICMCT_HeadAndCloud;
-    GS::UniString markerComponentName;
-    if (data.Get ("markerComponent", markerComponentName) && !StringToChangeMarkerComponent (markerComponentName, markerComponent)) {
-        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown markerComponent: ") + markerComponentName);
-    }
-
-    GS::UniString changeId;
-    const bool hasChangeId = data.Get ("changeId", changeId);
-    bool createChange = false;
-    data.Get ("createChange", createChange);
-    GS::UniString changeDescription;
-    const bool hasChangeDescription = data.Get ("changeDescription", changeDescription);
-
-    if (hasChangeId && changeId.IsEmpty ()) {
-        return CreateErrorResponse (APIERR_BADPARS, "changeId must not be empty.");
-    }
-    if (changeId.GetLength () >= static_cast<USize> (API_UniLongNameLen) || changeDescription.GetLength () >= static_cast<USize> (API_UniLongNameLen)) {
-        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("changeId and changeDescription can be at most %d characters long.", (int) (API_UniLongNameLen - 1)));
-    }
-    if (createChange && !hasChangeId) {
-        return CreateErrorResponse (APIERR_BADPARS, "createChange needs a changeId.");
-    }
-    if (hasChangeDescription && !createChange) {
-        return CreateErrorResponse (APIERR_BADPARS, "changeDescription is only used with createChange: the description of an existing Change cannot be changed.");
-    }
-    if (hasChangeId) {
-        const bool changeExists = RevisionChangeExists (changeId);
-        if (createChange && changeExists) {
-            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("A Change with the ID '") + changeId + "' already exists. Omit createChange to link the marker to it.");
-        }
-        if (!createChange && !changeExists) {
-            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("There is no Change with the ID '") + changeId + "'. Set createChange to create it.");
         }
     }
 
@@ -948,17 +1025,14 @@ static GS::ObjectState CreateOneChangeMarker (const GS::ObjectState& data)
         return layerError.Get ();
     }
 
-    if (hasChangeId) {
-        CopyChangeMarkerString (element.changeMarker.changeId, changeId);
-        element.changeMarker.linkType = createChange ? APICMLT_CreateNewChange : APICMLT_Linked;
-    } else {
-        element.changeMarker.changeId[0] = 0;
-        element.changeMarker.linkType = APICMLT_Unlinked;
+    // A new marker is linked to no Change and shows its head and its cloud, unless the item says otherwise.
+    element.changeMarker.changeId[0] = 0;
+    element.changeMarker.linkType = APICMLT_Unlinked;
+    element.changeMarker.markerComponent = APICMCT_HeadAndCloud;
+    const GS::Optional<GS::ObjectState> settingsError = ApplyChangeMarkerSettings (data, element, nullptr);
+    if (settingsError.HasValue ()) {
+        return settingsError.Get ();
     }
-    if (createChange) {
-        CopyChangeMarkerString (element.changeMarker.changeName, changeDescription);
-    }
-    element.changeMarker.markerComponent = markerComponent;
     element.changeMarker.pos = position;
 
     const Int32 nCoords = static_cast<Int32> (points.GetSize ()) + 1;
@@ -1032,5 +1106,252 @@ GS::ObjectState CreateChangeMarkersCommand::Execute (const GS::ObjectState& para
     for (const GS::ObjectState& result : results) {
         elements (result);
     }
+    return response;
+}
+
+ModifyChangeMarkersCommand::ModifyChangeMarkersCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyChangeMarkersCommand::GetName () const
+{
+    return "ModifyChangeMarkers";
+}
+
+GS::Optional<GS::UniString> ModifyChangeMarkersCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "changeMarkersWithDetails": {
+                "type": "array",
+                "description": "The Change Markers to change, in the database of the active window, each with the settings to change. Only the given settings are changed; the keys are those CreateChangeMarkers takes and GetDetailsOfElements returns. The cloud polygon cannot be changed: besides the settings, ACAPI_Element_Change only changes the position of a marker without a polygon, so delete the marker and create it again with CreateChangeMarkers for a new polygon.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },)") + ChangeMarkerSettingsSchemaProperties + R"(
+                        "linkType": {
+                            "type": "string",
+                            "enum": ["Linked", "Unlinked"],
+                            "description": "Unlinked removes the link of the marker to its Change (the Change stays in the project); it cannot be given with changeId or createChange. Linked links the marker to the Change of changeId, which it needs; changeId alone does the same."
+                        },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new point the Change Marker points to. Only for a marker without a cloud polygon, the only case in which Archicad takes it (ACAPI_Element_Change); every marker CreateChangeMarkers makes has a polygon, so it is refused for those."
+                        },
+                        "markerPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new position of the marker head, as CreateChangeMarkers takes it. Refused for a marker without a head (markerComponent CloudOnly)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "changeMarkersWithDetails"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyChangeMarkersCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// Archicad may store an angle normalized to another full turn, so angles are compared modulo 2 pi,
+// as ModifyDetailMarkers compares them.
+static bool IsSameChangeMarkerAngle (double angle1, double angle2)
+{
+    const double fullTurn = 2.0 * 3.14159265358979323846;
+    double diff = std::fmod (angle1 - angle2, fullTurn);
+    if (diff < 0.0) {
+        diff += fullTurn;
+    }
+    return diff < 1e-6 || fullTurn - diff < 1e-6;
+}
+
+// Changes one Change Marker: the settings through ApplyChangeMarkerSettings, as in CreateChangeMarkers,
+// and pos (position), which ACAPI_Element_Change edits only on a marker without a polygon (ACAPinc.h),
+// in one ACAPI_Element_Change of the marker; then the marker head, a placed library part of its own
+// (markerGuid), is moved to markerPosition with an ACAPI_Element_Change of its pos, as the DevKit's
+// Element_Test (Do_ChangeMarker_Edit) changes the head's pen. Both are read back, so a value Archicad
+// did not keep is reported as a failure.
+static GS::ObjectState ModifyOneChangeMarker (const GS::ObjectState& item)
+{
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId == nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+    }
+
+    API_Element element = {};
+    element.header.guid = GetGuidFromObjectState (*elementId);
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to find the element");
+    }
+    if (GetElemTypeId (element.header) != API_ChangeMarkerID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Change Marker.");
+    }
+    if (item.GetFieldCount () <= 1) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "No Change Marker settings to modify.");
+    }
+
+    const GS::ObjectState* positionOS = item.Get ("position");
+    if (positionOS != nullptr && element.changeMarker.poly.nCoords > 0) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "'position' is only taken for a Change Marker without a cloud polygon, and this one has a polygon: Archicad keeps the position of such a marker.");
+    }
+    const GS::ObjectState* markerPositionOS = item.Get ("markerPosition");
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    const GS::Optional<GS::ObjectState> settingsError = ApplyChangeMarkerSettings (item, element, &mask);
+    if (settingsError.HasValue ()) {
+        return CreateFailedExecutionResult (settingsError.Get ());
+    }
+    if (positionOS != nullptr) {
+        element.changeMarker.pos = Get2DCoordinateFromObjectState (*positionOS);
+        ACAPI_ELEMENT_MASK_SET (mask, API_ChangeMarkerType, pos);
+    }
+
+    // ACAPI_Element_Change may answer NoError on a hidden or locked layer and change nothing.
+    GS::UniString layerReason;
+    err = GetLayerChangeError (element.header.layer, layerReason);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The Change Marker was not changed, because " + layerReason + ".");
+    }
+
+    const bool hasMarkerSettings = item.GetFieldCount () > (markerPositionOS != nullptr ? 2u : 1u);
+    if (hasMarkerSettings) {
+        err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+        if (err != NoError) {
+            const GS::UniString refusal = DescribeElementEditRefusal (err, element.header);
+            return CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to modify the Change Marker.") : "Failed to modify the Change Marker, because " + refusal + ".");
+        }
+    }
+
+    // Read back, so a value Archicad did not take is reported instead of a success. The marker is read
+    // before its head is moved, as a new marker component may give it a head.
+    API_Element changed = {};
+    changed.header.guid = element.header.guid;
+    err = ACAPI_Element_Get (&changed);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the Change Marker back after the change.");
+    }
+
+    API_Coord markerPosition = {};
+    API_Guid movedHeadGuid = APINULLGuid;
+    if (markerPositionOS != nullptr) {
+        if (changed.changeMarker.markerGuid == APINULLGuid) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, hasMarkerSettings
+                ? GS::UniString ("The Change Marker has no marker head (markerComponent CloudOnly), so markerPosition was not applied; the other settings were.")
+                : GS::UniString ("The Change Marker has no marker head (markerComponent CloudOnly), so markerPosition cannot be applied."));
+        }
+        API_Element head = {};
+        head.header.guid = changed.changeMarker.markerGuid;
+        err = ACAPI_Element_Get (&head);
+        if (err != NoError || GetElemTypeId (head.header) != API_ObjectID) {
+            return CreateFailedExecutionResult (err != NoError ? err : APIERR_BADID, "Failed to load the marker head of the Change Marker.");
+        }
+        markerPosition = Get2DCoordinateFromObjectState (*markerPositionOS);
+        head.object.pos = markerPosition;
+        API_Element headMask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (headMask);
+        ACAPI_ELEMENT_MASK_SET (headMask, API_ObjectType, pos);
+        err = ACAPI_Element_Change (&head, &headMask, nullptr, 0, true);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to move the marker head of the Change Marker.");
+        }
+        // ACAPI_Element_Change fills in the guid of the changed element.
+        movedHeadGuid = head.header.guid;
+    }
+
+    const API_ChangeMarkerType& given = element.changeMarker;
+    const API_ChangeMarkerType& kept = changed.changeMarker;
+    const double tolerance = 1e-6;
+    GS::UniString notApplied;
+    if (item.Contains ("changeId") &&
+        (kept.linkType != APICMLT_Linked || GS::UniString (kept.changeId) != GS::UniString (given.changeId))) {
+        notApplied += item.Contains ("createChange") ? " changeId createChange" : " changeId";
+    }
+    if (!item.Contains ("changeId") && item.Contains ("linkType") && kept.linkType != APICMLT_Unlinked) {
+        notApplied += " linkType";
+    }
+    if (item.Contains ("markerComponent") && kept.markerComponent != given.markerComponent) {
+        notApplied += " markerComponent";
+    }
+    if (item.Contains ("horizontalMarker") && kept.horizontalMarker != given.horizontalMarker) {
+        notApplied += " horizontalMarker";
+    }
+    if (item.Contains ("angle") && !kept.horizontalMarker && !IsSameChangeMarkerAngle (kept.angle, given.angle)) {
+        notApplied += " angle";
+    }
+    if (positionOS != nullptr && (std::abs (kept.pos.x - given.pos.x) > tolerance || std::abs (kept.pos.y - given.pos.y) > tolerance)) {
+        notApplied += " position";
+    }
+    if (markerPositionOS != nullptr) {
+        API_Element movedHead = {};
+        movedHead.header.guid = movedHeadGuid;
+        if (ACAPI_Element_Get (&movedHead) != NoError ||
+            std::abs (movedHead.object.pos.x - markerPosition.x) > tolerance || std::abs (movedHead.object.pos.y - markerPosition.y) > tolerance) {
+            notApplied += " markerPosition";
+        }
+    }
+    if (!notApplied.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + ".");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+GS::ObjectState ModifyChangeMarkersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("changeMarkersWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // The marker head is an element of its own, so it is reported too when it moves.
+    GS::Array<API_Guid> elementsToWatch;
+    for (const GS::ObjectState& item : itemsWithDetails) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            continue;
+        }
+        API_Element element = {};
+        element.header.guid = GetGuidFromObjectState (*elementId);
+        elementsToWatch.Push (element.header.guid);
+        if (ACAPI_Element_Get (&element) == NoError && GetElemTypeId (element.header) == API_ChangeMarkerID && element.changeMarker.markerGuid != APINULLGuid) {
+            elementsToWatch.Push (element.changeMarker.markerGuid);
+        }
+    }
+    ElementChangeReporter changeReporter (elementsToWatch);
+
+    ACAPI_CallUndoableCommand ("ModifyChangeMarkers", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState result = ModifyOneChangeMarker (item);
+            changeReporter.MarkChangedIfSucceeded (item, result);
+            executionResults (result);
+        }
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
     return response;
 }
