@@ -1,0 +1,93 @@
+{
+  "title": "GetMarkerParametersOfElements and SetMarkerParametersOfElements reach the marker head of a Change Marker, also an unlinked one, and refuse a Change Marker with only a cloud (#2930)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "unlinked marker with a head, and one with only a cloud",
+      "command": "CreateChangeMarkers",
+      "params": {
+        "changeMarkersData": [
+          {
+            "polygon": [{"x": 760, "y": 700}, {"x": 764, "y": 700}, {"x": 764, "y": 703}, {"x": 760, "y": 703}],
+            "markerComponent": "HeadAndCloud",
+            "markerPosition": {"x": 765, "y": 704}
+          },
+          {
+            "polygon": [{"x": 770, "y": 700}, {"x": 773, "y": 700}, {"x": 771, "y": 702}],
+            "markerComponent": "CloudOnly"
+          }
+        ]
+      },
+      "save": {"head": "elements[0].elementId.guid", "cloud": "elements[1].elementId.guid"},
+      "expect": [
+        {"path": "elements", "len": 2, "name": "one result per marker"},
+        {"path": "elements[0].elementId.guid", "exists": true, "name": "marker with a head created"},
+        {"path": "elements[1].elementId.guid", "exists": true, "name": "cloud-only marker created"}
+      ]
+    },
+    {
+      "id": "the marker with a head has a marker object",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${head}"}}]},
+      "expect": [
+        {"path": "detailsOfElements[0].type", "eq": "ChangeMarker"},
+        {"path": "detailsOfElements[0].details.linkType", "eq": "Unlinked", "name": "not linked to a Change"},
+        {"path": "detailsOfElements[0].details.markerId.guid", "exists": true, "name": "has a marker head"}
+      ]
+    },
+    {
+      "id": "read the marker parameters",
+      "command": "GetMarkerParametersOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${head}"}}, {"elementId": {"guid": "${cloud}"}}]},
+      "save": {"firstName": "markerParametersOfElements[0].parameters[0].name"},
+      "expect": [
+        {"path": "markerParametersOfElements", "len": 2, "name": "one result per element"},
+        {"path": "markerParametersOfElements[0].parameters[0].name", "exists": true, "name": "the marker head's GDL parameters are read (was an error before #2930)"},
+        {"path": "markerParametersOfElements[0].libPart.name", "exists": true, "name": "with the marker head's library part"},
+        {"path": "markerParametersOfElements[0].error", "exists": false, "name": "no error for the marker with a head"},
+        {"path": "markerParametersOfElements[1].error.message", "exists": true, "name": "a cloud-only marker has no marker head"}
+      ]
+    },
+    {
+      "id": "write the marker head: nothing, an unknown parameter, the cloud-only marker",
+      "command": "SetMarkerParametersOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithMarkerParameters": [
+          {"elementId": {"guid": "${head}"}, "markerParameters": []},
+          {"elementId": {"guid": "${head}"}, "markerParameters": [{"name": "tapir_check_no_such_parameter", "value": 1}]},
+          {"elementId": {"guid": "${cloud}"}, "markerParameters": [{"name": "${firstName}", "value": 1}]}
+        ]
+      },
+      "expect": [
+        {"path": "executionResults", "len": 3, "name": "one result per element"},
+        {"path": "executionResults[0].success", "eq": true, "name": "the marker head of a Change Marker is written back"},
+        {"path": "executionResults[1].success", "eq": false, "name": "an unknown marker parameter is refused"},
+        {"path": "executionResults[2].success", "eq": false, "name": "a cloud-only marker has no marker head to write"}
+      ]
+    },
+    {
+      "id": "the marker is intact after the write",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${head}"}}]},
+      "expect": [
+        {"path": "detailsOfElements[0].type", "eq": "ChangeMarker", "name": "same guid, still a Change Marker"},
+        {"path": "detailsOfElements[0].details.linkType", "eq": "Unlinked", "name": "still not linked"},
+        {"path": "detailsOfElements[0].details.markerComponent", "eq": "HeadAndCloud", "name": "still with its head and cloud"},
+        {"path": "detailsOfElements[0].details.markerId.guid", "exists": true, "name": "still has a marker head"}
+      ]
+    },
+    {
+      "id": "the marker parameters can still be read",
+      "command": "GetMarkerParametersOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${head}"}}]},
+      "expect": [
+        {"path": "markerParametersOfElements[0].parameters[0].name", "eq": "${firstName}", "name": "the same parameters"}
+      ]
+    }
+  ]
+}

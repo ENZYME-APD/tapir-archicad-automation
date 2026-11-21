@@ -1,7 +1,7 @@
 /* 日本語: the About page (about/index.html). See ../README.md.
    The names of the people stay as they are. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'About Tapir – open-source Archicad add-on': 'Tapir について – オープンソースの Archicad アドオン',
+    'About the open-source Archicad add-on | Tapir': 'オープンソースの Archicad アドオンについて | Tapir',
     'Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template, who builds it and how to support it.':
         'オープンソースの Archicad アドオン Tapir が生まれた理由、Enzyme の研究開発と Tibor Lorántfy の JSON テンプレートから育った経緯、開発している人々、そして支援の方法。',
     '<a href="../">Tapir</a> / About': '<a href="../">Tapir</a> / Tapir について',
@@ -52,13 +52,13 @@
 
     // Principles
     'Principles': '原則',
-    '<b>FREE</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
+    '<b>Free</b><strong>No price, ever</strong><span>MIT licence for the add-on, the plugin and every shared script.</span>':
         '<b>無料</b><strong>ずっと無料</strong><span>アドオン、プラグイン、共有されるすべてのスクリプトに MIT ライセンス。</span>',
-    '<b>OPEN</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
+    '<b>Open</b><strong>Built in public</strong><span>Every issue, pull request and review is on GitHub.</span>':
         '<b>オープン</b><strong>公開の場で開発</strong><span>すべての issue、pull request、レビューは GitHub にあります。</span>',
-    '<b>SIGNED</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
+    '<b>Signed</b><strong>Safe to install</strong><span>The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.</span>':
         '<b>署名済み</b><strong>安心してインストール</strong><span>Windows インストーラーは SignPath で署名され、macOS インストーラーとアドオンは署名と公証を受けています。</span>',
-    '<b>WEEKLY</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
+    '<b>Weekly</b><strong>Small, steady releases</strong><span>A release every Monday when something changed.</span>':
         '<b>毎週</b><strong>小さく着実なリリース</strong><span>変更があれば毎週月曜日にリリースします。</span>',
 
     // Support

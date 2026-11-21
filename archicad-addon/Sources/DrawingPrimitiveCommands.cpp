@@ -8,6 +8,7 @@
 // ElementCommands.cpp - it writes into a collector that is only set while the decomposition runs.
 struct DrawingPrimitiveCollectorContext {
     GS::Array<GS::ObjectState> primitives;
+    GS::Array<GS::UniString>   texts;
 
     struct CachedAttributeGuid {
         API_AttrTypeID     typeID;
@@ -163,8 +164,13 @@ static GSErrCode CollectDrawingPrimitives (const API_PrimElement* primElem,
             os.Add ("angle", text.angle);
             os.Add ("widthFactor", text.widthFactor);
             os.Add ("charSpaceFactor", text.charSpaceFactor);
-            // The text content is not read: nothing in this add-on confirms what par1 carries
-            // for a text primitive, and a wrong guess would crash Archicad.
+            // par2 is the content as a null terminated UniChar string, read as the DevKit's
+            // Element_Test example (Dumper.cpp) reads it; par1 is not read.
+            if (par2 != nullptr) {
+                const GS::UniString content (static_cast<const GS::UniChar::Layout*> (par2));
+                os.Add ("content", content);
+                ctx.texts.Push (content);
+            }
             break;
         }
         case API_PrimPLineID: {
@@ -304,6 +310,22 @@ static GSErrCode GetStoryControlPrimitives (API_DatabaseUnId& databaseUnId, Draw
 
 // The schema of one item of the primitives lists of this file is DrawingPrimitive in CommonSchemaDefinitions.json.
 
+// One item of drawingPrimitivesOfElements and shapePrimitivesOfElements, ElementDrawingPrimitives in
+// CommonSchemaDefinitions.json.
+static GS::ObjectState CreateElementDrawingPrimitivesObjectState (const DrawingPrimitiveCollectorContext& ctx)
+{
+    GS::ObjectState result;
+    const auto& primitives = result.AddList<GS::ObjectState> ("primitives");
+    for (const GS::ObjectState& primitive : ctx.primitives) {
+        primitives (primitive);
+    }
+    const auto& texts = result.AddList<GS::UniString> ("texts");
+    for (const GS::UniString& text : ctx.texts) {
+        texts (text);
+    }
+    return result;
+}
+
 // ── GetDrawingPrimitivesOfElements ────────────────────────────────────────────
 
 GetDrawingPrimitivesOfElementsCommand::GetDrawingPrimitivesOfElementsCommand () :
@@ -398,12 +420,7 @@ GS::ObjectState GetDrawingPrimitivesOfElementsCommand::Execute (const GS::Object
             continue;
         }
 
-        GS::ObjectState result;
-        const auto& primitives = result.AddList<GS::ObjectState> ("primitives");
-        for (const GS::ObjectState& primitive : ctx.primitives) {
-            primitives (primitive);
-        }
-        drawingPrimitivesOfElements (result);
+        drawingPrimitivesOfElements (CreateElementDrawingPrimitivesObjectState (ctx));
     }
 
     return response;
@@ -631,12 +648,7 @@ GS::ObjectState GetShapePrimitivesOfElementsCommand::Execute (const GS::ObjectSt
             continue;
         }
 
-        GS::ObjectState result;
-        const auto& primitives = result.AddList<GS::ObjectState> ("primitives");
-        for (const GS::ObjectState& primitive : ctx.primitives) {
-            primitives (primitive);
-        }
-        shapePrimitivesOfElements (result);
+        shapePrimitivesOfElements (CreateElementDrawingPrimitivesObjectState (ctx));
     }
 
     return response;

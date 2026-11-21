@@ -14,13 +14,13 @@
     'What the components <em>do.</em>': '组件能<em>做什么。</em>',
     'Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the <strong>Tapir</strong> tab, grouped as in Archicad.':
         '每个组件向 Archicad 发送一个 Tapir 命令，并把结果作为 Grasshopper 数据返回给您。它们位于 <strong>Tapir</strong> 选项卡中，分组方式与 Archicad 相同。',
-    '<b>READ</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
+    '<b>Read</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span>':
         '<b>读取</b><strong>构件及其数据</strong><span>按类型、楼层或选择获取构件；以及它们的属性、分类、设置和几何。</span>',
-    '<b>CHANGE</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
+    '<b>Change</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span>':
         '<b>修改</b><strong>您传入的内容</strong><span>所传入构件的属性值、分类、图层、ID 和工具设置。</span>',
-    '<b>CREATE</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
+    '<b>Create</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span>':
         '<b>创建</b><strong>来自 Rhino 几何体</strong><span>由点和曲线生成墙、门、窗、栏杆、标高标注等。</span>',
-    '<b>PROJECT</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
+    '<b>Project</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span>':
         '<b>项目</b><strong>文件的其余部分</strong><span>楼层、属性、导航器视图、布图、问题、收藏夹和库。</span>',
     'Which Tapir commands have a component, and which settings each covers, is on the <a href="../gh-coverage/">Grasshopper coverage</a> page.':
         '哪些 Tapir 命令有对应的组件、每个组件覆盖哪些设置，请见 <a href="../gh-coverage/">Grasshopper 覆盖率</a>页面。',
@@ -34,12 +34,12 @@
     'Placed in an <code>OwnerWall</code> at a <code>CenterOffset</code>.': '放置在 <code>OwnerWall</code> 中的 <code>CenterOffset</code> 处。',
     'Placed along a <code>ReferenceLine</code>.': '沿 <code>ReferenceLine</code> 放置。',
     'Placed at a <code>Position</code>, optionally on a parent element.': '放置在 <code>Position</code> 处，可选择附着在父构件上。',
-    '<b>REFRESH</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
-        '<b>REFRESH</b><strong>读取</strong><span>读取 <code>ElementGuid</code> 中的构件并填充所有输出。</span>',
-    '<b>EXECUTE</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
-        '<b>EXECUTE</b><strong>写入</strong><span>把给定的设置写入这些构件。只写入您给出的键。</span>',
-    '<b>CREATE</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
-        '<b>CREATE</b><strong>创建新构件</strong><span>根据几何输入创建，以工具的默认设置或某个 <code>FavoriteName</code> 为起点。</span>',
+    '<b>Refresh</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span>':
+        '<b>Refresh</b><strong>读取</strong><span>读取 <code>ElementGuid</code> 中的构件并填充所有输出。</span>',
+    '<b>Execute</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span>':
+        '<b>Execute</b><strong>写入</strong><span>把给定的设置写入这些构件。只写入您给出的键。</span>',
+    '<b>Create</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool\'s defaults or from a <code>FavoriteName</code>.</span>':
+        '<b>Create</b><strong>创建新构件</strong><span>根据几何输入创建，以工具的默认设置或某个 <code>FavoriteName</code> 为起点。</span>',
     'Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed straight back into the same input. Archicad has no command to change railings or level dimensions after they are placed, so for those Execute only writes the ID, layer and draw order.':
         '在您按下 Execute 或 Create 之前，不会向 Archicad 写入任何内容。Refresh 读取的 JSON 输出可以直接送回同一个输入。Archicad 没有在放置后修改栏杆或标高标注的命令，因此对它们 Execute 只写入 ID、图层和绘制顺序。',
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Note</strong> Walls remembers the walls its Create made, in the <code>.gh</code> file. The next Create updates them instead of making new ones. Turn this off, or forget them, in the component\'s menu.':

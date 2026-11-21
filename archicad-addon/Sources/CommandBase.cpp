@@ -1348,6 +1348,7 @@ void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows)
 #ifdef ServerMainVers_2900
     os.Add ("startArrow", CreateLineArrowObjectState (arrows.start.arrowVisibility, arrows.start.arrowType, arrows.start.arrowSize, arrows.start.arrowPen));
     os.Add ("endArrow", CreateLineArrowObjectState (arrows.end.arrowVisibility, arrows.end.arrowType, arrows.end.arrowSize, arrows.end.arrowPen));
+    os.Add ("linkedArrowAttributes", arrows.linked);
 #else
     os.Add ("startArrow", CreateLineArrowObjectState (arrows.data.begArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
     os.Add ("endArrow", CreateLineArrowObjectState (arrows.data.endArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
@@ -1411,11 +1412,23 @@ GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, 
     if (error.HasValue ()) {
         return error;
     }
-    if (!start.given && !end.given) {
+    bool linkedRequested = false;
+    const bool linkedGiven = parameters.Get ("linkedArrowAttributes", linkedRequested);
+    if (!start.given && !end.given && !linkedGiven) {
         return {};
     }
 
 #ifdef ServerMainVers_2900
+    // Linked ends share their size and pen: a size or pen given for one end only applies to both.
+    if (linkedGiven && linkedRequested) {
+        if (start.size.HasValue () && end.size.HasValue () && start.size.Get () != end.size.Get ()) {
+            return GS::UniString ("Linked arrowheads share one size: with linkedArrowAttributes true, startArrow.size and endArrow.size must be the same.");
+        }
+        if (start.pen.HasValue () && end.pen.HasValue () && start.pen.Get () != end.pen.Get ()) {
+            return GS::UniString ("Linked arrowheads share one pen: with linkedArrowAttributes true, startArrow.pen and endArrow.pen must be the same.");
+        }
+    }
+
     const auto apply = [] (const RequestedLineArrow& requested, API_ArrowData& data) {
         if (!requested.given) {
             return;
@@ -1433,11 +1446,30 @@ GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, 
     };
     apply (start, arrows.start);
     apply (end, arrows.end);
-    // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
-    if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+    if (linkedGiven && linkedRequested) {
+        // The end that was given a size or pen sets it for both; otherwise the start's is used.
+        if (end.size.HasValue () && !start.size.HasValue ()) {
+            arrows.start.arrowSize = arrows.end.arrowSize;
+        } else {
+            arrows.end.arrowSize = arrows.start.arrowSize;
+        }
+        if (end.pen.HasValue () && !start.pen.HasValue ()) {
+            arrows.start.arrowPen = arrows.end.arrowPen;
+        } else {
+            arrows.end.arrowPen = arrows.start.arrowPen;
+        }
+        arrows.linked = true;
+    } else if (linkedGiven) {
+        arrows.linked = false;
+    } else if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+        // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
         arrows.linked = false;
     }
 #else
+    // Both ends always share one size and pen before Archicad 29, so they cannot be unlinked.
+    if (linkedGiven && !linkedRequested) {
+        return GS::UniString ("Before Archicad 29 both ends of a line always share one arrowhead size and pen: linkedArrowAttributes cannot be false.");
+    }
     // Both ends share one type, size and pen before Archicad 29.
     if (start.type.HasValue () && end.type.HasValue () && start.type.Get () != end.type.Get ()) {
         return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead type: startArrow.type and endArrow.type must be the same.");
@@ -1830,6 +1862,8 @@ GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex)
     return name;
 }
 
+static bool IsFontAddedBySearch (short fontIndex);
+
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
 {
     GS::Array<short> fontIndices;
@@ -1849,7 +1883,7 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
     GS::Optional<short> caseInsensitiveMatch;
     for (const short fontIndex : fontIndices) {
         const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
-        if (!name.HasValue ()) {
+        if (!name.HasValue () || IsFontAddedBySearch (fontIndex)) {
             continue;
         }
         if (*name == fontName) {
@@ -1884,6 +1918,25 @@ static Int32 GetLoadedFontCount ()
 #endif
 }
 
+// The fonts Archicad's search added to the font list for a name no font has, with the name they
+// got: a later search for that name finds them as if they were loaded (#2839, Archicad 30).
+static std::map<short, GS::UniString>& FontsAddedBySearch ()
+{
+    static std::map<short, GS::UniString> fonts;
+    return fonts;
+}
+
+static bool IsFontAddedBySearch (short fontIndex)
+{
+    const std::map<short, GS::UniString>& fonts = FontsAddedBySearch ();
+    const auto found = fonts.find (fontIndex);
+    if (found == fonts.end ()) {
+        return false;
+    }
+    const GS::Optional<GS::UniString> name = GetFontNameFromIndex (fontIndex);
+    return name.HasValue () && *name == found->second;
+}
+
 GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
 {
     // Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
@@ -1909,7 +1962,15 @@ GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
     // Only an index of a font that was loaded before the search is returned: on Archicad 26 and 28
     // (German) a name no font has was answered with NoError and a new index (1907, 1908), as if
     // the search had added the font to the list (#2470).
-    if (foundIndex < 1 || foundIndex > loadedFontCount || !GetFontNameFromIndex (foundIndex).HasValue ()) {
+    // Archicad 30 keeps the added font in the list, so it is remembered and refused again later.
+    if (foundIndex > loadedFontCount) {
+        const GS::Optional<GS::UniString> addedName = GetFontNameFromIndex (foundIndex);
+        if (addedName.HasValue ()) {
+            FontsAddedBySearch ()[foundIndex] = *addedName;
+        }
+        return GS::NoValue;
+    }
+    if (foundIndex < 1 || !GetFontNameFromIndex (foundIndex).HasValue () || IsFontAddedBySearch (foundIndex)) {
         return GS::NoValue;
     }
     return foundIndex;
