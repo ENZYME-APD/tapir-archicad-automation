@@ -13131,6 +13131,26 @@
             },
             "referenceLineLocation": {
                 "$ref": "#/RailingReferenceLineLocation"
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the segment is shown (API_RailingSegmentType::visible)."
+            },
+            "verticalOffset": {
+                "type": "number",
+                "description": "The vertical offset of the segment (API_RailingSegmentType::zOffset)."
+            },
+            "slantAngle": {
+                "type": "number",
+                "description": "The slant angle of the segment (API_RailingSegmentType::slantAngle)."
+            },
+            "skewAngle": {
+                "type": "number",
+                "description": "The skew angle of the segment (API_RailingSegmentType::skewAngle)."
+            },
+            "relativeSkewingAngle": {
+                "type": "boolean",
+                "description": "Whether skewAngle is relative (API_RailingSegmentType::relativeSkewingAngle)."
             }
         },
         "additionalProperties": false,
@@ -13138,7 +13158,12 @@
             "elementId",
             "height",
             "lateralOffset",
-            "referenceLineLocation"
+            "referenceLineLocation",
+            "visible",
+            "verticalOffset",
+            "slantAngle",
+            "skewAngle",
+            "relativeSkewingAngle"
         ]
     },
     "RailingReferenceLineLocation": {
@@ -13169,6 +13194,30 @@
             "unifyPatterns": {
                 "type": "boolean",
                 "description": "True when the pattern of the segments continues across the node, false when the segments are cropped at it (API_RailingNodeType::unifyPatterns)."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the node is shown (API_RailingNodeType::visible)."
+            },
+            "isStatic": {
+                "type": "boolean",
+                "description": "Whether the node is static, not associated with the element the railing was placed on (API_RailingNodeType::isStatic)."
+            },
+            "tiltedPost": {
+                "type": "boolean",
+                "description": "Whether the node's post follows the slope of the segments (API_RailingNodeType::tiltedPost)."
+            },
+            "autoConnectionOffset": {
+                "type": "boolean",
+                "description": "Whether Archicad sets the connection offset of the rails at the node (API_RailingNodeType::autoConnectionOffset)."
+            },
+            "connectionOffset": {
+                "type": "number",
+                "description": "The connection offset of the rails at the node (API_RailingNodeType::connectionOffset)."
+            },
+            "endingOffset": {
+                "type": "number",
+                "description": "The ending offset of the rails at the node (API_RailingNodeType::endingOffset)."
             }
         },
         "additionalProperties": false,
@@ -13176,7 +13225,13 @@
             "elementId",
             "postOffset",
             "elevation",
-            "unifyPatterns"
+            "unifyPatterns",
+            "visible",
+            "isStatic",
+            "tiltedPost",
+            "autoConnectionOffset",
+            "connectionOffset",
+            "endingOffset"
         ]
     },
     "RailingComponentOwnerElementId": {
