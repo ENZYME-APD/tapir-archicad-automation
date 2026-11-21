@@ -1437,6 +1437,15 @@ static void AddGuidIfAvailable (GS::ObjectState& os, const char* name, Value&& v
     }
 }
 
+// An MEPOrientation output, the shape ModifyMEPElements takes as orientation.
+static GS::ObjectState CreateMEPOrientationObjectState (const Orientation& orientation)
+{
+    GS::ObjectState orientationOs;
+    orientationOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
+    orientationOs.Add ("rotation", Create3DCoordinateObjectState (API_Coord3D { orientation.rotation.x, orientation.rotation.y, orientation.rotation.z }));
+    return orientationOs;
+}
+
 // The polyline of a flexible segment goes over JSON as its parts in order: {"type": "Line", "begin",
 // "end"} or {"type": "Spline", "controlPoints"} (FlexibleSegmentPolyline of MEPTypes.hpp).
 static void AddFlexibleSegmentPolyline (GS::ObjectState& os, const char* fieldName, const FlexibleSegmentPolyline& polyline)
@@ -1840,6 +1849,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             segments (segmentOs);
         }
 
+        std::vector<API_Coord3D> nodePositions;
         const auto& nodes = routingElementOs.AddList<GS::ObjectState> ("nodes");
         for (const ACAPI::MEP::UniqueID& nodeId : routingElement->GetRoutingNodeIds ()) {
             ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
@@ -1850,6 +1860,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             nodeOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (nodeId)));
             nodeOs.Add ("routingElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (node->GetRoutingElementId ())));
             nodeOs.Add ("position", Create3DCoordinateObjectState (node->GetPosition ()));
+            nodePositions.push_back (node->GetPosition ());
             const std::optional<ACAPI::MEP::UniqueID> incomingSegmentId = node->GetIncomingSegmentId ();
             if (incomingSegmentId.has_value ()) {
                 nodeOs.Add ("incomingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (incomingSegmentId.value ())));
@@ -1873,6 +1884,13 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
                 transitions (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (transitionId)));
             }
             nodes (nodeOs);
+        }
+
+        // The node positions with the key ModifyMEPRoutingElements writes them with, in the same
+        // order of the nodes, so they can be sent back.
+        const auto& nodePositionList = routingElementOs.AddList<GS::ObjectState> ("nodePositions");
+        for (const API_Coord3D& nodePosition : nodePositions) {
+            nodePositionList (Create3DCoordinateObjectState (nodePosition));
         }
 
         routingElements (routingElementOs);
@@ -2098,6 +2116,9 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
             if (polyline.IsOk ()) {
                 AddFlexibleSegmentPolyline (detailsOs, "polyline", *polyline);
             }
+            // The size ModifyMEPElements writes with the same keys.
+            AddNumberIfAvailable (detailsOs, "width", flexibleSegment->GetWidth ());
+            AddNumberIfAvailable (detailsOs, "height", flexibleSegment->GetHeight ());
         } else if (typeName == "Elbow") {
 #ifdef ServerMainVers_2900
             ACAPI::Result<ACAPI::MEP::Elbow> elbow = ACAPI::MEP::Elbow::Get (elemId);
@@ -2138,6 +2159,22 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
 #ifdef ServerMainVers_2900
             AddGuidIfAvailable (detailsOs, "preferenceTableId", transition->GetPreferenceTable ());
             AddBoolIfAvailable (detailsOs, "isControlledByPreference", transition->IsControlledByPreference ());
+#endif
+        }
+
+        // The placement ModifyMEPElements writes, with the same keys and read from the same
+        // ModifiableElement (terminals, accessories, equipment, fittings, flexible segments and the
+        // other modifiable elements), so it can be sent back.
+        ACAPI::Result<ModifiableElement> modifiableElement = ModifiableElement::Get (elemId);
+        if (modifiableElement.IsOk ()) {
+            detailsOs.Add ("anchorPoint", Create3DCoordinateObjectState (modifiableElement->GetAnchorPoint ()));
+            detailsOs.Add ("orientation", CreateMEPOrientationObjectState (modifiableElement->GetOrientation ()));
+            detailsOs.Add ("libraryPartId", CreateGuidObjectState (modifiableElement->GetObjectId ()));
+            // ElementBase::GetObjectXSize and GetObjectYSize exist from Archicad 30 (MEPElementBase.hpp
+            // of the 29 DevKit has neither, and AddElectricalPlacement is in an Archicad 30 block too).
+#ifdef ServerMainVers_3000
+            detailsOs.Add ("xSize", modifiableElement->GetObjectXSize ());
+            detailsOs.Add ("ySize", modifiableElement->GetObjectYSize ());
 #endif
         }
 
@@ -4933,14 +4970,6 @@ GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState
 static GS::ObjectState CreateMEPElementIdObjectState (const ACAPI::MEP::UniqueID& id)
 {
     return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (id));
-}
-
-static GS::ObjectState CreateMEPOrientationObjectState (const Orientation& orientation)
-{
-    GS::ObjectState orientationOs;
-    orientationOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
-    orientationOs.Add ("rotation", Create3DCoordinateObjectState (API_Coord3D { orientation.rotation.x, orientation.rotation.y, orientation.rotation.z }));
-    return orientationOs;
 }
 
 static void AddElectricalPlacement (GS::ObjectState& os, const ACAPI::MEP::ElementBase& element)

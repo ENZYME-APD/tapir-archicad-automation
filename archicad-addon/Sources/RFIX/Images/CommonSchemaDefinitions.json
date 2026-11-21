@@ -388,6 +388,13 @@
                 "items": {
                     "$ref": "#/MEPRoutingNodeDetails"
                 }
+            },
+            "nodePositions": {
+                "type": "array",
+                "description": "The position of every node, in the order of nodes: the key ModifyMEPRoutingElements writes the node positions with, so they can be sent back. The other settings ModifyMEPRoutingElements applies to all segments or all nodes are read per segment (segments) and per node (nodes), with the same keys.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
             }
         },
         "additionalProperties": false,
@@ -11516,6 +11523,10 @@
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
             },
+            "veneer": {
+                "$ref": "#/ColumnVeneer",
+                "description": "The veneer of the first segment, the key ModifyColumns and CreateColumns write to all segments, so it can be sent back as it is read. Each segment's own veneer is in segments."
+            },
             "segments": {
                 "type": "array",
                 "description": "The segments of the column, in the order Archicad keeps them: the surfaces, the cross section, the taper and the length of each.",
@@ -12186,7 +12197,8 @@
                 "$ref": "#/ElementType"
             },
             "origin": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The placement point, z absolute (the home story level plus the offset). ModifyObjects and ModifyLamps take it back with the same key (and as coordinates)."
             },
             "dimensions": {
                 "$ref": "#/Coordinate3D"
@@ -15250,11 +15262,11 @@
             },
             "ownerElementId": {
                 "$ref": "#/ElementId",
-                "description": "Present only for an associative level dimension: the element it measures."
+                "description": "Present when the level dimension has an owner element: the element it measures. ModifyLevelDimensions takes it back with the same key."
             },
             "ownerElementType": {
                 "$ref": "#/ElementType",
-                "description": "Present only for an associative level dimension."
+                "description": "Present when the level dimension has an owner element. Only read."
             },
             "dimForm": {
                 "type": "integer",
@@ -15425,7 +15437,7 @@
     },
     "DimensionDetails": {
         "type": "object",
-        "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes. The witness points are read with GetDimensionData.",
+        "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes, and the texts of its witness points. The witness points themselves are read with GetDimensionData.",
         "properties": {
             "appearance": {
                 "type": "string",
@@ -15507,6 +15519,13 @@
             },
             "layeredElementDimensions": {
                 "$ref": "#/LayeredElementDimensions"
+            },
+            "witnessPointTexts": {
+                "type": "array",
+                "description": "The text of every witness point, in the order GetDimensionData returns them, with the keys ModifyAssociativeDimensions' witnessPointTexts takes, so the list read can be sent back as it is. Missing when the witness points cannot be read.",
+                "items": {
+                    "$ref": "#/DimensionWitnessPointText"
+                }
             }
         },
         "additionalProperties": false,
@@ -15532,6 +15551,40 @@
             "openingHeightsNominal",
             "layeredElementDimensions"
         ]
+    },
+    "DimensionWitnessPointText": {
+        "type": "object",
+        "description": "The text of one witness point of a linear dimension, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position. ModifyAssociativeDimensions writes the given fields of the given witness points (witnessPointTexts); GetDetailsOfElements reads it for every witness point with the same keys (index, content, superscript, customText for a custom text and textPosition for a text moved by hand).",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The witness point whose text is changed, counted from 0 in the order GetDimensionData returns them."
+            },
+            "content": {
+                "type": "string",
+                "enum": ["MeasuredValue", "CustomText"],
+                "description": "Optional: show the measured value or the custom text (API note contentType)."
+            },
+            "customText": {
+                "type": "string",
+                "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). A line break is \\r (Archicad shows \\n on one line). Without content the witness point shows the custom text. GetDetailsOfElements reads it only while content is CustomText; GetDimensionData also reads the custom text a witness point keeps while it shows the measured value."
+            },
+            "superscript": {
+                "type": "boolean",
+                "description": "Optional: show the text superscript (API note effectBits, APIEffect_SuperScript)."
+            },
+            "resetTextPosition": {
+                "type": "boolean",
+                "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing. Cannot be given with textPosition. Only written: GetDetailsOfElements leaves out textPosition for a text at its automatic position instead."
+            },
+            "textPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Optional: moves the text there and fixes it, as dragging it by hand does (API note pos, fixPos true). In the coordinates GetDimensionData returns the witness points and the textPosition of each text in, so a text can be moved relative to where it is. GetDetailsOfElements reads it only for a text that was moved by hand (fixed), so the texts read can be sent back without fixing the automatic ones."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["index"]
     },
     "ChangeMarkerComponent": {
         "type": "string",
@@ -15836,7 +15889,7 @@
             },
             "position": {
                 "$ref": "#/Coordinate2D",
-                "description": "The placement position of the text."
+                "description": "The placement position of the text. ModifyTexts takes it back with the same key (and as coordinate with a z)."
             },
             "angle": {
                 "type": "number",
@@ -15857,6 +15910,10 @@
             "zCoordinate": {
                 "type": "number",
                 "description": "The level of the text's floor."
+            },
+            "width": {
+                "type": "number",
+                "description": "The wrap width in mm, as CreateTexts and ModifyTexts write it with the same key: the box width (style.boxWidth) while word wrap is on (style.nonBreaking false), 0 for an auto-width text."
             },
             "style": {
                 "$ref": "#/TextStyleDetails",
@@ -17611,6 +17668,10 @@
                 "$ref": "#/BoundingBox2D",
                 "description": "The box the picture is drawn in, in model units, before its rotation by angle. For an unmirrored picture this is API_PictureType::destBox; a mirrored picture is drawn one width away from its stored destBox (along the rotated x axis), and this box is the drawn one, so a mirrored and an unmirrored picture drawn at the same place report the same box."
             },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "Where the anchor point of the picture is, the point it is rotated around, in model units (on a layout in layout units): the anchorPoint of its box, worked out the way ModifyPictures places it, so ModifyPictures takes it back with the same key and the picture stays where it is. For an unmirrored picture it is the anchorPoint of box; for a mirrored one it follows ModifyPictures, which shifts the stored box by one width along x without the rotation."
+            },
             "width": {
                 "type": "number",
                 "description": "The width of the picture in model units: box.xMax - box.xMin."
@@ -18046,6 +18107,7 @@
     },
     "RoofLevel": {
         "type": "object",
+        "description": "A level of a multi-plane roof: its height and the angle of the roof planes above it. Give levelHeight and levelAngle, or height and angle, the keys GetDetailsOfElements reads the levels with (RoofDetailsLevel), so the levels read can be sent back; levelHeight and levelAngle win when both forms are given.",
         "properties": {
             "levelHeight": {
                 "type": "number"
@@ -18053,12 +18115,31 @@
             "levelAngle": {
                 "type": "number",
                 "exclusiveMinimum": 0.0
+            },
+            "height": {
+                "type": "number",
+                "description": "The same as levelHeight, as GetDetailsOfElements reads it."
+            },
+            "angle": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "The same as levelAngle, as GetDetailsOfElements reads it."
             }
         },
         "additionalProperties": false,
-        "required": [
-            "levelHeight",
-            "levelAngle"
+        "anyOf": [
+            {
+                "required": [
+                    "levelHeight",
+                    "levelAngle"
+                ]
+            },
+            {
+                "required": [
+                    "height",
+                    "angle"
+                ]
+            }
         ]
     },
     "RoofPivotLine": {
@@ -22857,6 +22938,34 @@
             "isControlledByPreference": {
                 "type": "boolean",
                 "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the flexible segment (FlexibleSegment::GetWidth), as ModifyMEPElements writes it. FlexibleSegment."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the flexible segment (FlexibleSegment::GetHeight), as ModifyMEPElements writes it. FlexibleSegment."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point, as ModifyMEPElements writes it. The elements ModifyMEPElements can place: Terminal, Accessory, Equipment, Fitting, FlexibleSegment and the other modifiable MEP elements."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation",
+                "description": "The orientation, as ModifyMEPElements writes it. Present with anchorPoint."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part the element uses (its main guid), as ModifyMEPElements writes it. Present with anchorPoint."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the library part along the element's local x axis in meters, as ModifyMEPElements writes it. Present with anchorPoint, from Archicad 30."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the library part along the element's local y axis in meters, as ModifyMEPElements writes it. Present with anchorPoint, from Archicad 30."
             }
         },
         "additionalProperties": false,
@@ -23144,7 +23253,7 @@
             },
             "nodePositions": {
                 "type": "array",
-                "description": "New positions of the routing nodes. The size must match the number of nodes of the route. A first or last node that is connected to a tee (Branch) must keep its position (within 1 mm): moving a route end away from its tee can crash Archicad, and no command moves a tee, so such an item is refused and nothing of it is changed.",
+                "description": "New positions of the routing nodes. The size must match the number of nodes of the route. A first or last node that is connected to a tee (Branch) must keep its position (within 1 mm): moving a route end away from its tee can crash Archicad, and no command moves a tee, so such an item is refused and nothing of it is changed. GetMEPRoutingElements reads them back with the same key.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 }
@@ -23821,11 +23930,11 @@
             },
             "width": {
                 "type": "number",
-                "description": "The new width of a flexible segment."
+                "description": "The new width of a flexible segment. It is written before height: on Archicad 29 a Ventilation flexible duct of the template then read the height given in the same item as its width too (probably a round duct, whose width and height are one diameter), so give such a duct one of them."
             },
             "height": {
                 "type": "number",
-                "description": "The new height of a flexible segment."
+                "description": "The new height of a flexible segment, written after width."
             },
             "xSize": {
                 "type": "number",
