@@ -414,7 +414,7 @@ def processes() -> dict[int, str]:
         return host.processes()
     out = subprocess.run(["powershell", "-NoProfile", "-Command",
                           "Get-Process -ErrorAction SilentlyContinue | ForEach-Object { \"$($_.Id)|$($_.Path)\" }"],
-                         capture_output=True, text=True, timeout=60).stdout
+                         capture_output=True, text=True, encoding="oem", errors="replace", timeout=60).stdout
     found = {}
     for line in out.splitlines():
         pid, _, path = line.strip().partition("|")
@@ -453,7 +453,10 @@ def ports_of(exe: str) -> set[int]:
     pids = archicad_pids(exe)
     if MACOS:
         return host.listening_ports(pids)
-    out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, timeout=60).stdout
+    # Console programs write in the OEM code page ("netstat" localizes its column names, e.g. "État"),
+    # which the default ANSI decoding fails on.
+    out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, encoding="oem",
+                         errors="replace", timeout=60).stdout
     return listening_ports(out, pids)
 
 
