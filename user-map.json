@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-20T11:49:15Z",
+ "generatedAt": "2026-11-21T11:13:44Z",
  "totals": {
   "people": 49,
   "places": 46,
@@ -940,6 +940,7 @@
    "lon": 21.01,
    "kind": "settlement"
   },
+  "welcome to the community": null,
   "yeah, same city": null
  }
 }

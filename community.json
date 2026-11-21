@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-20T11:33:47Z",
+ "generatedAt": "2026-11-21T10:57:48Z",
  "months": [
   {
    "month": "2022-07",
@@ -420,42 +420,42 @@
   }
  ],
  "totals": {
-  "commits": 1355,
-  "discordMessages": 12338,
-  "discordMembers": 686,
+  "commits": 1409,
+  "discordMessages": 12361,
+  "discordMembers": 688,
   "discordMembersChange": {
-   "diff": 46,
-   "days": 14
+   "diff": 48,
+   "days": 15
   },
-  "participants": 525
+  "participants": 528
  },
  "topContributors": [
   {
    "name": "tlorantfy",
    "login": "tlorantfy",
    "commits": 450,
-   "reports": 14,
+   "reports": 16,
    "tests": 0
   },
   {
    "name": "archispatialist",
    "login": "archispatialist",
-   "commits": 123,
-   "reports": 183,
+   "commits": 130,
+   "reports": 191,
    "tests": 0
   },
   {
    "name": "parikshit99",
    "login": "parikshit99",
-   "commits": 91,
-   "reports": 179,
+   "commits": 92,
+   "reports": 183,
    "tests": 0
   },
   {
    "name": "weltmaister",
    "login": "weltmaister",
    "commits": 54,
-   "reports": 21,
+   "reports": 22,
    "tests": 156
   },
   {
@@ -466,17 +466,17 @@
    "tests": 0
   },
   {
+   "name": "MathiasJon",
+   "login": "MathiasJon",
+   "commits": 111,
+   "reports": 23,
+   "tests": 0
+  },
+  {
    "name": "Viktor Kovacs",
    "login": "kovacsv",
    "commits": 129,
    "reports": 1,
-   "tests": 0
-  },
-  {
-   "name": "MathiasJon",
-   "login": "MathiasJon",
-   "commits": 99,
-   "reports": 23,
    "tests": 0
   },
   {
@@ -489,7 +489,7 @@
   {
    "name": "Ben Tristem",
    "login": "BenTristem",
-   "commits": 49,
+   "commits": 51,
    "reports": 19,
    "tests": 0
   },
@@ -497,6 +497,13 @@
    "name": "fuzesArch",
    "login": "fuzesArch",
    "commits": 54,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "Aziz Nacer",
+   "login": "aziznacer3d-create",
+   "commits": 41,
    "reports": 0,
    "tests": 0
   },
@@ -518,14 +525,14 @@
    "name": "Kaushik",
    "login": "thekaushikls",
    "commits": 31,
-   "reports": 1,
+   "reports": 2,
    "tests": 0
   },
   {
    "name": "JBENEITEZ",
    "login": "JBENEITEZ",
    "commits": 16,
-   "reports": 16,
+   "reports": 17,
    "tests": 0
   },
   {
@@ -533,6 +540,13 @@
    "login": "cmartif",
    "commits": 10,
    "reports": 18,
+   "tests": 0
+  },
+  {
+   "name": "Lucas Becker",
+   "login": "runxel",
+   "commits": 20,
+   "reports": 6,
    "tests": 0
   },
   {
@@ -547,13 +561,6 @@
    "login": "fertegi",
    "commits": 24,
    "reports": 0,
-   "tests": 0
-  },
-  {
-   "name": "Lucas Becker",
-   "login": "runxel",
-   "commits": 20,
-   "reports": 4,
    "tests": 0
   },
   {
@@ -631,6 +638,13 @@
    "tests": 0
   },
   {
+   "name": "gabrielggordillo-boop",
+   "login": "gabrielggordillo-boop",
+   "commits": 6,
+   "reports": 1,
+   "tests": 0
+  },
+  {
    "name": "cichym",
    "login": "cichym",
    "commits": 0,
@@ -652,6 +666,13 @@
    "tests": 0
   },
   {
+   "name": "akakaiju",
+   "login": "akakaiju",
+   "commits": 3,
+   "reports": 3,
+   "tests": 0
+  },
+  {
    "name": "Marcel Winklmüller",
    "login": "Liquidmasl",
    "commits": 2,
@@ -659,24 +680,10 @@
    "tests": 0
   },
   {
-   "name": "gabrielggordillo-boop",
-   "login": "gabrielggordillo-boop",
-   "commits": 5,
-   "reports": 0,
-   "tests": 0
-  },
-  {
    "name": "Hcf-Archi",
    "login": "Hcf-Archi",
    "commits": 0,
    "reports": 5,
-   "tests": 0
-  },
-  {
-   "name": "akakaiju",
-   "login": "akakaiju",
-   "commits": 2,
-   "reports": 2,
    "tests": 0
   },
   {
@@ -696,13 +703,6 @@
   {
    "name": "AlexanderBurkeAB",
    "login": "AlexanderBurkeAB",
-   "commits": 0,
-   "reports": 4,
-   "tests": 0
-  },
-  {
-   "name": "gustavodazarq-blip",
-   "login": "gustavodazarq-blip",
    "commits": 0,
    "reports": 4,
    "tests": 0
@@ -768,6 +768,10 @@
   {
    "date": "2026-11-20",
    "members": 686
+  },
+  {
+   "date": "2026-11-21",
+   "members": 688
   }
  ]
 }
