@@ -4271,9 +4271,19 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (ACAPI_CurtainWall_GetCWHeight (&elem.header.guid, &actualHeight) == NoError) {
                     typeSpecificDetails.Add ("actualHeight", actualHeight);
                 }
-                // planeOffset is the offset of the bottom from the home story, as
-                // CreateCurtainWalls and ModifyCurtainWalls write it from zCoordinate.
-                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.curtainWall.planeOffset, stories));
+                {
+                    // The base level is storyRelLevel, which Archicad keeps up to date. planeOffset
+                    // is only what ACAPI_Element_Create places the base by: changing the base offset
+                    // in the Settings dialog leaves it as it was, so a curtain wall raised to 3 m
+                    // there read 0 (Archicad 29). storyRelLevel is the bottom of the panels, which
+                    // the panel offset lifts by offset * cos (angle) on a slanted curtain wall (by
+                    // -offset * cos (angle) when flipped; angle in degrees, 90 is vertical). That
+                    // rise is taken off, so zCoordinate is the reference line's elevation, as
+                    // CreateCurtainWalls and ModifyCurtainWalls take it.
+                    const double cosAngle = std::fabs (elem.curtainWall.angle - 90.0) > 1e-9 ? std::cos (elem.curtainWall.angle * std::acos (-1.0) / 180.0) : 0.0;
+                    const double panelRise = (elem.curtainWall.flipped ? -1.0 : 1.0) * elem.curtainWall.offset * cosAngle;
+                    typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.curtainWall.storyRelLevel - panelRise, stories));
+                }
                 AddCurtainWallReferenceLine (elem, typeSpecificDetails);
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
@@ -15520,6 +15530,7 @@ GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectS
 
     GS::ObjectState response;
     const auto& absoluteBottoms = response.AddList<GS::ObjectState> ("absoluteBottoms");
+    const Stories stories = GetStories ();
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -15545,6 +15556,10 @@ GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectS
             continue;
         }
 
+        // Despite its name, ACAPI_CurtainWall_GetCWAbsoluteBottom returns the bottom relative to
+        // the element's home story (DevKit: "As against the function name the bottom is relative
+        // to the element's home story"; a curtain wall drawn on a story at 4 m answers 0). The
+        // level of the home story is added to make it absolute, as the name of this command says.
         double bottom = 0.0;
         err = ACAPI_CurtainWall_GetCWAbsoluteBottom (&elemHead.guid, &bottom);
         if (err != NoError) {
@@ -15552,7 +15567,10 @@ GS::ObjectState GetCurtainWallAbsoluteBottomsCommand::Execute (const GS::ObjectS
             continue;
         }
 
-        absoluteBottoms (GS::ObjectState ("absoluteBottom", bottom));
+        GS::ObjectState bottomOS;
+        bottomOS.Add ("absoluteBottom", GetZPos (elemHead.floorInd, bottom, stories));
+        bottomOS.Add ("bottomFromHomeStory", bottom);
+        absoluteBottoms (bottomOS);
     }
 
     return response;

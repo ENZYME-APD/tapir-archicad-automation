@@ -13904,7 +13904,7 @@
             },
             "zCoordinate": {
                 "type": "number",
-                "description": "The absolute elevation of the bottom of the curtain wall: its home story's level plus its offset from it (API_CurtainWallType::planeOffset), as CreateCurtainWalls and ModifyCurtainWalls take it."
+                "description": "The absolute elevation of the bottom of the curtain wall's reference line: its home story's level plus its base level from it (API_CurtainWallType::storyRelLevel, which follows a change of the base offset in Archicad; less offset * cos (angle) on a slanted curtain wall, whose panels the offset lifts), as CreateCurtainWalls and ModifyCurtainWalls take it."
             },
             "referenceLine": {
                 "type": "array",
@@ -31893,12 +31893,17 @@
         "properties": {
             "absoluteBottom": {
                 "type": "number",
-                "description": "The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom."
+                "description": "The absolute bottom level of the curtain wall or its subelement: the level of its home story plus bottomFromHomeStory."
+            },
+            "bottomFromHomeStory": {
+                "type": "number",
+                "description": "The bottom of the curtain wall or its subelement relative to its home story, as ACAPI_CurtainWall_GetCWAbsoluteBottom returns it despite its name. Earlier versions of GetCurtainWallAbsoluteBottoms returned this value as absoluteBottom, which was only right on a story at level 0."
             }
         },
         "additionalProperties": false,
         "required": [
-            "absoluteBottom"
+            "absoluteBottom",
+            "bottomFromHomeStory"
         ]
     },
     "TextContentChange": {
