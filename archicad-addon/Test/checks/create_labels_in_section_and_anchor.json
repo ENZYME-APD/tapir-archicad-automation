@@ -1,0 +1,153 @@
+{
+  "title": "CreateLabels: a label of a window made in a Section window is associative and reports the window as its owner, and style.anchor is kept on create (#2876)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CutPlane", "Wall", "Window", "Label" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "[independent text label, anchor RightBottom]",
+      "command": "CreateLabels",
+      "params": {
+        "labelsData": [
+          { "labelClass": "Text", "text": "Tapir anchor", "style": { "anchor": "RightBottom" }, "leaderLine": { "hasLeaderLine": false },
+            "begCoordinate": { "x": 940.0, "y": 940.0 }, "midCoordinate": { "x": 941.0, "y": 941.0 }, "endCoordinate": { "x": 943.0, "y": 941.0 } }
+        ]
+      },
+      "save": { "planLabel": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "label created" }
+      ]
+    },
+    {
+      "id": "read the floor plan label",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${planLabel}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.labelClass", "eq": "Text" },
+        { "path": "detailsOfElements[0].details.style.anchor", "eq": "RightBottom", "name": "the given anchor, not the Label tool default's" }
+      ]
+    },
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 950.0, "y": 960.0 }, "endCoordinate": { "x": 958.0, "y": 960.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "window in the wall",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          { "ownerWallId": { "guid": "${wall}" }, "centerOffset": 4.0, "sillHeight": 0.9, "width": 1.0, "height": 1.2 }
+        ]
+      },
+      "save": { "window": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "section cutting the wall through the window",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          { "startCoordinate": { "x": 954.2, "y": 955.0 }, "endCoordinate": { "x": 954.2, "y": 965.0 }, "depth": 3.0, "name": "TapirCheck Label section", "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "its viewpoint",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Section" ] },
+      "save": { "sectionDb": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases[0].databaseId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the Section window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${sectionDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the wall and the window are drawn by section elements here",
+      "command": "GetSectionElements",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "sectionElements[0].sectionElementId.guid", "exists": true, "name": "the section shows section elements" }
+      ]
+    },
+    {
+      "id": "[text label of the window, no leader line, anchor MiddleMiddle]",
+      "command": "CreateLabels",
+      "creates": false,
+      "params": {
+        "labelsData": [
+          { "labelClass": "Text", "text": "Tapir section label", "parentElementId": { "guid": "${window}" },
+            "leaderLine": { "hasLeaderLine": false }, "style": { "anchor": "MiddleMiddle" } }
+        ]
+      },
+      "save": { "sectionLabel": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "label created" }
+      ]
+    },
+    {
+      "id": "read the section label",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${sectionLabel}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${window}", "name": "associative: owned by the window" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Window" },
+        { "path": "detailsOfElements[0].details.style.anchor", "eq": "MiddleMiddle", "name": "the given anchor" }
+      ]
+    },
+    {
+      "id": "delete the section label in its own window",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${sectionLabel}" } } ] }
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    }
+  ]
+}

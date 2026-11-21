@@ -1,0 +1,36 @@
+/* The Grasshopper components reference (index.html); the layout, sidebar and toolbar come from
+   ../assets/coverage.css, the colors from ../assets/site.css's tokens. */
+
+.toolbar .hidden-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: .875rem; color: var(--muted) }
+.toolbar .hidden-toggle input { padding: 0; border: 0; border-radius: 0; background: none; width: auto }
+
+section.gc-group { margin: 0 0 8px }
+section.gc-group .sec-head h2 { margin-top: 28px }
+
+details.gc-component { border-bottom: 1px solid var(--line) }
+details.gc-component > summary { display: flex; align-items: baseline; gap: 12px; padding: 8px 4px; cursor: pointer; list-style: none; min-width: 0 }
+details.gc-component > summary::-webkit-details-marker { display: none }
+details.gc-component > summary:hover { background: var(--badge) }
+span.gc-title { flex: none; max-width: 100%; overflow-wrap: anywhere; font: 600 .9375rem var(--mono); color: var(--fg) }
+span.gc-summary { flex: 1 1 0; width: 0; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font-size: .875rem }
+span.gc-hidden { flex: none; font-size: .75rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 .5em }
+
+div.gc-content { padding: 4px 4px 16px }
+div.gc-content p { max-width: 72ch }
+h4.gc-sub { margin: 14px 0 6px; font-size: .875rem; color: var(--fg) }
+table.gc-params { width: 100%; border-collapse: collapse; font-size: .875rem }
+table.gc-params th, table.gc-params td { text-align: left; vertical-align: top; padding: .35em .6em; border-bottom: 1px solid var(--line) }
+table.gc-params th { color: var(--muted); font-weight: 600; font-size: .8125rem; white-space: nowrap }
+table.gc-params td.gc-name { overflow-wrap: anywhere; min-width: 9em }
+table.gc-params td.gc-kind { font-family: var(--mono); font-size: .8125rem; color: var(--muted); white-space: nowrap }
+table.gc-params td.gc-desc { min-width: 14em }
+ul.gc-keys { columns: 16em; margin: 0; padding-left: 1.2em; font-size: .875rem }
+span.gc-readonly { color: var(--muted); font-style: italic }
+p.gc-source { font-size: .8125rem; margin-top: 12px }
+
+@media (max-width: 640px) {
+    details.gc-component > summary { flex-wrap: wrap; gap: 2px 12px }
+    span.gc-title { flex: 0 1 auto; min-width: 0 }
+    span.gc-summary { flex-basis: 100% }
+}
+details.gc-component { scroll-margin-top: 72px }

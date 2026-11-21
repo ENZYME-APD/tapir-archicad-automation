@@ -1,0 +1,87 @@
+{
+  "title": "ModifyMeshes keeps each outline height on its own point when kept level lines cross the new outline (#2958)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a mesh with a level line across it",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "floorIndex": 0,
+            "level": 0.0,
+            "polygonCoordinates": [
+              { "x": 1060.0, "y": 1000.0, "z": 0.0 },
+              { "x": 1070.0, "y": 1000.0, "z": 0.0 },
+              { "x": 1070.0, "y": 1010.0, "z": 0.0 },
+              { "x": 1060.0, "y": 1010.0, "z": 0.0 }
+            ],
+            "sublines": [
+              {
+                "coordinates": [
+                  { "x": 1065.0, "y": 1000.0, "z": 2.0 },
+                  { "x": 1065.0, "y": 1010.0, "z": 2.0 }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "mesh": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "mesh created" }
+      ]
+    },
+    {
+      "id": "replace only the outline, inside the old one, so the level line crosses it",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "${mesh}" },
+            "meshData": {
+              "polygonCoordinates": [
+                { "x": 1061.0, "y": 1001.0, "z": 1.0 },
+                { "x": 1069.0, "y": 1001.0, "z": 3.0 },
+                { "x": 1069.0, "y": 1009.0, "z": 5.0 },
+                { "x": 1061.0, "y": 1009.0, "z": 7.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the outline back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.polygonCoordinates[0].x", "approx": 1061.0, "name": "point 0 is corner (1061, 1001)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[0].y", "approx": 1001.0, "name": "point 0 y" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[0].z", "approx": 1.0, "name": "corner (1061, 1001) keeps z 1" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[1].x", "approx": 1065.0, "name": "point 1 is the inserted crossing (1065, 1001)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[1].y", "approx": 1001.0, "name": "point 1 y" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[1].z", "approx": 2.0, "name": "crossing (1065, 1001) gets z 2, halfway between its corners" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].x", "approx": 1069.0, "name": "point 2 is corner (1069, 1001)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].y", "approx": 1001.0, "name": "point 2 y" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].z", "approx": 3.0, "name": "corner (1069, 1001) keeps z 3" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].x", "approx": 1069.0, "name": "point 3 is corner (1069, 1009)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].y", "approx": 1009.0, "name": "point 3 y" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].z", "approx": 5.0, "name": "corner (1069, 1009) keeps z 5" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[4].x", "approx": 1065.0, "name": "point 4 is the inserted crossing (1065, 1009)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[4].y", "approx": 1009.0, "name": "point 4 y" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[4].z", "approx": 6.0, "name": "crossing (1065, 1009) gets z 6, halfway between its corners" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[5].x", "approx": 1061.0, "name": "point 5 is corner (1061, 1009)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[5].y", "approx": 1009.0, "name": "point 5 y" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[5].z", "approx": 7.0, "name": "corner (1061, 1009) keeps z 7" }
+      ]
+    }
+  ]
+}

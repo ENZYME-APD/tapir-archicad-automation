@@ -331,6 +331,121 @@
           "name": "no opening made by the refused create"
         }
       ]
+    },
+    {
+      "id": "center anchor",
+      "command": "SetOpeningDetails",
+      "creates": false,
+      "params": {
+        "openingsWithDetails": [
+          {
+            "elementId": { "guid": "${opening}" },
+            "extrusionParameters": { "anchor": "Center" }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read the anchor point",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${opening}" } } ]
+      },
+      "save": {
+        "x3": "openings[0].geometry.anchorPoint.x",
+        "y3": "openings[0].geometry.anchorPoint.y",
+        "z3": "openings[0].geometry.anchorPoint.z"
+      },
+      "expect": [
+        {
+          "path": "openings[0].extrusionParameters.anchor",
+          "eq": "Center"
+        }
+      ]
+    },
+    {
+      "id": "polygon away from the origin",
+      "command": "SetOpeningDetails",
+      "creates": false,
+      "params": {
+        "openingsWithDetails": [
+          {
+            "elementId": { "guid": "${opening}" },
+            "polygon": [
+              { "x": 1.0, "y": 1.0 },
+              { "x": 2.0, "y": 1.0 },
+              { "x": 2.0, "y": 2.0 },
+              { "x": 1.0, "y": 2.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read the polygon",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${opening}" } } ]
+      },
+      "save": {
+        "x4": "openings[0].geometry.anchorPoint.x",
+        "y4": "openings[0].geometry.anchorPoint.y",
+        "z4": "openings[0].geometry.anchorPoint.z",
+        "px0": "openings[0].geometry.polygon[0].x",
+        "px1": "openings[0].geometry.polygon[1].x",
+        "px2": "openings[0].geometry.polygon[2].x",
+        "px3": "openings[0].geometry.polygon[3].x",
+        "py0": "openings[0].geometry.polygon[0].y",
+        "py1": "openings[0].geometry.polygon[1].y",
+        "py2": "openings[0].geometry.polygon[2].y",
+        "py3": "openings[0].geometry.polygon[3].y"
+      },
+      "expect": [
+        {
+          "path": "openings[0].geometry.polygon",
+          "len": 4,
+          "name": "the square's four corners"
+        },
+        {
+          "expr": "(${px0} + ${px1} + ${px2} + ${px3}) / 4",
+          "approx": 0.0,
+          "name": "square centred on the anchor point along X, the offset of 1 dropped"
+        },
+        {
+          "expr": "(${py0} + ${py1} + ${py2} + ${py3}) / 4",
+          "approx": 0.0,
+          "name": "square centred on the anchor point along Y, the offset of 1 dropped"
+        },
+        {
+          "expr": "${x4} - ${x3}",
+          "approx": 0.0,
+          "name": "the polygon did not move the anchor point along X"
+        },
+        {
+          "expr": "${y4} - ${y3}",
+          "approx": 0.0,
+          "name": "the polygon did not move the anchor point along Y"
+        },
+        {
+          "expr": "${z4} - ${z3}",
+          "approx": 0.0,
+          "name": "the polygon did not move the anchor point along Z"
+        }
+      ]
     }
   ]
 }

@@ -3,7 +3,8 @@
 The script places its own Detail marker on the current floor plan story first (CreateDetailMarkers).
 ModifyDetailMarkers works on Worksheet markers the same way. penIndex and lineTypeIndex are the
 boundary's pen and line type, markerPenIndex the pen of the marker symbol; angle turns the marker
-symbol unless isHorizontalMarker keeps it horizontal.
+symbol unless isHorizontalMarker keeps it horizontal. constructionElementsOnly is the marker's
+'Copy construction elements only' setting.
 """
 import aclib
 
@@ -25,7 +26,8 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyDetailMarkers', {
         'lineTypeIndex': 1,
         'markerPenIndex': 5,
         'isHorizontalMarker': False,
-        'angle': 0.5
+        'angle': 0.5,
+        'constructionElementsOnly': True
     }]
 }))
 
