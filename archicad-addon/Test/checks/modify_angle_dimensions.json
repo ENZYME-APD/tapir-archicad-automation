@@ -1,0 +1,136 @@
+{
+  "title": "ModifyAngleDimensions changes the settings of an angle dimension, keeps its geometry and refuses bad input",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a 30 degree angle dimension (lines from the origin of the check at x 930, y 900)",
+      "command": "CreateAngleDimensions",
+      "params": {
+        "angleDimensionsData": [
+          {
+            "firstLine": { "begCoordinate": { "x": 930.0, "y": 900.0 }, "endCoordinate": { "x": 934.0, "y": 900.0 } },
+            "secondLine": { "begCoordinate": { "x": 930.0, "y": 900.0 }, "endCoordinate": { "x": 933.4641016, "y": 902.0 } },
+            "arcPosition": { "x": 932.8977775, "y": 900.7764571 },
+            "smallArc": true,
+            "pen": 1,
+            "textHeight": 2.0,
+            "textPen": 1
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "angle dimension created" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.measuredAngle", "approx": 0.5235988, "name": "measures 30 degrees" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 1, "name": "pen 1" }
+      ]
+    },
+    {
+      "id": "new pens and text height",
+      "command": "ModifyAngleDimensions",
+      "creates": false,
+      "params": {
+        "angleDimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "pen": 3, "textHeight": 3.0, "textPen": 5 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "read after the change: settings changed, geometry kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.pen", "eq": 3, "name": "pen changed" },
+        { "path": "detailsOfElements[0].details.textHeight", "approx": 3.0, "name": "text height changed" },
+        { "path": "detailsOfElements[0].details.textPen", "eq": 5, "name": "text pen changed" },
+        { "path": "detailsOfElements[0].details.smallArc", "eq": true, "name": "smallArc kept" },
+        { "path": "detailsOfElements[0].details.measuredAngle", "approx": 0.5235988, "name": "still 30 degrees" },
+        { "path": "detailsOfElements[0].details.secondLine.endCoordinate.x", "approx": 933.4641016, "name": "second line kept" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 3.0, "name": "radius kept" }
+      ]
+    },
+    {
+      "id": "the outer arc instead of the inner one",
+      "command": "ModifyAngleDimensions",
+      "creates": false,
+      "params": {
+        "angleDimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "smallArc": false }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "smallArc change accepted" }
+      ]
+    },
+    {
+      "id": "read after the smallArc change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.smallArc", "eq": false, "name": "smallArc changed" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 3, "name": "pen kept" }
+      ]
+    },
+    {
+      "id": "a new line is not a setting of this command (Archicad keeps the geometry)",
+      "command": "ModifyAngleDimensions",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "angleDimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "secondLine": { "begCoordinate": { "x": 930.0, "y": 900.0 }, "endCoordinate": { "x": 932.8284271, "y": 902.8284271 } } }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "secondLine refused by the schema" }
+      ]
+    },
+    {
+      "id": "a wall to give as angle dimension",
+      "command": "CreateWalls",
+      "params": { "wallsData": [ { "begCoordinate": { "x": 930.0, "y": 910.0 }, "endCoordinate": { "x": 934.0, "y": 910.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 } ] },
+      "save": { "w": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "bad inputs",
+      "command": "ModifyAngleDimensions",
+      "creates": false,
+      "params": {
+        "angleDimensionsWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "pen": 2 },
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${w}" }, "pen": 2 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "an item with nothing to change refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a wall refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.pen", "eq": 3, "name": "pen still 3" },
+        { "path": "detailsOfElements[0].details.secondLine.endCoordinate.x", "approx": 933.4641016, "name": "second line still the same" }
+      ]
+    }
+  ]
+}
