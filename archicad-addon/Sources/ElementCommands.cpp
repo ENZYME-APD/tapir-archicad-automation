@@ -5586,6 +5586,25 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             hasMemoChanges = true;
                         }
                     } break;
+                    case API_CutPlaneID:
+                    case API_ElevationID: {
+                        // GetDetailsOfElements reads these back, but nothing of them is written here;
+                        // they used to be dropped with success (#2837), so the item fails instead and
+                        // names the commands that do change them.
+                        GS::UniString givenFields;
+                        for (const GS::String& fieldName : typeSpecificDetails->GetFieldNames ()) {
+                            if (!givenFields.IsEmpty ()) {
+                                givenFields += ", ";
+                            }
+                            givenFields += GS::UniString (fieldName.ToCStr ());
+                        }
+                        if (!givenFields.IsEmpty ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                                GS::UniString ("The typeSpecificDetails of a Section or an Elevation are not changed by SetDetailsOfElements: use ModifySections for startCoordinate, endCoordinate, depth, name and id, and SetSectionsAndElevationsDetails for its settings. Not supported: ") + givenFields));
+                            continue;
+                        }
+                    } break;
                     case API_DetailID:
                     case API_WorksheetID: {
                         // A marker's own settings (name, ID, clip polygon, marker) are written by
