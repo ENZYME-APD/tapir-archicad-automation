@@ -45,6 +45,22 @@
         '读取或设置栏杆的平面图符号：其折断线、显示哪些符号构件、它们的二维属性以及符号覆盖',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         '用 <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> 读取楼板的轮廓，再用 <a href="../archicad-addon/#CreateRailings">CreateRailings</a> 沿该边缘创建静态栏杆。楼板改变时，删除栏杆并重新创建。',
+    'Move a window or door into another wall': '把窗或门移到另一面墙中',
+    'Delete it and create it in the other wall with <a href="../archicad-addon/#CreateWindows">CreateWindows</a> or <a href="../archicad-addon/#CreateDoors">CreateDoors</a>; a favorite (<code>favoriteName</code>) gives it the same settings.':
+        '删除它，然后用 <a href="../archicad-addon/#CreateWindows">CreateWindows</a> 或 <a href="../archicad-addon/#CreateDoors">CreateDoors</a> 在另一面墙中重新创建；收藏夹（<code>favoriteName</code>）可赋予它相同的设置。',
+    'Move a skylight onto another roof or shell': '把天窗移到另一个屋顶或壳体上',
+    'Delete it and create it on the other roof or shell with <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a>.':
+        '删除它，然后用 <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a> 在另一个屋顶或壳体上重新创建。',
+    'Turn an automatic zone into a manual one': '把自动区域改为手动区域',
+    'Delete the zone and create it again as a manual zone, from its polygon, with <a href="../archicad-addon/#CreateZones">CreateZones</a>.':
+        '删除该区域，然后用 <a href="../archicad-addon/#CreateZones">CreateZones</a> 按其多边形重新创建为手动区域。',
+    'Change the height of a slanted curtain wall': '修改倾斜幕墙的高度',
+    'Create it again with <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a>, with its <code>angle</code> and the new <code>height</code>.':
+        '用 <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a> 重新创建，给出其 <code>angle</code> 和新的 <code>height</code>。',
+    'Move the lines or the arc of an angle dimension': '移动角度标注的线或弧',
+    'Delete it and create it again with <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a>.':
+        '删除它，然后用 <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a> 重新创建。',
+    'Set the position or the offset of a stair\'s walking line': '设置楼梯行走线的位置或偏移',
     'Anchor the sill or header of a window or door to the project zero or to a reference level': '将窗或门的窗台或过梁定位到项目零点或参考标高',
     'Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).':
         '用 <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> 或 <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a> 中的 <code>verticalLink</code> <code>SillToStory</code> 或 <code>HeaderToStory</code> 将其锚定到楼层，再根据楼层标高（<a href="../archicad-addon/#GetStories">GetStories</a>）算出高度。',
@@ -86,6 +102,9 @@
     'Change, rename or create a stored Model View Options combination': '修改、重命名或新建已保存的 Model View Options 组合',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         '用 <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a> 读取这些组合；用 <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a> 修改当前窗口的选项。',
+    'Make a 3D style the current one': '将某个 3D 样式设为当前样式',
+    'Give a view the 3D style with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) and open that view with <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, from Archicad 27).':
+        '用 <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a>（<code>d3styleName</code>）为某个视图指定该 3D 样式，再用 <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a>（<code>navigatorItemId</code>，Archicad 27 起）打开该视图。',
     'Read or set the floor plan cut plane or the structural analytical model settings saved in a view':
         '读取或设置视图中保存的平面图剖切面或结构分析模型设置',
     'Set them in the view\'s View Settings in Archicad. The project\'s floor plan cut plane can be set with <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.':
