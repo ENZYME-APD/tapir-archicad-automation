@@ -45,6 +45,22 @@
         'Leer o fijar el símbolo en planta de una barandilla: su línea de corte, qué componentes del símbolo muestra, sus atributos 2D y las sustituciones del símbolo',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lea el contorno del forjado con <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> y cree una barandilla estática a lo largo del borde con <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Cuando cambie el forjado, borre la barandilla y vuelva a crearla.',
+    'Move a window or door into another wall': 'Mover una ventana o una puerta a otro muro',
+    'Delete it and create it in the other wall with <a href="../archicad-addon/#CreateWindows">CreateWindows</a> or <a href="../archicad-addon/#CreateDoors">CreateDoors</a>; a favorite (<code>favoriteName</code>) gives it the same settings.':
+        'Bórrela y créela en el otro muro con <a href="../archicad-addon/#CreateWindows">CreateWindows</a> o <a href="../archicad-addon/#CreateDoors">CreateDoors</a>; un favorito (<code>favoriteName</code>) le da los mismos ajustes.',
+    'Move a skylight onto another roof or shell': 'Mover un lucernario a otra cubierta o lámina',
+    'Delete it and create it on the other roof or shell with <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a>.':
+        'Bórrelo y créelo en la otra cubierta o lámina con <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a>.',
+    'Turn an automatic zone into a manual one': 'Convertir una zona automática en una manual',
+    'Delete the zone and create it again as a manual zone, from its polygon, with <a href="../archicad-addon/#CreateZones">CreateZones</a>.':
+        'Borre la zona y vuelva a crearla como zona manual, a partir de su polígono, con <a href="../archicad-addon/#CreateZones">CreateZones</a>.',
+    'Change the height of a slanted curtain wall': 'Cambiar la altura de un muro cortina inclinado',
+    'Create it again with <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a>, with its <code>angle</code> and the new <code>height</code>.':
+        'Vuelva a crearlo con <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a>, con su <code>angle</code> y la nueva <code>height</code>.',
+    'Move the lines or the arc of an angle dimension': 'Mover las líneas o el arco de una cota angular',
+    'Delete it and create it again with <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a>.':
+        'Bórrela y vuelva a crearla con <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a>.',
+    'Set the position or the offset of a stair\'s walking line': 'Definir la posición o el desfase de la línea de huella de una escalera',
     'Anchor the sill or header of a window or door to the project zero or to a reference level':
         'Anclar el antepecho o el dintel de una ventana o puerta al cero del proyecto o a un nivel de referencia',
     'Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).':
@@ -89,6 +105,9 @@
     'Change, rename or create a stored Model View Options combination': 'Cambiar, renombrar o crear una combinación guardada de Model View Options',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Lea las combinaciones con <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; cambie las opciones de la ventana actual con <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.',
+    'Make a 3D style the current one': 'Hacer que un estilo 3D sea el actual',
+    'Give a view the 3D style with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) and open that view with <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, from Archicad 27).':
+        'Asigne el estilo 3D a una vista con <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) y abra esa vista con <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, desde Archicad 27).',
     'Read or set the floor plan cut plane or the structural analytical model settings saved in a view':
         'Leer o fijar el plano de corte de la planta o los ajustes del modelo analítico estructural guardados en una vista',
     'Set them in the view\'s View Settings in Archicad. The project\'s floor plan cut plane can be set with <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.':

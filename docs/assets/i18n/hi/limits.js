@@ -45,6 +45,22 @@
         'रेलिंग का floor plan symbol पढ़ना या सेट करना: उसका break mark, वह कौन-से symbol components दिखाती है, उनके 2D attributes और symbol overrides',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         '<a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> से slab की outline पढ़ें और <a href="../archicad-addon/#CreateRailings">CreateRailings</a> से किनारे के साथ एक static railing बनाएँ। जब slab बदले, railing हटाकर फिर से बनाएँ।',
+    'Move a window or door into another wall': 'किसी window या door को दूसरी wall में ले जाना',
+    'Delete it and create it in the other wall with <a href="../archicad-addon/#CreateWindows">CreateWindows</a> or <a href="../archicad-addon/#CreateDoors">CreateDoors</a>; a favorite (<code>favoriteName</code>) gives it the same settings.':
+        'उसे हटाएँ और <a href="../archicad-addon/#CreateWindows">CreateWindows</a> या <a href="../archicad-addon/#CreateDoors">CreateDoors</a> से दूसरी wall में फिर से बनाएँ; एक favorite (<code>favoriteName</code>) उसे वही settings देता है।',
+    'Move a skylight onto another roof or shell': 'किसी skylight को दूसरी roof या shell पर ले जाना',
+    'Delete it and create it on the other roof or shell with <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a>.':
+        'उसे हटाएँ और <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a> से दूसरी roof या shell पर फिर से बनाएँ।',
+    'Turn an automatic zone into a manual one': 'किसी automatic zone को manual zone में बदलना',
+    'Delete the zone and create it again as a manual zone, from its polygon, with <a href="../archicad-addon/#CreateZones">CreateZones</a>.':
+        'Zone को हटाएँ और <a href="../archicad-addon/#CreateZones">CreateZones</a> से उसके polygon से manual zone के रूप में फिर से बनाएँ।',
+    'Change the height of a slanted curtain wall': 'किसी slanted curtain wall की height बदलना',
+    'Create it again with <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a>, with its <code>angle</code> and the new <code>height</code>.':
+        '<a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a> से उसे उसके <code>angle</code> और नई <code>height</code> के साथ फिर से बनाएँ।',
+    'Move the lines or the arc of an angle dimension': 'किसी angle dimension की lines या arc को खिसकाना',
+    'Delete it and create it again with <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a>.':
+        'उसे हटाएँ और <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a> से फिर से बनाएँ।',
+    'Set the position or the offset of a stair\'s walking line': 'किसी stair की walking line की position या offset सेट करना',
     'Anchor the sill or header of a window or door to the project zero or to a reference level':
         'Window या door के sill या header को project zero या किसी reference level से anchor करना',
     'Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).':
@@ -89,6 +105,9 @@
     'Change, rename or create a stored Model View Options combination': 'Model View Options का कोई saved combination बदलना, उसका नाम बदलना या नया बनाना',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Combinations को <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a> से पढ़ें; मौजूदा window के options <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a> से बदलें।',
+    'Make a 3D style the current one': 'किसी 3D style को current style बनाना',
+    'Give a view the 3D style with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) and open that view with <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, from Archicad 27).':
+        '<a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) से किसी view को वह 3D style दें और <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, Archicad 27 से) से वह view खोलें।',
     'Read or set the floor plan cut plane or the structural analytical model settings saved in a view':
         'किसी view में saved floor plan cut plane या structural analytical model settings पढ़ना या सेट करना',
     'Set them in the view\'s View Settings in Archicad. The project\'s floor plan cut plane can be set with <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.':

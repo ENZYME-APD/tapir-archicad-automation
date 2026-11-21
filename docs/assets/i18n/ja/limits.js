@@ -45,6 +45,22 @@
         '手すりの平面図シンボルを読み取る、または設定する：切断線、表示するシンボル構成要素、その2D属性、シンボルの上書き',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         '<a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> でスラブの輪郭を読み取り、<a href="../archicad-addon/#CreateRailings">CreateRailings</a> でそのエッジに沿って静的な手すりを作成してください。スラブが変わったら、手すりを削除して作成し直します。',
+    'Move a window or door into another wall': '窓またはドアを別の壁に移動する',
+    'Delete it and create it in the other wall with <a href="../archicad-addon/#CreateWindows">CreateWindows</a> or <a href="../archicad-addon/#CreateDoors">CreateDoors</a>; a favorite (<code>favoriteName</code>) gives it the same settings.':
+        '削除してから、<a href="../archicad-addon/#CreateWindows">CreateWindows</a> または <a href="../archicad-addon/#CreateDoors">CreateDoors</a> で別の壁に作成し直してください。お気に入り（<code>favoriteName</code>）で同じ設定にできます。',
+    'Move a skylight onto another roof or shell': '天窓を別の屋根またはシェルに移動する',
+    'Delete it and create it on the other roof or shell with <a href="../archicad-addon/#CreateSkylights">CreateSkylights</a>.':
+        '削除してから、<a href="../archicad-addon/#CreateSkylights">CreateSkylights</a> で別の屋根またはシェルに作成し直してください。',
+    'Turn an automatic zone into a manual one': '自動ゾーンを手動ゾーンに変える',
+    'Delete the zone and create it again as a manual zone, from its polygon, with <a href="../archicad-addon/#CreateZones">CreateZones</a>.':
+        'ゾーンを削除し、<a href="../archicad-addon/#CreateZones">CreateZones</a> でそのポリゴンから手動ゾーンとして作成し直してください。',
+    'Change the height of a slanted curtain wall': '傾斜したカーテンウォールの高さを変更する',
+    'Create it again with <a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a>, with its <code>angle</code> and the new <code>height</code>.':
+        '<a href="../archicad-addon/#CreateCurtainWalls">CreateCurtainWalls</a> で、<code>angle</code> と新しい <code>height</code> を指定して作成し直してください。',
+    'Move the lines or the arc of an angle dimension': '角度寸法の線または円弧を移動する',
+    'Delete it and create it again with <a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a>.':
+        '削除してから、<a href="../archicad-addon/#CreateAngleDimensions">CreateAngleDimensions</a> で作成し直してください。',
+    'Set the position or the offset of a stair\'s walking line': '階段の歩行線の位置またはオフセットを設定する',
     'Anchor the sill or header of a window or door to the project zero or to a reference level':
         '窓やドアの下端または上端を、プロジェクトゼロまたは参照レベルに固定する',
     'Anchor it to a story with <code>verticalLink</code> <code>SillToStory</code> or <code>HeaderToStory</code> in <a href="../archicad-addon/#ModifyWindows">ModifyWindows</a> or <a href="../archicad-addon/#ModifyDoors">ModifyDoors</a>, and work out the height from the story level (<a href="../archicad-addon/#GetStories">GetStories</a>).':
@@ -88,6 +104,9 @@
     'Change, rename or create a stored Model View Options combination': '保存済みの Model View Options の組み合わせを変更、名前変更、または作成する',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         '組み合わせは <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a> で読み取れます。現在のウィンドウのオプションは <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a> で変更できます。',
+    'Make a 3D style the current one': '3D スタイルを現在のスタイルにする',
+    'Give a view the 3D style with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (<code>d3styleName</code>) and open that view with <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> (<code>navigatorItemId</code>, from Archicad 27).':
+        '<a href="../archicad-addon/#SetViewSettings">SetViewSettings</a>（<code>d3styleName</code>）でビューにその 3D スタイルを設定し、<a href="../archicad-addon/#ChangeWindow">ChangeWindow</a>（<code>navigatorItemId</code>、Archicad 27 以降）でそのビューを開いてください。',
     'Read or set the floor plan cut plane or the structural analytical model settings saved in a view':
         'ビューに保存された平面図の切断面、または構造解析モデルの設定を読み取る、または設定する',
     'Set them in the view\'s View Settings in Archicad. The project\'s floor plan cut plane can be set with <a href="../archicad-addon/#SetProjectPreferences">SetProjectPreferences</a>.':
