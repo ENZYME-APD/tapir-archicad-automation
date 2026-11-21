@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 17:40 UTC",
+ "generatedAt": "2026-11-21 21:25 UTC",
  "versions": [
   25,
   26,
@@ -5809,6 +5809,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
+    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
@@ -7050,6 +7054,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
+    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -7135,6 +7143,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7893,6 +7905,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
+    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -7951,6 +7967,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
     {
      "number": 2898,
      "title": "ModifyRoofs: don't crash when a hole grows a multi-plane roof's pivot memo"
@@ -25528,6 +25548,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
+    {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
@@ -26997,7 +27021,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    }
+   ],
    "issues": []
   },
   {
@@ -31157,6 +31186,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
     {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
@@ -37620,6 +37653,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
@@ -44313,6 +44350,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
+    {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
@@ -47444,6 +47485,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3005,
+     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
+    },
     {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
