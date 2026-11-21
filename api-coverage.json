@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20 21:34 UTC",
+ "generatedAt": "2026-11-20 23:56 UTC",
  "versions": [
   25,
   26,
@@ -4059,6 +4059,14 @@
      "title": "Add RecreateRailings: give an existing railing a new reference line"
     },
     {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
+    },
+    {
      "number": 2843,
      "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     }
@@ -4067,10 +4075,6 @@
     {
      "number": 2313,
      "title": "Self-audit of the whole repository: AI slop, performance and safety"
-    },
-    {
-     "number": 2218,
-     "title": "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"
     },
     {
      "number": 1820,
@@ -4802,6 +4806,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2979,
+     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
+    },
+    {
      "number": 2960,
      "title": "Create meshes and other model elements from a 3D Document or other 2D window"
     },
@@ -4945,6 +4953,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2979,
+     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
+    },
     {
      "number": 2960,
      "title": "Create meshes and other model elements from a 3D Document or other 2D window"
@@ -5859,12 +5871,20 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
     },
     {
-     "number": 2939,
-     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+     "number": 2984,
+     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
+    },
+    {
+     "number": 2978,
+     "title": "SetDetailsOfElements: fail on typeSpecificDetails for Detail and Worksheet markers instead of answering success"
+    },
+    {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
      "number": 2935,
@@ -6768,12 +6788,7 @@
      "title": "CreateLabels: associative labels in section/elevation windows; keep style.anchor"
     }
    ],
-   "issues": [
-    {
-     "number": 2188,
-     "title": "New commands: align, distribute and scale elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_CalcCoreOffsetToSideOffset",
@@ -6865,12 +6880,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1825,
-     "title": "Element notifications: changes and deletions made by Tapir commands are not reported"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Change",
@@ -6934,6 +6944,14 @@
     {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
+    },
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
     },
     {
      "number": 2843,
@@ -7116,7 +7134,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2855,
+     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
+    }
+   ],
    "issues": [
     {
      "number": 1377,
@@ -7565,6 +7588,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2979,
+     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
+    },
+    {
      "number": 2961,
      "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
@@ -7623,6 +7650,14 @@
     {
      "number": 2854,
      "title": "[2/3] ModifyStairs/CreateStairs: write the line types, pens and fills of the stair's structure symbols"
+    },
+    {
+     "number": 2845,
+     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
+    },
+    {
+     "number": 2844,
+     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
     },
     {
      "number": 2843,
@@ -8215,6 +8250,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
+    },
+    {
+     "number": 2977,
+     "title": "GetAnalyticalMemberTypesOfElements: error item for an unknown guid, and say the type comes from the Complementary Project"
+    },
+    {
      "number": 2899,
      "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
     },
@@ -8287,12 +8330,16 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2961,
-     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
     },
     {
-     "number": 2939,
-     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+     "number": 2984,
+     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
+    },
+    {
+     "number": 2961,
+     "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
     {
      "number": 2935,
@@ -8337,6 +8384,10 @@
     {
      "number": 2809,
      "title": "GetDetailsOfElements: return the lines of a text as Archicad breaks them"
+    },
+    {
+     "number": 2807,
+     "title": "GetDetailsOfElements (Railing): return the arcs of the reference line"
     },
     {
      "number": 2712,
@@ -8561,7 +8612,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2998,
+     "title": "Add GetTypedPropertyValuesOfElements: property values in JSON's own types, with type, status and isDefault"
+    }
+   ],
    "issues": []
   },
   {
@@ -10014,7 +10070,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2985,
+     "title": "CreateDrawings: place a clipped Drawing of a view with a saved zoom by its origin"
+    }
+   ],
    "issues": []
   },
   {
@@ -14887,7 +14948,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2985,
+     "title": "CreateDrawings: place a clipped Drawing of a view with a saved zoom by its origin"
+    }
+   ],
    "issues": []
   },
   {
@@ -26127,6 +26193,26 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
+    },
+    {
+     "number": 2984,
+     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
+    },
+    {
+     "number": 2979,
+     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
+    },
+    {
+     "number": 2976,
+     "title": "Refuse a wall offset on a Center or CoreCenter reference line"
+    },
+    {
+     "number": 2974,
+     "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
+    },
+    {
      "number": 2961,
      "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
     },
@@ -27637,7 +27723,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
+    },
+    {
+     "number": 2998,
+     "title": "Add GetTypedPropertyValuesOfElements: property values in JSON's own types, with type, status and isDefault"
+    }
+   ],
    "issues": []
   },
   {
@@ -29151,7 +29246,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3002,
+     "title": "GetLibraryPartFileInfo: return the parameters of the .gsm file with their default values and descriptions"
+    }
+   ],
    "issues": []
   },
   {
@@ -29187,7 +29287,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3002,
+     "title": "GetLibraryPartFileInfo: return the parameters of the .gsm file with their default values and descriptions"
+    }
+   ],
    "issues": []
   },
   {
@@ -31608,6 +31713,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
@@ -31814,7 +31923,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -31867,8 +31981,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2939,
-     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
+    },
+    {
+     "number": 2981,
+     "title": "GetDetailsOfElements: read the boundary method (reference line or inner edge) of an automatic zone"
     },
     {
      "number": 2935,
@@ -32097,6 +32215,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -32367,6 +32489,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -32467,6 +32593,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -32558,7 +32688,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -33663,6 +33798,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -34061,7 +34200,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -34579,6 +34723,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -34772,7 +34920,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -35221,6 +35374,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -35448,7 +35605,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -35827,6 +35989,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -35918,7 +36084,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -36149,6 +36320,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -36356,7 +36531,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -36655,6 +36835,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -37037,6 +37221,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -37507,6 +37695,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -37783,6 +37975,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -38237,6 +38433,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -38484,6 +38684,34 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
+    },
+    {
+     "number": 2998,
+     "title": "Add GetTypedPropertyValuesOfElements: property values in JSON's own types, with type, status and isDefault"
+    },
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
+     "number": 2984,
+     "title": "Roofs: read and write the edge types of a multi-plane roof's contour"
+    },
+    {
+     "number": 2979,
+     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
+    },
+    {
+     "number": 2976,
+     "title": "Refuse a wall offset on a Center or CoreCenter reference line"
+    },
+    {
+     "number": 2974,
+     "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
+    },
     {
      "number": 2961,
      "title": "ModifyMeshes: keep outline heights on their points when level lines cross the new outline"
@@ -39343,6 +39571,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
@@ -39482,6 +39714,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -39641,6 +39877,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -40891,6 +41131,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -41087,6 +41331,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -41263,6 +41511,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -41662,7 +41914,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -42180,6 +42437,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -42407,7 +42668,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -42786,6 +43052,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -42979,7 +43249,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -43426,6 +43701,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -43633,7 +43912,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -43925,6 +44209,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -44303,6 +44591,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -44457,7 +44749,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -44539,6 +44836,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -45323,7 +45624,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -45379,8 +45685,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2939,
-     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
+    },
+    {
+     "number": 2981,
+     "title": "GetDetailsOfElements: read the boundary method (reference line or inner edge) of an automatic zone"
     },
     {
      "number": 2935,
@@ -45565,6 +45875,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -45830,6 +46144,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
@@ -45926,7 +46244,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -45944,7 +46267,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -46061,7 +46389,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    }
+   ],
    "issues": []
   },
   {
@@ -46750,6 +47083,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
@@ -46902,6 +47239,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -47373,6 +47714,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -48561,6 +48906,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     }
@@ -48634,8 +48983,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2939,
-     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
+     "number": 2999,
+     "title": "Add GetRailingSegmentPatterns: read each railing segment's pattern entry apart from its instances"
+    },
+    {
+     "number": 2981,
+     "title": "GetDetailsOfElements: read the boundary method (reference line or inner edge) of an automatic zone"
     },
     {
      "number": 2935,
@@ -48799,6 +49152,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -48986,6 +49343,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
+    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
@@ -49144,6 +49505,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -49609,6 +49974,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2992,
+     "title": "ModifyMEPRoutingElements: refuse moving a route end away from its tee instead of crashing Archicad"
+    },
     {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
@@ -55271,6 +55640,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2998,
+     "title": "Add GetTypedPropertyValuesOfElements: property values in JSON's own types, with type, status and isDefault"
+    },
+    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -56291,7 +56664,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2998,
+     "title": "Add GetTypedPropertyValuesOfElements: property values in JSON's own types, with type, status and isDefault"
+    }
+   ],
    "issues": []
   },
   {

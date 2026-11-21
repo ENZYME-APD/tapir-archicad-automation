@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20 21:34 UTC",
+ "generatedAt": "2026-11-20 23:56 UTC",
  "counts": {
   "done": 788,
   "open": 14,
@@ -2857,18 +2857,13 @@
     "databases"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. A Stair returns the structure settings of each part and side (structures, with the monolith or side stringer data of its type), and a StairStructure subelement returns the same keys. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
+   "brief": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. A Stair returns the structure settings of each part and side (structures, with the monolith or side stringer data of its type), and a StairStructure subelement returns the same keys. A Stair also returns its plan outline (its left and right boundary lines) and its walking lines. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2943,6 +2938,10 @@
     {
      "name": "GetDetailsOfZonesComponent",
      "path": "Components/ElementsComponents/GetDetailsOfElementsComponent.cs"
+    },
+    {
+     "name": "GetStairOutlinesComponent",
+     "path": "Components/ElementsComponents/GetStairOutlinesComponent.cs"
     },
     {
      "name": "HotspotsComponent",
@@ -3027,17 +3026,8 @@
    "missingParameters": [
     "additionalFields"
    ],
-   "pullRequests": [
-    {
-     "number": 2939,
-     "title": "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    },
     {
      "number": 1791,
      "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
@@ -3628,7 +3618,7 @@
    "id": "GetQuantitiesOfElements",
    "group": "Element Commands",
    "version": "1.7.2",
-   "brief": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call.",
+   "brief": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment, Stair. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4385,12 +4375,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2188,
-     "title": "New commands: align, distribute and scale elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "AlignElements",
@@ -4414,12 +4399,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2188,
-     "title": "New commands: align, distribute and scale elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "DistributeElements",
@@ -4443,12 +4423,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2188,
-     "title": "New commands: align, distribute and scale elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SplitElements",
@@ -4473,12 +4448,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2191,
-     "title": "New command SplitElements: split elements along a line"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CopyElementsToDatabase",
@@ -4652,12 +4622,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2188,
-     "title": "New commands: align, distribute and scale elements"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "DeleteElements",
@@ -5300,12 +5265,7 @@
     "stairsData.walkingLinePosition"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2936,
-     "title": "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SolveStairBaseline",
@@ -5327,12 +5287,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2936,
-     "title": "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateSlabs",
@@ -8377,12 +8332,7 @@
     "stairs.baseLineVertices"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2936,
-     "title": "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ChangeTextContent",
@@ -9260,12 +9210,7 @@
     "settingGroups"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "UpdateFavoritesFromElements",
@@ -9671,12 +9616,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetAllProperties",
@@ -9741,12 +9681,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetPropertyValuesOfElements",
@@ -16466,12 +16401,7 @@
     "sectionsData.details"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ModifySections",
@@ -16496,12 +16426,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "CreateInteriorElevations",
@@ -16553,12 +16478,7 @@
     "elevationsData.details"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetSectionsAndElevationsDetails",
@@ -16580,12 +16500,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetSectionsAndElevationsDetails",
@@ -16609,12 +16524,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2391,
-     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "MoveNavigatorItem",
@@ -20507,12 +20417,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2191,
-     "title": "New command SplitElements: split elements along a line"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "RemoveElementTrims",
@@ -20581,12 +20486,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2191,
-     "title": "New command SplitElements: split elements along a line"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "UnmergeElements",
@@ -20610,12 +20510,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2191,
-     "title": "New command SplitElements: split elements along a line"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetMergedElements",

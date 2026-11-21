@@ -34,7 +34,7 @@ Parameters of the 789 used commands: 🟢 722 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-20 21:34 UTC.
+Updated 2026-11-20 23:56 UTC.
 
 | | Status |
 |---|---|
@@ -185,8 +185,8 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetMarquee` 🟢 0/0 parameters – `GetMarqueeComponent`
 - ✅ `SetMarquee` 🟢 4/4 parameters – `SetMarqueeComponent`
 - ✅ `FilterElements` 🟢 7/7 parameters – `FilterElementsComponent`
-- ✅ `GetElementsByCriteria` 🟡 12/13 parameters – `GetElementsByCriteriaComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")<br><sub>no input: `databases`</sub>
-- ✅ `GetDetailsOfElements` 🟡 3/4 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#2939](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2939 "[3/3] Grasshopper: StairOutlines, a stair's boundaries, walking line and plan outline as curves"), [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"), [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
+- ✅ `GetElementsByCriteria` 🟡 12/13 parameters – `GetElementsByCriteriaComponent`<br><sub>no input: `databases`</sub>
+- ✅ `GetDetailsOfElements` 🟡 3/4 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `GetStairOutlinesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
 - ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 - ✅ `SetElementInfoStrings` 🟢 1/1 parameters – `SetElementInfoStringsComponent`
 - ✅ `GetElementCategories` 🟢 0/0 parameters – `GetElementCategoriesComponent`
@@ -240,17 +240,17 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetZoneLabelingSettings` 🟢 0/0 parameters – `GetZoneLabelingSettingsComponent`
 - ✅ `GetCollisions` 🟢 6/6 parameters – `GetCollisionsComponent`
 - ✅ `HighlightElements` 🟢 4/4 parameters – `HighlightElementsComponent`
-- ✅ `MoveElements` 🟢 7/7 parameters – `MoveElementsComponent` — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: align, distribute and scale elements")
-- ✅ `AlignElements` 🟢 3/3 parameters – `AlignElementsComponent` — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: align, distribute and scale elements")
-- ✅ `DistributeElements` 🟢 3/3 parameters – `DistributeElementsComponent` — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: align, distribute and scale elements")
-- ✅ `SplitElements` 🟢 4/4 parameters – `SplitElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New command SplitElements: split elements along a line")
+- ✅ `MoveElements` 🟢 7/7 parameters – `MoveElementsComponent`
+- ✅ `AlignElements` 🟢 3/3 parameters – `AlignElementsComponent`
+- ✅ `DistributeElements` 🟢 3/3 parameters – `DistributeElementsComponent`
+- ✅ `SplitElements` 🟢 4/4 parameters – `SplitElementsComponent`
 - ✅ `CopyElementsToDatabase` 🟢 4/4 parameters – `CopyElementsToDatabaseComponent`
 - ✅ `ElevateElements` 🟢 4/4 parameters – `ElevateElementsComponent`
 - ✅ `RotateElements` 🟢 7/7 parameters – `RotateElementsComponent`
 - ✅ `MirrorElements` 🟢 1/1 parameters – `MirrorElementsComponent`
 - ✅ `CopyElements` 🟢 3/3 parameters – `CopyElementsComponent`
 - ✅ `RotateCopyElements` 🟢 4/4 parameters – `RotateCopyElementsComponent`
-- ✅ `ScaleElements` 🟢 4/4 parameters – `ScaleElementsComponent` — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: align, distribute and scale elements")
+- ✅ `ScaleElements` 🟢 4/4 parameters – `ScaleElementsComponent`
 - ✅ `DeleteElements` 🟢 2/2 parameters – `DeleteElementsComponent`, `ElementMetadata`
 - ✅ `DeleteSelectedElements` 🟢 1/1 parameters – `DeleteSelectedElementsComponent`
 - ✅ `LockElements` 🟢 1/1 parameters – `LockElementsComponent`
@@ -270,8 +270,8 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateColumns` 🟢 27/27 parameters – `ColumnsComponent`, `CreateColumnsComponent`
 - ✅ `CreateWalls` 🟡 49/50 parameters – `CreateWallsComponent`, `WallsApiComponent`, `WallsComponent`<br><sub>no input: `wallsData.endThickness`</sub>
 - ✅ `CreateBeams` 🟡 25/27 parameters – `BeamsComponent`, `CreateBeamsComponent`<br><sub>no input: `beamsData.segmentCount`, `beamsData.segments`</sub>
-- ✅ `CreateStairs` 🟡 17/55 parameters – `CreateStairsComponent` — [#2936](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2936 "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves")<br><sub>no input: `stairsData.baseLineEdges`, `stairsData.baseLineVertices`, `stairsData.baselineOffset`, `stairsData.baselinePosition`, `stairsData.extraBottomTread`, `stairsData.extraTopTread`, `stairsData.floorPlanLayout`, `stairsData.headroom`, `stairsData.id`, `stairsData.inputDirection`, `stairsData.numberingType`, `stairsData.reflectedCeilingPlanLayout`, `stairsData.relativeTopStory`, `stairsData.risers`, `stairsData.risers.crossSection`, `stairsData.rules`, `stairsData.stairDisplayType`, `stairsData.structureVisibility`, `stairsData.structures`, `stairsData.structures.bottomType`, `stairsData.structures.horizontalThickness`, `stairsData.structures.monolith`, `stairsData.structures.side`, `stairsData.structures.sideStair`, `stairsData.topOffset`, `stairsData.totalHeightLocked`, `stairsData.treadDepthLocked`, `stairsData.treads`, `stairsData.treads.nosingSlant`, `stairsData.treads.nosingType`, `stairsData.treads.nosingValue`, `stairsData.treads.role`, `stairsData.treads.visible`, `stairsData.uniformDrainings`, `stairsData.uniformFinish`, `stairsData.uniformMonolithAttributes`, `stairsData.walkingLineOffset`, `stairsData.walkingLinePosition`</sub>
-- ✅ `SolveStairBaseline` 🟢 1/1 parameters – `SolveStairBaselineComponent` — [#2936](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2936 "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves")
+- ✅ `CreateStairs` 🟡 17/55 parameters – `CreateStairsComponent`<br><sub>no input: `stairsData.baseLineEdges`, `stairsData.baseLineVertices`, `stairsData.baselineOffset`, `stairsData.baselinePosition`, `stairsData.extraBottomTread`, `stairsData.extraTopTread`, `stairsData.floorPlanLayout`, `stairsData.headroom`, `stairsData.id`, `stairsData.inputDirection`, `stairsData.numberingType`, `stairsData.reflectedCeilingPlanLayout`, `stairsData.relativeTopStory`, `stairsData.risers`, `stairsData.risers.crossSection`, `stairsData.rules`, `stairsData.stairDisplayType`, `stairsData.structureVisibility`, `stairsData.structures`, `stairsData.structures.bottomType`, `stairsData.structures.horizontalThickness`, `stairsData.structures.monolith`, `stairsData.structures.side`, `stairsData.structures.sideStair`, `stairsData.topOffset`, `stairsData.totalHeightLocked`, `stairsData.treadDepthLocked`, `stairsData.treads`, `stairsData.treads.nosingSlant`, `stairsData.treads.nosingType`, `stairsData.treads.nosingValue`, `stairsData.treads.role`, `stairsData.treads.visible`, `stairsData.uniformDrainings`, `stairsData.uniformFinish`, `stairsData.uniformMonolithAttributes`, `stairsData.walkingLineOffset`, `stairsData.walkingLinePosition`</sub>
+- ✅ `SolveStairBaseline` 🟢 1/1 parameters – `SolveStairBaselineComponent`
 - ✅ `CreateSlabs` 🟡 20/31 parameters – `CreateSlabsComponent`, `SlabsComponent`<br><sub>no input: `slabsData.contourLineTypeId`, `slabsData.contourPen`, `slabsData.fillVisibility`, `slabsData.hiddenContourLinePen`, `slabsData.hiddenContourLineTypeId`, `slabsData.isAutoOnStoryVisibility`, `slabsData.linkToSettings`, `slabsData.materialsChained`, `slabsData.sectionContourLineTypeId`, `slabsData.sectionContourPen`, `slabsData.visibility`</sub>
 - ✅ `CreateWindows` 🟡 30/38 parameters – `CreateWindowsComponent`, `WindowsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `windowsData.directionType`, `windowsData.fixPoint`, `windowsData.revealDepthLocation`, `windowsData.subFloorThickness`, `windowsData.surfaceId`, `windowsData.useObjectMaterials`, `windowsData.verticalLink`, `windowsData.verticalLinkStoryIndex`</sub>
 - ✅ `CreateDoors` 🟡 30/38 parameters – `CreateDoorsComponent`, `DoorsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `doorsData.directionType`, `doorsData.fixPoint`, `doorsData.revealDepthLocation`, `doorsData.subFloorThickness`, `doorsData.surfaceId`, `doorsData.useObjectMaterials`, `doorsData.verticalLink`, `doorsData.verticalLinkStoryIndex`</sub>
@@ -340,7 +340,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyCurtainWallFrames` 🟢 9/9 parameters – `ModifyCurtainWallFramesComponent`
 - ⬜ `ModifyCurtainWallPanels`
 - ✅ `ModifyStairs` 🟡 15/46 parameters – `ModifyStairsComponent`<br><sub>no input: `stairsWithDetails.extraBottomTread`, `stairsWithDetails.extraTopTread`, `stairsWithDetails.floorPlanLayout`, `stairsWithDetails.headroom`, `stairsWithDetails.inputDirection`, `stairsWithDetails.numberingType`, `stairsWithDetails.reflectedCeilingPlanLayout`, `stairsWithDetails.relativeTopStory`, `stairsWithDetails.risers`, `stairsWithDetails.risers.crossSection`, `stairsWithDetails.rules`, `stairsWithDetails.stairDisplayType`, `stairsWithDetails.structureVisibility`, `stairsWithDetails.structures`, `stairsWithDetails.structures.bottomType`, `stairsWithDetails.structures.horizontalThickness`, `stairsWithDetails.structures.monolith`, `stairsWithDetails.structures.side`, `stairsWithDetails.structures.sideStair`, `stairsWithDetails.topOffset`, `stairsWithDetails.treads`, `stairsWithDetails.treads.nosingSlant`, `stairsWithDetails.treads.nosingType`, `stairsWithDetails.treads.nosingValue`, `stairsWithDetails.treads.role`, `stairsWithDetails.treads.visible`, `stairsWithDetails.uniformDrainings`, `stairsWithDetails.uniformFinish`, `stairsWithDetails.uniformMonolithAttributes`, `stairsWithDetails.walkingLineOffset`, `stairsWithDetails.walkingLinePosition`</sub>
-- 🔀 `RecreateStairs` 🟡 4/6 parameters – `RecreateStairsComponent` — [#2936](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2936 "Grasshopper: curved stairs from Rhino curves (CreateStairs, SolveStairBaseline, RecreateStairs), stair outline as curves")<br><sub>no input: `stairs.baseLineEdges`, `stairs.baseLineVertices`</sub>
+- 🔀 `RecreateStairs` 🟡 4/6 parameters – `RecreateStairsComponent`<br><sub>no input: `stairs.baseLineEdges`, `stairs.baseLineVertices`</sub>
 - ✅ `ChangeTextContent` 🟢 1/1 parameters – `ChangeTextContentComponent`
 - ✅ `ModifyZones` 🟡 17/21 parameters – `ModifyZonesComponent`, `ZonesComponent`<br><sub>no input: `zonesWithDetails.polygonDisplay`, `zonesWithDetails.reducePercent`, `zonesWithDetails.stampPen`, `zonesWithDetails.surface`</sub>
 - ✅ `MeasureTexts` 🟢 10/10 parameters – `MeasureTextsComponent`
@@ -382,7 +382,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateFavoritesFromElements` 🟢 1/1 parameters – `CreateFavoritesComponent`
 - ✅ `ImportFavorites` 🟢 6/6 parameters – `ImportFavoritesComponent`
 - ✅ `ExportFavorites` 🟢 4/4 parameters – `ExportFavoritesComponent`
-- ✅ `ApplyFavoritesToElements` 🟠 9/10 parameters – `ApplyFavoritesToElementsComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")<br><sub>no input: `settingGroups`</sub>
+- ✅ `ApplyFavoritesToElements` 🟠 9/10 parameters – `ApplyFavoritesToElementsComponent`<br><sub>no input: `settingGroups`</sub>
 - ✅ `UpdateFavoritesFromElements` 🟢 1/1 parameters – `UpdateFavoritesFromElementsComponent`
 - ✅ `RenameFavorites` 🟢 1/1 parameters – `RenameFavoritesComponent`
 - ✅ `DeleteFavorites` 🟢 1/1 parameters – `DeleteFavoritesComponent`
@@ -400,12 +400,12 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `DeleteFavoritesWithManager` 🟢 1/1 parameters – `DeleteFavoritesWithManagerComponent`
 - ✅ `MoveFavorites` 🟢 2/2 parameters – `MoveFavoritesComponent`
 - ✅ `GetFavoriteDefaults` 🟢 1/1 parameters – `GetFavoriteDefaultsComponent`
-- ✅ `SearchFavorites` 🟢 3/3 parameters – `SearchFavoritesComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")
+- ✅ `SearchFavorites` 🟢 3/3 parameters – `SearchFavoritesComponent`
 
 ## Property Commands
 
 - ✅ `GetAllProperties` 🟢 3/3 parameters – `ElementMetadata`, `FindPropertyByGuidComponent`, `FindPropertyByName`, `GetAllPropertiesComponent`
-- ✅ `SearchProperties` 🟢 8/8 parameters – `SearchPropertiesComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")
+- ✅ `SearchProperties` 🟢 8/8 parameters – `SearchPropertiesComponent`
 - ✅ `GetPropertyValuesOfElements` 🟢 4/4 parameters – `ElementMetadata`, `GetPropertyValuesOfElementsComponent`
 - ✅ `SetPropertyValuesOfElements` 🟢 2/2 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 - ✅ `GetComponentsOfElements` 🟢 1/1 parameters – `GetComponentsOfElementsComponent`
@@ -697,12 +697,12 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ZoomToElements` 🟢 2/2 parameters – `ZoomToElementsComponent`
 - ✅ `SetZoom` 🟢 1/1 parameters – `SetZoomComponent`
 - ✅ `ResetZoom` 🟢 1/1 parameters – `ResetZoomComponent`
-- ✅ `CreateSections` 🟠 8/9 parameters – `CreateSectionsComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")<br><sub>no input: `sectionsData.details`</sub>
-- ✅ `ModifySections` 🟢 4/4 parameters – `ModifySectionsComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")
+- ✅ `CreateSections` 🟠 8/9 parameters – `CreateSectionsComponent`<br><sub>no input: `sectionsData.details`</sub>
+- ✅ `ModifySections` 🟢 4/4 parameters – `ModifySectionsComponent`
 - ✅ `CreateInteriorElevations` 🟢 1/1 parameters – `CreateInteriorElevationsComponent`
-- ✅ `CreateElevations` 🟠 7/8 parameters – `CreateElevationsComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")<br><sub>no input: `elevationsData.details`</sub>
-- ✅ `GetSectionsAndElevationsDetails` 🟢 1/1 parameters – `GetSectionsAndElevationsDetailsComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")
-- ✅ `SetSectionsAndElevationsDetails` 🟢 3/3 parameters – `SetSectionsAndElevationsDetailsComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")
+- ✅ `CreateElevations` 🟠 7/8 parameters – `CreateElevationsComponent`<br><sub>no input: `elevationsData.details`</sub>
+- ✅ `GetSectionsAndElevationsDetails` 🟢 1/1 parameters – `GetSectionsAndElevationsDetailsComponent`
+- ✅ `SetSectionsAndElevationsDetails` 🟢 3/3 parameters – `SetSectionsAndElevationsDetailsComponent`
 - ✅ `MoveNavigatorItem` 🟢 3/3 parameters – `CreateViewMapFolderComponent`, `MoveNavigatorItem`
 - ✅ `RenameNavigatorItem` 🟢 4/4 parameters – `RenameNavigatorItem`
 - ✅ `DeleteNavigatorItems` 🟢 2/2 parameters – `DeleteNavigatorItem`
@@ -904,11 +904,11 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `RemoveSolidElementLinks` 🟢 2/2 parameters – `RemoveSolidElementLinksComponent`
 - ✅ `GetSolidElementLinks` 🟢 1/1 parameters – `GetSolidElementLinksComponent`
 - ✅ `CreateSolidOperations` 🟢 4/4 parameters – `CreateSolidOperationsComponent`
-- ✅ `TrimElements` 🟢 3/3 parameters – `TrimElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New command SplitElements: split elements along a line")
+- ✅ `TrimElements` 🟢 3/3 parameters – `TrimElementsComponent`
 - ✅ `RemoveElementTrims` 🟢 4/4 parameters – `RemoveElementTrimsComponent`
 - ✅ `GetElementTrims` 🟢 1/1 parameters – `GetElementTrimsComponent`
-- ✅ `MergeElements` 🟢 1/1 parameters – `MergeElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New command SplitElements: split elements along a line")
-- ✅ `UnmergeElements` 🟢 3/3 parameters – `UnmergeElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New command SplitElements: split elements along a line")
+- ✅ `MergeElements` 🟢 1/1 parameters – `MergeElementsComponent`
+- ✅ `UnmergeElements` 🟢 3/3 parameters – `UnmergeElementsComponent`
 - ✅ `GetMergedElements` 🟢 1/1 parameters – `GetMergedElementsComponent`
 
 ## Script UI Commands
