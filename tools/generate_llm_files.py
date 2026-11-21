@@ -54,6 +54,8 @@ LIVE_PAGES = [
                       + RAW + '/api-coverage/api-coverage.md'),
     ('gh-coverage/', 'Which Tapir commands have a Grasshopper component; data: '
                      + RAW + '/api-coverage/gh-coverage.md'),
+    ('grasshopper-components/', 'Every Grasshopper component with its inputs, outputs, Tapir commands and JSON keys; data: '
+                                + RAW + '/main/docs/grasshopper-components/components.js'),
 ]
 
 
