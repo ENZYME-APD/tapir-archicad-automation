@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 06:32 UTC",
+ "generatedAt": "2026-11-21 07:51 UTC",
  "versions": [
   25,
   26,
@@ -2908,10 +2908,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -4039,18 +4035,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
-     "number": 2915,
-     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
@@ -4643,12 +4627,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2891,
-     "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4810,14 +4789,6 @@
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
     {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
     },
@@ -4948,10 +4919,6 @@
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    },
-    {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
     },
     {
      "number": 2845,
@@ -5855,20 +5822,8 @@
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
     {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
-     "number": 2918,
-     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
     },
     {
      "number": 2914,
@@ -5877,14 +5832,6 @@
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
-    },
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
     {
      "number": 2855,
@@ -6861,32 +6808,8 @@
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
     {
-     "number": 2924,
-     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
-    },
-    {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
-     "number": 2915,
-     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2900,
-     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
-    },
-    {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
-    },
-    {
-     "number": 2888,
-     "title": "CreateCurtainWalls: create slanted curtain walls from angle"
     },
     {
      "number": 2855,
@@ -6979,20 +6902,8 @@
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
     {
-     "number": 2924,
-     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2900,
-     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
-    },
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
     {
      "number": 2781,
@@ -7032,12 +6943,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7202,24 +7108,12 @@
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
     {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2891,
-     "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
-    },
-    {
-     "number": 2888,
-     "title": "CreateCurtainWalls: create slanted curtain walls from angle"
     },
     {
      "number": 2880,
@@ -7260,10 +7154,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
     {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
@@ -7311,10 +7201,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7529,20 +7415,8 @@
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
     {
-     "number": 2924,
-     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
-    },
-    {
      "number": 2923,
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
-     "number": 2915,
-     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
     },
     {
      "number": 2914,
@@ -7551,14 +7425,6 @@
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2900,
-     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
-    },
-    {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
     },
     {
      "number": 2855,
@@ -7819,28 +7685,12 @@
      "title": "Add RecreateWindows, RecreateDoors, RecreateSkylights, RecreateZones and RecreateAngleDimensions; height and slant in RecreateCurtainWalls"
     },
     {
-     "number": 2924,
-     "title": "Element fields: optional pens and materials, note texts and 2D arrays"
-    },
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2900,
-     "title": "GetElementFieldDefinitions, GetElementFields and SetElementFields: every field of an element struct (#2883)"
-    },
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
     {
      "number": 2781,
@@ -7880,12 +7730,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7951,14 +7796,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
     {
      "number": 2845,
      "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
@@ -8154,10 +7991,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
-    },
-    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -8230,16 +8063,8 @@
      "title": "Read back what the Modify commands write, with the same keys"
     },
     {
-     "number": 2918,
-     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
     },
     {
      "number": 2898,
@@ -9500,12 +9325,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9526,12 +9346,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9573,12 +9388,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9599,12 +9409,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9732,12 +9537,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11107,12 +10907,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11291,12 +11086,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11319,12 +11109,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11573,12 +11358,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14372,12 +14152,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14595,12 +14370,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14646,12 +14416,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14835,12 +14600,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15063,12 +14823,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20545,12 +20300,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20642,12 +20392,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23540,12 +23285,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23740,12 +23480,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23761,12 +23496,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23782,12 +23512,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23901,12 +23626,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23923,12 +23643,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23945,12 +23660,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23967,12 +23677,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -23989,12 +23694,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24063,12 +23763,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24086,12 +23781,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24143,12 +23833,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24452,12 +24137,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24542,12 +24222,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24700,12 +24375,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24773,12 +24443,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -24795,12 +24460,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26033,24 +25693,12 @@
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
     },
     {
-     "number": 2913,
-     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
-    },
-    {
      "number": 2911,
      "title": "Stairs: write and read the position of the walking line symbol"
     },
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
-    },
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
     },
     {
      "number": 2855,
@@ -31679,28 +31327,12 @@
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
     {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
     {
-     "number": 2918,
-     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2913,
-     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
-    },
-    {
-     "number": 2912,
-     "title": "GetDetailsOfElements: read the visibility, offsets and angles of a railing's segments and nodes"
     },
     {
      "number": 2911,
@@ -31717,18 +31349,6 @@
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2896,
-     "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
-    },
-    {
-     "number": 2895,
-     "title": "GetDetailsOfElements: read curtain wall junctions and accessories"
-    },
-    {
-     "number": 2891,
-     "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
     },
     {
      "number": 2873,
@@ -38293,28 +37913,12 @@
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
     {
-     "number": 2921,
-     "title": "Add ModifyPolylines, ModifyHatches and ModifyChangeMarkers"
-    },
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
     {
-     "number": 2915,
-     "title": "Add ModifyAngleDimensions: change the settings of angle dimensions"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2913,
-     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
     },
     {
      "number": 2911,
@@ -38323,22 +37927,6 @@
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2907,
-     "title": "CreateRailingsFromPolyline: take templateElementId as CreateRailings does"
-    },
-    {
-     "number": 2899,
-     "title": "ModifyRailings: change inner posts, baluster sets and posts through their models (#2572)"
-    },
-    {
-     "number": 2894,
-     "title": "CreateWindows/CreateDoors: restore the tool defaults after favoriteName"
-    },
-    {
-     "number": 2888,
-     "title": "CreateCurtainWalls: create slanted curtain walls from angle"
     },
     {
      "number": 2880,
@@ -45163,28 +44751,12 @@
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
     {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
     {
-     "number": 2918,
-     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2913,
-     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
-    },
-    {
-     "number": 2912,
-     "title": "GetDetailsOfElements: read the visibility, offsets and angles of a railing's segments and nodes"
     },
     {
      "number": 2911,
@@ -45201,18 +44773,6 @@
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2896,
-     "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
-    },
-    {
-     "number": 2895,
-     "title": "GetDetailsOfElements: read curtain wall junctions and accessories"
-    },
-    {
-     "number": 2891,
-     "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
     },
     {
      "number": 2873,
@@ -48398,28 +47958,12 @@
      "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
     {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    },
-    {
      "number": 2919,
      "title": "Read back what the Modify commands write, with the same keys"
     },
     {
-     "number": 2918,
-     "title": "GetDetailsOfElements: read back the curtain wall patterns and cells"
-    },
-    {
      "number": 2914,
      "title": "Add RecreateCurtainWalls, and templateElementId for CreateCurtainWalls"
-    },
-    {
-     "number": 2913,
-     "title": "ModifyRailings: write the visibility and offsets of single segments and nodes"
-    },
-    {
-     "number": 2912,
-     "title": "GetDetailsOfElements: read the visibility, offsets and angles of a railing's segments and nodes"
     },
     {
      "number": 2911,
@@ -48436,18 +47980,6 @@
     {
      "number": 2908,
      "title": "Add RecreateRailings: give an existing railing a new reference line"
-    },
-    {
-     "number": 2896,
-     "title": "Curtain wall frames: read classIndex and objectType as ModifyCurtainWallFrames writes them"
-    },
-    {
-     "number": 2895,
-     "title": "GetDetailsOfElements: read curtain wall junctions and accessories"
-    },
-    {
-     "number": 2891,
-     "title": "Curtain walls: absolute bottom on upper stories, zCoordinate after a base offset change"
     },
     {
      "number": 2873,
@@ -49881,12 +49413,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54644,12 +54171,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2920,
-     "title": "Add RemoveElementTrimDirection, GetDefaultDesignOption, MergeFile and ChangeLayoutSubsetSettings"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

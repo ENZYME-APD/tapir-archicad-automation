@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-11-21 06:32 UTC",
+ "generatedAt": "2026-11-21 07:51 UTC",
  "counts": {
   "done": 788,
-  "open": 16,
+  "open": 29,
   "merged": 1,
   "not applicable": 1
  },
@@ -1568,6 +1568,21 @@
     "hotlinkNodes",
     "hotlinkNodes.hotlinkNodeId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "MergeFile",
+   "group": "Project Commands",
+   "version": "2.0.1",
+   "brief": "Merges an Archicad project or module file into the model, as File > Interoperability > Merge does, at an origin, rotation and mirroring, each story of the file on the story with the same index (or from floorIndex on). The Archicad API has no merge, so the file is placed as a hotlink and the hotlink is broken, in one undo step, and the elements that are new afterwards are returned; Archicad leaves them grouped together. A file the project already hotlinks is refused, because breaking would break that hotlink too.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -3827,6 +3842,81 @@
     "elements",
     "ownerMode"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetElementFieldDefinitions",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType) that GetElementFields reads and SetElementFields writes (and GetFieldsOfElementDefaults and SetFieldsOfElementDefaults in the tool defaults): its path, JSON type, C++ kind, size and whether it is read-only. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetElementFields",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Reads fields of elements by their path in the element's struct in the Archicad API (e.g. note.noteFont of an angle dimension, u.planeRoof.angle of a roof): every field, or only the given ones. Reaches the settings the other commands do not return.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetElementFields",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Writes fields of elements by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_Change and a mask of exactly the given fields, in one undoable command. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetFieldsOfElementDefaults",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Reads fields of the tool defaults of element types, the settings new elements of the type get, by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), e.g. thickness of the wall defaults: every field, or only the given ones. Reaches the default settings the other commands do not return. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetFieldsOfElementDefaults",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Writes fields of the tool defaults of element types by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_ChangeDefaults and a mask of exactly the given fields: the elements created afterwards get them. Like the settings dialogs of the tools, it is not undoable. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept. A change Archicad refuses can still have written some of the given fields (seen with libInd, the library part, which Archicad refuses in the tool defaults): the failure names them.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6155,7 +6245,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 7,
+   "parameterCount": 8,
    "coveredParameters": [
     "railingsData",
     "railingsData.favoriteName",
@@ -6165,7 +6255,8 @@
     "railingsData.polylineCoordinates"
    ],
    "missingParameters": [
-    "railingsData.polylineArcs"
+    "railingsData.polylineArcs",
+    "railingsData.templateElementId"
    ],
    "pullRequests": [],
    "issues": []
@@ -6188,9 +6279,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 10,
+   "parameterCount": 11,
    "coveredParameters": [
     "curtainWallsData",
+    "curtainWallsData.angle",
     "curtainWallsData.cells",
     "curtainWallsData.coordinates",
     "curtainWallsData.favoriteName",
@@ -6534,6 +6626,21 @@
    "issues": []
   },
   {
+   "id": "ModifyPolylines",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Changes existing Polyline elements with the keys CreatePolylines takes and GetDetailsOfElements returns: the pen, the line type, zone boundary (roomSeparator), the dash mode (drawSegmentMode), the arrowheads at both ends, and the polygon (coordinates with its arcs, replaced as a whole; the polyline keeps its GUID). Only the given settings are changed. With databaseId the polylines are looked for in that database, e.g. a worksheet, a detail or a layout. The polyline is read back, so a value Archicad did not keep is reported as a failure.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 12,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateLineElements",
    "group": "Element Commands",
    "version": "1.5.6",
@@ -6749,6 +6856,21 @@
     "hatchesData.fillCategory",
     "hatchesData.fillOrientation"
    ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyHatches",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Changes existing Hatch (Fill) elements with the keys CreateHatches takes and GetDetailsOfElements returns: the contour pen and line type, the fill pen and background pen or their RGB colors, the fill or building material, the fill category, the fill orientation, the area text and the percentage subtracted from the zone area, and the polygon (coordinates with its arcs and holes, replaced as a whole; the hatch keeps its GUID). Only the given settings are changed. With databaseId the hatches are looked for in that database, e.g. a worksheet, a detail or a layout. The hatch is read back, so a value Archicad did not keep is reported as a failure.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 18,
+   "coveredParameters": [],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7176,6 +7298,21 @@
    "components": [],
    "parameters": null,
    "parameterCount": 13,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyAngleDimensions",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Changes the settings of existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: smallArc, the pen, and the text height and pen. Only the given settings are changed. The lines and the arc position cannot be changed, as Archicad keeps them: delete the dimension and create it again with CreateAngleDimensions. The element is read back, so a value Archicad did not take is reported as a failure.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -7878,7 +8015,7 @@
    "id": "ModifyRailings",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the inner posts (double post offset, post count, vertical and horizontal position), panels (visible, frame) and baluster sets (frame, distribution) of a segment by their index among that segment's components of the kind, and the posts of a node (vertical position) by their index among that node's posts. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
+   "brief": "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the pattern of a segment (segments[].pattern: the models of its inner posts, panels and baluster sets and its distribution, which the inner posts, panels and baluster sets the railing has then follow) and the post model of a node (nodes[].post: vertical position). Archicad generates posts, inner posts, panels and baluster sets from these models; a change to a single one of them (innerPosts, panels, balusterSets, posts, by index) is tried, and on Archicad 29 it is refused with a message that names the model to change instead. On Archicad 29 every segment of a new railing follows the pattern of segment 0. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7888,7 +8025,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 34,
+   "parameterCount": 44,
    "coveredParameters": [
     "railingsWithDetails",
     "railingsWithDetails.bottomOffset",
@@ -7904,8 +8041,13 @@
    ],
    "missingParameters": [
     "railingsWithDetails.nodes",
+    "railingsWithDetails.nodes.autoConnectionOffset",
+    "railingsWithDetails.nodes.connectionOffset",
+    "railingsWithDetails.nodes.endingOffset",
+    "railingsWithDetails.nodes.post",
     "railingsWithDetails.nodes.postOffset",
     "railingsWithDetails.nodes.posts",
+    "railingsWithDetails.nodes.tiltedPost",
     "railingsWithDetails.nodes.unifyPatterns",
     "railingsWithDetails.segments",
     "railingsWithDetails.segments.balusterSets",
@@ -7921,11 +8063,16 @@
     "railingsWithDetails.segments.lateralOffset",
     "railingsWithDetails.segments.panels",
     "railingsWithDetails.segments.panels.frame",
+    "railingsWithDetails.segments.pattern",
+    "railingsWithDetails.segments.pattern.balusterSet",
+    "railingsWithDetails.segments.pattern.innerPost",
+    "railingsWithDetails.segments.pattern.panel",
     "railingsWithDetails.segments.rails",
     "railingsWithDetails.segments.rails.horizontalOffset",
     "railingsWithDetails.segments.rails.relative",
     "railingsWithDetails.segments.toprail",
-    "railingsWithDetails.segments.toprail.visible"
+    "railingsWithDetails.segments.verticalOffset",
+    "railingsWithDetails.segments.visible"
    ],
    "pullRequests": [],
    "issues": []
@@ -14984,6 +15131,21 @@
    "issues": []
   },
   {
+   "id": "ChangeLayoutSubsetSettings",
+   "group": "Navigator Commands",
+   "version": "2.0.1",
+   "brief": "Changes the settings of existing Layout Book subsets (name, ID prefix, numbering style, start at, ...), the fields of CreateLayoutSubset; the ones not given keep their value. The Archicad API can neither change the settings of a subset nor delete one, so a new subset is created with the changed settings right after the old one, and the old one's layouts and subsets are moved into it in their order; when a move fails, the ones moved before are moved back. The old subset is left empty, and its id is returned with the new one's: delete it in Archicad. These navigator functions are not undoable.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateDrawings",
    "group": "Navigator Commands",
    "version": "1.4.0",
@@ -17340,12 +17502,27 @@
    "id": "CreateChangeMarkers",
    "group": "Revision Management Commands",
    "version": "2.0.1",
-   "brief": "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults. GetDetailsOfElements reads the markers back.",
+   "brief": "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults, with the angle and always-horizontal setting given (angle, horizontalMarker). ModifyChangeMarkers takes the same settings. GetDetailsOfElements reads the markers back.",
    "status": "open",
    "reason": "",
    "components": [],
    "parameters": null,
-   "parameterCount": 9,
+   "parameterCount": 11,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyChangeMarkers",
+   "group": "Revision Management Commands",
+   "version": "2.0.1",
+   "brief": "Changes existing Change Markers (revision clouds) with the keys CreateChangeMarkers takes and GetDetailsOfElements returns: the Change the marker is linked to (an existing Change by its ID, a new Change made with createChange, or no Change with linkType Unlinked), the marker components, the angle and always-horizontal setting of the marker head, the position of the marker head (markerPosition), and the point a marker without a cloud polygon points to (position). Only the given settings are changed. The cloud polygon cannot be changed, as Archicad keeps it: delete the marker and create it again. The marker is read back, so a value Archicad did not keep is reported as a failure.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 11,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -17848,6 +18025,21 @@
    "coveredParameters": [
     "designOptionId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetDefaultDesignOption",
+   "group": "Design Options Commands",
+   "version": "2.0.1",
+   "brief": "Retrieves which design option, or the Main Model, is the default that new elements go to. The Archicad API has no function for it, so in a project with design options the command creates a temporary slab in the floor plan, reads its design option, moves it to the Main Model and deletes it (without design options the answer is the Main Model and nothing is created). Archicad puts a new element into the default design option only when the undo step that created it ends, so this takes two undo steps, creating and removing the slab, which together leave the project as it was. Needs a window where design options can be edited. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -20430,13 +20622,26 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 2,
    "coveredParameters": [
     "dryRun",
-    "elementPairs",
-    "elementPairs.elementId",
-    "elementPairs.trimmingElementId"
+    "elementPairs"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RemoveElementTrimDirection",
+   "group": "Solid Element Operation Commands",
+   "version": "2.0.1",
+   "brief": "Removes one direction of a trim: the trim of an element by a roof or shell, keeping the other direction when the two trim each other (two roofs or shells). The Archicad API can only remove both directions at once, so the command reads the other direction and its trim type, removes the trim and trims the other direction again, in one undo step, and reads the result back. A pair whose element is not trimmed by its trimming element fails without changing anything; when Archicad fails to remove or trim again, the whole call is undone.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
