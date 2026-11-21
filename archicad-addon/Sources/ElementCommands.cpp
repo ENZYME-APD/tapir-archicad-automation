@@ -4820,6 +4820,33 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("adjustLevelDiffs", elem.hotlink.adjustLevelDiffs);
             } break;
 
+            // The treads and risers of a stair (GetSubelementsOfHierarchicalElements lists them):
+            // what API_StairTreadType and API_StairRiserType hold beyond their GDL object, whose
+            // parameters GetGDLParametersOfElements reads.
+            case API_TreadID:
+                typeSpecificDetails.Add ("role", GS::UniString (elem.stairTread.role == APISR_Landing ? "Landing" : "Run"));
+                typeSpecificDetails.Add ("visible", elem.stairTread.visible);
+                typeSpecificDetails.Add ("isCustom", elem.stairTread.isCustom);
+                typeSpecificDetails.Add ("nosingType", GS::UniString (elem.stairTread.nosingType == APITN_BySlanting ? "BySlanting" : "ByValue"));
+                typeSpecificDetails.Add ("nosingValue", elem.stairTread.nosingValue);
+                typeSpecificDetails.Add ("nosingSlant", elem.stairTread.nosingSlant);
+                typeSpecificDetails.Add ("offset", elem.stairTread.offset);
+                typeSpecificDetails.Add ("thickness", elem.stairTread.thickness);
+                typeSpecificDetails.Add ("zOffset", elem.stairTread.zOffset);
+                typeSpecificDetails.Add ("stairId", CreateGuidObjectState (elem.stairTread.owner));
+                break;
+
+            case API_RiserID:
+                typeSpecificDetails.Add ("role", GS::UniString (elem.stairRiser.role == APISR_Landing ? "Landing" : "Run"));
+                typeSpecificDetails.Add ("visible", elem.stairRiser.visible);
+                typeSpecificDetails.Add ("riserPosition", GS::UniString (elem.stairRiser.riserPosition == APIRP_BehindTread ? "BehindTread" : "OnTread"));
+                typeSpecificDetails.Add ("crossSection", GS::UniString (elem.stairRiser.crossSect == APIRCS_Slanted ? "Slanted" : "Simple"));
+                typeSpecificDetails.Add ("angle", elem.stairRiser.angle);
+                typeSpecificDetails.Add ("offset", elem.stairRiser.offset);
+                typeSpecificDetails.Add ("thickness", elem.stairRiser.thickness);
+                typeSpecificDetails.Add ("stairId", CreateGuidObjectState (elem.stairRiser.owner));
+                break;
+
             case API_StairID: {
                 // The fields CreateStairs writes, read back (#823). The finishes and the
                 // structure are modeled by the Stair's subelements (risers, treads and
