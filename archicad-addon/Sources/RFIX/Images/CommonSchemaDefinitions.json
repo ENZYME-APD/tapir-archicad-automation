@@ -14194,13 +14194,23 @@
     },
     "CurtainWallFrameType": {
         "type": "string",
-        "description": "Enumeration of available curtain wall frame types.",
+        "description": "The class of a curtain wall frame (API_CWFrameType::classID): Deleted, Division, Corner, Boundary, or Custom for a frame class of the curtain wall or a customized frame. Not the object type that ModifyCurtainWallFrames takes as type: that one is CurtainWallFrameObjectType.",
         "enum": [
             "Deleted",
             "Division",
             "Corner",
             "Boundary",
             "Custom"
+        ]
+    },
+    "CurtainWallFrameObjectType": {
+        "type": "string",
+        "description": "The object type of a curtain wall frame (API_CWFrameType::objectType, API_CWFrameObjectTypeID): how the frame is drawn.",
+        "enum": [
+            "Invisible",
+            "GDL",
+            "InvisibleConnectedTurning",
+            "InvisibleConnectedStill"
         ]
     },
     "CurtainWallFrameDetails": {
@@ -14277,7 +14287,16 @@
                 "type": "string"
             },
             "type": {
-                "$ref": "#/CurtainWallFrameType"
+                "$ref": "#/CurtainWallFrameType",
+                "description": "The class of the frame. ModifyCurtainWallFrames takes it as classIndex, and its own type is objectType."
+            },
+            "classIndex": {
+                "type": "integer",
+                "description": "The frame class (API_CWFrameType::classID) as ModifyCurtainWallFrames takes it: 0 to 3 for the built-in classes (0 Deleted, 1 Division, 2 Corner, 3 Boundary), 4 and up for the frame classes of the curtain wall, -1 for a customized frame."
+            },
+            "objectType": {
+                "$ref": "#/CurtainWallFrameObjectType",
+                "description": "The object type of the frame, as ModifyCurtainWallFrames takes it in type."
             }
         },
         "additionalProperties": false,
@@ -14289,7 +14308,9 @@
             "frameContour",
             "segmentIndex",
             "className",
-            "type"
+            "type",
+            "classIndex",
+            "objectType"
         ]
     },
     "MeshSkirtType": {
