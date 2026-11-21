@@ -10024,7 +10024,7 @@
             },
             "dimensionStyle": {
                 "type": "string",
-                "description": "The name of the dimension style. If empty, the view has custom dimension style."
+                "description": "The name of the dimension style (a dimension standard of Options > Project Preferences > Dimensions, as GetDimensionStandards lists them). If empty, the view has custom dimension style. GetViewSettings returns the name the view stores as it is: Archicad does not check it against the project's dimension standards, so it can name one that GetDimensionStandards does not list, e.g. a standard that was renamed or deleted after the view was saved. It is valid data only when saveFlags.dimensions is true; otherwise the view does not store dimension settings and the name may be a leftover. Use FindDimensionStandard to tell whether the name exists in the project (it fails when it does not)."
             },
             "penSetName": {
                 "type": "string",
@@ -10072,7 +10072,7 @@
                     },
                     "dimensions": {
                         "type": "boolean",
-                        "description": "Whether the dimension settings are stored in the view (named by dimensionStyle, custom if that is empty)."
+                        "description": "Whether the dimension settings are stored in the view (named by dimensionStyle, custom if that is empty). When false, dimensionStyle is not valid data."
                     },
                     "penSet": {
                         "type": "boolean",
