@@ -94,6 +94,11 @@ GS::Optional<GS::UniString> ApplyZoneDisplayStampPenAndReduction (const GS::Obje
 void AddZoneSurface (const API_ZoneType& zone, GS::ObjectState& details);
 GS::Optional<GS::UniString> ApplyZoneSurface (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
 
+// The overlap pre-check of CreateZones for a manual zone with the polygon of the existing zone
+// zoneGuid (RecreateZones), which is left out: the error response naming the zone of story floorInd
+// it would overlap, as CreateZones gives it, or nothing.
+GS::Optional<GS::ObjectState> FindOverlapOfZonePolygon (const API_Guid& zoneGuid, short floorInd);
+
 class CreatePolylinesCommand : public CreateElementsCommandBase
 {
 public:

@@ -1,0 +1,124 @@
+{
+  "title": "RecreateZones turns an automatic zone into a manual zone with the same polygon, name, number, category and Element ID",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Zone" ],
+  "steps": [
+    {
+      "id": "a room of four walls whose reference lines close a 6 m square (deleted in the teardown, after the zones)",
+      "command": "CreateWalls",
+      "creates": false,
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 990.0, "y": 1020.0 }, "endCoordinate": { "x": 996.0, "y": 1020.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 },
+          { "begCoordinate": { "x": 996.0, "y": 1020.0 }, "endCoordinate": { "x": 996.0, "y": 1026.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 },
+          { "begCoordinate": { "x": 996.0, "y": 1026.0 }, "endCoordinate": { "x": 990.0, "y": 1026.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 },
+          { "begCoordinate": { "x": 990.0, "y": 1026.0 }, "endCoordinate": { "x": 990.0, "y": 1020.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid", "w3": "elements[2].elementId.guid", "w4": "elements[3].elementId.guid" }
+    },
+    {
+      "id": "an automatic zone in the room, with an Element ID",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          { "name": "Tapir recreate zone", "numberStr": "R-201", "floorIndex": 0, "id": "CHK-RECREATE-ZONE", "geometry": { "referencePosition": { "x": 993.0, "y": 1023.0 } } }
+        ]
+      },
+      "save": { "z": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "automatic zone created" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "the automatic zone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z}" } } ] },
+      "save": {
+        "cat": "detailsOfElements[0].details.categoryAttributeId.guid",
+        "stampX": "detailsOfElements[0].details.stampPosition.x",
+        "stampY": "detailsOfElements[0].details.stampPosition.y",
+        "p0x": "detailsOfElements[0].details.polygonOutline[0].x",
+        "p0y": "detailsOfElements[0].details.polygonOutline[0].y",
+        "p2x": "detailsOfElements[0].details.polygonOutline[2].x",
+        "p2y": "detailsOfElements[0].details.polygonOutline[2].y"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isManual", "eq": false, "name": "the zone is automatic" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].x", "exists": true, "name": "it has a polygon" }
+      ]
+    },
+    {
+      "id": "make it manual",
+      "command": "RecreateZones",
+      "params": { "zones": [ { "elementId": { "guid": "${z}" }, "makeManual": true } ] },
+      "save": { "nz": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new zone created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${z}", "name": "the old zone is named" }
+      ]
+    },
+    {
+      "id": "the new zone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nz}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Zone", "name": "it is a zone" },
+        { "path": "detailsOfElements[0].details.isManual", "eq": true, "name": "it is a manual zone" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-ZONE", "name": "keeps the Element ID" },
+        { "path": "detailsOfElements[0].details.name", "eq": "Tapir recreate zone", "name": "keeps its name" },
+        { "path": "detailsOfElements[0].details.numberStr", "eq": "R-201", "name": "keeps its number" },
+        { "path": "detailsOfElements[0].details.categoryAttributeId.guid", "eq": "${cat}", "name": "keeps its category" },
+        { "path": "detailsOfElements[0].details.stampPosition.x", "approx": "${stampX}", "name": "keeps its stamp position (x)" },
+        { "path": "detailsOfElements[0].details.stampPosition.y", "approx": "${stampY}", "name": "keeps its stamp position (y)" },
+        { "path": "detailsOfElements[0].details.polygonOutline[0].x", "approx": "${p0x}", "name": "the same polygon (first point x)" },
+        { "path": "detailsOfElements[0].details.polygonOutline[0].y", "approx": "${p0y}", "name": "the same polygon (first point y)" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].x", "approx": "${p2x}", "name": "the same polygon (third point x)" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].y", "approx": "${p2y}", "name": "the same polygon (third point y)" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "on its story" }
+      ]
+    },
+    {
+      "id": "the old zone is gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old zone was deleted" } ]
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateZones",
+      "creates": false,
+      "params": {
+        "zones": [
+          { "elementId": { "guid": "${nz}" }, "makeManual": true },
+          { "elementId": { "guid": "${nz}" }, "makeManual": false },
+          { "elementId": { "guid": "${w1}" }, "makeManual": true }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "a zone that is manual already refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "makeManual false refused" },
+        { "path": "results[2].error.code", "exists": true, "name": "a wall refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nz}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isManual", "eq": true, "name": "the manual zone is still there" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-ZONE", "name": "with its Element ID" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${nz}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w2}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w3}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${w4}" } } ] } }
+  ]
+}
