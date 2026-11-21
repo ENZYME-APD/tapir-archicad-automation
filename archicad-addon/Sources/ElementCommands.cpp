@@ -4713,6 +4713,24 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("error", "The details of an Opening are not returned here; use GetOpeningDetails. The id, layerIndex and the other common fields above are the Opening's.");
                 break;
 
+            // Junctions and accessories have no geometry of their own in API_Element: they are GDL
+            // objects placed by their curtain wall (their parameters are read by
+            // GetGDLParametersOfElements, their library part by the libraryPartUnId field).
+            case API_CurtainWallJunctionID:
+                typeSpecificDetails.Add ("category", GS::UniString (elem.cwJunction.category == APICWJunC_Custom ? "Custom" : "System"));
+                typeSpecificDetails.Add ("flipped", elem.cwJunction.flipped);
+                typeSpecificDetails.Add ("clampingFrameCount", static_cast<Int32> (elem.cwJunction.clampFramesNum));
+                typeSpecificDetails.Add ("clampingPanelCount", static_cast<Int32> (elem.cwJunction.clampPanelsNum));
+                typeSpecificDetails.Add ("curtainWallId", CreateGuidObjectState (elem.cwJunction.owner));
+                break;
+
+            case API_CurtainWallAccessoryID:
+                typeSpecificDetails.Add ("category", GS::UniString (elem.cwAccessory.category == APICWAccC_Custom ? "Custom" : "System"));
+                typeSpecificDetails.Add ("flipped", elem.cwAccessory.flipped);
+                typeSpecificDetails.Add ("referenceFrameId", CreateGuidObjectState (elem.cwAccessory.refFrame));
+                typeSpecificDetails.Add ("curtainWallId", CreateGuidObjectState (elem.cwAccessory.owner));
+                break;
+
             default:
                 typeSpecificDetails.Add ("error", "Not yet supported element type");
                 break;
