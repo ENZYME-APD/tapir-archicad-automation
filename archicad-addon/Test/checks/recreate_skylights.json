@@ -1,0 +1,132 @@
+{
+  "title": "RecreateSkylights moves a skylight onto another roof, keeping its size, pen, display option, library part and Element ID",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Roof", "Skylight", "Wall" ],
+  "steps": [
+    {
+      "id": "roof R1 at 2000 and roof R2 at 2020, single-plane, level 3",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0,
+            "polygonCoordinates": [ { "x": 2000, "y": 1000 }, { "x": 2008, "y": 1000 }, { "x": 2008, "y": 1008 }, { "x": 2000, "y": 1008 } ],
+            "pivotLine": { "begCoordinate": { "x": 2000, "y": 1000 }, "endCoordinate": { "x": 2008, "y": 1000 } },
+            "angle": 0.5
+          },
+          {
+            "level": 3.0,
+            "polygonCoordinates": [ { "x": 2020, "y": 1000 }, { "x": 2028, "y": 1000 }, { "x": 2028, "y": 1008 }, { "x": 2020, "y": 1008 } ],
+            "pivotLine": { "begCoordinate": { "x": 2020, "y": 1000 }, "endCoordinate": { "x": 2028, "y": 1000 } },
+            "angle": 0.3
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid", "r2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "a skylight in R1 with its own size, pen, display option and Element ID",
+      "command": "CreateSkylights",
+      "params": {
+        "skylightsData": [
+          { "ownerId": { "guid": "${r1}" }, "anchorPosition": { "x": 2004, "y": 1003 }, "width": 0.9, "height": 1.1, "pen": 5, "displayOption": "CutAll", "id": "CHK-RECREATE-SKY" }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "skylight created in R1" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "the skylight as created (Archicad 29 keeps CutOnly whatever displayOption CreateSkylights sends, see modify_skylights, so the option to keep is read here)",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": { "part": "detailsOfElements[0].details.libPart.name", "anchorPoint": "detailsOfElements[0].details.anchorPoint", "display": "detailsOfElements[0].details.displayOption" },
+      "expect": [ { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${r1}", "name": "the skylight is in R1" } ]
+    },
+    {
+      "id": "recreate it on R2 at 2024, 1003",
+      "command": "RecreateSkylights",
+      "params": { "skylights": [ { "elementId": { "guid": "${s}" }, "ownerId": { "guid": "${r2}" }, "anchorPosition": { "x": 2024, "y": 1003 } } ] },
+      "save": { "ns": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new skylight created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${s}", "name": "the old skylight is named" }
+      ]
+    },
+    {
+      "id": "the new skylight",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Skylight", "name": "it is a skylight" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-SKY", "name": "keeps the Element ID" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${r2}", "name": "it is on R2" },
+        { "path": "detailsOfElements[0].details.anchorPosition.x", "approx": 2024.0, "name": "at the new anchor position (x)" },
+        { "path": "detailsOfElements[0].details.anchorPosition.y", "approx": 1003.0, "name": "at the new anchor position (y)" },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.9, "name": "keeps its width" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "keeps its height" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 5, "name": "keeps its pen" },
+        { "path": "detailsOfElements[0].details.displayOption", "eq": "${display}", "name": "keeps its display option" },
+        { "path": "detailsOfElements[0].details.anchorPoint", "eq": "${anchorPoint}", "name": "keeps its anchor point" },
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "${part}", "name": "keeps its library part" }
+      ]
+    },
+    {
+      "id": "the new skylight sits on R2",
+      "command": "GetOpeningTransformations",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] },
+      "expect": [
+        { "path": "openingTransformations[0].origin.z", "gt": 3.0, "name": "above the pivot line's level, on the slope" },
+        { "path": "openingTransformations[0].origin.x", "gt": 2020.0, "name": "over R2 (from x 2020)" },
+        { "path": "openingTransformations[0].origin.x", "lt": 2028.0, "name": "over R2 (to x 2028)" }
+      ]
+    },
+    {
+      "id": "the old skylight is gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old skylight was deleted" } ]
+    },
+    {
+      "id": "a wall, which is not an owner of skylights",
+      "command": "CreateWalls",
+      "params": { "wallsData": [ { "begCoordinate": { "x": 2000, "y": 1020 }, "endCoordinate": { "x": 2004, "y": 1020 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 } ] },
+      "save": { "w": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateSkylights",
+      "creates": false,
+      "params": {
+        "skylights": [
+          { "elementId": { "guid": "${ns}" }, "ownerId": { "guid": "${w}" } },
+          { "elementId": { "guid": "${ns}" }, "ownerId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+          { "elementId": { "guid": "${r1}" }, "ownerId": { "guid": "${r2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.message", "contains": "not a roof or a shell", "name": "a wall as owner refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "a nonexistent owner refused" },
+        { "path": "results[2].error.code", "exists": true, "name": "a roof as the skylight to recreate refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ns}" } }, { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${r2}", "name": "the skylight is still on R2" },
+        { "path": "detailsOfElements[1].type", "eq": "Roof", "name": "R1 is still there" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] } }
+  ]
+}

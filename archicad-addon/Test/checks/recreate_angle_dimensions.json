@@ -1,0 +1,113 @@
+{
+  "title": "RecreateAngleDimensions puts an angle dimension on new lines and a new arc, keeping its pens, text and inner arc (Archicad 29 gives angle dimensions no Element ID)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "AngleDimension" ],
+  "steps": [
+    {
+      "id": "a 30 degree inner angle dimension with pen 2, text pen 3 and text height 2.5 (no id: Archicad 29 refuses an Element ID on angle dimensions)",
+      "command": "CreateAngleDimensions",
+      "params": {
+        "angleDimensionsData": [
+          {
+            "firstLine": { "begCoordinate": { "x": 900.0, "y": 950.0 }, "endCoordinate": { "x": 904.0, "y": 950.0 } },
+            "secondLine": { "begCoordinate": { "x": 900.0, "y": 950.0 }, "endCoordinate": { "x": 903.4641016, "y": 952.0 } },
+            "arcPosition": { "x": 902.8977775, "y": 950.7764571 },
+            "smallArc": true,
+            "floorIndex": 0,
+            "pen": 2,
+            "textHeight": 2.5,
+            "textPen": 3
+          }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "angle dimension created" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "recreate it on two lines at 45 degrees, 20 m away, with an arc of radius 2",
+      "command": "RecreateAngleDimensions",
+      "params": {
+        "angleDimensions": [
+          {
+            "elementId": { "guid": "${a}" },
+            "firstLine": { "begCoordinate": { "x": 920.0, "y": 950.0 }, "endCoordinate": { "x": 924.0, "y": 950.0 } },
+            "secondLine": { "begCoordinate": { "x": 920.0, "y": 950.0 }, "endCoordinate": { "x": 922.8284271, "y": 952.8284271 } },
+            "arcPosition": { "x": 921.8477591, "y": 950.7653669 }
+          }
+        ]
+      },
+      "save": { "na": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new angle dimension created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${a}", "name": "the old angle dimension is named" }
+      ]
+    },
+    {
+      "id": "the new angle dimension",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "AngleDimension", "name": "an angle dimension" },
+        { "path": "detailsOfElements[0].details.measuredAngle", "approx": 0.7853982, "name": "measures the new 45 degrees" },
+        { "path": "detailsOfElements[0].details.arcCenter.x", "approx": 920.0, "name": "arc centered on the new common point (x)" },
+        { "path": "detailsOfElements[0].details.arcCenter.y", "approx": 950.0, "name": "arc centered on the new common point (y)" },
+        { "path": "detailsOfElements[0].details.firstLine.endCoordinate.x", "approx": 924.0, "name": "the new first line" },
+        { "path": "detailsOfElements[0].details.secondLine.endCoordinate.y", "approx": 952.8284271, "name": "the new second line" },
+        { "path": "detailsOfElements[0].details.arcPosition.x", "approx": 921.8477591, "name": "the new arc position" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 2.0, "name": "the new radius" },
+        { "path": "detailsOfElements[0].details.smallArc", "eq": true, "name": "still the inner angle" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 2, "name": "keeps pen 2" },
+        { "path": "detailsOfElements[0].details.textHeight", "approx": 2.5, "name": "keeps text height 2.5" },
+        { "path": "detailsOfElements[0].details.textPen", "eq": 3, "name": "keeps text pen 3" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "on its story" }
+      ]
+    },
+    {
+      "id": "the old angle dimension is gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old angle dimension was deleted" } ]
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateAngleDimensions",
+      "creates": false,
+      "params": {
+        "angleDimensions": [
+          {
+            "elementId": { "guid": "${na}" },
+            "firstLine": { "begCoordinate": { "x": 920.0, "y": 950.0 }, "endCoordinate": { "x": 924.0, "y": 950.0 } },
+            "secondLine": { "begCoordinate": { "x": 920.0, "y": 951.0 }, "endCoordinate": { "x": 924.0, "y": 951.0 } },
+            "arcPosition": { "x": 922.0, "y": 953.0 }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "firstLine": { "begCoordinate": { "x": 920.0, "y": 950.0 }, "endCoordinate": { "x": 924.0, "y": 950.0 } },
+            "secondLine": { "begCoordinate": { "x": 920.0, "y": 950.0 }, "endCoordinate": { "x": 920.0, "y": 954.0 } },
+            "arcPosition": { "x": 921.0, "y": 951.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "parallel lines refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "a nonexistent angle dimension refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.measuredAngle", "approx": 0.7853982, "name": "still 45 degrees" },
+        { "path": "detailsOfElements[0].details.arcCenter.x", "approx": 920.0, "name": "still centered at x 920" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] } }
+  ]
+}

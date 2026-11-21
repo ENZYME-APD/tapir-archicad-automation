@@ -32593,5 +32593,70 @@
         "required": [
             "turnType"
         ]
+    },
+    "RecreateNotCarriedOver": {
+        "type": "object",
+        "description": "Something that was linked to the old element of a Recreate command and could not be moved to the new one.",
+        "properties": {
+            "relation": {
+                "type": "string",
+                "enum": [
+                    "Label",
+                    "Dimension",
+                    "LevelDimension",
+                    "Group"
+                ],
+                "description": "Label: an associative label of the old element; it is deleted with it. Dimension, LevelDimension: a dimension of the current database (the active window) that measured the old element; it loses those witness points or is deleted. Group: the old element was in a group; the new one is not."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The label or dimension, as it was before the old element was deleted. Not given for Group."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "relation"
+        ]
+    },
+    "RecreatedElement": {
+        "type": "object",
+        "description": "An element a Recreate command created again, and the old element it replaces.",
+        "properties": {
+            "oldElementId": {
+                "$ref": "#/ElementId",
+                "description": "The old element, which was deleted."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The new element."
+            },
+            "notCarriedOver": {
+                "type": "array",
+                "description": "What was linked to the old element and could not be moved to the new one. Only the dimensions of the current database (the active window) are listed.",
+                "items": {
+                    "$ref": "#/RecreateNotCarriedOver"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "oldElementId",
+            "elementId",
+            "notCarriedOver"
+        ]
+    },
+    "RecreatedElementsOrErrors": {
+        "type": "array",
+        "description": "One item per input element of a Recreate command: the new element, or an error. After an error nothing was changed for that element.",
+        "items": {
+            "oneOf": [
+                {
+                    "$ref": "#/RecreatedElement"
+                },
+                {
+                    "$ref": "#/ErrorItem"
+                }
+            ]
+        }
     }
 }

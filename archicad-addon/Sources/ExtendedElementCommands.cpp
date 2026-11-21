@@ -12314,61 +12314,27 @@ GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () c
     })";
 }
 
-GS::Optional<GS::UniString> RecreateStairsCommand::GetRawResponseSchema () const
+// The response of every Recreate command (RecreateStairs, RecreateRailings, ...): one
+// RecreatedElement or error per input element. resultsDescription says what the command recreates
+// and what it cannot carry over.
+static GS::UniString RecreateCommandResponseSchema (const GS::UniString& resultsDescription)
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "results": {
-                "type": "array",
-                "description": "One item per input stair: the new stair, or an error. After an error nothing was changed for that stair.",
-                "items": {
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "oldElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The stair that was deleted."
-                                },
-                                "elementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The new stair."
-                                },
-                                "notCarriedOver": {
-                                    "type": "array",
-                                    "description": "What was linked to the old stair and could not be moved to the new one. Labels of the stair are deleted with it; dimensions measuring it lose those witness points or are deleted. Only the dimensions of the current database (the active window) are listed.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "relation": {
-                                                "type": "string",
-                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"],
-                                                "description": "Label: an associative label of the old stair. Dimension, LevelDimension: a dimension that measured the old stair. Group: the old stair was in a group; the new one is not."
-                                            },
-                                            "elementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The label or dimension, as it was before the old stair was deleted. Not given for Group."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["relation"]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["oldElementId", "elementId", "notCarriedOver"]
-                        },
-                        {
-                            "$ref": "#/ErrorItem"
-                        }
-                    ]
-                }
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": ")") + resultsDescription + R"("
             }
         },
         "additionalProperties": false,
         "required": ["results"]
     })";
+}
+
+GS::Optional<GS::UniString> RecreateStairsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input stair: the new stair, or an error. After an error nothing was changed for that stair. Labels of the old stair are deleted with it; dimensions measuring it lose those witness points or are deleted.");
 }
 
 namespace {
@@ -12388,6 +12354,10 @@ struct StairTrim {
 struct StairDataToCarry {
     API_Element                                 element = {};
     GS::UniString                               elementId;
+    // Set by the caller for an element type that may have no Element ID on some Archicad versions
+    // (angle dimensions on Archicad 29 refuse one, as lines do): an ID that cannot be read or written
+    // is then left out instead of failing the whole recreate.
+    bool                                        elementIdOptional = false;
     GS::Array<GS::Pair<API_Guid, API_Guid>>     classifications;
     GS::Array<API_Property>                     properties;
     GS::Array<API_ElemCategoryValue>            categoryValues;
@@ -12402,41 +12372,46 @@ GS::ObjectState RecreateStairFailure (const char* step, GSErrCode err)
     return CreateErrorResponse (err, GS::UniString (step) + ". Nothing was changed.");
 }
 
-// Reads everything RecreateStairs carries over, and lists what it cannot. Returns the error text.
-GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, StairDataToCarry& data, GSErrCode& err)
+// Reads everything RecreateStairs and RecreateRailings carry over, and lists what they cannot.
+// typeName names the element type in messages ("Stair"), noun the element ("stair"). Returns the
+// error text.
+GS::Optional<GS::UniString> ReadElementDataToCarry (const API_Guid& stairGuid, API_ElemTypeID expectedType, const GS::UniString& typeName, const GS::UniString& noun, StairDataToCarry& data, GSErrCode& err)
 {
     data.element.header.guid = stairGuid;
     err = ACAPI_Element_Get (&data.element);
     if (err != NoError) {
-        return GS::UniString ("The stair was not found.");
+        return "The " + noun + " was not found.";
     }
-    if (GetElemTypeId (data.element.header) != API_StairID) {
+    if (GetElemTypeId (data.element.header) != expectedType) {
         err = APIERR_BADID;
-        return GS::UniString ("The element is not a Stair.");
+        return "The element is not a " + typeName + ".";
     }
     if (data.element.header.hotlinkGuid != APINULLGuid || !ACAPI_Element_Filter (stairGuid, APIFilt_IsEditable)) {
         err = APIERR_NOACCESSRIGHT;
-        return GS::UniString ("The stair cannot be deleted: it is in a hotlink, on a locked or hidden layer, locked, or not reserved in Teamwork.");
+        return "The " + noun + " cannot be deleted: it is in a hotlink, on a locked or hidden layer, locked, or not reserved in Teamwork.";
     }
 
     err = GetElementId (stairGuid, data.elementId);
     if (err != NoError) {
-        return GS::UniString ("Failed to read the Element ID of the stair.");
+        if (!data.elementIdOptional) {
+            return "Failed to read the Element ID of the " + noun + ".";
+        }
+        data.elementId.Clear ();
     }
 
     err = ACAPI_Element_GetClassificationItems (stairGuid, data.classifications);
     if (err != NoError) {
-        return GS::UniString ("Failed to read the classifications of the stair.");
+        return "Failed to read the classifications of the " + noun + ".";
     }
 
-    // The user-defined property values the stair has of its own, as CreateFavoritesFromElements reads them.
+    // The user-defined property values the element has of its own, as CreateFavoritesFromElements reads them.
     GS::Array<API_PropertyDefinition> definitions;
     err = ACAPI_Element_GetPropertyDefinitions (stairGuid, API_PropertyDefinitionFilter_UserDefined, definitions);
     if (err == NoError) {
         err = ACAPI_Element_GetPropertyValues (stairGuid, definitions, data.properties);
     }
     if (err != NoError) {
-        return GS::UniString ("Failed to read the property values of the stair.");
+        return "Failed to read the property values of the " + noun + ".";
     }
     for (UIndex ii = data.properties.GetSize (); ii >= 1; --ii) {
         const API_Property& p = data.properties[ii - 1];
@@ -12445,7 +12420,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
         }
     }
 
-    // A category whose value cannot be read does not apply to stairs, so there is nothing to carry.
+    // A category whose value cannot be read does not apply to this element type, so there is nothing to carry.
     GS::Array<API_ElemCategory> categories;
     if (TAPIR_GetElementCategories (categories) == NoError) {
         for (const API_ElemCategory& category : categories) {
@@ -12466,7 +12441,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
             if (ACAPI_Element_SolidLink_GetOperation (stairGuid, operatorGuid, &link.operation) != NoError ||
                 ACAPI_Element_SolidLink_GetFlags (stairGuid, operatorGuid, &link.flags) != NoError) {
                 err = APIERR_GENERAL;
-                return GS::UniString ("Failed to read a solid element operation of the stair.");
+                return "Failed to read a solid element operation of the " + noun + ".";
             }
             data.operatorsOfStair.Push (link);
         }
@@ -12479,7 +12454,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
             if (ACAPI_Element_SolidLink_GetOperation (targetGuid, stairGuid, &link.operation) != NoError ||
                 ACAPI_Element_SolidLink_GetFlags (targetGuid, stairGuid, &link.flags) != NoError) {
                 err = APIERR_GENERAL;
-                return GS::UniString ("Failed to read a solid element operation of the stair.");
+                return "Failed to read a solid element operation of the " + noun + ".";
             }
             data.targetsOfStair.Push (link);
         }
@@ -12492,7 +12467,7 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
             trim.trimming = trimmingGuid;
             err = ACAPI_Element_Trim_GetTrimType (stairGuid, trimmingGuid, &trim.trimType);
             if (err != NoError) {
-                return GS::UniString ("Failed to read a trim of the stair.");
+                return "Failed to read a trim of the " + noun + ".";
             }
             data.trims.Push (trim);
         }
@@ -12544,13 +12519,13 @@ GS::Optional<GS::UniString> ReadStairDataToCarry (const API_Guid& stairGuid, Sta
     return {};
 }
 
+GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err, bool oldDeletedFirst = false);
+
 // Creates the new stair and moves everything over; runs inside the undoable command. Returns the
 // error response, with err set, when a step failed: the caller returns err from the command, which
 // rolls back every step before it.
 GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, const GS::ObjectState& item, const Stories& stories, API_Guid& newGuid, GSErrCode& err)
 {
-    const API_Guid oldGuid = data.element.header.guid;
-
     // The CreateStairs path: the Stair tool defaults and their memo, the stair settings, then the
     // baseline from SetTypeSpecificParameters. The settings are the old stair's whole API_StairType,
     // as CreateStairs with favoriteName creates from the settings of a Favorite captured from a stair.
@@ -12604,11 +12579,26 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
     }
     newGuid = element.header.guid;
 
-    // Classifications: the old stair's items, and none of the defaults' in other systems.
+    return CarryOverAndDeleteOld (data, newGuid, "stair", err);
+}
+
+// Moves what ReadElementDataToCarry read from the old element onto the new one (newGuid), deletes
+// the old element and gives the new one its Element ID. Shared by the Recreate commands; runs inside
+// their undoable command. oldDeletedFirst: the caller deleted the old element before it created the
+// new one (RecreateZones), so it is not deleted here. Returns the error response, with err set, when
+// a step failed.
+GS::Optional<GS::ObjectState> CarryOverAndDeleteOld (const StairDataToCarry& data, const API_Guid& newGuid, const GS::UniString& noun, GSErrCode& err, bool oldDeletedFirst)
+{
+    const API_Guid oldGuid = data.element.header.guid;
+    const auto failure = [] (const GS::UniString& step, GSErrCode stepErr) {
+        return CreateErrorResponse (stepErr, step + ". Nothing was changed.");
+    };
+
+    // Classifications: the old element's items, and none of the defaults' in other systems.
     GS::Array<GS::Pair<API_Guid, API_Guid>> newClassifications;
     err = ACAPI_Element_GetClassificationItems (newGuid, newClassifications);
     if (err != NoError) {
-        return RecreateStairFailure ("Failed to read the classifications of the new stair", err);
+        return failure ("Failed to read the classifications of the new " + noun, err);
     }
     for (const GS::Pair<API_Guid, API_Guid>& newPair : newClassifications) {
         bool systemOfOld = false;
@@ -12618,41 +12608,41 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
         if (!systemOfOld) {
             err = ACAPI_Element_RemoveClassificationItem (newGuid, newPair.second);
             if (err != NoError) {
-                return RecreateStairFailure ("Failed to remove a default classification from the new stair", err);
+                return failure ("Failed to remove a default classification from the new " + noun, err);
             }
         }
     }
     for (const GS::Pair<API_Guid, API_Guid>& oldPair : data.classifications) {
         err = ACAPI_Element_AddClassificationItem (newGuid, oldPair.second);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to classify the new stair as the old one", err);
+            return failure ("Failed to classify the new " + noun + " as the old one", err);
         }
     }
 
     for (const API_ElemCategoryValue& value : data.categoryValues) {
         err = TAPIR_Element_SetCategoryValue (newGuid, value);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to set a category value (Structural Function, Position, Renovation Status ...) of the new stair", err);
+            return failure ("Failed to set a category value (Structural Function, Position, Renovation Status ...) of the new " + noun, err);
         }
     }
 
     if (!data.properties.IsEmpty ()) {
         err = ACAPI_Element_SetProperties (newGuid, data.properties);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to set the property values of the new stair", err);
+            return failure ("Failed to set the property values of the new " + noun, err);
         }
     }
 
     for (const StairSolidLink& link : data.operatorsOfStair) {
         err = ACAPI_Element_SolidLink_Create (newGuid, link.other, link.operation, link.flags);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to link a solid element operator to the new stair", err);
+            return failure ("Failed to link a solid element operator to the new " + noun, err);
         }
     }
     for (const StairSolidLink& link : data.targetsOfStair) {
         err = ACAPI_Element_SolidLink_Create (link.other, newGuid, link.operation, link.flags);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to link the new stair as a solid element operator", err);
+            return failure ("Failed to link the new " + noun + " as a solid element operator", err);
         }
     }
 
@@ -12661,22 +12651,25 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
         toTrim.Push (newGuid);
         err = ACAPI_Element_Trim_ElementsWith (toTrim, trim.trimming, trim.trimType);
         if (err != NoError) {
-            return RecreateStairFailure ("Failed to trim the new stair with a roof or shell", err);
+            return failure ("Failed to trim the new " + noun + " with a roof or shell", err);
         }
     }
 
-    GS::Array<API_Guid> toDelete;
-    toDelete.Push (oldGuid);
-    err = ACAPI_Element_Delete (toDelete);
-    if (err != NoError) {
-        return RecreateStairFailure ("Failed to delete the old stair", err);
+    if (!oldDeletedFirst) {
+        GS::Array<API_Guid> toDelete;
+        toDelete.Push (oldGuid);
+        err = ACAPI_Element_Delete (toDelete);
+        if (err != NoError) {
+            return failure ("Failed to delete the old " + noun, err);
+        }
     }
 
-    // The Element ID last, once the old stair is gone. ChangeElementId reads it back.
+    // The Element ID last, once the old element is gone. ChangeElementId reads it back.
     if (!data.elementId.IsEmpty ()) {
         err = ChangeElementId (newGuid, data.elementId);
-        if (err != NoError) {
-            return RecreateStairFailure ("Failed to give the new stair the Element ID of the old one", err);
+        const bool refusedForTheType = err == APIERR_REFUSEDPAR || err == APIERR_BADELEMENTTYPE;
+        if (err != NoError && !(data.elementIdOptional && refusedForTheType)) {
+            return failure ("Failed to give the new " + noun + " the Element ID of the old one", err);
         }
     }
 
@@ -12710,7 +12703,7 @@ GS::ObjectState RecreateStairsCommand::Execute (const GS::ObjectState& parameter
 
         StairDataToCarry data;
         GSErrCode err = NoError;
-        const GS::Optional<GS::UniString> readError = ReadStairDataToCarry (oldGuid, data, err);
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_StairID, "Stair", "stair", data, err);
         if (readError.HasValue ()) {
             results (CreateErrorResponse (err, *readError + " Nothing was changed."));
             continue;
@@ -12731,6 +12724,473 @@ GS::ObjectState RecreateStairsCommand::Execute (const GS::ObjectState& parameter
         }
         if (commandErr != NoError) {
             results (CreateErrorResponse (commandErr, "Failed to recreate the stair."));
+            continue;
+        }
+
+        API_Element newElement = {};
+        newElement.header.guid = newGuid;
+        if (ACAPI_Element_Get (&newElement) == NoError) {
+            notification = {};
+            notification.notifID = APINotifyElement_New;
+            notification.elemHead = newElement.header;
+            AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+        }
+
+        GS::ObjectState result;
+        result.Add ("oldElementId", CreateGuidObjectState (oldGuid));
+        result.Add ("elementId", CreateGuidObjectState (newGuid));
+        const auto& notCarriedOver = result.AddList<GS::ObjectState> ("notCarriedOver");
+        for (const GS::Pair<GS::UniString, API_Guid>& lost : data.notCarriedOver) {
+            GS::ObjectState lostOs ("relation", lost.first);
+            if (lost.second != APINULLGuid) {
+                lostOs.Add ("elementId", CreateGuidObjectState (lost.second));
+            }
+            notCarriedOver (lostOs);
+        }
+        results (result);
+    }
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    return response;
+}
+
+// ============================================================================
+// RecreateRailings
+// The reference line of an existing railing cannot be changed through the Archicad API (see the
+// templateElementId of CreateRailings), so a railing gets a new one - with more or fewer nodes and
+// segments - by being created again with itself as template, and deleted. As RecreateStairs, it
+// carries over the Element ID, classifications, categories, properties, solid element operations
+// and trims, in one undoable command per railing that leaves the old railing as it was on failure.
+// ============================================================================
+
+RecreateRailingsCommand::RecreateRailingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateRailingsCommand::GetName () const
+{
+    return "RecreateRailings";
+}
+
+GS::Optional<GS::UniString> RecreateRailingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "railings": {
+                "type": "array",
+                "description": "The railings to recreate on a new reference line.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The railing to recreate."
+                        },
+                        "coordinates": {
+                            "type": "array",
+                            "description": "The new reference line on the floor plan, as CreateRailings takes it: one node per point, one segment per pair of consecutive points. The railing keeps its bottom offset. Give this or polylineCoordinates.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "polylineCoordinates": {
+                            "type": "array",
+                            "description": "The new reference line with an elevation per node, as CreateRailingsFromPolyline takes it (z relative to the railing's home story). Give this or coordinates.",
+                            "items": { "$ref": "#/Coordinate3D" },
+                            "minItems": 2
+                        },
+                        "polylineArcs": {
+                            "type": "array",
+                            "description": "Optional arc segments of polylineCoordinates, as CreateRailingsFromPolyline takes them.",
+                            "items": { "$ref": "#/PolyArc" }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["railings"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateRailingsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input railing: the new railing, or an error. After an error nothing was changed for that railing. Its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group. The link of a railing to the slab or stair it was placed on cannot be read through the Archicad API, so it is not listed in notCarriedOver: the new railing has none.");
+}
+
+GS::ObjectState RecreateRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> railings;
+    parameters.Get ("railings", railings);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const Stories stories = GetStories ();
+
+    // ACAPI_Element_Create puts a new railing on the story active in the floor plan (see
+    // CreateRailingsCommand::Execute), so the old railing's home story is made active while it is
+    // recreated, and the story active before is put back at the end.
+    API_StoryInfo storyInfo = {};
+    const GSErrCode storyErr = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&storyInfo.data));
+    const short originalActStory = storyErr == NoError ? storyInfo.actStory : 0;
+    short activeStory = originalActStory;
+    const GS::OnExit restoreActiveStory ([&] () {
+        if (storyErr == NoError && activeStory != originalActStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = originalActStory;
+            ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        }
+    });
+
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    for (const GS::ObjectState& item : railings) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId is missing."));
+            continue;
+        }
+        const bool has2D = item.Contains ("coordinates");
+        const bool has3D = item.Contains ("polylineCoordinates");
+        if (has2D == has3D) {
+            results (CreateErrorResponse (APIERR_BADPARS, "Give either coordinates or polylineCoordinates. Nothing was changed."));
+            continue;
+        }
+        if (has2D && item.Contains ("polylineArcs")) {
+            results (CreateErrorResponse (APIERR_BADPARS, "polylineArcs goes with polylineCoordinates, not with coordinates. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_RailingID, "Railing", "railing", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        const short homeStory = data.element.header.floorInd;
+        if (storyErr == NoError && homeStory != activeStory) {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_GoTo;
+            storyCmd.index  = homeStory;
+            err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            if (err != NoError) {
+                results (CreateErrorResponse (err, "Failed to activate the home story of the railing, where it is recreated. Nothing was changed."));
+                continue;
+            }
+            activeStory = homeStory;
+        }
+
+        // The item of CreateRailings or CreateRailingsFromPolyline: the new reference line, with
+        // the old railing as template for everything else.
+        GS::ObjectState createItem;
+        createItem.Add ("templateElementId", CreateGuidObjectState (oldGuid));
+        for (const char* key : { "coordinates", "polylineCoordinates", "polylineArcs" }) {
+            GS::Array<GS::ObjectState> values;
+            if (item.Get (key, values)) {
+                const auto& list = createItem.AddList<GS::ObjectState> (key);
+                for (const GS::ObjectState& value : values) {
+                    list (value);
+                }
+            }
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Railing", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_RailingID;
+#else
+            element.header.typeID = API_RailingID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Railing defaults. Nothing was changed.");
+                return stepErr;
+            }
+            stepError = has3D
+                ? CreateRailingsFromPolylineCommand ().SetTypeSpecificParameters (element, memo, stories, createItem)
+                : CreateRailingsCommand ().SetTypeSpecificParameters (element, memo, stories, createItem);
+            if (stepError.HasValue ()) {
+                stepErr = APIERR_BADPARS;
+                return stepErr;
+            }
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a railing on the new reference line with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "railing", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the railing."));
+            continue;
+        }
+
+        API_Element newElement = {};
+        newElement.header.guid = newGuid;
+        if (ACAPI_Element_Get (&newElement) == NoError) {
+            notification = {};
+            notification.notifID = APINotifyElement_New;
+            notification.elemHead = newElement.header;
+            AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+        }
+
+        GS::ObjectState result;
+        result.Add ("oldElementId", CreateGuidObjectState (oldGuid));
+        result.Add ("elementId", CreateGuidObjectState (newGuid));
+        const auto& notCarriedOver = result.AddList<GS::ObjectState> ("notCarriedOver");
+        for (const GS::Pair<GS::UniString, API_Guid>& lost : data.notCarriedOver) {
+            GS::ObjectState lostOs ("relation", lost.first);
+            if (lost.second != APINULLGuid) {
+                lostOs.Add ("elementId", CreateGuidObjectState (lost.second));
+            }
+            notCarriedOver (lostOs);
+        }
+        results (result);
+    }
+
+    notification = {};
+    notification.notifID = APINotifyElement_EndEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    return response;
+}
+
+// ============================================================================
+// RecreateCurtainWalls
+// ModifyCurtainWalls keeps the number of segments of a curtain wall (Archicad does not take more or
+// fewer reference line points through ACAPI_Element_Change), and Archicad 29 does not apply a new
+// height or slant to a slanted curtain wall through it either. So a curtain wall gets a reference
+// line with more or fewer segments, a new height or a new slant by being created again with itself
+// as templateElementId, and deleted, as RecreateRailings does for railings.
+// ============================================================================
+
+RecreateCurtainWallsCommand::RecreateCurtainWallsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateCurtainWallsCommand::GetName () const
+{
+    return "RecreateCurtainWalls";
+}
+
+GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "curtainWalls": {
+                "type": "array",
+                "description": "The curtain walls to recreate on a new reference line, with a new height or with a new slant. Give at least one of coordinates, height and angle.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The curtain wall to recreate."
+                        },
+                        "coordinates": {
+                            "type": "array",
+                            "description": "Optional new reference line on the floor plan, as CreateCurtainWalls takes it: one segment per pair of consecutive points, so more or fewer points than the old curtain wall has add or remove segments. A slanted curtain wall needs exactly 2 points. When omitted, the old curtain wall's reference line is kept, the points GetDetailsOfElements returns as its referenceLine.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "height": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Optional new height, as CreateCurtainWalls takes it: the vertical height, also of a slanted curtain wall. When omitted, the old curtain wall's height is kept. Archicad does not apply a new height to a slanted curtain wall through ACAPI_Element_Change (seen in Archicad 29), so it is given here."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "exclusiveMaximum": 180.0,
+                            "description": "Optional new slant angle in degrees, as CreateCurtainWalls takes it and GetDetailsOfElements returns it: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first point), more than 90 to the right. The vertical height and the elevation of the reference line are kept. A slanted curtain wall needs a reference line of exactly 2 points. When omitted, the old curtain wall's slant is kept. Archicad does not change the slant of an existing curtain wall through ACAPI_Element_Change, so it is given here."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["curtainWalls"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input curtain wall: the new curtain wall, or an error. After an error nothing was changed for that curtain wall. Its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+// The reference line of an existing curtain wall on the floor plan, as CreateCurtainWalls takes its
+// coordinates, for a RecreateCurtainWalls item without coordinates: memo.coords from index 1, one
+// vertex more than the segments, as GetDetailsOfElements reads referenceLine. CreateCurtainWalls
+// passes a slanted curtain wall's points in its plane, but Archicad gives them back on the floor plan
+// (the check create_curtain_walls_angle reads the given points back on Archicad 29), so they are taken
+// as they are, for vertical and slanted curtain walls alike.
+static GS::Optional<GS::UniString> GetCurtainWallReferenceLine (const API_Element& curtainWall, GS::Array<GS::ObjectState>& coordinates)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (curtainWall.header.guid, &memo, APIMemoMask_Polygon) != NoError || memo.coords == nullptr) {
+        return GS::UniString ("Failed to read the reference line of the curtain wall; give coordinates.");
+    }
+    const Int32 nCoords = static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord)) - 1;
+    const Int32 nVertices = std::min<Int32> (nCoords, static_cast<Int32> (curtainWall.curtainWall.nSegments) + 1);
+    if (nVertices < 2) {
+        return GS::UniString ("The reference line of the curtain wall could not be read; give coordinates.");
+    }
+    for (Int32 i = 1; i <= nVertices; ++i) {
+        coordinates.Push (Create2DCoordinateObjectState ((*memo.coords)[i]));
+    }
+    return {};
+}
+
+GS::ObjectState RecreateCurtainWallsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> curtainWalls;
+    parameters.Get ("curtainWalls", curtainWalls);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const Stories stories = GetStories ();
+
+    API_NotifyElementType notification = {};
+    notification.notifID = APINotifyElement_BeginEvents;
+    AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+
+    for (const GS::ObjectState& item : curtainWalls) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId is required. Nothing was changed."));
+            continue;
+        }
+        GS::Array<GS::ObjectState> coordinates;
+        const bool hasCoordinates = item.Get ("coordinates", coordinates);
+        double height = 0.0;
+        const bool hasHeight = item.Get ("height", height);
+        double angle = 0.0;
+        const bool hasAngle = item.Get ("angle", angle);
+        if (!hasCoordinates && !hasHeight && !hasAngle) {
+            results (CreateErrorResponse (APIERR_BADPARS, "Give coordinates, height or angle: with none of them the curtain wall would be created again as it is. Nothing was changed."));
+            continue;
+        }
+        if (hasHeight && height <= 0.0) {
+            results (CreateErrorResponse (APIERR_BADPARS, "height must be greater than 0. Nothing was changed."));
+            continue;
+        }
+        if (hasAngle && (angle <= 0.0 || angle >= 180.0)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "angle must be between 0 and 180 degrees. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_CurtainWallID, "Curtain Wall", "curtain wall", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+        if (!hasCoordinates) {
+            const GS::Optional<GS::UniString> lineError = GetCurtainWallReferenceLine (data.element, coordinates);
+            if (lineError.HasValue ()) {
+                results (CreateErrorResponse (APIERR_GENERAL, *lineError + " Nothing was changed."));
+                continue;
+            }
+        }
+
+        // The item of CreateCurtainWalls: the new (or the old) reference line, with the old curtain
+        // wall as template for everything else (its base, height, slant, frames, panels and
+        // pattern); a given height or angle overrides the template's, as in CreateCurtainWalls.
+        GS::ObjectState createItem;
+        createItem.Add ("templateElementId", CreateGuidObjectState (oldGuid));
+        {
+            const auto& list = createItem.AddList<GS::ObjectState> ("coordinates");
+            for (const GS::ObjectState& coordinate : coordinates) {
+                list (coordinate);
+            }
+        }
+        if (hasHeight) {
+            createItem.Add ("height", height);
+        }
+        if (hasAngle) {
+            createItem.Add ("angle", angle);
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Curtain Wall", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_CurtainWallID;
+#else
+            element.header.typeID = API_CurtainWallID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Curtain Wall defaults. Nothing was changed.");
+                return stepErr;
+            }
+            stepError = CreateCurtainWallsCommand ().SetTypeSpecificParameters (element, memo, stories, createItem);
+            if (stepError.HasValue ()) {
+                stepErr = APIERR_BADPARS;
+                return stepErr;
+            }
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a curtain wall with the given reference line, height or slant and the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "curtain wall", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the curtain wall."));
             continue;
         }
 
@@ -13139,6 +13599,1013 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetRawResponseSchema () const
 GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     return CreateWindowsOrDoors (parameters, API_DoorID, "doorsData", "Create Doors", "door");
+}
+
+// ============================================================================
+// RecreateWindows, RecreateDoors
+// Archicad 29 does not move a window or door into another wall through ACAPI_Element_Change: it
+// keeps API_WindowType::owner (tested 17/11/2026). So the window or door is created again in the new
+// wall, as CreateWindows and CreateDoors create one, with the old one's settings and GDL parameters,
+// and the old one is deleted, carrying over what RecreateStairs carries over. One undoable command
+// per element, which leaves the old one as it was when a step fails.
+// ============================================================================
+
+// The result of a Recreate command for one element, as RecreatedElement describes it; also tells the
+// element notification clients about the new element.
+static GS::ObjectState CreateRecreatedElementResult (const StairDataToCarry& data, const API_Guid& newGuid)
+{
+    API_Element newElement = {};
+    newElement.header.guid = newGuid;
+    if (ACAPI_Element_Get (&newElement) == NoError) {
+        API_NotifyElementType notification = {};
+        notification.notifID = APINotifyElement_New;
+        notification.elemHead = newElement.header;
+        AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+    }
+
+    GS::ObjectState result;
+    result.Add ("oldElementId", CreateGuidObjectState (data.element.header.guid));
+    result.Add ("elementId", CreateGuidObjectState (newGuid));
+    const auto& notCarriedOver = result.AddList<GS::ObjectState> ("notCarriedOver");
+    for (const GS::Pair<GS::UniString, API_Guid>& lost : data.notCarriedOver) {
+        GS::ObjectState lostOs ("relation", lost.first);
+        if (lost.second != APINULLGuid) {
+            lostOs.Add ("elementId", CreateGuidObjectState (lost.second));
+        }
+        notCarriedOver (lostOs);
+    }
+    return result;
+}
+
+namespace {
+
+// The begin and end events of the element notification clients around a Recreate command.
+class RecreateNotificationEvents {
+public:
+    RecreateNotificationEvents ()
+    {
+        API_NotifyElementType notification = {};
+        notification.notifID = APINotifyElement_BeginEvents;
+        AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+    }
+    ~RecreateNotificationEvents ()
+    {
+        API_NotifyElementType notification = {};
+        notification.notifID = APINotifyElement_EndEvents;
+        AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
+    }
+};
+
+} // namespace
+
+// The input schema of RecreateWindows (arrayKey "windows", noun "window") and RecreateDoors.
+static GS::UniString RecreateWindowsOrDoorsInputSchema (const char* arrayKey, const GS::UniString& noun, const char* createCommand, const char* modifyCommand)
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            ")") + arrayKey + R"(": {
+                "type": "array",
+                "description": "The )" + noun + R"(s to recreate in another wall.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The )" + noun + R"( to recreate."
+                        },
+                        "ownerWallId": {
+                            "$ref": "#/ElementId",
+                            "description": "The wall to place the new )" + noun + R"( in, as )" + createCommand + R"( takes it: a wall that is not polygonal. It may also be the )" + noun + R"('s own wall."
+                        },
+                        "centerOffset": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "description": "Optional position of the center of the new )" + noun + R"( along the wall, from the wall's beginning (API_WindowType::objLoc), as )" + createCommand + R"( and )" + modifyCommand + R"( take it and GetDetailsOfElements returns it. When omitted, the old )" + noun + R"('s centerOffset is kept."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "ownerWallId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [")" + arrayKey + R"("]
+    })";
+}
+
+// The shared body of RecreateWindows and RecreateDoors, as CreateWindowsOrDoors is the one of
+// CreateWindows and CreateDoors: typeID is API_WindowID or API_DoorID, arrayKey the input array,
+// typeName and noun the element in the messages ("Window", "window"). Both write through
+// element.window, the door being the same struct.
+static GS::ObjectState RecreateWindowsOrDoors (const GS::ObjectState& parameters, API_ElemTypeID typeID, const char* arrayKey, const GS::UniString& typeName, const GS::UniString& noun)
+{
+    GS::Array<GS::ObjectState> items;
+    parameters.Get (arrayKey, items);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    // As in CreateWindowsOrDoors: the window or door is created with its marker, which lives on
+    // the floor plan, so the floor plan is made the current database (it is also where the old one
+    // is read and deleted), and the previous database is put back on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : items) {
+        if (databaseErr != NoError) {
+            results (CreateErrorResponse (databaseErr, "Failed to activate the floor plan database, where a " + noun + " is created. Activate the floor plan in Archicad and run the command again. Nothing was changed."));
+            continue;
+        }
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        const GS::ObjectState* ownerWallId = item.Get ("ownerWallId");
+        if (elementId == nullptr || ownerWallId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId and ownerWallId are required. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+        const API_Guid wallGuid = GetGuidFromObjectState (*ownerWallId);
+        // The owner wall is checked as CreateWindows checks it.
+        if (!DoesWallExist (wallGuid)) {
+            results (CreateErrorResponse (APIERR_BADID, "ownerWallId is not a wall of the project. Nothing was changed."));
+            continue;
+        }
+        if (IsPolygonalWall (wallGuid)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "The owner wall is polygonal, and Archicad cannot place a " + noun + " in one. Nothing was changed."));
+            continue;
+        }
+        const GS::Optional<double> centerOffset = GetOptionalDouble (item, "centerOffset");
+        if (centerOffset.HasValue () && centerOffset.Get () < 0.0) {
+            results (CreateErrorResponse (APIERR_BADPARS, "centerOffset must not be negative. Nothing was changed."));
+            continue;
+        }
+        API_Elem_Head wallHead = {};
+        wallHead.guid = wallGuid;
+        GSErrCode err = ACAPI_Element_GetHeader (&wallHead);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, "Failed to read the story of the owner wall. Nothing was changed."));
+            continue;
+        }
+
+        StairDataToCarry data;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, typeID, typeName, noun, data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        // The old element's GDL parameters (its memo's params), which the new one gets.
+        API_ElementMemo oldMemo = {};
+        const GS::OnExit oldMemoGuard ([&oldMemo] () { ACAPI_DisposeElemMemoHdls (&oldMemo); });
+        err = ACAPI_Element_GetMemo (oldGuid, &oldMemo, APIMemoMask_AddPars);
+        if (err != NoError || oldMemo.params == nullptr) {
+            results (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the GDL parameters of the " + noun + ". Nothing was changed."));
+            continue;
+        }
+
+        // The old marker (a separate element, see CaptureOpeningMarker in FavoritesCommands.cpp),
+        // whose parameters the new marker gets when both are of the same marker library part.
+        API_Element oldMarker = {};
+        API_ElementMemo oldMarkerMemo = {};
+        const GS::OnExit oldMarkerMemoGuard ([&oldMarkerMemo] () { ACAPI_DisposeElemMemoHdls (&oldMarkerMemo); });
+        bool hasOldMarker = false;
+        if (data.element.window.openingBase.markGuid != APINULLGuid) {
+            oldMarker.header.guid = data.element.window.openingBase.markGuid;
+            hasOldMarker = ACAPI_Element_Get (&oldMarker) == NoError &&
+                ACAPI_Element_GetMemo (oldMarker.header.guid, &oldMarkerMemo, APIMemoMask_AddPars) == NoError &&
+                oldMarkerMemo.params != nullptr;
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate " + typeName, [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            API_SubElement marker = {};
+            // The one of the two marker parameter lists (the tool default's, the old marker's) that
+            // is not in marker.memo.
+            API_AddParType** spareMarkerParams = nullptr;
+            const GS::OnExit cleanup ([&] () {
+                ACAPI_DisposeElemMemoHdls (&memo);
+                ACAPI_DisposeElemMemoHdls (&marker.memo);
+                if (spareMarkerParams != nullptr) {
+                    ACAPI_DisposeAddParHdl (&spareMarkerParams);
+                }
+            });
+
+            // The CreateWindows path: the tool defaults with their marker (or without one when the
+            // tool has no marker), then the old element's settings.
+            bool withMarker = true;
+            stepErr = PrepareWindowOrDoorDefaults (typeID, element, memo, marker, withMarker);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the " + typeName + " defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // API_WindowType begins with the element header, so the defaults' header is put back
+            // after the copy (the old element's guid, group and hotlink must not reach the create),
+            // and so are the members that point at the old wall or the old marker: the marker guid,
+            // and the position in a polygonal wall (startPoint, dirVector), which a straight wall,
+            // the only kind a window or door is recreated in, does not use.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_Guid defaultsMarkGuid = element.window.openingBase.markGuid;
+            const GS::Int64 defaultsLookId = element.window.openingBase.lookId;
+            const API_Coord defaultsStartPoint = element.window.startPoint;
+            const API_Coord defaultsDirVector = element.window.dirVector;
+            element.window = data.element.window;
+            element.header = defaultsHeader;
+            element.window.openingBase.markGuid = defaultsMarkGuid;
+            element.window.openingBase.lookId = defaultsLookId;
+            element.window.startPoint = defaultsStartPoint;
+            element.window.dirVector = defaultsDirVector;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = wallHead.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+            element.window.owner = wallGuid;
+            if (centerOffset.HasValue ()) {
+                element.window.objLoc = centerOffset.Get ();
+            }
+
+            // The old element's GDL parameters, of its library part (openingBase.libInd, copied above).
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = oldMemo.params;
+            oldMemo.params = nullptr;
+
+            bool markerCarried = false;
+            if (withMarker && hasOldMarker && marker.memo.params != nullptr &&
+                GetElemTypeId (oldMarker.header) == GetElemTypeId (marker.subElem.header) &&
+                oldMarker.object.libInd == marker.subElem.object.libInd) {
+                spareMarkerParams = marker.memo.params;
+                marker.memo.params = oldMarkerMemo.params;
+                oldMarkerMemo.params = nullptr;
+                markerCarried = true;
+            }
+
+            stepErr = withMarker
+                ? ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker)
+                : ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError && markerCarried) {
+                // The marker as CreateWindows places it, with the tool default's parameters.
+                std::swap (marker.memo.params, spareMarkerParams);
+                stepErr = ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker);
+            }
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a " + noun + " in the given wall with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, noun, stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the " + noun + "."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
+}
+
+RecreateWindowsCommand::RecreateWindowsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateWindowsCommand::GetName () const
+{
+    return "RecreateWindows";
+}
+
+GS::Optional<GS::UniString> RecreateWindowsCommand::GetInputParametersSchema () const
+{
+    return RecreateWindowsOrDoorsInputSchema ("windows", "window", "CreateWindows", "ModifyWindows");
+}
+
+GS::Optional<GS::UniString> RecreateWindowsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input window: the new window, or an error. After an error nothing was changed for that window. Labels of the old window are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return RecreateWindowsOrDoors (parameters, API_WindowID, "windows", "Window", "window");
+}
+
+RecreateDoorsCommand::RecreateDoorsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateDoorsCommand::GetName () const
+{
+    return "RecreateDoors";
+}
+
+GS::Optional<GS::UniString> RecreateDoorsCommand::GetInputParametersSchema () const
+{
+    return RecreateWindowsOrDoorsInputSchema ("doors", "door", "CreateDoors", "ModifyDoors");
+}
+
+GS::Optional<GS::UniString> RecreateDoorsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input door: the new door, or an error. After an error nothing was changed for that door. Labels of the old door are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return RecreateWindowsOrDoors (parameters, API_DoorID, "doors", "Door", "door");
+}
+
+// ============================================================================
+// RecreateZones
+// Archicad 29 does not turn an automatic zone into a manual one through ACAPI_Element_Change: it
+// keeps API_ZoneType::manual (tested 17/11/2026). So the zone is created again as a manual zone with
+// the polygon it has now (its memo's coords, pends and parcs, the polygon GetDetailsOfElements
+// returns) and with the old zone's settings and stamp parameters, and the old zone is deleted. The
+// old zone is deleted first: the new one has its very polygon, and Archicad answers a new zone that
+// overlaps another one with a modal warning that blocks the API (#822). One undoable command per
+// zone, which brings the old zone back when a later step fails.
+// ============================================================================
+
+RecreateZonesCommand::RecreateZonesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateZonesCommand::GetName () const
+{
+    return "RecreateZones";
+}
+
+GS::Optional<GS::UniString> RecreateZonesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "zones": {
+                "type": "array",
+                "description": "The zones to recreate as manual zones.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The automatic zone to recreate."
+                        },
+                        "makeManual": {
+                            "type": "boolean",
+                            "description": "Must be true: the new zone is a manual zone (isManual in GetDetailsOfElements) with the polygon the old zone has now (its polygonOutline, polygonArcs and holes), so it no longer follows its boundaries when the zones are updated. Archicad does not turn an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). A zone that is manual already is refused, as there is nothing to change."
+                        },
+                        "allowOverlap": {
+                            "type": "boolean",
+                            "description": "Optional, defaults to false. As in CreateZones: a new zone that would overlap another zone of the same story (not the old zone, which is deleted first) fails with an error naming that zone, instead of risking Archicad's modal overlap warning, which blocks the API. Set it to true to create the zone anyway; the dialog may then appear."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "makeManual"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["zones"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateZonesCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input zone: the new manual zone, or an error. After an error nothing was changed for that zone. Labels of the old zone are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateZonesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> zones;
+    parameters.Get ("zones", zones);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    // Zones live on the floor plan, where the old one is read and deleted and the new one created.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : zones) {
+        if (databaseErr != NoError) {
+            results (CreateErrorResponse (databaseErr, "Failed to activate the floor plan database, where the zone is recreated. Activate the floor plan in Archicad and run the command again. Nothing was changed."));
+            continue;
+        }
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        bool makeManual = false;
+        if (elementId == nullptr || !item.Get ("makeManual", makeManual)) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId and makeManual are required. Nothing was changed."));
+            continue;
+        }
+        if (!makeManual) {
+            results (CreateErrorResponse (APIERR_BADPARS, "makeManual must be true: a zone is recreated to make it a manual zone. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_ZoneID, "Zone", "zone", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+        if (data.element.zone.manual) {
+            results (CreateErrorResponse (APIERR_BADPARS, "The zone is a manual zone already, so there is nothing to change. Nothing was changed."));
+            continue;
+        }
+
+        // The polygon the zone has now, and its stamp parameters.
+        API_ElementMemo oldMemo = {};
+        const GS::OnExit oldMemoGuard ([&oldMemo] () { ACAPI_DisposeElemMemoHdls (&oldMemo); });
+        err = ACAPI_Element_GetMemo (oldGuid, &oldMemo, APIMemoMask_Polygon | APIMemoMask_AddPars);
+        const Int32 nSubPolys = (err == NoError && oldMemo.pends != nullptr)
+            ? static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (oldMemo.pends)) / sizeof (Int32)) - 1
+            : 0;
+        const Int32 nStoredCoords = (err == NoError && oldMemo.coords != nullptr)
+            ? static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (oldMemo.coords)) / sizeof (API_Coord)) - 1
+            : 0;
+        const Int32 nCoords = nSubPolys >= 1 ? (*oldMemo.pends)[nSubPolys] : 0;
+        if (nSubPolys < 1 || nCoords < 4 || nCoords > nStoredCoords) {
+            results (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the zone. Nothing was changed."));
+            continue;
+        }
+        const Int32 nArcs = oldMemo.parcs != nullptr
+            ? static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (oldMemo.parcs)) / sizeof (API_PolyArc))
+            : 0;
+
+        bool allowOverlap = false;
+        item.Get ("allowOverlap", allowOverlap);
+        if (!allowOverlap) {
+            const GS::Optional<GS::ObjectState> overlapError = FindOverlapOfZonePolygon (oldGuid, data.element.header.floorInd);
+            if (overlapError.HasValue ()) {
+                results (*overlapError);
+                continue;
+            }
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Zone", [&] () -> GSErrCode {
+            GS::Array<API_Guid> toDelete;
+            toDelete.Push (oldGuid);
+            stepErr = ACAPI_Element_Delete (toDelete);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to delete the old zone. Nothing was changed.");
+                return stepErr;
+            }
+
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_ZoneID;
+#else
+            element.header.typeID = API_ZoneID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Zone defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // The old zone's whole API_ZoneType (category, name, number, stamp library part and
+            // position, levels, contour, fill, surface ...) with the defaults' header put back, as
+            // RecreateStairs does, and without the stamp element and the found polygon of the old
+            // zone, which belong to it.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_Guid defaultsStampGuid = element.zone.stampGuid;
+            const API_Polygon defaultsRefPoly = element.zone.refPoly;
+            element.zone = data.element.zone;
+            element.header = defaultsHeader;
+            element.zone.stampGuid = defaultsStampGuid;
+            element.zone.refPoly = defaultsRefPoly;
+            element.zone.manual = true;
+            element.zone.poly.nCoords = nCoords;
+            element.zone.poly.nSubPolys = nSubPolys;
+            element.zone.poly.nArcs = nArcs;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = data.element.header.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            // The polygon and the stamp parameters, moved from the old zone's memo.
+            if (memo.coords != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.coords));
+            }
+            if (memo.pends != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.pends));
+            }
+            if (memo.parcs != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.parcs));
+            }
+            if (memo.vertexIDs != nullptr) {
+                BMKillHandle (reinterpret_cast<GSHandle*> (&memo.vertexIDs));
+            }
+            memo.coords = oldMemo.coords;
+            memo.pends = oldMemo.pends;
+            memo.parcs = oldMemo.parcs;
+            oldMemo.coords = nullptr;
+            oldMemo.pends = nullptr;
+            oldMemo.parcs = nullptr;
+            if (oldMemo.params != nullptr) {
+                if (memo.params != nullptr) {
+                    ACAPI_DisposeAddParHdl (&memo.params);
+                }
+                memo.params = oldMemo.params;
+                oldMemo.params = nullptr;
+            }
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a manual zone with the polygon and the settings of the old zone. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "zone", stepErr, true);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the zone."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
+}
+
+// ============================================================================
+// RecreateAngleDimensions
+// Archicad 29 does not move the lines or the arc of an angle dimension through ACAPI_Element_Change:
+// it keeps base[].loc, pos and radius (tested 17/11/2026). So the angle dimension is created again
+// on the new lines and arc position, as CreateAngleDimensions creates one (static), with the old
+// one's settings, and the old one is deleted. One undoable command per angle dimension, which leaves
+// the old one as it was when a step fails.
+// ============================================================================
+
+RecreateAngleDimensionsCommand::RecreateAngleDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateAngleDimensionsCommand::GetName () const
+{
+    return "RecreateAngleDimensions";
+}
+
+GS::Optional<GS::UniString> RecreateAngleDimensionsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "angleDimensions": {
+                "type": "array",
+                "description": "The angle dimensions to recreate on new lines, with a new arc position.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The angle dimension to recreate. It has to be in the current database (the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active), where the new one is created."
+                        },
+                        "firstLine": {
+                            "$ref": "#/AngleDimensionLine",
+                            "description": "The new first measured line, as CreateAngleDimensions takes it."
+                        },
+                        "secondLine": {
+                            "$ref": "#/AngleDimensionLine",
+                            "description": "The new second measured line, as CreateAngleDimensions takes it. It must not be parallel to the first one."
+                        },
+                        "arcPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "A point the new dimension arc passes through, as CreateAngleDimensions takes it: its distance from the intersection of the two lines is the radius of the arc, and the side it lies on chooses which of the angles between the lines is measured."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "firstLine", "secondLine", "arcPosition"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["angleDimensions"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateAngleDimensionsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input angle dimension: the new angle dimension, or an error. After an error nothing was changed for that angle dimension. The old one leaves its group.");
+}
+
+// The custom text of an angle dimension's note as stored, autotexts as their keys: read again with the
+// autotext flag off and the content asked for through contentUStr, as GetLevelDimensionTexts reads the
+// notes of a level dimension. Empty when it cannot be read.
+static GS::UniString GetAngleDimensionCustomText (const API_Guid& guid)
+{
+    bool savedAutoTextFlag = false;
+    if (ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag) != NoError) {
+        return {};
+    }
+    if (savedAutoTextFlag) {
+        bool keysAutoTextFlag = false;
+        if (ACAPI_AutoText_ChangeAutoTextFlag (&keysAutoTextFlag) != NoError) {
+            return {};
+        }
+    }
+    const GS::OnExit flagGuard ([&savedAutoTextFlag] () {
+        if (savedAutoTextFlag) {
+            ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
+        }
+    });
+
+    GS::UniString content;
+    API_Element reread = {};
+    reread.header.guid = guid;
+    reread.angleDimension.note.contentUStr = &content;
+    if (ACAPI_Element_Get (&reread) != NoError) {
+        return {};
+    }
+    if (reread.angleDimension.note.contentUStr != nullptr && reread.angleDimension.note.contentUStr != &content) {
+        return *reread.angleDimension.note.contentUStr;
+    }
+    if (!content.IsEmpty ()) {
+        return content;
+    }
+    USize length = 0;
+    while (length < sizeof (reread.angleDimension.note.content) && reread.angleDimension.note.content[length] != '\0') {
+        ++length;
+    }
+    return GS::UniString (reread.angleDimension.note.content, length, CC_UTF8);
+}
+
+GS::ObjectState RecreateAngleDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> angleDimensions;
+    parameters.Get ("angleDimensions", angleDimensions);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    const Stories stories = GetStories ();
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : angleDimensions) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId is required. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+
+        StairDataToCarry data;
+        // Archicad 29 gives an angle dimension no Element ID: ChangeElementId answers APIERR_REFUSEDPAR,
+        // as CreateAngleDimensions with id shows. An ID that cannot be read or written is left out.
+        data.elementIdOptional = true;
+        GSErrCode err = NoError;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_AngleDimensionID, "Angle Dimension", "angle dimension", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+        GS::UniString customText;
+        if (data.element.angleDimension.note.contentType == API_NoteContent_Custom) {
+            customText = GetAngleDimensionCustomText (oldGuid);
+        }
+
+        // The item of CreateAngleDimensions with only the geometry: the lines and the arc position.
+        GS::ObjectState createItem;
+        for (const char* key : { "firstLine", "secondLine", "arcPosition" }) {
+            const GS::ObjectState* value = item.Get (key);
+            if (value != nullptr) {
+                createItem.Add (key, *value);
+            }
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Angle Dimension", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_AngleDimensionID;
+#else
+            element.header.typeID = API_AngleDimensionID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Angle Dimension defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // The old angle dimension's whole API_AngleDimensionType (pens, markers, witness lines,
+            // text style, text position and direction, smallArc ...) with the defaults' header put
+            // back, as RecreateStairs does. The reference points come from the defaults, so the new
+            // dimension is static like one of CreateAngleDimensions and not tied to the elements the
+            // old one measured; the text goes back to its automatic place on the new arc.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_AngleDimensionType defaults = element.angleDimension;
+            element.angleDimension = data.element.angleDimension;
+            element.header = defaultsHeader;
+            for (UIndex i = 0; i < 4; ++i) {
+                element.angleDimension.base[i] = defaults.base[i];
+            }
+            element.angleDimension.dimVal = defaults.dimVal;
+            element.angleDimension.note.contentUStr = nullptr;
+            element.angleDimension.note.pos = defaults.note.pos;
+            element.angleDimension.note.fixPos = defaults.note.fixPos;
+            element.angleDimension.note.useLeaderLine = defaults.note.useLeaderLine;
+            element.angleDimension.note.begC = defaults.note.begC;
+            element.angleDimension.note.midC = defaults.note.midC;
+            element.angleDimension.note.endC = defaults.note.endC;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = data.element.header.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+
+            // The lines, the arc position and its center, checked as CreateAngleDimensions checks them.
+            stepError = CreateAngleDimensionsCommand ().SetTypeSpecificParameters (element, memo, stories, createItem);
+            if (stepError.HasValue ()) {
+                stepErr = APIERR_BADPARS;
+                return stepErr;
+            }
+            element.angleDimension.radius = std::hypot (element.angleDimension.pos.x - element.angleDimension.origo.x, element.angleDimension.pos.y - element.angleDimension.origo.y);
+            if (!customText.IsEmpty ()) {
+                element.angleDimension.note.contentUStr = &customText;
+            }
+
+            // Created with the autotext flag off, as CreateAngleDimensions creates it, so an autotext
+            // of the custom text stays an autotext.
+            bool savedAutoTextFlag = true;
+            const bool flagRead = ACAPI_AutoText_GetAutoTextFlag (&savedAutoTextFlag) == NoError;
+            bool offAutoTextFlag = false;
+            if (flagRead) {
+                ACAPI_AutoText_ChangeAutoTextFlag (&offAutoTextFlag);
+            }
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (flagRead) {
+                ACAPI_AutoText_ChangeAutoTextFlag (&savedAutoTextFlag);
+            }
+            // As CreateAngleDimensions' AfterCreate: Archicad can report success with a GUID of no
+            // element in some databases (#510).
+            API_Element created = {};
+            created.header.guid = element.header.guid;
+            if (stepErr == NoError && ACAPI_Element_Get (&created) != NoError) {
+                stepErr = APIERR_GENERAL;
+            }
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create an angle dimension on the new lines with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "angle dimension", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the angle dimension."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
+}
+
+// ============================================================================
+// RecreateSkylights
+// Archicad 29 does not move a skylight onto another roof or shell through ACAPI_Element_Change: it
+// keeps API_SkylightType::owner (tested 17/11/2026). So the skylight is created again on the new
+// owner, as CreateSkylights creates one, with the old one's settings and GDL parameters, and the old
+// one is deleted. One undoable command per skylight, which leaves the old one as it was when a step
+// fails.
+// ============================================================================
+
+RecreateSkylightsCommand::RecreateSkylightsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RecreateSkylightsCommand::GetName () const
+{
+    return "RecreateSkylights";
+}
+
+GS::Optional<GS::UniString> RecreateSkylightsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "skylights": {
+                "type": "array",
+                "description": "The skylights to recreate on another roof or shell.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The skylight to recreate."
+                        },
+                        "ownerId": {
+                            "$ref": "#/ElementId",
+                            "description": "The roof (single- or multi-plane) or shell to place the new skylight in, as CreateSkylights takes it. It may also be the skylight's own roof or shell."
+                        },
+                        "anchorPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Optional global XY coordinates of the new skylight's anchor point, as CreateSkylights and ModifySkylights take them and GetDetailsOfElements returns them. Archicad places the skylight on its owner at this point, so it has to lie on the new owner. When omitted, the old skylight's anchorPosition is kept."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "ownerId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["skylights"]
+    })";
+}
+
+GS::Optional<GS::UniString> RecreateSkylightsCommand::GetRawResponseSchema () const
+{
+    return RecreateCommandResponseSchema ("One item per input skylight: the new skylight, or an error. After an error nothing was changed for that skylight. Labels of the old skylight are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group.");
+}
+
+GS::ObjectState RecreateSkylightsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> skylights;
+    parameters.Get ("skylights", skylights);
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    // Skylights live on the floor plan, where the old one is read and deleted and the new one created.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    const RecreateNotificationEvents notificationEvents;
+
+    for (const GS::ObjectState& item : skylights) {
+        if (databaseErr != NoError) {
+            results (CreateErrorResponse (databaseErr, "Failed to activate the floor plan database, where the skylight is recreated. Activate the floor plan in Archicad and run the command again. Nothing was changed."));
+            continue;
+        }
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        const GS::ObjectState* ownerId = item.Get ("ownerId");
+        if (elementId == nullptr || ownerId == nullptr) {
+            results (CreateErrorResponse (APIERR_BADPARS, "elementId and ownerId are required. Nothing was changed."));
+            continue;
+        }
+        const API_Guid oldGuid = GetGuidFromObjectState (*elementId);
+        const API_Guid ownerGuid = GetGuidFromObjectState (*ownerId);
+        // The owner is checked as CreateSkylights checks it.
+        if (!DoesElementExist (ownerGuid, API_RoofID) && !DoesElementExist (ownerGuid, API_ShellID)) {
+            results (CreateErrorResponse (APIERR_BADID, "'ownerId' is not a roof or a shell. Nothing was changed."));
+            continue;
+        }
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = ownerGuid;
+        GSErrCode err = ACAPI_Element_GetHeader (&ownerHead);
+        if (err != NoError) {
+            results (CreateErrorResponse (err, "Failed to read the story of the new owner. Nothing was changed."));
+            continue;
+        }
+        const GS::Optional<API_Coord> anchorPosition = GetOptionalCoordinate2D (item, "anchorPosition");
+
+        StairDataToCarry data;
+        const GS::Optional<GS::UniString> readError = ReadElementDataToCarry (oldGuid, API_SkylightID, "Skylight", "skylight", data, err);
+        if (readError.HasValue ()) {
+            results (CreateErrorResponse (err, *readError + " Nothing was changed."));
+            continue;
+        }
+
+        // The old skylight's GDL parameters (its memo's params), which the new one gets.
+        API_ElementMemo oldMemo = {};
+        const GS::OnExit oldMemoGuard ([&oldMemo] () { ACAPI_DisposeElemMemoHdls (&oldMemo); });
+        err = ACAPI_Element_GetMemo (oldGuid, &oldMemo, APIMemoMask_AddPars);
+        if (err != NoError || oldMemo.params == nullptr) {
+            results (CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the GDL parameters of the skylight. Nothing was changed."));
+            continue;
+        }
+
+        API_Guid newGuid = APINULLGuid;
+        GS::Optional<GS::ObjectState> stepError;
+        GSErrCode stepErr = NoError;
+        const GSErrCode commandErr = ACAPI_CallUndoableCommand ("Recreate Skylight", [&] () -> GSErrCode {
+            API_Element element = {};
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+#ifdef ServerMainVers_2600
+            element.header.type = API_SkylightID;
+#else
+            element.header.typeID = API_SkylightID;
+#endif
+            stepErr = ACAPI_Element_GetDefaults (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Failed to read the Skylight defaults. Nothing was changed.");
+                return stepErr;
+            }
+
+            // The old skylight's whole API_SkylightType (size, anchor point, fix mode, azimuth,
+            // pens, line types, surfaces ...) with the defaults' header put back, as RecreateStairs
+            // does, and with the defaults' members that depend on the old owner, which Archicad sets
+            // from the new one as it does for CreateSkylights: the vertex of a multi-plane roof, the
+            // anchor level and the elevation angle; and the defaults' marker guid and look id.
+            const API_Elem_Head defaultsHeader = element.header;
+            const API_SkylightType defaults = element.skylight;
+            element.skylight = data.element.skylight;
+            element.header = defaultsHeader;
+            element.skylight.vertexID = defaults.vertexID;
+            element.skylight.anchorLevel = defaults.anchorLevel;
+            element.skylight.elevationAngle = defaults.elevationAngle;
+            element.skylight.openingBase.markGuid = defaults.openingBase.markGuid;
+            element.skylight.openingBase.lookId = defaults.openingBase.lookId;
+            element.header.layer = data.element.header.layer;
+            element.header.floorInd = ownerHead.floorInd;
+            element.header.drwIndex = data.element.header.drwIndex;
+            element.header.renovationStatus = data.element.header.renovationStatus;
+            element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
+            element.skylight.owner = ownerGuid;
+            if (anchorPosition.HasValue ()) {
+                element.skylight.anchorPosition = anchorPosition.Get ();
+            }
+
+            // The old skylight's GDL parameters, of its library part (openingBase.libInd, copied above).
+            if (memo.params != nullptr) {
+                ACAPI_DisposeAddParHdl (&memo.params);
+            }
+            memo.params = oldMemo.params;
+            oldMemo.params = nullptr;
+
+            stepErr = ACAPI_Element_Create (&element, &memo);
+            if (stepErr != NoError) {
+                stepError = CreateErrorResponse (stepErr, "Archicad could not create a skylight on the given roof or shell with the settings of the old one. Nothing was changed.");
+                return stepErr;
+            }
+            newGuid = element.header.guid;
+
+            stepError = CarryOverAndDeleteOld (data, newGuid, "skylight", stepErr);
+            return stepError.HasValue () ? (stepErr != NoError ? stepErr : APIERR_GENERAL) : NoError;
+        });
+        if (stepError.HasValue ()) {
+            results (*stepError);
+            continue;
+        }
+        if (commandErr != NoError) {
+            results (CreateErrorResponse (commandErr, "Failed to recreate the skylight."));
+            continue;
+        }
+        results (CreateRecreatedElementResult (data, newGuid));
+    }
+
+    return response;
 }
 
 CreateOpeningsCommand::CreateOpeningsCommand () :
