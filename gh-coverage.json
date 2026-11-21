@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-11-21 14:53 UTC",
+ "generatedAt": "2026-11-21 15:58 UTC",
  "counts": {
   "done": 788,
-  "open": 36,
+  "open": 37,
   "merged": 1,
   "not applicable": 1
  },
@@ -6446,7 +6446,7 @@
    "id": "ModifyAssociativeDimensions",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
+   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, the text position and the reset to the automatic text position; GetDetailsOfElements reads them back with the same keys. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6456,7 +6456,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 26,
+   "parameterCount": 20,
    "coveredParameters": [
     "dimensionsWithDetails",
     "dimensionsWithDetails.appearance",
@@ -6479,13 +6479,7 @@
     "dimensionsWithDetails.staticDimension",
     "dimensionsWithDetails.textPlacement",
     "dimensionsWithDetails.textStyle",
-    "dimensionsWithDetails.witnessPointTexts",
-    "dimensionsWithDetails.witnessPointTexts.content",
-    "dimensionsWithDetails.witnessPointTexts.customText",
-    "dimensionsWithDetails.witnessPointTexts.index",
-    "dimensionsWithDetails.witnessPointTexts.resetTextPosition",
-    "dimensionsWithDetails.witnessPointTexts.superscript",
-    "dimensionsWithDetails.witnessPointTexts.textPosition"
+    "dimensionsWithDetails.witnessPointTexts"
    ],
    "pullRequests": [],
    "issues": []
@@ -7307,6 +7301,21 @@
    "issues": []
   },
   {
+   "id": "CreateRadialDimensions",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Creates Radial Dimension elements (the Radial Dimension tool) measuring the radius of an arc, a circle or a curved wall, linked to that element, with the dimension line ending at dimensionLineEnd, optionally based on a Radial Dimension favorite, with the line pen, marker, text height, pen, position and direction, a custom text and the centre mark. The Archicad API does not document how a radial dimension stores the measured element, so the link is written as GetDetailsOfElements reads it from dimensions placed by hand (ownerElementInIndex and ownerElementLine can be given), and each new dimension is read back: one Archicad did not link to the element, whose radius is not the element's, whose dimension line Archicad moved off the given direction (it may lengthen the line so that the text fits) or that did not keep a given setting fails with the values Archicad stored and is deleted again. Archicad stores the link to a circle with the type Arc, and to a curved wall with ownerElementInIndex -1, as for a dimension placed by hand. Tested on Archicad 29 with circles, arcs and curved walls. The dimensions are created in the current database or in the one given by databaseId; GetDetailsOfElements returns their radius, base point and owner element.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 18,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ModifyAngleDimensions",
    "group": "Element Commands",
    "version": "2.0.1",
@@ -7325,7 +7334,7 @@
    "id": "ModifyLevelDimensions",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId).",
+   "brief": "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId, or ownerElementId as GetDetailsOfElements reads it, which does not change the Static checkbox).",
    "status": "done",
    "reason": "",
    "components": [
@@ -7335,7 +7344,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 24,
+   "parameterCount": 25,
    "coveredParameters": [
     "levelDimensionsWithDetails",
     "levelDimensionsWithDetails.angle",
@@ -7351,6 +7360,7 @@
     "levelDimensionsWithDetails.markerSize",
     "levelDimensionsWithDetails.needPlus",
     "levelDimensionsWithDetails.origin",
+    "levelDimensionsWithDetails.ownerElementId",
     "levelDimensionsWithDetails.parentElementId",
     "levelDimensionsWithDetails.pen",
     "levelDimensionsWithDetails.position",
@@ -8098,7 +8108,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 24,
+   "parameterCount": 25,
    "coveredParameters": [
     "objectsWithDetails",
     "objectsWithDetails.angle",
@@ -8110,6 +8120,7 @@
     "objectsWithDetails.lineTypeId",
     "objectsWithDetails.linkToSettings",
     "objectsWithDetails.offset",
+    "objectsWithDetails.origin",
     "objectsWithDetails.pen",
     "objectsWithDetails.reflected",
     "objectsWithDetails.sectionContourPen",
@@ -8147,7 +8158,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 26,
+   "parameterCount": 27,
    "coveredParameters": [
     "lampsWithDetails",
     "lampsWithDetails.angle",
@@ -8161,6 +8172,7 @@
     "lampsWithDetails.lineTypeId",
     "lampsWithDetails.linkToSettings",
     "lampsWithDetails.offset",
+    "lampsWithDetails.origin",
     "lampsWithDetails.pen",
     "lampsWithDetails.reflected",
     "lampsWithDetails.sectionContourPen",
@@ -8198,12 +8210,13 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 8,
+   "parameterCount": 9,
    "coveredParameters": [
     "textsWithDetails",
     "textsWithDetails.coordinate",
     "textsWithDetails.elementId",
     "textsWithDetails.floorIndex",
+    "textsWithDetails.position",
     "textsWithDetails.runs",
     "textsWithDetails.style",
     "textsWithDetails.text",
@@ -15514,7 +15527,7 @@
    "id": "SetViewOptions",
    "group": "Navigator Commands",
    "version": "1.8.0",
-   "brief": "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply.",
+   "brief": "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply. The options are read back, and a given field Archicad did not keep (with an index, a given on-screen view option) fails the call with the value it kept; the fields Archicad kept stay changed. Archicad 29 does not keep the railing components shown in the floor plan (modelViewOptions.railing, railing2DDisplayComp*) changed this way, so such a change is reported as not kept; GetViewOptions reads them.",
    "status": "done",
    "reason": "",
    "components": [
@@ -18804,7 +18817,7 @@
    "id": "GetMEPRoutingElements",
    "group": "MEP Commands",
    "version": "1.5.6",
-   "brief": "Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style, insulation thickness and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions. Available from Archicad 28.",
+   "brief": "Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style, insulation thickness and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions, and the node positions with the key ModifyMEPRoutingElements writes them with. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -19670,7 +19683,7 @@
    "id": "GetMEPElementDetails",
    "group": "MEP Commands",
    "version": "1.8.0",
-   "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
+   "brief": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions; the width and height of flexible segments, and the anchor point, orientation, library part and (from Archicad 30) size of the elements ModifyMEPElements places, with the keys it writes them with. Available from Archicad 28.",
    "status": "done",
    "reason": "",
    "components": [
@@ -19976,7 +19989,7 @@
    "id": "SetAnalyticalVisibilitySettings",
    "group": "Analytical Commands",
    "version": "1.8.0",
-   "brief": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26.",
+   "brief": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. The settings are read back, and a given field Archicad did not keep is reported as an error with the value it kept. Available from Archicad 26.",
    "status": "done",
    "reason": "",
    "components": [

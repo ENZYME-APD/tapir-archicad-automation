@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-21 14:53 UTC.
+Archicad 25–30 DevKits; updated 2026-11-21 15:58 UTC.
 
 | | Status |
 |---|---|
@@ -137,7 +137,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ⛔ `ACAPI_Element_ChangeMore` – Modifies a number of elements in the current database. *(no speed gain over SetDetailsOfElements / the Modify* commands in the #1226 measurement, and one error code for the whole batch instead of per-element results)*
 - ✅ `ACAPI_Element_ChangeMorphEdgeType` <sub>AC29–30</sub> – Modifies a morph element's edge type in the current database.
 - ✅ `ACAPI_Element_ChangeParameters` – Changes the parameters of a number of elements.
-- ✅ `ACAPI_Element_Create` — [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options"), [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2970](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2970 "ChangeDrawingLink creates the new drawing with anchorPoint BottomLeft and shifts content vs. clip frame (native relink keeps everything)"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_Create` — [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2970](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2970 "ChangeDrawingLink creates the new drawing with anchorPoint BottomLeft and shifts content vs. clip frame (native relink keeps everything)"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_CreateExt` – Places a new Window, Door, Skylight, Section, Elevation, Interior Elevation, ChangeMarker, Detail, or Worksheet element with the specified marker into the current database. — [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments")
 - ✅ `ACAPI_Element_Decompose` – Enumerates the planes of a Multi-plane Roof.
 - ✅ `ACAPI_Element_Delete` – Deletes a number of elements. — [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls")
@@ -149,7 +149,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub>
 - ➖ `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
-- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2941](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2941 "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"), [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2845](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2845 "[3/3] SetStories: a dryRun that lists the stories it would delete"), [#2844](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2844 "[2/3] Add ModifyStory: change one story's name, level or height"), [#2843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2843 "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2941](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2941 "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2845](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2845 "[3/3] SetStories: a dryRun that lists the stories it would delete"), [#2844](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2844 "[2/3] Add ModifyStory: change one story's name, level or height"), [#2843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2843 "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
 - ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
@@ -172,8 +172,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetExtent` – Returns the drawing extent of the current database. <sub>(was `APIDb_GetExtentID`)</sub>
 - ✅ `ACAPI_Element_GetExtent3D` – Returns the model extent of the current database. <sub>(was `APIDb_GetExtent3DID`)</sub>
 - ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2845](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2845 "[3/3] SetStories: a dryRun that lists the stories it would delete"), [#2844](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2844 "[2/3] Add ModifyStory: change one story's name, level or height"), [#2843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2843 "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)")
-- ✅ `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element. — [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options")
-- ✅ `ACAPI_Element_GetMemo` — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2898](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2898 "ModifyRoofs: don't crash when a hole grows a multi-plane roof's pivot memo"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2809](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2809 "GetDetailsOfElements: return the lines of a text as Archicad breaks them"), [#2807](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2807 "GetDetailsOfElements (Railing): return the arcs of the reference line"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element.
+- ✅ `ACAPI_Element_GetMemo` — [#2898](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2898 "ModifyRoofs: don't crash when a hole grows a multi-plane roof's pivot memo"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2809](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2809 "GetDetailsOfElements: return the lines of a text as Archicad breaks them"), [#2807](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2807 "GetDetailsOfElements (Railing): return the arcs of the reference line"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
 - ✅ `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type.
 - ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub>
@@ -467,7 +467,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
 - ✅ `ACAPI_Navigator_ChangeStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_ChangeStructureDisplayID`)</sub>
-- ✅ `ACAPI_Navigator_ChangeViewOptions` – Changes the actual model view options. <sub>(was `APIEnv_ChangeViewOptionsID`)</sub> — [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options")
+- ✅ `ACAPI_Navigator_ChangeViewOptions` – Changes the actual model view options. <sub>(was `APIEnv_ChangeViewOptionsID`)</sub>
 - ✅ `ACAPI_Navigator_CloneProjectMapItemToViewMap` – Clones a Navigator item from the project map to view map. <sub>(was `APINavigator_CloneProjectMapItemToViewMapID`)</sub>
 - ✅ `ACAPI_Navigator_CreateLayout` – Creates a new layout. <sub>(was `APIEnv_CreateLayoutID`)</sub>
 - ✅ `ACAPI_Navigator_CreateNavigatorVPItem` – Creates a new Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_CreateNavigatorVPItemID`)</sub>
@@ -493,7 +493,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_GetStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_GetStructureDisplayID`)</sub>
 - ✅ `ACAPI_Navigator_GetSubSet` – Retrieves the Subset settings of the given Layout Subset. <sub>(was `APIDb_GetSubSetID`)</sub>
 - ✅ `ACAPI_Navigator_GetSubSetDefault` – Retrieves the default Subset settings of the Layout Book. <sub>(was `APIDb_GetSubSetDefaultID`)</sub>
-- ✅ `ACAPI_Navigator_GetViewOptions` – Returns the actual view display options. <sub>(was `APIEnv_GetViewOptionsID`)</sub> — [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options")
+- ✅ `ACAPI_Navigator_GetViewOptions` – Returns the actual view display options. <sub>(was `APIEnv_GetViewOptionsID`)</sub>
 - ✅ `ACAPI_Navigator_ModelViewOptions_Get` <sub>AC27–30</sub> – Get an API_ModelViewOptionsType by index.
 - ✅ `ACAPI_Navigator_ModelViewOptions_GetNum` <sub>AC27–30</sub> – Get the number of API_ModelViewOptions.
 - ✅ `ACAPI_Navigator_ModelViewOptions_Search` <sub>AC27–30</sub> – Search an API_ModelViewOptions_Head by name or index.
@@ -513,7 +513,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles.
 - ✅ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles.
-- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
+- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
 - ✅ `ACAPI_DisposeParagraphsHdl` – Frees the memory occupied by a handle to an array of @ref API_ParagraphType.
 - ✅ `ACAPI_DisposeRoomRelationHdls` – Frees the memory occupied by all allocated room relation handles.
 - ✅ `ACAPI_DisposeWallRelationHdls` – Frees the memory occupied by all allocated wall relation handles.
@@ -1378,7 +1378,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## C++ MEPAPI
 
-- ✅ `ACAPI::MEP::Accessory::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
+- ✅ `ACAPI::MEP::Accessory::Get` <sub>AC27–30</sub> — [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
 - ✅ `ACAPI::MEP::Accessory::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Accessory::Modifier::Inject` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Accessory::Modify` <sub>AC27–30</sub>
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options"), [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -1400,7 +1400,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::Bend::Modify` <sub>AC27</sub>
 - ➖ `ACAPI::MEP::BendUIManager::ApplyBendDefaultToToolUIData` <sub>AC28</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::BendUIManager::CreateBendDefaultFromToolUIData` <sub>AC28</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::Branch::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
+- ✅ `ACAPI::MEP::Branch::Get` <sub>AC27–30</sub> — [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
 - ✅ `ACAPI::MEP::Branch::GetBranchAngle` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Branch::GetBranchLength` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Branch::GetBranchOffset` <sub>AC27–30</sub>
@@ -1414,12 +1414,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::Branch::PickUpDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::BranchUIManager::ApplyBranchDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::BranchUIManager::CreateBranchDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::CableCarrierPort::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
-- ✅ `ACAPI::MEP::CableCarrierPortDefault::GetHeight` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::CableCarrierPort::Get` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::CableCarrierPortDefault::GetHeight` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::CableCarrierPortDefault::Modifier::SetHeight` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::CableCarrierPortDefault::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::CableCarrierSegmentPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::CableCarrierSegmentPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::CableCarrierSegmentPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::CableCarrierSegmentPreferenceTable::GetDescription` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::CableCarrierSegmentPreferenceTable::GetMaximumSegmentationLength` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::CableCarrierSegmentPreferenceTable::GetMinimumSegmentationLength` <sub>AC29–30</sub>
@@ -1485,7 +1485,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::DistributionSystemsGraphTreeNode::GetNextElements` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DistributionSystemsGraphTreeNode::GetPreviousElement` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctBranchPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::DuctBranchPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::DuctBranchPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctBranchPreferenceTable::GetBranchAxisAngle` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctBranchPreferenceTable::GetBranchAxisDiameter` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctBranchPreferenceTable::GetBranchAxisDiameterByKey` <sub>AC29–30</sub>
@@ -1538,7 +1538,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::DuctBranchPreferenceTable::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctBranchPreferenceTable::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::GetDescription` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::GetDescriptionByKey` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::GetDescriptionByReferenceId` <sub>AC28</sub>
@@ -1575,7 +1575,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::Modifier::SetWallThicknessByReferenceId` <sub>AC28</sub>
 - ✅ `ACAPI::MEP::DuctCircularSegmentPreferenceTable::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctElbowPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::DuctElbowPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::DuctElbowPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctElbowPreferenceTable::GetAngle` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctElbowPreferenceTable::GetDescription` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctElbowPreferenceTable::GetDescriptionByKey` <sub>AC29–30</sub>
@@ -1610,7 +1610,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::DuctElbowPreferenceTable::Modifier::SetRadiusByReferenceId` <sub>AC28</sub>
 - ✅ `ACAPI::MEP::DuctElbowPreferenceTable::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::GetDescription` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::GetMaximumSegmentationLength` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::GetMinimumSegmentationLength` <sub>AC29–30</sub>
@@ -1628,7 +1628,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::Modifier::SetValue` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctRectangularSegmentPreferenceTable::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::Get` <sub>AC29–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::Get` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::GetAngle` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::GetAngleByKey` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::GetBeginDiameter` <sub>AC29–30</sub>
@@ -1657,16 +1657,16 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::Modifier::SetEndDiameterByKey` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::DuctTransitionPreferenceTable::Modify` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::Elbow::Get` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::Get`)</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::Elbow::Get` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::Get`)</sub>
 - ✅ `ACAPI::MEP::Elbow::GetDomain` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetDomain`)</sub>
 - ✅ `ACAPI::MEP::Elbow::GetFactorRadius` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetFactorRadius`)</sub>
-- ✅ `ACAPI::MEP::Elbow::GetHeight` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetHeight`)</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::Elbow::GetHeight` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetHeight`)</sub>
 - ✅ `ACAPI::MEP::Elbow::GetInsulationThickness` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetInsulationThickness`)</sub>
 - ✅ `ACAPI::MEP::Elbow::GetPreferenceTable` <sub>AC28–30</sub> <sub>(was `ACAPI::MEP::Bend::GetPreferenceTable`)</sub>
 - ✅ `ACAPI::MEP::Elbow::GetRadius` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetRadius`)</sub>
 - ✅ `ACAPI::MEP::Elbow::GetRoutingNodeId` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetRoutingNodeId`)</sub>
 - ✅ `ACAPI::MEP::Elbow::GetShape` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetShape`)</sub>
-- ✅ `ACAPI::MEP::Elbow::GetWidth` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetWidth`)</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::Elbow::GetWidth` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::GetWidth`)</sub>
 - ✅ `ACAPI::MEP::Elbow::PickUpDefault` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::PickUpDefault`)</sub>
 - ✅ `ACAPI::MEP::ElbowDefault::GetFactorRadius` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::BendDefault::GetFactorRadius`)</sub>
 - ✅ `ACAPI::MEP::ElbowDefault::GetPreferenceTable` <sub>AC28–30</sub> <sub>(was `ACAPI::MEP::BendDefault::GetPreferenceTable`)</sub>
@@ -1675,7 +1675,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElbowDefault::Modify` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::BendDefault::Modify`)</sub>
 - ➖ `ACAPI::MEP::ElbowUIManager::ApplyElbowDefaultToToolUIData` <sub>AC29–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::ElbowUIManager::CreateElbowDefaultFromToolUIData` <sub>AC29–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::ElectricalCircuit::Get` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ElectricalCircuit::Get` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalCircuit::GetChildDeviceIds` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalCircuit::GetChildPanelIds` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalCircuit::GetCircuitDescription` <sub>AC30</sub>
@@ -1704,7 +1704,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalCircuit::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalCircuit::Modifier::SetWiringTypeName` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalCircuit::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::ElectricalDevice::Get` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ElectricalDevice::Get` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalDevice::GetApparentPower` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalDevice::GetApparentPowerEnabled` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalDevice::GetDemandLoad` <sub>AC30</sub>
@@ -1721,7 +1721,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalDeviceDefault::GetApparentPowerEnabled` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalDeviceDefault::GetLoadClassificationName` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalDeviceDefault::Place` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::ElectricalPanel::Get` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ElectricalPanel::Get` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanel::GetCircuitIdStyle` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanel::GetCircuitIds` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanel::GetCircuitNamePrefix` <sub>AC30</sub>
@@ -1749,7 +1749,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalPanelDefault::GetCircuitNamePrefix` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanelDefault::GetPanelName` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanelDefault::Place` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::ElectricalProjectSettings::Get` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ElectricalProjectSettings::Get` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::GetLoadClassificationDemandFactor` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::GetLoadClassificationNames` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::GetVoltage` <sub>AC30</sub>
@@ -1764,15 +1764,15 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2976](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2976 "Refuse a wall offset on a Center or CoreCenter reference line"), [#2974](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2974 "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"), [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options"), [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2845](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2845 "[3/3] SetStories: a dryRun that lists the stories it would delete"), [#2844](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2844 "[2/3] Add ModifyStory: change one story's name, level or height"), [#2843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2843 "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2976](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2976 "Refuse a wall offset on a Center or CoreCenter reference line"), [#2974](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2974 "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"), [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2845](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2845 "[3/3] SetStories: a dryRun that lists the stories it would delete"), [#2844](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2844 "[2/3] Add ModifyStory: change one story's name, level or height"), [#2843](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2843 "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetDirectConnectedMEPElementIds` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::ElementBase::GetObjectId` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
-- ✅ `ACAPI::MEP::ElementBase::GetObjectXSize` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
-- ✅ `ACAPI::MEP::ElementBase::GetObjectYSize` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
-- ✅ `ACAPI::MEP::ElementBase::GetOrientation` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ElementBase::GetObjectId` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::ElementBase::GetObjectXSize` <sub>AC30</sub>
+- ✅ `ACAPI::MEP::ElementBase::GetObjectYSize` <sub>AC30</sub>
+- ✅ `ACAPI::MEP::ElementBase::GetOrientation` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetPortIDs` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetPorts` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetReflected` <sub>AC30</sub>
@@ -1782,9 +1782,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElementDefault::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetDomainOfPort` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetInsulationThickness` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::ElementDefault::GetObjectId` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
-- ✅ `ACAPI::MEP::ElementDefault::GetObjectXSize` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
-- ✅ `ACAPI::MEP::ElementDefault::GetObjectYSize` <sub>AC30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ElementDefault::GetObjectId` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::ElementDefault::GetObjectXSize` <sub>AC30</sub>
+- ✅ `ACAPI::MEP::ElementDefault::GetObjectYSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetPipingPortDefault` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetPipingPortDefaults` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetPortCount` <sub>AC27–30</sub>
@@ -1803,14 +1803,14 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElementDefault::Modify` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::ElementUIManager::ApplyElementDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::ElementUIManager::CreateElementDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::Equipment::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
+- ✅ `ACAPI::MEP::Equipment::Get` <sub>AC27–30</sub> — [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
 - ✅ `ACAPI::MEP::Equipment::Modifier::Inject` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Equipment::Modify` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Equipment::PickUpDefault` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::EquipmentDefault::Place` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::EquipmentUIManager::ApplyEquipmentDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::EquipmentUIManager::CreateEquipmentDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::Fitting::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
+- ✅ `ACAPI::MEP::Fitting::Get` <sub>AC27–30</sub> — [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
 - ✅ `ACAPI::MEP::Fitting::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Fitting::Modifier::Inject` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Fitting::Modify` <sub>AC27–30</sub>
@@ -1818,12 +1818,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::FittingDefault::Place` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::FittingUIManager::ApplyFittingDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::FittingUIManager::CreateFittingDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::FlexibleSegment::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::FlexibleSegment::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::GetControlPoints` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::GetDomain` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::FlexibleSegment::GetHeight` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::FlexibleSegment::GetHeight` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::GetPolyline` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::FlexibleSegment::GetWidth` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::FlexibleSegment::GetWidth` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::Modifier::Inject` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::Modifier::SetControlPoints` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::Modifier::SetHeight` <sub>AC27–30</sub>
@@ -1831,9 +1831,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::FlexibleSegment::Modifier::SetWidth` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::Modify` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::PickUpDefault` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::FlexibleSegmentDefault::GetHeight` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::FlexibleSegmentDefault::GetHeight` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegmentDefault::GetShape` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::FlexibleSegmentDefault::GetWidth` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::FlexibleSegmentDefault::GetWidth` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegmentDefault::Place` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegmentDefault::PlacePolyline` <sub>AC28–30</sub>
 - ➖ `ACAPI::MEP::FlexibleSegmentUIManager::ApplyFlexibleSegmentDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
@@ -1886,7 +1886,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::IsTerminal` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::IsTransition` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::IsVentilation` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ModifiableElement::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::ModifiableElement::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetBaseRotation` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetObjectId` <sub>AC27–30</sub>
@@ -1897,7 +1897,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modify` <sub>AC27–30</sub>
 - ⛔ `ACAPI::MEP::PhysicalSystem::Create` <sub>AC29–30</sub> *(has no id getter for the new system; CreateMEPPhysicalSystems uses SystemGroup::Modifier::Add, which returns the new id directly)*
 - ✅ `ACAPI::MEP::PhysicalSystem::FindSystemIdsFromElementIds` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::PhysicalSystem::Get` <sub>AC29–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PhysicalSystem::Get` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PhysicalSystem::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PhysicalSystem::GetRootElementId` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PhysicalSystem::GetSystemCategory` <sub>AC29–30</sub>
@@ -1907,7 +1907,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PhysicalSystem::Modifier::SetSystemCategory` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PhysicalSystem::Modify` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeBranchPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::PipeBranchPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PipeBranchPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeBranchPreferenceTable::GetBranchAxisAngle` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeBranchPreferenceTable::GetBranchAxisDiameter` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeBranchPreferenceTable::GetBranchAxisDiameterByKey` <sub>AC29–30</sub>
@@ -1960,7 +1960,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipeBranchPreferenceTable::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeBranchPreferenceTable::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeElbowPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::PipeElbowPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PipeElbowPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeElbowPreferenceTable::GetAngle` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeElbowPreferenceTable::GetDescription` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeElbowPreferenceTable::GetDescriptionByKey` <sub>AC29–30</sub>
@@ -1995,7 +1995,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipeElbowPreferenceTable::Modifier::SetRadiusByReferenceId` <sub>AC28</sub>
 - ✅ `ACAPI::MEP::PipeElbowPreferenceTable::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::Exists` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::GetDescription` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::GetDescriptionByKey` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::GetDescriptionByReferenceId` <sub>AC28</sub>
@@ -2032,7 +2032,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::Modifier::SetWallThicknessByReferenceId` <sub>AC28</sub>
 - ✅ `ACAPI::MEP::PipeSegmentPreferenceTable::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::Get` <sub>AC29–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::Get` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::GetBeginDiameter` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::GetBeginDiameterByKey` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::GetBeginReferenceId` <sub>AC29–30</sub>
@@ -2061,7 +2061,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::Modifier::SetLengthByKey` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PipeTransitionPreferenceTable::Modify` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::PipingPort::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PipingPort::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PipingPort::GetFlangeSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::PipingPort::GetFlowDirection` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipingPort::GetNominalSize` <sub>AC30</sub>
@@ -2082,21 +2082,21 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipingPortDefault::Modifier::SetFlowDirection` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipingPortDefault::Modifier::SetWallThickness` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipingPortDefault::Modify` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::Port::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::Port::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectedMEPElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectedPortId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectionStyle` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetElemId` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::PortBase::GetHeight` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PortBase::GetHeight` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetMEPElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetMEPSystem` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetName` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::PortBase::GetOrientation` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
-- ✅ `ACAPI::MEP::PortBase::GetPosition` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PortBase::GetOrientation` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::PortBase::GetPosition` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetShape` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::PortBase::GetWidth` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PortBase::GetWidth` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::IsConnectable` <sub>AC27</sub>
 - ✅ `ACAPI::MEP::PortBase::IsConnected` <sub>AC27</sub>
 - ✅ `ACAPI::MEP::PortBase::IsPhysicallyConnectable` <sub>AC28–30</sub>
@@ -2112,7 +2112,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PortDefaultBase::GetMEPSystem` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PortDefaultBase::GetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PortDefaultBase::GetShape` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::PortDefaultBase::GetWidth` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::PortDefaultBase::GetWidth` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PortDefaultBase::Modifier::SetConnectionStyle` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::PortDefaultBase::Modifier::SetMEPSystem` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PortDefaultBase::Modifier::SetShape` <sub>AC28–30</sub>
@@ -2141,25 +2141,25 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options"), [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
 - ➖ `ACAPI::MEP::RegisterCalculationCallback` <sub>AC29–30</sub> *(interfaces an add-on implements or registers, not commands: classes the add-on writes so that Archicad can call it (calculations, model checks, keynotes, imports), not calls a script could make)*
-- ✅ `ACAPI::MEP::RigidSegment::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::RigidSegment::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RigidSegment::GetDomain` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RigidSegment::GetHeight` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::RigidSegment::GetHeight` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RigidSegment::GetInsulationThickness` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RigidSegment::GetLength` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RigidSegment::GetRoutingSegmentId` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RigidSegment::GetWidth` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::RigidSegment::GetWidth` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RigidSegment::PickUpDefault` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RigidSegmentDefault::GetHeight` <sub>AC27–28</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::RigidSegmentDefault::GetHeight` <sub>AC27–28</sub>
 - ✅ `ACAPI::MEP::RigidSegmentDefault::GetShape` <sub>AC27–28</sub>
-- ✅ `ACAPI::MEP::RigidSegmentDefault::GetWidth` <sub>AC27–28</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::RigidSegmentDefault::GetWidth` <sub>AC27–28</sub>
 - ➖ `ACAPI::MEP::RigidSegmentUIManager::ApplyRigidSegmentDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::RigidSegmentUIManager::CreateRigidSegmentDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::RoutingElement::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts")
+- ✅ `ACAPI::MEP::RoutingElement::Get` <sub>AC27–30</sub> — [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts")
 - ✅ `ACAPI::MEP::RoutingElement::GetBranchPreferenceTableId` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetCutPlanePosition` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetDomain` <sub>AC27–30</sub>
@@ -2209,7 +2209,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingElementDefault::Place` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::RoutingElementUIManager::ApplyRoutingElementDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::RoutingElementUIManager::CreateRoutingElementDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::RoutingNode::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts")
+- ✅ `ACAPI::MEP::RoutingNode::Get` <sub>AC27–30</sub> — [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts")
 - ✅ `ACAPI::MEP::RoutingNode::GetBendDefaultParameters` <sub>AC27–28</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetBendIds` <sub>AC27–28</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetDomain` <sub>AC27–30</sub>
@@ -2217,7 +2217,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingNode::GetElbowIds` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetIncomingSegmentId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetOutgoingSegmentId` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingNode::GetPosition` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::RoutingNode::GetPosition` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetPreferredTransitionPlacement` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetRoutingElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetTransitionDefaultParameters` <sub>AC27–30</sub>
@@ -2242,7 +2242,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingNodeDefault::Modify` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::RoutingNodeUIManager::ApplyRoutingNodeDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::RoutingNodeUIManager::CreateRoutingNodeDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::RoutingSegment::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts")
+- ✅ `ACAPI::MEP::RoutingSegment::Get` <sub>AC27–30</sub> — [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts")
 - ✅ `ACAPI::MEP::RoutingSegment::GetAnchor` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetBeginNodeId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetConnectionStyle` <sub>AC28–30</sub>
@@ -2306,15 +2306,15 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI::MEP::SystemBrowserCalculationCallbackInterface::CalculationsRequested` <sub>AC29–30</sub> *(interfaces an add-on implements or registers, not commands: classes the add-on writes so that Archicad can call it (calculations, model checks, keynotes, imports), not calls a script could make)*
 - ➖ `ACAPI::MEP::SystemBrowserCalculationCallbackInterface::RegisterCalculatedColumns` <sub>AC29–30</sub> *(interfaces an add-on implements or registers, not commands: classes the add-on writes so that Archicad can call it (calculations, model checks, keynotes, imports), not calls a script could make)*
 - ➖ `ACAPI::MEP::SystemBrowserCalculationCallbackInterface::SubmitCalculations` <sub>AC29–30</sub> *(interfaces an add-on implements or registers, not commands: classes the add-on writes so that Archicad can call it (calculations, model checks, keynotes, imports), not calls a script could make)*
-- ✅ `ACAPI::MEP::SystemGroup::Get` <sub>AC29–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::SystemGroup::Get` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options"), [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2873](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2873 "[4/4] Zones: read and write the letter size (roomLSize)"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2853](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2853 "[1/2] Read Interior Elevations in GetDetailsOfElements"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::TakeOff::Get` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::TakeOff::Get` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::TakeOff::GetDomain` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::TakeOff::GetLength` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::TakeOff::Modifier::Inject` <sub>AC28–30</sub>
@@ -2324,7 +2324,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::TakeOffDefault::Place` <sub>AC28–30</sub>
 - ➖ `ACAPI::MEP::TakeOffUIManager::ApplyTakeOffDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::TakeOffUIManager::CreateTakeOffDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::Terminal::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
+- ✅ `ACAPI::MEP::Terminal::Get` <sub>AC27–30</sub> — [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command")
 - ✅ `ACAPI::MEP::Terminal::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Terminal::Modifier::Inject` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Terminal::Modify` <sub>AC27–30</sub>
@@ -2332,7 +2332,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::TerminalDefault::Place` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::TerminalUIManager::ApplyTerminalDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::TerminalUIManager::CreateTerminalDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::Transition::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::Transition::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Transition::GetAngle` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Transition::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Transition::GetInsulationThickness` <sub>AC27–30</sub>
@@ -2356,7 +2356,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::TransitionDefault::Modify` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::TransitionUIManager::ApplyTransitionDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
 - ➖ `ACAPI::MEP::TransitionUIManager::CreateTransitionDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface): the data behind the panels of the tool settings dialogs, for add-ons that add a panel of their own)*
-- ✅ `ACAPI::MEP::VentilationPort::Get` <sub>AC27–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::VentilationPort::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::VentilationPort::GetFlangeSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::VentilationPort::GetFlowDirection` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::VentilationPort::GetWallThickness` <sub>AC27–30</sub>
@@ -2366,7 +2366,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::VentilationPort::Modify` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::VentilationPortDefault::GetFlangeSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::VentilationPortDefault::GetFlowDirection` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::VentilationPortDefault::GetHeight` <sub>AC28–30</sub> — [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys")
+- ✅ `ACAPI::MEP::VentilationPortDefault::GetHeight` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::VentilationPortDefault::GetWallThickness` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::VentilationPortDefault::Modifier::SetFlangeSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::VentilationPortDefault::Modifier::SetFlowDirection` <sub>AC28–30</sub>
@@ -2446,7 +2446,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::SetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::Transform` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2976](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2976 "Refuse a wall offset on a Center or CoreCenter reference line"), [#2974](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2974 "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"), [#2923](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2923 "Add CreateRadialDimensions; read back the analytical visibility and railing view options"), [#2919](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2919 "Read back what the Modify commands write, with the same keys"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment"), [#2520](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2520 "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated")
+- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2976](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2976 "Refuse a wall offset on a Center or CoreCenter reference line"), [#2974](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2974 "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"), [#2855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2855 "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"), [#2838](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2838 "ModifySections: move the section line and depth of Sections and Elevations"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment"), [#2520](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2520 "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated")
 - ✅ `ACAPI::Element::Opening::GetConnectedOpenings` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetCutElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetExtrusionParameters` <sub>AC29–30</sub>

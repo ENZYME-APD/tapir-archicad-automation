@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-21 14:53 UTC",
+ "generatedAt": "2026-11-21 15:58 UTC",
  "versions": [
   25,
   26,
@@ -5809,10 +5809,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
@@ -7054,10 +7050,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -7351,10 +7343,6 @@
     {
      "number": 2941,
      "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
-    },
-    {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
     },
     {
      "number": 2855,
@@ -7941,12 +7929,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7968,10 +7951,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
     {
      "number": 2898,
      "title": "ModifyRoofs: don't crash when a hole grows a multi-plane roof's pivot memo"
@@ -13961,12 +13940,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14552,12 +14526,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25571,14 +25540,6 @@
      "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
     },
     {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2855,
      "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
@@ -30942,10 +30903,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     }
@@ -31201,14 +31158,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
@@ -31363,10 +31312,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
@@ -31631,12 +31576,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31654,12 +31594,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31731,12 +31666,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32927,12 +32857,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33843,12 +33768,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34485,12 +34405,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35091,12 +35006,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35413,12 +35323,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35920,12 +35825,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35988,12 +35888,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36118,12 +36013,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36302,12 +36192,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -36771,12 +36656,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37048,12 +36928,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37501,12 +37376,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37763,14 +37633,6 @@
      "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
     },
     {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -37868,12 +37730,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37927,12 +37784,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37948,12 +37800,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37969,12 +37816,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37993,12 +37835,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38174,12 +38011,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38195,12 +38027,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38216,12 +38043,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38553,10 +38375,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     }
@@ -38692,10 +38510,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
     {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
@@ -38850,12 +38664,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38912,12 +38721,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38954,12 +38758,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39110,12 +38909,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39153,12 +38947,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40099,12 +39888,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40295,12 +40079,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40472,12 +40251,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41388,12 +41162,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41994,12 +41763,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42634,12 +42398,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43134,12 +42893,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43511,12 +43265,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43643,12 +43392,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43724,12 +43468,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43748,12 +43487,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43791,12 +43525,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44081,12 +43810,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44589,14 +44313,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
     },
@@ -44706,12 +44422,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44749,12 +44460,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44830,12 +44536,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44871,12 +44572,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44910,12 +44606,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44971,10 +44662,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
@@ -45892,10 +45579,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
     }
@@ -46043,12 +45726,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46515,10 +46193,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
     {
      "number": 2729,
      "title": "SetMEPRoutingParameters: set the transition angle of ducts"
@@ -47701,12 +47375,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -47775,14 +47444,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2923,
-     "title": "Add CreateRadialDimensions; read back the analytical visibility and railing view options"
-    },
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
     {
      "number": 2873,
      "title": "[4/4] Zones: read and write the letter size (roomLSize)"
@@ -47872,12 +47533,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48060,10 +47716,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    },
-    {
      "number": 2755,
      "title": "Refuse unknown keys inside shared schema definitions ($ref), for every command"
     }
@@ -48217,12 +47869,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48682,12 +48329,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48864,12 +48506,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2919,
-     "title": "Read back what the Modify commands write, with the same keys"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
