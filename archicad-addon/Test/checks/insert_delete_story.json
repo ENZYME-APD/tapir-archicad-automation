@@ -59,8 +59,9 @@
       "command": "GetStories",
       "creates": false,
       "params": {},
+      "save": { "last1": "lastStory" },
       "expect": [
-        { "path": "lastStory", "eq": "${newIndex}" }
+        { "expr": "${last1} - ${newIndex}", "eq": 0, "name": "the new story is still the top story" }
       ]
     },
     {
@@ -92,8 +93,9 @@
       "command": "GetStories",
       "creates": false,
       "params": {},
+      "save": { "last2": "lastStory" },
       "expect": [
-        { "path": "lastStory", "eq": "${newIndex}" }
+        { "expr": "${last2} - ${newIndex}", "eq": 0, "name": "the new story is still the top story" }
       ]
     },
     {
@@ -124,9 +126,10 @@
       "command": "GetStories",
       "creates": false,
       "params": {},
+      "save": { "lastEnd": "lastStory", "firstEnd": "firstStory" },
       "expect": [
-        { "path": "lastStory", "eq": "${top}" },
-        { "path": "firstStory", "eq": "${first}" }
+        { "expr": "${lastEnd} - ${top}", "eq": 0, "name": "the old top story is the top story again" },
+        { "expr": "${firstEnd} - ${first}", "eq": 0, "name": "the bottom story is kept" }
       ]
     },
     {

@@ -3566,6 +3566,268 @@ GS::ObjectState DeleteStoryCommand::Execute (const GS::ObjectState& parameters, 
     return result;
 }
 
+ModifyStoryCommand::ModifyStoryCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String ModifyStoryCommand::GetName () const
+{
+    return "ModifyStory";
+}
+
+GS::Optional<GS::UniString> ModifyStoryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story to modify (see GetStories)."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the story."
+            },
+            "level": {
+                "type": "number",
+                "description": "The new level of the story. Only this story moves: the story below gets taller or shorter, and the stories above stay where they are unless height is given too. It must stay above the level of the story below, and, without height, below the level of the story above. On the top story without height its top stays where it is: moving it up makes it shorter by as much, and moving it down taller."
+            },
+            "height": {
+                "type": "number",
+                "description": "The new height of the story, greater than zero. As in Archicad's Story Settings dialog, every story above moves up or down with the top of this story and keeps its height.",
+                "exclusiveMinimum": 0
+            },
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Whether the level line of the story appears on sections and elevations."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "storyIndex"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyStoryCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "story": {
+                "$ref": "#/StoryParameters",
+                "description": "The modified story, as GetStories reports it after the change."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "story"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyStoryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    short storyIndex = 0;
+    if (!parameters.Get ("storyIndex", storyIndex)) {
+        return CreateErrorResponse (APIERR_BADPARS, "storyIndex is required.");
+    }
+
+    GS::UniString name;
+    const bool hasName = parameters.Get ("name", name);
+    double level = 0.0;
+    const bool hasLevel = parameters.Get ("level", level);
+    double height = 0.0;
+    const bool hasHeight = parameters.Get ("height", height);
+    bool dispOnSections = false;
+    const bool hasDispOnSections = parameters.Get ("dispOnSections", dispOnSections);
+
+    if (!hasName && !hasLevel && !hasHeight && !hasDispOnSections) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give at least one of name, level, height and dispOnSections.");
+    }
+    if (hasHeight && height <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "height must be greater than zero.");
+    }
+
+    API_StoryInfo storyInfo = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+
+    if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+        return CreateErrorResponse (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+    }
+
+    // Copied out of the handle, which every refresh disposes (see StorySnapshot).
+    GS::Array<StorySnapshot> before;
+    TakeStorySnapshot (storyInfo, before);
+    const GS::USize storyCount = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1);
+    if (before.GetSize () != storyCount) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to read the story structure.");
+    }
+
+    const GS::UIndex position = static_cast<GS::UIndex> (storyIndex - storyInfo.firstStory);
+    const bool isTopStory = position + 1 == storyCount;
+    const double oldLevel = before[position].level;
+
+    // Where the story ends now: the level of the story above, or for the top story that of the
+    // virtual story Archicad keeps above it (see CreateStoryParametersObjectState).
+    const GS::USize recordCount = static_cast<GS::USize> (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+    const bool hasOldTop = position + 1 < recordCount;
+    const double oldTop = hasOldTop ? (*storyInfo.data)[position + 1].level : 0.0;
+
+    const double targetLevel = hasLevel ? level : oldLevel;
+    if (hasLevel && position > 0 && targetLevel <= before[position - 1].level + StoryLevelTolerance) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+            "level must be above the level of the story below (%.4f).", before[position - 1].level));
+    }
+    if (hasLevel && !hasHeight && !isTopStory && targetLevel >= before[position + 1].level - StoryLevelTolerance) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+            "level must be below the level of the story above (%.4f), unless height is given too.", before[position + 1].level));
+    }
+
+    // How far the stories above this one move: with the top of this story when height is given.
+    const double aboveShift = (hasHeight && !isTopStory) ? targetLevel + height - before[position + 1].level : 0.0;
+
+    // Neither renaming a story nor changing its level line display moves any story.
+    if (hasDispOnSections && before[position].dispOnSections != dispOnSections) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action         = APIStory_SetDispOnSections;
+        storyCmd.index          = storyIndex;
+        storyCmd.dispOnSections = dispOnSections;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to modify dispOnSections.");
+        }
+    }
+
+    if (hasName && before[position].name != name) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_Rename;
+        storyCmd.index  = storyIndex;
+        GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to rename the story.");
+        }
+    }
+
+    const bool levelGoesUp   = targetLevel >= oldLevel + StoryLevelTolerance;
+    const bool levelGoesDown = targetLevel <= oldLevel - StoryLevelTolerance;
+
+    if (levelGoesUp || levelGoesDown || hasHeight) {
+        // The story is made the active one, as Archicad's own example does for APIStory_SetHeight
+        // (on which side of the boundary SetHeight moves depends on the active story, see
+        // SetStoriesCommand), and the previously active story is restored afterwards.
+        const short originalActStory = storyInfo.actStory;
+        bool actStoryMoved = false;
+        const GS::OnExit restoreActStory ([&] () {
+            if (actStoryMoved) {
+                API_StoryCmdType storyCmd = {};
+                storyCmd.action = APIStory_GoTo;
+                storyCmd.index  = originalActStory;
+                ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            }
+        });
+
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = storyIndex;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to make the story active to change its level or height.");
+        }
+        actStoryMoved = storyIndex != originalActStory;
+
+        // APIStory_SetElevation moves this story and nothing else, APIStory_SetHeight moves every
+        // story above it with its top. A story never crosses a neighbour: when it goes up and
+        // height is given, the stories above are moved up first, to where they end up.
+        const auto setElevation = [&] () -> GSErrCode {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action    = APIStory_SetElevation;
+            storyCmd.index     = storyIndex;
+            storyCmd.elevation = targetLevel;
+            return ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        };
+        const auto setHeight = [&] (const double newHeight) -> GSErrCode {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_SetHeight;
+            storyCmd.index  = storyIndex;
+            storyCmd.height = newHeight;
+            return ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        };
+
+        // The height is only left alone when the level stays and the height is already right.
+        const bool heightAlreadySet = !levelGoesUp && !levelGoesDown && hasOldTop && std::abs ((oldTop - oldLevel) - height) < StoryLevelTolerance;
+
+        if (levelGoesUp && hasHeight && !isTopStory) {
+            err = setHeight (targetLevel + height - oldLevel);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to change the story height.");
+            }
+            err = setElevation ();
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to change the story level.");
+            }
+        } else {
+            if (levelGoesUp || levelGoesDown) {
+                err = setElevation ();
+                if (err != NoError) {
+                    return CreateErrorResponse (err, "Failed to change the story level.");
+                }
+            }
+            if (hasHeight && !heightAlreadySet) {
+                err = setHeight (height);
+                if (err != NoError) {
+                    return CreateErrorResponse (err, "Failed to change the story height.");
+                }
+            }
+        }
+    }
+
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+
+    GS::Array<StorySnapshot> after;
+    TakeStorySnapshot (storyInfo, after);
+    if (after.GetSize () != storyCount || static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+
+    // A structure which silently ended up somewhere else than requested is worse than an error,
+    // so every level is checked: the stories below stay, this one is on its level, the ones above
+    // moved by aboveShift. The changes made are undoable in Archicad (Edit > Undo).
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
+        const double expectedLevel = i < position ? before[i].level : (i == position ? targetLevel : before[i].level + aboveShift);
+        if (std::abs (after[i].level - expectedLevel) >= StoryLevelTolerance) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+                "Failed to modify the story: story %d is at level %.4f instead of %.4f.",
+                static_cast<int> (after[i].index), after[i].level, expectedLevel));
+        }
+    }
+    if (hasHeight) {
+        const GS::USize newRecordCount = static_cast<GS::USize> (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+        if (position + 1 < newRecordCount) {
+            const double newHeight = (*storyInfo.data)[position + 1].level - (*storyInfo.data)[position].level;
+            if (std::abs (newHeight - height) >= StoryLevelTolerance) {
+                return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+                    "Failed to set the height of the story: requested %.4f, got %.4f.", height, newHeight));
+            }
+        }
+    }
+
+    GS::ObjectState response;
+    response.Add ("story", CreateStoryParametersObjectState (storyInfo, static_cast<short> (position)));
+    return response;
+}
+
 OpenProjectCommand::OpenProjectCommand () :
     CommandBase (CommonSchema::Used)
 {
