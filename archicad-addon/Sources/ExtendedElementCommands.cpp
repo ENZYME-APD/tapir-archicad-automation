@@ -22243,7 +22243,10 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             if (changed) {
                 err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
                 if (err != NoError) {
-                    results.Push (CreateFailedExecutionResult (err, "Failed to modify column."));
+                    // Names the reason when Archicad refused an element the user could not edit
+                    // either, as SetDetailsOfElements does (#2972).
+                    const GS::UniString refusal = DescribeElementEditRefusal (err, element.header);
+                    results.Push (CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to modify column.") : "Failed to modify column, because " + refusal + "."));
                     continue;
                 }
             }
@@ -22252,9 +22255,16 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 GS::UniString sectionError;
                 bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item, sectionError);
                 if (!sectionOk) {
-                    results.Push (sectionError.IsEmpty ()
-                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments.")
-                        : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                    if (sectionError.IsEmpty ()) {
+                        // ApplyColumnSectionToMemo returns no error code, so the element's layer
+                        // and editability are checked as for a general error (#2972).
+                        const GS::UniString refusal = DescribeElementEditRefusal (APIERR_GENERAL, element.header);
+                        results.Push (refusal.IsEmpty ()
+                            ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments.")
+                            : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments, because " + refusal + "."));
+                    } else {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                    }
                     continue;
                 }
                 const GS::Optional<GS::UniString> ignoredSize = GetIgnoredColumnSectionSize (element.header.guid, item);
