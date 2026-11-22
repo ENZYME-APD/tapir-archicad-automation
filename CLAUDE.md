@@ -257,6 +257,12 @@ python test_examples.py
   labelled `needs-test`: a person sets it on a PR, and the bot PR steward sets it by itself on a
   bot PR with a check once its builds are green, so testers' runners install those bot builds
   without a person looking first (see `claude_bot_pr_steward.yml` under CI).
+- Tests that need no Archicad at all, all standard-library `unittest`:
+  `python -m unittest discover python-client/tests` (the generated Python client),
+  `python -m unittest discover tools/community-test-runner/tests` (the runner) and
+  `python -m unittest discover tools/tests` (the tooling itself: the version rewrite rules the
+  release runs, and the schema expander a schema refactor is compared with). The add-on build
+  check runs the last one on every pull request.
 
 ## Grasshopper plugin
 

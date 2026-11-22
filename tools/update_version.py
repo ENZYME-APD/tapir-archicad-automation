@@ -67,5 +67,7 @@ def Main ():
             return 1
     
     return 0
-    
-sys.exit (Main ())
+
+
+if __name__ == '__main__':
+    sys.exit (Main ())
