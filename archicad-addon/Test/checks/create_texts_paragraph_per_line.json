@@ -1,0 +1,136 @@
+{
+  "title": "CreateTexts/ModifyTexts: one paragraph per line, so a line after a line break is drawn inside the text box (#2874)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "texts with line breaks, as text and as runs",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          { "coordinate": { "x": 760.0, "y": 760.0, "z": 0.0 }, "text": "TEST 2 first paragraph\nsecond paragraph", "height": 3.0, "justification": "Left" },
+          { "coordinate": { "x": 760.0, "y": 750.0, "z": 0.0 }, "text": "TEST 3 first paragraph\rsecond paragraph", "height": 3.0, "justification": "Left" },
+          { "coordinate": { "x": 760.0, "y": 740.0, "z": 0.0 }, "text": "one\n\nthree", "height": 3.0, "justification": "Left" },
+          { "coordinate": { "x": 760.0, "y": 730.0, "z": 0.0 }, "runs": [ { "text": "Title\n", "bold": true }, { "text": "body", "bold": false } ], "height": 3.0, "justification": "Left" },
+          { "coordinate": { "x": 760.0, "y": 720.0, "z": 0.0 }, "runs": [ { "text": "a\nb", "bold": true }, { "text": "c", "bold": false } ], "height": 3.0, "justification": "Left" },
+          { "coordinate": { "x": 760.0, "y": 710.0, "z": 0.0 }, "text": "single line", "height": 3.0, "justification": "Left" }
+        ]
+      },
+      "save": {
+        "lf": "elements[0].elementId.guid",
+        "cr": "elements[1].elementId.guid",
+        "empty": "elements[2].elementId.guid",
+        "title": "elements[3].elementId.guid",
+        "split": "elements[4].elementId.guid",
+        "single": "elements[5].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "text with \\n created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "text with \\r created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "text with an empty line created" },
+        { "path": "elements[3].elementId.guid", "exists": true, "name": "runs with a line break at a run end created" },
+        { "path": "elements[4].elementId.guid", "exists": true, "name": "runs with a line break inside a run created" },
+        { "path": "elements[5].elementId.guid", "exists": true, "name": "single-line text created" }
+      ]
+    },
+    {
+      "id": "every line is a paragraph of its own",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${lf}" } },
+          { "elementId": { "guid": "${cr}" } },
+          { "elementId": { "guid": "${empty}" } },
+          { "elementId": { "guid": "${title}" } },
+          { "elementId": { "guid": "${split}" } },
+          { "elementId": { "guid": "${single}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "TEST 2 first paragraph\nsecond paragraph", "name": "\\n text content kept" },
+        { "path": "detailsOfElements[0].details.paragraphCount", "eq": 2, "name": "\\n text has two paragraphs" },
+        { "path": "detailsOfElements[0].details.style.lineCount", "eq": 2, "name": "\\n text has two lines" },
+        { "path": "detailsOfElements[0].details.runs", "len": 2, "name": "\\n text reads back one run per paragraph" },
+        { "path": "detailsOfElements[0].details.runs[1].text", "eq": "second paragraph", "name": "second paragraph's run" },
+        { "path": "detailsOfElements[1].details.text", "eq": "TEST 3 first paragraph\nsecond paragraph", "name": "\\r text normalized to \\n" },
+        { "path": "detailsOfElements[1].details.paragraphCount", "eq": 2, "name": "\\r text has two paragraphs" },
+        { "path": "detailsOfElements[2].details.text", "eq": "one\n\nthree", "name": "empty line kept" },
+        { "path": "detailsOfElements[2].details.paragraphCount", "eq": 3, "name": "empty line is a paragraph" },
+        { "path": "detailsOfElements[2].details.style.lineCount", "eq": 3, "name": "text with an empty line has three lines" },
+        { "path": "detailsOfElements[3].details.text", "eq": "Title\nbody", "name": "runs content kept" },
+        { "path": "detailsOfElements[3].details.paragraphCount", "eq": 2, "name": "runs text has two paragraphs" },
+        { "path": "detailsOfElements[3].details.runs[0].bold", "eq": true, "name": "title run stays bold" },
+        { "path": "detailsOfElements[3].details.runs[1].bold", "eq": false, "name": "body run stays plain" },
+        { "path": "detailsOfElements[4].details.text", "eq": "a\nbc", "name": "split run content kept" },
+        { "path": "detailsOfElements[4].details.paragraphCount", "eq": 2, "name": "split run text has two paragraphs" },
+        { "path": "detailsOfElements[4].details.runs", "len": 3, "name": "a run over a line break is split at it" },
+        { "path": "detailsOfElements[4].details.runs[1].text", "eq": "b", "name": "second part of the split run" },
+        { "path": "detailsOfElements[4].details.runs[1].bold", "eq": true, "name": "second part keeps the run's bold" },
+        { "path": "detailsOfElements[4].details.runs[2].bold", "eq": false, "name": "following run stays plain" },
+        { "path": "detailsOfElements[5].details.paragraphCount", "eq": 1, "name": "single-line text has one paragraph" }
+      ],
+      "save": {
+        "twoLineHeight": "detailsOfElements[0].details.style.boxHeight",
+        "oneLineHeight": "detailsOfElements[5].details.style.boxHeight"
+      }
+    },
+    {
+      "id": "the two-line box is taller than the one-line box",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${lf}" } } ] },
+      "expect": [
+        { "expr": "${twoLineHeight} - ${oneLineHeight}", "gt": 0, "name": "second line adds to the box height" }
+      ]
+    },
+    {
+      "id": "ModifyTexts writes a paragraph per line too",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${single}" }, "text": "first\r\nsecond\nthird" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "three-line content accepted" }
+      ]
+    },
+    {
+      "id": "the modified text has three paragraphs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${single}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "first\nsecond\nthird", "name": "modified content stored" },
+        { "path": "detailsOfElements[0].details.paragraphCount", "eq": 3, "name": "modified text has three paragraphs" },
+        { "path": "detailsOfElements[0].details.style.lineCount", "eq": 3, "name": "modified text has three lines" }
+      ]
+    },
+    {
+      "id": "a style-only change keeps the paragraphs",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${title}" }, "style": { "penIndex": 3 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pen change on a two-paragraph text accepted" }
+      ]
+    },
+    {
+      "id": "the content survives the rebuild",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${title}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "Title\nbody", "name": "content kept after the pen change" },
+        { "path": "detailsOfElements[0].details.paragraphCount", "eq": 2, "name": "still two paragraphs" },
+        { "path": "detailsOfElements[0].details.runs[0].bold", "eq": true, "name": "title still bold" },
+        { "path": "detailsOfElements[0].details.runs[1].penIndex", "eq": 3, "name": "pen applied to the body" }
+      ]
+    }
+  ]
+}
