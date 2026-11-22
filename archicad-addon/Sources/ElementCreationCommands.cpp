@@ -1464,6 +1464,24 @@ GSErrCode ReapplyZoneTopOffset (const GS::ObjectState& details, const API_Guid& 
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
+// The letter size of the zone (roomLSize, #2867), in millimetres as Archicad stores it, not in
+// metres like the other lengths. Applied by CreateZones (no mask) and, through ApplyZoneSettings,
+// by ModifyZones and SetDetailsOfElements.
+static GS::Optional<GS::ObjectState> ApplyZoneLetterSize (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    double roomLSize = 0.0;
+    if (details.Get ("roomLSize", roomLSize)) {
+        if (roomLSize <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "roomLSize must be greater than 0.");
+        }
+        zone.roomLSize = roomLSize;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomLSize);
+        }
+    }
+    return {};
+}
+
 GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
 {
     if (details.Contains ("name")) {
@@ -1518,6 +1536,11 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
     const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (details, element.zone, &mask);
     if (displayError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *displayError);
+    }
+
+    const GS::Optional<GS::ObjectState> letterSizeError = ApplyZoneLetterSize (details, element.zone, &mask);
+    if (letterSizeError.HasValue ()) {
+        return letterSizeError;
     }
 
     return ApplyZoneLevels (details, element.zone, &mask);
@@ -1748,6 +1771,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "minimum": 0.0,
                         "description" : "Optional thickness of the floor finish (subfloor thickness) of the zone."
                     },
+                    "roomLSize": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description" : "Optional letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -1824,6 +1852,11 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     auto levelsError = ApplyZoneLevels (parameters, element.zone, nullptr);
     if (levelsError.HasValue ()) {
         return levelsError;
+    }
+
+    auto letterSizeError = ApplyZoneLetterSize (parameters, element.zone, nullptr);
+    if (letterSizeError.HasValue ()) {
+        return letterSizeError;
     }
 
     GS::ObjectState referencePosition;
@@ -1997,6 +2030,7 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
+                        "roomLSize": { "type": "number", "exclusiveMinimum": 0.0, "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
                         "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
                         "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." },
