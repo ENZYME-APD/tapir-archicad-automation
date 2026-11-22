@@ -1,0 +1,155 @@
+{
+  "title": "CreateProfiles refuses a newSkins contour of fewer than 3 vertices instead of dropping it, and keeps a circular hole given with 3 vertices (#2971)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "A: a hole of 2 vertices with two semicircle arcs is refused, nothing is created",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2971 A",
+            "coluType": true,
+            "wallType": false,
+            "newSkins": [
+              {
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "isCore": true,
+                "contours": [
+                  {"polygonCoordinates": [{"x": -0.3, "y": -0.5}, {"x": 0.3, "y": -0.5}, {"x": 0.3, "y": 0.5}, {"x": -0.3, "y": 0.5}]},
+                  {
+                    "polygonCoordinates": [{"x": -0.1, "y": 0.0}, {"x": 0.1, "y": 0.0}],
+                    "polygonArcs": [
+                      {"begIndex": 0, "endIndex": 1, "arcAngle": 3.141592653589793},
+                      {"begIndex": 1, "endIndex": 0, "arcAngle": 3.141592653589793}
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/newSkins/0/contours/1/polygonCoordinates", "name": "the error names the hole"},
+        {"path": "attributeIds[0].error.message", "contains": "at least 3 vertices", "name": "the error says why"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "B: an outer contour of 2 vertices is refused",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2971 B",
+            "wallType": true,
+            "newSkins": [
+              {
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}]}]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/newSkins/0/contours/0/polygonCoordinates", "name": "the error names the contour"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "C: a new skin without contours is refused",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2971 C",
+            "wallType": true,
+            "newSkins": [
+              {
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "contours": []
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "D: a circular hole given as 3 vertices with an arc on each edge is accepted",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2971 D",
+            "coluType": true,
+            "wallType": false,
+            "newSkins": [
+              {
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "isCore": true,
+                "contours": [
+                  {"polygonCoordinates": [{"x": -0.3, "y": -0.5}, {"x": 0.3, "y": -0.5}, {"x": 0.3, "y": 0.5}, {"x": -0.3, "y": 0.5}]},
+                  {
+                    "polygonCoordinates": [{"x": 0.0, "y": 0.1}, {"x": -0.0866025404, "y": -0.05}, {"x": 0.0866025404, "y": -0.05}],
+                    "polygonArcs": [
+                      {"begIndex": 0, "endIndex": 1, "arcAngle": 2.0943951024},
+                      {"begIndex": 1, "endIndex": 2, "arcAngle": 2.0943951024},
+                      {"begIndex": 2, "endIndex": 0, "arcAngle": 2.0943951024}
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"pD": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back D: the hole and its arcs are kept",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${pD}"}}]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].skins", "len": 1, "name": "the skin is there"},
+        {"path": "profiles[0].skins[0].outlineCoords", "len": 10, "name": "anchor + rectangle (4 + closing) + hole (3 + closing)"},
+        {"path": "profiles[0].skins[0].outlineArcs", "len": 3, "name": "the hole's three arcs"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${pD}"}}}]}
+    }
+  ]
+}

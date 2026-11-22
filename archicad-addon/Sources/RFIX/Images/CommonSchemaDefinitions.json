@@ -13083,6 +13083,10 @@
                 "type": "number",
                 "description": "Thickness of the floor finish (subfloor thickness) of the zone."
             },
+            "roomLSize": {
+                "type": "number",
+                "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements), so this value may not change how the stamp looks."
+            },
             "contourLine": {
                 "$ref": "#/ZoneContourLine"
             },
@@ -13116,6 +13120,7 @@
             "topOffset",
             "relativeTopStory",
             "floorThickness",
+            "roomLSize",
             "contourLine",
             "coverFill",
             "surface",
@@ -13132,6 +13137,13 @@
                 "description": "The 2D coordinates of the reference line of the railing, one per node.",
                 "items": {
                     "$ref": "#/Coordinate2D"
+                }
+            },
+            "referenceLineArcs": {
+                "type": "array",
+                "description": "The curved segments of the reference line; empty when every segment is straight. begIndex and endIndex are indices into referenceLine (from 0), in the same form CreateRailingsFromPolyline takes as polylineArcs.",
+                "items": {
+                    "$ref": "#/PolyArc"
                 }
             },
             "bottomOffset": {
@@ -13187,6 +13199,7 @@
         "additionalProperties": false,
         "required": [
             "referenceLine",
+            "referenceLineArcs",
             "bottomOffset",
             "zCoordinate",
             "height",
@@ -15197,7 +15210,17 @@
           },
           "paragraphCount": {
             "type": "integer",
-            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands write one paragraph per line of the content)."
+          },
+          "lines": {
+            "type": "array",
+            "description": "Present only when labelClass is 'Text' and Archicad reports the line starts. Read-only: the lines as Archicad lays the text out, the breaks of a wrapped text included, each without the line-end characters that end it.",
+            "items": { "type": "string" }
+          },
+          "lineStarts": {
+            "type": "array",
+            "description": "Present with 'lines'. Read-only: the offset in 'text' of the first character of each entry of 'lines'.",
+            "items": { "type": "integer" }
           },
           "runs": {
             "type": "array",
@@ -15921,7 +15944,17 @@
             },
             "paragraphCount": {
                 "type": "integer",
-                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands write one paragraph per line of the content)."
+            },
+            "lines": {
+                "type": "array",
+                "description": "Read-only: the lines as Archicad lays the text out, the breaks of a wrapped text (style.nonBreaking false) included, each without the line-end characters that end it. Present when Archicad reports the line starts.",
+                "items": { "type": "string" }
+            },
+            "lineStarts": {
+                "type": "array",
+                "description": "Read-only: the offset in 'text' of the first character of each entry of 'lines'.",
+                "items": { "type": "integer" }
             },
             "runs": {
                 "type": "array",
@@ -16248,23 +16281,23 @@
             },
             "leftBoundary": {
                 "$ref": "#/StairBoundary",
-                "description": "The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it."
+                "description": "Read only. The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "rightBoundary": {
                 "$ref": "#/StairBoundary",
-                "description": "The right boundary line of the stair (the memo's stairBoundary[1]), seen along the baseline. Given when Archicad has calculated it."
+                "description": "Read only. The right boundary line of the stair (the memo's stairBoundary[1]), seen along the baseline. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "walkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The walking line of the stair (the memo's stairWalkingLine), the one Archicad lays the goings out along. Given when Archicad has calculated it."
+                "description": "Read only. The walking line of the stair (the memo's stairWalkingLine), the one Archicad lays the goings out along. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "customWalkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The custom walking line of the stair (the memo's stairCustomWalkLine). Archicad 29 fills it on every stair: on a stair whose walking line was not edited it is the same as walkingLine."
+                "description": "Read only. The custom walking line of the stair (the memo's stairCustomWalkLine). Archicad 29 fills it on every stair: on a stair whose walking line was not edited it is the same as walkingLine. The API cannot write it (see StairOutlineNotWritable)."
             },
             "centerWalkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The center walking line of the stair (the memo's stairCenterWalkLine). Archicad 29 fills it on every stair: on a stair with a centered walking line it is the same as walkingLine."
+                "description": "Read only. The center walking line of the stair (the memo's stairCenterWalkLine). Archicad 29 fills it on every stair: on a stair with a centered walking line it is the same as walkingLine. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "linkToSettings": {
                 "$ref": "#/LinkToSettings"
@@ -16595,6 +16628,10 @@
         },
         "additionalProperties": false,
         "required": ["isCustom", "points", "arcs", "edges"]
+    },
+    "StairOutlineNotWritable": {
+        "type": "object",
+        "description": "Not writable: a boundary or a walking line of a stair, as GetDetailsOfElements reads it (leftBoundary, rightBoundary, walkingLine, customWalkingLine, centerWalkingLine). Archicad lays them out itself from the baseline and the flight width, and the API keeps none given: ACAPI_Element_Change refuses a stair memo that holds them (APIERR_GENERAL, also when it is unchanged) or ignores them, ACAPI_Element_ChangeExt does not take stairs (APIERR_BADID), and ACAPI_Element_Create lays them out again, whatever the memo holds (checked on Archicad 29). The walking line stays in the middle of the flight: Archicad 29 keeps walkingLinePosition Center and walkingLineOffset half the flight width whatever is written. An item that gives one is refused with an error, before anything is changed. Change the baseline instead (CreateStairs, RecreateStairs), or flightWidth (ModifyStairs), which moves the boundaries and keeps the walking line in the middle."
     },
     "StairStructureDetails": {
         "type": "object",
@@ -17637,6 +17674,183 @@
             "depthCoordinates"
         ]
     },
+    "InteriorElevationDetails": {
+        "type": "object",
+        "description": "The settings of an Interior Elevation element and its segments. Each segment is one viewpoint of the Project Map, with its own name, reference ID, lines and settings.",
+        "properties": {
+            "showOnStories": {
+                "type": "string",
+                "enum": ["All", "OneStory", "InRange", "PartRange"],
+                "description": "Which stories the interior elevation is shown on."
+            },
+            "storyToShowOn": {
+                "type": "integer",
+                "description": "The story index the interior elevation is shown on, if showOnStories is 'OneStory'."
+            },
+            "useCommonMarker": {
+                "type": "boolean",
+                "description": "Whether the common marker of the interior elevation is shown."
+            },
+            "commonMarkerGuid": {
+                "$ref": "#/Guid",
+                "description": "The GUID Archicad keeps for the common marker (API_InteriorElevationType::markerGuid)."
+            },
+            "commonMarkerPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the common marker."
+            },
+            "commonMarkerFontIndex": {
+                "type": "integer",
+                "description": "Font index of the common marker."
+            },
+            "commonMarkerSize": {
+                "type": "number",
+                "description": "Size of the common marker."
+            },
+            "commonMarkerTextSize": {
+                "type": "number",
+                "description": "Size of the common marker's text."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The segments of the interior elevation, in the order of its line (CreateInteriorElevations makes one per gap between two nodeCoordinates). Empty when they cannot be read.",
+                "items": {
+                    "$ref": "#/InteriorElevationSegmentDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "useCommonMarker",
+            "segments"
+        ]
+    },
+    "InteriorElevationSegmentDetails": {
+        "type": "object",
+        "description": "One segment of an Interior Elevation: one viewpoint of the Project Map.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the segment, shown in the Project Map. RenameNavigatorItem changes it through the segment's viewpoint."
+            },
+            "idStr": {
+                "type": "string",
+                "description": "The reference ID of the segment, shown in its marker and in the Project Map."
+            },
+            "mainCoordinates": {
+                "type": "array",
+                "description": "The points of the segment's line, from start to end. Empty when the line cannot be read. Archicad does not keep the line on the nodeCoordinates given to CreateInteriorElevations: in Archicad 26 and 28 each segment's line is moved to the left of its pair of nodes by the depth.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "depthCoordinates": {
+                "type": "array",
+                "description": "The points of the segment's depth line, its far boundary. Empty when it cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "startCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The first point of the segment's line."
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The last point of the segment's line."
+            },
+            "depth": {
+                "type": "number",
+                "description": "The distance of the first depth point from the first line of the segment (depth of CreateInteriorElevations)."
+            },
+            "viewDirection": {
+                "$ref": "#/Coordinate2D",
+                "description": "The unit vector perpendicular to the first line of the segment, pointing to the side of the depth line: the direction the segment looks in."
+            },
+            "settings": {
+                "$ref": "#/SectionElevationDetails",
+                "description": "The settings of the segment (API_SectionSegment), with the keys GetSectionsAndElevationsDetails gives for a Section or an Elevation. showOnStories and storyToShowOn are the interior elevation's own, above, and markerShowType is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "idStr",
+            "mainCoordinates",
+            "depthCoordinates",
+            "settings"
+        ]
+    },
+    "InteriorElevationSegmentSettableDetails": {
+        "type": "object",
+        "description": "The changes to one segment of an Interior Elevation, for SetInteriorElevationsDetails. Only the fields given are changed.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the segment in the segments that GetDetailsOfElements returns for the interior elevation, from 0."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the segment, shown in the Project Map."
+            },
+            "id": {
+                "type": "string",
+                "description": "The new reference ID of the segment, shown in its marker and in the Project Map."
+            },
+            "settings": {
+                "$ref": "#/SectionElevationSettableDetails",
+                "description": "The segment settings to change (API_SectionSegment), with the keys of SetSectionsAndElevationsDetails. showOnStories, storyToShowOn and markerShowType are not settings of a segment and are refused here; showOnStories and storyToShowOn are set on the interior elevation itself."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentIndex"
+        ]
+    },
+    "InteriorElevationSettableDetails": {
+        "type": "object",
+        "description": "The settings of an Interior Elevation element and of its segments that SetInteriorElevationsDetails changes, with the keys of InteriorElevationDetails. Only the fields given are changed.",
+        "properties": {
+            "showOnStories": {
+                "type": "string",
+                "enum": ["All", "OneStory", "InRange", "PartRange"],
+                "description": "Which stories the interior elevation is shown on."
+            },
+            "storyToShowOn": {
+                "type": "integer",
+                "description": "The story index the interior elevation is shown on, if showOnStories is 'OneStory'."
+            },
+            "useCommonMarker": {
+                "type": "boolean",
+                "description": "Whether the common marker of the interior elevation is shown."
+            },
+            "commonMarkerPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the common marker."
+            },
+            "commonMarkerFontIndex": {
+                "type": "integer",
+                "description": "Font index of the common marker."
+            },
+            "commonMarkerSize": {
+                "type": "number",
+                "description": "Size of the common marker."
+            },
+            "commonMarkerTextSize": {
+                "type": "number",
+                "description": "Size of the common marker's text."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The segments to change, each chosen by its segmentIndex. Segments not listed are kept as they are.",
+                "items": {
+                    "$ref": "#/InteriorElevationSegmentSettableDetails"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "PictureAnchorPoint": {
         "type": "string",
         "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
@@ -17878,6 +18092,9 @@
             },
             {
                 "$ref": "#/SectionDetails"
+            },
+            {
+                "$ref": "#/InteriorElevationDetails"
             },
             {
                 "$ref": "#/PictureDetails"
@@ -19039,6 +19256,11 @@
                 "minimum": 0.0,
                 "description": "Thickness of the floor finish (subfloor thickness) of the zone."
             },
+            "roomLSize": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
+            },
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
@@ -19552,7 +19774,7 @@
             },
             "height": {
                 "type": "number",
-                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
+                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content (one paragraph per line) with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
                 "$ref": "#/Justification",

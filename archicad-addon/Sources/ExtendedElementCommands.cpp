@@ -4996,6 +4996,26 @@ GS::Optional<GS::UniString> CheckWallSlantTakesEffect (const API_Element& elemen
     return {};
 }
 
+// Called after ApplyWallDetails (#2973). The DevKit (API_WallReferenceLineLocationID) says an
+// offset cannot be specified when the reference line is Center or CoreCenter: Archicad keeps
+// offset 0 there while the command reports success. A non-zero offset on such a wall, after
+// this item is applied, is therefore an error; 0 (what GetDetailsOfElements reads on such a
+// wall) is accepted, so a read fed back unchanged never fails. Profile walls do not use
+// referenceLineLocation, so they are not checked.
+GS::Optional<GS::UniString> CheckWallOffsetTakesEffect (const API_Element& element, const GS::ObjectState& details)
+{
+    constexpr double Tolerance = 1e-6;
+    auto offset = GetOptionalDouble (details, "offset");
+    if (!offset.HasValue () || std::abs (offset.Get ()) < Tolerance || element.wall.modelElemStructureType == API_ProfileStructure) {
+        return {};
+    }
+    const API_WallReferenceLineLocationID referenceLineLocation = element.wall.referenceLineLocation;
+    if (referenceLineLocation == APIWallRefLine_Center || referenceLineLocation == APIWallRefLine_CoreCenter) {
+        return GS::UniString ("'offset' is unavailable on a wall whose referenceLineLocation is Center or CoreCenter: Archicad keeps it 0. Send another referenceLineLocation (e.g. Outside or Inside) in the same item, or omit 'offset'.");
+    }
+    return {};
+}
+
 GS::Optional<GS::UniString> ApplyRoofLevels (API_Element& element, API_Element* mask, const GS::ObjectState& details, bool& changed)
 {
     GS::Array<GS::ObjectState> roofLevels;
@@ -8326,7 +8346,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                             "exclusiveMinimum": 0.0,
                             "description": "Optional thickness. When omitted, the favorite's or the Wall tool default's thickness is kept. Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the favorite (or the wall tool default), which may be a composite; send structureType 'Basic' for the thickness to apply."
                         },
-                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept." },
+                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept. Unavailable when the wall's referenceLineLocation is Center or CoreCenter (Archicad keeps 0 there): a non-zero value on such a wall fails it instead of being dropped." },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation",
@@ -8529,6 +8549,10 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     auto slantError = CheckWallSlantTakesEffect (element, previousSlantAlpha, previousSlantBeta, parameters);
     if (slantError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, slantError.Get ());
+    }
+    auto offsetError = CheckWallOffsetTakesEffect (element, parameters);
+    if (offsetError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, offsetError.Get ());
     }
 
     return {};
@@ -8943,6 +8967,16 @@ static const char* StairSettingsSchemaProperties = R"(
                             }
                         })";
 
+// The boundaries and the walking lines GetDetailsOfElements reads, taken by CreateStairs,
+// ModifyStairs and RecreateStairs only to be refused with an error that says what to change instead
+// (ApplyStairSettings), rather than with a schema error about an unknown key.
+static const char* StairOutlineSchemaProperties = R"(
+                        "leftBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the left boundary of the stair. An item with it is refused." },
+                        "rightBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the right boundary of the stair. An item with it is refused." },
+                        "walkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the walking line of the stair. An item with it is refused." },
+                        "customWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the custom walking line of the stair. An item with it is refused." },
+                        "centerWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the center walking line of the stair. An item with it is refused." })";
+
 static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
 
 static GS::UniString StairLinePositionToString (API_LinePositionID position)
@@ -9075,7 +9109,7 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                             "type": "array",
                             "description": "Optional. The curved edges of the baseline, for a curved or spiral stair, in the format GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, and an arc bends one edge, so endIndex = begIndex + 1. arcAngle is the angle of the arc in radians, not 0 and less than a full turn; it is positive if the arc is on the right-hand side of the straight edge. At most one arc per edge; the edges without an arc are straight.",
                             "items": { "$ref": "#/PolyArc" }
-                        },)") + StairSettingsSchemaProperties + R"(
+                        },)") + StairSettingsSchemaProperties + "," + StairOutlineSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["baseLinePoints", "zCoordinate"]
@@ -10587,7 +10621,7 @@ GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () con
                         "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
                         "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
                         "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
-                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + R"(
+                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + "," + StairOutlineSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11876,6 +11910,22 @@ static GS::Optional<GS::UniString> ApplyStairSideStructureSettings (const GS::Ob
 // memo, and Archicad rebuilds the subelements from them. Only the given settings are written.
 static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
 {
+    // The boundaries and the walking lines (memo stairBoundary, stairWalkingLine, stairCustomWalkLine,
+    // stairCenterWalkLine) cannot be written. Tried on Archicad 29 build 5101: ACAPI_Element_Change
+    // answers APIERR_GENERAL to a stair memo with APIMemoMask_All or APIMemoMask_Polygon, also when
+    // the memo is the stair's own, unchanged, and ignores them with the subelement masks;
+    // ACAPI_Element_ChangeExt answers APIERR_BADID for a stair; ACAPI_Element_Create, with them in
+    // the memo next to the baseline (isCustom set or not, with the baseline's edge and vertex data
+    // or without), lays them out again from the baseline and the flight width. So an item with one
+    // is refused before anything is written, saying what moves them instead.
+    for (const char* key : { "leftBoundary", "rightBoundary", "walkingLine", "customWalkingLine", "centerWalkingLine" }) {
+        if (details.Contains (key)) {
+            return GS::UniString (key) + " cannot be written: Archicad lays out the boundaries and the walking lines of a stair itself, from its baseline and its flight width, "
+                "and the API keeps none given (Archicad refuses or ignores them, also in a new stair). "
+                "To move them, change the baseline (CreateStairs, RecreateStairs) or flightWidth (ModifyStairs); the walking line stays in the middle of the flight. Nothing was changed.";
+        }
+    }
+
     API_StairType& stair = element.stair;
 
     auto flightWidth = GetOptionalDouble (details, "flightWidth");
@@ -12811,7 +12861,7 @@ GS::String RecreateStairsCommand::GetName () const
 
 GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "stairs": {
@@ -12844,7 +12894,7 @@ GS::Optional<GS::UniString> RecreateStairsCommand::GetInputParametersSchema () c
                             "type": "array",
                             "description": "Optional. The curved edges of the new baseline, as in CreateStairs and as GetDetailsOfElements returns them (0-based indices, endIndex = begIndex + 1). Without it every edge of the new baseline is straight, also when the old stair was curved.",
                             "items": { "$ref": "#/PolyArc" }
-                        }
+                        },)") + StairOutlineSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId", "baseLinePoints"]
@@ -13102,8 +13152,9 @@ GS::Optional<GS::ObjectState> RecreateOneStair (const StairDataToCarry& data, co
     element.header.renovationStatus = data.element.header.renovationStatus;
     element.header.renovationFilterGuid = data.element.header.renovationFilterGuid;
 
-    // The item holds only elementId and the baseline keys of CreateStairs (its schema allows no
-    // other), so SetTypeSpecificParameters writes the baseline and nothing else. It also sets the
+    // The item holds only elementId, the baseline keys of CreateStairs and the boundary and walking
+    // line keys (its schema allows no other), so SetTypeSpecificParameters writes the baseline and
+    // nothing else; it refuses the item when it gives a boundary or walking line. It also sets the
     // story and the base offset from zCoordinate, which the item does not have: both are set to
     // the old stair's below.
     const CreateStairsCommand createStairsCommand;
@@ -17821,7 +17872,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Send structureType 'Basic' in the same call to switch such a wall first."
                         },
                         "bottomOffset": { "type": "number" },
-                        "offset": { "type": "number" },
+                        "offset": { "type": "number", "description": "Reference line offset. Unavailable when the wall's referenceLineLocation is Center or CoreCenter after this item is applied (Archicad keeps 0 there): a non-zero value on such a wall fails the item instead of being dropped. 0 is accepted." },
                         "structureType": {
                             "$ref": "#/WallStructureType"
                         },
@@ -17947,6 +17998,11 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
             auto slantError = CheckWallSlantTakesEffect (element, previousSlantAlpha, previousSlantBeta, item);
             if (slantError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, slantError.Get ()));
+                continue;
+            }
+            auto offsetError = CheckWallOffsetTakesEffect (element, item);
+            if (offsetError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, offsetError.Get ()));
                 continue;
             }
             if (!changed) {
@@ -18188,6 +18244,23 @@ static GS::Optional<GS::UniString> ApplyPolygonEdgeTrims (API_ElementMemo& memo,
 static GS::Optional<GS::UniString> ApplyPolygonEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& elementSideMaterial, bool isSlab);
 static GS::Array<Int32> GetPolygonEdgeIndices (const API_ElementMemo& memo);
 
+// The edge data of one edge of a single-plane roof's or a slab's polygon: its trim, its side
+// surface and its edge type, with the ends of the edge they belonged to. Edge i runs from
+// coords[i] to coords[i + 1]; index 0 and the closing vertex of each contour (the pends) carry
+// no edge.
+struct RoofPolygonEdge {
+    Int32                   index;
+    API_Coord               begin;
+    API_Coord               end;
+    API_EdgeTrim            trim;
+    API_OverriddenAttribute sideMaterial;
+    API_RoofEdgeTypeID      edgeType;
+};
+
+static GS::Array<RoofPolygonEdge> GetRoofPolygonEdges (const API_ElementMemo& memo);
+static void RestoreRoofPolygonEdges (API_ElementMemo& memo, const GS::Array<RoofPolygonEdge>& oldEdges, bool sameContours, bool hadEdgeTypes);
+static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo);
+
 ModifySlabsCommand::ModifySlabsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -18228,7 +18301,7 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3,
-                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed."
+                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed. The Edge Angle and the custom surface of an edge are kept when the new edge lies on an old one (an unchanged or split edge), or, with the same point counts as before, from the edge with the same index (moved points); other edges are Vertical with the slab's side surface."
                         },
                         "polygonArcs": {
                             "type": "array",
@@ -18496,11 +18569,27 @@ GS::ObjectState ModifySlabsCommand::Execute (const GS::ObjectState& parameters, 
                 });
                 ACAPI_Element_GetMemo (element.header.guid, &memo);
 
+                // ApplySlabPolygonChange leaves every edge Vertical with the slab's side surface, so
+                // the Edge Angles and the custom edge surfaces set in Slab Settings were lost on every
+                // outline or hole change, even an unchanged outline (#2822). They are given back as
+                // ModifyRoofs gives them back to a roof's polygon: each new edge keeps the data of the
+                // old edge it lies on, and with unchanged point counts that of the edge with the same index.
+                GS::Array<RoofPolygonEdge> oldEdges = GetRoofPolygonEdges (memo);
+                const GSSize oldSideMaterialCount = memo.sideMaterials == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.sideMaterials) / sizeof (API_OverriddenAttribute);
+                for (RoofPolygonEdge& oldEdge : oldEdges) {
+                    if (oldEdge.index >= oldSideMaterialCount) {
+                        // No surface stored for the edge: the slab's side surface, as ApplySlabPolygonChange writes it.
+                        oldEdge.sideMaterial = element.slab.sideMat;
+                    }
+                }
+                const GS::Array<Int32> oldContours = GetContourPointCounts (memo);
+
                 auto error = ApplySlabPolygonChange (memo, element.slab.sideMat, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
                 }
+                RestoreRoofPolygonEdges (memo, oldEdges, GetContourPointCounts (memo) == oldContours, false);
 
                 // Non-geometry field changes (thickness/level/etc, accumulated into mask above)
                 // are applied first via ACAPI_Element_Change; the polygon itself goes through
@@ -19855,18 +19944,6 @@ static GS::Optional<GS::UniString> ApplyPlaneRoofPivot (API_Element& element, AP
     return {};
 }
 
-// The edge data of one edge of a single-plane roof's polygon: its trim, its side surface and
-// its edge type, with the ends of the edge they belonged to. Edge i runs from coords[i] to
-// coords[i + 1]; index 0 and the closing vertex of each contour (the pends) carry no edge.
-struct RoofPolygonEdge {
-    Int32                   index;
-    API_Coord               begin;
-    API_Coord               end;
-    API_EdgeTrim            trim;
-    API_OverriddenAttribute sideMaterial;
-    API_RoofEdgeTypeID      edgeType;
-};
-
 static GS::Array<Int32> GetPolygonEdgeIndices (const API_ElementMemo& memo)
 {
     GS::Array<Int32> indices;
@@ -20638,6 +20715,10 @@ static void GetCurrentRoofOutline (const API_ElementMemo& memo, bool isPlaneRoof
 // ID 0, as API_ElementMemo asks for new vertices, edges and contours, and the roof planes of the
 // first edge of the old outline. An empty memo built from scratch (no IDs, no pivotPolyEdges) is
 // refused by ACAPI_Element_Change on an existing roof (Archicad 29, #2398).
+// The arrays are never resized in place with BMReallocPtr/BMReallocHandle: a memo pointer from
+// ACAPI_Element_GetMemo is not moveable, so growing it aborted Archicad with "Fatal memory error
+// in BMReallocPtr" (Archicad 29 on macOS, #2897, as in #452). A new block is allocated, the kept
+// records are copied into it and the old block is killed.
 static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCount, GSIndex keepUpTo, Int32 nCoords, Int32 nSubPolys)
 {
     const GSSize newCoordCount = nCoords + 1;
@@ -20645,13 +20726,16 @@ static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCo
         if (ids == nullptr) {
             return;
         }
-        ids = reinterpret_cast<UInt32**> (BMReallocHandle (reinterpret_cast<GSHandle> (ids), count * sizeof (UInt32), REALLOC_CLEAR, 0));
-        if (ids == nullptr) {
+        UInt32** newIds = reinterpret_cast<UInt32**> (BMAllocateHandle (count * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+        if (newIds == nullptr) {
             return;
         }
-        for (GSIndex i = lastKept + 1; i < count; ++i) {
-            (*ids)[i] = 0;
+        const GSSize oldCount = BMGetHandleSize (reinterpret_cast<GSConstHandle> (ids)) / sizeof (UInt32);
+        for (GSIndex i = 0; i <= lastKept && i < oldCount && i < count; ++i) {
+            (*newIds)[i] = (*ids)[i];
         }
+        BMKillHandle (reinterpret_cast<GSHandle*> (&ids));
+        ids = newIds;
     };
     resizeIds (memo.additionalPolyVertexIDs, newCoordCount, keepUpTo);
     resizeIds (memo.additionalPolyEdgeIDs, newCoordCount, keepUpTo);
@@ -20682,10 +20766,16 @@ static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCo
         memo.pivotPolyEdges[i] = {};
     }
     API_PivotPolyEdgeData* edges = reinterpret_cast<API_PivotPolyEdgeData*> (
-        BMReallocPtr (reinterpret_cast<GSPtr> (memo.pivotPolyEdges), newCoordCount * sizeof (API_PivotPolyEdgeData), REALLOC_CLEAR, 0));
+        BMAllocatePtr (newCoordCount * sizeof (API_PivotPolyEdgeData), ALLOCATE_CLEAR, 0));
     if (edges == nullptr) {
         return;
     }
+    // The kept records move to the new array with their level data; the old array is killed
+    // without it.
+    for (GSIndex i = 0; i <= keepUpTo && i < oldEdgeCount && i < newCoordCount; ++i) {
+        edges[i] = memo.pivotPolyEdges[i];
+    }
+    BMKillPtr (reinterpret_cast<GSPtr*> (&memo.pivotPolyEdges));
     memo.pivotPolyEdges = edges;
     for (GSIndex i = keepUpTo + 1; i < newCoordCount; ++i) {
         API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];
@@ -22274,7 +22364,10 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             if (changed) {
                 err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
                 if (err != NoError) {
-                    results.Push (CreateFailedExecutionResult (err, "Failed to modify column."));
+                    // Names the reason when Archicad refused an element the user could not edit
+                    // either, as SetDetailsOfElements does (#2972).
+                    const GS::UniString refusal = DescribeElementEditRefusal (err, element.header);
+                    results.Push (CreateFailedExecutionResult (err, refusal.IsEmpty () ? GS::UniString ("Failed to modify column.") : "Failed to modify column, because " + refusal + "."));
                     continue;
                 }
             }
@@ -22283,9 +22376,16 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
                 GS::UniString sectionError;
                 bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item, sectionError);
                 if (!sectionOk) {
-                    results.Push (sectionError.IsEmpty ()
-                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments.")
-                        : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                    if (sectionError.IsEmpty ()) {
+                        // ApplyColumnSectionToMemo returns no error code, so the element's layer
+                        // and editability are checked as for a general error (#2972).
+                        const GS::UniString refusal = DescribeElementEditRefusal (APIERR_GENERAL, element.header);
+                        results.Push (refusal.IsEmpty ()
+                            ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments.")
+                            : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section or segments, because " + refusal + "."));
+                    } else {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                    }
                     continue;
                 }
                 const GS::Optional<GS::UniString> ignoredSize = GetIgnoredColumnSectionSize (element.header.guid, item);
@@ -23161,9 +23261,11 @@ static API_CutPlanePlanConn StringToPlanConn (const GS::UniString& s)
     return APICutPl_Online;
 }
 
-static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneType& cutPlane, bool includeReadOnly)
+// The settings of one section segment, the keys of SectionElevationDetails. cutPlane, when given,
+// adds the settings a Section or an Elevation keeps outside its segment (showOnStories,
+// storyToShowOn, markerShowType) in their place; an Interior Elevation segment has none of them.
+static void AddSectionSegmentDetails (GS::ObjectState& os, const API_SectionSegment& seg, bool includeReadOnly, const API_CutPlaneType* cutPlane)
 {
-    const API_SectionSegment& seg = cutPlane.segment;
 
     os.Add ("name", GS::UniString (seg.cutPlName));
     os.Add ("id", GS::UniString (seg.cutPlIdStr));
@@ -23230,9 +23332,11 @@ static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneT
     os.Add ("boundaryDisplayMode", BoundaryDisplayToString (seg.boundaryDisplay));
     os.Add ("boundaryPenIndex", seg.boundaryPen);
     os.Add ("boundaryLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, seg.boundaryLineType)));
-    os.Add ("showOnStories", CutPlaneShowTypeToString (cutPlane.cutPlShow));
-    os.Add ("storyToShowOn", cutPlane.storyToShowOn);
-    os.Add ("markerShowType", cutPlane.markerShow == APICutPl_ShowWingMarkers ? GS::UniString ("WingMarkers") : GS::UniString ("MiddleMarker"));
+    if (cutPlane != nullptr) {
+        os.Add ("showOnStories", CutPlaneShowTypeToString (cutPlane->cutPlShow));
+        os.Add ("storyToShowOn", cutPlane->storyToShowOn);
+        os.Add ("markerShowType", cutPlane->markerShow == APICutPl_ShowWingMarkers ? GS::UniString ("WingMarkers") : GS::UniString ("MiddleMarker"));
+    }
     os.Add ("intendedPlanConnectivity", PlanConnToString (seg.intPlanConn));
 
     if (includeReadOnly) {
@@ -23247,14 +23351,105 @@ static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneT
     }
 }
 
-// Applies every field present in 'details' onto cutPlane. Returns an error for an attribute guid
-// that does not name an attribute of the expected type. When mask is non-null, also sets the
-// corresponding ACAPI_ELEMENT_MASK_SET bit (needed for ACAPI_Element_Change; not needed when
-// preparing a brand new element for ACAPI_Element_CreateExt, which always writes the full struct).
-static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const GS::ObjectState& details, API_CutPlaneType& cutPlane, API_Element* mask)
+static void AddSectionElevationDetails (GS::ObjectState& os, const API_CutPlaneType& cutPlane, bool includeReadOnly)
 {
-    API_SectionSegment& seg = cutPlane.segment;
+    AddSectionSegmentDetails (os, cutPlane.segment, includeReadOnly, &cutPlane);
+}
 
+// The segments of an Interior Elevation are in its memo (#2851): intElevSegments holds one
+// API_SectionSegment per segment, and sectionSegmentMainCoords and sectionSegmentDepthCoords
+// hold the main and depth line points of every segment one after the other, nMainCoord and
+// nDepthCoord points per segment (the DevKit's DumpSectionLineCoords reads the main line so).
+// The element's own segment only holds the defaults the segments were made from, so it is not
+// reported. Every count is checked against the size of its pointer.
+void AddInteriorElevationDetails (const API_Element& elem, GS::ObjectState& os)
+{
+    const API_InteriorElevationType& intElev = elem.interiorElevation;
+    os.Add ("showOnStories", CutPlaneShowTypeToString (intElev.cutPlShow));
+    os.Add ("storyToShowOn", intElev.storyToShowOn);
+    os.Add ("useCommonMarker", intElev.useCommonMarker);
+    os.Add ("commonMarkerGuid", APIGuidToString (intElev.markerGuid));
+    os.Add ("commonMarkerPenIndex", intElev.markerPen);
+    os.Add ("commonMarkerFontIndex", intElev.markerFont);
+    os.Add ("commonMarkerSize", intElev.markerSize);
+    os.Add ("commonMarkerTextSize", intElev.markerTextSize);
+
+    const auto& segments = os.AddList<GS::ObjectState> ("segments");
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All) != NoError || memo.intElevSegments == nullptr) {
+        return;
+    }
+
+    const GSSize nSegments = std::min<GSSize> (static_cast<GSSize> (intElev.nSegments),
+        BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment));
+    const GSSize nAllMain = memo.sectionSegmentMainCoords != nullptr
+        ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentMainCoords)) / sizeof (API_Coord)
+        : 0;
+    const GSSize nAllDepth = memo.sectionSegmentDepthCoords != nullptr
+        ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.sectionSegmentDepthCoords)) / sizeof (API_Coord)
+        : 0;
+
+    GSSize mainOffset = 0;
+    GSSize depthOffset = 0;
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        const API_SectionSegment& seg = memo.intElevSegments[i];
+        GS::ObjectState segmentOs;
+        segmentOs.Add ("name", GS::UniString (seg.cutPlName));
+        segmentOs.Add ("idStr", GS::UniString (seg.cutPlIdStr));
+
+        const GSSize nMain = std::max<GSSize> (0, std::min<GSSize> (static_cast<GSSize> (seg.nMainCoord), nAllMain - mainOffset));
+        const GSSize nDepth = std::max<GSSize> (0, std::min<GSSize> (static_cast<GSSize> (seg.nDepthCoord), nAllDepth - depthOffset));
+        const API_Coord* mainCoords = nMain > 0 ? memo.sectionSegmentMainCoords + mainOffset : nullptr;
+        const API_Coord* depthCoords = nDepth > 0 ? memo.sectionSegmentDepthCoords + depthOffset : nullptr;
+
+        const auto& mainList = segmentOs.AddList<GS::ObjectState> ("mainCoordinates");
+        for (GSIndex j = 0; j < nMain; ++j) {
+            mainList (Create2DCoordinateObjectState (mainCoords[j]));
+        }
+        const auto& depthList = segmentOs.AddList<GS::ObjectState> ("depthCoordinates");
+        for (GSIndex j = 0; j < nDepth; ++j) {
+            depthList (Create2DCoordinateObjectState (depthCoords[j]));
+        }
+
+        if (nMain >= 2) {
+            const API_Coord& begC = mainCoords[0];
+            segmentOs.Add ("startCoordinate", Create2DCoordinateObjectState (begC));
+            segmentOs.Add ("endCoordinate", Create2DCoordinateObjectState (mainCoords[nMain - 1]));
+            const double dx = mainCoords[1].x - begC.x;
+            const double dy = mainCoords[1].y - begC.y;
+            const double length = sqrt (dx * dx + dy * dy);
+            if (nDepth >= 1 && length > 1e-9) {
+                // Signed distance of the first depth point from the first line of the segment, positive on its left.
+                const API_Coord& depthC = depthCoords[0];
+                const double leftDistance = (dx * (depthC.y - begC.y) - dy * (depthC.x - begC.x)) / length;
+                segmentOs.Add ("depth", fabs (leftDistance));
+                const double side = leftDistance < 0.0 ? -1.0 : 1.0;
+                const API_Coord viewDirection = { -dy / length * side, dx / length * side };
+                segmentOs.Add ("viewDirection", Create2DCoordinateObjectState (viewDirection));
+            }
+        }
+
+        GS::ObjectState settings;
+        AddSectionSegmentDetails (settings, seg, true, nullptr);
+        segmentOs.Add ("settings", settings);
+        segments (segmentOs);
+
+        mainOffset += static_cast<GSSize> (seg.nMainCoord);
+        depthOffset += static_cast<GSSize> (seg.nDepthCoord);
+    }
+}
+
+// Applies every segment field present in 'details' (the keys of SectionElevationSettableDetails
+// apart from showOnStories, storyToShowOn and markerShowType, which are not in the segment) onto
+// seg. Returns an error for an attribute guid that does not name an attribute of the expected
+// type. When mask is non-null, seg is the segment of an API_CutPlaneType and the corresponding
+// ACAPI_ELEMENT_MASK_SET bit is set too (needed for ACAPI_Element_Change; not needed when
+// preparing a brand new element for ACAPI_Element_CreateExt, which always writes the full struct,
+// nor for an Interior Elevation segment, which is written through the memo).
+static GS::Optional<GS::UniString> ApplySectionSegmentSettableDetails (const GS::ObjectState& details, API_SectionSegment& seg, API_Element* mask)
+{
     // The name and the reference ID are not among these settings: ACAPI_Element_Change reports
     // success for them but Archicad keeps the old values. CreateSections and CreateElevations
     // take them as 'name' and 'id', and ModifySections changes them on existing elements.
@@ -23492,6 +23687,24 @@ static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const G
             if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.boundaryLineType);
         }
     }
+    if (details.Get ("intendedPlanConnectivity", strVal)) {
+        seg.intPlanConn = StringToPlanConn (strVal);
+        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.intPlanConn);
+    }
+
+    return {};
+}
+
+// Applies every field present in 'details' onto cutPlane: its segment and the settings a Section or
+// an Elevation keeps outside it. See ApplySectionSegmentSettableDetails for the errors and the mask.
+static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const GS::ObjectState& details, API_CutPlaneType& cutPlane, API_Element* mask)
+{
+    const GS::Optional<GS::UniString> segmentError = ApplySectionSegmentSettableDetails (details, cutPlane.segment, mask);
+    if (segmentError.HasValue ()) {
+        return segmentError;
+    }
+
+    GS::UniString strVal;
     if (details.Get ("showOnStories", strVal)) {
         cutPlane.cutPlShow = StringToCutPlaneShowType (strVal);
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, cutPlShow);
@@ -23506,10 +23719,6 @@ static GS::Optional<GS::UniString> ApplySectionElevationSettableDetails (const G
     if (details.Get ("markerShowType", strVal)) {
         cutPlane.markerShow = (strVal == "WingMarkers") ? APICutPl_ShowWingMarkers : APICutPl_ShowMiddleMarker;
         if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, markerShow);
-    }
-    if (details.Get ("intendedPlanConnectivity", strVal)) {
-        seg.intPlanConn = StringToPlanConn (strVal);
-        if (mask != nullptr) ACAPI_ELEMENT_MASK_SET (*mask, API_CutPlaneType, segment.intPlanConn);
     }
 
     return {};
@@ -23695,6 +23904,194 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
     });
 }
 
+// Puts the 1 or 2 points of a line that runs parallel to the section line newBeg -> newEnd, at
+// signedDistance on its left (negative: on its right), into coords. Other counts are not touched.
+static void PlaceSectionParallelLine (API_Coord* coords, UInt32 count, const API_Coord& newBeg, const API_Coord& newEnd, double signedDistance)
+{
+    const double dx = newEnd.x - newBeg.x;
+    const double dy = newEnd.y - newBeg.y;
+    const double length = sqrt (dx * dx + dy * dy);
+    const double nx = -dy / length;
+    const double ny = dx / length;
+    if (count >= 1) {
+        coords[0].x = newBeg.x + nx * signedDistance;
+        coords[0].y = newBeg.y + ny * signedDistance;
+    }
+    if (count == 2) {
+        coords[1].x = newEnd.x + nx * signedDistance;
+        coords[1].y = newEnd.y + ny * signedDistance;
+    }
+}
+
+// Signed distance of point from the line beg -> end, positive on its left (as AddSectionLinesFromMemo).
+static double SectionLeftDistance (const API_Coord& beg, const API_Coord& end, const API_Coord& point)
+{
+    const double dx = end.x - beg.x;
+    const double dy = end.y - beg.y;
+    const double length = sqrt (dx * dx + dy * dy);
+    return (dx * (point.y - beg.y) - dy * (point.x - beg.x)) / length;
+}
+
+// Moves the section line of a straight Section or Elevation (2 main points) to newBeg -> newEnd,
+// and its depth line to depth from it (or to the distance it had), on the side it was. The marked
+// distant area line keeps its distance too. The point counts stay the same, so the memo read from
+// the element is changed in place and written with ACAPI_Element_Change and the main coords mask, the way the DevKit's
+// Do_CutPlane_Or_Elevation_Edit_Coords (Element_Test) changes the coordinates of both types.
+// A depth the main coords change did not apply is then written with the depth coords mask.
+// It is read back, so a change Archicad did not take is reported instead of a success.
+// The element is loaded here again, after any name or ID change, as the sample does it.
+static GS::Optional<GS::UniString> ChangeSectionLines (const API_Guid& guid,
+                                                       const GS::Optional<API_Coord>& requestedBeg,
+                                                       const GS::Optional<API_Coord>& requestedEnd,
+                                                       const GS::Optional<double>& requestedDepth,
+                                                       GSErrCode& err)
+{
+    API_Element element = {};
+    element.header.guid = guid;
+    err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return GS::UniString ("Failed to load the element.");
+    }
+    const API_SectionSegment& segment = GetElemTypeId (element.header) == API_ElevationID
+        ? element.elevation.segment
+        : element.cutPlane.segment;
+
+    // The whole memo, as the DevKit sample passes it to ACAPI_Element_Change.
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    constexpr UInt64 linesMask = APIMemoMask_SectionMainCoords | APIMemoMask_SectionDistCoords | APIMemoMask_SectionDepthCoords;
+    err = ACAPI_Element_GetMemo (guid, &memo);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the lines of the element.");
+    }
+
+    const auto pointCount = [] (API_Coord* coords, UInt32 count) -> UInt32 {
+        if (coords == nullptr) {
+            return 0;
+        }
+        const UInt32 allocated = static_cast<UInt32> (BMGetPtrSize (reinterpret_cast<GSPtr> (coords)) / sizeof (API_Coord));
+        return count < allocated ? count : allocated;
+    };
+    const UInt32 nMain = pointCount (memo.sectionSegmentMainCoords, segment.nMainCoord);
+    const UInt32 nDist = pointCount (memo.sectionSegmentDistCoords, segment.nDistCoord);
+    const UInt32 nDepth = pointCount (memo.sectionSegmentDepthCoords, segment.nDepthCoord);
+
+    err = APIERR_BADPARS;
+    if (nMain != 2) {
+        return GS::UniString ("Only a straight marker (one section line of 2 points) can be moved; this one is staggered or has no section line.");
+    }
+    if (requestedDepth.HasValue () && (nDepth < 1 || nDepth > 2)) {
+        return GS::UniString ("The element has no depth line to move, so 'depth' cannot be set.");
+    }
+    if (requestedDepth.HasValue () && requestedDepth.Get () <= 0.0) {
+        return GS::UniString ("'depth' must be greater than 0.");
+    }
+    // Archicad refuses or ignores the depth line while the horizontal range is not Limited (an
+    // Infinite range, the default of new markers, on Archicad 26 and 30, #2838).
+    const bool depthIsLimited = segment.horizRange == APIHorRange_Limited;
+    if (requestedDepth.HasValue () && !depthIsLimited) {
+        return GS::UniString ("'depth' only applies when the horizontal range is Limited; this element's horizontalRange is ") +
+            (segment.horizRange == APIHorRange_ZeroDepth ? "ZeroDepth" : "Infinite") + ". Set horizontalRange to Limited with SetSectionsAndElevationsDetails first.";
+    }
+    // With a Limited range the depth line keeps its distance when the section line moves.
+    const bool keepDepthLine = depthIsLimited && nDepth >= 1 && nDepth <= 2;
+
+    const API_Coord oldBeg = memo.sectionSegmentMainCoords[0];
+    const API_Coord oldEnd = memo.sectionSegmentMainCoords[1];
+    const API_Coord newBeg = requestedBeg.HasValue () ? requestedBeg.Get () : oldBeg;
+    const API_Coord newEnd = requestedEnd.HasValue () ? requestedEnd.Get () : oldEnd;
+    const double ndx = newEnd.x - newBeg.x;
+    const double ndy = newEnd.y - newBeg.y;
+    if (sqrt (ndx * ndx + ndy * ndy) < 1e-6) {
+        return GS::UniString ("Start and end coordinates are too close.");
+    }
+
+    // The distances are measured before any point is moved.
+    double depthDistance = 0.0;
+    if (nDepth >= 1 && nDepth <= 2) {
+        depthDistance = SectionLeftDistance (oldBeg, oldEnd, memo.sectionSegmentDepthCoords[0]);
+        if (requestedDepth.HasValue ()) {
+            depthDistance = (depthDistance < 0.0 ? -1.0 : 1.0) * requestedDepth.Get ();
+        }
+    }
+    double distDistance = 0.0;
+    if (nDist >= 1 && nDist <= 2) {
+        distDistance = SectionLeftDistance (oldBeg, oldEnd, memo.sectionSegmentDistCoords[0]);
+    }
+
+    memo.sectionSegmentMainCoords[0] = newBeg;
+    memo.sectionSegmentMainCoords[1] = newEnd;
+    if (nDepth >= 1 && nDepth <= 2) {
+        PlaceSectionParallelLine (memo.sectionSegmentDepthCoords, nDepth, newBeg, newEnd, depthDistance);
+    }
+    if (nDist >= 1 && nDist <= 2) {
+        PlaceSectionParallelLine (memo.sectionSegmentDistCoords, nDist, newBeg, newEnd, distDistance);
+    }
+
+    constexpr double tolerance = 1e-5;
+    const auto same = [] (const API_Coord& a, const API_Coord& b) {
+        return fabs (a.x - b.x) < 1e-5 && fabs (a.y - b.y) < 1e-5;
+    };
+    const auto depthApplied = [&] (const API_ElementMemo& read) {
+        return pointCount (read.sectionSegmentDepthCoords, 1) == 1 &&
+            fabs (SectionLeftDistance (newBeg, newEnd, read.sectionSegmentDepthCoords[0]) - depthDistance) <= tolerance;
+    };
+    const bool lineMoved = requestedBeg.HasValue () || requestedEnd.HasValue ();
+
+    // Only APIMemoMask_SectionMainCoords, as in Do_CutPlane_Or_Elevation_Edit_Coords: with the
+    // depth and distant area masks added, Archicad 26 and 30 answered APIERR_BADPARS (#2838). The
+    // depth and distant area points are in the memo passed, and are checked when read back.
+    if (lineMoved) {
+        err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionMainCoords, true);
+        if (err != NoError) {
+            return GS::UniString ("Archicad refused the new start and end coordinates.");
+        }
+
+        API_ElementMemo changed = {};
+        const GS::OnExit changedGuard ([&changed] () { ACAPI_DisposeElemMemoHdls (&changed); });
+        err = ACAPI_Element_GetMemo (guid, &changed, linesMask);
+        if (err != NoError) {
+            return GS::UniString ("Failed to read the lines back after the change.");
+        }
+        err = APIERR_REFUSEDPAR;
+        if (pointCount (changed.sectionSegmentMainCoords, 2) != 2 ||
+            !same (changed.sectionSegmentMainCoords[0], newBeg) || !same (changed.sectionSegmentMainCoords[1], newEnd)) {
+            return GS::UniString ("Archicad did not apply the new start and end coordinates.");
+        }
+        if (!keepDepthLine || depthApplied (changed)) {
+            err = NoError;
+            return {};
+        }
+    }
+
+    // The main coords mask leaves the depth line where it was when only the depth changes
+    // (Archicad 30, #2838), and also when the section line moves (Archicad 26: the depth read
+    // 0.2 instead of 5 after a start point moved), so the depth line is written on its own with
+    // the depth coords mask.
+    const GS::UniString movedNote = lineMoved ? GS::UniString ("The section line was moved, but ") : GS::UniString ();
+    const GS::UniString depthWhat = requestedDepth.HasValue () ? GS::UniString ("the new depth.") : GS::UniString ("the depth line with it.");
+    err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return GS::UniString ("Failed to load the element.");
+    }
+    err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionDepthCoords, true);
+    if (err != NoError) {
+        return movedNote + "Archicad refused " + depthWhat;
+    }
+    API_ElementMemo changedDepth = {};
+    const GS::OnExit changedDepthGuard ([&changedDepth] () { ACAPI_DisposeElemMemoHdls (&changedDepth); });
+    err = ACAPI_Element_GetMemo (guid, &changedDepth, linesMask);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the lines back after the change.");
+    }
+    err = APIERR_REFUSEDPAR;
+    if (!depthApplied (changedDepth)) {
+        return movedNote + "Archicad did not apply " + depthWhat;
+    }
+    err = NoError;
+    return {};
+}
+
 ModifySectionsCommand::ModifySectionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -23717,7 +24114,10 @@ GS::Optional<GS::UniString> ModifySectionsCommand::GetInputParametersSchema () c
                     "properties": {
                         "elementId": { "$ref": "#/ElementId", "description": "A Section or an Elevation." },
                         "name": { "type": "string", "description": "The new name, shown in the Project Map." },
-                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." }
+                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." },
+                        "startCoordinate": { "$ref": "#/Coordinate2D", "description": "The new start point of the section line. Only a straight marker (a section line of 2 points, as CreateSections and CreateElevations make) can be moved. The depth line and the marked distant area line keep their distance from it." },
+                        "endCoordinate": { "$ref": "#/Coordinate2D", "description": "The new end point of the section line, as startCoordinate. The view looks to the side the depth line was on." },
+                        "depth": { "type": "number", "exclusiveMinimum": 0, "description": "The new distance of the depth line from the section line, on the side it is on. GetDetailsOfElements reads it back as depth. Only applies when the element's horizontalRange is Limited (SetSectionsAndElevationsDetails); refused otherwise." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -23753,8 +24153,22 @@ GS::ObjectState ModifySectionsCommand::Execute (const GS::ObjectState& parameter
             GS::UniString id;
             const bool hasName = item.Get ("name", name);
             const bool hasId = item.Get ("id", id);
-            if (!hasName && !hasId) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name' or 'id'."));
+            GS::Optional<API_Coord> startCoordinate;
+            GS::Optional<API_Coord> endCoordinate;
+            GS::Optional<double> depth;
+            if (item.Get ("startCoordinate") != nullptr) {
+                startCoordinate = Get2DCoordinateFromObjectState (*item.Get ("startCoordinate"));
+            }
+            if (item.Get ("endCoordinate") != nullptr) {
+                endCoordinate = Get2DCoordinateFromObjectState (*item.Get ("endCoordinate"));
+            }
+            double depthValue = 0.0;
+            if (item.Get ("depth", depthValue)) {
+                depth = depthValue;
+            }
+            const bool hasLines = startCoordinate.HasValue () || endCoordinate.HasValue () || depth.HasValue ();
+            if (!hasName && !hasId && !hasLines) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id', 'startCoordinate', 'endCoordinate' or 'depth'."));
                 continue;
             }
 
@@ -23821,12 +24235,26 @@ GS::ObjectState ModifySectionsCommand::Execute (const GS::ObjectState& parameter
                 }
             }
 
+            // The lines first: a marker that cannot be moved fails the item before its name or ID
+            // is changed. ChangeSectionLines reads its change back itself.
+            if (hasLines) {
+                const GS::Optional<GS::UniString> linesError = ChangeSectionLines (element.header.guid, startCoordinate, endCoordinate, depth, err);
+                if (linesError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (err, linesError.Get () + (hasName || hasId ? " The name and the ID were not changed either." : "")));
+                    continue;
+                }
+            }
+            if (!hasName && !hasId) {
+                results.Push (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
             // ACAPI_Element_Change returns NoError for the name and the ID of a Section but leaves
             // them as they were (Archicad 29). The DevKit's Element_Test changes the ID of Sections
             // and Elevations with ACAPI_Element_ChangeParameters, which does apply them.
             err = ACAPI_Element_ChangeParameters ({element.header.guid}, &element, nullptr, &mask);
             if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to change the section."));
+                results.Push (CreateFailedExecutionResult (err, hasLines ? "The lines were changed, but the name or the ID failed." : "Failed to change the section."));
                 continue;
             }
 
@@ -24081,7 +24509,9 @@ GS::ObjectState GetSectionsAndElevationsDetailsCommand::Execute (const GS::Objec
         } else if (typeID == API_ElevationID) {
             AddSectionElevationDetails (os, elem.elevation, true);
         } else {
-            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, "The element is neither a Section nor an Elevation."));
+            detailsOfElements (CreateErrorResponse (APIERR_BADPARS, typeID == API_InteriorElevationID
+                ? "The element is an Interior Elevation, not a Section or an Elevation; GetDetailsOfElements returns its settings and segments."
+                : "The element is neither a Section nor an Elevation."));
             continue;
         }
         detailsOfElements (os);
@@ -24180,6 +24610,288 @@ GS::ObjectState SetSectionsAndElevationsDetailsCommand::Execute (const GS::Objec
 
             err = ACAPI_Element_Change (&elem, &mask, nullptr, 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the element."));
+        }
+    });
+}
+
+SetInteriorElevationsDetailsCommand::SetInteriorElevationsDetailsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetInteriorElevationsDetailsCommand::GetName () const
+{
+    return "SetInteriorElevationsDetails";
+}
+
+GS::Optional<GS::UniString> SetInteriorElevationsDetailsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "interiorElevationsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "details": { "$ref": "#/InteriorElevationSettableDetails" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "details"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["interiorElevationsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> SetInteriorElevationsDetailsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+// Applies the element-level settings of an Interior Elevation (#/InteriorElevationSettableDetails
+// without its segments) onto intElev and sets their mask bits.
+static void ApplyInteriorElevationSettableDetails (const GS::ObjectState& details, API_InteriorElevationType& intElev, API_Element& mask)
+{
+    GS::UniString strVal;
+    if (details.Get ("showOnStories", strVal)) {
+        intElev.cutPlShow = StringToCutPlaneShowType (strVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, cutPlShow);
+    }
+    Int32 intVal;
+    if (details.Get ("storyToShowOn", intVal)) {
+        intElev.storyToShowOn = static_cast<short> (intVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, storyToShowOn);
+    }
+    if (details.Get ("useCommonMarker", intElev.useCommonMarker)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, useCommonMarker);
+    }
+    if (details.Get ("commonMarkerPenIndex", intVal)) {
+        intElev.markerPen = static_cast<short> (intVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerPen);
+    }
+    if (details.Get ("commonMarkerFontIndex", intVal)) {
+        intElev.markerFont = static_cast<short> (intVal);
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerFont);
+    }
+    if (details.Get ("commonMarkerSize", intElev.markerSize)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerSize);
+    }
+    if (details.Get ("commonMarkerTextSize", intElev.markerTextSize)) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_InteriorElevationType, markerTextSize);
+    }
+}
+
+// The mask bits ApplySectionSegmentSettableDetails sets for the segment of an API_CutPlaneType,
+// added to a mask of one API_SectionSegment: both are the same struct, so a field's bit is at the
+// same place in either, and the segment of an API_InteriorElevationType takes the same mask.
+static void AddSectionSegmentMaskBits (const API_Element& cutPlaneMask, API_SectionSegment& segmentMask)
+{
+    const char* source = reinterpret_cast<const char*> (&cutPlaneMask.cutPlane.segment);
+    char* target = reinterpret_cast<char*> (&segmentMask);
+    for (size_t i = 0; i < sizeof (API_SectionSegment); ++i) {
+        target[i] |= source[i];
+    }
+}
+
+// The segments of an Interior Elevation are in its memo (intElevSegments), like the ones
+// RenameNavigatorItem renames. Every segment entry is checked before anything is changed, so a
+// bad entry changes nothing. ACAPI_Element_Change is not for elements with markers (ACAPinc.h:
+// "To change elements having associated markers use the ACAPI_Element_ChangeExt function"): it
+// returned NoError and kept the common marker pen and every segment change (the testers' AC26 and
+// AC28 runs of #2851). So the interior elevation is changed with ACAPI_Element_ChangeExt, which
+// changes one segment, subIndex, at a time, as the DevKit's Do_ChangeInteriorElevation does: once
+// for each changed segment, with the segment in element.interiorElevation.segment and in the memo,
+// or once with subIndex 0 and no segment fields in the mask when no segment changes. Both keep the
+// element's GUID and the segments' viewpoints. What Archicad still did not apply is read back and
+// reported as a failure rather than as a success.
+GS::ObjectState SetInteriorElevationsDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> interiorElevationsWithDetails;
+    auto error = GetElementArray (parameters, "interiorElevationsWithDetails", interiorElevationsWithDetails);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Set Interior Elevations Details", interiorElevationsWithDetails, [&](GS::Array<GS::ObjectState>& results) {
+        for (const GS::ObjectState& item : interiorElevationsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            const GS::ObjectState* details = item.Get ("details");
+            if (elementId == nullptr || details == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId or details is missing"));
+                continue;
+            }
+
+            API_Element elem = {};
+            elem.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&elem);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to find the element."));
+                continue;
+            }
+
+            if (GetElemTypeId (elem.header) != API_InteriorElevationID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element is not an Interior Elevation. SetSectionsAndElevationsDetails sets Sections and Elevations."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            ApplyInteriorElevationSettableDetails (*details, elem.interiorElevation, mask);
+
+            GS::Array<GS::ObjectState> segmentChanges;
+            details->Get ("segments", segmentChanges);
+
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            GS::Optional<GS::UniString> segmentError;
+            // The mask of each changed segment, by its index.
+            std::map<Int32, API_SectionSegment> segmentMasks;
+            if (!segmentChanges.IsEmpty ()) {
+                err = ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_All);
+                const GSSize nSegments = (err == NoError && memo.intElevSegments != nullptr)
+                    ? BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment)
+                    : 0;
+                if (nSegments == 0) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the segments of the interior elevation."));
+                    continue;
+                }
+
+                for (USize i = 0; i < segmentChanges.GetSize () && !segmentError.HasValue (); ++i) {
+                    const GS::ObjectState& change = segmentChanges[i];
+                    Int32 segmentIndex = -1;
+                    if (!change.Get ("segmentIndex", segmentIndex) || segmentIndex < 0 || segmentIndex >= nSegments) {
+                        segmentError = GS::UniString::Printf ("segments[%u]: 'segmentIndex' must be the index of a segment, from 0 to %d.", i, static_cast<int> (nSegments) - 1);
+                        break;
+                    }
+
+                    API_SectionSegment& seg = memo.intElevSegments[segmentIndex];
+                    API_SectionSegment& segMask = segmentMasks[segmentIndex];
+                    GS::UniString strVal;
+                    if (change.Get ("name", strVal)) {
+                        CopySectionString (seg.cutPlName, strVal);
+                        ACAPI_ELEMENT_MASK_SET (segMask, API_SectionSegment, cutPlName);
+                    }
+                    if (change.Get ("id", strVal)) {
+                        CopySectionString (seg.cutPlIdStr, strVal);
+                        ACAPI_ELEMENT_MASK_SET (segMask, API_SectionSegment, cutPlIdStr);
+                    }
+
+                    const GS::ObjectState* settings = change.Get ("settings");
+                    if (settings == nullptr) {
+                        continue;
+                    }
+                    for (const char* elementLevelKey : { "showOnStories", "storyToShowOn", "markerShowType" }) {
+                        if (settings->Contains (elementLevelKey)) {
+                            segmentError = GS::UniString::Printf ("segments[%u].settings: '%s' is not a setting of a segment; showOnStories and storyToShowOn are set on the interior elevation itself.", i, elementLevelKey);
+                            break;
+                        }
+                    }
+                    if (segmentError.HasValue ()) {
+                        break;
+                    }
+                    // The settings are applied to a copy in a cut plane, so that
+                    // ApplySectionSegmentSettableDetails sets the mask bits of the fields it
+                    // changes; the copy then goes back into the memo.
+                    API_Element cutPlane = {};
+                    cutPlane.cutPlane.segment = seg;
+                    API_Element cutPlaneMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (cutPlaneMask);
+                    const GS::Optional<GS::UniString> settingsError = ApplySectionSegmentSettableDetails (*settings, cutPlane.cutPlane.segment, &cutPlaneMask);
+                    if (settingsError.HasValue ()) {
+                        segmentError = GS::UniString::Printf ("segments[%u].settings: ", i) + settingsError.Get ();
+                        break;
+                    }
+                    seg = cutPlane.cutPlane.segment;
+                    AddSectionSegmentMaskBits (cutPlaneMask, segMask);
+                }
+            }
+            if (segmentError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentError.Get ()));
+                continue;
+            }
+
+            // What was asked for, to check it against what Archicad stored.
+            const API_InteriorElevationType wanted = elem.interiorElevation;
+            GS::Array<std::pair<Int32, API_SectionSegment>> wantedSegments;
+            for (const auto& entry : segmentMasks) {
+                wantedSegments.Push (std::make_pair (entry.first, memo.intElevSegments[entry.first]));
+            }
+
+            if (segmentMasks.empty ()) {
+                err = ACAPI_Element_ChangeExt (&elem, &mask, nullptr, 0, 0, nullptr, true, 0);
+            } else {
+                for (const auto& entry : segmentMasks) {
+                    API_Element segmentChangeMask = mask;
+                    segmentChangeMask.interiorElevation.segment = entry.second;
+                    elem.interiorElevation.segment = memo.intElevSegments[entry.first];
+                    err = ACAPI_Element_ChangeExt (&elem, &segmentChangeMask, &memo, APIMemoMask_SectionSegments, 0, nullptr, true, entry.first);
+                    if (err != NoError) {
+                        break;
+                    }
+                }
+            }
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify the interior elevation."));
+                continue;
+            }
+
+            API_Element stored = {};
+            stored.header.guid = elem.header.guid;
+            API_ElementMemo storedMemo = {};
+            const GS::OnExit storedMemoGuard ([&storedMemo] () { ACAPI_DisposeElemMemoHdls (&storedMemo); });
+            if (ACAPI_Element_Get (&stored) != NoError) {
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "The interior elevation was changed, but could not be read back."));
+                continue;
+            }
+            GS::Array<GS::UniString> notApplied;
+            const API_InteriorElevationType& got = stored.interiorElevation;
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, cutPlShow) && got.cutPlShow != wanted.cutPlShow) notApplied.Push ("showOnStories");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, storyToShowOn) && got.storyToShowOn != wanted.storyToShowOn) notApplied.Push ("storyToShowOn");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, useCommonMarker) && got.useCommonMarker != wanted.useCommonMarker) notApplied.Push ("useCommonMarker");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerPen) && got.markerPen != wanted.markerPen) notApplied.Push ("commonMarkerPenIndex");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerFont) && got.markerFont != wanted.markerFont) notApplied.Push ("commonMarkerFontIndex");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerSize) && std::abs (got.markerSize - wanted.markerSize) > 1e-6) notApplied.Push ("commonMarkerSize");
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_InteriorElevationType, markerTextSize) && std::abs (got.markerTextSize - wanted.markerTextSize) > 1e-6) notApplied.Push ("commonMarkerTextSize");
+            if (!wantedSegments.IsEmpty ()) {
+                const bool segmentsRead = ACAPI_Element_GetMemo (stored.header.guid, &storedMemo, APIMemoMask_SectionSegments) == NoError && storedMemo.intElevSegments != nullptr;
+                const GSSize nStored = segmentsRead ? BMGetPtrSize (reinterpret_cast<GSPtr> (storedMemo.intElevSegments)) / sizeof (API_SectionSegment) : 0;
+                for (const auto& entry : wantedSegments) {
+                    const API_SectionSegment& segMask = segmentMasks[entry.first];
+                    const API_SectionSegment* storedSeg = entry.first < nStored ? &storedMemo.intElevSegments[entry.first] : nullptr;
+                    if (ACAPI_ELEMENT_MASK_CHECK (segMask, API_SectionSegment, cutPlName) && (storedSeg == nullptr || GS::UniString (storedSeg->cutPlName) != GS::UniString (entry.second.cutPlName))) {
+                        notApplied.Push (GS::UniString::Printf ("the name of segment %d", static_cast<int> (entry.first)));
+                    }
+                    if (ACAPI_ELEMENT_MASK_CHECK (segMask, API_SectionSegment, cutPlIdStr) && (storedSeg == nullptr || GS::UniString (storedSeg->cutPlIdStr) != GS::UniString (entry.second.cutPlIdStr))) {
+                        notApplied.Push (GS::UniString::Printf ("the id of segment %d", static_cast<int> (entry.first)));
+                    }
+                }
+            }
+            if (!notApplied.IsEmpty ()) {
+                GS::UniString message ("Archicad did not apply ");
+                for (UIndex i = 0; i < notApplied.GetSize (); ++i) {
+                    if (i > 0) {
+                        message += ", ";
+                    }
+                    message += notApplied[i];
+                }
+                message += "; the other changes were made.";
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, message));
+                continue;
+            }
+            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }

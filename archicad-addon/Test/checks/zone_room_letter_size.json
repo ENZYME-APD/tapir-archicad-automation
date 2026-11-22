@@ -1,0 +1,112 @@
+{
+  "title": "Zones: letter size (roomLSize, millimetres) in CreateZones, ModifyZones, SetDetailsOfElements and GetDetailsOfElements (#2867 part 4)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "zone created with a letter size",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck letter size zone",
+            "numberStr": "L1",
+            "floorIndex": 0,
+            "roomLSize": 3.5,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 960.0, "y": 780.0 },
+                { "x": 964.0, "y": 780.0 },
+                { "x": 964.0, "y": 783.0 },
+                { "x": 960.0, "y": 783.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created, roomLSize accepted" }
+      ]
+    },
+    {
+      "id": "read the new zone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roomLSize", "approx": 3.5, "name": "letter size written on create" }
+      ]
+    },
+    {
+      "id": "ModifyZones changes only the letter size",
+      "command": "ModifyZones",
+      "creates": false,
+      "params": {
+        "zonesWithDetails": [
+          { "elementId": { "guid": "${z1}" }, "roomLSize": 5.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "zone modified" }
+      ]
+    },
+    {
+      "id": "read the modified zone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roomLSize", "approx": 5.0, "name": "letter size written by ModifyZones" },
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck letter size zone", "name": "name kept" }
+      ]
+    },
+    {
+      "id": "SetDetailsOfElements takes the same key",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          {
+            "elementId": { "guid": "${z1}" },
+            "details": { "typeSpecificDetails": { "roomLSize": 2.5 } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "zone changed" }
+      ]
+    },
+    {
+      "id": "read the zone again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roomLSize", "approx": 2.5, "name": "letter size written by SetDetailsOfElements" }
+      ]
+    },
+    {
+      "id": "a letter size of 0 is refused",
+      "command": "ModifyZones",
+      "creates": false,
+      "params": {
+        "zonesWithDetails": [
+          { "elementId": { "guid": "${z1}" }, "roomLSize": 0.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "a letter size of 0 is refused" },
+        { "path": "executionResults[0].error.message", "contains": "roomLSize", "name": "the refusal names roomLSize" }
+      ]
+    },
+    {
+      "id": "the refused letter size changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roomLSize", "approx": 2.5, "name": "letter size kept after the refusal" }
+      ]
+    }
+  ]
+}

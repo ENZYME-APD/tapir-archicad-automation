@@ -1469,6 +1469,24 @@ GSErrCode ReapplyZoneTopOffset (const GS::ObjectState& details, const API_Guid& 
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
+// The letter size of the zone (roomLSize, #2867), in millimetres as Archicad stores it, not in
+// metres like the other lengths. Applied by CreateZones (no mask) and, through ApplyZoneSettings,
+// by ModifyZones and SetDetailsOfElements.
+static GS::Optional<GS::ObjectState> ApplyZoneLetterSize (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
+{
+    double roomLSize = 0.0;
+    if (details.Get ("roomLSize", roomLSize)) {
+        if (roomLSize <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "roomLSize must be greater than 0.");
+        }
+        zone.roomLSize = roomLSize;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET ((*mask), API_ZoneType, roomLSize);
+        }
+    }
+    return {};
+}
+
 GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
 {
     if (details.Contains ("name")) {
@@ -1523,6 +1541,11 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
     const GS::Optional<GS::UniString> displayError = ApplyZoneDisplayStampPenAndReduction (details, element.zone, &mask);
     if (displayError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, *displayError);
+    }
+
+    const GS::Optional<GS::ObjectState> letterSizeError = ApplyZoneLetterSize (details, element.zone, &mask);
+    if (letterSizeError.HasValue ()) {
+        return letterSizeError;
     }
 
     return ApplyZoneLevels (details, element.zone, &mask);
@@ -1753,6 +1776,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "minimum": 0.0,
                         "description" : "Optional thickness of the floor finish (subfloor thickness) of the zone."
                     },
+                    "roomLSize": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description" : "Optional letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -1829,6 +1857,11 @@ GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API
     auto levelsError = ApplyZoneLevels (parameters, element.zone, nullptr);
     if (levelsError.HasValue ()) {
         return levelsError;
+    }
+
+    auto letterSizeError = ApplyZoneLetterSize (parameters, element.zone, nullptr);
+    if (letterSizeError.HasValue ()) {
+        return letterSizeError;
     }
 
     GS::ObjectState referencePosition;
@@ -2002,6 +2035,7 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
+                        "roomLSize": { "type": "number", "exclusiveMinimum": 0.0, "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
                         "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
                         "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." },
@@ -5059,7 +5093,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, and on a multi-run text applies that style to every run; a text that wraps keeps its wrap width through the rebuild unless the same item gives a width. The other style fields and a width leave the content as it is.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content (one paragraph per line, as SetDetailsOfElements does), and on a multi-run text applies that style to every run; a text that wraps keeps its wrap width through the rebuild unless the same item gives a width. The other style fields and a width leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -5585,7 +5619,7 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
         "properties": {
             "labelsWithDetails": {
                 "type": "array",
-                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
+                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content (one paragraph per line), which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -7324,24 +7358,97 @@ static GSErrCode SetEOL (API_ParagraphType** paragraph, UInt32 parNum, UInt32 eo
 	return NoError;
 }
 
-// Fills the eolPos array of the single paragraph that holds the whole content: one entry per line,
-// the position within the paragraph of the line's last character (the DevKit's Element_Test example
-// writes 14 for "This multistyle" and 27, 35 for a paragraph wrapped after "example "), so the
-// entries grow from line to line. They used to be each line's length minus one, which dropped as
-// soon as a line was shorter than the one before it ("abcdefghij\nx" gave 9, then 1); ModifyTexts,
-// ModifyLabels and SetDetailsOfElements then failed with "Failed to modify the Text" (#2461).
-// An empty line ends at the line break before it, which keeps the entries growing; an empty first
-// line ends at 0.
-static void SetLineEnds (API_ParagraphType** paragraph, const GS::UniString& text, Int32 nLine)
+namespace {
+
+// The style of one run of the content, and how many characters of the content it covers.
+struct TextRunStyle {
+    Int32           length;
+    short           pen;
+    unsigned short  faceBits;
+    short           font;
+    Int32           effectBits;
+    double          size;
+};
+
+}
+
+// Builds memo.paragraphs for 'text' (line breaks already normalized to '\n') the way the DevKit's
+// Element_Test example (CreateMultiTextElement) and a text typed in Archicad are built: one paragraph
+// per line, the '\n' between two lines belonging to neither (paragraph 1 of the example starts at 16,
+// after the 15 characters of paragraph 0 and its line break). Each paragraph holds the parts of the
+// runs that fall in it, with a run's `from` relative to the paragraph, and one eolPos entry: the
+// position within the paragraph of its last character (the example writes 14 for "This multistyle";
+// an empty paragraph ends at 0). Tapir used to put the whole content, line breaks included, into a
+// single paragraph whose eolPos listed every line; Archicad then drew every line after the first
+// below the text box until the text was edited (#2874).
+//
+// The handle is cleared, and every paragraph gets the element's justification, no indents and the
+// element's line spacing (a factor between -10.0 and -1.0, APIdefs_Elements.h; -1.0, the value of
+// the example, when the element's is outside that range). These were left uninitialized before.
+// textData.nLine is set to the number of paragraphs: the content is written with automatic width
+// (nonBreaking), so every paragraph is one line.
+static void BuildTextParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text, const GS::Array<TextRunStyle>& runs)
 {
+    struct ParagraphRange { Int32 from; Int32 range; };
+    GS::Array<ParagraphRange> paragraphRanges;
     const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
     const Int32 textLength = static_cast<Int32> (text.GetLength ());
-    Int32 lineStart = 0;
-    for (Int32 eolIndex = 0; eolIndex < nLine; ++eolIndex) {
-        const UIndex newlinePos = (lineStart < textLength) ? text.FindFirst (newlineChar, static_cast<UIndex> (lineStart)) : MaxUIndex;
-        const Int32 lineEnd = (newlinePos != MaxUIndex) ? static_cast<Int32> (newlinePos) : textLength;
-        SetEOL (paragraph, 0, static_cast<UInt32> (eolIndex), GS::Max (lineEnd - 1, static_cast<Int32> (0)));
-        lineStart = lineEnd + 1;
+    Int32 paragraphStart = 0;
+    for (Int32 i = 0; i <= textLength; ++i) {
+        if (i == textLength || text[static_cast<UIndex> (i)] == newlineChar) {
+            paragraphRanges.Push (ParagraphRange { paragraphStart, i - paragraphStart });
+            paragraphStart = i + 1;
+        }
+    }
+
+    const double spacing = (textData.spacing <= -1.0 && textData.spacing >= -10.0) ? textData.spacing : -1.0;
+    const UInt32 numOfParagraphs = paragraphRanges.GetSize ();
+    textData.nLine = static_cast<Int32> (numOfParagraphs);
+    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAllClear (numOfParagraphs * sizeof (API_ParagraphType)));
+
+    for (UInt32 p = 0; p < numOfParagraphs; ++p) {
+        const Int32 paragraphFrom = paragraphRanges[p].from;
+        const Int32 paragraphEnd = paragraphFrom + paragraphRanges[p].range;
+
+        // The parts of the runs inside this paragraph, as (run index, from, range) with `from`
+        // relative to the paragraph.
+        struct RunPart { UIndex runIndex; Int32 from; Int32 range; };
+        GS::Array<RunPart> parts;
+        // The run an empty paragraph takes its style from: the last one starting at or before it.
+        UIndex styleRunIndex = 0;
+        Int32 runFrom = 0;
+        for (UIndex r = 0; r < runs.GetSize (); ++r) {
+            const Int32 runEnd = runFrom + runs[r].length;
+            if (runFrom <= paragraphFrom) {
+                styleRunIndex = r;
+            }
+            const Int32 partFrom = GS::Max (runFrom, paragraphFrom);
+            const Int32 partEnd = GS::Min (runEnd, paragraphEnd);
+            if (partEnd > partFrom) {
+                parts.Push (RunPart { r, partFrom - paragraphFrom, partEnd - partFrom });
+            }
+            runFrom = runEnd;
+        }
+        if (parts.IsEmpty () && !runs.IsEmpty ()) {
+            parts.Push (RunPart { styleRunIndex, 0, 0 });
+        }
+        if (parts.IsEmpty ()) {
+            continue;
+        }
+
+        SetParagraph (memo.paragraphs, p, paragraphFrom, paragraphRanges[p].range, 1, static_cast<Int32> (parts.GetSize ()), 1);
+        API_ParagraphType& paragraph = (*memo.paragraphs)[p];
+        paragraph.just = textData.just;
+        paragraph.firstIndent = 0.0;
+        paragraph.indent = 0.0;
+        paragraph.rightIndent = 0.0;
+        paragraph.spacing = spacing;
+
+        for (UIndex i = 0; i < parts.GetSize (); ++i) {
+            const TextRunStyle& style = runs[parts[i].runIndex];
+            SetRun (memo.paragraphs, p, static_cast<UInt32> (i), parts[i].from, parts[i].range, style.pen, style.faceBits, style.font, style.effectBits, style.size);
+        }
+        SetEOL (memo.paragraphs, p, 0, GS::Max (paragraphRanges[p].range - 1, static_cast<Int32> (0)));
     }
 }
 
@@ -7388,13 +7495,9 @@ void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData,
     textData.charCode = CC_UniCode;
 #endif
 
-    const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
-    textData.nLine = text.Count (newlineChar) + 1;
-    const Int32 numOfParagraphs = 1;
-    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
-    SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, 1, textData.nLine);
-    SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size);
-    SetLineEnds (memo.paragraphs, text, textData.nLine);
+    GS::Array<TextRunStyle> runs;
+    runs.Push (TextRunStyle { static_cast<Int32> (text.GetLength ()), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size });
+    BuildTextParagraphs (memo, textData, text, runs);
 
     textData.width = 0;
     textData.height = 0;
@@ -7800,11 +7903,6 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     textData.charCode = CC_UniCode;
 #endif
 
-    const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
-    textData.nLine = text.Count (newlineChar) + 1;
-    const Int32 numOfParagraphs = 1;
-    const Int32 numOfRuns = hasRuns ? static_cast<Int32> (runTexts.GetSize ()) : 1;
-
     // Existing paragraphs (sized for the old content) and textLineStarts - a separate short** array
     // of line-start indices into textContent, distinct from each paragraph's own eolPos - must go
     // before the new content is set: leaving textLineStarts stale while textContent/paragraphs get
@@ -7821,26 +7919,20 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         BMKillHandle (reinterpret_cast<GSHandle*> (&memo.textLineStarts));
     }
 
-    memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
-    SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, numOfRuns, textData.nLine);
-    // A paragraph carries its own justification (API_ParagraphType::just, see the DevKit's
-    // Element_Test example); keep it in step with the element-level setting.
-    (*memo.paragraphs)[0].just = textData.just;
-
+    // Each run carries its own pen/face/font/size/effects; a field a run does not give defaults to
+    // the element-level style, as for a single-run content. A paragraph carries its own
+    // justification (API_ParagraphType::just), which BuildTextParagraphs keeps in step with the
+    // element-level setting. A run that reaches over a line break is split at it, one part in
+    // each paragraph.
+    GS::Array<TextRunStyle> runs;
     if (hasRuns) {
-        // Each run carries its own pen/face/font/size/effects; a field a run does not give
-        // defaults to the element-level style, as for a single-run content.
-        Int32 runFrom = 0;
-        for (Int32 i = 0; i < numOfRuns; ++i) {
-            const Int32 runRange = runTexts[i].GetLength ();
-            SetRun (memo.paragraphs, 0, static_cast<UInt32> (i), runFrom, runRange, runPens[i], runFaceBits[i], runFonts[i], runEffects[i], runSizes[i]);
-            runFrom += runRange;
+        for (UIndex i = 0; i < runTexts.GetSize (); ++i) {
+            runs.Push (TextRunStyle { static_cast<Int32> (runTexts[i].GetLength ()), runPens[i], runFaceBits[i], runFonts[i], runEffects[i], runSizes[i] });
         }
     } else {
-        SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size);
+        runs.Push (TextRunStyle { static_cast<Int32> (text.GetLength ()), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size });
     }
-
-    SetLineEnds (memo.paragraphs, text, textData.nLine);
+    BuildTextParagraphs (memo, textData, text, runs);
 
     // Auto-width: the line ends are the ones set above. A wrap width of CreateTexts/ModifyTexts
     // is written after the content, without a memo (TextLabelDetails::SetTextWrapWidth).
@@ -7868,10 +7960,21 @@ static GSErrCode GetTextContentMemo (const API_Guid& elemGuid, API_ElementMemo& 
 #endif
 }
 
+// Archicad separates the paragraphs of a text's content with a bare '\r' (the testers' AC26 and
+// AC28 runs of #2874 read "first\rsecond" back for a content written as "first\nsecond", one
+// paragraph per line). The content is read with '\n' instead, as the commands take it (they turn
+// "\r\n" and '\r' into '\n'), so a text reads back as it was written and a text typed in Archicad
+// reads the same way. Each '\r' becomes one '\n', so the length and the run positions stay as they are.
+static GS::UniString WithNewlineLineBreaks (GS::UniString content)
+{
+    content.ReplaceAll ("\r", "\n");
+    return content;
+}
+
 static GS::UniString GetTextContentFromMemo (const API_ElementMemo& memo)
 {
 #ifdef ServerMainVers_2800
-    return (memo.textContent != nullptr) ? *memo.textContent : GS::EmptyUniString;
+    return (memo.textContent != nullptr) ? WithNewlineLineBreaks (*memo.textContent) : GS::EmptyUniString;
 #else
     GS::UniString content;
     if (memo.textContent != nullptr) {
@@ -7888,7 +7991,7 @@ static GS::UniString GetTextContentFromMemo (const API_ElementMemo& memo)
         }
         content = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (chars), contentCharCount);
     }
-    return content;
+    return WithNewlineLineBreaks (content);
 #endif
 }
 
@@ -7922,6 +8025,66 @@ static GS::Optional<GS::UniString> GetRawTextContent (const API_Guid& elemGuid)
     return GetTextContentFromMemo (memo);
 }
 
+// The lines as Archicad lays them out (#2804): memo.textLineStarts holds the offset of each line's
+// first character in the content, the breaks of a wrapped text included (APIdefs_Elements.h: "Text
+// line starts array (indices into the text content)"; ACAPinc.h, ACAPI_Element_GetMemo: "the line
+// starts (offsets into textContent)"). They are read as offsets into the same content the paragraphs
+// index, which is read as characters. The starts are only reported when they are usable: ascending
+// and inside the content; a start at the very end of the content (a closing entry) adds no line.
+// Each line is its slice of the content without the line-end characters that end it. The start
+// of a line that follows a line end points at that line end ("First\nSecond" gives the starts 0
+// and 5 on Archicad 26 and 28, #2809), so the line end is skipped at the start of a line too and
+// the reported start is that of its first character.
+static void AddTextLines (GS::ObjectState& os, const API_ElementMemo& memo, const GS::UniString& content)
+{
+    if (memo.textLineStarts == nullptr) {
+        return;
+    }
+    const USize nStarts = static_cast<USize> (BMhGetSize (reinterpret_cast<GSHandle> (memo.textLineStarts)) / sizeof (short));
+    if (nStarts == 0) {
+        return;
+    }
+
+    const USize contentLength = content.GetLength ();
+    GS::Array<UIndex> starts;
+    for (UIndex i = 0; i < nStarts; ++i) {
+        const short start = (*memo.textLineStarts)[i];
+        if (start < 0 || static_cast<USize> (start) > contentLength) {
+            return;
+        }
+        if (!starts.IsEmpty () && static_cast<UIndex> (start) <= starts.GetLast ()) {
+            return;
+        }
+        if (static_cast<USize> (start) == contentLength && contentLength > 0) {
+            break;
+        }
+        starts.Push (static_cast<UIndex> (start));
+    }
+    if (starts.IsEmpty ()) {
+        return;
+    }
+
+    const auto& startList = os.AddList<Int32> ("lineStarts");
+    const auto& lineList = os.AddList<GS::UniString> ("lines");
+    for (UIndex i = 0; i < starts.GetSize (); ++i) {
+        UIndex start = starts[i];
+        UIndex end = (i + 1 < starts.GetSize ()) ? starts[i + 1] : contentLength;
+        if (i > 0) {
+            if (start < end && content[start] == '\r') {
+                ++start;
+            }
+            if (start < end && content[start] == '\n') {
+                ++start;
+            }
+        }
+        while (end > start && (content[end - 1] == '\n' || content[end - 1] == '\r')) {
+            --end;
+        }
+        startList (static_cast<Int32> (start));
+        lineList (GS::UniString (content.GetSubstring (start, end - start)));
+    }
+}
+
 GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
 {
     API_ElementMemo memo = {};
@@ -7937,6 +8100,8 @@ GSErrCode AddTextContent (GS::ObjectState& os, const API_Guid& elemGuid)
     if (rawContent.HasValue ()) {
         os.Add ("rawText", *rawContent);
     }
+
+    AddTextLines (os, memo, content);
 
     const UInt32 nParagraphs = (memo.paragraphs != nullptr) ? static_cast<UInt32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.paragraphs)) / sizeof (API_ParagraphType)) : 0;
     os.Add ("paragraphCount", static_cast<int> (nParagraphs));

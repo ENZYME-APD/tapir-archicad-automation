@@ -3187,14 +3187,16 @@ static void AddShellGeometry (const API_Element& elem, GS::ObjectState& typeSpec
     }
 }
 
-// The reference line of a railing (memo.coords from index 1, one vertex per node), the height of
-// each generated segment, which can differ from defSegment.height once a segment was edited, and
-// the settings of each segment and node that ModifyRailings can change one by one.
+// The reference line of a railing (memo.coords from index 1, one vertex per node) with its arcs
+// (memo.parcs; API_RailingType has no nArcs, so their number is the size of the handle), the
+// height of each generated segment, which can differ from defSegment.height once a segment was
+// edited, and the settings of each segment and node that ModifyRailings can change one by one.
 static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     const auto& referenceLine = typeSpecificDetails.AddList<GS::ObjectState> ("referenceLine");
+    const auto& referenceLineArcs = typeSpecificDetails.AddList<GS::ObjectState> ("referenceLineArcs");
     const auto& segmentHeights = typeSpecificDetails.AddList<double> ("segmentHeights");
     const auto& segments = typeSpecificDetails.AddList<GS::ObjectState> ("segments");
     const auto& nodes = typeSpecificDetails.AddList<GS::ObjectState> ("nodes");
@@ -3206,6 +3208,20 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
         const Int32 nVertices = std::min<Int32> (nCoords, static_cast<Int32> (elem.railing.nVertices));
         for (Int32 i = 1; i <= nVertices; ++i) {
             referenceLine (Create2DCoordinateObjectState ((*memo.coords)[i]));
+        }
+        // CreateRailingsFromPolyline writes the arcs with indices from 1, as the coords, but
+        // ACAPI_Element_GetMemo returns a railing's arcs with indices from 0 (the first node is 0):
+        // the arc written as begIndex 2, endIndex 3 (between the 2nd and the 3rd node) read back as
+        // begIndex 1, endIndex 2 on Archicad 26 and 28 (#2807). So they are reported as they are, not shifted like the arcs
+        // of a polygon (CreatePolyArcObjectState).
+        if (memo.parcs != nullptr) {
+            const Int32 nArcs = static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (API_PolyArc));
+            for (Int32 i = 0; i < nArcs; ++i) {
+                const API_PolyArc& arc = (*memo.parcs)[i];
+                if (arc.begIndex >= 0 && arc.endIndex >= 0 && arc.begIndex < nVertices && arc.endIndex < nVertices && std::abs (arc.arcAngle) > 1e-9) {
+                    referenceLineArcs (GS::ObjectState ("begIndex", arc.begIndex, "endIndex", arc.endIndex, "arcAngle", arc.arcAngle));
+                }
+            }
         }
     }
     if (memo.railingSegments != nullptr) {
@@ -3890,6 +3906,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("topOffset", elem.zone.roomTopOffset);
                 typeSpecificDetails.Add ("relativeTopStory", elem.zone.relativeTopStory);
                 typeSpecificDetails.Add ("floorThickness", elem.zone.roomFlThick);
+                // In millimetres, as Archicad stores it (#2867).
+                typeSpecificDetails.Add ("roomLSize", elem.zone.roomLSize);
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonOutline", "polygonArcs", "holes", "polygonOutline", "polygonArcs");
                 break;
 
@@ -4968,6 +4986,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddSectionLinesFromMemo (elem.header.guid, static_cast<GSSize> (elem.elevation.segment.nMainCoord), static_cast<GSSize> (elem.elevation.segment.nDepthCoord), typeSpecificDetails);
             } break;
 
+            case API_InteriorElevationID:
+                // The interior elevation's settings and its segments, each with its lines and
+                // the keys of SectionElevationDetails (#2851).
+                AddInteriorElevationDetails (elem, typeSpecificDetails);
+                break;
+
             case API_OpeningID:
                 // The opening's own settings are read by GetOpeningDetails (#2629).
                 typeSpecificDetails.Add ("error", "The details of an Opening are not returned here; use GetOpeningDetails. The id, layerIndex and the other common fields above are the Opening's.");
@@ -5820,7 +5844,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         GS::UniString text;
                         if (typeSpecificDetails->Get ("text", text)) {
                             // Same content handling as CreateTexts: the whole textContent is replaced
-                            // and the paragraphs memo is rebuilt as a single paragraph/run, so any
+                            // and the paragraphs memo is rebuilt with one run and one paragraph per line, so any
                             // per-run formatting of the old content is dropped and the element becomes
                             // auto-width (nonBreaking) - mask exactly the API_TextType fields the helper sets.
                             // A new height given alongside is carried into the rebuilt run via elem.text.size.
@@ -5880,6 +5904,25 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.height);
                             memoMask = TextContentMemoMask;
                             hasMemoChanges = true;
+                        }
+                    } break;
+                    case API_CutPlaneID:
+                    case API_ElevationID: {
+                        // GetDetailsOfElements reads these back, but nothing of them is written here;
+                        // they used to be dropped with success (#2837), so the item fails instead and
+                        // names the commands that do change them.
+                        GS::UniString givenFields;
+                        for (const GS::String& fieldName : typeSpecificDetails->GetFieldNames ()) {
+                            if (!givenFields.IsEmpty ()) {
+                                givenFields += ", ";
+                            }
+                            givenFields += GS::UniString (fieldName.ToCStr ());
+                        }
+                        if (!givenFields.IsEmpty ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
+                                GS::UniString ("The typeSpecificDetails of a Section or an Elevation are not changed by SetDetailsOfElements: use ModifySections for startCoordinate, endCoordinate, depth, name and id, and SetSectionsAndElevationsDetails for its settings. Not supported: ") + givenFields));
+                            continue;
                         }
                     } break;
                     case API_DetailID:

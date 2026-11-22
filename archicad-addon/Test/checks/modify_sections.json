@@ -1,0 +1,244 @@
+{
+  "title": "ModifySections moves the section line and the depth line of a Section and an Elevation; SetDetailsOfElements refuses their geometry instead of ignoring it (#2837)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "section along +x, depth 3",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          {
+            "startCoordinate": { "x": 900.0, "y": 900.0 },
+            "endCoordinate": { "x": 906.0, "y": 900.0 },
+            "depth": 3.0,
+            "name": "TapirCheck Move Section",
+            "id": "TM-S",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "the section's horizontal range Limited, so that it has a depth",
+      "command": "SetSectionsAndElevationsDetails",
+      "creates": false,
+      "params": { "elementsWithDetails": [ { "elementId": { "guid": "${s1}" }, "details": { "horizontalRange": "Limited" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "move the end point and set depth 5",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "endCoordinate": { "x": 908.0, "y": 900.0 }, "depth": 5.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the section has the new end and depth",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 900.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.startCoordinate.y", "approx": 900.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 908.0, "name": "end moved" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 900.0 },
+        { "path": "detailsOfElements[0].details.depth", "approx": 5.0, "name": "depth line 5 m away" },
+        { "path": "detailsOfElements[0].details.viewDirection.y", "approx": 1.0, "name": "still looks the same way" },
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck Move Section", "name": "name kept" },
+        { "path": "detailsOfElements[0].details.idStr", "eq": "TM-S", "name": "ID kept" }
+      ]
+    },
+    {
+      "id": "move the start point only, with a new ID",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "startCoordinate": { "x": 902.0, "y": 902.0 }, "id": "TM-S2" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "start moved, depth kept, ID changed",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 902.0 },
+        { "path": "detailsOfElements[0].details.startCoordinate.y", "approx": 902.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 908.0, "name": "end kept" },
+        { "path": "detailsOfElements[0].details.depth", "approx": 5.0, "name": "depth kept" },
+        { "path": "detailsOfElements[0].details.idStr", "eq": "TM-S2" }
+      ]
+    },
+    {
+      "id": "bad input: start on the end",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "startCoordinate": { "x": 908.0, "y": 900.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "SetDetailsOfElements refuses the geometry of a section",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "details": { "typeSpecificDetails": { "startCoordinate": { "x": 0.0, "y": 0.0 }, "endCoordinate": { "x": 12.0, "y": 0.0 } } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused, not ignored" }
+      ]
+    },
+    {
+      "id": "the section is unchanged by both refusals",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 902.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 908.0 },
+        { "path": "detailsOfElements[0].details.depth", "approx": 5.0 }
+      ]
+    },
+    {
+      "id": "set only the depth of the section to 4",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "depth": 4.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the section has depth 4 and the same line",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.depth", "approx": 4.0, "name": "depth changed alone" },
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 902.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.startCoordinate.y", "approx": 902.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 908.0, "name": "end kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 900.0, "name": "end kept" }
+      ]
+    },
+    {
+      "id": "elevation from (920,900) to (930,900)",
+      "command": "CreateElevations",
+      "params": {
+        "elevationsData": [
+          {
+            "startCoordinate": { "x": 920.0, "y": 900.0 },
+            "endCoordinate": { "x": 930.0, "y": 900.0 },
+            "depth": 2.0,
+            "name": "TapirCheck Move Elevation",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "e1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "elevation created" }
+      ]
+    },
+    {
+      "id": "the elevation's horizontal range Limited, so that it has a depth",
+      "command": "SetSectionsAndElevationsDetails",
+      "creates": false,
+      "params": { "elementsWithDetails": [ { "elementId": { "guid": "${e1}" }, "details": { "horizontalRange": "Limited" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "move the elevation's end to (932,900)",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${e1}" }, "endCoordinate": { "x": 932.0, "y": 900.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the elevation has the new end",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${e1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Elevation" },
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 920.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 932.0, "name": "end moved" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 900.0 },
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck Move Elevation", "name": "name kept" }
+      ]
+    },
+    {
+      "id": "set only the depth of the elevation to 3",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${e1}" }, "depth": 3.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the elevation has depth 3 and the same line",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${e1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.depth", "approx": 3.0, "name": "depth changed alone" },
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 920.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 932.0, "name": "end kept" }
+      ]
+    }
+  ]
+}
