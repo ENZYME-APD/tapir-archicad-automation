@@ -56,6 +56,10 @@ python python-client/generate.py
 python -m unittest discover python-client/tests
 ```
 
+The committed `tapir_archicad/commands.py` is checked against the committed command reference by the
+build check (`python-client/generate.py --check`), so the client of `main` knows the commands of the
+Add-On of `main`, not of last week's release.
+
 The tests need no Archicad: they check that the committed `tapir_archicad/commands.py` is what
 `generate.py` writes, that every command has its method, and the client's requests and errors against
 a fake server. `python python-client/generate.py --check` only reports whether

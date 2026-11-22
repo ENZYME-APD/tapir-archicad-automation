@@ -718,16 +718,87 @@ class Commands:
         """
         return self.run ('GetStories', {})
 
-    def set_stories (self, *, stories):
-        """Sets the story sructure of the currently loaded project.
+    def set_stories (self, *, stories, dry_run = None):
+        """Sets the story structure of the currently loaded project to the given list of stories. Existing
+        stories outside the list are deleted, and Archicad deletes every element whose home story they
+        are with them; dryRun lists those stories with the number of elements on each, without changing
+        anything. To add, change or delete a single story, use InsertStory or DeleteStory instead.
 
         Tapir command SetStories (Tapir 1.1.5): https://archicad-api.com/archicad-addon/#SetStories
 
         Arguments:
         stories (StoriesSettings, required): A list of story settings, used as input for creating or
             modifying multiple stories.
+        dry_run (dryRun, DryRun, optional): If true, nothing is changed in the project and no undo step
+            is created: the list is checked as in a real run, and the response lists the existing stories a
+            real run would delete (with the number of elements Archicad would delete with each) and the
+            number of stories it would insert. Default is false.
         """
-        return self.run ('SetStories', _Parameters (('stories', stories)))
+        return self.run ('SetStories', _Parameters (('stories', stories), ('dryRun', dry_run)))
+
+    def insert_story (self, *, story_index, position, name = None, height = None, disp_on_sections = None):
+        """Inserts one new story directly above or below an existing story, with its name, height and level
+        line display, and returns the new story as GetStories reports it. Other stories are never
+        deleted; their indices and levels can change with the insertion as in Archicad's Story Settings
+        dialog, so read them again with GetStories.
+
+        Tapir command InsertStory (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#InsertStory
+
+        Arguments:
+        story_index (storyIndex, integer, required): The index of an existing story (see GetStories)
+            next to which the new story is inserted.
+        position (string ("Above", "Below"), required): Whether the new story is inserted directly above
+            or directly below the story of storyIndex.
+        name (string, optional): The name of the new story. Default is an empty name.
+        height (number, optional): The height of the new story, greater than zero. Default is the height
+            of the story of storyIndex.
+        disp_on_sections (dispOnSections, boolean, optional): Whether the level line of the new story
+            appears on sections and elevations. Default is what Archicad gives a new story.
+        """
+        return self.run ('InsertStory', _Parameters (('storyIndex', story_index), ('position', position), ('name', name), ('height', height), ('dispOnSections', disp_on_sections)))
+
+    def delete_story (self, *, story_index, delete_elements = None, dry_run = None):
+        """Deletes one story. Archicad deletes every element whose home story it is together with it, so a
+        story that is the home story of any element is only deleted with deleteElements: true; otherwise
+        it fails and gives the number of those elements. dryRun reports, without changing anything,
+        whether the story would be deleted and how many elements with it.
+
+        Tapir command DeleteStory (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#DeleteStory
+
+        Arguments:
+        story_index (storyIndex, integer, required): The index of the story to delete (see GetStories).
+        delete_elements (deleteElements, boolean, optional): Archicad deletes every element whose home
+            story is the deleted story. Without true here, a story that is the home story of any element is
+            not deleted, and the response says how many elements it has. Default is false.
+        dry_run (dryRun, DryRun, optional): If true, the command makes all the checks of a real run and
+            resolves the same targets, with the same errors, but changes nothing in the project and creates
+            no undo step. The response is that of a real run with "dryRun": true added, and says for each
+            target what the real run would do. Default is f...
+        """
+        return self.run ('DeleteStory', _Parameters (('storyIndex', story_index), ('deleteElements', delete_elements), ('dryRun', dry_run)))
+
+    def modify_story (self, *, story_index, name = None, level = None, height = None, disp_on_sections = None):
+        """Changes the name, level, height or level line display of one story, and returns the story as
+        GetStories reports it. It never adds or deletes a story. level moves only this story; height
+        moves every story above with the top of this one, as in Archicad's Story Settings dialog. The
+        elements of a moved story move with it.
+
+        Tapir command ModifyStory (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#ModifyStory
+
+        Arguments:
+        story_index (storyIndex, integer, required): The index of the story to modify (see GetStories).
+        name (string, optional): The new name of the story.
+        level (number, optional): The new level of the story. Only this story moves: the story below
+            gets taller or shorter, and the stories above stay where they are unless height is given too. It
+            must stay above the level of the story below, and, without height, below the level of the story
+            above. On the top story without heigh...
+        height (number, optional): The new height of the story, greater than zero. As in Archicad's
+            Story Settings dialog, every story above moves up or down with the top of this story and keeps
+            its height.
+        disp_on_sections (dispOnSections, boolean, optional): Whether the level line of the story
+            appears on sections and elevations.
+        """
+        return self.run ('ModifyStory', _Parameters (('storyIndex', story_index), ('name', name), ('level', level), ('height', height), ('dispOnSections', disp_on_sections)))
 
     def get_auto_text_keys (self, *, element_id = None):
         """Retrieves the available autotext keys (name and embeddable key): the Project Info, layout,
@@ -914,6 +985,32 @@ class Commands:
         """
         return self.run ('DeleteHotlinkNodes', _Parameters (('hotlinkNodes', hotlink_nodes)))
 
+    def merge_file (self, *, source_location, origin = None, rotation_angle = None, mirrored = None, floor_index = None):
+        """Merges an Archicad project or module file into the model, as File > Interoperability > Merge
+        does, at an origin, rotation and mirroring, each story of the file on the story with the same
+        index (or from floorIndex on). The Archicad API has no merge, so the file is placed as a hotlink
+        and the hotlink is broken, in one undo step, and the elements that are new afterwards are
+        returned; Archicad leaves them grouped together. A file the project already hotlinks is refused,
+        because breaking would break that hotlink too.
+
+        Tapir command MergeFile (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#MergeFile
+
+        Arguments:
+        source_location (sourceLocation, string, required): Absolute path of the file to merge: an
+            Archicad project (.pln, .pla) or module (.mod). It cannot be a file the project already
+            hotlinks: breaking that hotlink would turn its placed instances into ordinary elements too.
+        origin (HotlinkOrigin, optional): Optional. Where the origin of the file lands in the project.
+            Defaults to the project origin; if z is omitted, it is 0.
+        rotation_angle (rotationAngle, number, optional): Optional rotation about the origin,
+            counter-clockwise, in radians. Defaults to 0.
+        mirrored (boolean, optional): Optional. Reflects the file's local X axis before the rotation.
+            Defaults to false.
+        floor_index (floorIndex, integer, optional): Optional story of the project that the story with
+            index 0 of the file goes to; the other stories of the file follow it. Defaults to 0, so each
+            story of the file goes to the story with the same index.
+        """
+        return self.run ('MergeFile', _Parameters (('sourceLocation', source_location), ('origin', origin), ('rotationAngle', rotation_angle), ('mirrored', mirrored), ('floorIndex', floor_index)))
+
     def get_hotlink_owners_of_elements (self, *, elements):
         """Tells for each element whether it comes from a hotlinked module, and returns the hotlink element
         that contains it and the hotlink instance it belongs to. Available from Archicad 27.
@@ -976,7 +1073,8 @@ class Commands:
         return self.run ('NewProject', _Parameters (('newAndReset', new_and_reset)))
 
     def close_project (self):
-        """Closes the currently opened project.
+        """Closes the currently opened project. Fails, instead of answering success, when Archicad leaves
+        the project open, as it does with its last open project.
 
         Tapir command CloseProject (Tapir 1.3.1): https://archicad-api.com/archicad-addon/#CloseProject
         """
@@ -1490,7 +1588,9 @@ class Commands:
         """Returns the identifier of every element of the given type on the plan. It works for any type.
         Use the optional filter parameter for filtering. Objects that belong to another element (zone
         stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter
-        is given.
+        is given. Without databases it lists the current database: in a section or elevation window the
+        model elements of the type that the window shows, the same elements GetAllElements reports
+        there; pass the floor plan's database (GetDatabases) to list every one.
 
         Tapir command GetElementsByType (Tapir 1.0.7): https://archicad-api.com/archicad-addon/#GetElementsByType
 
@@ -1504,7 +1604,10 @@ class Commands:
     def get_all_elements (self, *, filters = None, databases = None):
         """Returns the identifier of all elements on the plan. Use the optional filter parameter for
         filtering. Objects that belong to another element (zone stamps, the parts of stairs and
-        railings) are left out unless the IncludeSubElemObjects filter is given.
+        railings) are left out unless the IncludeSubElemObjects filter is given. Without databases it
+        lists the current database: in a section or elevation window the model elements that the window
+        shows (and its own 2D elements); pass the floor plan's database (GetDatabases) to list every
+        model element.
 
         Tapir command GetAllElements (Tapir 1.0.7): https://archicad-api.com/archicad-addon/#GetAllElements
 
@@ -1660,13 +1763,15 @@ class Commands:
         """
         return self.run ('FilterElements', _Parameters (('elements', elements), ('filters', filters), ('layerIndices', layer_indices), ('floorIndices', floor_indices), ('elementTypes', element_types), ('fromHotlink', from_hotlink), ('hotlinkIds', hotlink_ids)))
 
-    def get_elements_by_criteria (self, *, types = None, floor_indices = None, layer_indices = None, filters = None, property_criteria = None, count_only = None, limit = None):
+    def get_elements_by_criteria (self, *, types = None, floor_indices = None, layer_indices = None, filters = None, property_criteria = None, count_only = None, limit = None, databases = None):
         """Returns the elements, or with countOnly only their number, that match all the given criteria:
         element types, home stories, layers, Archicad's element filter flags and property criteria (a
         value compared in internal units, or a value status such as hasValue, isUserUndefined,
         isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error,
         not ignored. Objects that belong to another element (zone stamps, the parts of stairs and
-        railings) are left out unless the IncludeSubElemObjects filter is given.
+        railings) are left out unless the IncludeSubElemObjects filter is given. It searches the current
+        database, as GetElementsByType does (in a section or elevation window the model elements the
+        window shows), or the given databases.
 
         Tapir command GetElementsByCriteria (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#GetElementsByCriteria
 
@@ -1686,8 +1791,11 @@ class Commands:
             without listing their GUIDs. Minimizes token usage.
         limit (integer, optional): Maximum number of matching elements to list. The count is still the
             total number of matches.
+        databases (Databases, optional): Optional. The databases to search, as GetDatabases lists them;
+            an element found in more than one is counted once. If omitted, the current database is searched:
+            the floor plan, or in a section or elevation window the model elements it shows.
         """
-        return self.run ('GetElementsByCriteria', _Parameters (('types', types), ('floorIndices', floor_indices), ('layerIndices', layer_indices), ('filters', filters), ('propertyCriteria', property_criteria), ('countOnly', count_only), ('limit', limit)))
+        return self.run ('GetElementsByCriteria', _Parameters (('types', types), ('floorIndices', floor_indices), ('layerIndices', layer_indices), ('filters', filters), ('propertyCriteria', property_criteria), ('countOnly', count_only), ('limit', limit), ('databases', databases)))
 
     def get_details_of_elements (self, *, elements = None, fields = None, filter = None, additional_fields = None):
         """Gets the details of elements (geometry parameters etc). When elements is omitted, all elements
@@ -1699,7 +1807,10 @@ class Commands:
         ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters,
         baluster sets, panels, patterns, rail ends, rail connections and end finishes, as
         GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings.
-        An element of another database (a layout, a section, a worksheet ...) returns only its header
+        A Stair returns the structure settings of each part and side (structures, with the monolith or
+        side stringer data of its type), and a StairStructure subelement returns the same keys. A Stair
+        also returns its plan outline (its left and right boundary lines) and its walking lines. An
+        element of another database (a layout, a section, a worksheet ...) returns only its header
         fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.
 
         Tapir command GetDetailsOfElements (Tapir 1.5.7): https://archicad-api.com/archicad-addon/#GetDetailsOfElements
@@ -1740,10 +1851,12 @@ class Commands:
         Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and
         often a placed Drawing's drawingScale, which comes from its source view (the element's result
         then names the kept value). Other wall, slab, column, beam, stair and object settings are
-        written by their Modify commands. An element Archicad does not let you edit (its layer is hidden
-        or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution
-        result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed
-        execution result too.
+        written by their Modify commands, and the name, ID and clip polygon of Detail and Worksheet
+        markers by ModifyDetailMarkers: typeSpecificDetails given for a Detail or Worksheet marker fail
+        the item, and nothing of it is changed. An element Archicad does not let you edit (its layer is
+        hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed
+        execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a
+        failed execution result too.
 
         Tapir command SetDetailsOfElements (Tapir 1.0.7): https://archicad-api.com/archicad-addon/#SetDetailsOfElements
 
@@ -2068,9 +2181,9 @@ class Commands:
         """Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths
         etc.), together with the volume and projected area per building material (one item per skin of
         composite and complex profile elements, one item for basic elements). Supported types: Wall,
-        Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional
-        minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate
-        the elements of each type in one Archicad call.
+        Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment, Stair. Use the
+        optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to
+        calculate the elements of each type in one Archicad call.
 
         Tapir command GetQuantitiesOfElements (Tapir 1.7.2): https://archicad-api.com/archicad-addon/#GetQuantitiesOfElements
 
@@ -2190,6 +2303,20 @@ class Commands:
         """
         return self.run ('GetSubelementsOfHierarchicalElements', _Parameters (('elements', elements)))
 
+    def get_railing_segment_patterns (self, *, elements):
+        """Gets the pattern of each segment of the given railings, telling the entry apart from its
+        instances: the entry is the segment's pattern settings (distribution, panel, baluster set with
+        its spacing, baluster and inner post) that Archicad generates the pattern from, the instances
+        are the RailingPattern, RailingPanel, RailingBalusterSet and RailingInnerPost subelements it
+        generated for the segment, whose own settings GetDetailsOfElements reads. Read only.
+
+        Tapir command GetRailingSegmentPatterns (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#GetRailingSegmentPatterns
+
+        Arguments:
+        elements (Elements, required): The railings to read.
+        """
+        return self.run ('GetRailingSegmentPatterns', _Parameters (('elements', elements)))
+
     def get_hierarchical_element_owners (self, *, elements, owner_mode = None):
         """Gets the owner of each given element in its hierarchical element: the root (e.g. the Curtain
         Wall, Stair or Railing of a frame, tread or post) or the immediate parent. Also returns whether
@@ -2203,6 +2330,93 @@ class Commands:
         owner_mode (ownerMode, HierarchicalOwnerMode, optional): root by default.
         """
         return self.run ('GetHierarchicalElementOwners', _Parameters (('elements', elements), ('ownerMode', owner_mode)))
+
+    def get_element_field_definitions (self, *, element_type):
+        """Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType)
+        that GetElementFields reads and SetElementFields writes (and GetFieldsOfElementDefaults and
+        SetFieldsOfElementDefaults in the tool defaults): its path, JSON type, C++ kind, size and
+        whether it is read-only. The list is generated from the Archicad 29 and 30 DevKit headers; other
+        Archicad versions answer that it is not available.
+
+        Tapir command GetElementFieldDefinitions (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#GetElementFieldDefinitions
+
+        Arguments:
+        element_type (elementType, ElementType, required): The element type whose fields are listed.
+        """
+        return self.run ('GetElementFieldDefinitions', _Parameters (('elementType', element_type)))
+
+    def get_element_fields (self, *, elements, fields = None):
+        """Reads fields of elements by their path in the element's struct in the Archicad API (e.g.
+        note.noteFont of an angle dimension, u.planeRoof.angle of a roof): every field, or only the
+        given ones. Reaches the settings the other commands do not return.
+
+        Tapir command GetElementFields (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#GetElementFields
+
+        Arguments:
+        elements (Elements, required): A list of elements.
+        fields (array of string, optional): The paths of the fields to read (see
+            GetElementFieldDefinitions), e.g. ["note.noteFont", "note.frame"]. Every field of the element is
+            read when it is left out. A path the element type does not have is listed in the element's
+            missingFields.
+        """
+        return self.run ('GetElementFields', _Parameters (('elements', elements), ('fields', fields)))
+
+    def set_element_fields (self, *, elements_with_fields, dry_run = None):
+        """Writes fields of elements by their path in the element's struct in the Archicad API (see
+        GetElementFieldDefinitions), with ACAPI_Element_Change and a mask of exactly the given fields,
+        in one undoable command. Each value is read back afterwards: one Archicad did not keep is
+        reported as a failure that names the field and the value Archicad kept.
+
+        Tapir command SetElementFields (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#SetElementFields
+
+        Arguments:
+        elements_with_fields (elementsWithFields, array of object, required): The elements to change and
+            the fields to write to each.
+        dry_run (dryRun, DryRun, optional): If true, the command makes all the checks of a real run and
+            resolves the same targets, with the same errors, but changes nothing in the project and creates
+            no undo step. The response is that of a real run with "dryRun": true added, and says for each
+            target what the real run would do. Default is f...
+        """
+        return self.run ('SetElementFields', _Parameters (('elementsWithFields', elements_with_fields), ('dryRun', dry_run)))
+
+    def get_fields_of_element_defaults (self, *, element_types, fields = None):
+        """Reads fields of the tool defaults of element types, the settings new elements of the type get,
+        by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), e.g.
+        thickness of the wall defaults: every field, or only the given ones. Reaches the default
+        settings the other commands do not return. The list is generated from the Archicad 29 and 30
+        DevKit headers; other Archicad versions answer that it is not available.
+
+        Tapir command GetFieldsOfElementDefaults (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#GetFieldsOfElementDefaults
+
+        Arguments:
+        element_types (elementTypes, array of ElementType, required): The element types whose tool
+            defaults are read.
+        fields (array of string, optional): The paths of the fields to read (see
+            GetElementFieldDefinitions), e.g. ["thickness", "height"]. Every field of the defaults is read
+            when it is left out. A path the element type does not have is listed in missingFields.
+        """
+        return self.run ('GetFieldsOfElementDefaults', _Parameters (('elementTypes', element_types), ('fields', fields)))
+
+    def set_fields_of_element_defaults (self, *, fields_of_element_defaults, dry_run = None):
+        """Writes fields of the tool defaults of element types by their path in the element's struct in the
+        Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_ChangeDefaults and a mask of
+        exactly the given fields: the elements created afterwards get them. Like the settings dialogs of
+        the tools, it is not undoable. Each value is read back afterwards: one Archicad did not keep is
+        reported as a failure that names the field and the value Archicad kept. A change Archicad
+        refuses can still have written some of the given fields (seen with libInd, the library part,
+        which Archicad refuses in the tool defaults): the failure names them.
+
+        Tapir command SetFieldsOfElementDefaults (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#SetFieldsOfElementDefaults
+
+        Arguments:
+        fields_of_element_defaults (fieldsOfElementDefaults, array of object, required): The element
+            types whose tool defaults change and the fields to write to each.
+        dry_run (dryRun, DryRun, optional): If true, the command makes all the checks of a real run and
+            resolves the same targets, with the same errors, but changes nothing in the project and creates
+            no undo step. The response is that of a real run with "dryRun": true added, and says for each
+            target what the real run would do. Default is f...
+        """
+        return self.run ('SetFieldsOfElementDefaults', _Parameters (('fieldsOfElementDefaults', fields_of_element_defaults), ('dryRun', dry_run)))
 
     def edit_hierarchical_element (self, *, element_id):
         """Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its
@@ -2778,24 +2992,26 @@ class Commands:
         return self.run ('ScaleElements', _Parameters (('elements', elements), ('center', center), ('factor', factor), ('factorY', factor_y)))
 
     def delete_elements (self, *, elements, dry_run = None):
-        """Deletes elements. The zones of the call are deleted before all the other elements, so an
-        automatic zone deleted together with its bounding walls is gone before its boundary is; deleting
-        the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed
-        polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an
-        execution result for each input element: an element that could not be deleted (for example
-        because its layer is locked) or a guid that is not in the project gets a failed execution result
-        instead of being skipped silently, and does not stop the other elements from being deleted. With
-        dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true,
-        and each element that passes the checks made before deleting gets wouldDelete, so a script can
-        preview a deletion before making it.
+        """Deletes elements, each in the database that contains it (the floor plan, a section, a worksheet,
+        a layout, ...), whichever window is the current one; the current window stays. The zones of the
+        call are deleted before all the other elements, so an automatic zone deleted together with its
+        bounding walls is gone before its boundary is; deleting the boundary of an automatic zone
+        without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks
+        the command until someone clicks it in Archicad. Returns an execution result for each input
+        element: an element that could not be deleted (for example because its layer is locked) or a
+        guid that is not in the project gets a failed execution result instead of being skipped
+        silently, and does not stop the other elements from being deleted. With dryRun true nothing is
+        deleted and no undo step is created: the response has dryRun set to true, and each element that
+        passes the checks made before deleting gets wouldDelete, so a script can preview a deletion
+        before making it.
 
         Tapir command DeleteElements (Tapir 1.2.1): https://archicad-api.com/archicad-addon/#DeleteElements
 
         Arguments:
-        elements (Elements, required): The elements to delete. The zones among them are deleted before
-            all the others, so an automatic zone deleted together with its bounding elements is gone before
-            its boundary is. Deleting the boundary of an automatic zone without the zone itself can open
-            Archicad's modal 'No closed polygon found ar...
+        elements (Elements, required): The elements to delete, of any database (the floor plan, a
+            section, a worksheet, a layout, ...): each is deleted in the database that contains it,
+            whichever window is the current one, and the current window stays. The zones among them are
+            deleted before all the others, so an automatic zone delete...
         dry_run (dryRun, DryRun, optional): If true, the command makes all the checks of a real run and
             resolves the same targets, with the same errors, but changes nothing in the project and creates
             no undo step. The response is that of a real run with "dryRun": true added, and says for each
@@ -2855,8 +3071,10 @@ class Commands:
         """
         return self.run ('RefreshElements', _Parameters (('elements', elements), ('force', force)))
 
-    def get_gdl_parameters_of_elements (self, *, elements):
-        """Gets all the GDL parameters (name, type, value) of the given elements. For the railing
+    def get_gdl_parameters_of_elements (self, *, elements, parameter_names = None, include_possible_values = None):
+        """Gets all the GDL parameters (name, type, value) of the given elements. parameterNames returns
+        only the named parameters, and includePossibleValues false leaves out the value lists (which for
+        font parameters list every installed font), for a much smaller answer. For the railing
         components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...),
         which have no parameter session in the Archicad API, the parameters are read from the component
         itself: isLocked is then always false and possibleValues is not given.
@@ -2865,8 +3083,15 @@ class Commands:
 
         Arguments:
         elements (Elements, required): A list of elements.
+        parameter_names (parameterNames, array of string, optional): Optional. Only the parameters with
+            these GDL variable names are returned (case-insensitive), in the order of the library part. A
+            name the element's library part does not have is left out. All parameters are returned when it
+            is not given.
+        include_possible_values (includePossibleValues, boolean, optional): Optional, true by default.
+            When false, possibleValues (the value lists of the Parameter Script, e.g. every installed font
+            for a font parameter) is left out of the answer, which makes it much smaller.
         """
-        return self.run ('GetGDLParametersOfElements', _Parameters (('elements', elements)))
+        return self.run ('GetGDLParametersOfElements', _Parameters (('elements', elements), ('parameterNames', parameter_names), ('includePossibleValues', include_possible_values)))
 
     def set_gdl_parameters_of_elements (self, *, elements_with_gdl_parameters, dry_run = None):
         """Sets the given GDL parameters of the given elements. An element Archicad does not let the user
@@ -2904,9 +3129,11 @@ class Commands:
 
     def get_marker_parameters_of_elements (self, *, elements):
         """Gets the marker library part and the marker's GDL parameters (name, type, value) of the given
-        Window and Door elements. The marker is the stamp drawn next to the opening on the floor plan;
-        its parameters are separate from the opening's own GDL parameters, which
-        GetGDLParametersOfElements returns.
+        Window, Door and Change Marker elements. The marker of an opening is the stamp drawn next to it
+        on the floor plan; its parameters are separate from the opening's own GDL parameters, which
+        GetGDLParametersOfElements returns. The marker of a Change Marker is its marker head, e.g. with
+        the texts typed into it; a Change Marker with only a cloud has no marker and gets an error.
+        GetDetailsOfElements gives the Change a Change Marker is linked to.
 
         Tapir command GetMarkerParametersOfElements (Tapir 1.7.1): https://archicad-api.com/archicad-addon/#GetMarkerParametersOfElements
 
@@ -2916,8 +3143,9 @@ class Commands:
         return self.run ('GetMarkerParametersOfElements', _Parameters (('elements', elements)))
 
     def set_marker_parameters_of_elements (self, *, elements_with_marker_parameters):
-        """Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's
-        own settings and the other marker parameters are left as they are.
+        """Sets the given GDL parameters of the marker of the given Window, Door and Change Marker elements
+        (the marker head of a Change Marker). The element's own settings and the other marker parameters
+        are left as they are.
 
         Tapir command SetMarkerParametersOfElements (Tapir 1.7.1): https://archicad-api.com/archicad-addon/#SetMarkerParametersOfElements
 
@@ -3068,13 +3296,17 @@ class Commands:
 
     def create_stairs (self, *, stairs_data):
         """Creates Stair elements based on the given baseline and parameters, optionally with the segment
-        type of each baseline edge and the turn at each baseline point (landings and winders). Accepts
-        the same settings as ModifyStairs: the step values with their locks, the top link
-        (relativeTopStory, topOffset), the Rules and Standards, the finish and structure visibility, the
-        extra treads, the walking line, the numbering, the walking direction, and the tread, riser and
-        structure settings of the flights and the landings, and the floor plan and reflected ceiling
-        plan display (shown stories and components); settings not given come from the Stair tool
-        defaults or the favorite.
+        type of each baseline edge and the turn at each baseline point (landings and winders), and with
+        curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as
+        ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the
+        Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the
+        walking line, the numbering, the walking direction, and the tread, riser and structure settings
+        of the flights and the landings (with the monolith data of a Monolith structure and the stringer
+        data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and
+        components, the symbol on each story, the break line and the line type, pen and fill overrides),
+        and the line types, pens and fills of the structure symbols (structureSymbols,
+        monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories);
+        settings not given come from the Stair tool defaults or the favorite.
 
         Tapir command CreateStairs (Tapir 1.5.0): https://archicad-api.com/archicad-addon/#CreateStairs
 
@@ -3084,14 +3316,14 @@ class Commands:
         return self.run ('CreateStairs', _Parameters (('stairsData', stairs_data)))
 
     def solve_stair_baseline (self, *, stairs_data):
-        """Runs the Archicad stair solver on the given Stair baselines and parameters without creating any
-        element. Returns for each one whether the baseline was already correct, could be solved or could
-        not be solved, with the baseline and the main stair settings after solving, and the Rules and
-        Standards (riser height and going limits, 2R+G, R+G, R/G, pitch) CreateStairs would lay the
-        steps out by, with a given treadDepth pinned as CreateStairs pins it. The solver checks the
-        baseline only: it does not lay out the steps, so stepNum, riserHeight and treadDepth are the
-        given values or the tool defaults, and CreateStairs picks the riser count and height for
-        totalHeight within the rules. Available from Archicad 27.
+        """Runs the Archicad stair solver on the given Stair baselines (straight or with curved edges) and
+        parameters without creating any element. Returns for each one whether the baseline was already
+        correct, could be solved or could not be solved, with the baseline and the main stair settings
+        after solving, and the Rules and Standards (riser height and going limits, 2R+G, R+G, R/G,
+        pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs
+        pins it. The solver checks the baseline only: it does not lay out the steps, so stepNum,
+        riserHeight and treadDepth are the given values or the tool defaults, and CreateStairs picks the
+        riser count and height for totalHeight within the rules. Available from Archicad 27.
 
         Tapir command SolveStairBaseline (Tapir 1.7.3): https://archicad-api.com/archicad-addon/#SolveStairBaseline
 
@@ -3405,14 +3637,15 @@ class Commands:
 
     def modify_associative_dimensions (self, *, dimensions_with_details):
         """Changes the settings of existing linear dimensions (the Dimension tool's elements, also in
-        sections): the dimension type, the elevation origin, the line pen, the marker type, pen and
-        size, the text placement method, the text height, pen and frame and the witness line form and
-        value, with the same keys as the dimension creation commands. The text and witness line settings
-        are applied to every witness point. witnessPointTexts sets the text of single witness points:
-        the measured value or a custom text (which can contain the measured value), superscript, and the
-        reset to the automatic text position. Not written: the witness points, the dimension line
-        position and direction (use MoveElements), the witness extension line and the hole and composite
-        wall dimensioning settings.
+        sections): the dimension type, the elevation origin and elevation marker, the line pen, the
+        marker type, pen and size, the text placement method, the text height, pen, frame, font and
+        style (bold, italic, underline) and the witness line form and value, with the same keys as the
+        dimension creation commands. The text and witness line settings are applied to every witness
+        point. witnessPointTexts sets the text of single witness points: the measured value or a custom
+        text (which can contain the measured value), superscript, the text position and the reset to the
+        automatic text position; GetDetailsOfElements reads them back with the same keys. Not written:
+        the witness points, the dimension line position and direction (use MoveElements), the witness
+        extension line and the hole and composite wall dimensioning settings.
 
         Tapir command ModifyAssociativeDimensions (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#ModifyAssociativeDimensions
 
@@ -3426,8 +3659,8 @@ class Commands:
     def get_dimension_data (self, *, elements):
         """Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the
         text placement method and the default witness line, and per witness point the coordinates,
-        measured value, witness line, the text height, pen and frame, and the text content (measured
-        value or custom text), superscript and whether the text was moved by hand.
+        measured value, witness line, the text height, pen, frame, font and style, and the text content
+        (measured value or custom text), superscript and whether the text was moved by hand.
 
         Tapir command GetDimensionData (Tapir 1.5.0): https://archicad-api.com/archicad-addon/#GetDimensionData
 
@@ -3454,11 +3687,11 @@ class Commands:
 
     def create_zones (self, *, zones_data):
         """Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones
-        (name, number, category, zone stamp, stamp pen, levels, contour line, cover fill, 3D surface,
-        polygon display and area reduction), applied by the same helpers; the polygon or reference
-        point, and the layer (layerIndex), are only set here. An item whose area would overlap an
-        existing Zone on the same story fails with an error naming that Zone instead of opening
-        Archicad's modal overlap warning, unless its allowOverlap is true.
+        (name, number, category, zone stamp, stamp pen, levels, letter size (roomLSize, in millimetres),
+        contour line, cover fill, 3D surface, polygon display and area reduction), applied by the same
+        helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item
+        whose area would overlap an existing Zone on the same story fails with an error naming that Zone
+        instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.
 
         Tapir command CreateZones (Tapir 1.1.8): https://archicad-api.com/archicad-addon/#CreateZones
 
@@ -3474,12 +3707,37 @@ class Commands:
 
         Arguments:
         polylines_data (polylinesData, array of object, required): Array of data to create Polylines.
+            The settings left out come from the Polyline tool defaults, or from the favorite given by
+            favoriteName.
         database_id (databaseId, DatabaseId, optional): Optional database to create the elements in,
             e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and
             CreateDetails return). The front window stays as it is: a worksheet or detail whose window was
             never opened is opened once on Archicad 27 and later, and th...
         """
         return self.run ('CreatePolylines', _Parameters (('polylinesData', polylines_data), ('databaseId', database_id)))
+
+    def modify_polylines (self, *, polylines_with_details, database_id = None):
+        """Changes existing Polyline elements with the keys CreatePolylines takes and GetDetailsOfElements
+        returns: the pen, the line type, zone boundary (roomSeparator), the dash mode (drawSegmentMode),
+        the arrowheads at both ends, and the polygon (coordinates with its arcs, replaced as a whole;
+        the polyline keeps its GUID). Only the given settings are changed. With databaseId the polylines
+        are looked for in that database, e.g. a worksheet, a detail or a layout. The polyline is read
+        back, so a value Archicad did not keep is reported as a failure.
+
+        Tapir command ModifyPolylines (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#ModifyPolylines
+
+        Arguments:
+        polylines_with_details (polylinesWithDetails, array of object, required): The Polylines to
+            change, each with the settings to change. Only the given settings are changed; the keys are
+            those CreatePolylines takes and GetDetailsOfElements returns. coordinates replaces the whole
+            polygon, with its arcs. The pen weight override (penWeightMm of CreatePolylines) is not
+            taken:...
+        database_id (databaseId, DatabaseId, optional): Optional database the polylines are in, e.g. a
+            worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and
+            CreateDetails return), as CreatePolylines takes it. The front window stays as it is: a worksheet
+            or detail whose window was never opened is opened once on Archi...
+        """
+        return self.run ('ModifyPolylines', _Parameters (('polylinesWithDetails', polylines_with_details), ('databaseId', database_id)))
 
     def create_line_elements (self, *, lines_data, database_id = None):
         """Creates Line elements based on the given parameters.
@@ -3565,13 +3823,37 @@ class Commands:
         Tapir command CreateHatches (Tapir 1.5.6): https://archicad-api.com/archicad-addon/#CreateHatches
 
         Arguments:
-        hatches_data (hatchesData, array of object, required): Array of data to create Hatches.
+        hatches_data (hatchesData, array of object, required): Array of data to create Hatches. The
+            settings left out come from the Fill tool defaults, or from the favorite given by favoriteName.
         database_id (databaseId, DatabaseId, optional): Optional database to create the elements in,
             e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and
             CreateDetails return). The front window stays as it is: a worksheet or detail whose window was
             never opened is opened once on Archicad 27 and later, and th...
         """
         return self.run ('CreateHatches', _Parameters (('hatchesData', hatches_data), ('databaseId', database_id)))
+
+    def modify_hatches (self, *, hatches_with_details, database_id = None):
+        """Changes existing Hatch (Fill) elements with the keys CreateHatches takes and
+        GetDetailsOfElements returns: the contour pen and line type, the fill pen and background pen or
+        their RGB colors, the fill or building material, the fill category, the fill orientation, the
+        area text and the percentage subtracted from the zone area, and the polygon (coordinates with
+        its arcs and holes, replaced as a whole; the hatch keeps its GUID). Only the given settings are
+        changed. With databaseId the hatches are looked for in that database, e.g. a worksheet, a detail
+        or a layout. The hatch is read back, so a value Archicad did not keep is reported as a failure.
+
+        Tapir command ModifyHatches (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#ModifyHatches
+
+        Arguments:
+        hatches_with_details (hatchesWithDetails, array of object, required): The Hatches (Fills) to
+            change, each with the settings to change. Only the given settings are changed; the keys are
+            those CreateHatches takes and GetDetailsOfElements returns. coordinates replaces the whole
+            polygon, with its arcs and holes.
+        database_id (databaseId, DatabaseId, optional): Optional database the hatches are in, e.g. a
+            worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and
+            CreateDetails return), as CreateHatches takes it. The front window stays as it is: a worksheet
+            or detail whose window was never opened is opened once on Archicad...
+        """
+        return self.run ('ModifyHatches', _Parameters (('hatchesWithDetails', hatches_with_details), ('databaseId', database_id)))
 
     def create_splines (self, *, splines_data, database_id = None):
         """Creates Spline elements based on the given parameters.
@@ -3731,12 +4013,62 @@ class Commands:
         """
         return self.run ('CreateAngleDimensions', _Parameters (('angleDimensionsData', angle_dimensions_data), ('databaseId', database_id)))
 
+    def create_radial_dimensions (self, *, radial_dimensions_data, database_id = None):
+        """Creates Radial Dimension elements (the Radial Dimension tool) measuring the radius of an arc, a
+        circle or a curved wall, linked to that element, with the dimension line ending at
+        dimensionLineEnd, optionally based on a Radial Dimension favorite, with the line pen, marker,
+        text height, pen, position and direction, a custom text and the centre mark. The Archicad API
+        does not document how a radial dimension stores the measured element, so the link is written as
+        GetDetailsOfElements reads it from dimensions placed by hand (ownerElementInIndex and
+        ownerElementLine can be given), and each new dimension is read back: one Archicad did not link
+        to the element, whose radius is not the element's, whose dimension line Archicad moved off the
+        given direction (it may lengthen the line so that the text fits) or that did not keep a given
+        setting fails with the values Archicad stored and is deleted again. Archicad stores the link to
+        a circle with the type Arc, and to a curved wall with ownerElementInIndex -1, as for a dimension
+        placed by hand. Tested on Archicad 29 with circles, arcs and curved walls. The dimensions are
+        created in the current database or in the one given by databaseId; GetDetailsOfElements returns
+        their radius, base point and owner element.
+
+        Tapir command CreateRadialDimensions (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#CreateRadialDimensions
+
+        Arguments:
+        radial_dimensions_data (radialDimensionsData, array of object, required): Array of data to
+            create Radial Dimensions (the Radial Dimension tool), each measuring the radius of an arc, a
+            circle or a curved wall. They are created in the current database (the floor plan, or the
+            worksheet or detail whose window is active), or in the one given by databaseId, which must hold
+            t...
+        database_id (databaseId, DatabaseId, optional): Optional database to create the elements in,
+            e.g. a worksheet or a detail (see GetDatabases), which must hold the measured elements. The
+            front window stays as it is: a worksheet or detail whose window was never opened is opened once
+            on Archicad 27 and later, and the front window is brought back....
+        """
+        return self.run ('CreateRadialDimensions', _Parameters (('radialDimensionsData', radial_dimensions_data), ('databaseId', database_id)))
+
+    def modify_angle_dimensions (self, *, angle_dimensions_with_details):
+        """Changes the settings of existing Angle Dimension elements with the keys CreateAngleDimensions
+        takes and GetDetailsOfElements returns: smallArc, the pen, and the text height and pen. Only the
+        given settings are changed. The lines and the arc position cannot be changed, as Archicad keeps
+        them: delete the dimension and create it again with CreateAngleDimensions. The element is read
+        back, so a value Archicad did not take is reported as a failure.
+
+        Tapir command ModifyAngleDimensions (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#ModifyAngleDimensions
+
+        Arguments:
+        angle_dimensions_with_details (angleDimensionsWithDetails, array of object, required): The Angle
+            Dimensions to change, each with the settings to change. Only the given settings are changed; the
+            keys are those CreateAngleDimensions takes and GetDetailsOfElements returns. The lines and the
+            arc position cannot be changed: Archicad keeps them as they are, so delete the dimension and
+            cr...
+        """
+        return self.run ('ModifyAngleDimensions', _Parameters (('angleDimensionsWithDetails', angle_dimensions_with_details)))
+
     def modify_level_dimensions (self, *, level_dimensions_with_details):
         """Changes existing Level Dimension elements: the position of the marker and the settings
         CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus
         sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts,
         and from Archicad 29 hide with associated element), with the same keys, and the static level,
-        the Static checkbox (staticLevel) and the owner element (parentElementId).
+        the Static checkbox (staticLevel) and the owner element (parentElementId, or ownerElementId as
+        GetDetailsOfElements reads it, which does not change the Static checkbox).
 
         Tapir command ModifyLevelDimensions (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#ModifyLevelDimensions
 
@@ -3789,11 +4121,14 @@ class Commands:
         isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). edgeTrim sets the
         Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and
         edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports
-        them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens
-        before Archicad 27. Each slab is read back after the change: a given display setting Archicad
-        did not apply gets a failed execution result naming it, and so does a given cover fill origin or
-        distortion matrix, of whose orientation Archicad applies only the type to a Slab through the
-        API; the other details are applied.
+        them; they cannot be combined with polygonOutline or holes. A polygonOutline or holes change
+        keeps the Edge Angle and the custom surface of each edge that lies on an edge of the old polygon
+        (also both parts of a split edge), and with the same point counts that of the edge with the same
+        index (moved points); new edges are Vertical with the slab's side surface. Not written: the cut
+        fill pens before Archicad 27. Each slab is read back after the change: a given display setting
+        Archicad did not apply gets a failed execution result naming it, and so does a given cover fill
+        origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab
+        through the API; the other details are applied.
 
         Tapir command ModifySlabs (Tapir 1.4.0): https://archicad-api.com/archicad-addon/#ModifySlabs
 
@@ -3809,8 +4144,9 @@ class Commands:
         of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read
         back after the change, and one Archicad did not take fails the item. The segments list writes a
         given column segment in the shape GetDetailsOfElements returns it: its extrusion and ends
-        surfaces, veneer, cross section, taper and length. Not written: the cut fill pens before
-        Archicad 27.
+        surfaces, veneer, cross section, taper and length. A column Archicad does not let you edit (its
+        layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed
+        execution result naming the reason. Not written: the cut fill pens before Archicad 27.
 
         Tapir command ModifyColumns (Tapir 1.4.0): https://archicad-api.com/archicad-addon/#ModifyColumns
 
@@ -3871,18 +4207,19 @@ class Commands:
         """Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan
         outline, its holes (also on their own), level, thickness, structure, trimming body
         (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of
-        the outline or contour and its holes) and the floor plan and section settings (floor plan
-        display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both;
-        angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and
-        edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels,
-        eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges
-        (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof
-        polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the
-        contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its
-        own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it.
-        level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without
-        floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof
-        on its story.
+        the outline or contour and its holes), edgeSideMaterials (the custom surface of each edge of the
+        polygon, on a multi-plane roof of its contour; read back after writing), edgeTypes (the Edge
+        Type of each polygon edge, used by schedules; on a multi-plane roof of its contour, read back
+        after writing) and the floor plan and section settings (floor plan display, show on stories, cut
+        fill pens, contour pens and line types, cover fill) apply to both; angle and pivotLine only to
+        single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of
+        curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On
+        a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements'
+        pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs;
+        contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon,
+        and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not
+        its story-relative level); without floorIndex it also picks the home story, so send the current
+        floorIndex with it to keep the roof on its story.
 
         Tapir command ModifyRoofs (Tapir 1.4.0): https://archicad-api.com/archicad-addon/#ModifyRoofs
 
@@ -3898,10 +4235,12 @@ class Commands:
         (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides, the
         custom surface of individual edges (edgeMaterials) and the floor plan and section settings
         (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) of
-        Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping
-        their GUID, base plane and extrusion start), based on the given parameters. The reference
-        surface stays in place when the thickness changes; a thickness for a Composite shell is refused,
-        as it comes from the composite.
+        Shell elements, the extrusion vector or length and the profile of extruded Shells (keeping their
+        GUID, base plane and extrusion start), the profile, axis, revolution, begin, slant and shear
+        angles and segments of revolved Shells, and the two profiles, their planes and the morphing rule
+        of ruled Shells (keeping their GUID and base plane), based on the given parameters. The
+        reference surface stays in place when the thickness changes; a thickness for a Composite shell
+        is refused, as it comes from the composite.
 
         Tapir command ModifyShells (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#ModifyShells
 
@@ -3928,12 +4267,16 @@ class Commands:
         pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements
         returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and
         handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among
-        that segment's rails and handrails, the inner posts (double post offset, post count, vertical
-        and horizontal position), panels (visible, frame) and baluster sets (frame, distribution) of a
-        segment by their index among that segment's components of the kind, and the posts of a node
-        (vertical position) by their index among that node's posts. The reference line, the other
-        segments, nodes and components and the railing's GUID stay as they are. Each railing is read
-        back once the change is done, and a value Archicad did not apply gets a failed execution result.
+        that segment's rails and handrails, the pattern of a segment (segments[].pattern: the models of
+        its inner posts, panels and baluster sets and its distribution, which the inner posts, panels
+        and baluster sets the railing has then follow) and the post model of a node (nodes[].post:
+        vertical position). Archicad generates posts, inner posts, panels and baluster sets from these
+        models; a change to a single one of them (innerPosts, panels, balusterSets, posts, by index) is
+        tried, and on Archicad 29 it is refused with a message that names the model to change instead.
+        On Archicad 29 every segment of a new railing follows the pattern of segment 0. The reference
+        line, the other segments, nodes and components and the railing's GUID stay as they are. Each
+        railing is read back once the change is done, and a value Archicad did not apply gets a failed
+        execution result.
 
         Tapir command ModifyRailings (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#ModifyRailings
 
@@ -3974,7 +4317,7 @@ class Commands:
         texts_with_details (textsWithDetails, array of object, required): Array of Text elements to
             modify, with the fields to change. Only provided fields are changed; omitted fields are left
             as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height,
-            effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, and on...
+            effects) rebuilds the content (one paragraph per line, as SetDetailsOfElements does),...
         """
         return self.run ('ModifyTexts', _Parameters (('textsWithDetails', texts_with_details)))
 
@@ -4072,22 +4415,32 @@ class Commands:
     def modify_stairs (self, *, stairs_with_details):
         """Modifies Stair elements in place, keeping their baseline and position: the flight width, total
         height, number of steps, riser height and going with their locks, the top link to a story with
-        its offset, the Rules and Standards (each limit and whether it is applied), the finish and
-        structure visibility, the extra top and bottom treads, the walking line position and offset, the
-        step numbering, the walking direction, the uniform finish, monolith and draining settings, and
-        for the flights and the landings the tread and riser settings (presence, thickness, offset,
-        nosing, riser cross section and position) and the structure of each side (presence, type,
-        underside shape and thickness), and the floor plan display: whether it is Custom or by the Model
-        View Options, and for the floor plan and the reflected ceiling plan separately the stories the
-        stair is shown on and whether its walking line, numbering, up/down text, description and
-        structure are shown; these are read back, and one Archicad did not apply is reported as an
-        error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad
-        solves the stair again within its baseline, so it may adjust the step values; read them back
-        with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as
-        CreateStairs pins it, before the given rules are written. Not written by this command: the
-        baseline with its landings and winders, the break marks, lines and fills of the floor plan
-        symbol, and the headroom; the subelements (treads, risers, structures) take the per-part
-        settings above and cannot be written one by one through the API.
+        its offset, the Rules and Standards (each limit and whether it is applied), the headroom
+        (generation method, height and left and right offset; read back, and one Archicad did not apply
+        is reported as an error), the finish and structure visibility, the extra top and bottom treads,
+        the walking line position and offset, the step numbering, the walking direction, the uniform
+        finish, monolith and draining settings, and for the flights and the landings the tread and riser
+        settings (presence, thickness, offset, nosing, riser cross section and position) and the
+        structure of each side (presence, type, underside shape and thickness, the monolith data of a
+        Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces,
+        pens, line types and drainings, and the stringer data of a Side structure: width, height above
+        tread and how it is measured; the monolith and stringer data are read back, and one Archicad did
+        not apply is reported as an error), and the floor plan display: whether it is Custom or by the
+        Model View Options, and for the floor plan and the reflected ceiling plan separately the stories
+        the stair is shown on and whether its walking line, numbering, up/down text, description and
+        structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant
+        stories), the break line (angle, gap and position) and the line type, pen and symbol fill
+        overrides, and the line types, pens and fills of the structure symbols per structure type and
+        view (structureSymbols) and of the monolithic structure per view and visible or hidden part
+        (monolithStructureSymbols), and which structures, fills and monolithic parts are shown on each
+        range of the relevant stories, per view (structureVisibilityOnStories); these are read back, and
+        one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only
+        the given settings are changed. Archicad solves the stair again within its baseline, so it may
+        adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is
+        pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written.
+        Not written by this command: the baseline with its landings and winders; the subelements
+        (treads, risers, structures) take the per-part settings above and cannot be written one by one
+        through the API.
 
         Tapir command ModifyStairs (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#ModifyStairs
 
@@ -4098,17 +4451,62 @@ class Commands:
         """
         return self.run ('ModifyStairs', _Parameters (('stairsWithDetails', stairs_with_details)))
 
+    def recreate_curtain_walls (self, *, curtain_walls):
+        """Recreates Curtain Wall elements on a new reference line with more or fewer segments, as
+        CreateCurtainWalls takes it, because ModifyCurtainWalls can only keep the number of segments; or
+        with a new height or slant angle, which Archicad does not apply to an existing slanted curtain
+        wall through ACAPI_Element_Change (seen in Archicad 29). Without coordinates the old reference
+        line is kept. The new curtain wall is created with the old one as templateElementId, so it gets
+        its frame and panel classes, pattern, surfaces, boundary and corner frames, height, home story
+        and base, layer and slant angle, unless height or angle is given; it also gets its Element ID,
+        renovation status, classifications, element categories, property values, solid element
+        operations and trims, and the old curtain wall is then deleted. Each curtain wall is recreated
+        in its own undo step, and when any step fails nothing is changed for that curtain wall. The
+        result lists what could not be carried over (labels, dimensions, group). Frames and panels
+        changed one by one on the old curtain wall are generated again from its classes and pattern, as
+        when it is drawn again in Archicad.
+
+        Tapir command RecreateCurtainWalls (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateCurtainWalls
+
+        Arguments:
+        curtain_walls (curtainWalls, array of object, required): The curtain walls to recreate on a new
+            reference line, with a new height or with a new slant. Give at least one of coordinates, height
+            and angle.
+        """
+        return self.run ('RecreateCurtainWalls', _Parameters (('curtainWalls', curtain_walls)))
+
+    def recreate_railings (self, *, railings):
+        """Recreates Railing elements on a new reference line - with more or fewer nodes and segments, in
+        2D as CreateRailings takes it or with an elevation per node and arcs as
+        CreateRailingsFromPolyline takes it - because the Archicad API cannot change the reference line
+        of an existing railing. The new railing is created with the old one as templateElementId, so it
+        gets its node and segment settings, posts, rails, handrails, toprails, panels and balusters,
+        story visibility, pens, layer, home story and bottom offset; it also gets its Element ID,
+        renovation status, classifications, element categories, property values, solid element
+        operations and trims, and the old railing is then deleted. Each railing is recreated in its own
+        undo step, and when any step fails nothing is changed for that railing. The result lists what
+        could not be carried over (labels, dimensions, group). Settings given to single segments, nodes
+        or posts of the old railing are not carried over: the new ones are generated from the railing's
+        defaults, as when it is drawn again in Archicad.
+
+        Tapir command RecreateRailings (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateRailings
+
+        Arguments:
+        railings (array of object, required): The railings to recreate on a new reference line.
+        """
+        return self.run ('RecreateRailings', _Parameters (('railings', railings)))
+
     def recreate_stairs (self, *, stairs):
-        """Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes
-        it), because the Archicad API cannot change the baseline of an existing stair. The new stair
-        gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and
-        top link), Element ID, layer, home story and base offset, renovation status, classifications,
-        element categories and property values, and its solid element operations (on Archicad 27 without
-        their link flags, which the API cannot read there) and roof or shell trims; the old stair is
-        then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is
-        changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new
-        one and lists what could not be carried over (associative labels, dimensions of the current
-        database that measured the old stair, and the group it was in).
+        """Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as
+        CreateStairs takes it), because the Archicad API cannot change the baseline of an existing
+        stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline
+        position, rules and top link), Element ID, layer, home story and base offset, renovation status,
+        classifications, element categories and property values, and its solid element operations (on
+        Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims;
+        the old stair is then deleted. Each stair is recreated in its own undo step, and when any step
+        fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old
+        GUID to the new one and lists what could not be carried over (associative labels, dimensions of
+        the current database that measured the old stair, and the group it was in).
 
         Tapir command RecreateStairs (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateStairs
 
@@ -4116,6 +4514,113 @@ class Commands:
         stairs (array of object, required): The stairs to recreate on a new baseline.
         """
         return self.run ('RecreateStairs', _Parameters (('stairs', stairs)))
+
+    def recreate_windows (self, *, windows):
+        """Recreates Window elements in another wall (ownerWallId, optionally at a new centerOffset along
+        it), because Archicad does not move a window into another wall through ACAPI_Element_Change: it
+        keeps its owner (seen in Archicad 29). The new window is created as CreateWindows creates one,
+        from the Window tool defaults with the tool's marker, with the old window's settings (size,
+        sill, anchor, reveal, sides, pens, line types, surfaces and the rest of API_WindowType), library
+        part and GDL parameters, layer and renovation status; its marker gets the old marker's
+        parameters when both are of the same marker library part. It also gets the old window's Element
+        ID, classifications, element categories and property values, and the old window is then deleted.
+        Each window is recreated in its own undo step, and when any step fails nothing is changed for
+        that window. The new window has a new GUID: the result maps the old GUID to the new one and
+        lists what could not be carried over (labels, dimensions of the current database that measured
+        the old window, group).
+
+        Tapir command RecreateWindows (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateWindows
+
+        Arguments:
+        windows (array of object, required): The windows to recreate in another wall.
+        """
+        return self.run ('RecreateWindows', _Parameters (('windows', windows)))
+
+    def recreate_doors (self, *, doors):
+        """Recreates Door elements in another wall (ownerWallId, optionally at a new centerOffset along
+        it), because Archicad does not move a door into another wall through ACAPI_Element_Change: it
+        keeps its owner (seen in Archicad 29). The new door is created as CreateDoors creates one, from
+        the Door tool defaults with the tool's marker, with the old door's settings (size, sill, anchor,
+        reveal, sides, pens, line types, surfaces and the rest of API_DoorType), library part and GDL
+        parameters, layer and renovation status; its marker gets the old marker's parameters when both
+        are of the same marker library part. It also gets the old door's Element ID, classifications,
+        element categories and property values, and the old door is then deleted. Each door is recreated
+        in its own undo step, and when any step fails nothing is changed for that door. The new door has
+        a new GUID: the result maps the old GUID to the new one and lists what could not be carried over
+        (labels, dimensions of the current database that measured the old door, group).
+
+        Tapir command RecreateDoors (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateDoors
+
+        Arguments:
+        doors (array of object, required): The doors to recreate in another wall.
+        """
+        return self.run ('RecreateDoors', _Parameters (('doors', doors)))
+
+    def recreate_skylights (self, *, skylights):
+        """Recreates Skylight elements on another roof or shell (ownerId, optionally at a new
+        anchorPosition on it), because Archicad does not move a skylight onto another roof or shell
+        through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). The new skylight is
+        created as CreateSkylights creates one, from the Skylight tool defaults, with the old skylight's
+        settings (size, anchor point, fix mode, azimuth, pens, line types, surfaces and the rest of
+        API_SkylightType), library part and GDL parameters, layer and renovation status; Archicad sets
+        its plane, level and elevation angle from the new owner. It also gets the old skylight's Element
+        ID, classifications, element categories and property values, and the old skylight is then
+        deleted. Each skylight is recreated in its own undo step, and when any step fails nothing is
+        changed for that skylight. The new skylight has a new GUID: the result maps the old GUID to the
+        new one and lists what could not be carried over (labels, dimensions of the current database
+        that measured the old skylight, group).
+
+        Tapir command RecreateSkylights (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateSkylights
+
+        Arguments:
+        skylights (array of object, required): The skylights to recreate on another roof or shell.
+        """
+        return self.run ('RecreateSkylights', _Parameters (('skylights', skylights)))
+
+    def recreate_zones (self, *, zones):
+        """Recreates automatic Zone elements as manual zones (makeManual), because Archicad does not turn
+        an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). The new
+        manual zone has the polygon the old zone has now (with its arcs and holes, as
+        GetDetailsOfElements returns it), so it no longer follows its boundaries when the zones are
+        updated; it gets the old zone's category, name, number, stamp library part, stamp position and
+        stamp parameters, levels, contour, cover fill, surface and the rest of API_ZoneType, layer and
+        renovation status, and its Element ID, classifications, element categories and property values.
+        The old zone is deleted first, since a new zone with its polygon would overlap it; a new zone
+        that would overlap another zone of the story is refused, as CreateZones refuses it, unless
+        allowOverlap is true. Each zone is recreated in its own undo step, and when any step fails
+        nothing is changed for that zone. The new zone has a new GUID: the result maps the old GUID to
+        the new one and lists what could not be carried over (labels, dimensions of the current database
+        that measured the old zone, group).
+
+        Tapir command RecreateZones (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateZones
+
+        Arguments:
+        zones (array of object, required): The zones to recreate as manual zones.
+        """
+        return self.run ('RecreateZones', _Parameters (('zones', zones)))
+
+    def recreate_angle_dimensions (self, *, angle_dimensions):
+        """Recreates Angle Dimension elements on new lines with a new arc position (firstLine, secondLine
+        and arcPosition, as CreateAngleDimensions takes them), because Archicad does not move the lines
+        or the arc of an angle dimension through ACAPI_Element_Change (seen in Archicad 29). The new
+        angle dimension is static, as CreateAngleDimensions creates it, and is created in the current
+        database, where the old one has to be. It gets the old one's settings (pen, inner or outer arc,
+        markers, witness lines, text pen, size, font, style, position and direction, custom text and the
+        rest of API_AngleDimensionType), layer, story and renovation status, and its classifications,
+        element categories and property values, and its Element ID where Archicad gives angle dimensions
+        one (Archicad 29 refuses an Element ID on them, so there is none to carry); the text goes back
+        to its automatic place on the new arc. The old angle dimension is then deleted. Each angle
+        dimension is recreated in its own undo step, and when any step fails nothing is changed for it.
+        The new angle dimension has a new GUID: the result maps the old GUID to the new one and lists
+        what could not be carried over (the group it was in).
+
+        Tapir command RecreateAngleDimensions (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RecreateAngleDimensions
+
+        Arguments:
+        angle_dimensions (angleDimensions, array of object, required): The angle dimensions to recreate
+            on new lines, with a new arc position.
+        """
+        return self.run ('RecreateAngleDimensions', _Parameters (('angleDimensions', angle_dimensions)))
 
     def change_text_content (self, *, content_changes):
         """Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs
@@ -4133,13 +4638,14 @@ class Commands:
 
     def modify_zones (self, *, zones_with_details):
         """Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top
-        link, floor thickness, contour line, cover fill, 3D surface (one surface on all sides, or the
-        surfaces of the bounding walls), polygon display (gross or net) and area reduction - the same
-        settings as CreateZones, applied by the same helpers. Only the given fields are changed.
-        geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone
-        keeps its GUID, properties and other settings; a new polygon that would overlap another zone on
-        the same story is refused unless allowOverlap is true. The reference point of an automatic zone
-        cannot be changed here (SetDetailsOfElements moves it).
+        link, floor thickness, letter size (roomLSize, in millimetres), contour line, cover fill, 3D
+        surface (one surface on all sides, or the surfaces of the bounding walls), polygon display
+        (gross or net) and area reduction - the same settings as CreateZones, applied by the same
+        helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and
+        holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a
+        new polygon that would overlap another zone on the same story is refused unless allowOverlap is
+        true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements
+        moves it).
 
         Tapir command ModifyZones (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#ModifyZones
 
@@ -5022,6 +5528,25 @@ class Commands:
             strings in SI units, except degrees for angles. Default is false.
         """
         return self.run ('GetPropertyValuesOfElements', _Parameters (('elements', elements), ('properties', properties), ('includeAvailability', include_availability), ('useSIUnits', use_si_units)))
+
+    def get_typed_property_values_of_elements (self, *, elements, properties):
+        """Returns the property values of the elements in JSON's own types instead of display text:
+        numbers, integers, booleans, strings, lists of them, and the chosen options of an option set as
+        their identifiers (a list for a multiple choice). Each value comes with its type (number,
+        length, area, volume, angle, integer, string, boolean, their lists, singleEnum, multiEnum), its
+        status (normal, userUndefined or notAvailable) and isDefault, in the PropertyValueDetails shape
+        of Graphisoft's API. Measured values are in SI units (meters, square meters, cubic meters,
+        radians) whatever the project's working units and language, and an option is named by its
+        nonLocalizedValue when it has one. A property that is not found, cannot be evaluated for the
+        element or has a Guid value gets an error item.
+
+        Tapir command GetTypedPropertyValuesOfElements (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#GetTypedPropertyValuesOfElements
+
+        Arguments:
+        elements (Elements, required): A list of elements.
+        properties (PropertyIds, required): A list of property identifiers.
+        """
+        return self.run ('GetTypedPropertyValuesOfElements', _Parameters (('elements', elements), ('properties', properties)))
 
     def set_property_values_of_elements (self, *, element_property_values, dry_run = None):
         """Sets the property values of elements. It works for subelements of hierarchal elements also. With
@@ -7320,8 +7845,10 @@ class Commands:
         """Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward
         migration scripts of loaded library parts. Only the given scripts are changed; an empty script
         makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a
-        part of a library package or a read-only library) is refused and left unchanged. Available from
-        Archicad 28.
+        part of a library package or a read-only library) is refused and left unchanged. A part of the
+        embedded library that Archicad does not report editable, as in a saved project, is changed in a
+        temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded.
+        Available from Archicad 28.
 
         Tapir command SetLibraryPartScripts (Tapir 1.7.3): https://archicad-api.com/archicad-addon/#SetLibraryPartScripts
 
@@ -7335,7 +7862,9 @@ class Commands:
         """Sets the author, keywords, license, license version, password and the placeable, UI default,
         subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed.
         A library part that is not editable (e.g. a part of a library package or a read-only library) is
-        refused and left unchanged. Available from Archicad 28.
+        refused and left unchanged. A part of the embedded library that Archicad does not report
+        editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping
+        its main GUID, and the libraries are reloaded. Available from Archicad 28.
 
         Tapir command SetLibraryPartMetadata (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#SetLibraryPartMetadata
 
@@ -7360,7 +7889,10 @@ class Commands:
     def set_library_part_pictures (self, *, name, delete_preview_picture = None, delete_dark_preview_picture = None, delete_gdl_pictures = None, delete_dark_gdl_pictures = None, copy_2d_symbol_from = None, delete_2d_symbol = None):
         """Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the
         2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library
-        part that is not editable is refused and left unchanged. Available from Archicad 28.
+        part that is not editable is refused and left unchanged. A part of the embedded library that
+        Archicad does not report editable, as in a saved project, is changed in a temporary copy that
+        then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad
+        28.
 
         Tapir command SetLibraryPartPictures (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#SetLibraryPartPictures
 
@@ -7402,8 +7934,10 @@ class Commands:
 
     def set_library_part_custom_section (self, *, name, section_id, index = None, data_version = None, data = None, delete = None):
         """Creates, replaces or deletes a custom section of a loaded library part. The content is given as
-        base64. A library part that is not editable is refused and left unchanged. Available from
-        Archicad 28.
+        base64. A library part that is not editable is refused and left unchanged. A part of the
+        embedded library that Archicad does not report editable, as in a saved project, is changed in a
+        temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded.
+        Available from Archicad 28.
 
         Tapir command SetLibraryPartCustomSection (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#SetLibraryPartCustomSection
 
@@ -7490,7 +8024,9 @@ class Commands:
         """Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs,
         and from Archicad 29 also their dark user interface variants. All pictures are set in one step;
         an invalid picture changes nothing. A library part that is not editable is refused and left
-        unchanged. Available from Archicad 28.
+        unchanged. A part of the embedded library that Archicad does not report editable, as in a saved
+        project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the
+        libraries are reloaded. Available from Archicad 28.
 
         Tapir command SetLibraryPartPictureImages (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#SetLibraryPartPictureImages
 
@@ -7513,8 +8049,10 @@ class Commands:
         """Sets the parameter values, and optionally the parameter descriptions, of loaded library parts,
         in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge,
         the changed list is merged into the parameters of the part instead of replacing them. A library
-        part that is not editable, or with an invalid value given, is left unchanged. Available from
-        Archicad 28.
+        part that is not editable, or with an invalid value given, is left unchanged. A part of the
+        embedded library that Archicad does not report editable, as in a saved project, is changed in a
+        temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded.
+        Available from Archicad 28.
 
         Tapir command SetLibraryPartParameters (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#SetLibraryPartParameters
 
@@ -7542,10 +8080,12 @@ class Commands:
         """
         return self.run ('GetLibraryPartScripts', _Parameters (('libraryParts', library_parts), ('scripts', scripts), ('password', password)))
 
-    def get_library_part_file_info (self, *, files, scripts = None, password = None):
+    def get_library_part_file_info (self, *, files, scripts = None, password = None, include_parameters = None):
         """Reads library part files (.gsm) without loading them into the libraries of the project: the
-        unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and
-        properties scripts. Password protected parts need their password. Available from Archicad 28.
+        unique ID of the part, the unique ID of its subtype, its master, parameter, 2D, 3D and
+        properties scripts, and, with includeParameters, its parameters with their default values and
+        descriptions (in the format of GetLibraryPartParameterValues). Password protected parts need
+        their password. Available from Archicad 28.
 
         Tapir command GetLibraryPartFileInfo (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#GetLibraryPartFileInfo
 
@@ -7556,8 +8096,12 @@ class Commands:
             default.
         password (string, optional): The password of password protected library parts. Reading a script
             of a protected part without the right password is an error for that file.
+        include_parameters (includeParameters, boolean, optional): Also returns the parameters of each
+            file with their default values and descriptions, in the format of GetLibraryPartParameterValues.
+            Default is false, so a caller that only wants the scripts gets them even when the parameters of
+            a file cannot be read.
         """
-        return self.run ('GetLibraryPartFileInfo', _Parameters (('files', files), ('scripts', scripts), ('password', password)))
+        return self.run ('GetLibraryPartFileInfo', _Parameters (('files', files), ('scripts', scripts), ('password', password), ('includeParameters', include_parameters)))
 
     def copy_library_parts (self, *, library_parts):
         """Copies loaded library parts, given by name or by an element placed from them, under a new file
@@ -7909,7 +8453,11 @@ class Commands:
 
     def publish_publisher_set (self, *, publisher_set_name, output_path = None, selected_navigator_item_ids = None):
         """Performs a publish operation on the currently opened project. Only the given publisher set will
-        be published.
+        be published. The command answers when Archicad's API reports the publishing done; for a local
+        or LAN output folder the answer names the folder and lists the files created or changed in it
+        (writtenFiles). A large set can take minutes, so give the call a long enough timeout. The output
+        format of each item is the one set in the publisher set: Archicad's API cannot choose it per
+        call.
 
         Tapir command PublishPublisherSet (Tapir 0.1.0): https://archicad-api.com/archicad-addon/#PublishPublisherSet
 
@@ -7918,7 +8466,9 @@ class Commands:
         output_path (outputPath, string, optional): Full local or LAN path for publishing. Optional, by
             default the path set in the settings of the publisher set will be used.
         selected_navigator_item_ids (selectedNavigatorItemIds, NavigatorItemIds, optional): Optional
-            publisher-tree navigator items to publish instead of the whole publisher set.
+            publisher-tree navigator items to publish instead of the whole publisher set. Each item wraps
+            its id in navigatorItemId, as the items of GetNavigatorItemTree do: [{"navigatorItemId":
+            {"guid": "6E1C3A9B-0F2D-4B8E-9C7A-1D2E3F405162"}}], not [{"guid": "..."}].
         """
         return self.run ('PublishPublisherSet', _Parameters (('publisherSetName', publisher_set_name), ('outputPath', output_path), ('selectedNavigatorItemIds', selected_navigator_item_ids)))
 
@@ -8035,11 +8585,12 @@ class Commands:
 
     def modify_detail_markers (self, *, detail_markers_with_details):
         """Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the
-        marker symbol's angle, always-horizontal setting and pen of Detail and Worksheet markers. Not
-        written: the base point (Archicad places it at the center of the clip polygon's bounding box
-        when the marker is created), the viewpoint the marker refers to, and the marker symbol's other
-        settings, which are parameters of the library part placed as the marker (markerId in
-        GetDetailsOfElements). A value Archicad did not apply gets a failed execution result.
+        marker symbol's angle, always-horizontal setting and pen, and 'Copy construction elements only'
+        of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center
+        of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers
+        to, and the marker symbol's other settings, which are parameters of the library part placed as
+        the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed
+        execution result.
 
         Tapir command ModifyDetailMarkers (Tapir 2.0.0): https://archicad-api.com/archicad-addon/#ModifyDetailMarkers
 
@@ -8083,6 +8634,23 @@ class Commands:
             identifiers.
         """
         return self.run ('GetLayoutSubsetSettings', _Parameters (('navigatorItemIds', navigator_item_ids)))
+
+    def change_layout_subset_settings (self, *, subsets):
+        """Changes the settings of existing Layout Book subsets (name, ID prefix, numbering style, start
+        at, ...), the fields of CreateLayoutSubset; the ones not given keep their value. The Archicad
+        API can neither change the settings of a subset nor delete one, so a new subset is created with
+        the changed settings right after the old one, and the old one's layouts and subsets are moved
+        into it in their order; when a move fails, the ones moved before are moved back. The old subset
+        is left empty, and its id is returned with the new one's: delete it in Archicad. These navigator
+        functions are not undoable.
+
+        Tapir command ChangeLayoutSubsetSettings (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#ChangeLayoutSubsetSettings
+
+        Arguments:
+        subsets (array of object, required): The Layout Book subsets to change, each with the settings
+            to change.
+        """
+        return self.run ('ChangeLayoutSubsetSettings', _Parameters (('subsets', subsets)))
 
     def create_drawings (self, *, drawings_data):
         """Creates Drawing elements on the specified or active layout from navigator items.
@@ -8201,7 +8769,11 @@ class Commands:
     def set_view_options (self, *, model_view_option_index = None, view_options = None):
         """Switches the current plan window to a model view option combination by index, and/or changes the
         given model view options and on-screen view options. With an index, the model view options
-        stored in the combination apply.
+        stored in the combination apply. The options are read back, and a given field Archicad did not
+        keep (with an index, a given on-screen view option) fails the call with the value it kept; the
+        fields Archicad kept stay changed. Archicad 29 does not keep the railing components shown in the
+        floor plan (modelViewOptions.railing, railing2DDisplayComp*) changed this way, so such a change
+        is reported as not kept; GetViewOptions reads them.
 
         Tapir command SetViewOptions (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#SetViewOptions
 
@@ -8213,7 +8785,7 @@ class Commands:
         view_options (viewOptions, ViewOptionsUpdate, optional): The fields to change, named as in the
             response of GetViewOptions. Fields not given keep their current value. Without an index, the
             window then uses Custom model view options (index 0), also when only on-screen view options are
-            given. To keep the combination, give its index as well.
+            given. To keep the combination, give its index as well. The options ar...
         """
         return self.run ('SetViewOptions', _Parameters (('modelViewOptionIndex', model_view_option_index), ('viewOptions', view_options)))
 
@@ -8781,7 +9353,8 @@ class Commands:
         Arguments:
         zoom_box (zoomBox, Zoom, required): The area to zoom the current 2D window to, in model
             coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than
-            the box. The rotation of the window is kept as it is.
+            the box. The rotation of the window is kept as it is; in a rotated window the whole box is
+            shown, so the shown area is larger than the box.
         """
         return self.run ('SetZoom', _Parameters (('zoomBox', zoom_box)))
 
@@ -8866,6 +9439,21 @@ class Commands:
         elements_with_details (elementsWithDetails, array of object, required)
         """
         return self.run ('SetSectionsAndElevationsDetails', _Parameters (('elementsWithDetails', elements_with_details)))
+
+    def set_interior_elevations_details (self, *, interior_elevations_with_details):
+        """Sets settings of the given Interior Elevation elements: the stories they are shown on, the
+        common marker's visibility, pen, font and sizes, and for each segment, chosen by its index in
+        GetDetailsOfElements' segments, its name, reference ID and the segment settings of
+        SetSectionsAndElevationsDetails. The element keeps its GUID and its segments keep their
+        viewpoints. A bad segment entry changes nothing on that element, and a change Archicad does not
+        keep (read back after the change) fails the item with the fields it did not apply.
+
+        Tapir command SetInteriorElevationsDetails (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#SetInteriorElevationsDetails
+
+        Arguments:
+        interior_elevations_with_details (interiorElevationsWithDetails, array of object, required)
+        """
+        return self.run ('SetInteriorElevationsDetails', _Parameters (('interiorElevationsWithDetails', interior_elevations_with_details)))
 
     def move_navigator_item (self, *, navigator_item_id_to_move, parent_navigator_item_id, previous_navigator_item_id = None):
         """Moves a navigator item to a new parent in the navigator tree, or to a new position within its
@@ -9327,7 +9915,9 @@ class Commands:
         polygon, its marker components, the position it points to and the position of its marker head. A
         marker can be linked to an existing Change by its ID, or create a new Change with an ID and a
         description (createChange): the Archicad API creates Changes only this way. The marker head uses
-        the Change Marker tool defaults. GetDetailsOfElements reads the markers back.
+        the Change Marker tool defaults, with the angle and always-horizontal setting given (angle,
+        horizontalMarker). ModifyChangeMarkers takes the same settings. GetDetailsOfElements reads the
+        markers back.
 
         Tapir command CreateChangeMarkers (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#CreateChangeMarkers
 
@@ -9337,6 +9927,27 @@ class Commands:
             worksheet or a layout).
         """
         return self.run ('CreateChangeMarkers', _Parameters (('changeMarkersData', change_markers_data)))
+
+    def modify_change_markers (self, *, change_markers_with_details):
+        """Changes existing Change Markers (revision clouds) with the keys CreateChangeMarkers takes and
+        GetDetailsOfElements returns: the Change the marker is linked to (an existing Change by its ID,
+        a new Change made with createChange, or no Change with linkType Unlinked), the marker
+        components, the angle and always-horizontal setting of the marker head, the position of the
+        marker head (markerPosition), and the point a marker without a cloud polygon points to
+        (position). Only the given settings are changed. The cloud polygon cannot be changed, as
+        Archicad keeps it: delete the marker and create it again. The marker is read back, so a value
+        Archicad did not keep is reported as a failure.
+
+        Tapir command ModifyChangeMarkers (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#ModifyChangeMarkers
+
+        Arguments:
+        change_markers_with_details (changeMarkersWithDetails, array of object, required): The Change
+            Markers to change, in the database of the active window, each with the settings to change. Only
+            the given settings are changed; the keys are those CreateChangeMarkers takes and
+            GetDetailsOfElements returns. The cloud polygon cannot be changed: besides the settings,
+            ACAPI_Element_Change...
+        """
+        return self.run ('ModifyChangeMarkers', _Parameters (('changeMarkersWithDetails', change_markers_with_details)))
 
     # Design Options Commands
 
@@ -9578,6 +10189,20 @@ class Commands:
             default. When it is not given, the Main Model becomes the default.
         """
         return self.run ('SetDefaultDesignOption', _Parameters (('designOptionId', design_option_id)))
+
+    def get_default_design_option (self):
+        """Retrieves which design option, or the Main Model, is the default that new elements go to. The
+        Archicad API has no function for it, so in a project with design options the command creates a
+        temporary slab in the floor plan, reads its design option, moves it to the Main Model and
+        deletes it (without design options the answer is the Main Model and nothing is created).
+        Archicad puts a new element into the default design option only when the undo step that created
+        it ends, so this takes two undo steps, creating and removing the slab, which together leave the
+        project as it was. Needs a window where design options can be edited. Available from Archicad
+        29.
+
+        Tapir command GetDefaultDesignOption (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#GetDefaultDesignOption
+        """
+        return self.run ('GetDefaultDesignOption', {})
 
     def reorder_design_option_sets (self, *, design_option_sets):
         """Moves the given design option sets before another set or to the end of the list. Available from
@@ -9929,7 +10554,8 @@ class Commands:
         section data (shape, size, preference table and reference id), begin and end nodes, anchor,
         reference line offsets, wall thickness, flange size, connection style, insulation thickness and
         rigid segments, and nodes with their incoming and outgoing segments, preferred transition
-        placement, elbows and transitions. Available from Archicad 28.
+        placement, elbows and transitions, and the node positions with the key ModifyMEPRoutingElements
+        writes them with. Available from Archicad 28.
 
         Tapir command GetMEPRoutingElements (Tapir 1.5.6): https://archicad-api.com/archicad-addon/#GetMEPRoutingElements
 
@@ -10508,8 +11134,10 @@ class Commands:
         segment of rigid segments, control points and polyline of flexible segments, radius factor,
         insulation thickness, preference table and routing node of elbows (from Archicad 29), angle,
         length and insulation thickness of branches, and offsets, wider and narrower ports, insulation
-        thickness, routing node and (from Archicad 29) preference table of transitions. Available from
-        Archicad 28.
+        thickness, routing node and (from Archicad 29) preference table of transitions; the width and
+        height of flexible segments, and the anchor point, orientation, library part and (from Archicad
+        30) size of the elements ModifyMEPElements places, with the keys it writes them with. Available
+        from Archicad 28.
 
         Tapir command GetMEPElementDetails (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#GetMEPElementDetails
 
@@ -10703,7 +11331,8 @@ class Commands:
 
     def set_analytical_visibility_settings (self, *, visibility_settings):
         """Changes the given fields of the Structural Analytical Model visibility settings; the others keep
-        their value. Available from Archicad 26.
+        their value. The settings are read back, and a given field Archicad did not keep is reported as
+        an error with the value it kept. Available from Archicad 26.
 
         Tapir command SetAnalyticalVisibilitySettings (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#SetAnalyticalVisibilitySettings
 
@@ -10715,7 +11344,9 @@ class Commands:
 
     def get_analytical_member_types_of_elements (self, *, elements):
         """Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given
-        elements.
+        elements from the Complementary Project, the structural analysis project exchanged with
+        Archicad. Without a Complementary Project every element reads Unknown. An element that does not
+        exist gets an error item.
 
         Tapir command GetAnalyticalMemberTypesOfElements (Tapir 1.8.0): https://archicad-api.com/archicad-addon/#GetAnalyticalMemberTypesOfElements
 
@@ -11148,15 +11779,33 @@ class Commands:
         Tapir command RemoveElementTrims (Tapir 1.5.9): https://archicad-api.com/archicad-addon/#RemoveElementTrims
 
         Arguments:
-        element_pairs (elementPairs, array of object, required): The trimmed element and the roof or
-            shell trimming it, per pair. The trimming connection between the two is removed: when they trim
-            each other, both directions are removed.
+        element_pairs (elementPairs, array of ElementTrimPair, required): The trimmed element and the
+            roof or shell trimming it, per pair. The trimming connection between the two is removed: when
+            they trim each other, both directions are removed.
         dry_run (dryRun, DryRun, optional): If true, the command makes all the checks of a real run and
             resolves the same targets, with the same errors, but changes nothing in the project and creates
             no undo step. The response is that of a real run with "dryRun": true added, and says for each
             target what the real run would do. Default is f...
         """
         return self.run ('RemoveElementTrims', _Parameters (('elementPairs', element_pairs), ('dryRun', dry_run)))
+
+    def remove_element_trim_direction (self, *, element_pairs):
+        """Removes one direction of a trim: the trim of an element by a roof or shell, keeping the other
+        direction when the two trim each other (two roofs or shells). The Archicad API can only remove
+        both directions at once, so the command reads the other direction and its trim type, removes the
+        trim and trims the other direction again, in one undo step, and reads the result back. A pair
+        whose element is not trimmed by its trimming element fails without changing anything; when
+        Archicad fails to remove or trim again, the whole call is undone.
+
+        Tapir command RemoveElementTrimDirection (Tapir 2.0.1): https://archicad-api.com/archicad-addon/#RemoveElementTrimDirection
+
+        Arguments:
+        element_pairs (elementPairs, array of ElementTrimPair, required): Per pair, the trim of
+            elementId by trimmingElementId is removed. When trimmingElementId is trimmed by elementId too
+            (two roofs or shells trimming each other), that other direction is kept, with its trim type. The
+            pairs are done in order, each on the trims the pairs before it left, so the two pair...
+        """
+        return self.run ('RemoveElementTrimDirection', _Parameters (('elementPairs', element_pairs)))
 
     def get_element_trims (self, *, elements):
         """Which roofs and shells trim each queried element, with the trim type, and which elements it

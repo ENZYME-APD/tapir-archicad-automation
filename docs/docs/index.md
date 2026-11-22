@@ -22,6 +22,14 @@ The tool components, one per Archicad tool, with inputs named after the settings
 
 Read the guide
 
+Grasshopper
+
+### [Grasshopper components](https://archicad-api.com/grasshopper-components/)
+
+Every component of the plugin with its inputs, outputs and the Tapir commands it calls, and the JSON keys of the tool components.
+
+Open the reference
+
 Archicad API
 
 ### [API coverage](https://archicad-api.com/api-coverage/)

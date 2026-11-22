@@ -69,13 +69,13 @@ Many more report bugs, test fixes in their own Archicad and share scripts; bots 
 
 ## Principles
 
-**FREE** **No price, ever**MIT licence for the add-on, the plugin and every shared script.
+**Free** **No price, ever**MIT licence for the add-on, the plugin and every shared script.
 
-**OPEN** **Built in public**Every issue, pull request and review is on GitHub.
+**Open** **Built in public**Every issue, pull request and review is on GitHub.
 
-**SIGNED** **Safe to install**The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.
+**Signed** **Safe to install**The Windows installer is signed through SignPath; the macOS installer and add-ons are signed and notarized.
 
-**WEEKLY** **Small, steady releases**A release every Monday when something changed.
+**Weekly** **Small, steady releases**A release every Monday when something changed.
 
 ## Support *Tapir.*
 

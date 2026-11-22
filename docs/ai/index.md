@@ -69,11 +69,11 @@ Tell me which Tapir commands you used.
 
 Your words rarely match the names in the project: "fire rating" may be a property called FireRating in one template and Feuerwiderstand in another, and "level 2" may be the story "02 First Floor". An AI that guesses the name still gets an answer, only a wrong one: no values found, so "no doors have a fire rating".
 
-**01** **Look the words up first**Before a command whose parameters come from your words (a story, property, classification, layer, building material, composite, surface, zone category or element type), the AI sends those words to [ResolveNames](https://archicad-api.com/archicad-addon/#ResolveNames), with the kind of each when it knows it. It only reads.
+**Look the words up first**Before a command whose parameters come from your words (a story, property, classification, layer, building material, composite, surface, zone category or element type), the AI sends those words to [ResolveNames](https://archicad-api.com/archicad-addon/#ResolveNames), with the kind of each when it knows it. It only reads.
 
-**02** **Use what it returns**found: the item named exactly so, with the ids the other commands take (story index, attribute id, elementType, propertyId, classification ids). closeMatches: only similar names, best first; the AI asks you which one you meant instead of picking one itself.
+**Use what it returns**found: the item named exactly so, with the ids the other commands take (story index, attribute id, elementType, propertyId, classification ids). closeMatches: only similar names, best first; the AI asks you which one you meant instead of picking one itself.
 
-**03** **Say "not in this project"**notFound: nothing in the project is close, so the project has no such item. The AI says "this project has no X" instead of guessing a name or reporting an empty result as the answer.
+**Say "not in this project"**notFound: nothing in the project is close, so the project has no such item. The AI says "this project has no X" instead of guessing a name or reporting an empty result as the answer.
 
 Add these lines to your prompt, or to the instructions of your MCP server, so the AI checks the names every time. They work the same when the AI writes a script: the script sends ResolveNames first and stops with a message on notFound.
 
@@ -99,11 +99,11 @@ it would change.
 
 Without an MCP server, describe the task, give the AI the command list, and run the script it writes.
 
-**01** **Describe what you want**For example: "Extract all composite exterior walls on level 2 and calculate their net volume."
+**Describe what you want**For example: "Extract all composite exterior walls on level 2 and calculate their net volume."
 
-**02** **Share the command list**Give the AI the [command reference](https://archicad-api.com/archicad-addon/) and the working example below. Ask for Python's standard library only, on port 19723.
+**Share the command list**Give the AI the [command reference](https://archicad-api.com/archicad-addon/) and the working example below. Ask for Python's standard library only, on port 19723.
 
-**03** **Read it, then run it**Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.
+**Read it, then run it**Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.
 
 promptfor Claude or any AI tool
 

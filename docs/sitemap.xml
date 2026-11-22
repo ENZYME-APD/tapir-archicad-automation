@@ -20,6 +20,7 @@
   <url><loc>https://archicad-api.com/archicad-addon/</loc></url>
   <url><loc>https://archicad-api.com/api-coverage/</loc></url>
   <url><loc>https://archicad-api.com/gh-coverage/</loc></url>
+  <url><loc>https://archicad-api.com/grasshopper-components/</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=assign-home-story</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=building-material-property-audit</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=bulk-view-renamer</loc></url>
@@ -36,6 +37,7 @@
   <url><loc>https://archicad-api.com/scripts/?s=place-symbols-in-rooms</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=property-value-exporter</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=property-value-importer</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=relink-drawing-keep-placement</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=room-finishes-from-zones</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=room-finishes-schedule</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=run-lengths</loc></url>
@@ -43,6 +45,7 @@
   <url><loc>https://archicad-api.com/scripts/?s=story-setup</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=symbol-legend</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=symbol-numbering-by-circuit-and-zone</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=tapir-note</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=text-find-replace</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=wall-clearance</loc></url>
   <url><loc>https://archicad-api.com/scripts/?s=zone-area-check</loc></url>
