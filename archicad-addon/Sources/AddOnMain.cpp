@@ -466,7 +466,19 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetStoriesCommand> (
             projectCommands, "1.1.5",
-            "Sets the story sructure of the currently loaded project."
+            "Sets the story structure of the currently loaded project to the given list of stories. "
+            "Existing stories outside the list are deleted, and Archicad deletes every element whose home story they are with them; dryRun lists those stories with the number of elements on each, without changing anything. "
+            "To add, change or delete a single story, use InsertStory or DeleteStory instead."
+        );
+        err |= RegisterCommand<InsertStoryCommand> (
+            projectCommands, "2.0.1",
+            "Inserts one new story directly above or below an existing story, with its name, height and level line display, and returns the new story as GetStories reports it. "
+            "Other stories are never deleted; their indices and levels can change with the insertion as in Archicad's Story Settings dialog, so read them again with GetStories."
+        );
+        err |= RegisterCommand<DeleteStoryCommand> (
+            projectCommands, "2.0.1",
+            "Deletes one story. Archicad deletes every element whose home story it is together with it, so a story that is the home story of any element is only deleted with deleteElements: true; "
+            "otherwise it fails and gives the number of those elements. dryRun reports, without changing anything, whether the story would be deleted and how many elements with it."
         );
         err |= RegisterCommand<GetAutoTextKeysCommand> (
             projectCommands, "1.5.9",
