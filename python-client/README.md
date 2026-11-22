@@ -40,10 +40,15 @@ print (tapir.get_details_of_elements (elements = walls))
   Arguments left at `None` are not sent. `tapir.run ('CommandName', {...})` runs a command by its own
   name and JSON parameters.
 - **Errors:** when Archicad refuses a command, the response is an error, or Archicad does not answer,
-  the method raises `TapirError` (with `code`, `message` and `command`). The `executionResults` of
-  commands that work on several items are returned as they are: check each item yourself.
+  the method raises `TapirError` (with `code`, `message` and `command`). An answer that comes with an
+  HTTP error status keeps Archicad's own error code and message too, so a failed command reads the
+  same however Archicad answered it; an answer that is not Archicad's at all (a proxy's page, a
+  firewall's) raises naming the status and what was answered. The `executionResults` of commands
+  that work on several items are returned as they are: check each item yourself.
 - **Port and host:** `Client (host = 'http://127.0.0.1', port = 19723, timeout = None)`. The first
-  Archicad listens on 19723, the next ones on the following ports.
+  Archicad listens on 19723, the next ones on the following ports. Requests go straight to that
+  address: the proxy environment variables (`http_proxy` and the like) are ignored, so a corporate
+  proxy cannot stand between the script and Archicad.
 
 ## Keeping it up to date
 

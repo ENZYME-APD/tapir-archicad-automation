@@ -6,10 +6,12 @@
 import http.server
 import inspect
 import json
+import os
 import pathlib
 import sys
 import threading
 import unittest
+import urllib.request
 
 CLIENT_ROOT = pathlib.Path (__file__).resolve ().parent.parent
 sys.path.insert (0, str (CLIENT_ROOT))
@@ -50,15 +52,22 @@ class GeneratedFileTest (unittest.TestCase):
 
 
 class FakeArchicad (http.server.BaseHTTPRequestHandler):
-    """Answers every request with FakeArchicad.answer and keeps the requests it got."""
+    """Answers every request with FakeArchicad.answer, with FakeArchicad.status, or with
+    FakeArchicad.body as it is when that is not None (a page that is not JSON, say), and keeps the
+    requests it got."""
     answer = {}
+    body = None
+    status = 200
     requests = []
 
     def do_POST (self):
         length = int (self.headers['Content-Length'])
         FakeArchicad.requests.append (json.loads (self.rfile.read (length)))
-        body = json.dumps (FakeArchicad.answer).encode ('utf-8')
-        self.send_response (200)
+        if FakeArchicad.body is None:
+            body = json.dumps (FakeArchicad.answer).encode ('utf-8')
+        else:
+            body = FakeArchicad.body.encode ('utf-8')
+        self.send_response (FakeArchicad.status)
         self.send_header ('Content-Type', 'application/json')
         self.send_header ('Content-Length', str (len (body)))
         self.end_headers ()
@@ -84,6 +93,9 @@ class ClientTest (unittest.TestCase):
 
     def setUp (self):
         FakeArchicad.requests = []
+        FakeArchicad.answer = {}
+        FakeArchicad.body = None
+        FakeArchicad.status = 200
 
     def test_request_and_response (self):
         FakeArchicad.answer = {'succeeded': True, 'result': {'addOnCommandResponse': {'version': '2.0.1'}}}
@@ -117,6 +129,50 @@ class ClientTest (unittest.TestCase):
         with self.assertRaises (tapir_archicad.TapirError) as raised:
             self.client.run ('NoSuchCommand', {})
         self.assertEqual ((raised.exception.code, raised.exception.message), (4001, 'Unknown command'))
+
+    def test_http_error_answer_keeps_the_error_code_and_message (self):
+        # Archicad answers a refused command with an HTTP error status and its own JSON error in
+        # the body; the caller needs the code and the message, not "Archicad does not answer".
+        FakeArchicad.status = 500
+        FakeArchicad.answer = {'succeeded': False, 'error': {'code': 4001, 'message': 'Unknown command'}}
+        with self.assertRaises (tapir_archicad.TapirError) as raised:
+            self.client.run ('NoSuchCommand', {})
+        self.assertEqual ((raised.exception.code, raised.exception.message), (4001, 'Unknown command'))
+
+    def test_http_error_body_that_is_not_json_raises_with_the_status (self):
+        # A proxy or a firewall answers instead of Archicad: say so, and quote what it said.
+        FakeArchicad.status = 502
+        FakeArchicad.body = '<html><body>Proxy authentication required</body></html>'
+        with self.assertRaises (tapir_archicad.TapirError) as raised:
+            self.client.get_add_on_version ()
+        self.assertEqual (raised.exception.code, None)
+        self.assertIn ('502', raised.exception.message)
+        self.assertIn ('Proxy authentication required', raised.exception.message)
+
+    def test_requests_ignore_the_proxy_environment_variables (self):
+        # A BIM workstation usually has http_proxy set machine-wide; a request for 127.0.0.1 must
+        # still reach Archicad, not the proxy.
+        FakeArchicad.answer = {'succeeded': True, 'result': {'addOnCommandResponse': {'version': '2.0.1'}}}
+        saved = {name: os.environ.get (name) for name in ('http_proxy', 'HTTP_PROXY', 'no_proxy', 'NO_PROXY')}
+        savedOpener = urllib.request._opener
+        try:
+            for name in ('http_proxy', 'HTTP_PROXY'):
+                os.environ[name] = 'http://127.0.0.1:1'
+            for name in ('no_proxy', 'NO_PROXY'):
+                os.environ.pop (name, None)
+            # urlopen keeps the opener it built first in a module variable, with the proxies of that
+            # moment; forgetting it makes the request read the environment as a new process does,
+            # which is the case that broke.
+            urllib.request._opener = None
+            client = tapir_archicad.Client (port = self.server.server_address[1], timeout = 10)
+            self.assertEqual (client.get_add_on_version (), {'version': '2.0.1'})
+        finally:
+            urllib.request._opener = savedOpener
+            for name, value in saved.items ():
+                if value is None:
+                    os.environ.pop (name, None)
+                else:
+                    os.environ[name] = value
 
     def test_no_archicad_raises (self):
         port = self.server.server_address[1]
