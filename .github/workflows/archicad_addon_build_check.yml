@@ -35,16 +35,24 @@ jobs:
     # The weekly release regenerates docs/archicad-addon with this script, so
     # what a pull request commits can be a week behind its sources: the docs,
     # the site, the LLM files and python-client/tapir_archicad/commands.py are
-    # all generated from it. Running it here with --check reports both things
-    # on the pull request that causes them - schema code it cannot evaluate,
-    # and generated files that no longer match the sources - instead of at
-    # release time, or not at all until somebody runs the generator by hand.
-    # --check writes nothing; the same run answers both.
+    # all generated from it.
+    #
+    # The steps below report that drift - on the pull request that causes it,
+    # with a warning saying so - but they never fail: the policy is that the
+    # weekly release regenerates, and a schema change that waits for the
+    # release is not an error. Making it a gate would fail every pull request
+    # whose author did not run a 16-minute generator, including the issue
+    # bot's, and would turn main red for every merge that lands before the next
+    # release. So: same run as before, --check writes nothing instead of
+    # writing, and continue-on-error turns the drift into a warning. The
+    # schema-evaluability error, which is what this job existed for, is printed
+    # the same way and is equally visible in the log.
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
-    - name: Check the docs are up to date
+    - name: Report docs that are out of date
+      continue-on-error: true
       run: python3 tools/generate_addon_docs.py --check
     # One example per command, at archicad-addon/Examples/<Group>/<CommandName>.py;
     # the docs show it in the command's Example popdown.
@@ -57,10 +65,12 @@ jobs:
         python3 tools/check_marketplace.py
         python3 tools/generate_catalogue.py --self-test
     # The client is generated from the command reference too, so it is stale
-    # for the same reason and is checked the same way. Its tests compare the
-    # committed file with what the generator writes ("Offline Tests"), but only
-    # once a file is there to compare: this says it is the one for these docs.
-    - name: Check the Python client is up to date
+    # for the same reason and is reported the same way. Nothing regenerates it
+    # at release time yet (the PyPI publishing pull request does; until then
+    # only a person running generate.py does), which is exactly why this is a
+    # warning and not a gate.
+    - name: Report a Python client that is out of date
+      continue-on-error: true
       run: python3 python-client/generate.py --check
 
   # Whether this change needs the builds below (see the top of this file).

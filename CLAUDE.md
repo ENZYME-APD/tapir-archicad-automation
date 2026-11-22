@@ -383,7 +383,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
   uses); a newer push to a pull request cancels its superseded runs. The add-on
   check also runs `tools/check_examples.py` (one example per command), and
-  `tools/check_marketplace.py` with `tools/generate_catalogue.py --self-test`. The installer
+  `tools/check_marketplace.py` with `tools/generate_catalogue.py --self-test`,
+  and reports with a warning (never a failure) when `docs/archicad-addon` or
+  `python-client/tapir_archicad/commands.py` no longer match the sources: the
+  weekly release is what regenerates them, so a pull request that waits for it
+  is not in error. The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
   A pull request (or the steward's dispatch on a branch) whose changed files are
