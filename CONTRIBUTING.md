@@ -60,8 +60,7 @@ The Grasshopper plugin builds with the solution in
 
 ## Running the tests
 
-**Without Archicad** — these run in seconds and CI runs them on every pull request ("Offline
-Tests"):
+**Without Archicad** — these need nothing but Python and run in seconds:
 
 ```bash
 python3 -m unittest discover python-client/tests
@@ -79,7 +78,7 @@ build loaded and compare against golden outputs:
 ```bash
 cd archicad-addon/Test
 python test_examples.py            # every script and example against TestProject.pla
-python test_examples.py Wall_Test  # only the ones named
+python test_examples.py create_and_flip_walls  # only the ones named
 python record_expected_output.py <name>.py   # record a golden output
 ```
 
@@ -140,14 +139,18 @@ the way the other commands write theirs, or a change to the generator.
   Archicad versions you built and tested. A check plus a tested build is what gets a pull request
   merged quickly.
 - The checks a pull request has to pass are the build checks for the Add-On, the Grasshopper plugin
-  and the installer, the documentation and example checks, and the offline tests. The
+  and the installer, and the documentation and example checks. The
   [build gate](.github/actions/build-gate) skips the expensive builds for changes that cannot affect
   them (docs, tests, examples, marketplace scripts).
-- A committer reviews every pull request. Merges are automated only for the project's own bot pull
-  requests, and never for changes to the installer, the build and release definitions, or the
-  workflows. Labels `do-not-merge` and `needs-maintainer` stop the automation.
-- Testers pick up pull requests labelled `needs-test`; the bot PR steward sets it on the bot's own
-  pull requests, and anyone can add it to theirs.
+- A committer reviews every pull request. Two kinds merge without a person: one whose author has
+  write access, once every check has passed and the diff touches none of the release critical paths;
+  and the issue bot's own, once its builds passed and its review has been clean for three days. The
+  release critical paths — the installer, the build and release definitions, the workflows — always
+  wait for a person. The labels `do-not-merge` and `needs-maintainer`, a request for changes, or a
+  draft stop the automation.
+- Testers pick up pull requests labelled `needs-test`. The bot PR steward sets it on the bot's own
+  pull requests; on yours, ask a maintainer or a triager to add it, since changing labels needs
+  triage access.
 
 Security problems do not go in an issue: see [SECURITY.md](SECURITY.md).
 
