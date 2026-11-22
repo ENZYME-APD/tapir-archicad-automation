@@ -23844,6 +23844,194 @@ GS::ObjectState CreateSectionsCommand::Execute (const GS::ObjectState& parameter
     });
 }
 
+// Puts the 1 or 2 points of a line that runs parallel to the section line newBeg -> newEnd, at
+// signedDistance on its left (negative: on its right), into coords. Other counts are not touched.
+static void PlaceSectionParallelLine (API_Coord* coords, UInt32 count, const API_Coord& newBeg, const API_Coord& newEnd, double signedDistance)
+{
+    const double dx = newEnd.x - newBeg.x;
+    const double dy = newEnd.y - newBeg.y;
+    const double length = sqrt (dx * dx + dy * dy);
+    const double nx = -dy / length;
+    const double ny = dx / length;
+    if (count >= 1) {
+        coords[0].x = newBeg.x + nx * signedDistance;
+        coords[0].y = newBeg.y + ny * signedDistance;
+    }
+    if (count == 2) {
+        coords[1].x = newEnd.x + nx * signedDistance;
+        coords[1].y = newEnd.y + ny * signedDistance;
+    }
+}
+
+// Signed distance of point from the line beg -> end, positive on its left (as AddSectionLinesFromMemo).
+static double SectionLeftDistance (const API_Coord& beg, const API_Coord& end, const API_Coord& point)
+{
+    const double dx = end.x - beg.x;
+    const double dy = end.y - beg.y;
+    const double length = sqrt (dx * dx + dy * dy);
+    return (dx * (point.y - beg.y) - dy * (point.x - beg.x)) / length;
+}
+
+// Moves the section line of a straight Section or Elevation (2 main points) to newBeg -> newEnd,
+// and its depth line to depth from it (or to the distance it had), on the side it was. The marked
+// distant area line keeps its distance too. The point counts stay the same, so the memo read from
+// the element is changed in place and written with ACAPI_Element_Change and the main coords mask, the way the DevKit's
+// Do_CutPlane_Or_Elevation_Edit_Coords (Element_Test) changes the coordinates of both types.
+// A depth the main coords change did not apply is then written with the depth coords mask.
+// It is read back, so a change Archicad did not take is reported instead of a success.
+// The element is loaded here again, after any name or ID change, as the sample does it.
+static GS::Optional<GS::UniString> ChangeSectionLines (const API_Guid& guid,
+                                                       const GS::Optional<API_Coord>& requestedBeg,
+                                                       const GS::Optional<API_Coord>& requestedEnd,
+                                                       const GS::Optional<double>& requestedDepth,
+                                                       GSErrCode& err)
+{
+    API_Element element = {};
+    element.header.guid = guid;
+    err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return GS::UniString ("Failed to load the element.");
+    }
+    const API_SectionSegment& segment = GetElemTypeId (element.header) == API_ElevationID
+        ? element.elevation.segment
+        : element.cutPlane.segment;
+
+    // The whole memo, as the DevKit sample passes it to ACAPI_Element_Change.
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    constexpr UInt64 linesMask = APIMemoMask_SectionMainCoords | APIMemoMask_SectionDistCoords | APIMemoMask_SectionDepthCoords;
+    err = ACAPI_Element_GetMemo (guid, &memo);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the lines of the element.");
+    }
+
+    const auto pointCount = [] (API_Coord* coords, UInt32 count) -> UInt32 {
+        if (coords == nullptr) {
+            return 0;
+        }
+        const UInt32 allocated = static_cast<UInt32> (BMGetPtrSize (reinterpret_cast<GSPtr> (coords)) / sizeof (API_Coord));
+        return count < allocated ? count : allocated;
+    };
+    const UInt32 nMain = pointCount (memo.sectionSegmentMainCoords, segment.nMainCoord);
+    const UInt32 nDist = pointCount (memo.sectionSegmentDistCoords, segment.nDistCoord);
+    const UInt32 nDepth = pointCount (memo.sectionSegmentDepthCoords, segment.nDepthCoord);
+
+    err = APIERR_BADPARS;
+    if (nMain != 2) {
+        return GS::UniString ("Only a straight marker (one section line of 2 points) can be moved; this one is staggered or has no section line.");
+    }
+    if (requestedDepth.HasValue () && (nDepth < 1 || nDepth > 2)) {
+        return GS::UniString ("The element has no depth line to move, so 'depth' cannot be set.");
+    }
+    if (requestedDepth.HasValue () && requestedDepth.Get () <= 0.0) {
+        return GS::UniString ("'depth' must be greater than 0.");
+    }
+    // Archicad refuses or ignores the depth line while the horizontal range is not Limited (an
+    // Infinite range, the default of new markers, on Archicad 26 and 30, #2838).
+    const bool depthIsLimited = segment.horizRange == APIHorRange_Limited;
+    if (requestedDepth.HasValue () && !depthIsLimited) {
+        return GS::UniString ("'depth' only applies when the horizontal range is Limited; this element's horizontalRange is ") +
+            (segment.horizRange == APIHorRange_ZeroDepth ? "ZeroDepth" : "Infinite") + ". Set horizontalRange to Limited with SetSectionsAndElevationsDetails first.";
+    }
+    // With a Limited range the depth line keeps its distance when the section line moves.
+    const bool keepDepthLine = depthIsLimited && nDepth >= 1 && nDepth <= 2;
+
+    const API_Coord oldBeg = memo.sectionSegmentMainCoords[0];
+    const API_Coord oldEnd = memo.sectionSegmentMainCoords[1];
+    const API_Coord newBeg = requestedBeg.HasValue () ? requestedBeg.Get () : oldBeg;
+    const API_Coord newEnd = requestedEnd.HasValue () ? requestedEnd.Get () : oldEnd;
+    const double ndx = newEnd.x - newBeg.x;
+    const double ndy = newEnd.y - newBeg.y;
+    if (sqrt (ndx * ndx + ndy * ndy) < 1e-6) {
+        return GS::UniString ("Start and end coordinates are too close.");
+    }
+
+    // The distances are measured before any point is moved.
+    double depthDistance = 0.0;
+    if (nDepth >= 1 && nDepth <= 2) {
+        depthDistance = SectionLeftDistance (oldBeg, oldEnd, memo.sectionSegmentDepthCoords[0]);
+        if (requestedDepth.HasValue ()) {
+            depthDistance = (depthDistance < 0.0 ? -1.0 : 1.0) * requestedDepth.Get ();
+        }
+    }
+    double distDistance = 0.0;
+    if (nDist >= 1 && nDist <= 2) {
+        distDistance = SectionLeftDistance (oldBeg, oldEnd, memo.sectionSegmentDistCoords[0]);
+    }
+
+    memo.sectionSegmentMainCoords[0] = newBeg;
+    memo.sectionSegmentMainCoords[1] = newEnd;
+    if (nDepth >= 1 && nDepth <= 2) {
+        PlaceSectionParallelLine (memo.sectionSegmentDepthCoords, nDepth, newBeg, newEnd, depthDistance);
+    }
+    if (nDist >= 1 && nDist <= 2) {
+        PlaceSectionParallelLine (memo.sectionSegmentDistCoords, nDist, newBeg, newEnd, distDistance);
+    }
+
+    constexpr double tolerance = 1e-5;
+    const auto same = [] (const API_Coord& a, const API_Coord& b) {
+        return fabs (a.x - b.x) < 1e-5 && fabs (a.y - b.y) < 1e-5;
+    };
+    const auto depthApplied = [&] (const API_ElementMemo& read) {
+        return pointCount (read.sectionSegmentDepthCoords, 1) == 1 &&
+            fabs (SectionLeftDistance (newBeg, newEnd, read.sectionSegmentDepthCoords[0]) - depthDistance) <= tolerance;
+    };
+    const bool lineMoved = requestedBeg.HasValue () || requestedEnd.HasValue ();
+
+    // Only APIMemoMask_SectionMainCoords, as in Do_CutPlane_Or_Elevation_Edit_Coords: with the
+    // depth and distant area masks added, Archicad 26 and 30 answered APIERR_BADPARS (#2838). The
+    // depth and distant area points are in the memo passed, and are checked when read back.
+    if (lineMoved) {
+        err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionMainCoords, true);
+        if (err != NoError) {
+            return GS::UniString ("Archicad refused the new start and end coordinates.");
+        }
+
+        API_ElementMemo changed = {};
+        const GS::OnExit changedGuard ([&changed] () { ACAPI_DisposeElemMemoHdls (&changed); });
+        err = ACAPI_Element_GetMemo (guid, &changed, linesMask);
+        if (err != NoError) {
+            return GS::UniString ("Failed to read the lines back after the change.");
+        }
+        err = APIERR_REFUSEDPAR;
+        if (pointCount (changed.sectionSegmentMainCoords, 2) != 2 ||
+            !same (changed.sectionSegmentMainCoords[0], newBeg) || !same (changed.sectionSegmentMainCoords[1], newEnd)) {
+            return GS::UniString ("Archicad did not apply the new start and end coordinates.");
+        }
+        if (!keepDepthLine || depthApplied (changed)) {
+            err = NoError;
+            return {};
+        }
+    }
+
+    // The main coords mask leaves the depth line where it was when only the depth changes
+    // (Archicad 30, #2838), and also when the section line moves (Archicad 26: the depth read
+    // 0.2 instead of 5 after a start point moved), so the depth line is written on its own with
+    // the depth coords mask.
+    const GS::UniString movedNote = lineMoved ? GS::UniString ("The section line was moved, but ") : GS::UniString ();
+    const GS::UniString depthWhat = requestedDepth.HasValue () ? GS::UniString ("the new depth.") : GS::UniString ("the depth line with it.");
+    err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return GS::UniString ("Failed to load the element.");
+    }
+    err = ACAPI_Element_Change (&element, nullptr, &memo, APIMemoMask_SectionDepthCoords, true);
+    if (err != NoError) {
+        return movedNote + "Archicad refused " + depthWhat;
+    }
+    API_ElementMemo changedDepth = {};
+    const GS::OnExit changedDepthGuard ([&changedDepth] () { ACAPI_DisposeElemMemoHdls (&changedDepth); });
+    err = ACAPI_Element_GetMemo (guid, &changedDepth, linesMask);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the lines back after the change.");
+    }
+    err = APIERR_REFUSEDPAR;
+    if (!depthApplied (changedDepth)) {
+        return movedNote + "Archicad did not apply " + depthWhat;
+    }
+    err = NoError;
+    return {};
+}
+
 ModifySectionsCommand::ModifySectionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -23866,7 +24054,10 @@ GS::Optional<GS::UniString> ModifySectionsCommand::GetInputParametersSchema () c
                     "properties": {
                         "elementId": { "$ref": "#/ElementId", "description": "A Section or an Elevation." },
                         "name": { "type": "string", "description": "The new name, shown in the Project Map." },
-                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." }
+                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." },
+                        "startCoordinate": { "$ref": "#/Coordinate2D", "description": "The new start point of the section line. Only a straight marker (a section line of 2 points, as CreateSections and CreateElevations make) can be moved. The depth line and the marked distant area line keep their distance from it." },
+                        "endCoordinate": { "$ref": "#/Coordinate2D", "description": "The new end point of the section line, as startCoordinate. The view looks to the side the depth line was on." },
+                        "depth": { "type": "number", "exclusiveMinimum": 0, "description": "The new distance of the depth line from the section line, on the side it is on. GetDetailsOfElements reads it back as depth. Only applies when the element's horizontalRange is Limited (SetSectionsAndElevationsDetails); refused otherwise." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -23902,8 +24093,22 @@ GS::ObjectState ModifySectionsCommand::Execute (const GS::ObjectState& parameter
             GS::UniString id;
             const bool hasName = item.Get ("name", name);
             const bool hasId = item.Get ("id", id);
-            if (!hasName && !hasId) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name' or 'id'."));
+            GS::Optional<API_Coord> startCoordinate;
+            GS::Optional<API_Coord> endCoordinate;
+            GS::Optional<double> depth;
+            if (item.Get ("startCoordinate") != nullptr) {
+                startCoordinate = Get2DCoordinateFromObjectState (*item.Get ("startCoordinate"));
+            }
+            if (item.Get ("endCoordinate") != nullptr) {
+                endCoordinate = Get2DCoordinateFromObjectState (*item.Get ("endCoordinate"));
+            }
+            double depthValue = 0.0;
+            if (item.Get ("depth", depthValue)) {
+                depth = depthValue;
+            }
+            const bool hasLines = startCoordinate.HasValue () || endCoordinate.HasValue () || depth.HasValue ();
+            if (!hasName && !hasId && !hasLines) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id', 'startCoordinate', 'endCoordinate' or 'depth'."));
                 continue;
             }
 
@@ -23970,12 +24175,26 @@ GS::ObjectState ModifySectionsCommand::Execute (const GS::ObjectState& parameter
                 }
             }
 
+            // The lines first: a marker that cannot be moved fails the item before its name or ID
+            // is changed. ChangeSectionLines reads its change back itself.
+            if (hasLines) {
+                const GS::Optional<GS::UniString> linesError = ChangeSectionLines (element.header.guid, startCoordinate, endCoordinate, depth, err);
+                if (linesError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (err, linesError.Get () + (hasName || hasId ? " The name and the ID were not changed either." : "")));
+                    continue;
+                }
+            }
+            if (!hasName && !hasId) {
+                results.Push (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
             // ACAPI_Element_Change returns NoError for the name and the ID of a Section but leaves
             // them as they were (Archicad 29). The DevKit's Element_Test changes the ID of Sections
             // and Elevations with ACAPI_Element_ChangeParameters, which does apply them.
             err = ACAPI_Element_ChangeParameters ({element.header.guid}, &element, nullptr, &mask);
             if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to change the section."));
+                results.Push (CreateFailedExecutionResult (err, hasLines ? "The lines were changed, but the name or the ID failed." : "Failed to change the section."));
                 continue;
             }
 
