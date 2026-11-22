@@ -50,10 +50,11 @@ jobs:
     # does not take, or reads a response field the command does not return, is
     # found later, by whoever runs the check, not by the pull request that wrote
     # it. This reads the schemas generated just above and reports those
-    # disagreements in under a second (a name only the sources have yet is a
-    # note, see tools/check_contracts.py).
+    # disagreements in under a second. --strict: the schemas were just
+    # regenerated from the sources, so a name they do not have is a
+    # disagreement too, not the published reference lagging behind.
     - name: Check the test steps against the command schemas
-      run: python3 tools/check_contracts.py
+      run: python3 tools/check_contracts.py --strict
     # Every marketplace/<slug>/ folder against marketplace/README.md; the
     # Scripts page only lists folders that pass (tools/generate_catalogue.py).
     - name: Check the marketplace scripts

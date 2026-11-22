@@ -24,6 +24,8 @@ Usage:
   python tools/check_contracts.py            check every step of every check
   python tools/check_contracts.py -v         also list the steps that passed and the notes: a name the
                                              sources have and the published schemas not yet (docs lag)
+  python tools/check_contracts.py --strict   count those notes as errors, for CI, where the schemas are
+                                             regenerated from the sources before this runs
 
 Exit code: 1 when a step contradicts a command schema, 0 otherwise.
 """
@@ -200,7 +202,9 @@ def ResolvePath (path, schema, definitions, sourceNames):
                 schema = schema['properties'][token]
                 continue
             if schema.get ('additionalProperties') is False:
-                return (token in sourceNames), (None if token in sourceNames else 'missing')
+                if token in sourceNames:
+                    return True, 'lagging'
+                return False, None
             return True, None            # properties not described: cannot say it is wrong
         return True, None                # object without properties: free-form
     return True, None
@@ -216,8 +220,8 @@ def ExpectsRefusal (step):
             return True
         if '.error' in path or path.endswith ('error'):
             return True                     # a per-item error: the command must refuse that item
-        if path == 'success' and rule.get ('eq') is False:
-            return True
+        if rule.get ('eq') is False and (path == 'success' or path.endswith ('.success')):
+            return True                     # the command must refuse: a per-item success is false
     return False
 
 
@@ -246,7 +250,9 @@ def CheckStep (path, step, commands, definitions, sourceNames):
             CheckValue (params, schema, definitions, identifier, errors, notes, sourceNames)
 
     output = commands[command]['output']
-    paths = [(rule.get ('path', ''), 'expect path') for rule in step.get ('expect', []) or [] if 'expr' not in rule]
+    # A rule with exists false asserts the field is absent, so the path is not expected to resolve.
+    paths = [(rule.get ('path', ''), 'expect path') for rule in step.get ('expect', []) or []
+             if 'expr' not in rule and rule.get ('exists') is not False]
     paths += [(path, 'save path') for path in (step.get ('save') or {}).values ()]
     for path, kind in paths:
         ok, note = ResolvePath (path, output, definitions, sourceNames) if output else (True, None)
@@ -261,6 +267,9 @@ def CheckStep (path, step, commands, definitions, sourceNames):
 def main ():
     parser = argparse.ArgumentParser (description = __doc__.split ('\n')[0])
     parser.add_argument ('-v', '--verbose', action = 'store_true', help = 'also list the steps that passed')
+    parser.add_argument ('--strict', action = 'store_true',
+                         help = 'treat a note as an error: for CI, where the schemas are regenerated from '
+                                'the sources first, a name they do not have is a disagreement, not docs lag')
     args = parser.parse_args ()
 
     commands = LoadCommands ()
@@ -284,6 +293,10 @@ def main ():
             allNotes.extend (notes)
             if args.verbose and not errors:
                 print ('ok   %s: %s' % (os.path.basename (path), step.get ('id') or step.get ('command')))
+
+    if args.strict:
+        allErrors.extend (allNotes)
+        allNotes = []
 
     if args.verbose:
         for note in allNotes:
