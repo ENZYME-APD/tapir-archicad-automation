@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-22 10:50 UTC",
+ "generatedAt": "2026-11-22 14:55 UTC",
  "counts": {
   "done": 788,
   "open": 41,
@@ -5341,7 +5341,7 @@
    "id": "CreateStairs",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides), and the line types, pens and fills of the structure symbols (structureSymbols, monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories); settings not given come from the Stair tool defaults or the favorite.",
+   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides), and the line types, pens and fills of the structure symbols (structureSymbols, monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories); settings not given come from the Stair tool defaults or the favorite. Archicad lays out the boundaries and the walking lines from the baseline and the flight width, and the API cannot write them: an item that gives one is refused with an error that says so.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5351,7 +5351,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 59,
+   "parameterCount": 64,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLineArcs",
@@ -5376,16 +5376,20 @@
     "stairsData.baseLineVertices",
     "stairsData.baselineOffset",
     "stairsData.baselinePosition",
+    "stairsData.centerWalkingLine",
+    "stairsData.customWalkingLine",
     "stairsData.extraBottomTread",
     "stairsData.extraTopTread",
     "stairsData.floorPlanLayout",
     "stairsData.headroom",
     "stairsData.id",
     "stairsData.inputDirection",
+    "stairsData.leftBoundary",
     "stairsData.monolithStructureSymbols",
     "stairsData.numberingType",
     "stairsData.reflectedCeilingPlanLayout",
     "stairsData.relativeTopStory",
+    "stairsData.rightBoundary",
     "stairsData.risers",
     "stairsData.risers.crossSection",
     "stairsData.rules",
@@ -5411,6 +5415,7 @@
     "stairsData.uniformDrainings",
     "stairsData.uniformFinish",
     "stairsData.uniformMonolithAttributes",
+    "stairsData.walkingLine",
     "stairsData.walkingLineOffset",
     "stairsData.walkingLinePosition",
     "stairsData.walkingLineSymbolPosition"
@@ -8430,7 +8435,7 @@
    "id": "ModifyStairs",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) and the line type, pen and symbol fill overrides, and the line types, pens and fills of the structure symbols per structure type and view (structureSymbols) and of the monolithic structure per view and visible or hidden part (monolithStructureSymbols), and which structures, fills and monolithic parts are shown on each range of the relevant stories, per view (structureVisibilityOnStories); these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
+   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) and the line type, pen and symbol fill overrides, and the line types, pens and fills of the structure symbols per structure type and view (structureSymbols) and of the monolithic structure per view and visible or hidden part (monolithStructureSymbols), and which structures, fills and monolithic parts are shown on each range of the relevant stories, per view (structureVisibilityOnStories); these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API; the boundaries and the walking lines GetDetailsOfElements reads, which Archicad lays out itself from the baseline and the flight width and which the API cannot write (here, in CreateStairs and in RecreateStairs an item that gives one is refused with an error that says so).",
    "status": "done",
    "reason": "",
    "components": [
@@ -8440,7 +8445,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 50,
+   "parameterCount": 55,
    "coveredParameters": [
     "stairsWithDetails",
     "stairsWithDetails.elementId",
@@ -8459,15 +8464,19 @@
     "stairsWithDetails.treads.thickness"
    ],
    "missingParameters": [
+    "stairsWithDetails.centerWalkingLine",
+    "stairsWithDetails.customWalkingLine",
     "stairsWithDetails.extraBottomTread",
     "stairsWithDetails.extraTopTread",
     "stairsWithDetails.floorPlanLayout",
     "stairsWithDetails.headroom",
     "stairsWithDetails.inputDirection",
+    "stairsWithDetails.leftBoundary",
     "stairsWithDetails.monolithStructureSymbols",
     "stairsWithDetails.numberingType",
     "stairsWithDetails.reflectedCeilingPlanLayout",
     "stairsWithDetails.relativeTopStory",
+    "stairsWithDetails.rightBoundary",
     "stairsWithDetails.risers",
     "stairsWithDetails.risers.crossSection",
     "stairsWithDetails.rules",
@@ -8491,6 +8500,7 @@
     "stairsWithDetails.uniformDrainings",
     "stairsWithDetails.uniformFinish",
     "stairsWithDetails.uniformMonolithAttributes",
+    "stairsWithDetails.walkingLine",
     "stairsWithDetails.walkingLineOffset",
     "stairsWithDetails.walkingLinePosition",
     "stairsWithDetails.walkingLineSymbolPosition"
@@ -8532,7 +8542,7 @@
    "id": "RecreateStairs",
    "group": "Element Commands",
    "version": "2.0.1",
-   "brief": "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).",
+   "brief": "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in). Archicad lays out the boundaries and the walking lines of the new stair again from its baseline and flight width, so boundaries or a walking line edited by hand on the old stair are not carried over; the API cannot write them, so an item that gives one is refused and the stair is left as it was.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -8542,7 +8552,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 6,
+   "parameterCount": 11,
    "coveredParameters": [
     "stairs",
     "stairs.baseLineArcs",
@@ -8551,7 +8561,12 @@
    ],
    "missingParameters": [
     "stairs.baseLineEdges",
-    "stairs.baseLineVertices"
+    "stairs.baseLineVertices",
+    "stairs.centerWalkingLine",
+    "stairs.customWalkingLine",
+    "stairs.leftBoundary",
+    "stairs.rightBoundary",
+    "stairs.walkingLine"
    ],
    "pullRequests": [],
    "issues": []

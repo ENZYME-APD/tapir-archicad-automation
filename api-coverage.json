@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-22 10:50 UTC",
+ "generatedAt": "2026-11-22 14:55 UTC",
  "versions": [
   25,
   26,
@@ -6738,10 +6738,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3013,
-     "title": "Stairs: refuse the boundaries and walking lines, which the API cannot write"
-    },
-    {
      "number": 2838,
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
@@ -6889,12 +6885,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3013,
-     "title": "Stairs: refuse the boundaries and walking lines, which the API cannot write"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 3014,
@@ -7001,10 +6992,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3013,
-     "title": "Stairs: refuse the boundaries and walking lines, which the API cannot write"
-    },
     {
      "number": 3005,
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
