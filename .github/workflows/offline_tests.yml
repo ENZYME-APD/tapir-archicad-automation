@@ -1,0 +1,66 @@
+name: Offline Tests
+
+# The test suites that need neither Archicad nor a build and that nothing ran:
+# the Python client's (10 tests) and the community test runner's (53). Both were
+# green or red only on the machine of whoever remembered to run them, so a
+# regression could sit on main until someone did.
+#
+# Already run elsewhere, and therefore not repeated here: the installer's two
+# suites (installer_build_check.yml runs test_update_mode.py and
+# test_per_user.py as scripts, which a grep for unittest/pytest does not show)
+# and the issue bot's (discord_issue_bot.yml).
+#
+# Not here either: the C# tests (grasshopper-plugin/TapirGrasshopperPlugin.Tests)
+# - that project is not in the solution msbuild builds, and running it needs the
+# Rhino/Grasshopper assemblies on a Windows runner. That is a separate change.
+#
+# Nothing here needs the DevKits or the build gate: the whole workflow is a
+# couple of minutes on ubuntu-latest, so it runs on every pull request, including
+# the ones that change only docs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same pull request or branch supersedes a run still queued
+# or running; main keeps every run (the same rule as the build checks).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        # The version the release workflow uses for the tools and the installer
+        # (archicad_addon.yml), so a script that only runs on a newer one is
+        # caught here rather than at release time.
+        python-version: '3.12'
+
+    # The client the marketplace scripts and most users write: generated from
+    # the command reference, so its suites also catch a commands.py that no
+    # longer matches docs/archicad-addon (tests/test_client.py compares them).
+    - name: Test the Python client
+      run: python -m unittest discover python-client/tests -v
+      working-directory: .
+
+    # The runner community testers install: it drives real Archicad, and its
+    # tests stub what needs one.
+    - name: Test the community test runner
+      run: python -m unittest discover -s tools/community-test-runner/tests -v
+
