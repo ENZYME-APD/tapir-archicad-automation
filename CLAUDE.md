@@ -193,7 +193,11 @@ by hand.
    pull request gets run in real Archicad before it is merged: testers' runners test what is
    labelled `needs-test`, which the bot PR steward sets on a bot pull request once its builds are
    green and it has a check (see CI). Make the elements it needs in its own steps, and make the
-   expectations catch the bug or prove the feature, not only that the command answers.
+   expectations catch the bug or prove the feature, not only that the command answers. The command
+   check runs `tools/check_contracts.py`, which validates a check's steps against the schemas of the
+   commands they call - the parameters they send and the response paths they expect - so a typo or a
+   field the command does not have fails the pull request instead of the tester. A step that asserts
+   a refusal sends invalid parameters on purpose and is left alone.
 6. Docs at <https://archicad-api.com/...> are generated from the registered
    descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
    needed; same output as the `GenerateDocumentation` developer command). The weekly
@@ -382,7 +386,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `installer_build_check.yml` — PR build checks for each component, also run
   on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
   uses); a newer push to a pull request cancels its superseded runs. The add-on
-  check also runs `tools/check_examples.py` (one example per command), and
+  check also runs `tools/check_examples.py` (one example per command), `tools/check_contracts.py`
+  (every `Test/checks` step against the schema of the command it calls), and
   `tools/check_marketplace.py` with `tools/generate_catalogue.py --self-test`. The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.

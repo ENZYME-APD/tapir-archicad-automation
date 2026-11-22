@@ -51,7 +51,7 @@
             "floorIndex": 0,
             "zCoordinate": 0.0,
             "structureType": "Profile",
-            "profileId": { "attributeId": { "guid": "${p}" } }
+            "profileId": { "guid": "${p}" }
           }
         ]
       },
@@ -86,7 +86,7 @@
             "endCoordinate": { "x": 685.0, "y": 650.0 },
             "zCoordinate": 3.0,
             "floorIndex": 0,
-            "profileId": { "attributeId": { "guid": "${p}" } }
+            "profileId": { "guid": "${p}" }
           }
         ]
       },

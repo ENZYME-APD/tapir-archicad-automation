@@ -62,7 +62,7 @@
             "isWidthAndHeightLinked": false,
             "width": 0.3,
             "depth": 0.3,
-            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+            "buildingMaterialId": { "guid": "${bm}" }
           }
         ]
       },
@@ -75,7 +75,7 @@
       "id": "the column uses profile A",
       "command": "ModifyColumns",
       "creates": false,
-      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "profileId": { "attributeId": { "guid": "${pA}" } } } ] },
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "profileId": { "guid": "${pA}" } } ] },
       "expect": [
         { "path": "executionResults[0].success", "eq": true, "name": "profile set" }
       ]

@@ -45,6 +45,15 @@ jobs:
     # the docs show it in the command's Example popdown.
     - name: Check the examples
       run: python3 tools/check_examples.py
+    # archicad-addon/Test/checks/*.json are the tests, and they only run in real
+    # Archicad, on a tester's machine: a step that sends a parameter its command
+    # does not take, or reads a response field the command does not return, is
+    # found later, by whoever runs the check, not by the pull request that wrote
+    # it. This reads the schemas generated just above and reports those
+    # disagreements in under a second (a name only the sources have yet is a
+    # note, see tools/check_contracts.py).
+    - name: Check the test steps against the command schemas
+      run: python3 tools/check_contracts.py
     # Every marketplace/<slug>/ folder against marketplace/README.md; the
     # Scripts page only lists folders that pass (tools/generate_catalogue.py).
     - name: Check the marketplace scripts
