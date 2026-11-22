@@ -46,6 +46,10 @@ class Client (Commands):
         self.host = host
         self.port = port
         self.timeout = timeout
+        # Archicad answers on the machine the client runs on, so a request for it must never go
+        # through http_proxy: a corporate proxy answers 407, or refuses the loopback address, and
+        # that reached the caller as "Archicad does not answer".
+        self._opener = urllib.request.build_opener (urllib.request.ProxyHandler ({}))
 
     @property
     def url (self):
@@ -56,14 +60,40 @@ class Client (Commands):
         data = json.dumps ({'command': command, 'parameters': parameters}).encode ('utf-8')
         request = urllib.request.Request (self.url, data = data, headers = {'Content-Type': 'application/json'})
         try:
-            if self.timeout is None:
-                response = urllib.request.urlopen (request)
-            else:
-                response = urllib.request.urlopen (request, timeout = self.timeout)
-            with response:
+            with self._opener.open (request, timeout = self.timeout) as response:
                 return json.loads (response.read ().decode ('utf-8'))
-        except (urllib.error.URLError, OSError, ValueError) as exception:
+        except urllib.error.HTTPError as exception:
+            # Archicad's JSON interface answers an error status with its own JSON error in the
+            # body, in the same shape a successful answer has; returning it keeps the code and the
+            # message the caller needs, which the status alone does not carry.
+            return self._AnswerOfHTTPError (exception, command)
+        except (urllib.error.URLError, OSError) as exception:
             raise TapirError ('Archicad does not answer on {}: {}'.format (self.url, exception), command = command) from exception
+        except ValueError as exception:
+            raise TapirError ('Archicad answered on {} with something that is not JSON: {}'.format (self.url, exception), command = command) from exception
+
+    def _AnswerOfHTTPError (self, exception, command):
+        """The answer inside an HTTP error response: its JSON body, as post returns it.
+
+        A body that is not JSON (a proxy's page, a firewall's, a page login) is not an Archicad
+        answer, so it raises, naming the status and the beginning of the body."""
+        try:
+            body = exception.read ().decode ('utf-8', 'replace')
+        except (OSError, ValueError):
+            body = ''
+        finally:
+            exception.close ()
+        try:
+            answer = json.loads (body)
+        except ValueError:
+            answer = None
+        if isinstance (answer, dict):
+            return answer
+        beginning = ' '.join (body.split ())[:200]
+        raise TapirError ('Archicad answered HTTP {} on {}{}'.format (
+            exception.code,
+            self.url,
+            ': ' + beginning if beginning else ''), command = command) from exception
 
     def run (self, command, parameters = None):
         """Runs the Tapir command named command with the given parameters (a dict) and returns its response."""
