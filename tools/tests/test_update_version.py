@@ -5,12 +5,16 @@ shape changes - a reformatted csproj, a renamed define - stops matching, and the
 a release that stops half way. These pin the rules and the invariant they serve: every place the
 version lives carries the same one.
 
+The rules come from update_version.ReplaceRules, not from a copy here, so editing a rule in the
+script means these tests check the edited one.
+
     python -m unittest discover tools/tests
 """
 
 import json
 import os
 import pathlib
+import re
 import sys
 import tempfile
 import unittest
@@ -21,47 +25,57 @@ sys.path.insert (0, str (TOOLS))
 
 import update_version  # noqa: E402
 
-VERSION_PATTERN = r'[0-9]+\.[0-9]+\.[0-9]+'
+# How to read the version back out of each file: an invariant of its own, not the rewrite rule, so
+# it is written here on purpose. Its keys must be exactly the files the rules rewrite.
+READ_BACK = {
+    'archicad-addon/Sources/AddOnVersion.hpp': r'#define ADDON_VERSION "([^"]*)"',
+    'grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj': r'<Version>([^<]*)</Version>',
+    'grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs': r'AssemblyVersion\s*=>\s*"([^"]*)"',
+    'grasshopper-plugin/YakPackage/manifest.yml': r'version:\s*([0-9.]+)',
+}
 
-# Every file the version lives in, and how to read it back: the rules of update_version.Main.
-VERSION_FILES = [
-    ('archicad-addon/Sources/AddOnVersion.hpp',
-     r'#define ADDON_VERSION "{0}"'.format (VERSION_PATTERN),
-     r'#define ADDON_VERSION "([^"]*)"'),
-    ('grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPlugin.csproj',
-     r'<Version>{0}</Version>'.format (VERSION_PATTERN),
-     r'<Version>([^<]*)</Version>'),
-    ('grasshopper-plugin/TapirGrasshopperPlugin/TapirGrasshopperPluginInfo.cs',
-     r'AssemblyVersion\s*\=\>\s*"{0}"'.format (VERSION_PATTERN),
-     r'AssemblyVersion\s*=>\s*"([^"]*)"'),
-    ('grasshopper-plugin/YakPackage/manifest.yml',
-     r'version: {0}'.format (VERSION_PATTERN),
-     r'version:\s*([0-9.]+)'),
-]
+
+def Rules (version = '9.9.9'):
+    return update_version.ReplaceRules (str (REPO_ROOT), version)
+
+
+def RelativePath (rule):
+    return os.path.relpath (rule['filePath'], str (REPO_ROOT)).replace (os.sep, '/')
 
 
 class RepositoryVersionTest (unittest.TestCase):
     """The state the release depends on, on every checkout - not only on release day."""
 
+    def test_the_read_back_table_covers_exactly_the_rewritten_files (self):
+        # A new place the version lives has to be read back too, or it can drift unobserved.
+        self.assertEqual (sorted (READ_BACK), sorted (RelativePath (rule) for rule in Rules ()))
+
     def test_every_file_the_release_rewrites_is_where_it_expects_it (self):
-        for relativePath, _, _ in VERSION_FILES:
-            self.assertTrue ((REPO_ROOT / relativePath).exists (), relativePath)
+        for rule in Rules ():
+            self.assertTrue (os.path.exists (rule['filePath']), RelativePath (rule))
 
     def test_every_rule_matches_its_file_exactly_once (self):
         # ReplaceRegexInFile refuses to write unless there is exactly one match, so a rule that
         # stops matching - or starts matching twice - fails the release, not the build.
-        import re
-        for relativePath, rule, _ in VERSION_FILES:
-            text = (REPO_ROOT / relativePath).read_text (encoding = 'utf-8')
-            self.assertEqual (len (re.findall (rule, text)), 1, relativePath)
+        for rule in Rules ():
+            text = pathlib.Path (rule['filePath']).read_text (encoding = 'utf-8')
+            self.assertEqual (len (re.findall (rule['oldRegex'], text)), 1, RelativePath (rule))
+
+    def test_every_rule_writes_the_new_version (self):
+        # Applied to the real file, each rule leaves the new version where the read-back looks for
+        # it. (A file holds other dotted numbers - an SDK version, a package version - so the check
+        # is the targeted field, not every version-shaped string in the file.)
+        for rule in Rules ('9.9.9'):
+            text = pathlib.Path (rule['filePath']).read_text (encoding = 'utf-8')
+            rewritten = re.sub (rule['oldRegex'], rule['newRegex'], text)
+            readBack = READ_BACK[RelativePath (rule)]
+            self.assertEqual (re.findall (readBack, rewritten), ['9.9.9'], RelativePath (rule))
 
     def test_all_files_carry_the_version_of_package_info (self):
-        import re
         version = json.loads ((TOOLS / 'package_info.json').read_text (encoding = 'utf-8'))['version']
-        for relativePath, _, readBack in VERSION_FILES:
+        for relativePath, readBack in READ_BACK.items ():
             text = (REPO_ROOT / relativePath).read_text (encoding = 'utf-8')
-            found = re.findall (readBack, text)
-            self.assertEqual (found, [version], relativePath)
+            self.assertEqual (re.findall (readBack, text), [version], relativePath)
 
 
 class ReplaceRegexInFileTest (unittest.TestCase):
