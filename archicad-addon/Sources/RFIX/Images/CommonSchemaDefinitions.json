@@ -16281,23 +16281,23 @@
             },
             "leftBoundary": {
                 "$ref": "#/StairBoundary",
-                "description": "The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it."
+                "description": "Read only. The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "rightBoundary": {
                 "$ref": "#/StairBoundary",
-                "description": "The right boundary line of the stair (the memo's stairBoundary[1]), seen along the baseline. Given when Archicad has calculated it."
+                "description": "Read only. The right boundary line of the stair (the memo's stairBoundary[1]), seen along the baseline. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "walkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The walking line of the stair (the memo's stairWalkingLine), the one Archicad lays the goings out along. Given when Archicad has calculated it."
+                "description": "Read only. The walking line of the stair (the memo's stairWalkingLine), the one Archicad lays the goings out along. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "customWalkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The custom walking line of the stair (the memo's stairCustomWalkLine). Archicad 29 fills it on every stair: on a stair whose walking line was not edited it is the same as walkingLine."
+                "description": "Read only. The custom walking line of the stair (the memo's stairCustomWalkLine). Archicad 29 fills it on every stair: on a stair whose walking line was not edited it is the same as walkingLine. The API cannot write it (see StairOutlineNotWritable)."
             },
             "centerWalkingLine": {
                 "$ref": "#/StairPolyline",
-                "description": "The center walking line of the stair (the memo's stairCenterWalkLine). Archicad 29 fills it on every stair: on a stair with a centered walking line it is the same as walkingLine."
+                "description": "Read only. The center walking line of the stair (the memo's stairCenterWalkLine). Archicad 29 fills it on every stair: on a stair with a centered walking line it is the same as walkingLine. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
             },
             "linkToSettings": {
                 "$ref": "#/LinkToSettings"
@@ -16628,6 +16628,10 @@
         },
         "additionalProperties": false,
         "required": ["isCustom", "points", "arcs", "edges"]
+    },
+    "StairOutlineNotWritable": {
+        "type": "object",
+        "description": "Not writable: a boundary or a walking line of a stair, as GetDetailsOfElements reads it (leftBoundary, rightBoundary, walkingLine, customWalkingLine, centerWalkingLine). Archicad lays them out itself from the baseline and the flight width, and the API keeps none given: ACAPI_Element_Change refuses a stair memo that holds them (APIERR_GENERAL, also when it is unchanged) or ignores them, ACAPI_Element_ChangeExt does not take stairs (APIERR_BADID), and ACAPI_Element_Create lays them out again, whatever the memo holds (checked on Archicad 29). The walking line stays in the middle of the flight: Archicad 29 keeps walkingLinePosition Center and walkingLineOffset half the flight width whatever is written. An item that gives one is refused with an error, before anything is changed. Change the baseline instead (CreateStairs, RecreateStairs), or flightWidth (ModifyStairs), which moves the boundaries and keeps the walking line in the middle."
     },
     "StairStructureDetails": {
         "type": "object",

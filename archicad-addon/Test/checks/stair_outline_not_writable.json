@@ -1,0 +1,197 @@
+{
+  "title": "CreateStairs, ModifyStairs and RecreateStairs refuse a stair's boundaries and walking lines, which Archicad lays out from the baseline and the flight width, and change nothing; flightWidth and a new baseline move them",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a straight stair with a centered baseline",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [{"x": 900.0, "y": 760.0}, {"x": 904.0, "y": 760.0}],
+            "baselinePosition": "Center",
+            "baselineOffset": 0.0,
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2
+          }
+        ]
+      },
+      "save": {"s": "elements[0].elementId.guid"},
+      "expect": [
+        {"path": "elements[0].elementId.guid", "exists": true, "name": "stair created"}
+      ]
+    },
+    {
+      "id": "ModifyStairs refuses a left boundary, together with a flight width",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": {"guid": "${s}"},
+            "flightWidth": 1.6,
+            "leftBoundary": {
+              "isCustom": true,
+              "points": [{"x": 900.0, "y": 761.0}, {"x": 904.0, "y": 761.0}],
+              "arcs": [],
+              "edges": [{"visible": true}]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {"path": "executionResults[0].success", "eq": false, "name": "the item is refused"},
+        {"path": "executionResults[0].error.message", "contains": "leftBoundary cannot be written", "name": "the error names the key"},
+        {"path": "executionResults[0].error.message", "contains": "flightWidth", "name": "the error says what to change instead"}
+      ]
+    },
+    {
+      "id": "ModifyStairs refuses a custom walking line",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": {"guid": "${s}"},
+            "customWalkingLine": {
+              "points": [{"x": 900.0, "y": 760.3}, {"x": 904.0, "y": 760.3}],
+              "arcs": []
+            }
+          }
+        ]
+      },
+      "expect": [
+        {"path": "executionResults[0].success", "eq": false, "name": "the item is refused"},
+        {"path": "executionResults[0].error.message", "contains": "customWalkingLine cannot be written", "name": "the error names the key"}
+      ]
+    },
+    {
+      "id": "RecreateStairs refuses a right boundary",
+      "command": "RecreateStairs",
+      "creates": false,
+      "params": {
+        "stairs": [
+          {
+            "elementId": {"guid": "${s}"},
+            "baseLinePoints": [{"x": 900.0, "y": 760.0}, {"x": 904.0, "y": 760.0}],
+            "rightBoundary": {
+              "isCustom": true,
+              "points": [{"x": 900.0, "y": 759.0}, {"x": 904.0, "y": 759.0}],
+              "arcs": [],
+              "edges": [{"visible": true}]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {"path": "results[0].error.message", "contains": "rightBoundary cannot be written", "name": "the item is refused, naming the key"},
+        {"path": "results[0].elementId", "exists": false, "name": "no new stair"}
+      ]
+    },
+    {
+      "id": "the stair was left as it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${s}"}}]},
+      "save": {
+        "by": "detailsOfElements[0].details.baseLinePoints[0].y",
+        "ly": "detailsOfElements[0].details.leftBoundary.points[0].y",
+        "ry": "detailsOfElements[0].details.rightBoundary.points[0].y",
+        "wy": "detailsOfElements[0].details.walkingLine.points[0].y",
+        "cy": "detailsOfElements[0].details.customWalkingLine.points[0].y"
+      },
+      "expect": [
+        {"path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "tol": 0.0001, "name": "the flight width given with the refused boundary was not written"},
+        {"path": "detailsOfElements[0].details.leftBoundary.isCustom", "eq": false, "name": "the left boundary is not custom"},
+        {"path": "detailsOfElements[0].details.rightBoundary.isCustom", "eq": false, "name": "the right boundary is not custom"},
+        {"expr": "${ly} - ${by}", "approx": 0.6, "tol": 0.001, "name": "left boundary still half the flight width left of the baseline"},
+        {"expr": "${by} - ${ry}", "approx": 0.6, "tol": 0.001, "name": "right boundary still half the flight width right of the baseline"},
+        {"expr": "${cy} - ${by}", "approx": 0.0, "tol": 0.001, "name": "custom walking line not moved"}
+      ]
+    },
+    {
+      "id": "CreateStairs refuses a center walking line",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [{"x": 900.0, "y": 770.0}, {"x": 904.0, "y": 770.0}],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "centerWalkingLine": {
+              "points": [{"x": 900.0, "y": 770.2}, {"x": 904.0, "y": 770.2}],
+              "arcs": []
+            }
+          }
+        ]
+      },
+      "expect": [
+        {"path": "elements[0].error.message", "contains": "centerWalkingLine cannot be written", "name": "the item is refused, naming the key"},
+        {"path": "elements[0].elementId", "exists": false, "name": "no stair created"}
+      ]
+    },
+    {
+      "id": "flightWidth moves the boundaries, as the error says",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {"stairsWithDetails": [{"elementId": {"guid": "${s}"}, "flightWidth": 1.6}]},
+      "expect": [
+        {"path": "executionResults[0].success", "eq": true, "name": "flight width written"}
+      ]
+    },
+    {
+      "id": "the boundaries moved apart, the walking line stayed in the middle",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${s}"}}]},
+      "save": {
+        "by2": "detailsOfElements[0].details.baseLinePoints[0].y",
+        "ly2": "detailsOfElements[0].details.leftBoundary.points[0].y",
+        "ry2": "detailsOfElements[0].details.rightBoundary.points[0].y",
+        "wy2": "detailsOfElements[0].details.walkingLine.points[0].y"
+      },
+      "expect": [
+        {"expr": "${ly2} - ${by2}", "approx": 0.8, "tol": 0.001, "name": "left boundary half the new width left of the baseline"},
+        {"expr": "${by2} - ${ry2}", "approx": 0.8, "tol": 0.001, "name": "right boundary half the new width right of the baseline"},
+        {"expr": "${wy2} - ${by2}", "approx": 0.0, "tol": 0.001, "name": "walking line in the middle of the flight"}
+      ]
+    },
+    {
+      "id": "a new baseline moves them too",
+      "command": "RecreateStairs",
+      "params": {
+        "stairs": [
+          {
+            "elementId": {"guid": "${s}"},
+            "baseLinePoints": [{"x": 900.0, "y": 761.0}, {"x": 904.0, "y": 761.0}]
+          }
+        ]
+      },
+      "save": {"s2": "results[0].elementId.guid"},
+      "expect": [
+        {"path": "results[0].elementId.guid", "exists": true, "name": "stair recreated"}
+      ]
+    },
+    {
+      "id": "the boundaries followed the new baseline",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${s2}"}}]},
+      "save": {
+        "ly3": "detailsOfElements[0].details.leftBoundary.points[0].y",
+        "ry3": "detailsOfElements[0].details.rightBoundary.points[0].y",
+        "wy3": "detailsOfElements[0].details.walkingLine.points[0].y"
+      },
+      "expect": [
+        {"expr": "${ly3} - ${ly2}", "approx": 1.0, "tol": 0.001, "name": "left boundary moved with the baseline"},
+        {"expr": "${ry3} - ${ry2}", "approx": 1.0, "tol": 0.001, "name": "right boundary moved with the baseline"},
+        {"expr": "${wy3} - ${wy2}", "approx": 1.0, "tol": 0.001, "name": "walking line moved with the baseline"}
+      ]
+    }
+  ]
+}
