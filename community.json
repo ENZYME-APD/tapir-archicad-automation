@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-21T10:57:48Z",
+ "generatedAt": "2026-11-22T11:17:42Z",
  "months": [
   {
    "month": "2022-07",
@@ -420,14 +420,14 @@
   }
  ],
  "totals": {
-  "commits": 1409,
-  "discordMessages": 12361,
-  "discordMembers": 688,
+  "commits": 1459,
+  "discordMessages": 12378,
+  "discordMembers": 690,
   "discordMembersChange": {
-   "diff": 48,
-   "days": 15
+   "diff": 50,
+   "days": 16
   },
-  "participants": 528
+  "participants": 531
  },
  "topContributors": [
   {
@@ -440,8 +440,8 @@
   {
    "name": "archispatialist",
    "login": "archispatialist",
-   "commits": 130,
-   "reports": 191,
+   "commits": 137,
+   "reports": 195,
    "tests": 0
   },
   {
@@ -468,9 +468,9 @@
   {
    "name": "MathiasJon",
    "login": "MathiasJon",
-   "commits": 111,
+   "commits": 112,
    "reports": 23,
-   "tests": 0
+   "tests": 1
   },
   {
    "name": "Viktor Kovacs",
@@ -487,23 +487,23 @@
    "tests": 0
   },
   {
+   "name": "Aziz Nacer",
+   "login": "aziznacer3d-create",
+   "commits": 90,
+   "reports": 0,
+   "tests": 0
+  },
+  {
    "name": "Ben Tristem",
    "login": "BenTristem",
-   "commits": 51,
-   "reports": 19,
+   "commits": 52,
+   "reports": 20,
    "tests": 0
   },
   {
    "name": "fuzesArch",
    "login": "fuzesArch",
    "commits": 54,
-   "reports": 0,
-   "tests": 0
-  },
-  {
-   "name": "Aziz Nacer",
-   "login": "aziznacer3d-create",
-   "commits": 41,
    "reports": 0,
    "tests": 0
   },
@@ -573,8 +573,8 @@
   {
    "name": "Kappa-lo",
    "login": "Kappa-lo",
-   "commits": 10,
-   "reports": 6,
+   "commits": 13,
+   "reports": 9,
    "tests": 0
   },
   {
@@ -588,6 +588,13 @@
    "name": "akunia",
    "commits": 13,
    "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "akakaiju",
+   "login": "akakaiju",
+   "commits": 7,
+   "reports": 4,
    "tests": 0
   },
   {
@@ -663,13 +670,6 @@
    "login": "Yostage",
    "commits": 6,
    "reports": 0,
-   "tests": 0
-  },
-  {
-   "name": "akakaiju",
-   "login": "akakaiju",
-   "commits": 3,
-   "reports": 3,
    "tests": 0
   },
   {
@@ -772,6 +772,10 @@
   {
    "date": "2026-11-21",
    "members": 688
+  },
+  {
+   "date": "2026-11-22",
+   "members": 690
   }
  ]
 }

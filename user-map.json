@@ -1,8 +1,8 @@
 {
  "version": 1,
- "generatedAt": "2026-11-21T11:13:44Z",
+ "generatedAt": "2026-11-22T11:34:27Z",
  "totals": {
-  "people": 49,
+  "people": 50,
   "places": 46,
   "countries": 30
  },
@@ -30,6 +30,15 @@
    "lat": 47.27,
    "lon": 11.39,
    "people": 2
+  },
+  {
+   "name": "Italy",
+   "country": "Italy",
+   "countryCode": "IT",
+   "lat": 42.64,
+   "lon": 12.67,
+   "people": 2,
+   "countryOnly": true
   },
   {
    "name": "Barcelona",
@@ -109,15 +118,6 @@
    "countryCode": "HU",
    "lat": 47.18,
    "lon": 19.51,
-   "people": 1,
-   "countryOnly": true
-  },
-  {
-   "name": "Italy",
-   "country": "Italy",
-   "countryCode": "IT",
-   "lat": 42.64,
-   "lon": 12.67,
    "people": 1,
    "countryOnly": true
   },
@@ -425,6 +425,11 @@
    "people": 2
   },
   {
+   "name": "Italy",
+   "code": "IT",
+   "people": 2
+  },
+  {
    "name": "New Zealand",
    "code": "NZ",
    "people": 2
@@ -462,11 +467,6 @@
   {
    "name": "Indonesia",
    "code": "ID",
-   "people": 1
-  },
-  {
-   "name": "Italy",
-   "code": "IT",
    "people": 1
   },
   {
