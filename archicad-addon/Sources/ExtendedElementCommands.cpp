@@ -18505,7 +18505,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         "elementId": { "$ref": "#/ElementId" },
                         "coordinates": {
                             "type": "array",
-                            "description": "The new 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates is one straight segment, so the number of coordinates must be the current number of segments plus one: the segments can be moved and resized, but not added or removed (a curved segment becomes straight).",
+                            "description": "The new 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates is one straight segment, so the number of coordinates must be the current number of segments plus one: the segments can be moved and resized, but not added or removed (a curved segment becomes straight). Only for a vertical curtain wall (angle 90): on a slanted or horizontal one the item fails and nothing is changed, because Archicad takes its reference line in the plane of the curtain wall; use RecreateCurtainWalls for a slanted one.",
                             "items": {
                                 "$ref": "#/Coordinate2D"
                             },
@@ -18513,7 +18513,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         },
                         "zCoordinate": {
                             "type": "number",
-                            "description": "The new Z coordinate (absolute elevation) of the bottom of the curtain wall. The home story is derived from it unless floorIndex is given too."
+                            "description": "The new Z coordinate (absolute elevation) of the bottom of the curtain wall. The home story is derived from it unless floorIndex is given too. Only for a vertical curtain wall (angle 90): on a slanted or horizontal one Archicad moves the plane by the base offset along the plane itself, so the item fails and nothing is changed; give a slanted one a new elevation with CreateCurtainWalls and it as templateElementId."
                         },
                         "floorIndex": {
                             "type": "integer",
@@ -18521,7 +18521,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         },
                         "height": {
                             "type": "number",
-                            "description": "The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed.",
+                            "description": "The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed. Only for a vertical curtain wall (angle 90): on a slanted or horizontal one the item fails and nothing is changed; use RecreateCurtainWalls for a slanted one.",
                             "exclusiveMinimum": 0.0
                         },
                         "flipped": {
@@ -18934,6 +18934,24 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
     }
     if (GetElemTypeId (element.header) != API_CurtainWallID) {
         return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Curtain Wall.");
+    }
+
+    // A curtain wall that is not vertical lies in its own plane (planeMatrix): Archicad takes
+    // memo.coords in that plane, measures the height along it and moves it by planeOffset along
+    // it, so the floor plan coordinates, the vertical height and the base offset written below
+    // would move or distort it - a horizontal one got its X doubled and its Y turned into a
+    // depth of -Y, and reported failure afterwards (#3011). Those fields are refused before
+    // anything is changed; CreateCurtainWalls (and RecreateCurtainWalls through it) places a
+    // slanted one in its plane.
+    if (std::fabs (element.curtainWall.angle - 90.0) > 1e-6) {
+        const char* refusedField = item.Contains ("coordinates") ? "coordinates" : (item.Contains ("height") ? "height" : (item.Contains ("zCoordinate") ? "zCoordinate" : nullptr));
+        if (refusedField != nullptr) {
+            const bool horizontal = std::fabs (std::sin (element.curtainWall.angle * std::acos (-1.0) / 180.0)) < 1e-6;
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf (
+                "%s cannot be changed on a curtain wall that is not vertical (its angle is %.4f degrees, not 90): Archicad takes it in the plane of the curtain wall, so it would move or distort it. %s Nothing was changed.",
+                refusedField, element.curtainWall.angle,
+                horizontal ? "A horizontal curtain wall cannot be changed this way, nor recreated with RecreateCurtainWalls yet." : "Use RecreateCurtainWalls for a new reference line or height, or CreateCurtainWalls with it as templateElementId for a new zCoordinate."));
+        }
     }
 
     // The height is changed in a call of its own, before the other fields (see below).
