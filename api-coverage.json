@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-22 10:19 UTC",
+ "generatedAt": "2026-11-22 10:50 UTC",
  "versions": [
   25,
   26,
@@ -4032,20 +4032,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2313,
@@ -4778,18 +4765,6 @@
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    },
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     }
    ],
    "issues": []
@@ -4910,18 +4885,6 @@
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    },
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     }
    ],
    "issues": []
@@ -5811,14 +5774,6 @@
     {
      "number": 3005,
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2853,
-     "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
     },
     {
      "number": 2838,
@@ -6783,20 +6738,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
+     "number": 3013,
+     "title": "Stairs: refuse the boundaries and walking lines, which the API cannot write"
     },
     {
      "number": 2838,
@@ -6817,8 +6760,8 @@
    ],
    "issues": [
     {
-     "number": 2972,
-     "title": "ModifyColumns: explain a hidden-layer refusal as SetDetailsOfElements does"
+     "number": 3014,
+     "title": "Stairs: set the left and right boundaries or the walking line (not possible through the Archicad API)"
     }
    ]
   },
@@ -6948,11 +6891,16 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
+     "number": 3013,
+     "title": "Stairs: refuse the boundaries and walking lines, which the API cannot write"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 3014,
+     "title": "Stairs: set the left and right boundaries or the walking line (not possible through the Archicad API)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeMemo",
@@ -7054,6 +7002,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3013,
+     "title": "Stairs: refuse the boundaries and walking lines, which the API cannot write"
+    },
+    {
      "number": 3005,
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
     },
@@ -7067,6 +7019,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 3014,
+     "title": "Stairs: set the left and right boundaries or the walking line (not possible through the Archicad API)"
+    },
     {
      "number": 2970,
      "title": "ChangeDrawingLink creates the new drawing with anchorPoint BottomLeft and shifts content vs. clip frame (native relink keeps everything)"
@@ -7095,12 +7051,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7355,22 +7306,6 @@
     {
      "number": 2941,
      "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     },
     {
      "number": 2838,
@@ -7709,20 +7644,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7911,18 +7833,6 @@
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
-    },
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     }
    ],
    "issues": []
@@ -7972,28 +7882,8 @@
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
     },
     {
-     "number": 2898,
-     "title": "ModifyRoofs: don't crash when a hole grows a multi-plane roof's pivot memo"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2853,
-     "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
-    },
-    {
      "number": 2838,
      "title": "ModifySections: move the section line and depth of Sections and Elevations"
-    },
-    {
-     "number": 2809,
-     "title": "GetDetailsOfElements: return the lines of a text as Archicad breaks them"
-    },
-    {
-     "number": 2807,
-     "title": "GetDetailsOfElements (Railing): return the arcs of the reference line"
     },
     {
      "number": 2712,
@@ -15895,18 +15785,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2808,
-     "title": "CloseProject fails when Archicad leaves the project open"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2798,
-     "title": "CloseProject answers success but the project stays open"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectOperation_GetMiscAppInfo",
@@ -16089,12 +15969,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2808,
-     "title": "CloseProject fails when Archicad leaves the project open"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16251,20 +16126,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16422,20 +16284,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20294,20 +20143,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25554,18 +25390,6 @@
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    },
-    {
-     "number": 2976,
-     "title": "Refuse a wall offset on a Center or CoreCenter reference line"
-    },
-    {
-     "number": 2974,
-     "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
     },
     {
      "number": 2838,
@@ -31189,18 +31013,6 @@
     {
      "number": 3005,
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
-     "number": 2873,
-     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2853,
-     "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
     },
     {
      "number": 2712,
@@ -37662,36 +37474,8 @@
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
     {
-     "number": 2976,
-     "title": "Refuse a wall offset on a Center or CoreCenter reference line"
-    },
-    {
-     "number": 2974,
-     "title": "CreateProfiles: refuse newSkins contours of fewer than 3 vertices"
-    },
-    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
-    },
-    {
-     "number": 2873,
-     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
     },
     {
      "number": 2838,
@@ -44354,18 +44138,6 @@
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
     },
     {
-     "number": 2873,
-     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2853,
-     "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47488,18 +47260,6 @@
     {
      "number": 3005,
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
-     "number": 2873,
-     "title": "[4/4] Zones: read and write the letter size (roomLSize)"
-    },
-    {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
-     "number": 2853,
-     "title": "[1/2] Read Interior Elevations in GetDetailsOfElements"
     },
     {
      "number": 2712,
@@ -54017,10 +53777,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2855,
-     "title": "[2/2] SetInteriorElevationsDetails: change an Interior Elevation's settings and its segments"
-    },
-    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     }
@@ -54328,20 +54084,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54787,20 +54530,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54926,20 +54656,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2845,
-     "title": "[3/3] SetStories: a dryRun that lists the stories it would delete"
-    },
-    {
-     "number": 2844,
-     "title": "[2/3] Add ModifyStory: change one story's name, level or height"
-    },
-    {
-     "number": 2843,
-     "title": "[1/3] Add InsertStory and DeleteStory (one story at a time, with an element check)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-11-22 10:19 UTC",
+ "generatedAt": "2026-11-22 10:50 UTC",
  "counts": {
   "done": 788,
-  "open": 37,
+  "open": 41,
   "merged": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 720,
-  "json": 60,
-  "partial": 9
+  "all": 719,
+  "partial": 10,
+  "json": 60
  },
  "items": [
   {
@@ -1234,7 +1234,7 @@
    "id": "SetStories",
    "group": "Project Commands",
    "version": "1.1.5",
-   "brief": "Sets the story sructure of the currently loaded project.",
+   "brief": "Sets the story structure of the currently loaded project to the given list of stories. Existing stories outside the list are deleted, and Archicad deletes every element whose home story they are with them; dryRun lists those stories with the number of elements on each, without changing anything. To add, change or delete a single story, use InsertStory or DeleteStory instead.",
    "status": "done",
    "reason": "",
    "components": [
@@ -1243,11 +1243,58 @@
      "path": "Components/ProjectComponents/SetStoriesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "stories"
    ],
+   "missingParameters": [
+    "dryRun"
+   ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "InsertStory",
+   "group": "Project Commands",
+   "version": "2.0.1",
+   "brief": "Inserts one new story directly above or below an existing story, with its name, height and level line display, and returns the new story as GetStories reports it. Other stories are never deleted; their indices and levels can change with the insertion as in Archicad's Story Settings dialog, so read them again with GetStories.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteStory",
+   "group": "Project Commands",
+   "version": "2.0.1",
+   "brief": "Deletes one story. Archicad deletes every element whose home story it is together with it, so a story that is the home story of any element is only deleted with deleteElements: true; otherwise it fails and gives the number of those elements. dryRun reports, without changing anything, whether the story would be deleted and how many elements with it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyStory",
+   "group": "Project Commands",
+   "version": "2.0.1",
+   "brief": "Changes the name, level, height or level line display of one story, and returns the story as GetStories reports it. It never adds or deletes a story. level moves only this story; height moves every story above with the top of this one, as in Archicad's Story Settings dialog. The elements of a moved story move with it.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -1701,7 +1748,7 @@
    "id": "CloseProject",
    "group": "Project Commands",
    "version": "1.3.1",
-   "brief": "Closes the currently opened project.",
+   "brief": "Closes the currently opened project. Fails, instead of answering success, when Archicad leaves the project open, as it does with its last open project.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6533,7 +6580,7 @@
    "id": "CreateZones",
    "group": "Element Commands",
    "version": "1.1.8",
-   "brief": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, stamp pen, levels, contour line, cover fill, 3D surface, polygon display and area reduction), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
+   "brief": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, stamp pen, levels, letter size (roomLSize, in millimetres), contour line, cover fill, 3D surface, polygon display and area reduction), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6547,7 +6594,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 24,
+   "parameterCount": 25,
    "coveredParameters": [
     "zonesData",
     "zonesData.allowOverlap",
@@ -6573,6 +6620,7 @@
    "missingParameters": [
     "zonesData.polygonDisplay",
     "zonesData.reducePercent",
+    "zonesData.roomLSize",
     "zonesData.stampPen",
     "zonesData.surface"
    ],
@@ -7529,7 +7577,7 @@
    "id": "ModifySlabs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens, floor fill and floor plan and section display, with the keys GetDetailsOfElements reads (contourPen, contourLineTypeId, sectionContourPen, sectionContourLineTypeId, hiddenContourLinePen, hiddenContourLineTypeId, visibility, fillVisibility, isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Each slab is read back after the change: a given display setting Archicad did not apply gets a failed execution result naming it, and so does a given cover fill origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab through the API; the other details are applied.",
+   "brief": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens, floor fill and floor plan and section display, with the keys GetDetailsOfElements reads (contourPen, contourLineTypeId, sectionContourPen, sectionContourLineTypeId, hiddenContourLinePen, hiddenContourLineTypeId, visibility, fillVisibility, isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. A polygonOutline or holes change keeps the Edge Angle and the custom surface of each edge that lies on an edge of the old polygon (also both parts of a split edge), and with the same point counts that of the edge with the same index (moved points); new edges are Vertical with the slab's side surface. Not written: the cut fill pens before Archicad 27. Each slab is read back after the change: a given display setting Archicad did not apply gets a failed execution result naming it, and so does a given cover fill origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab through the API; the other details are applied.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7587,7 +7635,7 @@
    "id": "ModifyColumns",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list writes a given column segment in the shape GetDetailsOfElements returns it: its extrusion and ends surfaces, veneer, cross section, taper and length. Not written: the cut fill pens before Archicad 27.",
+   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list writes a given column segment in the shape GetDetailsOfElements returns it: its extrusion and ends surfaces, veneer, cross section, taper and length. A column Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason. Not written: the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8609,7 +8657,7 @@
    "id": "ModifyZones",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top link, floor thickness, contour line, cover fill, 3D surface (one surface on all sides, or the surfaces of the bounding walls), polygon display (gross or net) and area reduction - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).",
+   "brief": "Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top link, floor thickness, letter size (roomLSize, in millimetres), contour line, cover fill, 3D surface (one surface on all sides, or the surfaces of the bounding walls), polygon display (gross or net) and area reduction - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).",
    "status": "done",
    "reason": "",
    "components": [
@@ -8623,7 +8671,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 21,
+   "parameterCount": 22,
    "coveredParameters": [
     "zonesWithDetails",
     "zonesWithDetails.allowOverlap",
@@ -8646,6 +8694,7 @@
    "missingParameters": [
     "zonesWithDetails.polygonDisplay",
     "zonesWithDetails.reducePercent",
+    "zonesWithDetails.roomLSize",
     "zonesWithDetails.stampPen",
     "zonesWithDetails.surface"
    ],
@@ -16803,6 +16852,21 @@
     "elementsWithDetails.details",
     "elementsWithDetails.elementId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetInteriorElevationsDetails",
+   "group": "Navigator Commands",
+   "version": "2.0.1",
+   "brief": "Sets settings of the given Interior Elevation elements: the stories they are shown on, the common marker's visibility, pen, font and sizes, and for each segment, chosen by its index in GetDetailsOfElements' segments, its name, reference ID and the segment settings of SetSectionsAndElevationsDetails. The element keeps its GUID and its segments keep their viewpoints. A bad segment entry changes nothing on that element, and a change Archicad does not keep (read back after the change) fails the item with the fields it did not apply.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
