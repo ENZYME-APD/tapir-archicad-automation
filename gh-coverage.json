@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-22 14:55 UTC",
+ "generatedAt": "2026-11-22 18:03 UTC",
  "counts": {
   "done": 788,
   "open": 41,
@@ -7,8 +7,8 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 719,
-  "partial": 10,
+  "all": 718,
+  "partial": 11,
   "json": 60
  },
  "items": [
@@ -16752,7 +16752,7 @@
    "id": "ModifySections",
    "group": "Navigator Commands",
    "version": "2.0.0",
-   "brief": "Changes the name and the reference ID of Section and Elevation elements, which the Project Map and the markers show. GetDetailsOfElements reads those of a Section back as name and idStr.",
+   "brief": "Changes the name and the reference ID of Section and Elevation elements, which the Project Map and the markers show, and moves their section line (startCoordinate, endCoordinate) and depth line (depth, only with the horizontal range Limited, which SetSectionsAndElevationsDetails sets). GetDetailsOfElements reads them back as name, idStr, startCoordinate, endCoordinate and depth.",
    "status": "done",
    "reason": "",
    "components": [
@@ -16761,15 +16761,19 @@
      "path": "Components/NavigatorComponents/ModifySectionsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 4,
+   "parameters": "partial",
+   "parameterCount": 7,
    "coveredParameters": [
     "sectionsWithDetails",
+    "sectionsWithDetails.depth",
     "sectionsWithDetails.elementId",
+    "sectionsWithDetails.endCoordinate",
     "sectionsWithDetails.id",
     "sectionsWithDetails.name"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "sectionsWithDetails.startCoordinate"
+   ],
    "pullRequests": [],
    "issues": []
   },

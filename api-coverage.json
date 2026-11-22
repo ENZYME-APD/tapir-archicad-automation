@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-22 14:55 UTC",
+ "generatedAt": "2026-11-22 18:03 UTC",
  "versions": [
   25,
   26,
@@ -5776,10 +5776,6 @@
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
     },
     {
-     "number": 2838,
-     "title": "ModifySections: move the section line and depth of Sections and Elevations"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -6738,10 +6734,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2838,
-     "title": "ModifySections: move the section line and depth of Sections and Elevations"
-    },
-    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -7293,10 +7285,6 @@
     {
      "number": 2941,
      "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
-    },
-    {
-     "number": 2838,
-     "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
     {
      "number": 2797,
@@ -7867,10 +7855,6 @@
     {
      "number": 3005,
      "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
-     "number": 2838,
-     "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
     {
      "number": 2712,
@@ -25379,10 +25363,6 @@
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
     {
-     "number": 2838,
-     "title": "ModifySections: move the section line and depth of Sections and Elevations"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -37463,10 +37443,6 @@
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
-    },
-    {
-     "number": 2838,
-     "title": "ModifySections: move the section line and depth of Sections and Elevations"
     },
     {
      "number": 2797,

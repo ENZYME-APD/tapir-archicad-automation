@@ -4,7 +4,7 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **789 of 830** applicable Tapir commands have a Grasshopper component (95 %): ✅ 788 done, 🔀 1 merged, ⬜ 41 open, ➖ 1 not applicable.
 
-Parameters of the 789 used commands: 🟢 719 every parameter has an input, 🟡 60 the rest through a JSON input, 🟠 10 some parameters missing.
+Parameters of the 789 used commands: 🟢 718 every parameter has an input, 🟡 60 the rest through a JSON input, 🟠 11 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -20,7 +20,7 @@ Parameters of the 789 used commands: 🟢 719 every parameter has an input, 🟡
 | IFC Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Library Commands | 100 % | 51 | 51 |  |  |  |  |  |  | 50 |  | 1 |
 | Teamwork Commands | 100 % | 18 | 18 |  |  |  |  |  |  | 18 |  |  |
-| Navigator Commands | 92 % | 92 | 85 |  |  |  | 7 |  |  | 75 | 6 | 4 |
+| Navigator Commands | 92 % | 92 | 85 |  |  |  | 7 |  |  | 74 | 6 | 5 |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
 | Issue Management Commands | 100 % | 11 | 11 |  |  |  |  |  |  | 11 |  |  |
 | Revision Management Commands | 77 % | 9 | 7 |  |  |  | 2 |  |  | 7 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 789 used commands: 🟢 719 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-22 14:55 UTC.
+Updated 2026-11-22 18:03 UTC.
 
 | | Status |
 |---|---|
@@ -721,7 +721,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `SetZoom` 🟢 1/1 parameters – `SetZoomComponent`
 - ✅ `ResetZoom` 🟢 1/1 parameters – `ResetZoomComponent`
 - ✅ `CreateSections` 🟠 8/9 parameters – `CreateSectionsComponent`<br><sub>no input: `sectionsData.details`</sub>
-- ✅ `ModifySections` 🟢 4/4 parameters – `ModifySectionsComponent`
+- ✅ `ModifySections` 🟠 6/7 parameters – `ModifySectionsComponent`<br><sub>no input: `sectionsWithDetails.startCoordinate`</sub>
 - ✅ `CreateInteriorElevations` 🟢 1/1 parameters – `CreateInteriorElevationsComponent`
 - ✅ `CreateElevations` 🟠 7/8 parameters – `CreateElevationsComponent`<br><sub>no input: `elevationsData.details`</sub>
 - ✅ `GetSectionsAndElevationsDetails` 🟢 1/1 parameters – `GetSectionsAndElevationsDetailsComponent`
