@@ -88,7 +88,11 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          marketplace folder checker (check_marketplace.py) and
                          Scripts page catalogue (generate_catalogue.py),
                          site copies for AI assistants (generate_llm_files.py),
-                         release notes summary (release_notes.py)
+                         release notes summary (release_notes.py),
+                         generated-file drift check (check_drift.py; run by
+                         .github/workflows/drift_check.yml on every pull request,
+                         --write regenerates, --all adds the files that the weekly
+                         release regenerates)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
     triage-command/      The Discord /triage slash command (Cloudflare Worker that starts that workflow)
 sandbox/                 Experiments / scratch

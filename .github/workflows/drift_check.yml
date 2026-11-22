@@ -1,0 +1,50 @@
+name: Generated File Drift Check
+
+# The generated files that no release job rewrites have to be current in the pull request that
+# changes their sources:
+#   * docs/grasshopper-components/components.js - written by tools/generate_gh_docs.py from the
+#     component classes, so the reference page lists the components the plugin has,
+#   * python-client/tapir_archicad/commands.py - written by python-client/generate.py from the
+#     command reference.
+# Neither is touched by the weekly release, so a component added, renamed or deleted reaches them
+# only when someone remembers to run the generator. That is how the reference page came to list
+# four components whose .cs files no longer exist and to miss one that exists.
+#
+# The command reference (docs/archicad-addon/*.js) and the AI files (docs/commands*, docs/llms*,
+# docs/sitemap.xml) are deliberately NOT checked here: the weekly release regenerates them (see
+# the top of weekly_release.yml), so a pull request may leave them up to a week behind its
+# sources. `python tools/check_drift.py --all` reports them for a maintainer running the release
+# by hand.
+#
+# Cheap on purpose - no Archicad, no DevKits, no network, about a minute - so it can run on every
+# pull request instead of being one more thing to remember.
+on:
+  # Pushes to main only: a pull request's branch is checked by its pull_request run.
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same pull request supersedes a run still queued or running; main keeps
+# every run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    # The findings are written as error annotations, so what is out of date - and the files to
+    # run the generator on - show up on the pull request without opening the log.
+    - name: Check that the generated files are current
+      run: python3 tools/check_drift.py
