@@ -2973,6 +2973,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "2.0.0",
             "Sets settings of the given Section and Elevation elements: pens, line types, horizontal and vertical range, model effects, story handles and markers. The name and the reference ID are changed with ModifySections."
         );
+        err |= RegisterCommand<SetInteriorElevationsDetailsCommand> (
+            navigatorCommands, "2.0.1",
+            "Sets settings of the given Interior Elevation elements: the stories they are shown on, the common marker's visibility, pen, font and sizes, and for each segment, chosen by its index in GetDetailsOfElements' segments, its name, reference ID and the segment settings of SetSectionsAndElevationsDetails. The element keeps its GUID and its segments keep their viewpoints. A bad segment entry changes nothing on that element, and a change Archicad does not keep (read back after the change) fails the item with the fields it did not apply."
+        );
         err |= RegisterCommand<MoveNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
             "Moves a navigator item to a new parent in the navigator tree, or to a new position within its current parent. Fails when Archicad does not put the item where it was asked to."
