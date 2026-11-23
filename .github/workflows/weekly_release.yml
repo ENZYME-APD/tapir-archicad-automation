@@ -120,6 +120,7 @@ jobs:
     permissions:
       contents: write   # push the tag and the version bump commit
       actions: write    # dispatch the two release pipelines
+      checks: read      # read a cancelled job's annotations ("was not acquired by Runner")
     outputs:
       # Read by request_fix below when this job fails.
       version: ${{ steps.plan.outputs.version }}
