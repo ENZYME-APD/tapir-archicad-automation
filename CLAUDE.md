@@ -26,6 +26,7 @@ Read these files of [maintaining/](maintaining/), which hold the rest of this fi
 - [maintaining/auto-update.md](maintaining/auto-update.md): before changing the installer, the add-on's auto-update or `update_addon_and_restart_archicad.py`.
 - [maintaining/website.md](maintaining/website.md): before changing a page under `docs/` or the limits page, or for the project's links.
 - [maintaining/runbook.md](maintaining/runbook.md): to release, merge or turn the bots off by hand, with no bot running.
+- [maintaining/roadmap.md](maintaining/roadmap.md): for where the repository is going and why.
 
 ## Repository layout
 ```
