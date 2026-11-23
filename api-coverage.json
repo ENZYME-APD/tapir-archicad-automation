@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-23 06:55 UTC",
+ "generatedAt": "2026-11-23 08:12 UTC",
  "versions": [
   25,
   26,
@@ -5772,10 +5772,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -6985,10 +6981,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -7073,10 +7065,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7802,10 +7790,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     }
@@ -7852,10 +7836,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -9758,14 +9738,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3028,
-     "title": "Script Manager lists and runs every script; the Tapir Palette is a slim launcher (#2968, merged with main)"
-    },
-    {
-     "number": 2968,
-     "title": "Script Manager lists and runs every script; the Tapir Palette is a slim launcher (replaces #2413, #2416, #2419, #2421)"
-    },
     {
      "number": 2421,
      "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
@@ -25359,10 +25331,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
@@ -26816,12 +26784,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30981,10 +30944,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -37436,10 +37395,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
@@ -44101,10 +44056,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47224,10 +47175,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3005,
-     "title": "Add GetPolygonVertexIdsOfElements; CreateAssociativeDimensions reports witness points it could not attach"
-    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"

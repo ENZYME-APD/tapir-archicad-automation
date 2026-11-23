@@ -1,9 +1,8 @@
 {
- "generatedAt": "2026-11-23 06:55 UTC",
+ "generatedAt": "2026-11-23 08:12 UTC",
  "counts": {
-  "done": 788,
-  "open": 41,
-  "merged": 1,
+  "done": 789,
+  "open": 42,
   "not applicable": 1
  },
  "parameters": {
@@ -3443,6 +3442,21 @@
    "issues": []
   },
   {
+   "id": "GetPolygonVertexIdsOfElements",
+   "group": "Element Commands",
+   "version": "2.0.1",
+   "brief": "Gets the polygon vertices of the given elements that have a polygon with vertex IDs (Slabs, Zones, Roofs, Meshes, Fills and others): for each point of the outline and of each hole, in the order GetDetailsOfElements returns them, its coordinate, its index in the element's polygon (inIndex) and the vertex ID Archicad stores for it. These are the inIndex and nodeId a witness point of CreateAssociativeDimensions needs to attach to a vertex or an edge of the polygon; the vertex IDs are kept when vertices are inserted or deleted, so they cannot be worked out from the order of the points. The output is aligned with the input array of elements.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ConvertRevealOffsets",
    "group": "Element Commands",
    "version": "1.7.3",
@@ -5351,7 +5365,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 64,
+   "parameterCount": 65,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLineArcs",
@@ -5384,6 +5398,7 @@
     "stairsData.headroom",
     "stairsData.id",
     "stairsData.inputDirection",
+    "stairsData.layerIndex",
     "stairsData.leftBoundary",
     "stairsData.monolithStructureSymbols",
     "stairsData.numberingType",
@@ -8543,7 +8558,7 @@
    "group": "Element Commands",
    "version": "2.0.1",
    "brief": "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in). Archicad lays out the boundaries and the walking lines of the new stair again from its baseline and flight width, so boundaries or a walking line edited by hand on the old stair are not carried over; the API cannot write them, so an item that gives one is refused and the stair is left as it was.",
-   "status": "merged",
+   "status": "done",
    "reason": "",
    "components": [
     {
