@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-23 21:52 UTC",
+ "generatedAt": "2026-11-23 23:28 UTC",
  "versions": [
   25,
   26,
@@ -13700,7 +13700,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3051,
+     "title": "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply"
+    }
+   ],
    "issues": []
   },
   {
@@ -14176,7 +14181,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3051,
+     "title": "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply"
+    }
+   ],
    "issues": []
   },
   {
@@ -14199,7 +14209,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3051,
+     "title": "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply"
+    }
+   ],
    "issues": []
   },
   {
@@ -52814,7 +52829,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3043,
+     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -52880,7 +52900,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3043,
+     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -52978,7 +53003,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3043,
+     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -52995,7 +53025,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3043,
+     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
+    }
+   ],
    "issues": []
   },
   {
@@ -53012,7 +53047,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3043,
+     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
+    }
+   ],
    "issues": []
   },
   {
