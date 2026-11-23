@@ -914,7 +914,7 @@ jobs:
               | tee -a "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          while IFS=$'\t' read -r WF RUN JOB NAME URL; do
+          while IFS=$'\t' read -r _ _ JOB _ _; do
             gh api "repos/$REPO/actions/jobs/$JOB/logs" > "$WORK/log-$JOB" 2> /dev/null || : > "$WORK/log-$JOB"
           done < "$WORK/failed.tsv"
 
