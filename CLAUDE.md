@@ -426,6 +426,18 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
   warns), and pushes them to `main` when they changed (never hand-edit those docs).
   Run both scripts yourself to update them earlier; `--check` reports stale files.
+  A release that stops on a failed build job (not a runner that never started)
+  opens one `release-failure` issue for its version, with the failed jobs and
+  their error lines, and starts the issue bot on it (`request_fix` job;
+  `RELEASE_FIX=false` turns it off; at most `RELEASE_FIX_MAX_ATTEMPTS`, default 2,
+  issues per version reach the bot, then `needs-maintainer`; `RELEASE_FAILURE_NOTIFY`
+  is appended as a cc). Its fix is merged without the waiting time (see
+  `claude_auto_merge.yml`), and the merge starts the release again. An unpublished
+  tag left on an older commit is deleted with its draft releases and the fixed
+  `main` re-tagged under the same version, only when that version has no published
+  release and no Grasshopper pipeline run on the tag (which may have pushed it to
+  yak); otherwise the run stops and asks a person, as before. A dry run only reports
+  that deletion.
   The release notes are the installer links, a short summary written by
   `tools/release_notes.py` (the new commands per group, the new Grasshopper components
   and marketplace scripts, who made the pull requests, the new contributors and the
@@ -542,6 +554,13 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (default 72), with no open thread by a person, no changes requested and no
   `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
   This is a deliberate maintainer decision to minimize human maintenance.
+  A bot PR that fixes a `release-failure` issue (the Actions bot's open issue with
+  that label, whose body starts with `<!-- release-failure: <version> run=<id> -->`
+  naming a weekly release run that failed while the issue was opened, for the version
+  `main` still carries; the PR on the issue's `claude/issue-<n>-` branch with
+  `Fixes #<n>`) skips the waiting time, and its merge starts `weekly_release.yml`;
+  `claude_pr_review.yml` starts auto-merge when it records a passing verdict, so the
+  merge follows the review at once.
 - `delete_merged_branches.yml` — deletes the head branch of every merged pull
   request of this repository, however it was merged, when its tip is still the
   merged head and no open pull request uses it; run by hand (dry run by default)

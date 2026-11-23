@@ -717,7 +717,7 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write        # the claude-review status
-      actions: write         # start claude_bot_pr_steward.yml
+      actions: write         # start claude_bot_pr_steward.yml and claude_auto_merge.yml
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
@@ -750,6 +750,23 @@ jobs:
             gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main
           else
             echo "A sweep is already waiting to run."
+          fi
+
+      - name: Start auto-merge
+        # A passing verdict can be the last gate a pull request waits for;
+        # auto-merge otherwise only wakes on a finished build or every six
+        # hours. It matters for a release fix (see claude_auto_merge.yml),
+        # which merges as soon as its review passes; for any other bot pull
+        # request auto-merge just finds the waiting time not yet over.
+        if: env.VERDICT == 'clean' && vars.RELEASE_FIX != 'false'
+        run: |
+          set -euo pipefail
+          waiting=$(gh api "repos/$REPO/actions/workflows/claude_auto_merge.yml/runs?per_page=50" \
+            --jq '[.workflow_runs[] | select(.status == "queued" or .status == "pending" or .status == "waiting" or .status == "requested")] | length')
+          if [ "$waiting" -eq 0 ]; then
+            gh workflow run claude_auto_merge.yml --repo "$REPO" --ref main
+          else
+            echo "An auto-merge run is already waiting to run."
           fi
 
 # Not merging
