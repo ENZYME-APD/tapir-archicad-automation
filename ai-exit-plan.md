@@ -17,6 +17,7 @@ not a record of a decision.
 | what they contain | behaviour changes to existing commands, new commands, checks, documentation |
 | code review of every PR | the Claude review bot |
 | issue triage, Discord answers, PR stewardship (labels, `needs-test`, build dispatch) | the same subscription |
+| fixing a release that stopped on a failed build (`request_fix` hands it to the issue bot, #3026) | the same subscription |
 | authentication | `secrets.CLAUDE_CODE_OAUTH_TOKEN`, a subscription token, in all four agent workflows |
 
 The four workflows that would stop are `claude_pr_review.yml`, `claude_issue_triage.yml`,
@@ -30,8 +31,9 @@ More than the file count suggests, and this matters for the argument:
 - **`tools/new_command.py`** writes the repetitive part of a new command from a short spec: the class, the
   input/response schemas, an `Execute` skeleton, the `RegisterCommand` call in `AddOnMain.cpp`, a starter
   example and a starter check.
-- **`python-client/generate.py`** writes the Python client from the command reference, and
-  `python-client/generate.py --check` (plus `tests/test_client.py`) keeps the committed file honest.
+- **`python-client/generate.py`** writes the Python client from the command reference, and has a
+  `--check` mode (plus `tests/test_client.py`). No workflow on `main` runs either yet: #3021 (a draft)
+  wires `--check` in, together with `tools/generate_gh_docs.py --check`.
 - **`tools/generate_addon_docs.py`** writes the command reference, and `archicad_addon_build_check.yml`
   regenerates it on every PR, then runs `check_examples.py`, `check_marketplace.py` and
   `generate_catalogue.py --self-test`.
@@ -79,13 +81,19 @@ Then add the secret and rotate the OAuth token out.
 - Scope the agent to **review and triage**; stop autonomous feature PRs first, since they are the
   expensive part and the part no human reads.
 - Set a monthly token ceiling and an alert on it.
+- **Add off switches.** The steward (`BOT_PR_STEWARD`), the release fix (`RELEASE_FIX`) and the retry of
+  refused runs (`CLAUDE_RETRY`) can be turned off with a repository variable, but the issue bot, the review
+  bot and the Discord bot cannot. If the API is not paid for (section 7.1), every new issue and every PR
+  would start a Claude run that fails. Give those three a variable too, and set them all to `false` on the
+  day the token stops working.
 
 ### December, first half — the one gate still missing
 Regenerating the docs without diffing them means a PR can leave `docs/archicad-addon` stale until the
 weekly release fixes it. A drift gate is "regenerate, `git diff --exit-code`", and it should run on a
-schedule rather than on every PR because generating the reference takes ~15 minutes. The client already
-has its equivalent (`--check`), and two more gates are written and green but **not merged**: the schema
-contract check (#3022) and the version/schema-expander tests (#3023).
+schedule rather than on every PR because generating the reference takes about 11 minutes (the
+`generate_docs` job of the last two green build checks). The client and the Grasshopper reference have
+`--check` modes, which #3021 (a draft) runs on pull requests, and two more gates are written and green but
+**not merged**: the schema contract check (#3022, a draft) and the version/schema-expander tests (#3023).
 
 ### December, second half — record the judgement, and the people
 - `CLAUDE.md` (683 lines) is the operational spec: publish it also as `AGENTS.md`, so that any tool or
@@ -120,5 +128,5 @@ gates above make each sample cheap to check. This is the checks work read in the
 
 1. Swap the auth and scope the agent down — a day, and it turns an abrupt end into a budget decision.
 2. Two people cut a release unaided, in December, while the AI is still available to compare against.
-3. Land the two open gates (#3022, #3023) and the docs drift check, so that correctness review does not
-   leave with the subscription.
+3. Land the open gates (#3021, #3022, #3023) and the docs drift check, so that correctness review does
+   not leave with the subscription.
