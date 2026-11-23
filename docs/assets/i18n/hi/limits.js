@@ -106,6 +106,9 @@
     'Add an item to a publisher set': 'किसी publisher set में item जोड़ना',
     'Add the items in Archicad\'s Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Archicad के Organizer में items जोड़ें, फिर <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> से set को publish करें।',
+    'Rename a publisher set': 'किसी publisher set का नाम बदलना',
+    'Rename the set in Archicad\'s Organizer. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> reads the names, and <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> publishes a set by its name.':
+        'Set का नाम Archicad के Organizer में बदलें। <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> नाम पढ़ता है, और <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> किसी set को उसके नाम से publish करता है।',
     'Change, rename or create a stored Model View Options combination': 'Model View Options का कोई saved combination बदलना, उसका नाम बदलना या नया बनाना',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Combinations को <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a> से पढ़ें; मौजूदा window के options <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a> से बदलें।',

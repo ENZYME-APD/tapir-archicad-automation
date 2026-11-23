@@ -106,6 +106,9 @@
     'Add an item to a publisher set': 'Einem Publisher Set ein Element hinzufügen',
     'Add the items in Archicad\'s Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Fügen Sie die Elemente im Organizer von Archicad hinzu und veröffentlichen Sie das Set dann mit <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.',
+    'Rename a publisher set': 'Ein Publisher Set umbenennen',
+    'Rename the set in Archicad\'s Organizer. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> reads the names, and <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> publishes a set by its name.':
+        'Benennen Sie das Set im Organizer von Archicad um. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> liest die Namen, und <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> veröffentlicht ein Set über seinen Namen.',
     'Change the settings of an existing Layout Book subset (prefix, numbering style, start at, ...)':
         'Die Einstellungen eines bestehenden Teilsets im Planbuch ändern (Präfix, Nummerierungsstil, Beginnen mit, ...)',
     'Read the subset with <a href="../archicad-addon/#GetLayoutSubsetSettings">GetLayoutSubsetSettings</a>, create a subset with the new settings with <a href="../archicad-addon/#CreateLayoutSubset">CreateLayoutSubset</a> and move the layouts into it with <a href="../archicad-addon/#MoveNavigatorItem">MoveNavigatorItem</a>. The old, empty subset is deleted in Archicad.':
