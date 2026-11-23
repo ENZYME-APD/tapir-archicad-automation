@@ -17,10 +17,11 @@ not a record of a decision.
 | what they contain | behaviour changes to existing commands, new commands, checks, documentation |
 | code review of every PR | the Claude review bot |
 | issue triage, Discord answers, PR stewardship (labels, `needs-test`, build dispatch) | the same subscription |
-| authentication | `secrets.CLAUDE_CODE_OAUTH_TOKEN`, a subscription token |
+| authentication | `secrets.CLAUDE_CODE_OAUTH_TOKEN`, a subscription token, in all four agent workflows |
 
-The review bot is, in practice, the second reviewer on every human PR as well. `claude_pr_review.yml:14`
-carries a commented-out `anthropic_api_key:` line, so the API path exists but is not wired.
+The four workflows that would stop are `claude_pr_review.yml`, `claude_issue_triage.yml`,
+`claude_bot_pr_steward.yml` and `discord_issue_bot.yml`. The review bot is, in practice, the second reviewer
+on every human PR as well.
 
 ## 2. What the repository already does without it
 
@@ -61,11 +62,15 @@ autonomous feature work, which is also the part least reviewed by people.
 
 ## 5. Plan, by date
 
-### Now — the auth swap (about a day)
-- Uncomment `anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}` in `claude_pr_review.yml` (and the same
-  three lines in `claude_issue_triage.yml`), add the secret, rotate the OAuth token out.
+### Now — the auth swap (a day, four workflows)
+All four agent workflows authenticate with `claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}`.
+Two of them — `claude_pr_review.yml:14` and `claude_issue_triage.yml:120` — already carry a *commented-out*
+`anthropic_api_key:` line, so there the change is uncommenting it, replacing the `claude_code_oauth_token`
+line and un-commenting nothing else; `claude_bot_pr_steward.yml` and `discord_issue_bot.yml` need the
+`anthropic_api_key` input added, since they never had it. Then add the secret and rotate the OAuth token out.
+
 - Scope the agent to **review and triage**; stop autonomous feature PRs first, since they are the
-  expensive part and the part nobody human reads.
+  expensive part and the part no human reads.
 - Set a monthly token ceiling and an alert on it.
 
 ### December, first half — the one gate still missing
@@ -76,7 +81,7 @@ has its equivalent (`--check`), and two more gates are written and green but **n
 contract check (#3022) and the version/schema-expander tests (#3023).
 
 ### December, second half — record the judgement, and the people
-- `CLAUDE.md` (684 lines) is the operational spec: publish it also as `AGENTS.md`, so that any tool or
+- `CLAUDE.md` (683 lines) is the operational spec: publish it also as `AGENTS.md`, so that any tool or
   person reads the same instructions and the file stops being vendor-shaped.
 - Write down the decisions that are policy rather than code: deprecation, which commands are supported per
   Archicad version, and what "best effort" means for the rest.
