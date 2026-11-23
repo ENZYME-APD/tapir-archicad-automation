@@ -89,6 +89,16 @@ and it removes 75k lines from every release diff.
 `Test/checks` skeleton and the `Examples` stub can start from the schema the way `tools/new_command.py`
 already scaffolds the rest.
 
+### Move 5 — thin the build matrix on pull requests (CI cost, not files)
+
+`devkits.json` lists six Archicad versions (25–30), and every pull request builds all six on Windows and
+macOS: **12 builds**, which is the largest thing a pull request triggers. Compile-time API differences
+between versions are real, so the matrix is not waste — but not every pull request can break them. Two
+builds per OS (the oldest and the newest supported version) catch the common case on the PR, and the full
+matrix runs nightly and in the release. Effort S, risk L–M: the "nightly finds it instead" window is the
+cost, so it should stay a per-PR matrix for changes under `archicad-addon/Sources` and shrink only for
+documentation, test and tooling changes — which is most pull requests.
+
 ### What I would *not* do
 
 - **Do not split into separate repositories yet.** The schema is the shared dependency; splitting first
