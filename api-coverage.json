@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-23 06:18 UTC",
+ "generatedAt": "2026-11-23 06:55 UTC",
  "versions": [
   25,
   26,
@@ -9758,6 +9758,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3028,
+     "title": "Script Manager lists and runs every script; the Tapir Palette is a slim launcher (#2968, merged with main)"
+    },
     {
      "number": 2968,
      "title": "Script Manager lists and runs every script; the Tapir Palette is a slim launcher (replaces #2413, #2416, #2419, #2421)"
