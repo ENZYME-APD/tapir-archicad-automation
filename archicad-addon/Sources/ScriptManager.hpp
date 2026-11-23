@@ -141,6 +141,7 @@ private:
     DG::Button           fixButton;      // Install uv, Try again or Report a problem
     DG::Button           addScriptButton;
     DG::PopUp            categoryPopUp;   // the categories, in place of categoryList when the window is narrow
+    DG::Button           scriptsFolderButton;   // the Scripts tab, in Refresh's place: opens the custom-scripts folder
 
     std::vector<Script> scripts;            // the catalogue, in its order (by slug), then the installed scripts it lacks
     bool                hasCatalogue = false;

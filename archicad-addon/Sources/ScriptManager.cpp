@@ -639,6 +639,7 @@ ScriptManager::ScriptManager ()
     , fixButton (GetReference (), ID_SCRIPT_MANAGER_FIX)
     , addScriptButton (GetReference (), ID_SCRIPT_MANAGER_ADD_SCRIPT)
     , categoryPopUp (GetReference (), ID_SCRIPT_MANAGER_CATEGORY_POPUP)
+    , scriptsFolderButton (GetReference (), ID_SCRIPT_MANAGER_SCRIPTS_FOLDER)
 {
     SetGrowType (DG::Dialog::HVGrow);
     SetMinClientSize (MinWidth, MinHeight);
@@ -690,6 +691,7 @@ ScriptManager::ScriptManager ()
     outputButton.Attach (*this);
     fixButton.Attach (*this);
     addScriptButton.Attach (*this);
+    scriptsFolderButton.Attach (*this);
     categoryPopUp.Attach (*this);
     categoryList.Attach (*this);
     fitsCheckBox.Attach (*this);
@@ -717,6 +719,7 @@ ScriptManager::~ScriptManager ()
     outputButton.Detach (*this);
     fixButton.Detach (*this);
     addScriptButton.Detach (*this);
+    scriptsFolderButton.Detach (*this);
     categoryPopUp.Detach (*this);
     availableTab.Detach (*this);
     installedTab.Detach (*this);
@@ -1080,6 +1083,7 @@ void ScriptManager::RefreshTabTexts ()
     // The catalogue is the marketplace's: its time and Refresh do not belong to the Scripts tab.
     catalogueTimeText.SetVisibility (tab != Tab::Scripts && !isNarrow);
     refreshButton.SetVisibility (tab != Tab::Scripts);
+    scriptsFolderButton.SetVisibility (tab == Tab::Scripts);   // in Refresh's place
 }
 
 void ScriptManager::RefreshCategoryList ()
@@ -1751,11 +1755,15 @@ void ScriptManager::ShowRunResult ()
     fixButton.SetVisibility (onScriptsTab && display.fixTextIndex != 0);
 }
 
-// Run, Stop, Details, the fix button and Add script. True when the button was one of them.
+// Run, Stop, Details, the fix button, Add script and Scripts folder. True when the button was one of them.
 bool ScriptManager::HandleLocalButton (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &addScriptButton) {
         localActions.addScriptWithDialog ();   // refills the palette's list, and with it this one
+        return true;
+    }
+    if (ev.GetSource () == &scriptsFolderButton) {
+        localActions.openScriptsFolder ();
         return true;
     }
     const bool isRunButton = ev.GetSource () == &runButton;
@@ -2005,6 +2013,7 @@ void ScriptManager::LayoutItems ()
         place (updatesTab, 570, 12, 108, 18);
         place (catalogueTimeText, static_cast<short> (width - 256), 12, 142, 18);
         place (refreshButton, static_cast<short> (width - 110), 9, 100, 24);
+        place (scriptsFolderButton, static_cast<short> (width - 140), 9, 130, 24);   // the catalogue's time is hidden on its tab
         place (categoryList, 10, 44, 200, static_cast<short> (height - 94));
         place (fitsCheckBox, 220, 44, 410, 18);
         place (scriptList, 220, 66, static_cast<short> (width - 530), static_cast<short> (height - 116));
@@ -2047,8 +2056,10 @@ void ScriptManager::LayoutItems ()
         place (availableTab, static_cast<short> (margin + tabWidth), 36, tabWidth, 18);
         place (installedTab, static_cast<short> (margin + 2 * tabWidth), 36, tabWidth, 18);
         place (updatesTab, static_cast<short> (margin + 3 * tabWidth), 36, tabWidth, 18);
-        place (categoryPopUp, margin, 62, static_cast<short> (contentWidth - 88), 22);
-        place (refreshButton, static_cast<short> (width - margin - 80), 61, 80, 24);
+        // Refresh and, on the Scripts tab, Scripts folder in its place, beside the categories
+        place (categoryPopUp, margin, 62, static_cast<short> (contentWidth - 118), 22);
+        place (refreshButton, static_cast<short> (width - margin - 110), 61, 110, 24);
+        place (scriptsFolderButton, static_cast<short> (width - margin - 110), 61, 110, 24);
 
         // The bottom rows: what the selected script's tab offers, the buttons, and Share, Update all and Close.
         const short rowC = static_cast<short> (height - 34);
@@ -2108,7 +2119,8 @@ void ScriptManager::LayoutItems ()
         &categoryPopUp, &fitsCheckBox, &scriptList, &nameText, &bylineText, &summaryText, &changesLabel, &changesValue,
         &archicadLabel, &archicadValue, &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle, &changelogText,
         &shareButton, &scriptsPageButton, &closeButton, &enabledCheckBox, &installButton, &removeButton, &updateButton,
-        &updateAllButton, &readmeBrowser, &resultText, &runButton, &stopButton, &outputButton, &fixButton, &addScriptButton
+        &updateAllButton, &readmeBrowser, &resultText, &runButton, &stopButton, &outputButton, &fixButton, &addScriptButton,
+        &scriptsFolderButton
     };
     for (DG::Item* item : allItems) {
         item->Invalidate ();

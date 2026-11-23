@@ -722,6 +722,37 @@ static void OpenFileInExplorer (const IO::Location& file)
     system (command.ToCStr ().Get ());
 }
 
+// Opens a folder in Explorer or the Finder, for the Script Manager's Scripts folder button (#3048). Windows: the
+// folder's "open" verb, which takes a path with spaces as it is. macOS: open, the path in single quotes.
+static void OpenFolderInExplorer (const IO::Location& folder)
+{
+    GS::UniString path;
+    folder.ToPath (&path);
+    if (path.IsEmpty ()) {
+        return;
+    }
+#if defined (WINDOWS)
+    // The UStr object owns the UTF-16 string, it must live until ShellExecuteW returns
+    const auto pathUStr = path.ToUStr ();
+    ShellExecuteW (nullptr, L"open", reinterpret_cast<LPCWSTR> (pathUStr.Get ()), nullptr, nullptr, SW_SHOWNORMAL);
+#else
+    GS::UniString quotedPath = path;
+    quotedPath.ReplaceAll ("'", "'\\''");
+    const GS::UniString command = "open '" + quotedPath + "'";
+    system (command.ToCStr (CC_UTF8).Get ());
+#endif
+}
+
+// Documents/Tapir/custom-scripts: the Python scripts in it and in its subfolders are listed in the Tapir Palette.
+static IO::Location GetCustomScriptsFolder ()
+{
+    IO::Location folder;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserDocuments, &folder);
+    folder.AppendToLocal (IO::Name ("Tapir"));
+    folder.AppendToLocal (IO::Name ("custom-scripts"));
+    return folder;
+}
+
 // Opens a file in a text editor, for the Script Manager's Edit. Windows: the file type's "edit" verb, else
 // Notepad, never "open", which runs a .py file. macOS: the default text editor (open -t), the path in single quotes.
 static void OpenFileInEditor (const IO::Location& file)
@@ -1193,6 +1224,11 @@ LocalScriptActions TapirPalette::GetLocalScriptActions ()
     actions.openShortcuts = [this] () { OpenShortcutsDialog (); };
     actions.editFile = [] (const IO::Location& fileLocation) { OpenFileInEditor (fileLocation); };
     actions.showInFolder = [] (const IO::Location& fileLocation) { OpenFileInExplorer (fileLocation); };
+    actions.openScriptsFolder = [] () {
+        const IO::Location folder = GetCustomScriptsFolder ();
+        IO::fileSystem.CreateFolderTree (folder);
+        OpenFolderInExplorer (folder);
+    };
     actions.remove = [this] (const IO::Location& fileLocation) { RemoveAddedScript (fileLocation); };
     actions.addScripts = [this] (const GS::Array<IO::Location>& files) { AddScriptFiles (files); };
     actions.addScriptWithDialog = [this] () { AddNewScript (); };
@@ -2715,11 +2751,7 @@ void TapirPalette::AddScriptsFromLocalFolders ()
 
 void TapirPalette::AddScriptsFromCustomScriptsFolder ()
 {
-    IO::Location docsFolderLoc;
-    IO::fileSystem.GetSpecialLocation (IO::FileSystem::UserDocuments, &docsFolderLoc);
-    IO::Location customScriptsFolderLoc = docsFolderLoc;
-    customScriptsFolderLoc.AppendToLocal (IO::Name ("Tapir"));
-    customScriptsFolderLoc.AppendToLocal (IO::Name ("custom-scripts"));
+    const IO::Location customScriptsFolderLoc = GetCustomScriptsFolder ();
 
     IO::fileSystem.CreateFolderTree (customScriptsFolderLoc);
 
