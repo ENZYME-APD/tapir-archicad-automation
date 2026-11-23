@@ -40,6 +40,9 @@ jobs:
   build_win:
     needs: devkits
     strategy:
+      # One version failing must not cancel the others: whether it is one
+      # broken version or a broken main is exactly what their results say.
+      fail-fast: false
       matrix:
         params: ${{ fromJSON(needs.devkits.outputs.win) }}
     runs-on: [ windows-2022 ]
@@ -79,6 +82,12 @@ jobs:
   build_mac:
     needs: devkits
     strategy:
+      # One version failing must not cancel the others. It also keeps
+      # 'cancelled' meaning what the weekly release relies on: a job GitHub
+      # never gave a runner to (build_mac (27) on 2026-11-16, while machines
+      # freed up four times during its 20-minute wait), never a sibling
+      # cancelled by fail-fast. The weekly release re-runs such a job.
+      fail-fast: false
       matrix:
         params: ${{ fromJSON(needs.devkits.outputs.mac) }}
     runs-on: ${{ matrix.params.acVersion < 26 && 'macos-15-intel' || 'macos-latest' }}
