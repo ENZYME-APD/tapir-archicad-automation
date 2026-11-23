@@ -4,7 +4,7 @@ One JSON file per Archicad tool (`Wall.json`, …). Each file lists every settin
 that tool which the Tapir Add-On reads or writes, and ties it to the setting's
 place in the tool's settings dialog in Archicad. The Grasshopper tool components
 use these tables to show the names users know from Archicad instead of the API
-names (see "Naming from the Archicad GUI" in the repository's `CLAUDE.md`).
+names (see "Naming from the Archicad GUI" in the repository's `maintaining/grasshopper.md`).
 
 ## Fields
 
