@@ -35,9 +35,12 @@ name: Auto Merge
 # Release fixes. A bot pull request that fixes a release-failure issue (opened
 # by weekly_release.yml's request_fix job when a release stopped on a failed
 # build: the Actions bot's issue, open, labelled `release-failure` and not
-# `needs-maintainer`, carrying its `<!-- release-failure: <version> -->`
-# marker, with the pull request on that issue's claude/issue-<n>- branch and
-# saying `Fixes #<n>`) clears every gate above except the waiting time: it is
+# `needs-maintainer`, starting with its `<!-- release-failure: <version>
+# run=<id> -->` marker, with the pull request on that issue's claude/issue-<n>-
+# branch and
+# saying `Fixes #<n>`; the marker opens the body, names a weekly release run
+# that failed while the issue was opened, and the version main still carries)
+# clears every gate above except the waiting time: it is
 # merged as soon as its review passes, because the release waits on it. After
 # the merge this workflow starts weekly_release.yml, which re-tags the
 # unpublished version on the fixed main. claude_pr_review.yml starts this
@@ -272,15 +275,39 @@ jobs:
                   | grep -oE '(Fixes|Closes|Resolves) #[0-9]+' | head -n 1 | grep -oE '[0-9]+' || true)
                 case "$headName" in
                   "claude/issue-$fixes-"*)
-                    if [ -n "$fixes" ] && gh issue view "$fixes" --repo "$REPO" --json state,author,labels,body \
-                         --jq 'select(.state == "OPEN"
-                                and (.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
-                                and ([.labels[].name] | index("release-failure"))
-                                and ([.labels[].name] | index("needs-maintainer") | not)
-                                and (.body | contains("<!-- release-failure: "))) | .number' 2>/dev/null | grep -q .; then
-                      releaseFix=true
-                      delayHours=0
-                      echo "release fix for #$fixes: no waiting time"
+                    # The marker alone proves nothing: the Discord issue bot also
+                    # opens issues as the Actions bot with anyone's text in them,
+                    # and the issue bot can set labels and edit bodies. So the
+                    # marker must open the body and name a weekly release run
+                    # that really failed, the issue must have been opened while
+                    # that run was going, and its version must be the one main
+                    # still carries (the release that is waiting).
+                    issueJson=""
+                    if [ -n "$fixes" ]; then
+                      issueJson=$(gh issue view "$fixes" --repo "$REPO" --json state,author,labels,body,createdAt \
+                        --jq 'select(.state == "OPEN"
+                               and (.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
+                               and ([.labels[].name] | index("release-failure"))
+                               and ([.labels[].name] | index("needs-maintainer") | not))' 2>/dev/null || true)
+                    fi
+                    [ -n "$issueJson" ] || issueJson='{}'
+                    marker=$(jq -r '.body // ""' <<<"$issueJson" | head -n 1 \
+                      | grep -oE '^<!-- release-failure: [0-9]+\.[0-9]+\.[0-9]+ run=[0-9]+ -->$' || true)
+                    if [ -n "$marker" ]; then
+                      markVersion=$(awk '{print $3}' <<<"$marker")
+                      markRun=$(awk '{print $4}' <<<"$marker"); markRun=${markRun#run=}
+                      created=$(jq -r '.createdAt' <<<"$issueJson")
+                      mainVersion=$(gh api -H 'Accept: application/vnd.github.raw' \
+                        "repos/$REPO/contents/tools/package_info.json?ref=main" 2>/dev/null | jq -r '.version' 2>/dev/null || true)
+                      if [ "$mainVersion" = "$markVersion" ] && gh api "repos/$REPO/actions/runs/$markRun" \
+                           --jq "select(.path == \".github/workflows/weekly_release.yml\" and .conclusion == \"failure\"
+                                  and .run_started_at <= \"$created\" and .updated_at >= \"$created\") | .id" 2>/dev/null | grep -q .; then
+                        releaseFix=true
+                        delayHours=0
+                        echo "release fix for #$fixes ($markVersion, release run $markRun): no waiting time"
+                      else
+                        echo "#$fixes carries a release-failure marker that does not match a failed release of $mainVersion - the usual waiting time applies"
+                      fi
                     fi
                     ;;
                 esac

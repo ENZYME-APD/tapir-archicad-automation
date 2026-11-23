@@ -192,6 +192,14 @@ jobs:
               echo "::warning::Tag $VERSION is unpublished on an older commit, but it cannot be shown that" \
                    "$VERSION reached neither GitHub nor the Rhino package manager (Grasshopper runs on the" \
                    "tag: $GH_RUNS) - leaving it for a person."
+            elif [ '${{ inputs.dry_run }}' = 'true' ]; then
+              # A dry run changes nothing on GitHub: it only says what would be
+              # deleted, and drops the tag locally so the rest of the plan
+              # reports the release that would follow.
+              echo "DRY RUN: would delete the stale tag $VERSION and its draft release(s)" \
+                   "($(printf '%s' "$DRAFTS" | grep -c . || true)), then release $VERSION from the current main." \
+                | tee -a "$GITHUB_STEP_SUMMARY"
+              git tag -d "$VERSION" > /dev/null 2>&1 || true
             else
               DELETED=true
               for DRAFT in $DRAFTS; do
@@ -921,7 +929,10 @@ jobs:
           import json, os, re, sys
           work = sys.argv[1]
           version = os.environ['VERSION']
-          marker = '<!-- release-failure: %s -->' % version
+          # The marker opens the body and names this run: claude_auto_merge.yml
+          # checks both before it lets the fix skip the waiting time.
+          marker = '<!-- release-failure: %s run=%s -->' % (version, os.environ['RELEASE_RUN_ID'])
+          marker_prefix = '<!-- release-failure: %s run=' % version
           jobs = [line.rstrip('\n').split('\t') for line in open(os.path.join(work, 'failed.tsv')) if line.strip()]
           stamp = re.compile(r'^﻿?\d{4}-\d\d-\d\dT[\d:.]+Z ?')
           error = re.compile(r'error|fatal|failed|exception|traceback', re.I)
@@ -939,7 +950,7 @@ jobs:
               budget -= len(text)
               parts.append('### `%s` (%s)\n\n[Job log](%s)\n\n```\n%s\n```' % (name, wf, url, text or '(no log could be read)'))
           issues = [i for i in json.load(open(os.path.join(work, 'issues.json')))
-                    if marker in (i.get('body') or '')
+                    if (i.get('body') or '').startswith(marker_prefix)
                     and (i.get('author') or {}).get('login') in ('app/github-actions', 'github-actions[bot]', 'github-actions')]
           attempts = len(issues)
           max_attempts = int(os.environ.get('MAX_ATTEMPTS') or '2')
@@ -961,6 +972,9 @@ jobs:
           open_issue = next((i for i in issues if i['state'] == 'OPEN'), None)
           if open_issue:
               action = 'update %d' % open_issue['number']
+              # Keep the run that opened the issue in its marker: auto-merge
+              # checks that the issue was opened while that run was going.
+              body = (open_issue.get('body') or '').split('\n', 1)[0] + body[len(marker):]
           elif attempts >= max_attempts:
               action = 'maintainer'
               body += ('\n\n**%d earlier release-failure issue(s) for %s did not fix it, so this one is left to a '
