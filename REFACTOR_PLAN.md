@@ -47,6 +47,8 @@ Every release rewrites 75k lines that no one reviews, which is why a drift gate 
 
 ## 3. The moves, in the order that pays
 
+The first four shrink the tree; the fifth shrinks what a pull request costs to verify.
+
 ### Move 1 — finish the schema migration (enabler; no line count won, everything else unlocked)
 
 Extract each command's input and response schema from the C++ to `schemas/<Command>.json`, and have
