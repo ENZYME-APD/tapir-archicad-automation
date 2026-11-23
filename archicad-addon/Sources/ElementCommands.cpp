@@ -12744,7 +12744,12 @@ GS::Optional<GS::UniString> GetPolygonVertexIdsOfElementsCommand::GetRawResponse
                                                         "vertexId": {
                                                             "type": "integer",
                                                             "minimum": 0,
-                                                            "description": "The vertex ID Archicad stores for the point (API_ElementMemo vertexIDs). It is kept when vertices are inserted or deleted, so it does not follow the order of the points. Give it as the nodeId of a witness point of CreateAssociativeDimensions."
+                                                            "description": "The vertex ID Archicad stores for the point (API_ElementMemo vertexIDs). It is kept when vertices are inserted or deleted, so it does not follow the order of the points. Give it as the nodeId of a witness point of CreateAssociativeDimensions on this vertex (line false)."
+                                                        },
+                                                        "edgeId": {
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "description": "The edge ID Archicad stores for the edge from this point to the next one (API_ElementMemo edgeIDs). Like vertexId it is kept when the polygon is edited, and on an edited polygon it differs from vertexId. Give it as the nodeId of a witness point of CreateAssociativeDimensions on this edge (line true, inIndex of this point). Missing on the closing point of a contour, which starts no edge, and for elements whose memo has no edge IDs (#3034)."
                                                         }
                                                     },
                                                     "additionalProperties": false,
@@ -12817,8 +12822,12 @@ GS::ObjectState GetPolygonVertexIdsOfElementsCommand::Execute (const GS::ObjectS
         // vertices (vertexIDs[0] holds the largest vertex ID), pends[k] is the index of the closing
         // point of contour k, which repeats the contour's first point. A witness point refers to a
         // vertex by its index in coords (inIndex) and by its vertex ID (node_id) together (#3004).
+        // An edge (line true) is referred to by the index of its start point and by its edge ID:
+        // edgeIDs[i] belongs to the edge from coords[i] to coords[i + 1], so the closing point of
+        // each contour carries none, as for edgeTrims and sideMaterials (#3034).
         const Int32 nCoords = memo.coords == nullptr ? 0 : static_cast<Int32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord)) - 1;
         const Int32 nVertexIds = memo.vertexIDs == nullptr ? 0 : static_cast<Int32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.vertexIDs)) / sizeof (UInt32)) - 1;
+        const Int32 nEdgeIds = memo.edgeIDs == nullptr ? 0 : static_cast<Int32> (BMhGetSize (reinterpret_cast<GSHandle> (memo.edgeIDs)) / sizeof (UInt32)) - 1;
         if (nCoords < 1 || nVertexIds < nCoords) {
             polygonVertexIdsOfElements (CreateErrorResponse (APIERR_BADPARS, "The element has no polygon with vertex IDs."));
             continue;
@@ -12845,6 +12854,9 @@ GS::ObjectState GetPolygonVertexIdsOfElementsCommand::Execute (const GS::ObjectS
                 point.Add ("coordinate", Create2DCoordinateObjectState ((*memo.coords)[coordIndex]));
                 point.Add ("inIndex", coordIndex);
                 point.Add ("vertexId", static_cast<Int64> ((*memo.vertexIDs)[coordIndex]));
+                if (coordIndex < endIndex && coordIndex <= nEdgeIds) {
+                    point.Add ("edgeId", static_cast<Int64> ((*memo.edgeIDs)[coordIndex]));
+                }
                 points (point);
             }
             contours (contour);
