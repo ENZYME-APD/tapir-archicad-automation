@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-23 10:20 UTC",
+ "generatedAt": "2026-11-23 12:53 UTC",
  "versions": [
   25,
   26,
@@ -16163,7 +16163,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3036,
+     "title": "GetProjectPreferences / SetProjectPreferences: add the five missing preferences pages"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSetting_GetProjectNotes",
@@ -16275,7 +16280,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3036,
+     "title": "GetProjectPreferences / SetProjectPreferences: add the five missing preferences pages"
+    }
+   ]
   },
   {
    "id": "ACAPI_ProjectSettings_GetSpecFolder",
@@ -30945,6 +30955,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3035,
+     "title": "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"
+    },
+    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -44056,6 +44070,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3035,
+     "title": "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"
+    },
+    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47175,6 +47193,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3035,
+     "title": "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
