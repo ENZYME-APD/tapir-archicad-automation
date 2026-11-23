@@ -43,6 +43,13 @@
 #pragma comment (lib, "shell32.lib")
 #endif
 
+// ACAPI::UI::Menu::MenuItem (Archicad 29 and later) reads the keys of a menu item and names it in Work Environment.
+#if defined (ServerMainVers_2900) && __has_include ("ACAPI/UI/Menu/MenuItem.hpp")
+#include "ACAPI/UI/Menu/MenuManager.hpp"
+#include "ACAPI/UI/Menu/MenuItem.hpp"
+#define TAPIR_HAS_MENU_ITEM_API
+#endif
+
 #if defined (macintosh)
 #include <sys/sysctl.h>
 #include <libproc.h>
@@ -1191,6 +1198,10 @@ LocalScriptActions TapirPalette::GetLocalScriptActions ()
     actions.stop = [this] (const IO::Location& fileLocation) { StopScript (fileLocation); };
     actions.openWebpage = [] (const GS::UniString& url) { OpenUrl (url); };
     actions.openShortcuts = [this] () { OpenShortcutsDialog (); };
+    actions.shortcutKeys = [this] (const IO::Location& fileLocation) {
+        const short slot = FindShortcutSlot (fileLocation);
+        return slot < 0 ? GS::UniString () : GetShortcutKeys (slot);
+    };
     actions.editFile = [] (const IO::Location& fileLocation) { OpenFileInEditor (fileLocation); };
     actions.showInFolder = [] (const IO::Location& fileLocation) { OpenFileInExplorer (fileLocation); };
     actions.remove = [this] (const IO::Location& fileLocation) { RemoveAddedScript (fileLocation); };
@@ -1399,12 +1410,71 @@ void TapirPalette::RefreshScriptListShortcutLabels ()
     }
 }
 
-void TapirPalette::ApplyShortcutMenuItemText (short slotIndex)
+// The menu item of each shortcut slot (the menu commands 32020-32025 that keys are given to in Work Environment).
+static API_MenuItemRef ShortcutMenuItemRef (short slotIndex)
 {
-    static const short menuResIds[ScriptShortcutSlotCount] = {
+    static const short menuResIds[TapirPalette::ScriptShortcutSlotCount] = {
         ID_ADDON_MENU_RUNSCRIPT_1, ID_ADDON_MENU_RUNSCRIPT_2, ID_ADDON_MENU_RUNSCRIPT_3,
         ID_ADDON_MENU_RUNSCRIPT_4, ID_ADDON_MENU_RUNSCRIPT_5, ID_ADDON_MENU_RUNSCRIPT_6
     };
+    API_MenuItemRef itemRef = {};
+    itemRef.menuResID = menuResIds[slotIndex];
+    itemRef.itemIndex = ID_ADDON_MENU_RUNSCRIPT_ITEM;
+    return itemRef;
+}
+
+short TapirPalette::FindShortcutSlot (const IO::Location& location) const
+{
+    if (location.IsEmpty ()) {
+        return -1;
+    }
+    for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+        if (scriptShortcutSlots[slot] == location) {
+            return slot;
+        }
+    }
+    return -1;
+}
+
+bool TapirPalette::CanReadShortcutKeys ()
+{
+#if defined (TAPIR_HAS_MENU_ITEM_API)
+    return true;
+#else
+    return false;
+#endif
+}
+
+// Archicad's API can read the keys of the add-on's menu items but cannot assign one: the keys are set by the
+// user in Options > Work Environment > Keyboard Shortcuts (docs/limits/).
+GS::UniString TapirPalette::GetShortcutKeys (short slotIndex) const
+{
+    GS::UniString keys;
+#if defined (TAPIR_HAS_MENU_ITEM_API)
+    if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount) {
+        return keys;
+    }
+    const auto menuItem = ACAPI::UI::Menu::CreateMenuManager ().GetMenuItem (ShortcutMenuItemRef (slotIndex));
+    if (menuItem.IsErr ()) {
+        return keys;
+    }
+    for (const GS::UniString& shortcut : menuItem->GetShortcuts ()) {
+        if (shortcut.IsEmpty ()) {
+            continue;
+        }
+        if (!keys.IsEmpty ()) {
+            keys += ", ";
+        }
+        keys += shortcut;
+    }
+#else
+    (void) slotIndex;
+#endif
+    return keys;
+}
+
+void TapirPalette::ApplyShortcutMenuItemText (short slotIndex)
+{
     if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount) {
         return;
     }
@@ -1414,10 +1484,23 @@ void TapirPalette::ApplyShortcutMenuItemText (short slotIndex)
         label = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_DEFAULT_LABEL), (int) (slotIndex + 1));
     }
 
-    API_MenuItemRef itemRef = {};
-    itemRef.menuResID = menuResIds[slotIndex];
-    itemRef.itemIndex = ID_ADDON_MENU_RUNSCRIPT_ITEM;
+    API_MenuItemRef itemRef = ShortcutMenuItemRef (slotIndex);
     ACAPI_MenuItem_SetMenuItemText (&itemRef, nullptr, &label);
+
+#if defined (TAPIR_HAS_MENU_ITEM_API)
+    // Work Environment lists the six commands under their resource names, all "Run Script Shortcut N", so each is
+    // named after the script of its slot, e.g. "Run Script Shortcut 1: element_heatmap".
+    auto menuItem = ACAPI::UI::Menu::CreateMenuManager ().GetMenuItem (itemRef);
+    if (menuItem.IsOk ()) {
+        GS::UniString workEnvironmentText = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_DEFAULT_LABEL), (int) (slotIndex + 1));
+        IO::Name scriptName;
+        if (!scriptShortcutSlots[slotIndex].IsEmpty () && scriptShortcutSlots[slotIndex].GetLastLocalName (&scriptName) == NoError) {
+            scriptName.DeleteExtension ();
+            workEnvironmentText = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_WE_TEXT), (int) (slotIndex + 1), scriptName.ToString ().ToPrintf ());
+        }
+        menuItem->SetWorkEnvironmentText (workEnvironmentText);
+    }
+#endif
 
     // The API offers no way to hide add-on menu items, so slots without an
     // assigned script are disabled (greyed out) instead.
@@ -1441,9 +1524,10 @@ void TapirPalette::ApplyAllShortcutMenuItemTexts ()
 namespace {
 
 // Dedicated dialog for assigning scripts to shortcut slots: each row shows the slot's currently
-// assigned script directly in its own popup (and "(unassigned)" when empty), plus an editable label
-// for the text shown in Archicad's menu/toolbar for that shortcut, so both "which slot is this" and
-// "what's already taken" are visible in one screen, instead of blind slot numbers.
+// assigned script directly in its own popup (and "(unassigned)" when empty), an editable name for
+// the slot's item in Archicad's Tapir menu, and (from Archicad 29) the key the user gave that menu
+// command in Work Environment, so both "which slot is this" and "what's already taken" are visible
+// in one screen, instead of blind slot numbers. The keys themselves are set in Work Environment.
 class TapirShortcutsDialog : public DG::ModalDialog,
     public DG::ButtonItemObserver,
     public DG::PopUpObserver,
@@ -1465,6 +1549,13 @@ public:
         , labelEdit5 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_5)
         , labelEdit6 (GetReference (), ID_SHORTCUTS_DIALOG_LABELEDIT_6)
         , closeButton (GetReference (), ID_SHORTCUTS_DIALOG_CLOSE_BUTTON)
+        , keyHeader (GetReference (), ID_SHORTCUTS_DIALOG_KEY_HEADER)
+        , keyText1 (GetReference (), ID_SHORTCUTS_DIALOG_KEY_1)
+        , keyText2 (GetReference (), ID_SHORTCUTS_DIALOG_KEY_1 + 1)
+        , keyText3 (GetReference (), ID_SHORTCUTS_DIALOG_KEY_1 + 2)
+        , keyText4 (GetReference (), ID_SHORTCUTS_DIALOG_KEY_1 + 3)
+        , keyText5 (GetReference (), ID_SHORTCUTS_DIALOG_KEY_1 + 4)
+        , keyText6 (GetReference (), ID_SHORTCUTS_DIALOG_KEY_1 + 5)
     {
         slotPopUps[0] = &slotPopUp1;
         slotPopUps[1] = &slotPopUp2;
@@ -1479,6 +1570,21 @@ public:
         labelEdits[3] = &labelEdit4;
         labelEdits[4] = &labelEdit5;
         labelEdits[5] = &labelEdit6;
+
+        keyTexts[0] = &keyText1;
+        keyTexts[1] = &keyText2;
+        keyTexts[2] = &keyText3;
+        keyTexts[3] = &keyText4;
+        keyTexts[4] = &keyText5;
+        keyTexts[5] = &keyText6;
+
+        // Before Archicad 29 the API cannot read the keys, so only the hint where to set them is shown.
+        if (!TapirPalette::CanReadShortcutKeys ()) {
+            keyHeader.Hide ();
+            for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
+                keyTexts[row]->Hide ();
+            }
+        }
 
         closeButton.Attach (*this);
         for (short row = 0; row < TapirPalette::ScriptShortcutSlotCount; ++row) {
@@ -1506,8 +1612,11 @@ private:
     DG::PopUp    slotPopUp1, slotPopUp2, slotPopUp3, slotPopUp4, slotPopUp5, slotPopUp6;
     DG::TextEdit labelEdit1, labelEdit2, labelEdit3, labelEdit4, labelEdit5, labelEdit6;
     DG::Button   closeButton;
+    DG::LeftText keyHeader;
+    DG::LeftText keyText1, keyText2, keyText3, keyText4, keyText5, keyText6;
     DG::PopUp*     slotPopUps[TapirPalette::ScriptShortcutSlotCount];
     DG::TextEdit*  labelEdits[TapirPalette::ScriptShortcutSlotCount];
+    DG::LeftText*  keyTexts[TapirPalette::ScriptShortcutSlotCount];
     GS::Array<std::pair<GS::UniString, IO::Location>> scripts;
 
     void BuildRowItems (DG::PopUp& popUp)
@@ -1540,6 +1649,13 @@ private:
                 label = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_DEFAULT_LABEL), (int) (row + 1));
             }
             labelEdits[row]->SetText (label);
+
+            // The keys are given in Work Environment, which cannot be open while this dialog is, so reading them
+            // here keeps them current.
+            if (TapirPalette::CanReadShortcutKeys ()) {
+                const GS::UniString keys = TapirPalette::Instance ().GetShortcutKeys (row);
+                keyTexts[row]->SetText (keys.IsEmpty () ? PaletteText (ID_PALETTE_STRINGS_SHORTCUT_NO_KEY) : keys);
+            }
         }
     }
 

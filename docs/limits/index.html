@@ -455,6 +455,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">Archicad loads an add-on itself and calls its <code>CheckEnvironment</code>, <code>RegisterInterface</code>, <code>Initialize</code> and <code>FreeData</code>; <code>API_AddonType</code> (<code>APIAddon_Normal</code>, <code>APIAddon_Preload</code>, <code>APIAddon_DontRegister</code>; <code>APIdefs_Registration.h</code>) and <code>ACAPI_KeepInMemory</code> (<code>ACAPinc.h</code>) only steer the add-on's own loading. No function loads, registers or reloads another add-on (AC25&ndash;AC30).</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2732">#2732</a></td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Give a script or an add-on menu command a keyboard shortcut from the add-on</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Put the script on one of Tapir's six <em>Run Script Shortcut</em> slots (Tapir &gt; Manage Script Shortcuts...), then give that command a key in Options &gt; Work Environment &gt; Keyboard Shortcuts. From Archicad 29 the Script Shortcuts dialog shows the key and Work Environment names each slot after its script.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI::UI::Menu::MenuItem</code> (<code>UserInterfaceAPI/ACAPI/UI/Menu/MenuItem.hpp</code>, AC29&ndash;AC30) has only <code>GetShortcuts</code>, which reads the keys, and <code>SetWorkEnvironmentText</code>, which names the command in Work Environment; no function in <code>Inc/</code> or <code>Modules/UserInterfaceAPI</code> sets a key (AC25&ndash;AC30). DGLib's <code>DG::ShortcutManager</code> (<code>DGShortcutManager.hpp</code>) is not part of the documented API and Work Environment owns its scheme.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3042">#3042</a></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

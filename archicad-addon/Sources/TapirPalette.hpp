@@ -52,6 +52,11 @@ public:
     void SetShortcutSlot (short slotIndex, const IO::Location& location);   // empty location clears it
     GS::UniString GetShortcutLabel (short slotIndex) const;   // 0-based; empty = using the default "Run Script Shortcut N" text
     void SetShortcutLabel (short slotIndex, const GS::UniString& label);   // empty resets to the default text
+    short FindShortcutSlot (const IO::Location& location) const;   // 0-based; -1 = the script is in no slot
+    // The keys assigned to the slot's menu item in Work Environment, e.g. "Ctrl+Alt+H"; empty = none, or
+    // before Archicad 29, whose API cannot read them.
+    GS::UniString GetShortcutKeys (short slotIndex) const;
+    static bool CanReadShortcutKeys ();   // false before Archicad 29
     void OpenShortcutsDialog ();
 
     // Lists the enabled scripts of Documents/Tapir/marketplace/installed.json again in the Marketplace section of the
