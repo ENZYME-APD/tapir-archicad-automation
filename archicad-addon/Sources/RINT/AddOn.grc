@@ -145,12 +145,39 @@
 /* [ 31] */ "Status"
 }
 
-'STR#' ID_PALETTE_SEARCH_STRINGS "Tapir Palette Search Strings" {
+'STR#' ID_PALETTE_FAVOURITE_STRINGS "Tapir Palette Favourite Strings" {
 /* [  1] */ "Add to favourites"
 /* [  2] */ "Remove from favourites"
-/* [  3] */ "Search scripts"
-/* [  4] */ "No matching scripts"
-/* [  5] */ "Filtered by \"%T\" - click to change the search"
+}
+
+'STR#' ID_LOCAL_SCRIPT_STRINGS "Tapir Script Manager Scripts Tab Strings" {
+/* [  1] */ "Built-in"
+/* [  2] */ "Marketplace"
+/* [  3] */ "My scripts"
+/* [  4] */ "By %T"
+/* [  5] */ "Version %T"
+/* [  6] */ "Install uv"
+/* [  7] */ "Try again"
+/* [  8] */ "Report a problem"
+/* [  9] */ "Running..."
+/* [ 10] */ "Finished"
+/* [ 11] */ "Stopped"
+/* [ 12] */ "uv is not installed, so the script cannot run."
+/* [ 13] */ "The script could not be started."
+/* [ 14] */ "Archicad did not answer. It may be busy."
+/* [ 15] */ "The script failed (exit code %d)."
+/* [ 16] */ "Tapir Script Output"
+/* [ 17] */ "The last lines of %T:"
+/* [ 18] */ "The script wrote nothing."
+/* [ 19] */ "Script error: %T"
+/* [ 20] */ "The script **%T** failed when run from the Tapir Palette.\n\n- Tapir: %T\n- Archicad: %d\n\nThe last lines of its output:\n\n```\n%T\n```\n\nWhat I did before it failed:\n"
+/* [ 21] */ "Run"
+/* [ 22] */ "Stop"
+/* [ 23] */ "Assign Shortcut..."
+/* [ 24] */ "Edit"
+/* [ 25] */ "Show in Folder"
+/* [ 26] */ "Open on GitHub"
+/* [ 27] */ "Remove"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -267,6 +294,10 @@
 /* [ 55] */ "Loading the README..."
 /* [ 56] */ "The README could not be loaded. It is on https://archicad-api.com/scripts/ too."
 /* [ 57] */ "Screenshots"
+/* [ 58] */ "Scripts (%d)"
+/* [ 59] */ "Source"
+/* [ 60] */ "Source"
+/* [ 61] */ "File"
 }
 
 'STR#' ID_UV_STRINGS "Tapir uv Strings" {
@@ -339,44 +370,28 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  620  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  382  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
-/* [  2] */ PopupControl              56   3 320  22    80  3
-/* [  3] */ IconButton               376   0  28  28    ID_RUN_BUTTON_ICON noFrame
-/* [  4] */ IconButton               376   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
-/* [  5] */ IconButton               432   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
-/* [  6] */ IconButton               460   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
-/* [  7] */ IconButton               488   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
-/* [  8] */ LeftText                 580   6  40  16    SmallPlain  vCenter  ""
-/* [  9] */ IconButton               548   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
-/* [ 10] */ TextEdit                  56   3 120  22    SmallPlain  noDelay  255
-/* [ 11] */ IconButton               404   0  28  28    ID_STAR_BUTTON_ICON noFrame
-/* [ 12] */ IconButton                28   0  28  28    ID_SEARCH_BUTTON_ICON noFrame
-/* [ 13] */ IconButton               516   0  28  28    ID_SCRIPTMANAGER_BUTTON_ICON noFrame
+/* [  2] */ PopupControl              28   3 270  22    80  3
+/* [  3] */ IconButton               298   0  28  28    ID_RUN_BUTTON_ICON noFrame
+/* [  4] */ IconButton               326   0  28  28    ID_STAR_BUTTON_ICON noFrame
+/* [  5] */ IconButton               354   0  28  28    ID_SCRIPTMANAGER_BUTTON_ICON noFrame
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
 1    "Open the Tapir website"  TapirButton
 2    ""        ScriptSelection
 3    "Run Script"          RunButton
-4    "Open in Browser"     OpenButton
-5    "Add Script"          AddButton
-6    "Remove Script"       DelButton
-7    "Manage Shortcuts"    ManageShortcutsButton
-8    "Installed Tapir version"         InstalledVersionText
-9    "Check for Updates"               CheckForUpdatesButton
-10   ""        SearchEdit
-11   ""        FavouriteButton
-12   "Search scripts"      SearchButton
-13   "Script Manager"                  ScriptManagerButton
+4    ""        FavouriteButton
+5    "Script Manager"                  ScriptManagerButton
 }
 
-'GDLG' ID_SCRIPT_MANAGER Palette | topCaption | close | grow   0   0  940  540  "Tapir Script Manager"  {
+'GDLG' ID_SCRIPT_MANAGER Palette | topCaption | close | grow   0   0  480  620  "Tapir Script Manager"  {
 /* [  1] */ TextEdit                  10  10 220  22    LargePlain  128
-/* [  2] */ RadioButton              240  12 110  18    LargePlain  1  "Available"
-/* [  3] */ RadioButton              355  12 110  18    LargePlain  1  "Installed"
-/* [  4] */ RadioButton              470  12 110  18    LargePlain  1  "Updates"
-/* [  5] */ LeftText                 590  12 230  18    SmallPlain  vCenter  ""
+/* [  2] */ RadioButton              350  12 108  18    LargePlain  1  "Available"
+/* [  3] */ RadioButton              460  12 108  18    LargePlain  1  "Installed"
+/* [  4] */ RadioButton              570  12 108  18    LargePlain  1  "Updates"
+/* [  5] */ LeftText                 684  12 142  18    SmallPlain  vCenter  ""
 /* [  6] */ Button                   830   9 100  24    LargePlain  "Refresh"
 /* [  7] */ SingleSelList             10  44 200 446    LargePlain  PartialItems  18
 /* [  8] */ CheckBox                 220  44 410  18    LargePlain  "Fits this Archicad"
@@ -403,6 +418,14 @@
 /* [ 29] */ Button                   720 466 100  24    LargePlain  "Update"
 /* [ 30] */ Button                   510 500 120  24    LargePlain  "Update all"
 /* [ 31] */ Browser                  640 312 290 126
+/* [ 32] */ RadioButton              240  12 108  18    LargePlain  1  "Scripts"
+/* [ 33] */ LeftText                 640 444 290  18    SmallPlain  vCenter  ""
+/* [ 34] */ Button                   640 466  64  24    LargePlain  "Run"
+/* [ 35] */ Button                   708 466  64  24    LargePlain  "Stop"
+/* [ 36] */ Button                   776 466  70  24    LargePlain  "Details"
+/* [ 37] */ Button                   640 500 170  24    LargePlain  "Report a problem"
+/* [ 38] */ Button                   510 500 120  24    LargePlain  "Add script..."
+/* [ 39] */ PopupControl               10  62 270  22    80  3
 }
 
 'DLGH' ID_SCRIPT_MANAGER Tapir_Script_Manager {
@@ -437,6 +460,14 @@
 29   "Download the newest version made for this Archicad and Tapir, check it and replace the installed one" UpdateButton
 30   "Update every script listed" UpdateAllButton
 31   ""                                ReadmeBrowser
+32   "Every script of the Tapir Palette: run them, see what they do"   ScriptsTab
+33   ""                                ResultText
+34   "Run the selected script"         RunButton
+35   "Stop the selected script and the processes it started"   StopButton
+36   "Show the last lines of the script's output"              OutputButton
+37   ""                                FixButton
+38   "Add Python scripts of your own to the list"   AddScriptButton
+39   "Show the scripts of one category"             CategoryPopUp
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

@@ -3842,7 +3842,6 @@ GSErrCode Initialize (void)
         TapirPalette::ApplyUpdateMenuItemState ();
         if (TapirPalette::HasInstance ()) {
             TapirPalette::Instance ().SetRunButtonIcon ();
-            TapirPalette::Instance ().SetUpdateButtonIcon ();
         }
     });
 

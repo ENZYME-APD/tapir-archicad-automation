@@ -151,6 +151,37 @@
 #define ID_PALETTE_STRINGS_EXECUTE_FAILED        33
 #define ID_PALETTE_STRINGS_EXECUTE_UNEXPECTED    34
 
+// The texts of the Script Manager's Scripts tab: where a script comes from, how its last run ended, and its right-click menu
+#define ID_LOCAL_SCRIPT_STRINGS         32111
+#define ID_LOCAL_SCRIPT_STRINGS_BUILT_IN                  1
+#define ID_LOCAL_SCRIPT_STRINGS_MARKETPLACE               2
+#define ID_LOCAL_SCRIPT_STRINGS_MY_SCRIPTS                3
+#define ID_LOCAL_SCRIPT_STRINGS_BY_AUTHOR                 4
+#define ID_LOCAL_SCRIPT_STRINGS_VERSION                   5
+#define ID_LOCAL_SCRIPT_STRINGS_INSTALL_UV                6
+#define ID_LOCAL_SCRIPT_STRINGS_TRY_AGAIN                 7
+#define ID_LOCAL_SCRIPT_STRINGS_REPORT_PROBLEM            8
+#define ID_LOCAL_SCRIPT_STRINGS_RUNNING                   9
+#define ID_LOCAL_SCRIPT_STRINGS_FINISHED                  10
+#define ID_LOCAL_SCRIPT_STRINGS_STOPPED                   11
+#define ID_LOCAL_SCRIPT_STRINGS_ERROR_UV_MISSING          12
+#define ID_LOCAL_SCRIPT_STRINGS_ERROR_NOT_STARTED         13
+#define ID_LOCAL_SCRIPT_STRINGS_ERROR_CONNECTION_BUSY     14
+#define ID_LOCAL_SCRIPT_STRINGS_ERROR_EXIT_CODE           15
+#define ID_LOCAL_SCRIPT_STRINGS_OUTPUT_TITLE              16
+#define ID_LOCAL_SCRIPT_STRINGS_OUTPUT_HEADER             17
+#define ID_LOCAL_SCRIPT_STRINGS_OUTPUT_EMPTY              18
+#define ID_LOCAL_SCRIPT_STRINGS_ISSUE_TITLE               19
+#define ID_LOCAL_SCRIPT_STRINGS_ISSUE_BODY                20
+// The right-click menu of a script
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_RUN                  21
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_STOP                 22
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_ASSIGN_SHORTCUT      23
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_EDIT                 24
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_SHOW_IN_FOLDER       25
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_OPEN_ON_GITHUB       26
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_REMOVE               27
+
 #define ID_AUTOUPDATE_STRINGS           32011
 #define ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE 1
 #define ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT1 2
@@ -160,10 +191,7 @@
 #define ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE  6
 #define ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT   7
 #define ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON 8
-#define ID_AUTOUPDATE_CHECK_BUTTON_TEXT          9
-#define ID_AUTOUPDATE_UPDATE_BUTTON_TEXT        10
 #define ID_AUTOUPDATE_UPDATE_MENU_TEXT          11
-#define ID_AUTOUPDATE_INSTALLED_VERSION_TEXT    12
 #define ID_AUTOUPDATE_ALERT_TITLE               13
 #define ID_AUTOUPDATE_OK_BUTTON                 14
 #define ID_AUTOUPDATE_STILL_CHECKING_TEXT1      15
@@ -296,6 +324,16 @@
 #define ID_SCRIPT_MANAGER_UPDATE                 29
 #define ID_SCRIPT_MANAGER_UPDATE_ALL             30
 #define ID_SCRIPT_MANAGER_README                 31   // a browser: the README and the screenshots
+// The Scripts tab: its tab, the result of the last run of the selected script, the buttons that run and stop it, and
+// Add script
+#define ID_SCRIPT_MANAGER_SCRIPTS_TAB            32
+#define ID_SCRIPT_MANAGER_RESULT                 33
+#define ID_SCRIPT_MANAGER_RUN                    34
+#define ID_SCRIPT_MANAGER_STOP                   35
+#define ID_SCRIPT_MANAGER_OUTPUT                 36   // Details: the last lines of the script's output
+#define ID_SCRIPT_MANAGER_FIX                    37   // Install uv, Try again or Report a problem
+#define ID_SCRIPT_MANAGER_ADD_SCRIPT             38
+#define ID_SCRIPT_MANAGER_CATEGORY_POPUP         39   // the categories as a dropdown, for the narrow layout
 
 #define ID_SCRIPT_MANAGER_STRINGS            32121
 // "All categories", then the display names of the 12 categories in the order of CategoryKeys in ScriptManager.cpp
@@ -344,6 +382,10 @@
 #define ID_SCRIPT_MANAGER_STRINGS_README_LOADING 55
 #define ID_SCRIPT_MANAGER_STRINGS_README_FAILED  56
 #define ID_SCRIPT_MANAGER_STRINGS_SCREENSHOTS    57
+#define ID_SCRIPT_MANAGER_STRINGS_SCRIPTS_TAB    58
+#define ID_SCRIPT_MANAGER_STRINGS_SOURCE_COLUMN  59
+#define ID_SCRIPT_MANAGER_STRINGS_SOURCE_LABEL   60
+#define ID_SCRIPT_MANAGER_STRINGS_FILE_LABEL     61
 
 #define ID_ADDON_MENU_FOR_SCRIPT_MANAGER     32122
 #define ID_ADDON_MENU_SCRIPT_MANAGER              1
@@ -354,14 +396,8 @@
 #define ID_TAPIR_LOGO_MINI              32503
 #define ID_RUN_BUTTON_ICON              32504
 #define ID_KILL_BUTTON_ICON             32505
-#define ID_OPENSCRIPT_BUTTON_ICON       32506
-#define ID_ADDSCRIPT_BUTTON_ICON        32507
-#define ID_DELSCRIPT_BUTTON_ICON        32508
 #define ID_RUNWITHUPDATE_BUTTON_ICON    32509
 #define ID_UPDATE_ICON                  32510
-#define ID_SHORTCUTS_BUTTON_ICON        32511
-#define ID_CHECKFORUPDATES_BUTTON_ICON  32512
-#define ID_UPDATEAVAILABLE_BUTTON_ICON  32513
 // The marks before each script in the palette's script list: a running script, and an empty one of the same size
 // for every other item, so that the names stay aligned.
 #define ID_SCRIPT_RUNNING_ICON          32514
@@ -369,24 +405,17 @@
 // The Script Manager's button on the palette bar (#2408, icons 32540-32549)
 #define ID_SCRIPTMANAGER_BUTTON_ICON    32540
 
-// The Tapir Palette's search field and favourites: icons 32520-32529 and the 'STR#' list 32100
+// The Tapir Palette's favourites: icons 32520-32529 and the 'STR#' list 32100
 #define ID_STAR_BUTTON_ICON             32520
 #define ID_STARFILLED_BUTTON_ICON       32521
-#define ID_SEARCH_BUTTON_ICON           32522
-#define ID_SEARCHACTIVE_BUTTON_ICON     32523   // the search icon while a filter is applied
 
-#define ID_PALETTE_SEARCH_STRINGS       32100
-#define ID_PALETTE_SEARCH_STRINGS_ADD_FAVOURITE     1
-#define ID_PALETTE_SEARCH_STRINGS_REMOVE_FAVOURITE  2
-#define ID_PALETTE_SEARCH_STRINGS_PLACEHOLDER       3
-#define ID_PALETTE_SEARCH_STRINGS_NO_MATCH          4
-#define ID_PALETTE_SEARCH_STRINGS_FILTERED          5
+#define ID_PALETTE_FAVOURITE_STRINGS            32100
+#define ID_PALETTE_FAVOURITE_STRINGS_ADD        1
+#define ID_PALETTE_FAVOURITE_STRINGS_REMOVE     2
 
 // The items of ID_PALETTE that are not created in the order of the bar
-#define ID_PALETTE_SEARCH_EDIT          10
-#define ID_PALETTE_FAVOURITE_BUTTON     11
-#define ID_PALETTE_SEARCH_BUTTON        12
-#define ID_PALETTE_SCRIPTMANAGER_BUTTON 13   // opens the Script Manager (#2408)
+#define ID_PALETTE_FAVOURITE_BUTTON     4
+#define ID_PALETTE_SCRIPTMANAGER_BUTTON 5   // opens the Script Manager (#2408)
 
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004
