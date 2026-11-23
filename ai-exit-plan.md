@@ -63,11 +63,18 @@ autonomous feature work, which is also the part least reviewed by people.
 ## 5. Plan, by date
 
 ### Now — the auth swap (a day, four workflows)
-All four agent workflows authenticate with `claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}`.
-Two of them — `claude_pr_review.yml:14` and `claude_issue_triage.yml:120` — already carry a *commented-out*
-`anthropic_api_key:` line, so there the change is uncommenting it, replacing the `claude_code_oauth_token`
-line and un-commenting nothing else; `claude_bot_pr_steward.yml` and `discord_issue_bot.yml` need the
-`anthropic_api_key` input added, since they never had it. Then add the secret and rotate the OAuth token out.
+All four agent workflows authenticate with `secrets.CLAUDE_CODE_OAUTH_TOKEN`, but not the same way, so
+there is no single edit:
+
+- `claude_pr_review.yml:345` and `claude_issue_triage.yml` pass the action input `claude_code_oauth_token`;
+  both already carry a commented-out `anthropic_api_key:` line (`:14` and `:120`), so there the change is
+  uncomment that and replace the OAuth line;
+- `claude_bot_pr_steward.yml:769` passes the same input and has no API-key line, so one has to be added;
+- `discord_issue_bot.yml` does not use the action input at all: it exports `CLAUDE_CODE_OAUTH_TOKEN` as an
+  environment variable for the CLI (`:127`) and gates on a `HAVE_CLAUDE_TOKEN` boolean (`:107`), so both
+  the variable and the condition move to `ANTHROPIC_API_KEY`.
+
+Then add the secret and rotate the OAuth token out.
 
 - Scope the agent to **review and triage**; stop autonomous feature PRs first, since they are the
   expensive part and the part no human reads.
