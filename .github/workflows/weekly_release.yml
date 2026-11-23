@@ -564,25 +564,37 @@ jobs:
                      "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
                 exit 1
               fi
-              # A job that never started - no steps at all, which is what an
-              # unacquired runner leaves behind - is the only shape that is
-              # retried. A cancelled run whose jobs had already started is a
-              # person cancelling the release or a job timing out, and neither
-              # should resurrect itself.
-              UNFINISHED=$(gh_retry gh run view "$RUN_ID" --json jobs \
-                --jq '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length' || echo 1)
-              UNSTARTED=$(gh_retry gh run view "$RUN_ID" --json jobs \
-                --jq '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped" and (.steps | length) == 0)] | length' || echo 0)
-              if [ "$UNSTARTED" -lt "$UNFINISHED" ]; then
-                echo "::error::$WORKFLOW ended '$CONCLUSION' and $((UNFINISHED - UNSTARTED)) job(s) had already" \
-                     "started: a cancelled release or a job that timed out, not a runner that was never" \
-                     "acquired. Not re-running it. The release is NOT published and the version is NOT" \
-                     "bumped; tag $VERSION stays in place."
+              # Only a job GitHub itself gave up on is retried: it carries the
+              # annotation "The job was not acquired by Runner of type hosted
+              # even after multiple attempts". A job that has no steps is not
+              # proof enough - a person cancelling the release while its jobs
+              # still wait for runners leaves the same shape - and a person's
+              # cancel or a timeout must never resurrect itself. Every
+              # unfinished job must carry the annotation, or nothing is re-run.
+              UNFINISHED_IDS=$(gh_retry gh run view "$RUN_ID" --json jobs \
+                --jq '.jobs[] | select(.conclusion != "success" and .conclusion != "skipped") | .databaseId' || echo unreadable)
+              NOT_ACQUIRED=0
+              OTHER=0
+              for JOB_ID in $UNFINISHED_IDS; do
+                # Read first, then match: grep -q in the pipe could exit early
+                # and, under pipefail, turn a match into a miss.
+                MESSAGES=$(gh_retry gh api "repos/${{ github.repository }}/check-runs/$JOB_ID/annotations" \
+                  --jq '.[].message' 2>/dev/null || echo '')
+                if printf '%s\n' "$MESSAGES" | grep -q 'was not acquired by Runner'; then
+                  NOT_ACQUIRED=$((NOT_ACQUIRED + 1))
+                else
+                  OTHER=$((OTHER + 1))
+                fi
+              done
+              if [ "$OTHER" -gt 0 ] || [ "$NOT_ACQUIRED" -eq 0 ]; then
+                echo "::error::$WORKFLOW ended '$CONCLUSION' and $OTHER unfinished job(s) were not ones GitHub" \
+                     "failed to give a runner to: a cancelled release or a job that timed out. Not re-running" \
+                     "it. The release is NOT published and the version is NOT bumped; tag $VERSION stays in place."
                 exit 1
               fi
               INFRA_RETRY=$((INFRA_RETRY + 1))
               if [ "$INFRA_RETRY" -gt 3 ]; then
-                echo "::error::$WORKFLOW ended '$CONCLUSION' three times with no failed job: nothing" \
+                echo "::error::$WORKFLOW still ended '$CONCLUSION' after three re-runs, with no failed job: nothing" \
                      "compiled wrong, the hosted runners never picked the jobs up. The release is NOT" \
                      "published and the version is NOT bumped; tag $VERSION stays in place - re-run this" \
                      "workflow when GitHub has runner capacity."

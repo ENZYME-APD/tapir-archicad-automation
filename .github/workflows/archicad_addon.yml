@@ -82,14 +82,11 @@ jobs:
   build_mac:
     needs: devkits
     strategy:
-      # The hosted macOS concurrency of this account is 4: four builds start
-      # together, a fifth only when one finishes (measured on the 2.0.1 tag
-      # run). Asking for all six at once is how build_mac (27) ended up "not
-      # acquired by Runner of type hosted even after multiple attempts" on
-      # 2026-11-16 - queued 20 minutes, then cancelled. That single job
-      # failed the whole release while the other 15 passed, so the matrix is
-      # kept within what the pool actually serves.
-      max-parallel: 4
+      # One version failing must not cancel the others. It also keeps
+      # 'cancelled' meaning what the weekly release relies on: a job GitHub
+      # never gave a runner to (build_mac (27) on 2026-11-16, while machines
+      # freed up four times during its 20-minute wait), never a sibling
+      # cancelled by fail-fast. The weekly release re-runs such a job.
       fail-fast: false
       matrix:
         params: ${{ fromJSON(needs.devkits.outputs.mac) }}
