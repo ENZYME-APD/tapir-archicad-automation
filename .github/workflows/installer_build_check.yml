@@ -165,9 +165,11 @@ jobs:
         done < <(find dist/TapirInstaller.app -type f -print0)
         echo "Checked ${#names[@]} Mach-O files."
         # Make sure the libraries were found at all, so a pass means something.
-        for prefix in Python libtcl libtk; do
-          if ! printf '%s\n' "${names[@]}" | grep -q "^$prefix"; then
-            echo "::error::No Mach-O file named $prefix* in dist/TapirInstaller.app"
+        # Tcl/Tk come as libtcl*/libtk* dylibs in older python.org packages
+        # and as Tcl/Tk framework binaries from 3.15 on.
+        for pattern in 'Python' 'libtcl.*|Tcl' 'libtk.*|Tk'; do
+          if ! printf '%s\n' "${names[@]}" | grep -Eqx "$pattern"; then
+            echo "::error::No Mach-O file named $pattern in dist/TapirInstaller.app"
             failed=1
           fi
         done
