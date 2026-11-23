@@ -7690,7 +7690,9 @@ static GS::UniString GetLayoutsSchema (bool allFieldsRequired)
     return schema;
 }
 
-static GS::UniString GetDataSafetySchema ()
+// Not named Get...Schema: the docs generator reads such a call without
+// arguments as the command's own schema method.
+static GS::UniString BuildDataSafetySchema ()
 {
     return R"({
         "type": "object",
@@ -7860,7 +7862,7 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += GetLayoutsSchema (true);
     schema += R"(,
             "dataSafety": )";
-    schema += GetDataSafetySchema ();
+    schema += BuildDataSafetySchema ();
     schema += R"(,
             "calculationRules": )";
     schema += GetCalculationRulesSchema (true);
