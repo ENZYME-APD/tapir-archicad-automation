@@ -436,7 +436,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   tag left on an older commit is deleted with its draft releases and the fixed
   `main` re-tagged under the same version, only when that version has no published
   release and no Grasshopper pipeline run on the tag (which may have pushed it to
-  yak); otherwise the run stops and asks a person, as before.
+  yak); otherwise the run stops and asks a person, as before. A dry run only reports
+  that deletion.
   The release notes are the installer links, a short summary written by
   `tools/release_notes.py` (the new commands per group, the new Grasshopper components
   and marketplace scripts, who made the pull requests, the new contributors and the
@@ -554,7 +555,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
   This is a deliberate maintainer decision to minimize human maintenance.
   A bot PR that fixes a `release-failure` issue (the Actions bot's open issue with
-  that label and its marker, the PR on the issue's `claude/issue-<n>-` branch with
+  that label, whose body starts with `<!-- release-failure: <version> run=<id> -->`
+  naming a weekly release run that failed while the issue was opened, for the version
+  `main` still carries; the PR on the issue's `claude/issue-<n>-` branch with
   `Fixes #<n>`) skips the waiting time, and its merge starts `weekly_release.yml`;
   `claude_pr_review.yml` starts auto-merge when it records a passing verdict, so the
   merge follows the review at once.
