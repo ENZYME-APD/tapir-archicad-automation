@@ -564,6 +564,22 @@ jobs:
                      "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
                 exit 1
               fi
+              # A job that never started - no steps at all, which is what an
+              # unacquired runner leaves behind - is the only shape that is
+              # retried. A cancelled run whose jobs had already started is a
+              # person cancelling the release or a job timing out, and neither
+              # should resurrect itself.
+              UNFINISHED=$(gh_retry gh run view "$RUN_ID" --json jobs \
+                --jq '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped")] | length' || echo 1)
+              UNSTARTED=$(gh_retry gh run view "$RUN_ID" --json jobs \
+                --jq '[.jobs[] | select(.conclusion != "success" and .conclusion != "skipped" and (.steps | length) == 0)] | length' || echo 0)
+              if [ "$UNSTARTED" -lt "$UNFINISHED" ]; then
+                echo "::error::$WORKFLOW ended '$CONCLUSION' and $((UNFINISHED - UNSTARTED)) job(s) had already" \
+                     "started: a cancelled release or a job that timed out, not a runner that was never" \
+                     "acquired. Not re-running it. The release is NOT published and the version is NOT" \
+                     "bumped; tag $VERSION stays in place."
+                exit 1
+              fi
               INFRA_RETRY=$((INFRA_RETRY + 1))
               if [ "$INFRA_RETRY" -gt 3 ]; then
                 echo "::error::$WORKFLOW ended '$CONCLUSION' three times with no failed job: nothing" \
