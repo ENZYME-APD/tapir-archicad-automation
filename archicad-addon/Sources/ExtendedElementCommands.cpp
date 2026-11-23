@@ -16747,8 +16747,11 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                             "minimum": 1,
                             "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the tool defaults."
                         },
-                        "level": { "type": "number" },
-                        "floorIndex": { "type": "integer", "description": "Optional floor index. If omitted, derived from level." },
+                        "level": {
+                            "type": "number",
+                            "description": "Absolute elevation (from the project zero) of the roof's pivot line (single-plane, see pivotLine) or pivot polygon (multi-plane), the same as ModifyRoofs' level: the value GetDetailsOfElements returns as zCoordinate, not its story-relative level (GetDetailsOfElements returns level = this value minus the elevation of the home story). For a single-plane roof the pivot line lies on the roof's underside: its bottom surface passes through the pivot line at this elevation and rises from it at angle, and its top surface is thickness / cos(angle) higher, measured vertically at the pivot line (for example level 1, thickness 0.3 and angle 15 degrees put the top at 1.3106 there). Unlike a slab, a roof has no reference plane setting (no Top, Core Top, Core Bottom or Bottom choice), so level means the same for a Composite roof: the pivot line on its underside, the composite's skins above it and its top surface the composite's total thickness / cos(angle) higher (measured on a Basic roof; not yet checked on a Composite one)."
+                        },
+                        "floorIndex": { "type": "integer", "description": "Optional home story of the roof. If omitted, it is derived from level: the highest story whose elevation is at or below it (the lowest story when it is below every story). Either way level stays an absolute elevation; the offset from the home story is worked out from it." },
                         "thickness": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
@@ -20758,7 +20761,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "elementId": { "$ref": "#/ElementId" },
                         "level": {
                             "type": "number",
-                            "description": "Absolute elevation (from the project zero) of the roof's pivot line (single-plane) or pivot polygon (multi-plane): the value GetDetailsOfElements returns as zCoordinate, not its story-relative level. GetDetailsOfElements then returns level = this value minus the elevation of the roof's home story. Without floorIndex the home story is recomputed from this value: the highest story whose elevation is at or below it (the lowest story when it is below every story), so an elevation at or above the next story's moves the roof to that story. To keep the home story, send the roof's current floorIndex (from GetDetailsOfElements) with level."
+                            "description": "Absolute elevation (from the project zero) of the roof's pivot line (single-plane) or pivot polygon (multi-plane): the value GetDetailsOfElements returns as zCoordinate, not its story-relative level. For a single-plane roof it is the elevation of the roof's underside at the pivot line, as in CreateRoofs. GetDetailsOfElements then returns level = this value minus the elevation of the roof's home story. Without floorIndex the home story is recomputed from this value: the highest story whose elevation is at or below it (the lowest story when it is below every story), so an elevation at or above the next story's moves the roof to that story. To keep the home story, send the roof's current floorIndex (from GetDetailsOfElements) with level."
                         },
                         "floorIndex": {
                             "type": "integer",
