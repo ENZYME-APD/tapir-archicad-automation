@@ -624,11 +624,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetProjectPreferencesCommand> (
             projectCommands, "1.7.3",
-            "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Further pages may follow."
+            "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones, the reference levels, the legacy settings, the layouts settings and the data safety settings (the temporary folder), the Floor Plan Cut Plane Settings, and the Imaging and Calculation page of the Work Environment. Further pages may follow."
         );
         err |= RegisterCommand<SetProjectPreferencesCommand> (
             projectCommands, "1.7.3",
-            "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27."
+            "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones, the reference levels, the legacy settings and the layouts settings, the Floor Plan Cut Plane Settings, and the Imaging and Calculation page of the Work Environment. The data safety page is read only. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27."
         );
         err |= RegisterCommand<ConvertUnitValuesCommand> (
             projectCommands, "1.8.0",
