@@ -434,6 +434,25 @@ jobs:
             done
             return 1
           }
+
+          # Waits for a workflow run to finish and leaves its conclusion in
+          # CONCLUSION. A transient gh failure during this multi-hour wait must
+          # not kill the release under set -e; an unknown status or an empty
+          # conclusion just means poll again (the job timeout bounds the loop).
+          wait_for_run () {
+            local RUN_ID="$1" STATUS _ 
+            while true; do
+              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
+              [ "$STATUS" = "completed" ] && break
+              sleep 60
+            done
+            CONCLUSION=''
+            for _ in 1 2 3; do
+              CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion' || echo '')
+              [ -n "$CONCLUSION" ] && break
+              sleep 20
+            done
+          }
           # The dispatch is a non-idempotent POST: a client-side failure can
           # arrive after the server accepted the run, and a blind retry
           # would start a second parallel pipeline on the tag - racing the
@@ -527,26 +546,46 @@ jobs:
               exit 1
             fi
             echo "Waiting for $WORKFLOW (run $RUN_ID)..."
-            # A transient gh failure during this multi-hour wait must not
-            # kill the release run under set -e; an unknown status just
-            # means poll again (the job timeout bounds the loop).
-            while true; do
-              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
-              [ "$STATUS" = "completed" ] && break
-              sleep 60
+            wait_for_run "$RUN_ID"
+            # A job GitHub never gave a runner to ("The job was not acquired by
+            # Runner of type hosted even after multiple attempts") ends as
+            # 'cancelled', not 'failed' - on 2026-11-16 exactly that on
+            # build_mac (27) failed the 2.0.1 release while 15 of 16 jobs
+            # passed. Such a run is re-run, up to three times. A job that
+            # actually failed is believed: a release missing one version's
+            # binary is worse than a release that waits a week.
+            INFRA_RETRY=0
+            while [ "$CONCLUSION" != "success" ]; do
+              FAILED_JOBS=$(gh_retry gh run view "$RUN_ID" --json jobs \
+                --jq '[.jobs[] | select(.conclusion == "failure")] | length' || echo 1)
+              if [ "$FAILED_JOBS" -gt 0 ]; then
+                echo "::error::$WORKFLOW finished with conclusion '$CONCLUSION', $FAILED_JOBS job(s) failed." \
+                     "The release is NOT published and the version is NOT bumped." \
+                     "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
+                exit 1
+              fi
+              INFRA_RETRY=$((INFRA_RETRY + 1))
+              if [ "$INFRA_RETRY" -gt 3 ]; then
+                echo "::error::$WORKFLOW ended '$CONCLUSION' three times with no failed job: nothing" \
+                     "compiled wrong, the hosted runners never picked the jobs up. The release is NOT" \
+                     "published and the version is NOT bumped; tag $VERSION stays in place - re-run this" \
+                     "workflow when GitHub has runner capacity."
+                exit 1
+              fi
+              echo "::warning::$WORKFLOW ended '$CONCLUSION' but no job failed - a hosted runner was" \
+                   "probably not acquired. Re-running the jobs that did not run" \
+                   "(attempt $INFRA_RETRY of 3)."
+              gh_retry gh run rerun "$RUN_ID" --failed || true
+              # The run stays 'completed' for a few seconds after the rerun
+              # request, so wait for it to be picked up before waiting for it
+              # to finish - otherwise the poll below reads the old conclusion.
+              for _ in $(seq 1 30); do
+                STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
+                [ "$STATUS" != "completed" ] && break
+                sleep 10
+              done
+              wait_for_run "$RUN_ID"
             done
-            CONCLUSION=''
-            for _ in 1 2 3; do
-              CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion' || echo '')
-              [ -n "$CONCLUSION" ] && break
-              sleep 20
-            done
-            if [ "$CONCLUSION" != "success" ]; then
-              echo "::error::$WORKFLOW finished with conclusion '$CONCLUSION'." \
-                   "The release is NOT published and the version is NOT bumped." \
-                   "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
-              exit 1
-            fi
             echo "$WORKFLOW succeeded."
           done
 

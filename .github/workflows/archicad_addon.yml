@@ -40,6 +40,9 @@ jobs:
   build_win:
     needs: devkits
     strategy:
+      # One version failing must not cancel the others: whether it is one
+      # broken version or a broken main is exactly what their results say.
+      fail-fast: false
       matrix:
         params: ${{ fromJSON(needs.devkits.outputs.win) }}
     runs-on: [ windows-2022 ]
@@ -79,6 +82,15 @@ jobs:
   build_mac:
     needs: devkits
     strategy:
+      # The hosted macOS concurrency of this account is 4: four builds start
+      # together, a fifth only when one finishes (measured on the 2.0.1 tag
+      # run). Asking for all six at once is how build_mac (27) ended up "not
+      # acquired by Runner of type hosted even after multiple attempts" on
+      # 2026-11-16 - queued 20 minutes, then cancelled. That single job
+      # failed the whole release while the other 15 passed, so the matrix is
+      # kept within what the pool actually serves.
+      max-parallel: 4
+      fail-fast: false
       matrix:
         params: ${{ fromJSON(needs.devkits.outputs.mac) }}
     runs-on: ${{ matrix.params.acVersion < 26 && 'macos-15-intel' || 'macos-latest' }}
