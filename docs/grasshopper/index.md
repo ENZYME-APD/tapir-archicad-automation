@@ -10,15 +10,17 @@ The Tapir plugin connects Grasshopper to a running Archicad: read elements and t
 
 Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the **Tapir** tab, grouped as in Archicad.
 
-**READ** **Elements and their data**Elements by type, story or selection; their properties, classifications, settings and geometry.
+**Read** **Elements and their data**Elements by type, story or selection; their properties, classifications, settings and geometry.
 
-**CHANGE** **What you pass in**Property values, classifications, layers, IDs and tool settings of the elements you pass in.
+**Change** **What you pass in**Property values, classifications, layers, IDs and tool settings of the elements you pass in.
 
-**CREATE** **From Rhino geometry**Walls, doors, windows, railings, level dimensions and more, from points and curves.
+**Create** **From Rhino geometry**Walls, doors, windows, railings, level dimensions and more, from points and curves.
 
-**PROJECT** **The rest of the file**Stories, attributes, navigator views, layouts, issues, favorites and libraries.
+**Project** **The rest of the file**Stories, attributes, navigator views, layouts, issues, favorites and libraries.
 
 Which Tapir commands have a component, and which settings each covers, is on the [Grasshopper coverage](https://archicad-api.com/gh-coverage/) page.
+
+Every component with its inputs, outputs and JSON keys is in the [Grasshopper components](https://archicad-api.com/grasshopper-components/) reference.
 
 ## One per Archicad *tool.*
 
@@ -64,11 +66,11 @@ Placed at a `Position`, optionally on a parent element.
 
 Refresh Create
 
-**REFRESH** **Reads**Reads the elements in `ElementGuid` and fills every output.
+**Refresh** **Reads**Reads the elements in `ElementGuid` and fills every output.
 
-**EXECUTE** **Writes**Writes the given settings to those elements. Only the keys you give are written.
+**Execute** **Writes**Writes the given settings to those elements. Only the keys you give are written.
 
-**CREATE** **Makes new elements**From the geometry inputs, starting from the tool's defaults or from a `FavoriteName`.
+**Create** **Makes new elements**From the geometry inputs, starting from the tool's defaults or from a `FavoriteName`.
 
 Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed straight back into the same input. Archicad has no command to change railings or level dimensions after they are placed, so for those Execute only writes the ID, layer and draw order.
 

@@ -1,0 +1,2556 @@
+{
+ "version": 1,
+ "groups": [
+  "Favorites Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetFavoritesByType",
+   "group": "Favorites Commands",
+   "version": "1.2.2",
+   "description": "Returns a list of the names of all favorites with the given element type",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementType"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/FavoritesOrError"
+   },
+   "grasshopperComponents": [
+    "GetFavoritesByTypeComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetFavoritesByType.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoritesByType.py",
+    "description": "Lists the names of the Wall Favorites of the project with GetFavoritesByType.",
+    "code": "\"\"\"Lists the names of the Wall Favorites of the project with GetFavoritesByType.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetFavoritesByType"
+  },
+  {
+   "name": "GetAllFavorites",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "description": "Returns every Favorite of the project, or only those of the given element type, with its name and element type. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "Only the Favorites of this element type are returned. Omit it to get every Favorite."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "type": "array",
+      "items": {
+       "$ref": "#/FavoriteSummary"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAllFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetAllFavorites.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetAllFavorites.py",
+    "description": "Lists every Favorite of the project with its element type with GetAllFavorites. Requires Archicad 29 or later.",
+    "code": "\"\"\"Lists every Favorite of the project with its element type with GetAllFavorites.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nfavorites = aclib.RunTapirCommand ('GetAllFavorites')['favorites']\nfor favorite in favorites:\n    print (favorite.get ('elementType'), favorite['name'])\n\n# Only the Favorites of one element type.\naclib.PrintJson (aclib.RunTapirCommand ('GetAllFavorites', {'elementType': 'Door'}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAllFavorites"
+  },
+  {
+   "name": "GetFavoritePreviewImage",
+   "group": "Favorites Commands",
+   "version": "1.2.7",
+   "description": "Returns the preview image of the given favorite.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorite": {
+      "type": "string",
+      "description": "The name of the favorite."
+     },
+     "imageType": {
+      "type": "string",
+      "description": "The type of the preview image. Default is 3D.",
+      "enum": [
+       "2D",
+       "Section",
+       "3D"
+      ]
+     },
+     "format": {
+      "type": "string",
+      "description": "The image format. Default is png.",
+      "enum": [
+       "png",
+       "jpg"
+      ]
+     },
+     "width": {
+      "type": "integer",
+      "description": "The width of the preview image in pixels. Default is 128."
+     },
+     "height": {
+      "type": "integer",
+      "description": "The height of the preview image in pixels. Default is 128."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorite"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "previewImage": {
+      "type": "string",
+      "description": "The base64 encoded preview image."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "previewImage"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetFavoritePreviewImageComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetFavoritePreviewImage.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoritePreviewImage.py",
+    "description": "Saves the 3D preview image of the first Wall Favorite as a PNG file with GetFavoritePreviewImage. Needs a Wall Favorite. The image is written into a new temporary folder.",
+    "code": "\"\"\"Saves the 3D preview image of the first Wall Favorite as a PNG file with GetFavoritePreviewImage.\n\nNeeds a Wall Favorite. The image is written into a new temporary folder.\n\"\"\"\nimport base64\nimport os\nimport tempfile\n\nimport aclib\n\nwallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']\nif not wallFavorites:\n    raise SystemExit ('The project has no Wall Favorite.')\n\nresponse = aclib.RunTapirCommand ('GetFavoritePreviewImage', {\n    'favorite': wallFavorites[0],\n    'imageType': '3D',\n    'format': 'png',\n    'width': 256,\n    'height': 256\n})\n\nimagePath = os.path.join (tempfile.mkdtemp (), 'favorite_preview.png')\nwith open (imagePath, 'wb') as imageFile:\n    imageFile.write (base64.b64decode (response['previewImage']))\nprint ('Preview image saved to', imagePath)\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetFavoritePreviewImage"
+  },
+  {
+   "name": "GetFavoriteDetails",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Returns the classifications, property values and element category values stored in the given favorites, so they can be audited before elements are placed. Each property value comes with its evaluation status and default-value flag; the value itself is only returned when it has been evaluated.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "$ref": "#/Favorites"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "favoriteDetails": {
+      "type": "array",
+      "description": "The details of the given favorites, in the order of the input, or an error for a favorite that could not be read.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/FavoriteDetails"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favoriteDetails"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetFavoriteDetailsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetFavoriteDetails.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteDetails.py",
+    "description": "Reads the classifications, property values and element categories stored in the Wall Favorites with GetFavoriteDetails. Needs a Wall Favorite.",
+    "code": "\"\"\"Reads the classifications, property values and element categories stored in the Wall Favorites with GetFavoriteDetails.\n\nNeeds a Wall Favorite.\n\"\"\"\nimport aclib\n\nwallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']\nif not wallFavorites:\n    raise SystemExit ('The project has no Wall Favorite.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetFavoriteDetails', {'favorites': wallFavorites[:3]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetFavoriteDetails"
+  },
+  {
+   "name": "ApplyFavoritesToElementDefaults",
+   "group": "Favorites Commands",
+   "version": "1.1.2",
+   "description": "Apply the given favorites to element defaults.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "$ref": "#/Favorites"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ApplyFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/ApplyFavoritesToElementDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ApplyFavoritesToElementDefaults.py",
+    "description": "Makes the first Wall Favorite the default settings of the Wall tool with ApplyFavoritesToElementDefaults. Needs a Wall Favorite. Changes the Wall tool's default settings.",
+    "code": "\"\"\"Makes the first Wall Favorite the default settings of the Wall tool with ApplyFavoritesToElementDefaults.\n\nNeeds a Wall Favorite. Changes the Wall tool's default settings.\n\"\"\"\nimport aclib\n\nwallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']\nif not wallFavorites:\n    raise SystemExit ('The project has no Wall Favorite.')\n\naclib.PrintJson (aclib.RunTapirCommand ('ApplyFavoritesToElementDefaults', {'favorites': [wallFavorites[0]]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ApplyFavoritesToElementDefaults"
+  },
+  {
+   "name": "CreateFavoritesFromElements",
+   "group": "Favorites Commands",
+   "version": "1.1.2",
+   "description": "Create favorites from the given elements.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favoritesFromElements": {
+      "type": "array",
+      "items": {
+       "$ref": "#/FavoriteFromElement"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favoritesFromElements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/CreateFavoritesFromElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/CreateFavoritesFromElements.py",
+    "description": "Creates a Favorite from the first wall of the project with CreateFavoritesFromElements, then deletes it. Needs at least one Wall.",
+    "code": "\"\"\"Creates a Favorite from the first wall of the project with CreateFavoritesFromElements, then deletes it.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateFavoritesFromElements', {\n    'favoritesFromElements': [{\n        'elementId': walls[0]['elementId'],\n        'favorite': 'Tapir Example Wall'\n    }]\n}))\n\naclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})\n\naclib.RunTapirCommand ('DeleteFavorites', {'favorites': ['Tapir Example Wall']})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateFavoritesFromElements"
+  },
+  {
+   "name": "ImportFavorites",
+   "group": "Favorites Commands",
+   "version": "1.5.0",
+   "description": "Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy .prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew. In a Teamwork project the Favorites lockable object set must be reserved first (see ReserveLockableObjectSet).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string",
+      "description": "Absolute path on the AC host. With the prefs format: a Favorites file (.prefs) or folder. With the xml format: the folder of Favorite files, as ExportFavorites writes it. With the legacyPRF format: the .prf file."
+     },
+     "format": {
+      "$ref": "#/FavoriteImportFormat"
+     },
+     "fileNames": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Only with the xml format: the names of the Favorite files in the folder to import. Default: every Favorite file of the folder."
+     },
+     "targetFolder": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Folder hierarchy under which to import. Empty = root. With the xml and legacyPRF formats the folder must exist, and omitting it keeps the folders stored with the Favorites."
+     },
+     "importFolders": {
+      "type": "boolean",
+      "description": "Only with the prefs format: if true and `path` is a folder, the folder structure is preserved."
+     },
+     "conflictPolicy": {
+      "$ref": "#/FavoriteImportConflictPolicy"
+     }
+    },
+    "required": [
+     "path"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "firstConflictName": {
+      "type": "string",
+      "description": "Set when conflictPolicy=Error and a name collided; absent otherwise."
+     }
+    },
+    "additionalProperties": false
+   },
+   "grasshopperComponents": [
+    "ImportFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/ImportFavorites.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ImportFavorites.py",
+    "description": "Imports a Favorite from a .prefs file with ImportFavorites. Needs at least one Wall. The script creates the Favorite 'Tapir Example Wall' from the first wall, exports it to a temporary file, deletes it, imports it again from the file and finally deletes it.",
+    "code": "\"\"\"Imports a Favorite from a .prefs file with ImportFavorites.\n\nNeeds at least one Wall. The script creates the Favorite 'Tapir Example Wall' from the first wall, exports it to a\ntemporary file, deletes it, imports it again from the file and finally deletes it.\n\"\"\"\nimport os\nimport tempfile\n\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\nfavoriteName = 'Tapir Example Wall'\naclib.RunTapirCommand ('CreateFavoritesFromElements', {\n    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': favoriteName}]\n})\n\nwith tempfile.TemporaryDirectory () as tempDir:\n    favoritesFile = os.path.join (tempDir, 'TapirExample.prefs')\n    aclib.RunTapirCommand ('ExportFavorites', {'path': favoritesFile, 'names': [favoriteName]})\n    aclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]})\n\n    aclib.PrintJson (aclib.RunTapirCommand ('ImportFavorites', {\n        'path': favoritesFile,\n        'format': 'prefs',\n        'conflictPolicy': 'Skip'\n    }))\n\naclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})\n\naclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ImportFavorites"
+  },
+  {
+   "name": "ExportFavorites",
+   "group": "Favorites Commands",
+   "version": "1.5.0",
+   "description": "Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format). With overwrite false an export to a single file refuses to replace an existing file.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string",
+      "description": "Absolute path on the AC host. With the prefs format: if extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder. With the xml format: the folder to write the Favorite files to. With the legacyPRF format: the .prf file to write."
+     },
+     "names": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Optional subset of Favorites to export. Default: export all."
+     },
+     "format": {
+      "$ref": "#/FavoriteExportFormat",
+      "description": "prefs (the default) works in every Archicad version. xml exports each Favorite to its own file in the folder, and legacyPRF exports to a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+     },
+     "overwrite": {
+      "type": "boolean",
+      "description": "Optional, true by default: an existing file is overwritten. false refuses to export when a file already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's."
+     }
+    },
+    "required": [
+     "path"
+    ],
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ExportFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/ExportFavorites.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ExportFavorites.py",
+    "description": "Exports the Wall Favorites of the project to a .prefs file with ExportFavorites. Needs a Wall Favorite. The file is written into a new temporary folder.",
+    "code": "\"\"\"Exports the Wall Favorites of the project to a .prefs file with ExportFavorites.\n\nNeeds a Wall Favorite. The file is written into a new temporary folder.\n\"\"\"\nimport os\nimport tempfile\n\nimport aclib\n\nwallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']\nif not wallFavorites:\n    raise SystemExit ('The project has no Wall Favorite.')\n\nfavoritesFile = os.path.join (tempfile.mkdtemp (), 'WallFavorites.prefs')\n\naclib.PrintJson (aclib.RunTapirCommand ('ExportFavorites', {\n    'path': favoritesFile,\n    'names': wallFavorites,\n    'format': 'prefs'\n}))\nprint ('Favorites exported to', favoritesFile)\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ExportFavorites"
+  },
+  {
+   "name": "ApplyFavoritesToElements",
+   "group": "Favorites Commands",
+   "version": "1.5.4",
+   "description": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. The cross section of a Column or Beam is a Favorite setting and is applied too. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link, a Column's height, top link and cross section width and depth, a Beam's cross section width and height) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes. settingGroups is the positive list instead: e.g. only FloorPlanAndSection applies just the pens, line types, story visibility and cut and cover fills of a Column or Beam, and nothing else of the Favorite. With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, or to every element of its type that matches the filter.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favoritesToApply": {
+      "type": "array",
+      "description": "The elements and the Favorite to apply to each. Give this or favorite.",
+      "items": {
+       "$ref": "#/FavoriteToApply"
+      }
+     },
+     "favorite": {
+      "type": "string",
+      "description": "The name of one Favorite to apply to many elements, instead of favoritesToApply: to the given elements, or without elements to every element of the Favorite's type that matches the filter. The Favorite is read only once. Needs elements or filter."
+     },
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "The elements to apply the single favorite to, one execution result each, in the same order. Only with favorite."
+     },
+     "filter": {
+      "$ref": "#/ElementTypeFloorLayerFilter",
+      "description": "Server-side element filter for the single favorite. Without elements the favorite is applied to every element of its type that matches it; an element of elements that does not match it gets a failed execution result. Only with favorite."
+     },
+     "applySettings": {
+      "type": "boolean",
+      "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. A Stair keeps its own baseline and flight width. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
+     },
+     "applyClassifications": {
+      "type": "boolean",
+      "description": "Whether to apply the Favorite's classifications. Default is true."
+     },
+     "applyCategories": {
+      "type": "boolean",
+      "description": "Whether to apply the Favorite's element categories (e.g. IFC categories). Default is true."
+     },
+     "applyProperties": {
+      "type": "boolean",
+      "description": "Whether to apply the Favorite's property values. Default is true."
+     },
+     "keepFields": {
+      "type": "array",
+      "description": "Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall; 'width' and 'depth' (the cross section) to a Column, and 'width' and 'height' (the cross section) to a Beam. The cross section of a Column or Beam is a Favorite setting and is applied unless it is kept. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.",
+      "items": {
+       "$ref": "#/FavoriteKeepField"
+      }
+     },
+     "settingGroups": {
+      "type": "array",
+      "description": "Apply only these panels of the Favorite's settings dialog, and nothing else of it - a positive list instead of keepFields. 'FloorPlanAndSection' applies the Floor Plan and Section settings: story visibility (Show on Stories), floor plan display and projection, the pens and line types of the cut, uncut, overhead and hidden lines (a Beam's reference axis too), the cut fill pens and the cover fill; geometry, size, cross section, building material, profile, layer and the other panels stay the target's. It is supported for Column and Beam elements; another element type gets a failed execution result and is left unchanged. 'ClassificationAndProperties' applies the Favorite's classifications, element categories (e.g. structural function) and property values, each still only when its own apply flag is not false; without it in the list none of them is applied. applySettings false turns 'FloorPlanAndSection' off. keepFields still applies. Default: the whole Favorite is applied as described for applySettings.",
+      "items": {
+       "type": "string",
+       "enum": [
+        "FloorPlanAndSection",
+        "ClassificationAndProperties"
+       ]
+      },
+      "minItems": 1
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ApplyFavoritesToElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/ApplyFavoritesToElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ApplyFavoritesToElements.py",
+    "description": "Applies the first Wall Favorite to a new wall with ApplyFavoritesToElements, keeping the wall's height. Needs a Wall Favorite. The wall is created by the script and deleted at the end.",
+    "code": "\"\"\"Applies the first Wall Favorite to a new wall with ApplyFavoritesToElements, keeping the wall's height.\n\nNeeds a Wall Favorite. The wall is created by the script and deleted at the end.\n\"\"\"\nimport aclib\n\nwallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']\nif not wallFavorites:\n    raise SystemExit ('The project has no Wall Favorite.')\n\nwall = aclib.RunTapirCommand ('CreateWalls', {\n    'wallsData': [{'begCoordinate': {'x': 0.0, 'y': 0.0}, 'endCoordinate': {'x': 5.0, 'y': 0.0}, 'height': 3.0}]\n})['elements'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('ApplyFavoritesToElements', {\n    'favoritesToApply': [{'elementId': wall['elementId'], 'favorite': wallFavorites[0]}],\n    'applySettings': True,\n    'applyClassifications': True,\n    'applyCategories': True,\n    'applyProperties': False,\n    'keepFields': ['height', 'topOffset', 'relativeTopStory']\n}))\n\naclib.RunTapirCommand ('DeleteElements', {'elements': [wall]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ApplyFavoritesToElements"
+  },
+  {
+   "name": "UpdateFavoritesFromElements",
+   "group": "Favorites Commands",
+   "version": "1.5.4",
+   "description": "Update existing favorites from the given elements.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favoritesFromElements": {
+      "type": "array",
+      "items": {
+       "$ref": "#/FavoritesFromElementUpdate"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favoritesFromElements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UpdateFavoritesFromElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/UpdateFavoritesFromElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/UpdateFavoritesFromElements.py",
+    "description": "Updates a Favorite from the settings of a wall with UpdateFavoritesFromElements. Needs at least one Wall. The Favorite 'Tapir Example Wall' is created by the script and deleted at the end.",
+    "code": "\"\"\"Updates a Favorite from the settings of a wall with UpdateFavoritesFromElements.\n\nNeeds at least one Wall. The Favorite 'Tapir Example Wall' is created by the script and deleted at the end.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\nfavoriteName = 'Tapir Example Wall'\naclib.RunTapirCommand ('CreateFavoritesFromElements', {\n    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': favoriteName}]\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('UpdateFavoritesFromElements', {\n    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': favoriteName}]\n}))\n\naclib.RunTapirCommand ('DeleteFavorites', {'favorites': [favoriteName]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UpdateFavoritesFromElements"
+  },
+  {
+   "name": "RenameFavorites",
+   "group": "Favorites Commands",
+   "version": "1.5.4",
+   "description": "Rename existing favorites.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "renames": {
+      "type": "array",
+      "items": {
+       "$ref": "#/FavoriteRename"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "renames"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RenameFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/RenameFavorites.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/RenameFavorites.py",
+    "description": "Renames a Favorite with RenameFavorites. Needs at least one Wall. The Favorite is created from the first wall by the script and deleted at the end.",
+    "code": "\"\"\"Renames a Favorite with RenameFavorites.\n\nNeeds at least one Wall. The Favorite is created from the first wall by the script and deleted at the end.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.RunTapirCommand ('CreateFavoritesFromElements', {\n    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': 'Tapir Example Wall'}]\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('RenameFavorites', {\n    'renames': [{'oldName': 'Tapir Example Wall', 'newName': 'Tapir Example Wall (renamed)'}]\n}))\n\naclib.RunTapirCommand ('DeleteFavorites', {'favorites': ['Tapir Example Wall (renamed)']})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RenameFavorites"
+  },
+  {
+   "name": "DeleteFavorites",
+   "group": "Favorites Commands",
+   "version": "1.5.4",
+   "description": "Delete existing favorites.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "$ref": "#/Favorites"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/DeleteFavorites.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/DeleteFavorites.py",
+    "description": "Deletes a Favorite with DeleteFavorites. Needs at least one Wall. The deleted Favorite is created from the first wall by the script first.",
+    "code": "\"\"\"Deletes a Favorite with DeleteFavorites.\n\nNeeds at least one Wall. The deleted Favorite is created from the first wall by the script first.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.RunTapirCommand ('CreateFavoritesFromElements', {\n    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': 'Tapir Example Wall'}]\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteFavorites', {'favorites': ['Tapir Example Wall']}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteFavorites"
+  },
+  {
+   "name": "GetFavoriteFolders",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Returns the folder tree of the Favorites palette from its root folder: the name and path of every folder and the names of the Favorites in it. Available from Archicad 29.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "rootFolder": {
+      "$ref": "#/FavoriteFolderDetails"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "rootFolder"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetFavoriteFoldersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetFavoriteFolders.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteFolders.py",
+    "description": "Prints the folder tree of the Favorites palette with GetFavoriteFolders. Requires Archicad 29 or later.",
+    "code": "\"\"\"Prints the folder tree of the Favorites palette with GetFavoriteFolders.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nrootFolder = aclib.RunTapirCommand ('GetFavoriteFolders')['rootFolder']\n\nfolders = [rootFolder]\nwhile folders:\n    folder = folders.pop (0)\n    print ('/'.join (folder['path']) or '(root)', '-', len (folder['favorites']), 'Favorites')\n    folders += folder['subFolders']\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetFavoriteFolders"
+  },
+  {
+   "name": "ReadFavoritesFile",
+   "group": "Favorites Commands",
+   "version": "2.0.0",
+   "description": "Read the Favorites of a .prefs file or folder without importing them, returning the name, element type and folder of each. Nothing in the project changes, so the result can be compared with the project's Favorites before ImportFavorites.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string",
+      "description": "Absolute path on the AC host to a Favorites file (.prefs) or folder."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "path"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "type": "array",
+      "items": {
+       "$ref": "#/FavoriteFileEntry"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "grasshopperComponents": [
+    "ReadFavoritesFileComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/ReadFavoritesFile.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ReadFavoritesFile.py",
+    "description": "Lists the Favorites stored in a .prefs file with ReadFavoritesFile, without importing them. Needs a Wall Favorite: the script first exports the Wall Favorites to a temporary file to have a file to read.",
+    "code": "\"\"\"Lists the Favorites stored in a .prefs file with ReadFavoritesFile, without importing them.\n\nNeeds a Wall Favorite: the script first exports the Wall Favorites to a temporary file to have a file to read.\n\"\"\"\nimport os\nimport tempfile\n\nimport aclib\n\nwallFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Wall'})['favorites']\nif not wallFavorites:\n    raise SystemExit ('The project has no Wall Favorite.')\n\nwith tempfile.TemporaryDirectory () as tempDir:\n    favoritesFile = os.path.join (tempDir, 'WallFavorites.prefs')\n    aclib.RunTapirCommand ('ExportFavorites', {'path': favoritesFile, 'names': wallFavorites})\n\n    aclib.PrintJson (aclib.RunTapirCommand ('ReadFavoritesFile', {'path': favoritesFile}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReadFavoritesFile"
+  },
+  {
+   "name": "CreateFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "parentPath": {
+      "type": "array",
+      "description": "The path of the folder to create the new folder in, in the format GetFavoriteFolders returns: the folder names from the root down. Empty for the root folder.",
+      "items": {
+       "type": "string"
+      }
+     },
+     "name": {
+      "type": "string",
+      "description": "The name of the new folder.",
+      "minLength": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "parentPath",
+     "name"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "folder": {
+      "$ref": "#/FavoriteFolderDetails"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "folder"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateFavoriteFolderComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/CreateFavoriteFolder.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/CreateFavoriteFolder.py",
+    "description": "Creates a folder and a subfolder in the Favorites palette with CreateFavoriteFolder, then deletes them. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a folder and a subfolder in the Favorites palette with CreateFavoriteFolder, then deletes them.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'}))\naclib.PrintJson (aclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': ['Tapir Example Folder'], 'name': 'Walls'}))\n\naclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Folder'], 'recursive': True})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateFavoriteFolder"
+  },
+  {
+   "name": "RenameFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Renames a folder of the Favorites palette given by its path. The root folder cannot be renamed. Returns the renamed folder. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "array",
+      "description": "The path of the folder to rename, in the format GetFavoriteFolders returns: the folder names from the root down. The root folder cannot be renamed.",
+      "items": {
+       "type": "string"
+      },
+      "minItems": 1
+     },
+     "newName": {
+      "type": "string",
+      "description": "The new name of the folder.",
+      "minLength": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "path",
+     "newName"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "folder": {
+      "$ref": "#/FavoriteFolderDetails"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "folder"
+    ]
+   },
+   "grasshopperComponents": [
+    "RenameFavoriteFolderComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/RenameFavoriteFolder.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/RenameFavoriteFolder.py",
+    "description": "Renames a folder of the Favorites palette with RenameFavoriteFolder. The folder is created by the script and deleted at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Renames a folder of the Favorites palette with RenameFavoriteFolder.\n\nThe folder is created by the script and deleted at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'})\n\naclib.PrintJson (aclib.RunTapirCommand ('RenameFavoriteFolder', {\n    'path': ['Tapir Example Folder'],\n    'newName': 'Tapir Example Folder (renamed)'\n}))\n\naclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Folder (renamed)']})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RenameFavoriteFolder"
+  },
+  {
+   "name": "DeleteFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Deletes a folder of the Favorites palette given by its path. Archicad deletes the folder's Favorites and subfolders with it, so a folder that is not empty is deleted only if recursive is true. The root folder cannot be deleted. Returns the deleted folder. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "array",
+      "description": "The path of the folder to delete, in the format GetFavoriteFolders returns: the folder names from the root down. The root folder cannot be deleted.",
+      "items": {
+       "type": "string"
+      },
+      "minItems": 1
+     },
+     "recursive": {
+      "type": "boolean",
+      "description": "Archicad deletes a folder together with everything in it: its Favorites and its subfolders with their Favorites. A folder that is not empty is deleted only if this is true. Default: false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "path"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "deletedFolder": {
+      "$ref": "#/FavoriteFolderDetails"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "deletedFolder"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteFavoriteFolderComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/DeleteFavoriteFolder.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/DeleteFavoriteFolder.py",
+    "description": "Deletes a folder of the Favorites palette with DeleteFavoriteFolder. The folder is created by the script first. A folder that is not empty is only deleted with recursive set to true, and then its Favorites are deleted with it. Requires Archicad 29 or later.",
+    "code": "\"\"\"Deletes a folder of the Favorites palette with DeleteFavoriteFolder.\n\nThe folder is created by the script first. A folder that is not empty is only deleted with recursive set to true,\nand then its Favorites are deleted with it. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'})\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteFavoriteFolder', {\n    'path': ['Tapir Example Folder'],\n    'recursive': False\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteFavoriteFolder"
+  },
+  {
+   "name": "GetFavoriteSettings",
+   "group": "Favorites Commands",
+   "version": "1.7.3",
+   "description": "Reads the stored settings of the given favorites without applying them or placing an element: the element type, the folder, the library part and GDL parameters, the marker (library part and parameters) of Window and Door favorites, and the sub-elements. A favorite without a marker has no marker field, which is not an error. The other settings of the element (pens, layer, structure, etc.) are not returned.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "$ref": "#/Favorites"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "favoriteSettings": {
+      "type": "array",
+      "description": "The settings of each given Favorite, in the order of the input, or an error for a Favorite that could not be read.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/FavoriteSettings"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favoriteSettings"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetFavoriteSettingsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetFavoriteSettings.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteSettings.py",
+    "description": "Reads the library part, GDL parameters and marker stored in the Door Favorites with GetFavoriteSettings. Needs a Door Favorite.",
+    "code": "\"\"\"Reads the library part, GDL parameters and marker stored in the Door Favorites with GetFavoriteSettings.\n\nNeeds a Door Favorite.\n\"\"\"\nimport aclib\n\ndoorFavorites = aclib.RunTapirCommand ('GetFavoritesByType', {'elementType': 'Door'})['favorites']\nif not doorFavorites:\n    raise SystemExit ('The project has no Door Favorite.')\n\nresponse = aclib.RunTapirCommand ('GetFavoriteSettings', {'favorites': doorFavorites[:3]})\nfor settings in response['favoriteSettings']:\n    if 'error' in settings:\n        print (settings['error']['message'])\n    else:\n        print (settings['favorite'], settings.get ('libPart', {}).get ('name'), len (settings['parameters']), 'parameters')\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetFavoriteSettings"
+  },
+  {
+   "name": "CreateFavorite",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Creates a Favorite in the given folder from the settings of another Favorite or of the current Opening tool default. conflictPolicy says what happens when the name is taken: fail, skip, overwrite the existing Favorite's settings or create the new one under a free name. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "The name of the new Favorite."
+     },
+     "folder": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "The folder of the Favorites palette to create the Favorite in, as the folder names from the root down. The folder must exist. Empty or omitted = root."
+     },
+     "source": {
+      "$ref": "#/FavoriteSettingsSource"
+     },
+     "conflictPolicy": {
+      "$ref": "#/FavoriteCreationConflictPolicy"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "name",
+     "source"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "The name of the Favorite: the given name, or the new name with RenameNew."
+     },
+     "folder": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "The folder of the Favorite, as the folder names from the root down. Empty for the root. Missing when Archicad cannot read it."
+     },
+     "outcome": {
+      "$ref": "#/FavoriteCreationOutcome"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "name",
+     "outcome"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateFavoriteComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/CreateFavorite.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/CreateFavorite.py",
+    "description": "Creates a copy of the first Favorite of the project with CreateFavorite, then deletes it. Needs a Favorite. RenameNew picks a free name when the name is taken. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a copy of the first Favorite of the project with CreateFavorite, then deletes it.\n\nNeeds a Favorite. RenameNew picks a free name when the name is taken. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nfavorites = aclib.RunTapirCommand ('GetAllFavorites')['favorites']\nif not favorites:\n    raise SystemExit ('The project has no Favorite.')\n\ncreated = aclib.RunTapirCommand ('CreateFavorite', {\n    'name': 'Tapir Example Favorite',\n    'folder': [],\n    'source': {'favoriteName': favorites[0]['name']},\n    'conflictPolicy': 'RenameNew'\n})\naclib.PrintJson (created)\n\naclib.RunTapirCommand ('DeleteFavorites', {'favorites': [created['name']]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateFavorite"
+  },
+  {
+   "name": "ChangeFavorite",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Gives an existing Favorite the settings of another Favorite or of the current Opening tool default. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favoriteName": {
+      "type": "string",
+      "description": "The name of the Favorite to change."
+     },
+     "source": {
+      "type": "object",
+      "description": "Where the new settings of the Favorite come from: exactly one of favoriteName and toolDefault.",
+      "properties": {
+       "favoriteName": {
+        "type": "string",
+        "description": "Take the settings of this Favorite."
+       },
+       "toolDefault": {
+        "type": "string",
+        "enum": [
+         "Opening"
+        ],
+        "description": "Take the current settings of this tool."
+       }
+      },
+      "additionalProperties": false
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favoriteName",
+     "source"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ChangeFavoriteComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/ChangeFavorite.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ChangeFavorite.py",
+    "description": "Gives a Favorite the settings of another Favorite with ChangeFavorite. Needs a Wall Favorite. The changed Favorite is a copy of the first Wall Favorite, created by the script and deleted at the end; it gets the settings of the last Wall Favorite. Requires Archicad 29 or later.",
+    "code": "\"\"\"Gives a Favorite the settings of another Favorite with ChangeFavorite.\n\nNeeds a Wall Favorite. The changed Favorite is a copy of the first Wall Favorite, created by the script and deleted at\nthe end; it gets the settings of the last Wall Favorite. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nwallFavorites = aclib.RunTapirCommand ('GetAllFavorites', {'elementType': 'Wall'})['favorites']\nif not wallFavorites:\n    raise SystemExit ('The project has no Wall Favorite.')\n\ncreated = aclib.RunTapirCommand ('CreateFavorite', {\n    'name': 'Tapir Example Favorite',\n    'source': {'favoriteName': wallFavorites[0]['name']},\n    'conflictPolicy': 'RenameNew'\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('ChangeFavorite', {\n    'favoriteName': created['name'],\n    'source': {'favoriteName': wallFavorites[-1]['name']}\n}))\n\naclib.RunTapirCommand ('DeleteFavorites', {'favorites': [created['name']]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ChangeFavorite"
+  },
+  {
+   "name": "ApplyFavoriteToToolDefault",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Makes the settings of the given Favorite the settings of its tool, and returns the element type of that tool. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favoriteName": {
+      "type": "string",
+      "description": "The name of the Favorite whose settings become the settings of its tool."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favoriteName"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "The element type of the tool whose settings changed."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementType"
+    ]
+   },
+   "grasshopperComponents": [
+    "ApplyFavoriteToToolDefaultComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/ApplyFavoriteToToolDefault.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ApplyFavoriteToToolDefault.py",
+    "description": "Makes the settings of the first Favorite of the project the settings of its tool with ApplyFavoriteToToolDefault. Needs a Favorite. Changes the default settings of that tool. Requires Archicad 29 or later.",
+    "code": "\"\"\"Makes the settings of the first Favorite of the project the settings of its tool with ApplyFavoriteToToolDefault.\n\nNeeds a Favorite. Changes the default settings of that tool. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nfavorites = aclib.RunTapirCommand ('GetAllFavorites')['favorites']\nif not favorites:\n    raise SystemExit ('The project has no Favorite.')\n\naclib.PrintJson (aclib.RunTapirCommand ('ApplyFavoriteToToolDefault', {'favoriteName': favorites[0]['name']}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ApplyFavoriteToToolDefault"
+  },
+  {
+   "name": "MoveFavoriteFolder",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "folder": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "The folder of the Favorites palette to move, as the folder names from the root down. The root folder cannot be moved."
+     },
+     "targetFolder": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "The folder to move it into, as the folder names from the root down. Empty = root. It cannot be the moved folder or one of its subfolders."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "folder",
+     "targetFolder"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "folder": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "The new path of the moved folder, as the folder names from the root down."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "folder"
+    ]
+   },
+   "grasshopperComponents": [
+    "MoveFavoriteFolderComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/MoveFavoriteFolder.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/MoveFavoriteFolder.py",
+    "description": "Moves a folder of the Favorites palette into another folder with MoveFavoriteFolder. Both folders are created by the script and deleted at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Moves a folder of the Favorites palette into another folder with MoveFavoriteFolder.\n\nBoth folders are created by the script and deleted at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Target'})\naclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Moved'})\n\naclib.PrintJson (aclib.RunTapirCommand ('MoveFavoriteFolder', {\n    'folder': ['Tapir Example Moved'],\n    'targetFolder': ['Tapir Example Target']\n}))\n\naclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Target'], 'recursive': True})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#MoveFavoriteFolder"
+  },
+  {
+   "name": "GetFavoriteContents",
+   "group": "Favorites Commands",
+   "version": "2.0.0",
+   "description": "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder is given), each with its folder path, classifications, element category values and property values, read through the Favorite manager. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "folderPath": {
+      "type": "array",
+      "description": "The folder to read, the folder names from the root of the Favorites palette down. The Favorites of its subfolders are returned too. Omit it or leave it empty for every Favorite.",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "type": "array",
+      "description": "The Favorites of the folder and of its subfolders, or an error for a Favorite that could not be read.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/FavoriteContents"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetFavoriteContentsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetFavoriteContents.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteContents.py",
+    "description": "Lists every Favorite with its folder path, classifications, element category and property values with GetFavoriteContents. Give 'folderPath', the folder names from the root down, to read only one folder and its subfolders. Requires Archicad 29 or later.",
+    "code": "\"\"\"Lists every Favorite with its folder path, classifications, element category and property values with GetFavoriteContents.\n\nGive 'folderPath', the folder names from the root down, to read only one folder and its subfolders.\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetFavoriteContents', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetFavoriteContents"
+  },
+  {
+   "name": "DeleteFavoritesWithManager",
+   "group": "Favorites Commands",
+   "version": "2.0.0",
+   "description": "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. One execution result for each. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "type": "array",
+      "description": "The Favorites to delete.",
+      "items": {
+       "$ref": "#/FavoriteNameAndFolder"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteFavoritesWithManagerComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/DeleteFavoritesWithManager.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/DeleteFavoritesWithManager.py",
+    "description": "Deletes a Favorite through the Favorite manager with DeleteFavoritesWithManager. Needs at least one Wall. The deleted Favorite is created from the first wall by the script first; the second, missing Favorite shows the error item. Requires Archicad 29 or later.",
+    "code": "\"\"\"Deletes a Favorite through the Favorite manager with DeleteFavoritesWithManager.\n\nNeeds at least one Wall. The deleted Favorite is created from the first wall by the script first;\nthe second, missing Favorite shows the error item. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.RunTapirCommand ('CreateFavoritesFromElements', {\n    'favoritesFromElements': [{'elementId': walls[0]['elementId'], 'favorite': 'Tapir Example Wall'}]\n})\n\n# 'folderPath' is optional: without it the Favorite is found by name anywhere,\n# with it only directly in that folder (here the root folder).\naclib.PrintJson (aclib.RunTapirCommand ('DeleteFavoritesWithManager', {\n    'favorites': [\n        {'name': 'Tapir Example Wall', 'folderPath': []},\n        {'name': 'No Such Favorite'}\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteFavoritesWithManager"
+  },
+  {
+   "name": "MoveFavorites",
+   "group": "Favorites Commands",
+   "version": "1.8.0",
+   "description": "Moves Favorites given by their names into a folder of the Favorites palette given by its path. Returns an execution result for each Favorite. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "$ref": "#/Favorites"
+     },
+     "targetPath": {
+      "type": "array",
+      "description": "The path of the folder to move the Favorites into, in the format GetFavoriteFolders returns: the folder names from the root down. Empty for the root folder.",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites",
+     "targetPath"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "MoveFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/MoveFavorites.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/MoveFavorites.py",
+    "description": "Moves a Favorite into a folder of the Favorites palette with MoveFavorites. Needs a Favorite. The moved Favorite is a copy of the first Favorite and the folder is new; both are created by the script and deleted at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Moves a Favorite into a folder of the Favorites palette with MoveFavorites.\n\nNeeds a Favorite. The moved Favorite is a copy of the first Favorite and the folder is new; both are created by the\nscript and deleted at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nfavorites = aclib.RunTapirCommand ('GetAllFavorites')['favorites']\nif not favorites:\n    raise SystemExit ('The project has no Favorite.')\n\ncreated = aclib.RunTapirCommand ('CreateFavorite', {\n    'name': 'Tapir Example Favorite',\n    'source': {'favoriteName': favorites[0]['name']},\n    'conflictPolicy': 'RenameNew'\n})\naclib.RunTapirCommand ('CreateFavoriteFolder', {'parentPath': [], 'name': 'Tapir Example Folder'})\n\naclib.PrintJson (aclib.RunTapirCommand ('MoveFavorites', {\n    'favorites': [created['name']],\n    'targetPath': ['Tapir Example Folder']\n}))\n\n# Deleting the folder deletes the moved Favorite with it.\naclib.RunTapirCommand ('DeleteFavoriteFolder', {'path': ['Tapir Example Folder'], 'recursive': True})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#MoveFavorites"
+  },
+  {
+   "name": "GetFavoriteDefaults",
+   "group": "Favorites Commands",
+   "version": "2.0.0",
+   "description": "Reads the element default stored in each given Favorite through the Favorite manager, without applying it or placing an element: the element type, the layer, the element ID, the folder, the library part and GDL parameters, the marker of every element type that has one, and the sub-elements with each of their kinds (Curtain Wall frames and panels, Stair treads and risers, Railing posts and rails, markers ...). Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "$ref": "#/Favorites"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "favoriteDefaults": {
+      "type": "array",
+      "description": "The element default of each given Favorite, in the order of the input, or an error for a Favorite that could not be read.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/FavoriteDefaults"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favoriteDefaults"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetFavoriteDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/GetFavoriteDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteDefaults.py",
+    "description": "Reads the element default stored in Favorites through the Favorite manager (Archicad 29 or newer), without applying it or placing an element: element type, layer, element ID, folder, library part and GDL parameters, the marker of every element type that has one and the sub-elements with their kinds (subTypes). A Favorite without a marker has no 'marker' field, and a Favorite that cannot be read gets an error item.",
+    "code": "\"\"\"Reads the element default stored in Favorites through the Favorite manager (Archicad 29 or newer), without\napplying it or placing an element: element type, layer, element ID, folder, library part and GDL parameters,\nthe marker of every element type that has one and the sub-elements with their kinds (subTypes). A Favorite\nwithout a marker has no 'marker' field, and a Favorite that cannot be read gets an error item.\n\"\"\"\nimport aclib\n\nfavoriteNames = []\nfor elementType in ['Window', 'CurtainWall', 'Stair']:\n    favoriteNames += aclib.RunTapirCommand ('GetFavoritesByType', {\n        'elementType': elementType\n    }).get ('favorites', [])[:1]\n\nresponse = aclib.RunTapirCommand ('GetFavoriteDefaults', {\n    'favorites': favoriteNames\n})\n\nfor favoriteDefault in response['favoriteDefaults']:\n    if 'error' in favoriteDefault:\n        continue\n    print (favoriteDefault['favorite'], favoriteDefault['elementType'], 'on layer', favoriteDefault['layerIndex'],\n           'with', len (favoriteDefault['subElements']), 'sub-elements')\n    for subElement in favoriteDefault['subElements']:\n        print ('    ', subElement['elementType'], subElement['subTypes'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetFavoriteDefaults"
+  },
+  {
+   "name": "SearchFavorites",
+   "group": "Favorites Commands",
+   "version": "2.0.0",
+   "description": "Searches project favorites by keyword (matching favorite name or folder) and/or element type.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "Optional case-insensitive substring to search in favorite name or folder hierarchy."
+     },
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "Optional filter by element type. If omitted, searches across all element types."
+     },
+     "limit": {
+      "type": "integer",
+      "description": "Maximum number of matching favorites to return.",
+      "minimum": 1
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "favorites": {
+      "type": "array",
+      "description": "The matching Favorites, each with its element type and folder.",
+      "items": {
+       "$ref": "#/FavoriteSummary"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "favorites"
+    ]
+   },
+   "grasshopperComponents": [
+    "SearchFavoritesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Favorites/SearchFavorites.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/SearchFavorites.py",
+    "description": "Searches the Favorites whose name or folder contains \"Wall\" with SearchFavorites.",
+    "code": "\"\"\"Searches the Favorites whose name or folder contains \"Wall\" with SearchFavorites.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('SearchFavorites', {'query': 'Wall'}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SearchFavorites"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GuidId": {
+   "type": "object",
+   "description": "Identifier.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "FavoriteFolderDetails": {
+   "type": "object",
+   "description": "A folder of the Favorites palette with its Favorites and subfolders recursively.",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the folder. Empty for the root folder."
+    },
+    "path": {
+     "type": "array",
+     "description": "The names of the folders leading from the root to this folder, this folder's name last. Empty for the root folder.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "favorites": {
+     "type": "array",
+     "description": "The names of the Favorites directly in this folder.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "subFolders": {
+     "type": "array",
+     "items": {
+      "$ref": "#/FavoriteFolderDetails"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "path",
+    "favorites",
+    "subFolders"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "ElementCategoryType": {
+   "type": "string",
+   "description": "The type of an element category. The names of the categories and of their values are localized, so scripts should select a category by this type and a value by its categoryValueId, never by name. BRI is available only in the German localized version of Archicad.",
+   "enum": [
+    "StructuralFunction",
+    "Position",
+    "RenovationStatus",
+    "RenovationFilter",
+    "BRI"
+   ]
+  },
+  "ElementCategoryValueId": {
+   "type": "object",
+   "description": "The identifier of a value of an element category.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ElementCategoryId": {
+   "type": "object",
+   "description": "The identifier of an element category.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ElementType": {
+   "type": "string",
+   "description": "The type of an element.",
+   "enum": [
+    "Wall",
+    "Column",
+    "Beam",
+    "Window",
+    "Door",
+    "Object",
+    "Lamp",
+    "Slab",
+    "Roof",
+    "Mesh",
+    "Dimension",
+    "RadialDimension",
+    "LevelDimension",
+    "AngleDimension",
+    "Text",
+    "Label",
+    "Zone",
+    "Hatch",
+    "Line",
+    "PolyLine",
+    "Arc",
+    "Circle",
+    "Spline",
+    "Hotspot",
+    "CutPlane",
+    "Camera",
+    "CamSet",
+    "Group",
+    "SectElem",
+    "Drawing",
+    "Picture",
+    "Detail",
+    "Elevation",
+    "InteriorElevation",
+    "Worksheet",
+    "Hotlink",
+    "CurtainWall",
+    "CurtainWallSegment",
+    "CurtainWallFrame",
+    "CurtainWallPanel",
+    "CurtainWallJunction",
+    "CurtainWallAccessory",
+    "Shell",
+    "Skylight",
+    "Morph",
+    "ChangeMarker",
+    "Stair",
+    "Riser",
+    "Tread",
+    "StairStructure",
+    "Railing",
+    "RailingToprail",
+    "RailingHandrail",
+    "RailingRail",
+    "RailingPost",
+    "RailingInnerPost",
+    "RailingBaluster",
+    "RailingPanel",
+    "RailingSegment",
+    "RailingNode",
+    "RailingBalusterSet",
+    "RailingPattern",
+    "RailingToprailEnd",
+    "RailingHandrailEnd",
+    "RailingRailEnd",
+    "RailingToprailConnection",
+    "RailingHandrailConnection",
+    "RailingRailConnection",
+    "RailingEndFinish",
+    "BeamSegment",
+    "ColumnSegment",
+    "Opening",
+    "Unknown"
+   ]
+  },
+  "ElementTypeFloorLayerFilter": {
+   "type": "object",
+   "description": "A server-side element filter. An element matches when its type, its home story and its layer are each among the listed ones; an omitted or empty list does not filter.",
+   "properties": {
+    "types": {
+     "type": "array",
+     "description": "Element types to keep (e.g. ['Wall', 'Column']).",
+     "items": {
+      "$ref": "#/ElementType"
+     }
+    },
+    "floorIndices": {
+     "type": "array",
+     "description": "Home story indices to keep (e.g. [0, 1]).",
+     "items": {
+      "type": "integer"
+     }
+    },
+    "layerIndices": {
+     "type": "array",
+     "description": "Layer attribute indices to keep.",
+     "items": {
+      "type": "integer"
+     }
+    }
+   },
+   "additionalProperties": false
+  },
+  "FavoriteRename": {
+   "type": "object",
+   "properties": {
+    "oldName": {
+     "type": "string"
+    },
+    "newName": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "oldName",
+    "newName"
+   ]
+  },
+  "FavoritesFromElementUpdate": {
+   "type": "object",
+   "description": "The identifier of the element and the name of the existing Favorite to update from it.",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "favorite": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "favorite"
+   ]
+  },
+  "PropertyId": {
+   "type": "object",
+   "description": "The identifier of a property.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "PropertyValue": {
+   "type": "object",
+   "description": "The string value of a property, formatted according to the command's options.",
+   "properties": {
+    "value": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "value"
+   ]
+  },
+  "ClassificationSystemId": {
+   "type": "object",
+   "description": "The identifier of a classification system.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ClassificationItemId": {
+   "type": "object",
+   "description": "The identifier of a classification item.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ClassificationId": {
+   "type": "object",
+   "description": "The element classification identifier.",
+   "properties": {
+    "classificationSystemId": {
+     "$ref": "#/ClassificationSystemId"
+    },
+    "classificationItemId": {
+     "$ref": "#/ClassificationItemId",
+     "description": "The element's classification in the given system. If no value is specified here, the element is Unclassified in this system."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationSystemId"
+   ]
+  },
+  "ClassificationIdArrayItem": {
+   "type": "object",
+   "description": "A wrapper containing the classification identifier.",
+   "properties": {
+    "classificationId": {
+     "$ref": "#/ClassificationId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationId"
+   ]
+  },
+  "ClassificationIdOrError": {
+   "type": "object",
+   "description": "A classification identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ClassificationIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ClassificationIdsOrErrors": {
+   "type": "array",
+   "description": "A list of element classification identifiers or errors.",
+   "items": {
+    "$ref": "#/ClassificationIdOrError"
+   }
+  },
+  "LibPartUnId": {
+   "type": "object",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "LibPartDetails": {
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "parentUnID": {
+     "$ref": "#/LibPartUnId"
+    },
+    "ownUnID": {
+     "$ref": "#/LibPartUnId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "parentUnID",
+    "ownUnID"
+   ]
+  },
+  "StoredGDLParameter": {
+   "type": "object",
+   "description": "A GDL parameter as it is stored with a marker or a Favorite, read without a parameter interface (so without isLocked and possibleValues).",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the parameter."
+    },
+    "displayName": {
+     "type": "string",
+     "description": "The display name of the parameter."
+    },
+    "index": {
+     "type": "integer",
+     "description": "The index of the parameter."
+    },
+    "type": {
+     "type": "string",
+     "description": "The type of the parameter."
+    },
+    "dimension1": {
+     "type": "integer",
+     "description": "The 1st dimension of array (in case of array value)."
+    },
+    "dimension2": {
+     "type": "integer",
+     "description": "The 2nd dimension of array (in case of array value)."
+    },
+    "value": {
+     "description": "The value of the parameter."
+    },
+    "valueDescription": {
+     "type": "string",
+     "description": "The value description for numeric parameter."
+    },
+    "itemDescriptions": {
+     "type": "array",
+     "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "flags": {
+     "type": "array",
+     "description": "The flags of the parameter.",
+     "items": {
+      "type": "string",
+      "enum": [
+       "Hidden",
+       "HiddenFromScript",
+       "Disabled",
+       "Child",
+       "Unique",
+       "Fixed",
+       "BoldName",
+       "Open"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "displayName",
+    "index",
+    "type",
+    "flags"
+   ]
+  },
+  "Favorites": {
+   "type": "array",
+   "description": "A list of favorite names",
+   "items": {
+    "type": "string",
+    "description": "The name of a favorite."
+   }
+  },
+  "FavoritesWrapper": {
+   "type": "object",
+   "description": "The response of the GetFavoritesByType command.",
+   "properties": {
+    "favorites": {
+     "$ref": "#/Favorites"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "favorites"
+   ]
+  },
+  "FavoritesOrError": {
+   "type": "object",
+   "description": "The response of the GetFavoritesByType command or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/FavoritesWrapper"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "FavoriteDetails": {
+   "type": "object",
+   "properties": {
+    "favorite": {
+     "type": "string",
+     "description": "The name of the favorite."
+    },
+    "elementType": {
+     "type": "string",
+     "description": "The element type of the favorite, as in GetFavoritesByType."
+    },
+    "classifications": {
+     "type": "array",
+     "description": "The classifications the favorite applies, one per classification system.",
+     "items": {
+      "$ref": "#/ClassificationIdArrayItem"
+     }
+    },
+    "properties": {
+     "type": "array",
+     "description": "The property values stored in the favorite.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "propertyId": {
+        "$ref": "#/PropertyId"
+       },
+       "propertyName": {
+        "type": "string"
+       },
+       "status": {
+        "type": "string",
+        "enum": [
+         "HasValue",
+         "NotEvaluated",
+         "NotAvailable"
+        ],
+        "description": "The evaluation status of the value. propertyValue is only present for HasValue."
+       },
+       "isDefault": {
+        "type": "boolean",
+        "description": "True if the value is the default value of the property."
+       },
+       "propertyValue": {
+        "$ref": "#/PropertyValue"
+       },
+       "error": {
+        "$ref": "#/Error"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "propertyId",
+       "propertyName",
+       "status",
+       "isDefault"
+      ]
+     }
+    },
+    "categoryValues": {
+     "type": "array",
+     "description": "The element category values (e.g. Structural Function, Position, Renovation Status) stored in the favorite.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "categoryId": {
+        "$ref": "#/GuidId"
+       },
+       "categoryName": {
+        "type": "string"
+       },
+       "categoryValueId": {
+        "$ref": "#/GuidId"
+       },
+       "categoryValueName": {
+        "type": "string"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "categoryId",
+       "categoryName",
+       "categoryValueId",
+       "categoryValueName"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "favorite",
+    "elementType",
+    "classifications",
+    "properties",
+    "categoryValues"
+   ]
+  },
+  "FavoriteFromElement": {
+   "type": "object",
+   "description": "The identifier of the element and the name of the new favorite.",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "favorite": {
+     "type": "string"
+    },
+    "folder": {
+     "type": "array",
+     "description": "Optional folder hierarchy in the Favorites palette to place the new favorite under. Empty/omitted = root.",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "favorite"
+   ]
+  },
+  "FavoriteImportFormat": {
+   "type": "string",
+   "enum": [
+    "prefs",
+    "xml",
+    "legacyPRF"
+   ],
+   "description": "The format to import from, the counterpart of the format of ExportFavorites. prefs (the default) works in every Archicad version. xml imports Favorite files from a folder, and legacyPRF a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+  },
+  "FavoriteImportConflictPolicy": {
+   "type": "string",
+   "enum": [
+    "Error",
+    "Skip",
+    "Overwrite",
+    "Append",
+    "OverwriteExisting",
+    "RenameNew"
+   ],
+   "description": "How to resolve name conflicts. The prefs format takes Error, Skip, Overwrite or Append, default Overwrite. The xml and legacyPRF formats take Error, Skip, OverwriteExisting or RenameNew, default Error."
+  },
+  "FavoriteToApply": {
+   "type": "object",
+   "description": "The identifier of the element and the name of the Favorite to apply to it.",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "favorite": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "favorite"
+   ]
+  },
+  "FavoriteContents": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the Favorite."
+    },
+    "folderPath": {
+     "type": "array",
+     "description": "The path of the folder the Favorite is in, as Archicad gives it. Empty for the root folder.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "classifications": {
+     "$ref": "#/ClassificationIdsOrErrors",
+     "description": "The classifications stored with the Favorite, in the format of GetClassificationsOfElements."
+    },
+    "categoryValues": {
+     "type": "array",
+     "description": "The element category values stored with the Favorite, in the format of GetCategoryValuesOfElements.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "type": {
+        "$ref": "#/ElementCategoryType"
+       },
+       "categoryId": {
+        "$ref": "#/ElementCategoryId"
+       },
+       "categoryValueId": {
+        "$ref": "#/ElementCategoryValueId"
+       },
+       "name": {
+        "type": "string",
+        "description": "The localized name of the value, for display only."
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "type",
+       "categoryId",
+       "categoryValueId",
+       "name"
+      ]
+     }
+    },
+    "properties": {
+     "type": "array",
+     "description": "The property values stored with the Favorite. Each has propertyValue, in the format of GetPropertyValuesOfElements, or an error when its value cannot be read.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "propertyId": {
+        "$ref": "#/PropertyId"
+       },
+       "propertyValue": {
+        "$ref": "#/PropertyValue"
+       },
+       "error": {
+        "$ref": "#/Error"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "propertyId"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "folderPath",
+    "classifications",
+    "categoryValues",
+    "properties"
+   ]
+  },
+  "FavoriteNameAndFolder": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the Favorite."
+    },
+    "folderPath": {
+     "type": "array",
+     "description": "The folder the Favorite is in, the folder names from the root of the Favorites palette down, in the format GetFavoriteContents returns. When given, the Favorite is only looked for directly in that folder. Omit it to find the Favorite by name anywhere.",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name"
+   ]
+  },
+  "FavoriteFileEntry": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the Favorite."
+    },
+    "elementType": {
+     "$ref": "#/ElementType"
+    },
+    "folder": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "The folder hierarchy of the Favorite in the file or folder. Empty = root."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "elementType",
+    "folder"
+   ]
+  },
+  "FavoriteSettingsSource": {
+   "type": "object",
+   "description": "Where the settings of the new Favorite come from: exactly one of favoriteName and toolDefault.",
+   "properties": {
+    "favoriteName": {
+     "type": "string",
+     "description": "Take the settings of this Favorite."
+    },
+    "toolDefault": {
+     "type": "string",
+     "enum": [
+      "Opening"
+     ],
+     "description": "Take the current settings of this tool."
+    }
+   },
+   "additionalProperties": false
+  },
+  "FavoriteCreationConflictPolicy": {
+   "type": "string",
+   "enum": [
+    "Error",
+    "Skip",
+    "OverwriteExisting",
+    "RenameNew"
+   ],
+   "description": "What to do when a Favorite with this name already exists: Error fails, Skip leaves the existing Favorite unchanged, OverwriteExisting gives the existing Favorite the new settings (its folder does not change), RenameNew creates the Favorite with ' (2)', ' (3)', ... appended to the name. Default Error."
+  },
+  "FavoriteCreationOutcome": {
+   "type": "string",
+   "enum": [
+    "Created",
+    "Skipped",
+    "Overwritten"
+   ],
+   "description": "Created for a new Favorite (also with RenameNew), Skipped or Overwritten when a Favorite with the name already existed."
+  },
+  "FavoriteDefaults": {
+   "type": "object",
+   "properties": {
+    "favorite": {
+     "type": "string",
+     "description": "The name of the Favorite."
+    },
+    "elementType": {
+     "$ref": "#/ElementType"
+    },
+    "layerIndex": {
+     "type": "integer",
+     "description": "The index of the layer the Favorite places its elements on."
+    },
+    "elementId": {
+     "type": "string",
+     "description": "The element ID stored with the Favorite. Absent when it is empty."
+    },
+    "folder": {
+     "type": "array",
+     "description": "The folder hierarchy of the Favorite in the Favorites palette, outermost folder first. Empty for the root.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "libPart": {
+     "$ref": "#/LibPartDetails",
+     "description": "The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read."
+    },
+    "parameters": {
+     "type": "array",
+     "description": "The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.",
+     "items": {
+      "$ref": "#/StoredGDLParameter"
+     }
+    },
+    "marker": {
+     "type": "object",
+     "description": "The marker stored with the Favorite, for the element types that have one. Absent when the Favorite has no marker - that is not an error.",
+     "properties": {
+      "elementType": {
+       "$ref": "#/ElementType"
+      },
+      "libPart": {
+       "$ref": "#/LibPartDetails",
+       "description": "The library part of the marker. Absent when it could not be read."
+      },
+      "parameters": {
+       "type": "array",
+       "description": "The GDL parameters of the marker.",
+       "items": {
+        "$ref": "#/StoredGDLParameter"
+       }
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "elementType",
+      "parameters"
+     ]
+    },
+    "subElements": {
+     "type": "array",
+     "description": "The sub-elements stored with the Favorite, for example the frames and panels of a Curtain Wall.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "elementType": {
+        "$ref": "#/ElementType"
+       },
+       "libPart": {
+        "$ref": "#/LibPartDetails",
+        "description": "The library part of the sub-element. Absent when it has none or it could not be read."
+       },
+       "parameters": {
+        "type": "array",
+        "description": "The GDL parameters of the sub-element.",
+        "items": {
+         "$ref": "#/StoredGDLParameter"
+        }
+       },
+       "subTypes": {
+        "type": "array",
+        "description": "The kinds of the sub-element: the API_SubElementType flags set on it, without their APISubElement_ prefix.",
+        "items": {
+         "type": "string",
+         "enum": [
+          "MainMarker",
+          "SHMarker",
+          "CommonMarker",
+          "CWFrameClass",
+          "CWPanelClass",
+          "CWJunction",
+          "CWAccessory",
+          "StairRiser",
+          "StairTread",
+          "StairStructure",
+          "StairFPDMarker",
+          "StairRCPDMarker",
+          "RailingNode",
+          "RailingSegment",
+          "RailingPost",
+          "RailingInnerPost",
+          "RailingRail",
+          "RailingHandrail",
+          "RailingToprail",
+          "RailingPanel",
+          "RailingBaluster",
+          "RailingPattern",
+          "RailingBalusterSet",
+          "RailingRailEnd",
+          "RailingHandrailEnd",
+          "RailingToprailEnd",
+          "RailingRailConnection",
+          "RailingHandrailConnection",
+          "RailingToprailConnection",
+          "RailingFinish",
+          "CWTag",
+          "NoElem",
+          "NoParams"
+         ]
+        }
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "elementType",
+       "parameters",
+       "subTypes"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "favorite",
+    "elementType",
+    "layerIndex",
+    "parameters",
+    "subElements"
+   ]
+  },
+  "FavoriteKeepField": {
+   "type": "string",
+   "enum": [
+    "id",
+    "layerIndex",
+    "width",
+    "height",
+    "depth",
+    "sillHeight",
+    "referenceLineLocation",
+    "topOffset",
+    "relativeTopStory"
+   ]
+  },
+  "FavoriteExportFormat": {
+   "type": "string",
+   "enum": [
+    "prefs",
+    "xml",
+    "legacyPRF"
+   ],
+   "description": "Favorite export file format."
+  },
+  "FavoriteSummary": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the Favorite."
+    },
+    "elementType": {
+     "$ref": "#/ElementType",
+     "description": "The element type of the Favorite. Missing when Archicad cannot read the Favorite's element settings."
+    },
+    "folder": {
+     "type": "array",
+     "description": "The names of the folders leading from the root of the Favorites palette to the Favorite's folder. Returned only by SearchFavorites, and missing for a Favorite in the root folder.",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name"
+   ]
+  },
+  "FavoriteSettings": {
+   "type": "object",
+   "properties": {
+    "favorite": {
+     "type": "string",
+     "description": "The name of the Favorite."
+    },
+    "elementType": {
+     "$ref": "#/ElementType"
+    },
+    "folder": {
+     "type": "array",
+     "description": "The folder hierarchy of the Favorite in the Favorites palette. Empty for the root.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "libPart": {
+     "$ref": "#/LibPartDetails",
+     "description": "The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read."
+    },
+    "parameters": {
+     "type": "array",
+     "description": "The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.",
+     "items": {
+      "$ref": "#/StoredGDLParameter"
+     }
+    },
+    "marker": {
+     "type": "object",
+     "description": "The marker stored with a Window or Door Favorite. Absent when the Favorite has no marker - that is not an error.",
+     "properties": {
+      "libPart": {
+       "$ref": "#/LibPartDetails",
+       "description": "The library part of the marker. Absent when it could not be read."
+      },
+      "parameters": {
+       "type": "array",
+       "description": "The GDL parameters of the marker.",
+       "items": {
+        "$ref": "#/StoredGDLParameter"
+       }
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "parameters"
+     ]
+    },
+    "subElements": {
+     "type": "array",
+     "description": "The sub-elements stored with the Favorite.",
+     "items": {
+      "$ref": "#/FavoriteSubelement"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "favorite",
+    "elementType",
+    "parameters",
+    "subElements"
+   ]
+  },
+  "FavoriteSubelement": {
+   "type": "object",
+   "properties": {
+    "subType": {
+     "$ref": "#/FavoriteSubelementType"
+    },
+    "elementType": {
+     "$ref": "#/ElementType"
+    },
+    "libPart": {
+     "$ref": "#/LibPartDetails",
+     "description": "The library part of the sub-element. Absent when it has none or it could not be read."
+    },
+    "parameters": {
+     "type": "array",
+     "description": "The GDL parameters of the sub-element.",
+     "items": {
+      "$ref": "#/StoredGDLParameter"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "subType",
+    "elementType",
+    "parameters"
+   ]
+  },
+  "FavoriteSubelementType": {
+   "type": "string",
+   "enum": [
+    "MainMarker",
+    "Other"
+   ],
+   "description": "MainMarker for the main marker of the element; Other for any other kind of sub-element."
+  }
+ }
+}

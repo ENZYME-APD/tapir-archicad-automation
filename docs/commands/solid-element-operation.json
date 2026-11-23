@@ -1,0 +1,977 @@
+{
+ "version": 1,
+ "groups": [
+  "Solid Element Operation Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "CreateSolidElementLinks",
+   "group": "Solid Element Operation Commands",
+   "version": "1.5.4",
+   "description": "Creates solid element operation links between target and operator elements.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "solidLinks": {
+      "type": "array",
+      "description": "List of solid element operation links to create.",
+      "items": {
+       "$ref": "#/SolidLinkData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "solidLinks"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateSolidElementLinksComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/CreateSolidElementLinks.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/CreateSolidElementLinks.py",
+    "description": "Subtracts a slab from a wall with CreateSolidElementLinks and reads the link back. The wall and the slab are created by the script and deleted at the end.",
+    "code": "\"\"\"Subtracts a slab from a wall with CreateSolidElementLinks and reads the link back.\n\nThe wall and the slab are created by the script and deleted at the end.\n\"\"\"\nimport aclib\n\n# A wall and a slab cutting through it, created by this script and deleted at the end.\nwall = aclib.RunTapirCommand ('CreateWalls', {\n    'wallsData': [{'begCoordinate': {'x': 100.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 100.0}, 'height': 3.0, 'floorIndex': 0}]\n})['elements'][0]\nslab = aclib.RunTapirCommand ('CreateSlabs', {\n    'slabsData': [{\n        'level': 1.5,\n        'thickness': 0.3,\n        'polygonCoordinates': [{'x': 102.0, 'y': 99.0}, {'x': 104.0, 'y': 99.0}, {'x': 104.0, 'y': 101.0}, {'x': 102.0, 'y': 101.0}]\n    }]\n})['elements'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateSolidElementLinks', {\n    'solidLinks': [{\n        'targetId': wall['elementId'],\n        'operatorId': slab['elementId'],\n        'operation': 'Subtraction',\n        'linkFlags': {'inheritOperatorAttributes': False, 'skipPolygonHoles': False}\n    }]\n}))\n\naclib.RunTapirCommand ('GetSolidElementLinks', {'elements': [wall]})\n\naclib.RunTapirCommand ('DeleteElements', {'elements': [wall, slab]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateSolidElementLinks"
+  },
+  {
+   "name": "RemoveSolidElementLinks",
+   "group": "Solid Element Operation Commands",
+   "version": "1.5.4",
+   "description": "Removes solid element operation links between target and operator elements. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each link that exists gets wouldDelete.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "solidLinks": {
+      "type": "array",
+      "description": "List of solid element operation links to remove.",
+      "items": {
+       "$ref": "#/SolidLinkReference"
+      }
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "solidLinks"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/DeletionExecutionResults",
+      "description": "One result for each input link, in the order of the input. On a dry run a link that exists (the operator is linked to the target) gets wouldDelete."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RemoveSolidElementLinksComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/RemoveSolidElementLinks.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/RemoveSolidElementLinks.py",
+    "description": "Removes the solid element operation link between a wall and a slab with RemoveSolidElementLinks. The wall, the slab and the link between them are created by the script first; the elements are deleted at the end.",
+    "code": "\"\"\"Removes the solid element operation link between a wall and a slab with RemoveSolidElementLinks.\n\nThe wall, the slab and the link between them are created by the script first; the elements are deleted at the end.\n\"\"\"\nimport aclib\n\n# A wall and a slab cutting through it, created by this script and deleted at the end.\nwall = aclib.RunTapirCommand ('CreateWalls', {\n    'wallsData': [{'begCoordinate': {'x': 100.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 100.0}, 'height': 3.0, 'floorIndex': 0}]\n})['elements'][0]\nslab = aclib.RunTapirCommand ('CreateSlabs', {\n    'slabsData': [{\n        'level': 1.5,\n        'thickness': 0.3,\n        'polygonCoordinates': [{'x': 102.0, 'y': 99.0}, {'x': 104.0, 'y': 99.0}, {'x': 104.0, 'y': 101.0}, {'x': 102.0, 'y': 101.0}]\n    }]\n})['elements'][0]\n\naclib.RunTapirCommand ('CreateSolidElementLinks', {\n    'solidLinks': [{'targetId': wall['elementId'], 'operatorId': slab['elementId'], 'operation': 'Subtraction'}]\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('RemoveSolidElementLinks', {\n    'solidLinks': [{'targetId': wall['elementId'], 'operatorId': slab['elementId']}]\n}))\n\naclib.RunTapirCommand ('GetSolidElementLinks', {'elements': [wall]})\n\naclib.RunTapirCommand ('DeleteElements', {'elements': [wall, slab]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RemoveSolidElementLinks"
+  },
+  {
+   "name": "GetSolidElementLinks",
+   "group": "Solid Element Operation Commands",
+   "version": "1.5.4",
+   "description": "Returns solid element operation links for each queried element, grouped by role (target or operator).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "Elements to query. Returns all solid links where each element is a target or an operator."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "solidLinks": {
+      "type": "array",
+      "description": "For each input element, the solid links where it acts as target and where it acts as operator.",
+      "items": {
+       "$ref": "#/SolidLinksOfElement"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "solidLinks"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetSolidElementLinksComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/GetSolidElementLinks.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/GetSolidElementLinks.py",
+    "description": "Gets the solid element operation links of the first three walls with GetSolidElementLinks, as target and as operator. Needs at least one Wall.",
+    "code": "\"\"\"Gets the solid element operation links of the first three walls with GetSolidElementLinks, as target and as operator.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetSolidElementLinks', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetSolidElementLinks"
+  },
+  {
+   "name": "CreateSolidOperations",
+   "group": "Solid Element Operation Commands",
+   "version": "1.8.0",
+   "description": "Runs a solid operation (subtraction, intersection, addition) on two morphs and returns the resulting morphs, one item per operation. Unlike CreateSolidElementLinks this is not a link: the target and the operator morph are replaced by the result. Morphs only; the operations run in one undo step.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "operations": {
+      "type": "array",
+      "description": "The solid operations to run, each on two morphs. The target and the operator morph are replaced by the resulting morph.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "targetId": {
+         "$ref": "#/ElementId",
+         "description": "The target morph."
+        },
+        "operatorId": {
+         "$ref": "#/ElementId",
+         "description": "The operator morph."
+        },
+        "operation": {
+         "$ref": "#/SolidOperationType"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "targetId",
+        "operatorId",
+        "operation"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "operations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "results": {
+      "type": "array",
+      "description": "One item per operation, in the order of the input: the resulting morphs, or an error.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "elements": {
+           "$ref": "#/Elements",
+           "description": "The morphs created by the operation."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "elements"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "results"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateSolidOperationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/CreateSolidOperations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/CreateSolidOperations.py",
+    "description": "Subtracts a small box morph from a bigger one with CreateSolidOperations. Both morphs are created by the script and replaced by the resulting morph, which is deleted at the end.",
+    "code": "\"\"\"Subtracts a small box morph from a bigger one with CreateSolidOperations.\n\nBoth morphs are created by the script and replaced by the resulting morph, which is deleted at the end.\n\"\"\"\nimport aclib\n\ndef BoxBody (sizeX, sizeY, sizeZ):\n    return {\n        'bodyType': 'Solid',\n        'vertices': [\n            {'x': 0, 'y': 0, 'z': 0}, {'x': sizeX, 'y': 0, 'z': 0}, {'x': sizeX, 'y': sizeY, 'z': 0}, {'x': 0, 'y': sizeY, 'z': 0},\n            {'x': 0, 'y': 0, 'z': sizeZ}, {'x': sizeX, 'y': 0, 'z': sizeZ}, {'x': sizeX, 'y': sizeY, 'z': sizeZ}, {'x': 0, 'y': sizeY, 'z': sizeZ}\n        ],\n        'polygons': [\n            {'vertexIds': [0, 3, 2, 1]}, {'vertexIds': [4, 5, 6, 7]}, {'vertexIds': [0, 1, 5, 4]},\n            {'vertexIds': [1, 2, 6, 5]}, {'vertexIds': [2, 3, 7, 6]}, {'vertexIds': [3, 0, 4, 7]}\n        ]\n    }\n\nmorphs = aclib.RunTapirCommand ('CreateMorphs', {\n    'morphsData': [\n        {'basePoint': {'x': 0.0, 'y': 0.0, 'z': 0.0}, 'body': BoxBody (2.0, 2.0, 1.0)},\n        {'basePoint': {'x': 0.5, 'y': 0.5, 'z': 0.5}, 'body': BoxBody (1.0, 1.0, 1.0)}\n    ]\n})['elements']\n\nresult = aclib.RunTapirCommand ('CreateSolidOperations', {\n    'operations': [{'targetId': morphs[0]['elementId'], 'operatorId': morphs[1]['elementId'], 'operation': 'Subtraction'}]\n})['results'][0]\naclib.PrintJson (result)\n\nif 'elements' in result:\n    aclib.RunTapirCommand ('DeleteElements', {'elements': result['elements']})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateSolidOperations"
+  },
+  {
+   "name": "TrimElements",
+   "group": "Solid Element Operation Commands",
+   "version": "1.5.9",
+   "description": "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type. With several roofs or shells in the list Archicad decides which of them trims which element (they may also trim each other), so not every element is necessarily trimmed by each; to trim each element with each roof or shell, call it once per roof or shell with trimmingElement, and check the result with GetElementTrims.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming: Archicad decides which roof or shell trims which element and with which trim type, and may trim the roofs and shells with each other, so not every element is necessarily trimmed by every roof or shell. The call reports no result per pair; read them back with GetElementTrims. For a known result, use trimmingElement and call the command once per roof or shell."
+     },
+     "trimmingElement": {
+      "$ref": "#/ElementId",
+      "description": "Optional. The roof or shell that trims every element in the list, with trimType."
+     },
+     "trimType": {
+      "$ref": "#/TrimType",
+      "description": "Used with trimmingElement; defaults to KeepInside."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "TrimElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/TrimElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/TrimElements.py",
+    "description": "Trims two walls to the underside of a roof with TrimElements and reads the trims back. The walls and the roof are created by the script and deleted at the end.",
+    "code": "\"\"\"Trims two walls to the underside of a roof with TrimElements and reads the trims back.\n\nThe walls and the roof are created by the script and deleted at the end.\n\"\"\"\nimport math\n\nimport aclib\n\n# Two walls under a pitched roof, created by this script and deleted at the end.\nwalls = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [\n    {'begCoordinate': {'x': 100.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 100.0}, 'height': 4.0, 'floorIndex': 0},\n    {'begCoordinate': {'x': 106.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 105.0}, 'height': 4.0, 'floorIndex': 0}\n]})['elements']\nroofs = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [{\n    'level': 2.7,\n    'floorIndex': 0,\n    'levels': [{'levelHeight': 10.0, 'levelAngle': math.radians (25.0)}],\n    'polygonCoordinates': [{'x': 100.0, 'y': 100.0}, {'x': 106.0, 'y': 100.0}, {'x': 106.0, 'y': 105.0}, {'x': 100.0, 'y': 105.0}]\n}]})['elements']\n\naclib.PrintJson (aclib.RunTapirCommand ('TrimElements', {\n    'elements': walls,\n    'trimmingElement': roofs[0]['elementId'],\n    'trimType': 'KeepInside'\n}))\n\naclib.RunTapirCommand ('GetElementTrims', {'elements': walls})\n\naclib.RunTapirCommand ('DeleteElements', {'elements': walls + roofs})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#TrimElements"
+  },
+  {
+   "name": "RemoveElementTrims",
+   "group": "Solid Element Operation Commands",
+   "version": "1.5.9",
+   "description": "Removes the trim between an element and the roof or shell trimming it. The Archicad API removes the trimming connection between the two elements, so when they trim each other (two roofs or shells) both directions are removed; trim the other direction again with TrimElements to keep it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementPairs": {
+      "type": "array",
+      "description": "The trimmed element and the roof or shell trimming it, per pair. The trimming connection between the two is removed: when they trim each other, both directions are removed.",
+      "items": {
+       "$ref": "#/ElementTrimPair"
+      }
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementPairs"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/DeletionExecutionResults",
+      "description": "One result for each input pair, in the order of the input. On a dry run a pair whose element is trimmed by the trimming element gets wouldDelete."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RemoveElementTrimsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/RemoveElementTrims.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/RemoveElementTrims.py",
+    "description": "Removes the trim between two walls and the roof above them with RemoveElementTrims. The walls, the roof and the trims are created by the script first; the elements are deleted at the end.",
+    "code": "\"\"\"Removes the trim between two walls and the roof above them with RemoveElementTrims.\n\nThe walls, the roof and the trims are created by the script first; the elements are deleted at the end.\n\"\"\"\nimport math\n\nimport aclib\n\n# Two walls under a pitched roof, created by this script and deleted at the end.\nwalls = aclib.RunTapirCommand ('CreateWalls', {'wallsData': [\n    {'begCoordinate': {'x': 100.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 100.0}, 'height': 4.0, 'floorIndex': 0},\n    {'begCoordinate': {'x': 106.0, 'y': 100.0}, 'endCoordinate': {'x': 106.0, 'y': 105.0}, 'height': 4.0, 'floorIndex': 0}\n]})['elements']\nroofs = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [{\n    'level': 2.7,\n    'floorIndex': 0,\n    'levels': [{'levelHeight': 10.0, 'levelAngle': math.radians (25.0)}],\n    'polygonCoordinates': [{'x': 100.0, 'y': 100.0}, {'x': 106.0, 'y': 100.0}, {'x': 106.0, 'y': 105.0}, {'x': 100.0, 'y': 105.0}]\n}]})['elements']\n\naclib.RunTapirCommand ('TrimElements', {'elements': walls + roofs})\n\naclib.PrintJson (aclib.RunTapirCommand ('RemoveElementTrims', {\n    'elementPairs': [{'elementId': wall['elementId'], 'trimmingElementId': roofs[0]['elementId']} for wall in walls]\n}))\n\naclib.RunTapirCommand ('GetElementTrims', {'elements': walls})\n\naclib.RunTapirCommand ('DeleteElements', {'elements': walls + roofs})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RemoveElementTrims"
+  },
+  {
+   "name": "RemoveElementTrimDirection",
+   "group": "Solid Element Operation Commands",
+   "version": "2.0.1",
+   "description": "Removes one direction of a trim: the trim of an element by a roof or shell, keeping the other direction when the two trim each other (two roofs or shells). The Archicad API can only remove both directions at once, so the command reads the other direction and its trim type, removes the trim and trims the other direction again, in one undo step, and reads the result back. A pair whose element is not trimmed by its trimming element fails without changing anything; when Archicad fails to remove or trim again, the whole call is undone.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementPairs": {
+      "type": "array",
+      "description": "Per pair, the trim of elementId by trimmingElementId is removed. When trimmingElementId is trimmed by elementId too (two roofs or shells trimming each other), that other direction is kept, with its trim type. The pairs are done in order, each on the trims the pairs before it left, so the two pairs of two roofs remove both directions.",
+      "items": {
+       "$ref": "#/ElementTrimPair"
+      },
+      "minItems": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementPairs"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults",
+      "description": "One result for each input pair, in the order of the input. A pair whose element is not trimmed by its trimming element fails and changes nothing. When Archicad fails to remove a trim or to trim the kept direction again, the whole call is undone and every pair fails, the pair that failed with the reason."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/RemoveElementTrimDirection.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/RemoveElementTrimDirection.py",
+    "description": "Removes one direction of the trim between two roofs that trim each other with RemoveElementTrimDirection. The two overlapping roofs and their trims are created by the script; the roofs are deleted at the end.",
+    "code": "\"\"\"Removes one direction of the trim between two roofs that trim each other with RemoveElementTrimDirection.\n\nThe two overlapping roofs and their trims are created by the script; the roofs are deleted at the end.\n\"\"\"\nimport math\n\nimport aclib\n\n# Two overlapping hip roofs, created by this script and deleted at the end.\nroofs = aclib.RunTapirCommand ('CreateRoofs', {'roofsData': [\n    {\n        'level': 2.7, 'floorIndex': 0,\n        'levels': [{'levelHeight': 10.0, 'levelAngle': math.radians (25.0)}],\n        'polygonCoordinates': [{'x': 100.0, 'y': 100.0}, {'x': 106.0, 'y': 100.0}, {'x': 106.0, 'y': 105.0}, {'x': 100.0, 'y': 105.0}]\n    },\n    {\n        'level': 2.7, 'floorIndex': 0,\n        'levels': [{'levelHeight': 10.0, 'levelAngle': math.radians (25.0)}],\n        'polygonCoordinates': [{'x': 103.0, 'y': 102.0}, {'x': 109.0, 'y': 102.0}, {'x': 109.0, 'y': 107.0}, {'x': 103.0, 'y': 107.0}]\n    }\n]})['elements']\nroofA, roofB = roofs[0]['elementId'], roofs[1]['elementId']\n\n# The roofs trim each other: A is trimmed by B, and B by A.\naclib.RunTapirCommand ('TrimElements', {'elements': [{'elementId': roofA}], 'trimmingElement': roofB, 'trimType': 'KeepInside'})\naclib.RunTapirCommand ('TrimElements', {'elements': [{'elementId': roofB}], 'trimmingElement': roofA, 'trimType': 'KeepOutside'})\n\n# Only the trim of A by B goes; B stays trimmed by A, with its KeepOutside trim type.\naclib.PrintJson (aclib.RunTapirCommand ('RemoveElementTrimDirection', {\n    'elementPairs': [{'elementId': roofA, 'trimmingElementId': roofB}]\n}))\naclib.PrintJson (aclib.RunTapirCommand ('GetElementTrims', {'elements': roofs}))\n\naclib.RunTapirCommand ('DeleteElements', {'elements': roofs})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RemoveElementTrimDirection"
+  },
+  {
+   "name": "GetElementTrims",
+   "group": "Solid Element Operation Commands",
+   "version": "1.5.9",
+   "description": "Which roofs and shells trim each queried element, with the trim type, and which elements it trims.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementTrims": {
+      "type": "array",
+      "description": "One item per queried element, in order. An unknown or deleted element is an error item, so it cannot be mistaken for an element that is simply not trimmed.",
+      "items": {
+       "$ref": "#/ElementTrimsOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementTrims"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetElementTrimsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/GetElementTrims.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/GetElementTrims.py",
+    "description": "Gets which roofs and shells trim the first three walls with GetElementTrims, and what each wall trims. Needs at least one Wall.",
+    "code": "\"\"\"Gets which roofs and shells trim the first three walls with GetElementTrims, and what each wall trims.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementTrims', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementTrims"
+  },
+  {
+   "name": "MergeElements",
+   "group": "Solid Element Operation Commands",
+   "version": "1.8.0",
+   "description": "Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge. The merge is read back: when Archicad records no merge between the given elements (it decides which elements and type combinations it merges), the result is a failure, not a success.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "The construction elements to merge together. At least two."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "MergeElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/MergeElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/MergeElements.py",
+    "description": "Merges two adjacent slabs with MergeElements, the Merge command of Archicad, and reads the merge back. The slabs are created by the script and deleted at the end.",
+    "code": "\"\"\"Merges two adjacent slabs with MergeElements, the Merge command of Archicad, and reads the merge back.\n\nThe slabs are created by the script and deleted at the end.\n\"\"\"\nimport aclib\n\n# Two adjacent slabs, created by this script and deleted at the end.\nslabs = aclib.RunTapirCommand ('CreateSlabs', {\n    'slabsData': [\n        {'level': 0.0, 'thickness': 0.3, 'polygonCoordinates': [{'x': 50.0, 'y': 50.0}, {'x': 54.0, 'y': 50.0}, {'x': 54.0, 'y': 54.0}, {'x': 50.0, 'y': 54.0}]},\n        {'level': 0.0, 'thickness': 0.3, 'polygonCoordinates': [{'x': 54.0, 'y': 50.0}, {'x': 56.0, 'y': 50.0}, {'x': 56.0, 'y': 54.0}, {'x': 54.0, 'y': 54.0}]}\n    ]\n})['elements']\n\naclib.PrintJson (aclib.RunTapirCommand ('MergeElements', {'elements': slabs}))\n\naclib.RunTapirCommand ('GetMergedElements', {'elements': slabs})\n\naclib.RunTapirCommand ('DeleteElements', {'elements': slabs})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#MergeElements"
+  },
+  {
+   "name": "UnmergeElements",
+   "group": "Solid Element Operation Commands",
+   "version": "1.8.0",
+   "description": "Removes the merge between the two elements of each given pair. Undoable; one execution result per pair.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementPairs": {
+      "type": "array",
+      "description": "The pairs of merged elements to separate. The order within a pair does not matter.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementId1": {
+         "$ref": "#/ElementId"
+        },
+        "elementId2": {
+         "$ref": "#/ElementId"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementId1",
+        "elementId2"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementPairs"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UnmergeElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/UnmergeElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/UnmergeElements.py",
+    "description": "Removes the merge between two slabs with UnmergeElements. The slabs are created and merged by the script first, and deleted at the end.",
+    "code": "\"\"\"Removes the merge between two slabs with UnmergeElements.\n\nThe slabs are created and merged by the script first, and deleted at the end.\n\"\"\"\nimport aclib\n\n# Two adjacent slabs, created by this script and deleted at the end.\nslabs = aclib.RunTapirCommand ('CreateSlabs', {\n    'slabsData': [\n        {'level': 0.0, 'thickness': 0.3, 'polygonCoordinates': [{'x': 50.0, 'y': 50.0}, {'x': 54.0, 'y': 50.0}, {'x': 54.0, 'y': 54.0}, {'x': 50.0, 'y': 54.0}]},\n        {'level': 0.0, 'thickness': 0.3, 'polygonCoordinates': [{'x': 54.0, 'y': 50.0}, {'x': 56.0, 'y': 50.0}, {'x': 56.0, 'y': 54.0}, {'x': 54.0, 'y': 54.0}]}\n    ]\n})['elements']\n\naclib.RunTapirCommand ('MergeElements', {'elements': slabs})\n\naclib.PrintJson (aclib.RunTapirCommand ('UnmergeElements', {\n    'elementPairs': [{'elementId1': slabs[0]['elementId'], 'elementId2': slabs[1]['elementId']}]\n}))\n\naclib.RunTapirCommand ('GetMergedElements', {'elements': slabs})\n\naclib.RunTapirCommand ('DeleteElements', {'elements': slabs})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UnmergeElements"
+  },
+  {
+   "name": "GetMergedElements",
+   "group": "Solid Element Operation Commands",
+   "version": "1.8.0",
+   "description": "Gets the elements each queried element is merged with, one item per queried element; an unknown element is an error item.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementMerges": {
+      "type": "array",
+      "description": "One item per queried element, in order: the elements it is merged with. An unknown or deleted element is an error item, so it cannot be mistaken for an element that is simply not merged.",
+      "items": {
+       "$ref": "#/MergedElementsOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementMerges"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetMergedElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/SolidElementOperation/GetMergedElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/SolidElementOperation/GetMergedElements.py",
+    "description": "Gets the elements each of the first three slabs is merged with using GetMergedElements. Needs at least one Slab.",
+    "code": "\"\"\"Gets the elements each of the first three slabs is merged with using GetMergedElements.\n\nNeeds at least one Slab.\n\"\"\"\nimport aclib\n\nslabs = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Slab'})['elements'][:3]\nif not slabs:\n    raise SystemExit ('No slab in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetMergedElements', {'elements': slabs}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetMergedElements"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementTrims": {
+   "type": "object",
+   "description": "The trims of one element: the roofs and shells trimming it, and the elements it trims.",
+   "properties": {
+    "trimmedBy": {
+     "type": "array",
+     "description": "The roofs and shells trimming this element, with the trim type.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "elementId": {
+        "$ref": "#/ElementId"
+       },
+       "trimType": {
+        "$ref": "#/TrimType"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "elementId",
+       "trimType"
+      ]
+     }
+    },
+    "trims": {
+     "$ref": "#/Elements",
+     "description": "The elements this roof or shell trims."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "trimmedBy",
+    "trims"
+   ]
+  },
+  "ElementTrimsOrError": {
+   "type": "object",
+   "description": "The trims of one element, or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementTrims"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ElementTrimPair": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "trimmingElementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "trimmingElementId"
+   ]
+  },
+  "MergedElements": {
+   "type": "object",
+   "description": "The elements merged with one element.",
+   "properties": {
+    "mergedElements": {
+     "$ref": "#/Elements",
+     "description": "The elements merged with the queried element. Empty when it is not merged with any."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "mergedElements"
+   ]
+  },
+  "MergedElementsOrError": {
+   "type": "object",
+   "description": "The elements merged with one element, or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/MergedElements"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "DryRun": {
+   "type": "boolean",
+   "description": "If true, the command makes all the checks of a real run and resolves the same targets, with the same errors, but changes nothing in the project and creates no undo step. The response is that of a real run with \"dryRun\": true added, and says for each target what the real run would do. Default is false."
+  },
+  "DryRunFlag": {
+   "type": "boolean",
+   "description": "Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.",
+   "enum": [
+    true
+   ]
+  },
+  "WouldDeleteExecutionResult": {
+   "type": "object",
+   "description": "The result of a dry run for a target that passed every check: a real run would delete it.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    },
+    "wouldDelete": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "wouldDelete"
+   ]
+  },
+  "DeletionExecutionResult": {
+   "type": "object",
+   "description": "The result of a deletion for one target. On a dry run a target that passed every check gets wouldDelete instead of being deleted.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/WouldDeleteExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "DeletionExecutionResults": {
+   "type": "array",
+   "description": "A list of deletion results.",
+   "items": {
+    "$ref": "#/DeletionExecutionResult"
+   }
+  },
+  "TrimType": {
+   "type": "string",
+   "description": "Which side of the trimming element the elements keep.",
+   "enum": [
+    "KeepInside",
+    "KeepOutside",
+    "KeepAll",
+    "No"
+   ]
+  },
+  "SolidLinkReference": {
+   "type": "object",
+   "properties": {
+    "targetId": {
+     "$ref": "#/ElementId"
+    },
+    "operatorId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "targetId",
+    "operatorId"
+   ]
+  },
+  "SolidLinksOfElement": {
+   "type": "object",
+   "properties": {
+    "solidLinksWithTheGivenTarget": {
+     "type": "array",
+     "description": "Links where the given element is the target (being cut or modified).",
+     "items": {
+      "type": "object",
+      "properties": {
+       "operatorId": {
+        "$ref": "#/ElementId"
+       },
+       "operation": {
+        "$ref": "#/SolidOperationType"
+       },
+       "linkFlags": {
+        "$ref": "#/SolidLinkFlags"
+       },
+       "linkTime": {
+        "type": "string",
+        "description": "When the solid link was made, as a date and time string formatted like the times of revision issues. Omitted when Archicad does not report it."
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "operatorId",
+       "operation",
+       "linkFlags"
+      ]
+     }
+    },
+    "solidLinksWithTheGivenOperator": {
+     "type": "array",
+     "description": "Links where the given element is the operator (performing the cut).",
+     "items": {
+      "type": "object",
+      "properties": {
+       "targetId": {
+        "$ref": "#/ElementId"
+       },
+       "operation": {
+        "$ref": "#/SolidOperationType"
+       },
+       "linkFlags": {
+        "$ref": "#/SolidLinkFlags"
+       },
+       "linkTime": {
+        "type": "string",
+        "description": "When the solid link was made, as a date and time string formatted like the times of revision issues. Omitted when Archicad does not report it."
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "targetId",
+       "operation",
+       "linkFlags"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "solidLinksWithTheGivenTarget",
+    "solidLinksWithTheGivenOperator"
+   ]
+  },
+  "SolidLinkData": {
+   "type": "object",
+   "properties": {
+    "targetId": {
+     "$ref": "#/ElementId",
+     "description": "The element to be cut or modified."
+    },
+    "operatorId": {
+     "$ref": "#/ElementId",
+     "description": "The element performing the operation."
+    },
+    "operation": {
+     "$ref": "#/SolidOperationType"
+    },
+    "linkFlags": {
+     "$ref": "#/SolidLinkFlags"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "targetId",
+    "operatorId",
+    "operation"
+   ]
+  },
+  "SolidOperationType": {
+   "type": "string",
+   "description": "The type of solid element operation.",
+   "enum": [
+    "Subtraction",
+    "SubtractionUpwards",
+    "SubtractionDownwards",
+    "Intersection",
+    "Addition"
+   ]
+  },
+  "SolidLinkFlags": {
+   "type": "object",
+   "description": "Flags controlling the behaviour of a solid element operation link.",
+   "properties": {
+    "inheritOperatorAttributes": {
+     "type": "boolean",
+     "description": "If true, the target element inherits the attributes of the operator element."
+    },
+    "skipPolygonHoles": {
+     "type": "boolean",
+     "description": "If true, holes of the operator (roof/slab) are ignored during the operation."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "inheritOperatorAttributes",
+    "skipPolygonHoles"
+   ]
+  }
+ }
+}

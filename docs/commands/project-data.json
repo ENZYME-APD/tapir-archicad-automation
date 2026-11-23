@@ -1,0 +1,746 @@
+{
+ "version": 1,
+ "groups": [
+  "Project Data Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetProjectDataKeys",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Lists the project data stored by Tapir in the project: the names, the identifiers of the add-on objects that store them, whether they are kept on this client only and the Teamwork user who has reserved them. Project data is text (for example JSON) saved in the project file by scripts and Grasshopper definitions, such as their settings or the mapping of elements to an external system.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "keys": {
+      "type": "array",
+      "description": "The project data stored by Tapir in the project.",
+      "items": {
+       "$ref": "#/ProjectDataKey"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "keys"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetProjectDataKeysComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/GetProjectDataKeys.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/GetProjectDataKeys.py",
+    "description": "Prints the names of the project data stored by Tapir, with their Teamwork owners, with GetProjectDataKeys.",
+    "code": "\"\"\"Prints the names of the project data stored by Tapir, with their Teamwork owners, with GetProjectDataKeys.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetProjectDataKeys'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetProjectDataKeys"
+  },
+  {
+   "name": "GetProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Gets the content of the project data with the given names.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the project data to get.",
+      "items": {
+       "$ref": "#/ProjectDataName"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "names"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "values": {
+      "type": "array",
+      "description": "The project data in the order of the given names, or an error for a name that has no project data.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/ProjectDataValue"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "values"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetProjectDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/GetProjectData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/GetProjectData.py",
+    "description": "Prints the content of every project data stored by Tapir with GetProjectData.",
+    "code": "\"\"\"Prints the content of every project data stored by Tapir with GetProjectData.\"\"\"\nimport aclib\n\nkeys = aclib.RunTapirCommand ('GetProjectDataKeys')['keys']\nif not keys:\n    raise SystemExit ('No project data in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetProjectData', {'names': [k['name'] for k in keys]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetProjectData"
+  },
+  {
+   "name": "SetProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Creates or overwrites project data: text (for example JSON) saved in the project under a name. New project data can be kept on this client only, or created as unique so that in Teamwork only one can exist with its name. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "values": {
+      "type": "array",
+      "description": "The project data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.",
+      "items": {
+       "$ref": "#/ProjectDataValueData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "values"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetProjectDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/SetProjectData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/SetProjectData.py",
+    "description": "Saves a JSON text in the project under a name with SetProjectData, reads it back, then deletes it.",
+    "code": "\"\"\"Saves a JSON text in the project under a name with SetProjectData, reads it back, then deletes it.\"\"\"\nimport json\nimport aclib\n\nname = 'tapir-example/settings'\n\naclib.PrintJson (aclib.RunTapirCommand ('SetProjectData', {\n    'values': [\n        {'name': name, 'content': json.dumps ({'scale': 100, 'layer': 'Tapir'})}\n    ]\n}))\naclib.RunTapirCommand ('GetProjectData', {'names': [name]})\n\naclib.RunTapirCommand ('DeleteProjectData', {'names': [name]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetProjectData"
+  },
+  {
+   "name": "DeleteProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Deletes the project data with the given names.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the project data to delete.",
+      "items": {
+       "$ref": "#/ProjectDataName"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "names"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteProjectDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/DeleteProjectData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/DeleteProjectData.py",
+    "description": "Saves a project data and deletes it again with DeleteProjectData.",
+    "code": "\"\"\"Saves a project data and deletes it again with DeleteProjectData.\"\"\"\nimport aclib\n\nname = 'tapir-example/to-delete'\naclib.RunTapirCommand ('SetProjectData', {'values': [{'name': name, 'content': 'temporary'}]})\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteProjectData', {'names': [name]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteProjectData"
+  },
+  {
+   "name": "ReserveProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Reserves the project data with the given names in Teamwork, so that other users cannot change it. Returns the users who have already reserved some of it.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the project data to reserve.",
+      "items": {
+       "$ref": "#/ProjectDataName"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "names"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResult": {
+      "$ref": "#/ExecutionResult"
+     },
+     "conflicts": {
+      "type": "array",
+      "description": "The project data that could not be reserved because another user has reserved it.",
+      "items": {
+       "$ref": "#/ProjectDataReservationConflict"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResult"
+    ]
+   },
+   "grasshopperComponents": [
+    "ReserveProjectDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/ReserveProjectData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/ReserveProjectData.py",
+    "description": "Saves a project data, reserves it in Teamwork with ReserveProjectData, then releases and deletes it. Needs a Teamwork project; in a solo project the reservation fails.",
+    "code": "\"\"\"Saves a project data, reserves it in Teamwork with ReserveProjectData, then releases and deletes it.\n\nNeeds a Teamwork project; in a solo project the reservation fails.\n\"\"\"\nimport aclib\n\nname = 'tapir-example/teamwork'\naclib.RunTapirCommand ('SetProjectData', {'values': [{'name': name, 'content': 'shared'}]})\n\naclib.PrintJson (aclib.RunTapirCommand ('ReserveProjectData', {'names': [name]}))\naclib.RunTapirCommand ('GetProjectDataKeys')\n\naclib.RunTapirCommand ('ReleaseProjectData', {'names': [name]})\naclib.RunTapirCommand ('DeleteProjectData', {'names': [name]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReserveProjectData"
+  },
+  {
+   "name": "ReleaseProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Releases the project data with the given names in Teamwork.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the project data to release.",
+      "items": {
+       "$ref": "#/ProjectDataName"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "names"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ReleaseProjectDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/ReleaseProjectData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/ReleaseProjectData.py",
+    "description": "Saves and reserves a project data, then releases it in Teamwork with ReleaseProjectData and deletes it. Needs a Teamwork project; in a solo project the reservation and the release fail.",
+    "code": "\"\"\"Saves and reserves a project data, then releases it in Teamwork with ReleaseProjectData and deletes it.\n\nNeeds a Teamwork project; in a solo project the reservation and the release fail.\n\"\"\"\nimport aclib\n\nname = 'tapir-example/teamwork'\naclib.RunTapirCommand ('SetProjectData', {'values': [{'name': name, 'content': 'shared'}]})\naclib.RunTapirCommand ('ReserveProjectData', {'names': [name]})\n\naclib.PrintJson (aclib.RunTapirCommand ('ReleaseProjectData', {'names': [name]}))\naclib.RunTapirCommand ('GetProjectDataKeys')\n\naclib.RunTapirCommand ('DeleteProjectData', {'names': [name]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReleaseProjectData"
+  },
+  {
+   "name": "RequestProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Requests the project data with the given names in Teamwork from the users who have reserved it, with an optional message.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the project data to request from the users who have reserved them.",
+      "items": {
+       "$ref": "#/ProjectDataName"
+      }
+     },
+     "mailText": {
+      "type": "string",
+      "description": "The message sent with the request. The default is empty."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "names"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "RequestProjectDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/RequestProjectData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/RequestProjectData.py",
+    "description": "Requests the project data reserved by other Teamwork users from them, with a message, with RequestProjectData. Needs a Teamwork project. Sends the request to the users who reserved the data.",
+    "code": "\"\"\"Requests the project data reserved by other Teamwork users from them, with a message, with RequestProjectData.\n\nNeeds a Teamwork project. Sends the request to the users who reserved the data.\n\"\"\"\nimport aclib\n\nkeys = aclib.RunTapirCommand ('GetProjectDataKeys')['keys']\nreserved = [k['name'] for k in keys if 'teamworkOwner' in k]\nif not reserved:\n    raise SystemExit ('No reserved project data.')\n\naclib.PrintJson (aclib.RunTapirCommand ('RequestProjectData', {\n    'names': reserved,\n    'mailText': 'Please release the Tapir project data.'\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RequestProjectData"
+  },
+  {
+   "name": "GrantProjectData",
+   "group": "Project Data Commands",
+   "version": "1.7.3",
+   "description": "Grants the project data with the given names, reserved by the current user, to another Teamwork user.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the project data, reserved by the current user, to grant.",
+      "items": {
+       "$ref": "#/ProjectDataName"
+      }
+     },
+     "toUserId": {
+      "type": "integer",
+      "description": "The Teamwork user id of the user who gets the project data, for example the userId of a user returned by GetProjectDataKeys or ReserveProjectData.",
+      "minimum": 1,
+      "maximum": 32767
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "names",
+     "toUserId"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "GrantProjectDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/GrantProjectData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/GrantProjectData.py",
+    "description": "Saves and reserves a project data, then grants it to another Teamwork user with GrantProjectData. Needs a Teamwork project. Set toUserId to the user to grant to, e.g. the userId of a teamworkOwner that GetProjectDataKeys lists.",
+    "code": "\"\"\"Saves and reserves a project data, then grants it to another Teamwork user with GrantProjectData.\n\nNeeds a Teamwork project. Set toUserId to the user to grant to, e.g. the userId of a teamworkOwner\nthat GetProjectDataKeys lists.\n\"\"\"\nimport aclib\n\ntoUserId = 2\nname = 'tapir-example/teamwork'\n\naclib.RunTapirCommand ('SetProjectData', {'values': [{'name': name, 'content': 'shared'}]})\naclib.RunTapirCommand ('ReserveProjectData', {'names': [name]})\n\naclib.PrintJson (aclib.RunTapirCommand ('GrantProjectData', {'names': [name], 'toUserId': toUserId}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GrantProjectData"
+  },
+  {
+   "name": "GetModulData",
+   "group": "Project Data Commands",
+   "version": "2.0.0",
+   "description": "Gets the module data Tapir stored in the project with StoreModulData: the given names, or all of them, with their data version and, unless includeContent is false, their content. Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under a name, kept apart from project data (SetProjectData).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the module data to get; the empty name is the default section. When omitted, every module data Tapir stored in the project is returned.",
+      "items": {
+       "type": "string"
+      }
+     },
+     "includeContent": {
+      "type": "boolean",
+      "description": "Whether the content is returned too. When false, only the names and data versions are read, without loading the data. The default is true."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "modulData": {
+      "type": "array",
+      "description": "The module data in the order of the given names (or of the list Archicad returns), or an error for a name that has no module data.",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "name": {
+           "type": "string",
+           "description": "The name of the module data."
+          },
+          "dataVersion": {
+           "type": "integer",
+           "description": "The version number stored with the data."
+          },
+          "content": {
+           "type": "string",
+           "description": "The content of the module data. Left out when includeContent is false."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "name",
+          "dataVersion"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "modulData"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetModulDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/GetModulData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/GetModulData.py",
+    "description": "GetModulData returns the module data Tapir stored in the project (StoreModulData): every one without names, or the given names. With includeContent false only the names and data versions are read. A name without module data gets an error item.",
+    "code": "\"\"\"GetModulData returns the module data Tapir stored in the project (StoreModulData): every one without names, or\nthe given names. With includeContent false only the names and data versions are read. A name without module\ndata gets an error item.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('StoreModulData', {\n    'modulData': [\n        {'name': 'tapir-example/get', 'content': '{\"answer\": 42}'}\n    ]\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('GetModulData', {\n    'includeContent': False\n}))\n\naclib.PrintJson (aclib.RunTapirCommand ('GetModulData', {\n    'names': ['tapir-example/get', 'tapir-example/missing']\n}))\n\naclib.RunTapirCommand ('DeleteModulData', {\n    'names': ['tapir-example/get']\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetModulData"
+  },
+  {
+   "name": "StoreModulData",
+   "group": "Project Data Commands",
+   "version": "2.0.0",
+   "description": "Creates or overwrites module data: text (for example JSON) saved in the project under a name, with an optional data version. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data. Storing module data is not an undoable step.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "modulData": {
+      "type": "array",
+      "description": "The module data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "name": {
+         "type": "string",
+         "description": "The name of the module data; the empty name is the default section."
+        },
+        "content": {
+         "type": "string",
+         "description": "The content of the module data, for example a JSON string."
+        },
+        "dataVersion": {
+         "type": "integer",
+         "description": "A version number stored with the data, returned by GetModulData, for example to tell the formats of your content apart. The default is 1."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "name",
+        "content"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "modulData"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "StoreModulDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/StoreModulData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/StoreModulData.py",
+    "description": "Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under a name, kept apart from project data (SetProjectData). StoreModulData creates or overwrites them, with an optional data version; storing is not an undoable step.",
+    "code": "\"\"\"Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under\na name, kept apart from project data (SetProjectData). StoreModulData creates or overwrites them, with an\noptional data version; storing is not an undoable step.\n\"\"\"\nimport json\nimport aclib\n\nsettings = {'syncedAt': '2026-11-04T12:00:00Z', 'database': 'Épület DB'}\n\naclib.PrintJson (aclib.RunTapirCommand ('StoreModulData', {\n    'modulData': [\n        {'name': 'tapir-example/settings', 'content': json.dumps (settings, ensure_ascii = False), 'dataVersion': 2},\n        {'name': 'tapir-example/notes', 'content': 'stored by the Tapir example'}\n    ]\n}))\n\nvalues = aclib.RunTapirCommand ('GetModulData', {\n    'names': ['tapir-example/settings', 'tapir-example/notes']\n})['modulData']\nassert json.loads (values[0]['content']) == settings\nassert values[0]['dataVersion'] == 2\n\naclib.RunTapirCommand ('DeleteModulData', {\n    'names': ['tapir-example/settings', 'tapir-example/notes']\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#StoreModulData"
+  },
+  {
+   "name": "DeleteModulData",
+   "group": "Project Data Commands",
+   "version": "2.0.0",
+   "description": "Deletes the module data with the given names. Deleting module data is not an undoable step.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "names": {
+      "type": "array",
+      "description": "The names of the module data to delete; the empty name is the default section.",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "names"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteModulDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ProjectData/DeleteModulData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/DeleteModulData.py",
+    "description": "DeleteModulData deletes the module data with the given names; a name without module data gets a failed execution result. Deleting is not an undoable step.",
+    "code": "\"\"\"DeleteModulData deletes the module data with the given names; a name without module data gets a failed\nexecution result. Deleting is not an undoable step.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('StoreModulData', {\n    'modulData': [\n        {'name': 'tapir-example/delete', 'content': 'to be deleted'}\n    ]\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteModulData', {\n    'names': ['tapir-example/delete', 'tapir-example/missing']\n}))\n\naclib.RunTapirCommand ('GetModulData', {\n    'names': ['tapir-example/delete']\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteModulData"
+  }
+ ],
+ "schemaDefinitions": {
+  "User": {
+   "type": "object",
+   "properties": {
+    "userId": {
+     "type": "number"
+    },
+    "userName": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "userId",
+    "userName"
+   ]
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "ProjectDataKey": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the project data."
+    },
+    "guid": {
+     "type": "string",
+     "description": "The identifier of the add-on object that stores the project data."
+    },
+    "clientOnly": {
+     "type": "boolean",
+     "description": "True when the project data is kept on this client only and is not shared in Teamwork."
+    },
+    "teamworkOwner": {
+     "$ref": "#/User",
+     "description": "The Teamwork user who has reserved the project data. Omitted when nobody has reserved it or the project is not a Teamwork project."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "guid",
+    "clientOnly"
+   ]
+  },
+  "ProjectDataReservationConflict": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the project data."
+    },
+    "user": {
+     "$ref": "#/User"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "user"
+   ]
+  },
+  "ProjectDataValueData": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the project data.",
+     "minLength": 1
+    },
+    "content": {
+     "type": "string",
+     "description": "The content of the project data, for example a JSON string."
+    },
+    "clientOnly": {
+     "type": "boolean",
+     "description": "Creates the project data on this client only, it is not shared in Teamwork. Used only when the project data is created. The default is false."
+    },
+    "unique": {
+     "type": "boolean",
+     "description": "Creates the project data as a unique add-on object: in Teamwork only one can exist with its name, even when several users create it at the same time. Used only when the project data is created, and cannot be combined with clientOnly. The default is false."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "content"
+   ]
+  },
+  "ProjectDataValue": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the project data."
+    },
+    "content": {
+     "type": "string",
+     "description": "The content of the project data."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "content"
+   ]
+  },
+  "ProjectDataName": {
+   "type": "string",
+   "minLength": 1
+  }
+ }
+}

@@ -1,0 +1,1075 @@
+{
+ "version": 1,
+ "groups": [
+  "Teamwork Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "TeamworkSend",
+   "group": "Teamwork Commands",
+   "version": "0.1.0",
+   "description": "Performs a send operation on the currently opened Teamwork project.",
+   "inputSchema": null,
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "TeamworkSendComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/TeamworkSend.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/TeamworkSend.py",
+    "description": "Sends your changes to the BIMcloud server with TeamworkSend. Needs an open Teamwork project.",
+    "code": "\"\"\"Sends your changes to the BIMcloud server with TeamworkSend.\n\nNeeds an open Teamwork project.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('TeamworkSend'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#TeamworkSend"
+  },
+  {
+   "name": "TeamworkReceive",
+   "group": "Teamwork Commands",
+   "version": "0.1.0",
+   "description": "Performs a receive operation on the currently opened Teamwork project.",
+   "inputSchema": null,
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "TeamworkComponents"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/TeamworkReceive.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/TeamworkReceive.py",
+    "description": "Receives the changes of the other team members from the BIMcloud server with TeamworkReceive. Needs an open Teamwork project.",
+    "code": "\"\"\"Receives the changes of the other team members from the BIMcloud server with TeamworkReceive.\n\nNeeds an open Teamwork project.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('TeamworkReceive'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#TeamworkReceive"
+  },
+  {
+   "name": "GetTeamworkProjectInfo",
+   "group": "Teamwork Commands",
+   "version": "1.8.0",
+   "description": "Tells whether the opened project is a Teamwork project and whether it is online, and returns its BIMcloud server, project name and the current user (id and name).",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "isTeamwork": {
+      "type": "boolean",
+      "description": "True, if the opened project is a Teamwork (BIMcloud) project. When false, every other Teamwork field is left out."
+     },
+     "isOnline": {
+      "type": "boolean",
+      "description": "True, if the Teamwork project is connected to its BIMcloud server. False in a solo project or when the Teamwork project works offline."
+     },
+     "userId": {
+      "type": "number",
+      "description": "The Teamwork user identifier of the current user, as the Teamwork commands report users."
+     },
+     "userName": {
+      "type": "string",
+      "description": "The name of the current Teamwork user."
+     },
+     "serverUrl": {
+      "type": "string",
+      "description": "The address of the BIMcloud server of the Teamwork project."
+     },
+     "projectName": {
+      "type": "string",
+      "description": "The name of the Teamwork project on the server."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "isTeamwork",
+     "isOnline"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetTeamworkProjectInfoComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GetTeamworkProjectInfo.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetTeamworkProjectInfo.py",
+    "description": "Tells with GetTeamworkProjectInfo whether the open project is a Teamwork project, and its server, project name and current user.",
+    "code": "\"\"\"Tells with GetTeamworkProjectInfo whether the open project is a Teamwork project, and its server, project name and current user.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetTeamworkProjectInfo'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetTeamworkProjectInfo"
+  },
+  {
+   "name": "ReserveElements",
+   "group": "Teamwork Commands",
+   "version": "1.1.4",
+   "description": "Reserves elements in Teamwork mode. GUIDs that are not elements (navigator items, layouts, databases) cannot be reserved with it: they are returned in notElements and the execution result fails.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResult": {
+      "$ref": "#/ExecutionResult"
+     },
+     "notElements": {
+      "type": "array",
+      "description": "The given GUIDs that are not elements, e.g. navigator items, layouts or databases. They were not reserved, and executionResult fails because of them even if the other elements were reserved. Left out when every GUID is an element.",
+      "items": {
+       "$ref": "#/ElementIdArrayItem"
+      }
+     },
+     "conflicts": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementId": {
+         "$ref": "#/ElementId"
+        },
+        "user": {
+         "$ref": "#/User"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementId",
+        "user"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResult"
+    ]
+   },
+   "grasshopperComponents": [
+    "ReserveElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/ReserveElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/ReserveElements.py",
+    "description": "Reserves the first wall of the project with ReserveElements and prints the users who hold it if that fails. Needs an open Teamwork project with at least one Wall. A wall that was free before is released again at the end.",
+    "code": "\"\"\"Reserves the first wall of the project with ReserveElements and prints the users who hold it if that fails.\n\nNeeds an open Teamwork project with at least one Wall. A wall that was free before is released again at the end.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\nwasFree = aclib.RunTapirCommand ('GetReservationStatusOfElements', {'elements': walls})['reservationStatuses'][0].get ('status') == 'Free'\n\nresponse = aclib.RunTapirCommand ('ReserveElements', {'elements': walls})\nfor conflict in response.get ('conflicts', []):\n    print ('Reserved by', conflict['user']['userName'])\nfor notElement in response.get ('notElements', []):\n    print ('Not an element, not reserved:', notElement['elementId']['guid'])\n\nif wasFree:\n    aclib.RunTapirCommand ('ReleaseElements', {'elements': walls})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReserveElements"
+  },
+  {
+   "name": "ReleaseElements",
+   "group": "Teamwork Commands",
+   "version": "1.1.4",
+   "description": "Releases elements in Teamwork mode. Fails, naming them, when any of the given GUIDs is not an element; the other elements are released.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ReleaseElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/ReleaseElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/ReleaseElements.py",
+    "description": "Reserves the first wall of the project and releases it again with ReleaseElements. Needs an open Teamwork project with at least one Wall.",
+    "code": "\"\"\"Reserves the first wall of the project and releases it again with ReleaseElements.\n\nNeeds an open Teamwork project with at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.RunTapirCommand ('ReserveElements', {'elements': walls})\n\naclib.PrintJson (aclib.RunTapirCommand ('ReleaseElements', {'elements': walls}))\n\naclib.RunTapirCommand ('GetReservationStatusOfElements', {'elements': walls})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReleaseElements"
+  },
+  {
+   "name": "GetReservationStatusOfElements",
+   "group": "Teamwork Commands",
+   "version": "1.7.3",
+   "description": "Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user. New elements stay reserved by the user who created them until they are released.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "reservationStatuses": {
+      "type": "array",
+      "description": "One item per input element, in the same order.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/ElementReservationStatus"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "reservationStatuses"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetReservationStatusOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GetReservationStatusOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetReservationStatusOfElements.py",
+    "description": "Gets the Teamwork reservation status of the first three walls with GetReservationStatusOfElements, without reserving them. Needs at least one Wall. In a solo project every element is editable.",
+    "code": "\"\"\"Gets the Teamwork reservation status of the first three walls with GetReservationStatusOfElements, without reserving them.\n\nNeeds at least one Wall. In a solo project every element is editable.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetReservationStatusOfElements', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetReservationStatusOfElements"
+  },
+  {
+   "name": "GrantElements",
+   "group": "Teamwork Commands",
+   "version": "1.7.3",
+   "description": "Hands over the reservation of elements to another Teamwork user, given by user id, without a dialog. Available from Archicad 27.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     },
+     "userId": {
+      "type": "number",
+      "description": "The Teamwork user id of the user to hand the elements over to, as GetTeamworkProjectInfo, GetReservationStatusOfElements and the conflicts of ReserveElements report users."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements",
+     "userId"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "GrantElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GrantElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GrantElements.py",
+    "description": "Hands the reservation of the first wall over to another team member with GrantElements. Needs an open Teamwork project with at least one Wall and another member. The wall is reserved first, and stays reserved by the other member. Requires Archicad 27 or later.",
+    "code": "\"\"\"Hands the reservation of the first wall over to another team member with GrantElements.\n\nNeeds an open Teamwork project with at least one Wall and another member. The wall is reserved first, and stays\nreserved by the other member. Requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\nmyUserId = aclib.RunTapirCommand ('GetTeamworkProjectInfo').get ('userId')\nusers = aclib.RunTapirCommand ('GetTeamworkStatus').get ('users', [])\notherUsers = [user for user in users if user['userId'] != myUserId]\nif not otherUsers:\n    raise SystemExit ('The project has no other Teamwork member.')\n\naclib.RunTapirCommand ('ReserveElements', {'elements': walls})\n\naclib.PrintJson (aclib.RunTapirCommand ('GrantElements', {'elements': walls, 'userId': otherUsers[0]['userId']}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GrantElements"
+  },
+  {
+   "name": "ReserveLockableObjectSet",
+   "group": "Teamwork Commands",
+   "version": "1.7.1",
+   "description": "Reserves a non-element lockable object set (attributes, favorites, project info, project preferences, etc.) in Teamwork mode. The object set is given by its Archicad API name, e.g. 'Composites', 'LayerSettingsDialog' or 'ProjectInfo'.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "objectSetName": {
+      "type": "string",
+      "description": "The name of the lockable object set, as the Archicad API documents it: BuildingMaterials, Cities, Composites, Favorites, FillTypes, LayerSettingsDialog (layers and layer combinations), LineTypes, MarkupStyles, MEPSystems, ModelViewOptions, OperationProfiles, PenTables, Profiles, ProjectInfo, GeoLocation (project location), PreferencesDialog (project preferences and dimension standards), GraphicOverrides (renovation override styles), Surfaces or ZoneCategories. Other names the Archicad API accepts work too."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "objectSetName"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResult": {
+      "$ref": "#/ExecutionResult"
+     },
+     "conflicts": {
+      "type": "array",
+      "description": "The users whose reservation prevented reserving the object set.",
+      "items": {
+       "$ref": "#/User"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResult"
+    ]
+   },
+   "grasshopperComponents": [
+    "ReserveLockableObjectSetComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/ReserveLockableObjectSet.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/ReserveLockableObjectSet.py",
+    "description": "Reserves the Favorites of a Teamwork project with ReserveLockableObjectSet. Needs an open Teamwork project. Favorites that were free before are released again at the end.",
+    "code": "\"\"\"Reserves the Favorites of a Teamwork project with ReserveLockableObjectSet.\n\nNeeds an open Teamwork project. Favorites that were free before are released again at the end.\n\"\"\"\nimport aclib\n\nwasFree = aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': 'Favorites'}).get ('status') == 'Free'\n\naclib.PrintJson (aclib.RunTapirCommand ('ReserveLockableObjectSet', {'objectSetName': 'Favorites'}))\n\naclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': 'Favorites'})\n\nif wasFree:\n    aclib.RunTapirCommand ('ReleaseLockableObjectSet', {'objectSetName': 'Favorites'})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReserveLockableObjectSet"
+  },
+  {
+   "name": "ReleaseLockableObjectSet",
+   "group": "Teamwork Commands",
+   "version": "1.7.1",
+   "description": "Releases a non-element lockable object set reserved with ReserveLockableObjectSet in Teamwork mode.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "objectSetName": {
+      "type": "string",
+      "description": "The name of the lockable object set, as the Archicad API documents it: BuildingMaterials, Cities, Composites, Favorites, FillTypes, LayerSettingsDialog (layers and layer combinations), LineTypes, MarkupStyles, MEPSystems, ModelViewOptions, OperationProfiles, PenTables, Profiles, ProjectInfo, GeoLocation (project location), PreferencesDialog (project preferences and dimension standards), GraphicOverrides (renovation override styles), Surfaces or ZoneCategories. Other names the Archicad API accepts work too."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "objectSetName"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ReleaseLockableObjectSetComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/ReleaseLockableObjectSet.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/ReleaseLockableObjectSet.py",
+    "description": "Reserves the Composites of a Teamwork project and releases them again with ReleaseLockableObjectSet. Needs an open Teamwork project.",
+    "code": "\"\"\"Reserves the Composites of a Teamwork project and releases them again with ReleaseLockableObjectSet.\n\nNeeds an open Teamwork project.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('ReserveLockableObjectSet', {'objectSetName': 'Composites'})\n\naclib.PrintJson (aclib.RunTapirCommand ('ReleaseLockableObjectSet', {'objectSetName': 'Composites'}))\n\naclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': 'Composites'})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReleaseLockableObjectSet"
+  },
+  {
+   "name": "GetLockableObjectSetStatus",
+   "group": "Teamwork Commands",
+   "version": "1.7.1",
+   "description": "Returns the Teamwork reservation status of a non-element lockable object set and the users who hold it.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "objectSetName": {
+      "type": "string",
+      "description": "The name of the lockable object set, as the Archicad API documents it: BuildingMaterials, Cities, Composites, Favorites, FillTypes, LayerSettingsDialog (layers and layer combinations), LineTypes, MarkupStyles, MEPSystems, ModelViewOptions, OperationProfiles, PenTables, Profiles, ProjectInfo, GeoLocation (project location), PreferencesDialog (project preferences and dimension standards), GraphicOverrides (renovation override styles), Surfaces or ZoneCategories. Other names the Archicad API accepts work too."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "objectSetName"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "status": {
+      "type": "string",
+      "description": "Free: nobody has reserved it. Editable: the current user has reserved it. Locked: another user has reserved it (see conflicts). NotAvailable: the Teamwork server is offline or not available. NotExist: there is no Teamwork connection, for example the project is not a Teamwork project. An unknown object set name is reported as an error, not as a status.",
+      "enum": [
+       "Free",
+       "Editable",
+       "Locked",
+       "NotAvailable",
+       "NotExist"
+      ]
+     },
+     "conflicts": {
+      "type": "array",
+      "description": "The users who hold a reservation on the object set.",
+      "items": {
+       "$ref": "#/User"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "status"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetLockableObjectSetStatusComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GetLockableObjectSetStatus.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetLockableObjectSetStatus.py",
+    "description": "Gets the Teamwork reservation status of a few lockable object sets with GetLockableObjectSetStatus, and who holds them.",
+    "code": "\"\"\"Gets the Teamwork reservation status of a few lockable object sets with GetLockableObjectSetStatus, and who holds them.\"\"\"\nimport aclib\n\nfor objectSetName in ['Composites', 'LayerSettingsDialog', 'ProjectInfo']:\n    aclib.PrintJson (aclib.RunTapirCommand ('GetLockableObjectSetStatus', {'objectSetName': objectSetName}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetLockableObjectSetStatus"
+  },
+  {
+   "name": "ReserveHotlinkCacheManagement",
+   "group": "Teamwork Commands",
+   "version": "1.7.1",
+   "description": "Reserves the Hotlink and XRef management in Teamwork mode, which is needed before changing hotlink nodes.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResult": {
+      "$ref": "#/ExecutionResult"
+     },
+     "conflicts": {
+      "type": "array",
+      "description": "The user whose reservation prevented reserving the Hotlink and XRef management.",
+      "items": {
+       "$ref": "#/User"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResult"
+    ]
+   },
+   "grasshopperComponents": [
+    "ReserveHotlinkCacheManagementComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/ReserveHotlinkCacheManagement.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/ReserveHotlinkCacheManagement.py",
+    "description": "Reserves the Hotlink and XRef management of a Teamwork project with ReserveHotlinkCacheManagement. Needs an open Teamwork project. The reservation is released again at the end.",
+    "code": "\"\"\"Reserves the Hotlink and XRef management of a Teamwork project with ReserveHotlinkCacheManagement.\n\nNeeds an open Teamwork project. The reservation is released again at the end.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('ReserveHotlinkCacheManagement'))\n\naclib.RunTapirCommand ('GetTeamworkStatus')\n\naclib.RunTapirCommand ('ReleaseHotlinkCacheManagement')\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReserveHotlinkCacheManagement"
+  },
+  {
+   "name": "ReleaseHotlinkCacheManagement",
+   "group": "Teamwork Commands",
+   "version": "1.7.1",
+   "description": "Releases the Hotlink and XRef management in Teamwork mode.",
+   "inputSchema": null,
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ReleaseHotlinkCacheManagementComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/ReleaseHotlinkCacheManagement.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/ReleaseHotlinkCacheManagement.py",
+    "description": "Reserves the Hotlink and XRef management of a Teamwork project and releases it again with ReleaseHotlinkCacheManagement. Needs an open Teamwork project.",
+    "code": "\"\"\"Reserves the Hotlink and XRef management of a Teamwork project and releases it again with ReleaseHotlinkCacheManagement.\n\nNeeds an open Teamwork project.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('ReserveHotlinkCacheManagement')\n\naclib.PrintJson (aclib.RunTapirCommand ('ReleaseHotlinkCacheManagement'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReleaseHotlinkCacheManagement"
+  },
+  {
+   "name": "GetTeamworkStatus",
+   "group": "Teamwork Commands",
+   "version": "1.7.3",
+   "description": "Returns whether the opened project is a Teamwork project and is online, the members of the shared project and who has reserved the Hotlink and XRef management. Works in a solo project too, then isShared and isOnline are false.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "isShared": {
+      "type": "boolean",
+      "description": "Whether the opened project is a Teamwork (BIMcloud) project."
+     },
+     "isOnline": {
+      "type": "boolean",
+      "description": "Whether there is a live connection to the Teamwork server. Always false for a project that is not shared."
+     },
+     "users": {
+      "type": "array",
+      "description": "The members of the shared project. Only present when the project is shared.",
+      "items": {
+       "$ref": "#/TeamworkUser"
+      }
+     },
+     "hotlinkCacheManagementOwner": {
+      "$ref": "#/User",
+      "description": "The user who has reserved the Hotlink and XRef management. Only present when somebody has reserved it."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "isShared",
+     "isOnline"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetTeamworkStatusComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GetTeamworkStatus.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetTeamworkStatus.py",
+    "description": "Gets with GetTeamworkStatus whether the project is shared and online, its members and who holds the Hotlink and XRef management. In a solo project isShared and isOnline are false.",
+    "code": "\"\"\"Gets with GetTeamworkStatus whether the project is shared and online, its members and who holds the Hotlink and XRef management.\n\nIn a solo project isShared and isOnline are false.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetTeamworkStatus'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetTeamworkStatus"
+  },
+  {
+   "name": "GetTeamworkOwnersOfDatabases",
+   "group": "Teamwork Commands",
+   "version": "1.8.0",
+   "description": "Returns the Teamwork owner (user id and name) of each given database, e.g. of a layout or a view database. The user id is 0 when nobody owns the database.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "databases": {
+      "$ref": "#/Databases"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "databases"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "owners": {
+      "type": "array",
+      "description": "The Teamwork owner of each given database, in the order of the input. userId is 0 when nobody owns the database.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/User"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "owners"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetTeamworkOwnersOfDatabasesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GetTeamworkOwnersOfDatabases.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetTeamworkOwnersOfDatabases.py",
+    "description": "Gets the Teamwork owner of the first three layouts with GetTeamworkOwnersOfDatabases. Needs at least one Layout. The user id is 0 when nobody owns the layout.",
+    "code": "\"\"\"Gets the Teamwork owner of the first three layouts with GetTeamworkOwnersOfDatabases.\n\nNeeds at least one Layout. The user id is 0 when nobody owns the layout.\n\"\"\"\nimport aclib\n\nlayouts = aclib.RunTapirCommand ('GetDatabases', {'types': ['Layout']})['databases'][:3]\nif not layouts:\n    raise SystemExit ('No layout in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetTeamworkOwnersOfDatabases', {\n    'databases': [{'databaseId': layout['databaseId']} for layout in layouts]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetTeamworkOwnersOfDatabases"
+  },
+  {
+   "name": "UploadLibrariesToBIMcloud",
+   "group": "Teamwork Commands",
+   "version": "1.8.0",
+   "description": "Uploads local library folders or container files (.lcf) to a folder of a BIMcloud or Teamwork server, as BIMcloud libraries. Returns a result per library. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "libraryPaths": {
+      "type": "array",
+      "description": "The paths of the local library folders or container files (.lcf) to upload.",
+      "items": {
+       "type": "string",
+       "minLength": 1
+      },
+      "minItems": 1
+     },
+     "serverUrl": {
+      "type": "string",
+      "description": "The URL of the BIMcloud or Teamwork server, e.g. 'https://bimcloud.example.com:22000'.",
+      "minLength": 1
+     },
+     "parentPath": {
+      "type": "string",
+      "description": "The path of the folder on the server that holds the libraries, as shown in BIMcloud Manager."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "libraryPaths",
+     "serverUrl",
+     "parentPath"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults",
+      "description": "One result per library, in the order of the input."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UploadLibrariesToBIMcloudComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/UploadLibrariesToBIMcloud.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/UploadLibrariesToBIMcloud.py",
+    "description": "Uploads a local library folder to a folder of a BIMcloud server with UploadLibrariesToBIMcloud. Set serverUrl, parentPath and libraryPath to your own server and library before running it; the values below are placeholders. Uploads to the server. Requires Archicad 29 or later.",
+    "code": "\"\"\"Uploads a local library folder to a folder of a BIMcloud server with UploadLibrariesToBIMcloud.\n\nSet serverUrl, parentPath and libraryPath to your own server and library before running it; the values below are\nplaceholders. Uploads to the server. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nserverUrl = 'https://bimcloud.example.com:22000'\nparentPath = 'Libraries'\nlibraryPath = '/path/to/My Library'\n\naclib.PrintJson (aclib.RunTapirCommand ('UploadLibrariesToBIMcloud', {\n    'libraryPaths': [libraryPath],\n    'serverUrl': serverUrl,\n    'parentPath': parentPath\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UploadLibrariesToBIMcloud"
+  },
+  {
+   "name": "RemoveLibrariesFromBIMcloud",
+   "group": "Teamwork Commands",
+   "version": "1.8.0",
+   "description": "Removes libraries, given by name, from a folder of a BIMcloud or Teamwork server. Returns a result per library. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "libraryNames": {
+      "type": "array",
+      "description": "The names of the libraries on the server to remove.",
+      "items": {
+       "type": "string",
+       "minLength": 1
+      },
+      "minItems": 1
+     },
+     "serverUrl": {
+      "type": "string",
+      "description": "The URL of the BIMcloud or Teamwork server, e.g. 'https://bimcloud.example.com:22000'.",
+      "minLength": 1
+     },
+     "parentPath": {
+      "type": "string",
+      "description": "The path of the folder on the server that holds the libraries, as shown in BIMcloud Manager."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "libraryNames",
+     "serverUrl",
+     "parentPath"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults",
+      "description": "One result per library, in the order of the input."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RemoveLibrariesFromBIMcloudComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/RemoveLibrariesFromBIMcloud.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/RemoveLibrariesFromBIMcloud.py",
+    "description": "Removes a library from a folder of a BIMcloud server with RemoveLibrariesFromBIMcloud. Set serverUrl, parentPath and libraryName to your own server and library before running it; the values below are placeholders. Deletes the library from the server. Requires Archicad 29 or later.",
+    "code": "\"\"\"Removes a library from a folder of a BIMcloud server with RemoveLibrariesFromBIMcloud.\n\nSet serverUrl, parentPath and libraryName to your own server and library before running it; the values below are\nplaceholders. Deletes the library from the server. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nserverUrl = 'https://bimcloud.example.com:22000'\nparentPath = 'Libraries'\nlibraryName = 'My Library'\n\naclib.PrintJson (aclib.RunTapirCommand ('RemoveLibrariesFromBIMcloud', {\n    'libraryNames': [libraryName],\n    'serverUrl': serverUrl,\n    'parentPath': parentPath\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RemoveLibrariesFromBIMcloud"
+  },
+  {
+   "name": "GetTeamworkRightsOfObjects",
+   "group": "Teamwork Commands",
+   "version": "2.0.0",
+   "description": "Returns for each given object, for example an element, whether the current Teamwork user has the right to create objects of its kind and to delete or modify it.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "objectIds": {
+      "type": "array",
+      "description": "The objects to check, by guid, for example element guids.",
+      "items": {
+       "$ref": "#/GuidId"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "objectIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "rights": {
+      "type": "array",
+      "description": "One item per input object, in the same order.",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "canCreate": {
+           "type": "boolean",
+           "description": "Whether the current user has the right to create objects of this kind."
+          },
+          "canDeleteModify": {
+           "type": "boolean",
+           "description": "Whether the current user has the right to delete or modify the object."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "canCreate",
+          "canDeleteModify"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "rights"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetTeamworkRightsOfObjectsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GetTeamworkRightsOfObjects.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetTeamworkRightsOfObjects.py",
+    "description": "Gets with GetTeamworkRightsOfObjects whether the current user may create, delete and modify the first three walls. Needs at least one Wall.",
+    "code": "\"\"\"Gets with GetTeamworkRightsOfObjects whether the current user may create, delete and modify the first three walls.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetTeamworkRightsOfObjects', {\n    'objectIds': [wall['elementId'] for wall in walls]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetTeamworkRightsOfObjects"
+  },
+  {
+   "name": "GetTeamworkAccessRights",
+   "group": "Teamwork Commands",
+   "version": "2.0.0",
+   "description": "Returns whether the role of the current user has the given Teamwork access rights (API_TWAccessRights names without the API prefix, e.g. LayersCreate), all of them when no names are given.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "accessRights": {
+      "type": "array",
+      "description": "The names of the access rights to check, the API_TWAccessRights enumerators without the API prefix, e.g. LayersCreate or LibraryPartDeleteModify. All rights available in this Archicad version are checked when omitted.",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "accessRights": {
+      "type": "array",
+      "description": "The rights of the current user, in the requested order.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "name": {
+         "type": "string"
+        },
+        "hasRight": {
+         "type": "boolean",
+         "description": "Whether the role of the current user has this right."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "name",
+        "hasRight"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "accessRights"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetTeamworkAccessRightsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Teamwork/GetTeamworkAccessRights.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetTeamworkAccessRights.py",
+    "description": "Gets with GetTeamworkAccessRights whether the role of the current user has a few Teamwork access rights. Without accessRights every right of the Archicad version is returned.",
+    "code": "\"\"\"Gets with GetTeamworkAccessRights whether the role of the current user has a few Teamwork access rights.\n\nWithout accessRights every right of the Archicad version is returned.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetTeamworkAccessRights', {\n    'accessRights': ['LayersCreate', 'LibraryPartDeleteModify', 'HotlinkAndXrefManage']\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetTeamworkAccessRights"
+  }
+ ],
+ "schemaDefinitions": {
+  "User": {
+   "type": "object",
+   "properties": {
+    "userId": {
+     "type": "number"
+    },
+    "userName": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "userId",
+    "userName"
+   ]
+  },
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GuidId": {
+   "type": "object",
+   "description": "Identifier.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "Databases": {
+   "type": "array",
+   "description": "A list of Archicad databases.",
+   "items": {
+    "$ref": "#/DatabaseIdArrayItem"
+   }
+  },
+  "DatabaseIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "databaseId": {
+     "$ref": "#/DatabaseId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "databaseId"
+   ]
+  },
+  "DatabaseId": {
+   "type": "object",
+   "description": "The identifier of a database",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "TeamworkUser": {
+   "type": "object",
+   "properties": {
+    "userId": {
+     "type": "number"
+    },
+    "userName": {
+     "type": "string",
+     "description": "The login name of the user."
+    },
+    "fullName": {
+     "type": "string"
+    },
+    "isConnected": {
+     "type": "boolean",
+     "description": "Whether the user has joined the project."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "userId",
+    "userName",
+    "fullName",
+    "isConnected"
+   ]
+  },
+  "ElementReservationStatus": {
+   "type": "object",
+   "properties": {
+    "status": {
+     "$ref": "#/ElementReservationState"
+    },
+    "reservedBy": {
+     "$ref": "#/User",
+     "description": "The user who has reserved the element. Left out when the element is free."
+    },
+    "owner": {
+     "$ref": "#/User",
+     "description": "The Teamwork owner of the element. In Teamwork the owner is the user who has reserved the element, so this is the same user as reservedBy; kept for compatibility. Left out when the element is free."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "status"
+   ]
+  },
+  "ElementReservationState": {
+   "type": "string",
+   "description": "Free: nobody has reserved the element. Editable: the current user has reserved it. Locked: another user has reserved it (see reservedBy).",
+   "enum": [
+    "Free",
+    "Editable",
+    "Locked"
+   ]
+  }
+ }
+}

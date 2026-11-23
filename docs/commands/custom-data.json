@@ -1,0 +1,322 @@
+{
+ "version": 1,
+ "groups": [
+  "Custom Data Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "SetElementUserData",
+   "group": "Custom Data Commands",
+   "version": "1.8.0",
+   "description": "Stores string values under keys on elements, for scripts to keep their own state per element (external database ids, sync timestamps, markers). The data is saved with the project as the user data of the Tapir add-on on the element and appears nowhere in the Archicad UI. The given keys are merged into what the element already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. One undo step per call; in a Teamwork project the element has to be reserved.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementUserData": {
+      "type": "array",
+      "description": "The elements with the key-value pairs to store on them. Each item needs userData, keysToDelete or both.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementId": {
+         "$ref": "#/ElementId"
+        },
+        "userData": {
+         "type": "array",
+         "description": "The key-value pairs to store on the element. A key that already exists on the element gets the new value; other keys are left as they are.",
+         "items": {
+          "type": "object",
+          "properties": {
+           "key": {
+            "type": "string",
+            "description": "The key of the value. Scripts should prefix their keys (for example 'myscript.databaseId') so that different scripts do not overwrite each other's data.",
+            "minLength": 1
+           },
+           "value": {
+            "type": "string",
+            "description": "The value to store. Any text, for example an id, a timestamp or a JSON document the script encodes itself."
+           }
+          },
+          "additionalProperties": false,
+          "required": [
+           "key",
+           "value"
+          ]
+         }
+        },
+        "keysToDelete": {
+         "type": "array",
+         "description": "The keys to remove from the element. A key the element does not hold is ignored.",
+         "items": {
+          "type": "string",
+          "minLength": 1
+         }
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementId"
+       ]
+      },
+      "minItems": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementUserData"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults",
+      "description": "One result per input item, in the input order."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetElementUserDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/CustomData/SetElementUserData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/CustomData/SetElementUserData.py",
+    "description": "Stores a key-value pair on the first wall with SetElementUserData, reads it back, then removes it. The data is saved with the project, invisible in the Archicad UI. Needs at least one Wall.",
+    "code": "\"\"\"Stores a key-value pair on the first wall with SetElementUserData, reads it back, then removes it.\n\nThe data is saved with the project, invisible in the Archicad UI. Needs at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nwallId = walls[0]['elementId']\n\naclib.PrintJson (aclib.RunTapirCommand ('SetElementUserData', {\n    'elementUserData': [\n        {'elementId': wallId, 'userData': [{'key': 'tapir-example.externalId', 'value': 'W-001'}]}\n    ]\n}))\naclib.RunTapirCommand ('GetElementUserData', {'elements': walls})\n\naclib.PrintJson (aclib.RunTapirCommand ('SetElementUserData', {\n    'elementUserData': [\n        {'elementId': wallId, 'keysToDelete': ['tapir-example.externalId']}\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetElementUserData"
+  },
+  {
+   "name": "GetElementUserData",
+   "group": "Custom Data Commands",
+   "version": "1.8.0",
+   "description": "Reads the values stored on elements by SetElementUserData: every key of each element, or only the given keys.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     },
+     "keys": {
+      "type": "array",
+      "description": "Optional. Only the pairs with these keys are returned; a key an element does not hold is left out of its pairs. When omitted, every pair stored on each element is returned.",
+      "items": {
+       "type": "string",
+       "minLength": 1
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementUserData": {
+      "type": "array",
+      "description": "One item per element, in the input order: the pairs stored on the element (none when the element holds no user data of Tapir), or an error when the element was not found or its data could not be read.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "userData": {
+           "type": "array",
+           "description": "The key-value pairs stored on the element.",
+           "items": {
+            "type": "object",
+            "properties": {
+             "key": {
+              "type": "string",
+              "description": "The key of the value."
+             },
+             "value": {
+              "type": "string",
+              "description": "The stored value."
+             }
+            },
+            "additionalProperties": false,
+            "required": [
+             "key",
+             "value"
+            ]
+           }
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "userData"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementUserData"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetElementUserDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/CustomData/GetElementUserData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/CustomData/GetElementUserData.py",
+    "description": "Prints the key-value pairs that scripts stored on the first ten walls (SetElementUserData) with GetElementUserData. Needs at least one Wall.",
+    "code": "\"\"\"Prints the key-value pairs that scripts stored on the first ten walls (SetElementUserData) with GetElementUserData.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Wall'})['elements'][:10]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementUserData', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementUserData"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  }
+ }
+}

@@ -1,0 +1,890 @@
+{
+ "version": 1,
+ "groups": [
+  "Keynote Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetKeynoteTree",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Retrieves the whole keynote folder and item hierarchy. The technical root folder is not included in the output; the top-level folders and items are returned directly. Available from Archicad 28.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "foldersInRoot": {
+      "type": "array",
+      "description": "The top-level keynote folders with their content recursively. The technical root folder itself is not included.",
+      "items": {
+       "$ref": "#/KeynoteFolderDetails"
+      }
+     },
+     "itemsInRoot": {
+      "type": "array",
+      "description": "The keynote items located directly in the technical root folder.",
+      "items": {
+       "$ref": "#/KeynoteItemDetails"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "foldersInRoot",
+     "itemsInRoot"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetKeynoteTreeComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/GetKeynoteTree.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/GetKeynoteTree.py",
+    "description": "Prints the keynote folders and items of the project as an indented tree, using GetKeynoteTree. Requires Archicad 28 or later.",
+    "code": "\"\"\"Prints the keynote folders and items of the project as an indented tree, using GetKeynoteTree.\n\nRequires Archicad 28 or later.\n\"\"\"\nimport aclib\n\ndef PrintFolder (folder, indent):\n    print ('  ' * indent + '[{}] {}'.format (folder['key'], folder['title']))\n    for item in folder['items']:\n        print ('  ' * (indent + 1) + '{} {}'.format (item['key'], item['title']))\n    for subFolder in folder['subFolders']:\n        PrintFolder (subFolder, indent + 1)\n\ntree = aclib.RunTapirCommand ('GetKeynoteTree')\nfor folder in tree['foldersInRoot']:\n    PrintFolder (folder, 0)\nfor item in tree['itemsInRoot']:\n    print ('{} {}'.format (item['key'], item['title']))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetKeynoteTree"
+  },
+  {
+   "name": "GetKeynoteAutoTexts",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Retrieves the autotext tokens of the given keynote items. The tokens can be used as label text content to reference the fields of a keynote item. Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "keynoteItems": {
+      "type": "array",
+      "description": "The keynote items to get the autotext tokens for.",
+      "items": {
+       "$ref": "#/KeynoteItemIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "keynoteItems"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "autoTexts": {
+      "$ref": "#/KeynoteAutoTextTokensOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "autoTexts"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetKeynoteAutoTextsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/GetKeynoteAutoTexts.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/GetKeynoteAutoTexts.py",
+    "description": "Creates a keynote item and prints the autotext tokens that reference its fields, with GetKeynoteAutoTexts. Deletes the keynote item at the end. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote item and prints the autotext tokens that reference its fields, with GetKeynoteAutoTexts.\n\nDeletes the keynote item at the end. Requires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nitem = aclib.RunTapirCommand ('CreateKeynoteItems', {\n    'itemsData': [{'key': 'TAPIR-01', 'title': 'Tapir Example Keynote'}]\n})['keynoteItemIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('GetKeynoteAutoTexts', {'keynoteItems': [{'keynoteItemId': item['keynoteItemId']}]}))\n\naclib.RunTapirCommand ('DeleteKeynoteItems', {'keynoteItemIds': [{'keynoteItemId': item['keynoteItemId']}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetKeynoteAutoTexts"
+  },
+  {
+   "name": "CreateKeynoteFolders",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Creates keynote folders under the given parent folders (or under the root folder). Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "foldersData": {
+      "type": "array",
+      "description": "Array of data to create keynote folders.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "parentFolderId": {
+         "$ref": "#/KeynoteFolderId",
+         "description": "The parent folder. Optional; defaults to the root folder."
+        },
+        "key": {
+         "type": "string",
+         "minLength": 1
+        },
+        "title": {
+         "type": "string"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "key",
+        "title"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "foldersData"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "keynoteFolderIdsOrErrors": {
+      "$ref": "#/KeynoteFolderIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "keynoteFolderIdsOrErrors"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateKeynoteFoldersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/CreateKeynoteFolders.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/CreateKeynoteFolders.py",
+    "description": "Creates a keynote folder with a subfolder in it, using CreateKeynoteFolders. Deletes the folders at the end. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote folder with a subfolder in it, using CreateKeynoteFolders.\n\nDeletes the folders at the end. Requires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nfolder = aclib.RunTapirCommand ('CreateKeynoteFolders', {\n    'foldersData': [{'key': 'TAPIR', 'title': 'Tapir Example Folder'}]\n})['keynoteFolderIdsOrErrors'][0]\naclib.PrintJson (folder)\n\n# Without parentFolderId the folder is created in the root folder.\naclib.PrintJson (aclib.RunTapirCommand ('CreateKeynoteFolders', {\n    'foldersData': [{'parentFolderId': folder['keynoteFolderId'], 'key': 'TAPIR-SUB', 'title': 'Tapir Example Subfolder'}]\n}))\n\n# Deleting a folder deletes its content too.\naclib.RunTapirCommand ('DeleteKeynoteFolders', {'keynoteFolderIds': [{'keynoteFolderId': folder['keynoteFolderId']}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateKeynoteFolders"
+  },
+  {
+   "name": "CreateKeynoteItems",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Creates keynote items in the given parent folders (or in the root folder). Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "itemsData": {
+      "type": "array",
+      "description": "Array of data to create keynote items.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "parentFolderId": {
+         "$ref": "#/KeynoteFolderId",
+         "description": "The parent folder. Optional; defaults to the root folder."
+        },
+        "key": {
+         "type": "string",
+         "minLength": 1
+        },
+        "title": {
+         "type": "string"
+        },
+        "description": {
+         "type": "string"
+        },
+        "reference": {
+         "type": "string"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "key"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "itemsData"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "keynoteItemIdsOrErrors": {
+      "$ref": "#/KeynoteItemIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "keynoteItemIdsOrErrors"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateKeynoteItemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/CreateKeynoteItems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/CreateKeynoteItems.py",
+    "description": "Creates a keynote folder with a keynote item in it, using CreateKeynoteItems. Deletes the folder and the item at the end. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote folder with a keynote item in it, using CreateKeynoteItems.\n\nDeletes the folder and the item at the end. Requires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nfolder = aclib.RunTapirCommand ('CreateKeynoteFolders', {\n    'foldersData': [{'key': 'TAPIR', 'title': 'Tapir Example Folder'}]\n})['keynoteFolderIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateKeynoteItems', {\n    'itemsData': [{\n        'parentFolderId': folder['keynoteFolderId'],\n        'key': 'TAPIR-01',\n        'title': 'Tapir Example Keynote',\n        'description': 'Created by the Tapir example.',\n        'reference': 'EX-1'\n    }]\n}))\n\naclib.RunTapirCommand ('DeleteKeynoteFolders', {'keynoteFolderIds': [{'keynoteFolderId': folder['keynoteFolderId']}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateKeynoteItems"
+  },
+  {
+   "name": "ModifyKeynoteFolders",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Modifies the key, title or reference of the given keynote folders. Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "foldersData": {
+      "type": "array",
+      "description": "Array of data to modify keynote folders. Only provided fields are changed.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "keynoteFolderId": {
+         "$ref": "#/KeynoteFolderId"
+        },
+        "key": {
+         "type": "string",
+         "minLength": 1
+        },
+        "title": {
+         "type": "string"
+        },
+        "reference": {
+         "type": "string"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "keynoteFolderId"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "foldersData"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ModifyKeynoteFoldersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/ModifyKeynoteFolders.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/ModifyKeynoteFolders.py",
+    "description": "Creates a keynote folder and changes its title with ModifyKeynoteFolders. Deletes the folder at the end. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote folder and changes its title with ModifyKeynoteFolders.\n\nDeletes the folder at the end. Requires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nfolder = aclib.RunTapirCommand ('CreateKeynoteFolders', {\n    'foldersData': [{'key': 'TAPIR', 'title': 'Tapir Example Folder'}]\n})['keynoteFolderIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('ModifyKeynoteFolders', {\n    'foldersData': [{'keynoteFolderId': folder['keynoteFolderId'], 'title': 'Tapir Renamed Folder'}]\n}))\n\naclib.RunTapirCommand ('DeleteKeynoteFolders', {'keynoteFolderIds': [{'keynoteFolderId': folder['keynoteFolderId']}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ModifyKeynoteFolders"
+  },
+  {
+   "name": "ModifyKeynoteItems",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Modifies the key, title, description or reference of the given keynote items. Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "itemsData": {
+      "type": "array",
+      "description": "Array of data to modify keynote items. Only provided fields are changed.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "keynoteItemId": {
+         "$ref": "#/KeynoteItemId"
+        },
+        "key": {
+         "type": "string",
+         "minLength": 1
+        },
+        "title": {
+         "type": "string"
+        },
+        "description": {
+         "type": "string"
+        },
+        "reference": {
+         "type": "string"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "keynoteItemId"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "itemsData"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ModifyKeynoteItemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/ModifyKeynoteItems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/ModifyKeynoteItems.py",
+    "description": "Creates a keynote item and changes its title and description with ModifyKeynoteItems. Deletes the item at the end. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote item and changes its title and description with ModifyKeynoteItems.\n\nDeletes the item at the end. Requires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nitem = aclib.RunTapirCommand ('CreateKeynoteItems', {\n    'itemsData': [{'key': 'TAPIR-01', 'title': 'Tapir Example Keynote'}]\n})['keynoteItemIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('ModifyKeynoteItems', {\n    'itemsData': [{\n        'keynoteItemId': item['keynoteItemId'],\n        'title': 'Tapir Renamed Keynote',\n        'description': 'Changed by the Tapir example.'\n    }]\n}))\n\naclib.RunTapirCommand ('DeleteKeynoteItems', {'keynoteItemIds': [{'keynoteItemId': item['keynoteItemId']}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ModifyKeynoteItems"
+  },
+  {
+   "name": "DeleteKeynoteFolders",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Deletes the given keynote folders including their content. Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "keynoteFolderIds": {
+      "type": "array",
+      "description": "The keynote folders to delete.",
+      "items": {
+       "$ref": "#/KeynoteFolderIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "keynoteFolderIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteKeynoteFoldersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/DeleteKeynoteFolders.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/DeleteKeynoteFolders.py",
+    "description": "Creates a keynote folder and deletes it with DeleteKeynoteFolders. Deleting a folder deletes its content too. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote folder and deletes it with DeleteKeynoteFolders.\n\nDeleting a folder deletes its content too. Requires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nfolder = aclib.RunTapirCommand ('CreateKeynoteFolders', {\n    'foldersData': [{'key': 'TAPIR', 'title': 'Tapir Example Folder'}]\n})['keynoteFolderIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteKeynoteFolders', {'keynoteFolderIds': [{'keynoteFolderId': folder['keynoteFolderId']}]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteKeynoteFolders"
+  },
+  {
+   "name": "DeleteKeynoteItems",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Deletes the given keynote items. Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "keynoteItemIds": {
+      "type": "array",
+      "description": "The keynote items to delete.",
+      "items": {
+       "$ref": "#/KeynoteItemIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "keynoteItemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteKeynoteItemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/DeleteKeynoteItems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/DeleteKeynoteItems.py",
+    "description": "Creates a keynote item and deletes it with DeleteKeynoteItems. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote item and deletes it with DeleteKeynoteItems.\n\nRequires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nitem = aclib.RunTapirCommand ('CreateKeynoteItems', {\n    'itemsData': [{'key': 'TAPIR-01', 'title': 'Tapir Example Keynote'}]\n})['keynoteItemIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteKeynoteItems', {'keynoteItemIds': [{'keynoteItemId': item['keynoteItemId']}]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteKeynoteItems"
+  },
+  {
+   "name": "CreateKeynoteLabels",
+   "group": "Keynote Commands",
+   "version": "1.5.6",
+   "description": "Creates Label elements that reference the given keynote items via autotext. Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "labelsData": {
+      "type": "array",
+      "description": "Array of data to create keynote labels.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "keynoteItemId": {
+         "$ref": "#/KeynoteItemId"
+        },
+        "position": {
+         "$ref": "#/Coordinate2D",
+         "description": "The reference point of the label."
+        },
+        "contentFields": {
+         "type": "array",
+         "description": "The keynote fields to include in the label text as autotext. Optional; defaults to all fields.",
+         "items": {
+          "type": "string",
+          "enum": [
+           "Key",
+           "Title",
+           "Description",
+           "Reference"
+          ]
+         },
+         "minItems": 1
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "keynoteItemId",
+        "position"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "labelsData"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/ElementIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateKeynoteLabelsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Keynote/CreateKeynoteLabels.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Keynote/CreateKeynoteLabels.py",
+    "description": "Creates a keynote item and places a Label showing its key and title with CreateKeynoteLabels. Deletes the label and the keynote item at the end. Requires Archicad 28 or later.",
+    "code": "\"\"\"Creates a keynote item and places a Label showing its key and title with CreateKeynoteLabels.\n\nDeletes the label and the keynote item at the end. Requires Archicad 28 or later.\n\"\"\"\nimport aclib\n\nitem = aclib.RunTapirCommand ('CreateKeynoteItems', {\n    'itemsData': [{'key': 'TAPIR-01', 'title': 'Tapir Example Keynote'}]\n})['keynoteItemIdsOrErrors'][0]\n\nlabels = aclib.RunTapirCommand ('CreateKeynoteLabels', {\n    'labelsData': [{\n        'keynoteItemId': item['keynoteItemId'],\n        'position': {'x': 0.0, 'y': 0.0},\n        'contentFields': ['Key', 'Title']\n    }]\n})['elements']\naclib.PrintJson (labels)\n\naclib.RunTapirCommand ('DeleteElements', {'elements': [label for label in labels if 'elementId' in label]})\naclib.RunTapirCommand ('DeleteKeynoteItems', {'keynoteItemIds': [{'keynoteItemId': item['keynoteItemId']}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateKeynoteLabels"
+  }
+ ],
+ "schemaDefinitions": {
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementIdOrError": {
+   "type": "object",
+   "description": "An element identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ElementIdsOrErrors": {
+   "type": "array",
+   "description": "A list of element identifiers or errors.",
+   "items": {
+    "$ref": "#/ElementIdOrError"
+   }
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "KeynoteFolderId": {
+   "type": "object",
+   "description": "The identifier of a keynote folder.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "KeynoteItemId": {
+   "type": "object",
+   "description": "The identifier of a keynote item.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "KeynoteFolderIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "keynoteFolderId": {
+     "$ref": "#/KeynoteFolderId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "keynoteFolderId"
+   ]
+  },
+  "KeynoteItemIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "keynoteItemId": {
+     "$ref": "#/KeynoteItemId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "keynoteItemId"
+   ]
+  },
+  "KeynoteFolderIdOrError": {
+   "type": "object",
+   "description": "A keynote folder identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/KeynoteFolderIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "KeynoteFolderIdsOrErrors": {
+   "type": "array",
+   "description": "A list of keynote folder identifiers or errors.",
+   "items": {
+    "$ref": "#/KeynoteFolderIdOrError"
+   }
+  },
+  "KeynoteItemIdOrError": {
+   "type": "object",
+   "description": "A keynote item identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/KeynoteItemIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "KeynoteItemIdsOrErrors": {
+   "type": "array",
+   "description": "A list of keynote item identifiers or errors.",
+   "items": {
+    "$ref": "#/KeynoteItemIdOrError"
+   }
+  },
+  "KeynoteAutoTextTokens": {
+   "type": "object",
+   "description": "The autotext tokens of a keynote item. A token can be used as the text content of a label to reference the field of the keynote item.",
+   "properties": {
+    "keyToken": {
+     "type": "string"
+    },
+    "titleToken": {
+     "type": "string"
+    },
+    "descriptionToken": {
+     "type": "string"
+    },
+    "referenceToken": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "keyToken",
+    "titleToken",
+    "descriptionToken",
+    "referenceToken"
+   ]
+  },
+  "KeynoteAutoTextTokensOrError": {
+   "type": "object",
+   "description": "The autotext tokens of a keynote item or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/KeynoteAutoTextTokens"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "KeynoteAutoTextTokensOrErrors": {
+   "type": "array",
+   "description": "A list of keynote autotext tokens or errors.",
+   "items": {
+    "$ref": "#/KeynoteAutoTextTokensOrError"
+   }
+  },
+  "KeynoteItemDetails": {
+   "type": "object",
+   "description": "The details of a keynote item.",
+   "properties": {
+    "keynoteItemId": {
+     "$ref": "#/KeynoteItemId"
+    },
+    "key": {
+     "type": "string"
+    },
+    "title": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "reference": {
+     "type": "string"
+    },
+    "uiText": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "keynoteItemId",
+    "key",
+    "title",
+    "description",
+    "reference",
+    "uiText"
+   ]
+  },
+  "KeynoteFolderDetails": {
+   "type": "object",
+   "description": "The details of a keynote folder, including its subfolders and items recursively.",
+   "properties": {
+    "keynoteFolderId": {
+     "$ref": "#/KeynoteFolderId"
+    },
+    "key": {
+     "type": "string"
+    },
+    "title": {
+     "type": "string"
+    },
+    "reference": {
+     "type": "string"
+    },
+    "uiText": {
+     "type": "string"
+    },
+    "subFolders": {
+     "type": "array",
+     "items": {
+      "$ref": "#/KeynoteFolderDetails"
+     }
+    },
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/KeynoteItemDetails"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "keynoteFolderId",
+    "key",
+    "title",
+    "reference",
+    "uiText",
+    "subFolders",
+    "items"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Coordinate2D": {
+   "type": "object",
+   "description": "2D coordinate.",
+   "properties": {
+    "x": {
+     "type": "number",
+     "description": "X value of the coordinate."
+    },
+    "y": {
+     "type": "number",
+     "description": "Y value of the coordinate."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "x",
+    "y"
+   ]
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  }
+ }
+}
