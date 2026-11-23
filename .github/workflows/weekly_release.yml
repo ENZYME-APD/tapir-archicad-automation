@@ -120,6 +120,7 @@ jobs:
     permissions:
       contents: write   # push the tag and the version bump commit
       actions: write    # dispatch the two release pipelines
+      checks: read      # read a cancelled job's annotations ("was not acquired by Runner")
     outputs:
       # Read by request_fix below when this job fails.
       version: ${{ steps.plan.outputs.version }}
@@ -192,6 +193,14 @@ jobs:
               echo "::warning::Tag $VERSION is unpublished on an older commit, but it cannot be shown that" \
                    "$VERSION reached neither GitHub nor the Rhino package manager (Grasshopper runs on the" \
                    "tag: $GH_RUNS) - leaving it for a person."
+            elif [ '${{ inputs.dry_run }}' = 'true' ]; then
+              # A dry run changes nothing on the remote: it reports the delete
+              # and drops only the local tag, so the rest of the plan shows
+              # what the real run would do (release HEAD under $VERSION).
+              echo "::warning::DRY RUN: tag $VERSION is unpublished on an older commit; a real run would" \
+                   "delete it and its draft release(s) ($(printf '%s' "$DRAFTS" | tr '\n' ' ')) and release" \
+                   "$VERSION from the current main." | tee -a "$GITHUB_STEP_SUMMARY"
+              git tag -d "$VERSION" > /dev/null 2>&1 || true
             else
               DELETED=true
               for DRAFT in $DRAFTS; do

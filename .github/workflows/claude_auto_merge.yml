@@ -272,12 +272,22 @@ jobs:
                   | grep -oE '(Fixes|Closes|Resolves) #[0-9]+' | head -n 1 | grep -oE '[0-9]+' || true)
                 case "$headName" in
                   "claude/issue-$fixes-"*)
-                    if [ -n "$fixes" ] && gh issue view "$fixes" --repo "$REPO" --json state,author,labels,body \
-                         --jq 'select(.state == "OPEN"
+                    # The marker must open the body (request_fix writes it first)
+                    # and name the version main carries, which must have no
+                    # published release: the Discord bot also opens issues as the
+                    # Actions bot, with a person's text in them, so a marker
+                    # anywhere in the body, or one for another version, is not
+                    # enough to drop the waiting time.
+                    mainVersion=$(gh api "repos/$REPO/contents/tools/package_info.json?ref=main" --jq '.content' 2>/dev/null \
+                      | base64 -d 2>/dev/null | jq -r '.version // empty' 2>/dev/null || true)
+                    if [ -n "$fixes" ] && [ -n "$mainVersion" ] \
+                       && ! gh api "repos/$REPO/releases/tags/$mainVersion" --jq '.id' > /dev/null 2>&1 \
+                       && gh issue view "$fixes" --repo "$REPO" --json number,state,author,labels,body 2>/dev/null \
+                         | jq -r --arg marker "<!-- release-failure: $mainVersion -->" 'select(.state == "OPEN"
                                 and (.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
                                 and ([.labels[].name] | index("release-failure"))
                                 and ([.labels[].name] | index("needs-maintainer") | not)
-                                and (.body | contains("<!-- release-failure: "))) | .number' 2>/dev/null | grep -q .; then
+                                and ((.body // "") | startswith($marker))) | .number' 2>/dev/null | grep -q .; then
                       releaseFix=true
                       delayHours=0
                       echo "release fix for #$fixes: no waiting time"
