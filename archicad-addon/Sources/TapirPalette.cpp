@@ -842,8 +842,17 @@ TapirPalette::VisibleItemList TapirPalette::BuildVisibleItems (bool forDropdown)
     VisibleItemList items;
     // A section and its separator. In the dropdown a separator follows a section only when it shows a script;
     // otherwise, as every Tapir version did, when the section exists.
-    const auto appendSection = [&] (const ScriptList& scripts, bool hasSeparator) {
+    // A script of a subfolder of the custom-scripts folder follows a heading with the folder's name, which is shown
+    // before the first of its scripts in the custom-scripts section (#2963). The favourites section shows no headings.
+    const auto appendSection = [&] (const ScriptList& scripts, bool hasSeparator, bool withFolderHeadings) {
+        GS::UniString currentFolderName;
         for (const GS::Ref<PopUpItemData>& popUpItemData : scripts) {
+            if (withFolderHeadings && !popUpItemData->customFolderName.IsEmpty () && popUpItemData->customFolderName != currentFolderName) {
+                VisibleItem heading (VisibleItem::Kind::Heading);
+                heading.headingText = popUpItemData->customFolderName;
+                items.Push (heading);
+            }
+            currentFolderName = popUpItemData->customFolderName;
             items.Push (VisibleItem (VisibleItem::Kind::Script, popUpItemData));
         }
         if (forDropdown ? !scripts.IsEmpty () : hasSeparator) {
@@ -851,10 +860,10 @@ TapirPalette::VisibleItemList TapirPalette::BuildVisibleItems (bool forDropdown)
         }
     };
     if (forDropdown) {
-        appendSection (getSectionScripts (GetAllScripts (), true), true);
+        appendSection (getSectionScripts (GetAllScripts (), true), true, false);
     }
-    appendSection (getSectionScripts (addedScripts, false), hasAddedScript);
-    appendSection (getSectionScripts (customScripts, false), hasCustomScript);
+    appendSection (getSectionScripts (addedScripts, false), hasAddedScript, false);
+    appendSection (getSectionScripts (customScripts, false), hasCustomScript, true);
     const ScriptList listed = getSectionScripts (listedScripts, false);
     for (const GS::Ref<PopUpItemData>& popUpItemData : listed) {
         items.Push (VisibleItem (VisibleItem::Kind::Script, popUpItemData));
@@ -939,7 +948,7 @@ void TapirPalette::RebuildScriptPopUp (const GS::Ref<PopUpItemData>& scriptToSel
             {
                 scriptSelectionPopUp.AppendItem ();
                 const short headingItem = scriptSelectionPopUp.GetItemCount ();
-                scriptSelectionPopUp.SetItemText (headingItem, MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_PALETTE_SECTION));
+                scriptSelectionPopUp.SetItemText (headingItem, visibleItem.headingText.IsEmpty () ? MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_PALETTE_SECTION) : visibleItem.headingText);
                 scriptSelectionPopUp.SetItemFontStyle (headingItem, DG::Font::Bold);
                 scriptSelectionPopUp.DisableItem (headingItem);
                 break;
@@ -2714,9 +2723,17 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
 
     IO::fileSystem.CreateFolderTree (customScriptsFolderLoc);
 
+    std::vector<IO::Name> subfolderNames;
     IO::Folder customScriptsFolder (customScriptsFolderLoc);
     customScriptsFolder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
         if (isFolder) {
+            // Folders starting with '.' or '_' (__pycache__, .venv) and utilities (the helper modules of the
+            // repository's and marketplace scripts) hold no scripts to list.
+            const GS::UniString folderName = name.ToString ();
+            if (!folderName.BeginsWith ('.') && !folderName.BeginsWith ('_') &&
+                folderName.Compare ("utilities", CaseInsensitive) != GS::UniString::Equal) {
+                subfolderNames.push_back (name);
+            }
             return;
         }
 
@@ -2728,6 +2745,39 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
             customScripts.Insert (0, popUpItemData);
         }
     });
+
+    // The .py files directly in each subfolder, after the files of the folder itself, by folder and file name; the
+    // dropdown shows each subfolder's name as a heading before its scripts (#2963). Deeper folders are not read.
+    const auto byName = [] (const IO::Name& a, const IO::Name& b) {
+        return a.ToString ().IsLess (b.ToString (), CaseInsensitive);
+    };
+    std::stable_sort (subfolderNames.begin (), subfolderNames.end (), byName);
+    for (const IO::Name& subfolderName : subfolderNames) {
+        const IO::Location subfolderLoc (customScriptsFolderLoc, subfolderName);
+        std::vector<IO::Name> fileNames;
+        IO::Folder subfolder (subfolderLoc);
+        if (subfolder.GetStatus () != NoError) {
+            continue;
+        }
+        subfolder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+#ifdef ServerMainVers_3000
+            if (!isFolder && name.GetExtension ().GetLowerCased () == "py") {
+#else
+            if (!isFolder && name.GetExtension ().ToLowerCase () == "py") {
+#endif
+                fileNames.push_back (name);
+            }
+        });
+        std::stable_sort (fileNames.begin (), fileNames.end (), byName);
+        for (const IO::Name& fileName : fileNames) {
+            GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (IO::Location (subfolderLoc, fileName));
+            if (PrepareScript (*popUpItemData)) {
+                popUpItemData->customFolderName = subfolderName.ToString ();
+                customScripts.Push (popUpItemData);
+                hasCustomScript = true;
+            }
+        }
+    }
 }
 
 // The enabled scripts of installed.json, by name; one whose entry file is missing is left out. Reads only local

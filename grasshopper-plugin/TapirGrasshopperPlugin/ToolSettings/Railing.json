@@ -35,6 +35,16 @@
       "subgroup": null
     },
     {
+      "get": "referenceLineArcs",
+      "set": null,
+      "apiMember": "API_ElementMemo::parcs",
+      "apiDescription": "The arcs of the reference line of the railing: each one turns the segment from one point of referenceLine to the next into an arc (drawn in Archicad).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "floorIndex",
       "set": "floorIndex",
       "getFrom": "element",

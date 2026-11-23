@@ -40,6 +40,9 @@ jobs:
   build_win:
     needs: devkits
     strategy:
+      # One version failing must not cancel the others: whether it is one
+      # broken version or a broken main is exactly what their results say.
+      fail-fast: false
       matrix:
         params: ${{ fromJSON(needs.devkits.outputs.win) }}
     runs-on: [ windows-2022 ]
@@ -79,6 +82,12 @@ jobs:
   build_mac:
     needs: devkits
     strategy:
+      # One version failing must not cancel the others. It also keeps
+      # 'cancelled' meaning what the weekly release relies on: a job GitHub
+      # never gave a runner to (build_mac (27) on 2026-11-16, while machines
+      # freed up four times during its 20-minute wait), never a sibling
+      # cancelled by fail-fast. The weekly release re-runs such a job.
+      fail-fast: false
       matrix:
         params: ${{ fromJSON(needs.devkits.outputs.mac) }}
     runs-on: ${{ matrix.params.acVersion < 26 && 'macos-15-intel' || 'macos-latest' }}
@@ -173,7 +182,7 @@ jobs:
         "version=$version" >> $env:GITHUB_OUTPUT
     # --noupx: UPX, when on PATH, would rewrite the bundled DLLs.
     - name: Build Installer
-      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
+      run: pyinstaller --noconfirm --onefile --windowed --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
     - name: Rename Installer
       run: Move-Item dist/TapirInstaller.exe dist/TapirInstaller_Win.exe
     - name: Check Version Resource

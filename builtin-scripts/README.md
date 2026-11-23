@@ -27,8 +27,11 @@ not exist yet. Its list of scripts is built when Archicad starts and again when 
   `<file name> (<displayName>)`, or `<file name> (<repoOwner>/<repoName>)` without a `displayName`.
 - **`localFolders`:** folders on your computer or a network drive (`displayName`, `path`). The
   scripts run from where they are; nothing is copied.
-- The `Documents/Tapir/custom-scripts` folder and the scripts added with the palette's
-  *Add Script* button.
+- The `Documents/Tapir/custom-scripts` folder and the scripts added with the Script Manager's
+  *Add Script* button. To organize your scripts, put them in subfolders of `custom-scripts`:
+  the `.py` files directly in each subfolder are listed after the folder's own files, under a
+  bold heading with the subfolder's name, by folder and file name. Only one level is read, and
+  folders whose name starts with `.` or `_` and `utilities` folders (helper modules) are skipped.
 
 By default only the `.py` files directly in `relativeLoc` (or the local folder) are listed; files in
 subfolders, like `utilities/` here, are downloaded but not listed. That is how helper modules and

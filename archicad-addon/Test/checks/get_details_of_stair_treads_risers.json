@@ -1,0 +1,59 @@
+{
+  "title": "GetDetailsOfElements reads the treads and risers of a stair",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "U stair with a half landing",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 730.0, "y": 700.0 }, { "x": 733.455, "y": 700.0 }, { "x": 733.455, "y": 701.39 }, { "x": 730.0, "y": 701.39 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.7684,
+            "riserHeight": 0.1538,
+            "treadDepth": 0.24,
+            "flightWidth": 1.15,
+            "baseLineEdges": [ { "segmentType": "Flight" }, { "segmentType": "Landing" }, { "segmentType": "Flight" } ],
+            "baseLineVertices": [ { "turnType": "None" }, { "turnType": "Landing" }, { "turnType": "Landing" }, { "turnType": "None" } ]
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" } ]
+    },
+    {
+      "id": "its treads and risers",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": {
+        "t": "subelements[0].stairTreads[0].elementId.guid",
+        "r": "subelements[0].stairRisers[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "subelements[0].stairTreads[0].elementId.guid", "exists": true, "name": "the stair has treads" },
+        { "path": "subelements[0].stairRisers[0].elementId.guid", "exists": true, "name": "the stair has risers" }
+      ]
+    },
+    {
+      "id": "a tread and a riser",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${t}" } }, { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Tread", "name": "the first is a tread" },
+        { "path": "detailsOfElements[0].details.stairId.guid", "eq": "${s}", "name": "the tread names its stair" },
+        { "path": "detailsOfElements[0].details.role", "exists": true, "name": "the tread's role (Run or Landing) is read" },
+        { "path": "detailsOfElements[0].details.thickness", "gt": 0, "name": "the tread has a thickness" },
+        { "path": "detailsOfElements[0].details.nosingType", "exists": true, "name": "the tread's nosing type is read" },
+        { "path": "detailsOfElements[1].type", "eq": "Riser", "name": "the second is a riser" },
+        { "path": "detailsOfElements[1].details.stairId.guid", "eq": "${s}", "name": "the riser names its stair" },
+        { "path": "detailsOfElements[1].details.role", "exists": true, "name": "the riser's role (Run or Landing) is read" },
+        { "path": "detailsOfElements[1].details.crossSection", "exists": true, "name": "the riser's cross section is read" },
+        { "path": "detailsOfElements[1].details.riserPosition", "exists": true, "name": "the riser's position is read" }
+      ]
+    }
+  ]
+}

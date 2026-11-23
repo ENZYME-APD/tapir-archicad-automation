@@ -1,0 +1,278 @@
+{
+  "title": "InsertStory adds one story above the top story without deleting any, and DeleteStory refuses a story with elements unless deleteElements is given, with a dry run that changes nothing (#2842)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the stories before",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "first": "firstStory", "top": "lastStory" },
+      "expect": [
+        { "path": "stories", "exists": true }
+      ]
+    },
+    {
+      "id": "insert a story above the top story",
+      "command": "InsertStory",
+      "creates": false,
+      "params": {
+        "storyIndex": "${top}",
+        "position": "Above",
+        "name": "Tapir Check Story",
+        "height": 2.75,
+        "dispOnSections": false
+      },
+      "save": { "newIndex": "story.index", "newLevel": "story.level" },
+      "expect": [
+        { "path": "story.name", "eq": "Tapir Check Story" },
+        { "path": "story.height", "approx": 2.75, "tol": 0.001 },
+        { "path": "story.dispOnSections", "eq": false },
+        { "expr": "${newIndex} - ${top}", "eq": 1, "name": "the new story is directly above the old top story" }
+      ]
+    },
+    {
+      "id": "one story more, none deleted",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "firstAfter": "firstStory", "topAfter": "lastStory" },
+      "expect": [
+        { "expr": "${topAfter} - ${top}", "eq": 1, "name": "one story more on the top" },
+        { "expr": "${firstAfter} - ${first}", "eq": 0, "name": "the bottom story is kept" }
+      ]
+    },
+    {
+      "id": "dry run on the empty story",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}", "dryRun": true },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "wouldDelete", "eq": true },
+        { "path": "elementCount", "eq": 0 },
+        { "path": "dryRun", "eq": true }
+      ]
+    },
+    {
+      "id": "the dry run deleted nothing",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "last1": "lastStory" },
+      "expect": [
+        { "expr": "${last1} - ${newIndex}", "eq": 0, "name": "the new story is still the top story" }
+      ]
+    },
+    {
+      "id": "a wall on the new story",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 705, "y": 700 }, "floorIndex": "${newIndex}", "zCoordinate": 0,
+            "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "refused without deleteElements",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}" },
+      "expect": [
+        { "path": "success", "eq": false },
+        { "path": "elementCount", "eq": 1 }
+      ]
+    },
+    {
+      "id": "the refused story and its wall are still there",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "last2": "lastStory" },
+      "expect": [
+        { "expr": "${last2} - ${newIndex}", "eq": 0, "name": "the new story is still the top story" }
+      ]
+    },
+    {
+      "id": "dry run with deleteElements",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}", "deleteElements": true, "dryRun": true },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "wouldDelete", "eq": true },
+        { "path": "elementCount", "eq": 1 },
+        { "path": "dryRun", "eq": true }
+      ]
+    },
+    {
+      "id": "delete it with its wall",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${newIndex}", "deleteElements": true },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "elementCount", "eq": 1 },
+        { "path": "dryRun", "exists": false }
+      ]
+    },
+    {
+      "id": "back to the stories before",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "lastEnd": "lastStory", "firstEnd": "firstStory" },
+      "expect": [
+        { "expr": "${lastEnd} - ${top}", "eq": 0, "name": "the old top story is the top story again" },
+        { "expr": "${firstEnd} - ${first}", "eq": 0, "name": "the bottom story is kept" }
+      ]
+    },
+    {
+      "id": "the wall went with the story",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "elements", "len": 0 }
+      ]
+    },
+    {
+      "id": "a wall on the top story",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 710, "y": 700 }, "endCoordinate": { "x": 715, "y": 700 }, "floorIndex": "${top}", "zCoordinate": 0,
+            "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "topWall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the floor plan for the elevation",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan" }
+    },
+    {
+      "id": "an elevation on the top story",
+      "command": "CreateElevations",
+      "params": {
+        "elevationsData": [
+          { "startCoordinate": { "x": 710, "y": 690 }, "endCoordinate": { "x": 715, "y": 690 }, "depth": 5.0,
+            "name": "Tapir Check Elevation", "id": "TCE-1", "floorIndex": "${top}" }
+        ]
+      },
+      "save": { "topElevation": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "insert a story below the top story",
+      "command": "InsertStory",
+      "creates": false,
+      "params": {
+        "storyIndex": "${top}",
+        "position": "Below",
+        "name": "Tapir Check Story Below",
+        "height": 2.6
+      },
+      "save": { "belowIndex": "story.index" },
+      "expect": [
+        { "path": "story.name", "eq": "Tapir Check Story Below" },
+        { "path": "story.height", "approx": 2.6, "tol": 0.001 }
+      ]
+    },
+    {
+      "id": "the old top story moved up one",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "topAfterBelow": "lastStory" },
+      "expect": [
+        { "expr": "${topAfterBelow} - ${top}", "eq": 1, "name": "one story more on the top" },
+        { "expr": "${topAfterBelow} - ${belowIndex}", "eq": 1, "name": "the new story is directly below the old top story" }
+      ]
+    },
+    {
+      "id": "the wall stayed on its story, not on the new one",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${topWall}" } } ] },
+      "save": { "topWallFloor": "detailsOfElements[0].floorIndex" },
+      "expect": [
+        { "expr": "${topWallFloor} - ${topAfterBelow}", "eq": 0, "name": "the wall is on the old top story at its new index (#2843)" }
+      ]
+    },
+    {
+      "id": "the elevation stayed on its story, not on the new one",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${topElevation}" } } ] },
+      "save": { "topElevationFloor": "detailsOfElements[0].floorIndex" },
+      "expect": [
+        { "expr": "${topElevationFloor} - ${topAfterBelow}", "eq": 0, "name": "the elevation marker is on the old top story at its new index (#2843)" }
+      ]
+    },
+    {
+      "id": "the new story below is empty",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${belowIndex}", "dryRun": true },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "elementCount", "eq": 0 }
+      ]
+    },
+    {
+      "id": "delete the story below",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": "${belowIndex}" },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "elementCount", "eq": 0 }
+      ]
+    },
+    {
+      "id": "the wall is back on the top story",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${topWall}" } } ] },
+      "save": { "topWallFloorAfter": "detailsOfElements[0].floorIndex" },
+      "expect": [
+        { "expr": "${topWallFloorAfter} - ${top}", "eq": 0, "name": "the wall followed its story when the story below was deleted" }
+      ]
+    },
+    {
+      "id": "the elevation is back on the top story",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${topElevation}" } } ] },
+      "save": { "topElevationFloorAfter": "detailsOfElements[0].floorIndex" },
+      "expect": [
+        { "expr": "${topElevationFloorAfter} - ${top}", "eq": 0, "name": "the elevation followed its story when the story below was deleted" }
+      ]
+    },
+    {
+      "id": "an unknown story",
+      "command": "DeleteStory",
+      "creates": false,
+      "params": { "storyIndex": 999, "dryRun": true },
+      "expect": [
+        { "path": "success", "eq": false }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteStory", "params": { "storyIndex": "${newIndex}", "deleteElements": true } }
+  ]
+}

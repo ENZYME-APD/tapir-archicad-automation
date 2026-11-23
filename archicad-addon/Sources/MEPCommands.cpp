@@ -1437,6 +1437,15 @@ static void AddGuidIfAvailable (GS::ObjectState& os, const char* name, Value&& v
     }
 }
 
+// An MEPOrientation output, the shape ModifyMEPElements takes as orientation.
+static GS::ObjectState CreateMEPOrientationObjectState (const Orientation& orientation)
+{
+    GS::ObjectState orientationOs;
+    orientationOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
+    orientationOs.Add ("rotation", Create3DCoordinateObjectState (API_Coord3D { orientation.rotation.x, orientation.rotation.y, orientation.rotation.z }));
+    return orientationOs;
+}
+
 // The polyline of a flexible segment goes over JSON as its parts in order: {"type": "Line", "begin",
 // "end"} or {"type": "Spline", "controlPoints"} (FlexibleSegmentPolyline of MEPTypes.hpp).
 static void AddFlexibleSegmentPolyline (GS::ObjectState& os, const char* fieldName, const FlexibleSegmentPolyline& polyline)
@@ -1840,6 +1849,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             segments (segmentOs);
         }
 
+        std::vector<API_Coord3D> nodePositions;
         const auto& nodes = routingElementOs.AddList<GS::ObjectState> ("nodes");
         for (const ACAPI::MEP::UniqueID& nodeId : routingElement->GetRoutingNodeIds ()) {
             ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeId);
@@ -1850,6 +1860,7 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
             nodeOs.Add ("elementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (nodeId)));
             nodeOs.Add ("routingElementId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (node->GetRoutingElementId ())));
             nodeOs.Add ("position", Create3DCoordinateObjectState (node->GetPosition ()));
+            nodePositions.push_back (node->GetPosition ());
             const std::optional<ACAPI::MEP::UniqueID> incomingSegmentId = node->GetIncomingSegmentId ();
             if (incomingSegmentId.has_value ()) {
                 nodeOs.Add ("incomingSegmentId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (incomingSegmentId.value ())));
@@ -1873,6 +1884,13 @@ GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& pa
                 transitions (CreateIdObjectState ("elementId", MEPUniqueIDToAPIGuid (transitionId)));
             }
             nodes (nodeOs);
+        }
+
+        // The node positions with the key ModifyMEPRoutingElements writes them with, in the same
+        // order of the nodes, so they can be sent back.
+        const auto& nodePositionList = routingElementOs.AddList<GS::ObjectState> ("nodePositions");
+        for (const API_Coord3D& nodePosition : nodePositions) {
+            nodePositionList (Create3DCoordinateObjectState (nodePosition));
         }
 
         routingElements (routingElementOs);
@@ -2098,6 +2116,9 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
             if (polyline.IsOk ()) {
                 AddFlexibleSegmentPolyline (detailsOs, "polyline", *polyline);
             }
+            // The size ModifyMEPElements writes with the same keys.
+            AddNumberIfAvailable (detailsOs, "width", flexibleSegment->GetWidth ());
+            AddNumberIfAvailable (detailsOs, "height", flexibleSegment->GetHeight ());
         } else if (typeName == "Elbow") {
 #ifdef ServerMainVers_2900
             ACAPI::Result<ACAPI::MEP::Elbow> elbow = ACAPI::MEP::Elbow::Get (elemId);
@@ -2138,6 +2159,22 @@ GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& par
 #ifdef ServerMainVers_2900
             AddGuidIfAvailable (detailsOs, "preferenceTableId", transition->GetPreferenceTable ());
             AddBoolIfAvailable (detailsOs, "isControlledByPreference", transition->IsControlledByPreference ());
+#endif
+        }
+
+        // The placement ModifyMEPElements writes, with the same keys and read from the same
+        // ModifiableElement (terminals, accessories, equipment, fittings, flexible segments and the
+        // other modifiable elements), so it can be sent back.
+        ACAPI::Result<ModifiableElement> modifiableElement = ModifiableElement::Get (elemId);
+        if (modifiableElement.IsOk ()) {
+            detailsOs.Add ("anchorPoint", Create3DCoordinateObjectState (modifiableElement->GetAnchorPoint ()));
+            detailsOs.Add ("orientation", CreateMEPOrientationObjectState (modifiableElement->GetOrientation ()));
+            detailsOs.Add ("libraryPartId", CreateGuidObjectState (modifiableElement->GetObjectId ()));
+            // ElementBase::GetObjectXSize and GetObjectYSize exist from Archicad 30 (MEPElementBase.hpp
+            // of the 29 DevKit has neither, and AddElectricalPlacement is in an Archicad 30 block too).
+#ifdef ServerMainVers_3000
+            detailsOs.Add ("xSize", modifiableElement->GetObjectXSize ());
+            detailsOs.Add ("ySize", modifiableElement->GetObjectYSize ());
 #endif
         }
 
@@ -2742,6 +2779,62 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetRawResponseSchem
     })";
 }
 
+#ifdef ServerMainVers_2800
+
+// The refusal of a nodePositions change that moves an end node of the route away from the tee
+// (Branch) the route is connected to at that end, or nothing. Each node move is its own undoable
+// modification, after which Archicad reconnects the routes at the node; with the tee left at the
+// old point, Archicad 30 crashed there (TryMergeRoutingElementsAtNodes, #2929), and Tapir has no
+// command that moves a tee. Checked before anything of the item is changed. An end node that keeps
+// its position (within a millimeter) is not refused, so the other nodes of such a route still move.
+static std::optional<GS::UniString> FindEndNodeMovedAwayFromTee (RoutingElement& routingElement, const std::vector<ACAPI::MEP::UniqueID>& nodeIds, const GS::Array<GS::ObjectState>& nodePositions)
+{
+    if (nodeIds.empty () || nodePositions.GetSize () != nodeIds.size ()) {
+        return std::nullopt;
+    }
+    const struct {
+        USize                                   nodeIndex;
+        std::optional<ACAPI::MEP::UniqueID>     portId;
+        const char*                             end;
+    } routeEnds[] = {
+        { 0, routingElement.GetLogicallyConnectedPortIdAtRouteBegin (), "first" },
+        { nodePositions.GetSize () - 1, routingElement.GetLogicallyConnectedPortIdAtRouteEnd (), "last" }
+    };
+    for (const auto& routeEnd : routeEnds) {
+        if (!routeEnd.portId.has_value ()) {
+            continue;
+        }
+        ACAPI::Result<Port> port = Port::Get (routeEnd.portId.value ());
+        if (port.IsErr ()) {
+            continue;
+        }
+        const ACAPI::MEP::UniqueID connectedElementId = port->GetMEPElementId ();
+        if (ACAPI::MEP::Branch::Get (connectedElementId).IsErr ()) {
+            continue;
+        }
+        ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeIds[routeEnd.nodeIndex]);
+        if (node.IsErr ()) {
+            continue;
+        }
+        const API_Coord3D oldPosition = node->GetPosition ();
+        const API_Coord3D newPosition = Get3DCoordinateFromObjectState (nodePositions[routeEnd.nodeIndex]);
+        const double dx = newPosition.x - oldPosition.x;
+        const double dy = newPosition.y - oldPosition.y;
+        const double dz = newPosition.z - oldPosition.z;
+        if (std::sqrt (dx * dx + dy * dy + dz * dz) <= 0.001) {
+            continue;
+        }
+        return GS::UniString::Printf ("Node %u, the %s node of the route, is connected to the tee (Branch) %T and would move away from it. "
+            "Moving a route end away from its tee can crash Archicad, and Tapir cannot move a tee, so nothing was changed. "
+            "Keep that node at its current position; the route's other nodes can still be moved.",
+            static_cast<UInt32> (routeEnd.nodeIndex), routeEnd.end,
+            APIGuidToString (MEPUniqueIDToAPIGuid (connectedElementId)).ToPrintf ());
+    }
+    return std::nullopt;
+}
+
+#endif
+
 GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
@@ -2834,6 +2927,24 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
         if (mepSystemId != nullptr && mepSystem == ACAPI_CreateAttributeIndex (-1)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID, "The 'mepSystemId' is not an MEP system attribute."));
             continue;
+        }
+
+        // The node positions are checked before anything is changed: a count that does not match
+        // the route, and an end node moved away from its tee (#2929).
+        GS::Array<GS::ObjectState> nodePositions;
+        const bool hasNodePositions = routingElementData.Get ("nodePositions", nodePositions);
+        std::vector<ACAPI::MEP::UniqueID> nodeIds;
+        if (hasNodePositions) {
+            nodeIds = routingElement->GetRoutingNodeIds ();
+            if (nodePositions.GetSize () != nodeIds.size ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The size of 'nodePositions' must match the number of nodes of the route."));
+                continue;
+            }
+            const std::optional<GS::UniString> teeRefusal = FindEndNodeMovedAwayFromTee (*routingElement, nodeIds, nodePositions);
+            if (teeRefusal.has_value ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_REFUSEDPAR, teeRefusal.value ()));
+                continue;
+            }
         }
 
         bool success = true;
@@ -2968,13 +3079,7 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             }
         }
 
-        GS::Array<GS::ObjectState> nodePositions;
-        if (routingElementData.Get ("nodePositions", nodePositions)) {
-            const std::vector<ACAPI::MEP::UniqueID> nodeIds = routingElement->GetRoutingNodeIds ();
-            if (nodePositions.GetSize () != nodeIds.size ()) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The size of 'nodePositions' must match the number of nodes of the route."));
-                continue;
-            }
+        if (hasNodePositions) {
             for (USize i = 0; i < nodePositions.GetSize (); ++i) {
                 ACAPI::Result<RoutingNode> node = RoutingNode::Get (nodeIds[i]);
                 if (node.IsErr ()) {
@@ -4865,14 +4970,6 @@ GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState
 static GS::ObjectState CreateMEPElementIdObjectState (const ACAPI::MEP::UniqueID& id)
 {
     return CreateElementIdObjectState (MEPUniqueIDToAPIGuid (id));
-}
-
-static GS::ObjectState CreateMEPOrientationObjectState (const Orientation& orientation)
-{
-    GS::ObjectState orientationOs;
-    orientationOs.Add ("direction", Create3DCoordinateObjectState (API_Coord3D { orientation.direction.x, orientation.direction.y, orientation.direction.z }));
-    orientationOs.Add ("rotation", Create3DCoordinateObjectState (API_Coord3D { orientation.rotation.x, orientation.rotation.y, orientation.rotation.z }));
-    return orientationOs;
 }
 
 static void AddElectricalPlacement (GS::ObjectState& os, const ACAPI::MEP::ElementBase& element)

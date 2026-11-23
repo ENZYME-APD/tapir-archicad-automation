@@ -1,0 +1,85 @@
+{
+  "title": "SetViewOptions reports that Archicad does not keep the railing components shown in the floor plan (modelViewOptions.railing) changed through ACAPI_Navigator_ChangeViewOptions, and GetViewOptions reads them unchanged; the teardown writes the original railing options back",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the railing options before (the template shows the railing components)",
+      "command": "GetViewOptions",
+      "creates": false,
+      "params": {},
+      "save": {
+        "posts0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts",
+        "topRail0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail",
+        "handrails0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompHandrails",
+        "rails0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails",
+        "innerPosts0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompInnerPosts",
+        "balusters0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters",
+        "panels0": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels",
+        "stairWalkingLine0": "viewOptions.modelViewOptions.stair.stairFloorPlanCompWalkingLine"
+      },
+      "expect": [
+        { "path": "viewOptions.modelViewOptions.railing.railing3DDetailLevel", "exists": true, "name": "railing options read" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "exists": true, "name": "posts option read" }
+      ]
+    },
+    {
+      "id": "every railing component hidden in the floor plan: refused, Archicad 29 keeps them",
+      "command": "SetViewOptions",
+      "creates": false,
+      "params": {
+        "viewOptions": {
+          "modelViewOptions": {
+            "railing": {
+              "railing2DDisplayCompPosts": false,
+              "railing2DDisplayCompTopRail": false,
+              "railing2DDisplayCompHandrails": false,
+              "railing2DDisplayCompRails": false,
+              "railing2DDisplayCompInnerPosts": false,
+              "railing2DDisplayCompBalusters": false,
+              "railing2DDisplayCompPanels": false
+            }
+          }
+        }
+      },
+      "expect": [
+        { "path": "error.message", "contains": "Archicad did not keep every given view option: modelViewOptions.railing.", "name": "the change is reported as not kept, with the railing options Archicad kept" }
+      ]
+    },
+    {
+      "id": "the railing components are unchanged",
+      "command": "GetViewOptions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPosts", "eq": "${posts0}", "name": "posts unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompTopRail", "eq": "${topRail0}", "name": "top rails unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompHandrails", "eq": "${handrails0}", "name": "handrails unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompRails", "eq": "${rails0}", "name": "rails unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompInnerPosts", "eq": "${innerPosts0}", "name": "inner posts unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompBalusters", "eq": "${balusters0}", "name": "balusters unchanged" },
+        { "path": "viewOptions.modelViewOptions.railing.railing2DDisplayCompPanels", "eq": "${panels0}", "name": "panels unchanged" },
+        { "path": "viewOptions.modelViewOptions.stair.stairFloorPlanCompWalkingLine", "eq": "${stairWalkingLine0}", "name": "the stair options unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetViewOptions",
+      "params": {
+        "viewOptions": {
+          "modelViewOptions": {
+            "railing": {
+              "railing2DDisplayCompPosts": "${posts0}",
+              "railing2DDisplayCompTopRail": "${topRail0}",
+              "railing2DDisplayCompHandrails": "${handrails0}",
+              "railing2DDisplayCompRails": "${rails0}",
+              "railing2DDisplayCompInnerPosts": "${innerPosts0}",
+              "railing2DDisplayCompBalusters": "${balusters0}",
+              "railing2DDisplayCompPanels": "${panels0}"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

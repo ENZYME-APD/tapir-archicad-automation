@@ -32,6 +32,24 @@ name: Auto Merge
 #     exception is archicad-addon/devkits.json on the new Archicad version
 #     pull request of archicad_devkit_update.yml, when it only appends
 #     versions (see devkits_appended).
+# Release fixes. A bot pull request that fixes a release-failure issue (opened
+# by weekly_release.yml's request_fix job when a release stopped on a failed
+# build: the Actions bot's issue, open, labelled `release-failure` and not
+# `needs-maintainer`, starting with its `<!-- release-failure: <version>
+# run=<id> -->` marker, with the pull request on that issue's claude/issue-<n>-
+# branch and
+# saying `Fixes #<n>`; the marker opens the body, names a weekly release run
+# that failed while the issue was opened, and the version main still carries)
+# clears every gate above except the waiting time: it is
+# merged as soon as its review passes, because the release waits on it. After
+# the merge this workflow starts weekly_release.yml, which re-tags the
+# unpublished version on the fixed main. claude_pr_review.yml starts this
+# workflow when it records a passing verdict, so the merge does not wait for
+# the six-hourly sweep. RELEASE_FIX=false turns both off. The cost: such a fix
+# can ship before a person has read it; `do-not-merge` on the pull request, a
+# change request or an open thread still stops it, during the hour or so its
+# builds and review take.
+#
 # The accepted risk: the issue text is written by anyone, and the review is a
 # model reading what another model wrote from it, so nothing but that review
 # and the waiting time stands between a crafted issue and the next weekly
@@ -110,6 +128,7 @@ jobs:
           REPO: ${{ github.repository }}
           BOT_AUTO_MERGE: ${{ vars.BOT_AUTO_MERGE }}
           BOT_DELAY_HOURS: ${{ vars.BOT_AUTO_MERGE_DELAY_HOURS || '72' }}
+          RELEASE_FIX: ${{ vars.RELEASE_FIX }}
         run: |
           set -euo pipefail
 
@@ -174,6 +193,7 @@ jobs:
 
           for pr in $candidates; do
             echo "::group::PR #$pr"
+            releaseFix=false
 
             if ! info=$(gh pr view "$pr" --repo "$REPO" \
               --json number,state,isDraft,mergeable,baseRefName,author,title,headRefOid,headRefName,isCrossRepository,labels); then
@@ -246,10 +266,56 @@ jobs:
                 echo "::endgroup::"; continue
               fi
 
+              # A release fix (see the header) waits for no delay: the release
+              # is stopped until it is merged. Every other gate still applies.
+              delayHours=$BOT_DELAY_HOURS
+              case "$delayHours" in ''|*[!0-9]*) delayHours=72 ;; esac
+              if [ "${RELEASE_FIX:-}" != "false" ]; then
+                fixes=$(gh pr view "$pr" --repo "$REPO" --json body --jq '.body' 2>/dev/null \
+                  | grep -oE '(Fixes|Closes|Resolves) #[0-9]+' | head -n 1 | grep -oE '[0-9]+' || true)
+                case "$headName" in
+                  "claude/issue-$fixes-"*)
+                    # The marker alone proves nothing: the Discord issue bot also
+                    # opens issues as the Actions bot with anyone's text in them,
+                    # and the issue bot can set labels and edit bodies. So the
+                    # marker must open the body and name a weekly release run
+                    # that really failed, the issue must have been opened while
+                    # that run was going, and its version must be the one main
+                    # still carries (the release that is waiting).
+                    issueJson=""
+                    if [ -n "$fixes" ]; then
+                      issueJson=$(gh issue view "$fixes" --repo "$REPO" --json state,author,labels,body,createdAt \
+                        --jq 'select(.state == "OPEN"
+                               and (.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
+                               and ([.labels[].name] | index("release-failure"))
+                               and ([.labels[].name] | index("needs-maintainer") | not))' 2>/dev/null || true)
+                    fi
+                    [ -n "$issueJson" ] || issueJson='{}'
+                    marker=$(jq -r '.body // ""' <<<"$issueJson" | head -n 1 \
+                      | grep -oE '^<!-- release-failure: [0-9]+\.[0-9]+\.[0-9]+ run=[0-9]+ -->$' || true)
+                    if [ -n "$marker" ]; then
+                      markVersion=$(awk '{print $3}' <<<"$marker")
+                      markRun=$(awk '{print $4}' <<<"$marker"); markRun=${markRun#run=}
+                      created=$(jq -r '.createdAt' <<<"$issueJson")
+                      mainVersion=$(gh api -H 'Accept: application/vnd.github.raw' \
+                        "repos/$REPO/contents/tools/package_info.json?ref=main" 2>/dev/null | jq -r '.version' 2>/dev/null || true)
+                      if [ "$mainVersion" = "$markVersion" ] && gh api "repos/$REPO/actions/runs/$markRun" \
+                           --jq "select(.path == \".github/workflows/weekly_release.yml\" and .conclusion == \"failure\"
+                                  and .run_started_at <= \"$created\" and .updated_at >= \"$created\") | .id" 2>/dev/null | grep -q .; then
+                        releaseFix=true
+                        delayHours=0
+                        echo "release fix for #$fixes ($markVersion, release run $markRun): no waiting time"
+                      else
+                        echo "#$fixes carries a release-failure marker that does not match a failed release of $mainVersion - the usual waiting time applies"
+                      fi
+                    fi
+                    ;;
+                esac
+              fi
+
               # The review: claude-review must be a success now, and must have
-              # been one since at least BOT_DELAY_HOURS ago (the start of the
+              # been one since at least delayHours ago (the start of the
               # newest run of successes; statuses come newest first).
-              case "$BOT_DELAY_HOURS" in ''|*[!0-9]*) BOT_DELAY_HOURS=72 ;; esac
               if ! statuses=$(gh api "repos/$REPO/commits/$headOid/statuses?per_page=100" \
                    --jq '[.[] | select(.context == "claude-review") | {state, created_at}]'); then
                 echo "skip: could not read the commit statuses"
@@ -263,8 +329,8 @@ jobs:
               since=$(jq -r 'reduce .[] as $s ({stop: false, t: null};
                                if .stop then . elif $s.state == "success" then .t = $s.created_at else .stop = true end) | .t' <<<"$statuses")
               age=$(( $(date -u +%s) - $(date -u -d "$since" +%s) ))
-              if [ "$age" -lt $(( BOT_DELAY_HOURS * 3600 )) ]; then
-                echo "skip: the review passed $((age / 3600))h ago, waiting until ${BOT_DELAY_HOURS}h"
+              if [ "$age" -lt $(( delayHours * 3600 )) ]; then
+                echo "skip: the review passed $((age / 3600))h ago, waiting until ${delayHours}h"
                 echo "::endgroup::"; continue
               fi
 
@@ -401,6 +467,15 @@ jobs:
               echo "::endgroup::"; continue
             fi
             echo "merged at $headOid"
+
+            # A release fix: start the release again, which re-tags the
+            # unpublished version on the fixed main. A merge made with this
+            # token starts no run by itself.
+            if [ "$releaseFix" = "true" ]; then
+              gh workflow run weekly_release.yml --repo "$REPO" --ref main \
+                && echo "started weekly_release.yml for the fixed main" \
+                || echo "::warning::merged release fix #$pr, but could not start weekly_release.yml - start it by hand"
+            fi
 
             # A part of a split issue (claude_issue_triage.yml) says
             # `Part k of N of #n` instead of `Fixes`, so the issue stays open

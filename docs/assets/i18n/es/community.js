@@ -97,6 +97,7 @@
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':
         'Commits, issues y pull requests, y mensajes de Discord por mes, apilados, con el número de miembros de Discord como línea, de {first} a {last}. La tabla de abajo recoge todos los números.',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'ene feb mar abr may jun jul ago sept oct nov dic',
+    '{month} {year}': '{month} {year}',
     'Growth': 'Crecimiento',
     'Total': 'Total',
     'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
@@ -104,6 +105,7 @@
     'Growth since <em>2022.</em>': 'Crecimiento desde <em>2022.</em>',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Todo lo que ocurre alrededor de Tapir cada mes, desde el primer commit en Enzyme hasta hoy. Solo se recogen números, nunca el texto de un mensaje.',
+    '<i class="swatch layer-commits"></i>Commits': '<i class="swatch layer-commits"></i>Commits',
     '<i class="swatch layer-github"></i>Issues and pull requests': '<i class="swatch layer-github"></i>Issues y pull requests',
     '<i class="swatch layer-discordMessages"></i>Discord messages': '<i class="swatch layer-discordMessages"></i>Mensajes de Discord',
     '<i class="swatch swatch-line"></i>Discord members, right scale': '<i class="swatch swatch-line"></i>Miembros de Discord, escala derecha',

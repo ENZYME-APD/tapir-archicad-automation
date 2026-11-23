@@ -1,0 +1,195 @@
+{
+  "title": "SetInteriorElevationsDetails changes an Interior Elevation's settings and one segment's name, ID and settings, keeps its GUID and viewpoints, and refuses bad input (#2851)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "InteriorElevation", "CutPlane" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "interior elevation of two segments",
+      "command": "CreateInteriorElevations",
+      "params": {
+        "interiorElevationsData": [
+          {
+            "nodeCoordinates": [ { "x": 950.0, "y": 950.0 }, { "x": 956.0, "y": 950.0 }, { "x": 956.0, "y": 954.0 } ],
+            "depth": 2.0,
+            "name": "TapirCheck IE Set",
+            "id": "TC-IES",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "ie": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "interior elevation created" }
+      ]
+    },
+    {
+      "id": "the segment lines before the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ie}" } } ] },
+      "save": {
+        "s1StartX": "detailsOfElements[0].details.segments[1].startCoordinate.x",
+        "s1EndY": "detailsOfElements[0].details.segments[1].endCoordinate.y"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 2, "name": "two segments" }
+      ]
+    },
+    {
+      "id": "show on one story, common marker pen 7, rename and limit the second segment",
+      "command": "SetInteriorElevationsDetails",
+      "creates": false,
+      "params": {
+        "interiorElevationsWithDetails": [
+          {
+            "elementId": { "guid": "${ie}" },
+            "details": {
+              "showOnStories": "OneStory",
+              "storyToShowOn": 0,
+              "commonMarkerPenIndex": 7,
+              "segments": [
+                {
+                  "segmentIndex": 1,
+                  "name": "TapirCheck IE East",
+                  "id": "TC-IEE",
+                  "settings": {
+                    "verticalRange": "Limited",
+                    "verticalRangeMin": 0.25,
+                    "verticalRangeMax": 2.75,
+                    "linePenIndex": 5
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "every change applied (an unapplied one is reported here)" }
+      ]
+    },
+    {
+      "id": "read the changes back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ie}" } } ] },
+      "save": {
+        "s1StartXAfter": "detailsOfElements[0].details.segments[1].startCoordinate.x",
+        "s1EndYAfter": "detailsOfElements[0].details.segments[1].endCoordinate.y"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "InteriorElevation", "name": "same GUID, still an interior elevation" },
+        { "path": "detailsOfElements[0].details.showOnStories", "eq": "OneStory" },
+        { "path": "detailsOfElements[0].details.storyToShowOn", "eq": 0 },
+        { "path": "detailsOfElements[0].details.commonMarkerPenIndex", "eq": 7 },
+        { "path": "detailsOfElements[0].details.segments", "len": 2, "name": "still two segments" },
+        { "path": "detailsOfElements[0].details.segments[1].name", "eq": "TapirCheck IE East" },
+        { "path": "detailsOfElements[0].details.segments[1].idStr", "eq": "TC-IEE" },
+        { "path": "detailsOfElements[0].details.segments[1].settings.verticalRange", "eq": "Limited" },
+        { "path": "detailsOfElements[0].details.segments[1].settings.verticalRangeMin", "approx": 0.25 },
+        { "path": "detailsOfElements[0].details.segments[1].settings.verticalRangeMax", "approx": 2.75 },
+        { "path": "detailsOfElements[0].details.segments[1].settings.linePenIndex", "eq": 5 },
+        { "path": "detailsOfElements[0].details.segments[0].name", "contains": "TapirCheck IE Set", "name": "first segment keeps its name" },
+        { "expr": "${s1StartXAfter} - ${s1StartX}", "approx": 0.0, "name": "geometry kept (x)" },
+        { "expr": "${s1EndYAfter} - ${s1EndY}", "approx": 0.0, "name": "geometry kept (y)" },
+        { "path": "detailsOfElements[0].details.segments[0].depth", "approx": 2.0, "name": "depth kept" }
+      ]
+    },
+    {
+      "id": "the viewpoints are kept",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "InteriorElevation" ] },
+      "expect": [
+        { "path": "databases", "len": 2, "name": "still one viewpoint per segment" }
+      ]
+    },
+    {
+      "id": "bad input: segment index out of range",
+      "command": "SetInteriorElevationsDetails",
+      "creates": false,
+      "params": {
+        "interiorElevationsWithDetails": [
+          {
+            "elementId": { "guid": "${ie}" },
+            "details": {
+              "commonMarkerPenIndex": 9,
+              "segments": [ { "segmentIndex": 5, "name": "TapirCheck not a segment" } ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "bad input: an element-level key in a segment's settings",
+      "command": "SetInteriorElevationsDetails",
+      "creates": false,
+      "params": {
+        "interiorElevationsWithDetails": [
+          {
+            "elementId": { "guid": "${ie}" },
+            "details": {
+              "segments": [ { "segmentIndex": 0, "name": "TapirCheck refused", "settings": { "showOnStories": "All" } } ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "nothing changed by the refused calls",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ie}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.commonMarkerPenIndex", "eq": 7, "name": "pen not changed by the refused call" },
+        { "path": "detailsOfElements[0].details.segments[0].name", "contains": "TapirCheck IE Set", "name": "name not changed by the refused call" }
+      ]
+    },
+    {
+      "id": "a section to refuse",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          {
+            "startCoordinate": { "x": 950.0, "y": 960.0 },
+            "endCoordinate": { "x": 956.0, "y": 960.0 },
+            "name": "TapirCheck Section IES"
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "bad input: a section is not an interior elevation",
+      "command": "SetInteriorElevationsDetails",
+      "creates": false,
+      "params": {
+        "interiorElevationsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "details": { "showOnStories": "All" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" },
+        { "path": "executionResults[0].error.message", "contains": "SetSectionsAndElevationsDetails" }
+      ]
+    }
+  ]
+}

@@ -97,6 +97,7 @@
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':
         'Commit, issue e pull request, e messaggi su Discord al mese, impilati, con il numero di membri di Discord come linea, da {first} a {last}. La tabella sotto riporta tutti i numeri.',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'gen feb mar apr mag giu lug ago set ott nov dic',
+    '{month} {year}': '{month} {year}',
     'Growth': 'Crescita',
     'Total': 'Totale',
     'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
