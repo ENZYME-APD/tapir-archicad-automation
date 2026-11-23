@@ -432,6 +432,20 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_LibraryManagement_InterpretGDLScript3D</code> returns only <code>APIERR_GENERAL</code>, &ldquo;Failed to interpret the script&rdquo; (<code>ACAPI_Goodies.h</code>), and <code>ACAPI_LibraryPart_ShapePrims</code> only error codes (<code>ACAPinc.h</code>). <code>ACAPI::Library::GSMObject</code> (AC28&ndash;AC30) reads and writes the scripts but has no function that checks or compiles them, and no function returns a GDL error message or line number (AC25&ndash;AC30).</td>
                             <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the Library Localization (Library Developer &rsaquo; Library Localization Preferences), for example to move a project from a localized library to the Global Library</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Set it by hand in Archicad. The library steps of the move can be scripted: <a href="../archicad-addon/#GetLibraries">GetLibraries</a>, <a href="../archicad-addon/#SetLibraries">SetLibraries</a> (also libpacks) and <a href="../archicad-addon/#ReloadLibraries">ReloadLibraries</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No function or preference ID reads or writes the library localization (AC25&ndash;AC30): the library functions <code>ACAPI_LibraryManagement_*</code> (<code>ACAPI_Environment.h</code>, <code>ACAPI_Goodies.h</code>) and <code>ACAPI::Library::LibraryManager</code> (AC28&ndash;AC30) only list, add and remove libraries, and the <code>APIPrefs_*</code> IDs (<code>APIdefs_Environment.h</code>) have no library settings. <code>ACAPI::Library::Library::GetLocalizedName</code> only returns a library&rsquo;s display name.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3032">#3032</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Import a Mapping Value Table (Library Developer &rsaquo; Import Mapping Value Table) without its dialogs</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Import it by hand in Archicad, after loading the libraries with <a href="../archicad-addon/#SetLibraries">SetLibraries</a> and <a href="../archicad-addon/#ReloadLibraries">ReloadLibraries</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No function imports a mapping value table or runs the Library Developer menu commands (AC25&ndash;AC30). The only migration items are the library part section types <code>API_SectFWMScript</code>, <code>API_SectBWMScript</code> and <code>API_SectMigrTable</code> (<code>APIdefs_LibraryParts.h</code>), which hold one library part&rsquo;s migration scripts.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3032">#3032</a></td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Archicad's interface</th></tr>
                         <tr>
