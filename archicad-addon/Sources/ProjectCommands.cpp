@@ -7525,7 +7525,7 @@ static GS::UniString GetLayoutsSchema (bool allFieldsRequired)
     return schema;
 }
 
-static GS::UniString GetDataSafetySchema ()
+static GS::UniString GetDataSafetyPageSchemaText ()
 {
     return R"({
         "type": "object",
@@ -7619,7 +7619,7 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += GetLayoutsSchema (true);
     schema += R"(,
             "dataSafety": )";
-    schema += GetDataSafetySchema ();
+    schema += GetDataSafetyPageSchemaText ();
     schema += R"(
         },
         "additionalProperties": false,
