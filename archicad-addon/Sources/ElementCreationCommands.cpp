@@ -4305,7 +4305,7 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
         "lineTypeId": { "$ref": "#/AttributeId" },
         "surfaceId": { "$ref": "#/AttributeId", "description": "Material/Surface override (API_ObjectType.mat)." },
         "sectionFillId": { "$ref": "#/AttributeId" },
-        "sectionFillPen": { "type": "integer" },
+        "sectionFillPen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Foreground pen of the section fill." },
         "sectionFillBackgroundPen": { "type": "integer" },
         "sectionContourPen": { "type": "integer" },
         "useObjectPens": { "type": "boolean" },
