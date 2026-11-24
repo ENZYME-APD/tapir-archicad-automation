@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-23 23:28 UTC.
+Archicad 25–30 DevKits; updated 2026-11-24 01:03 UTC.
 
 | | Status |
 |---|---|
@@ -463,7 +463,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_Navigator_ChangeCurrLayerComb` – Activates a layer combination. <sub>(was `APIEnv_ChangeCurrLayerCombID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeLayoutSets` – Changes the settings of the current layout in Archicad. <sub>(was `APIEnv_ChangeLayoutSetsID`)</sub>
-- ✅ `ACAPI_Navigator_ChangeNavigatorItem` – Modifies the given Project Navigator item. <sub>(was `APINavigator_ChangeNavigatorItemID`)</sub> — [#3051](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3051 "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply")
+- ✅ `ACAPI_Navigator_ChangeNavigatorItem` – Modifies the given Project Navigator item. <sub>(was `APINavigator_ChangeNavigatorItemID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
 - ✅ `ACAPI_Navigator_ChangeStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_ChangeStructureDisplayID`)</sub>
@@ -484,8 +484,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_GetNavigatorChildrenItems` – Retrieves the child items of a navigator item. <sub>(was `APINavigator_GetNavigatorChildrenItemsID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorItem` – Retrieves a navigator item. <sub>(was `APINavigator_GetNavigatorItemID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorParentItem` – Retrieves the parent item of a navigator item. <sub>(was `APINavigator_GetNavigatorParentItemID`)</sub>
-- ✅ `ACAPI_Navigator_GetNavigatorSet` – Retrieves information about a Project Navigator Map or Publisher Set. <sub>(was `APINavigator_GetNavigatorSetID`)</sub> — [#3051](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3051 "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply")
-- ✅ `ACAPI_Navigator_GetNavigatorSetNum` – Retrieves the number of Publisher Sets. <sub>(was `APINavigator_GetNavigatorSetNumID`)</sub> — [#3051](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3051 "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply")
+- ✅ `ACAPI_Navigator_GetNavigatorSet` – Retrieves information about a Project Navigator Map or Publisher Set. <sub>(was `APINavigator_GetNavigatorSetID`)</sub>
+- ✅ `ACAPI_Navigator_GetNavigatorSetNum` – Retrieves the number of Publisher Sets. <sub>(was `APINavigator_GetNavigatorSetNumID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorVPItem` – Gets information about an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_GetNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorVPItemChildren` – Gets the list of child viewpoint groups/nodes of a Navigator viewpoint root or group. <sub>(was `APINavigator_GetNavigatorVPItemChildrenID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorVPRootGroups` – Gets the list of Navigator viewpoint roots. <sub>(was `APINavigator_GetNavigatorVPRootGroupsID`)</sub>

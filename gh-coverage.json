@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-23 23:28 UTC",
+ "generatedAt": "2026-11-24 01:03 UTC",
  "counts": {
   "done": 789,
   "open": 42,
@@ -16937,7 +16937,7 @@
    "id": "RenameNavigatorItem",
    "group": "Navigator Commands",
    "version": "1.1.7",
-   "brief": "Renames a navigator item or changes its ID. Renaming the Layout Book item of a placed Drawing also sets the custom name of the Drawing. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again.",
+   "brief": "Renames a navigator item or changes its ID. Renaming the Layout Book item of a placed Drawing also sets the custom name of the Drawing. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. A publisher set cannot be renamed (Archicad's API only reads publisher sets), so a new name or ID for the root item of a publisher set is refused. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again.",
    "status": "done",
    "reason": "",
    "components": [

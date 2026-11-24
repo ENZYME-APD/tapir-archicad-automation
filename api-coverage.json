@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-23 23:28 UTC",
+ "generatedAt": "2026-11-24 01:03 UTC",
  "versions": [
   25,
   26,
@@ -13700,12 +13700,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3051,
-     "title": "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14181,12 +14176,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3051,
-     "title": "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14209,12 +14199,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3051,
-     "title": "RenameNavigatorItem: refuse the root item of a publisher set instead of reporting a rename Archicad does not apply"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
