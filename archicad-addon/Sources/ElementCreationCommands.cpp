@@ -274,6 +274,11 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + reasonText + ", " + DeleteUnfinishedElement (element.header.guid)));
                 continue;
             }
+            const GS::UniString notKept = GetSettingsNotKept (requestedElement, element.header.guid, data);
+            if (!notKept.IsEmpty ()) {
+                elements (CreateErrorResponse (APIERR_GENERAL, "Archicad did not keep every setting of the new " + elemTypeName + ":" + notKept + " The " + elemTypeName + " was not finished, " + DeleteUnfinishedElement (element.header.guid) + "."));
+                continue;
+            }
 
             // Per-item "id" support: the Element ID is written right after the creation, in
             // the same undoable command, so the create call itself stays as it was. Without

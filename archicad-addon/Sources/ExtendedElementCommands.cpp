@@ -8949,11 +8949,11 @@ static const char* StairSettingsSchemaProperties = R"(
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
                         "extraTopTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its top." },
                         "extraBottomTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its bottom." },
-                        "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto)." },
-                        "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto." },
+                        "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto). CreateStairs and ModifyStairs read it back and fail the item when Archicad did not keep it (CreateStairs then deletes the new stair)." },
+                        "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto. While the stair's walking line is Left or Right, CreateStairs and ModifyStairs read it back and fail the item when Archicad did not keep it (CreateStairs then deletes the new stair)." },
                         "walkingLineSymbolPosition": { "type": "string", "enum": ["Auto", "Center", "Custom"], "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos): by Archicad (Auto), centered, or where it was placed by hand (Custom)." },
                         "numberingType": { "type": "string", "enum": ["Treads", "Risers"], "description": "Whether the steps are numbered on their treads or on their risers." },
-                        "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward)." },
+                        "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward). CreateStairs and ModifyStairs read it back and fail the item when Archicad did not keep it (CreateStairs then deletes the new stair)." },
                         "uniformFinish": { "type": "boolean", "description": "Whether the flights and the landings share one finish setting." },
                         "uniformMonolithAttributes": { "type": "boolean", "description": "Whether the monolithic structures of the flights and the landings share one set of attributes." },
                         "uniformDrainings": { "type": "boolean", "description": "Whether the flights and the landings share one draining setting." },
@@ -9046,6 +9046,49 @@ static const char* StairOutlineSchemaProperties = R"(
                         "centerWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the center walking line of the stair. An item with it is refused." })";
 
 static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
+
+static GS::UniString StairLinePositionToString (API_LinePositionID position)
+{
+    switch (position) {
+        case APILP_Left:   return "Left";
+        case APILP_Right:  return "Right";
+        case APILP_Center: return "Center";
+        case APILP_Auto:   return "Auto";
+        default:           return GS::UniString::Printf ("%d", static_cast<int> (position));
+    }
+}
+
+// Reads the stair back after CreateStairs created it or ModifyStairs changed it and names the
+// walking direction and walking line settings that were given but differ now (#2940): Archicad 29
+// answered success for an Inverse inputDirection and a walkingLinePosition, and kept the stair as
+// it was. The walking line offset is only compared while the stair's walking line is Left or Right,
+// the positions it is measured from. Empty when none were given or all were kept.
+static GS::UniString CheckStairDirectionAndWalkingLineApplied (const API_Guid& stairGuid, const API_StairType& want, bool hasInputDirection, bool hasWalkingLinePosition, bool hasWalkingLineOffset)
+{
+    if (!hasInputDirection && !hasWalkingLinePosition && !hasWalkingLineOffset) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = stairGuid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back.";
+    }
+
+    const API_StairType& got = changed.stair;
+    GS::UniString notApplied;
+    if (hasInputDirection && got.inputDirection != want.inputDirection) {
+        notApplied += got.inputDirection == APISD_Inverse ? " inputDirection is Inverse." : " inputDirection is Upward.";
+    }
+    if (hasWalkingLinePosition && got.walkingLinePosition != want.walkingLinePosition) {
+        notApplied += GS::UniString (" walkingLinePosition is ") + StairLinePositionToString (got.walkingLinePosition) + ".";
+    }
+    const bool offsetUsed = got.walkingLinePosition == APILP_Left || got.walkingLinePosition == APILP_Right;
+    if (hasWalkingLineOffset && offsetUsed && std::fabs (got.walkingLineOffset - want.walkingLineOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" walkingLineOffset is %g.", got.walkingLineOffset);
+    }
+    return notApplied;
+}
 
 CreateStairsCommand::CreateStairsCommand () :
     CreateElementsCommandBase ("CreateStairs", API_StairID, "stairsData")
@@ -9149,6 +9192,14 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
         "additionalProperties": false,
         "required": ["stairsData"]
     })";
+}
+
+// A new stair that did not keep the given walking direction or walking line is deleted again and
+// the item fails, naming what Archicad made of it (#2940), as ModifyStairs reports it.
+GS::UniString CreateStairsCommand::GetSettingsNotKept (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    return CheckStairDirectionAndWalkingLineApplied (newElementGuid, requestedElement.stair,
+        parameters.Contains ("inputDirection"), parameters.Contains ("walkingLinePosition"), parameters.Contains ("walkingLineOffset"));
 }
 
 static bool StairSegmentTypeFromString (const GS::UniString& str, API_StairSegmentTypeID& type)
@@ -12845,6 +12896,15 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString headroomNotApplied = CheckStairHeadroomApplied (element, givenHeadroomMask);
             if (!headroomNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every headroom setting:" + headroomNotApplied));
+                continue;
+            }
+            // And for the walking direction and the walking line (#2940).
+            const GS::UniString directionNotApplied = CheckStairDirectionAndWalkingLineApplied (element.header.guid, element.stair,
+                ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, inputDirection),
+                ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLinePosition),
+                ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLineOffset));
+            if (!directionNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every walking direction and walking line setting:" + directionNotApplied));
                 continue;
             }
 
