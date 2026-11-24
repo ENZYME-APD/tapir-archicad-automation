@@ -1,6 +1,6 @@
 {
-  "title": "GetPolygonVertexIdsOfElements gives the inIndex and nodeId CreateAssociativeDimensions needs on slab vertices and edges, and points it cannot attach get an error (#3004)",
-  "minTapir": "2.0.1",
+  "title": "GetPolygonVertexIdsOfElements gives the inIndex and nodeId CreateAssociativeDimensions needs on slab vertices and edges, and points it cannot attach get an error (#3004); an edge of a hole attaches by its edgeId (#3034)",
+  "minTapir": "2.0.2",
   "steps": [
     {
       "id": "a 6 m square slab",
@@ -136,6 +136,94 @@
       "params": { "elementType": "Dimension" },
       "expect": [
         { "path": "elements", "len": 2, "name": "only the two attached dimensions" }
+      ]
+    },
+    {
+      "id": "a 6 m square slab with a 2 m square hole",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              {"x": 1320.0, "y": 1300.0},
+              {"x": 1326.0, "y": 1300.0},
+              {"x": 1326.0, "y": 1306.0},
+              {"x": 1320.0, "y": 1306.0}
+            ],
+            "holes": [
+              {
+                "polygonOutline": [
+                  {"x": 1322.0, "y": 1302.0},
+                  {"x": 1324.0, "y": 1302.0},
+                  {"x": 1324.0, "y": 1304.0},
+                  {"x": 1322.0, "y": 1304.0}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "h": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab with a hole created" }
+      ]
+    },
+    {
+      "id": "the vertex and edge IDs of the slab with a hole (#3034)",
+      "command": "GetPolygonVertexIdsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${h}" } } ] },
+      "save": {
+        "o3i": "polygonVertexIdsOfElements[0].contours[0].points[2].inIndex",
+        "o3v": "polygonVertexIdsOfElements[0].contours[0].points[2].vertexId",
+        "e1i": "polygonVertexIdsOfElements[0].contours[1].points[0].inIndex",
+        "e1": "polygonVertexIdsOfElements[0].contours[1].points[0].edgeId"
+      },
+      "expect": [
+        { "path": "polygonVertexIdsOfElements[0].contours", "len": 2, "name": "the outline and one hole" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[0].edgeId", "exists": true, "name": "an outline point has an edgeId" },
+        { "path": "polygonVertexIdsOfElements[0].contours[0].points[4].edgeId", "exists": false, "name": "the outline's closing point has no edgeId" },
+        { "path": "polygonVertexIdsOfElements[0].contours[1].points", "len": 5, "name": "four hole vertices and the closing point" },
+        { "path": "polygonVertexIdsOfElements[0].contours[1].points[0].inIndex", "eq": 6, "name": "the hole starts at inIndex 6" },
+        { "path": "polygonVertexIdsOfElements[0].contours[1].points[0].edgeId", "exists": true, "name": "a hole point has an edgeId" },
+        { "path": "polygonVertexIdsOfElements[0].contours[1].points[4].edgeId", "exists": false, "name": "the hole's closing point has no edgeId" }
+      ]
+    },
+    {
+      "id": "the first hole edge, by its edgeId, to outline vertex 3",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 1329.0, "y": 1300.0 },
+            "direction": { "x": 0.0, "y": 1.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "elementId": { "guid": "${h}" }, "line": true, "inIndex": "${e1i}", "nodeId": "${e1}", "coordinate": { "x": 1323.0, "y": 1302.0 } },
+              { "elementId": { "guid": "${h}" }, "inIndex": "${o3i}", "nodeId": "${o3v}" }
+            ]
+          }
+        ]
+      },
+      "save": { "dh": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "hole edge by edgeId: created" }
+      ]
+    },
+    {
+      "id": "the hole edge dimension is attached to the slab",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dh}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[0].baseElementId.guid", "eq": "${h}", "name": "hole edge point attached to the slab" },
+        { "path": "dimensionsData[0].witnessPoints[0].coordinate.y", "approx": 1302.0, "name": "hole edge point on the hole's first edge" },
+        { "path": "dimensionsData[0].witnessPoints[1].baseElementId.guid", "eq": "${h}", "name": "outline vertex 3 attached to the slab" },
+        { "path": "dimensionsData[0].witnessPoints[1].coordinate.y", "approx": 1306.0, "name": "outline vertex 3 at y 1306" }
       ]
     }
   ]

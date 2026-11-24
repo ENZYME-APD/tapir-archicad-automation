@@ -2428,7 +2428,8 @@ GS::Optional<GS::UniString> CheckAssociativeDimensionPoints (
             return GS::UniString::Printf (
                 "Witness point %d was not attached to its element, so the dimension was not created. "
                 "On a polygon element (a Slab, for example) give inIndex and nodeId together: the index and the vertexId "
-                "of the vertex, as GetPolygonVertexIdsOfElements returns them.", (int) pointIndex);
+                "of the vertex, or with line true the index of the edge's start point and its edgeId, as "
+                "GetPolygonVertexIdsOfElements returns them.", (int) pointIndex);
         }
         used[dimElemIndex.Get ()] = true;
         const API_DimElem& dimElem = (*memo.dimElems)[dimElemIndex.Get ()];

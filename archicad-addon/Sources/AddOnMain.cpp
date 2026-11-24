@@ -822,7 +822,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetPolygonVertexIdsOfElementsCommand> (
             elementCommands, "2.0.1",
-            "Gets the polygon vertices of the given elements that have a polygon with vertex IDs (Slabs, Zones, Roofs, Meshes, Fills and others): for each point of the outline and of each hole, in the order GetDetailsOfElements returns them, its coordinate, its index in the element's polygon (inIndex) and the vertex ID Archicad stores for it. These are the inIndex and nodeId a witness point of CreateAssociativeDimensions needs to attach to a vertex or an edge of the polygon; the vertex IDs are kept when vertices are inserted or deleted, so they cannot be worked out from the order of the points. The output is aligned with the input array of elements."
+            "Gets the polygon vertices of the given elements that have a polygon with vertex IDs (Slabs, Zones, Roofs, Meshes, Fills and others): for each point of the outline and of each hole, in the order GetDetailsOfElements returns them, its coordinate, its index in the element's polygon (inIndex), the vertex ID Archicad stores for it and the edge ID of the edge that starts at it. These are the inIndex and nodeId a witness point of CreateAssociativeDimensions needs to attach to a vertex (vertexId) or an edge (edgeId) of the polygon; the IDs are kept when vertices are inserted or deleted, so they cannot be worked out from the order of the points. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<ConvertRevealOffsetsCommand> (
             elementCommands, "1.7.3",
