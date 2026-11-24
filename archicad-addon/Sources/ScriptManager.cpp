@@ -2013,7 +2013,12 @@ void ScriptManager::LayoutItems ()
         place (updatesTab, 570, 12, 108, 18);
         place (catalogueTimeText, static_cast<short> (width - 256), 12, 142, 18);
         place (refreshButton, static_cast<short> (width - 110), 9, 100, 24);
-        place (scriptsFolderButton, static_cast<short> (width - 140), 9, 130, 24);   // the catalogue's time is hidden on its tab
+        {
+            // The catalogue's time is hidden on its tab. Right of the Updates tab (ends at 678), narrower when needed.
+            const short folderX = static_cast<short> (width - 140 > 688 ? width - 140 : 688);
+            const short folderWidth = static_cast<short> (width - 10 - folderX < 130 ? width - 10 - folderX : 130);
+            place (scriptsFolderButton, folderX, 9, folderWidth, 24);
+        }
         place (categoryList, 10, 44, 200, static_cast<short> (height - 94));
         place (fitsCheckBox, 220, 44, 410, 18);
         place (scriptList, 220, 66, static_cast<short> (width - 530), static_cast<short> (height - 116));
