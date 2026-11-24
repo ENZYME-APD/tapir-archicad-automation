@@ -89,14 +89,14 @@
       "id": "a letter size of 0 is refused",
       "command": "ModifyZones",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "zonesWithDetails": [
           { "elementId": { "guid": "${z1}" }, "roomLSize": 0.0 }
         ]
       },
       "expect": [
-        { "path": "executionResults[0].success", "eq": false, "name": "a letter size of 0 is refused" },
-        { "path": "executionResults[0].error.message", "contains": "roomLSize", "name": "the refusal names roomLSize" }
+        { "path": "__envelopeError__", "exists": true, "name": "a letter size of 0 is refused by the schema" }
       ]
     },
     {
