@@ -103,6 +103,9 @@
     'Add an item to a publisher set': '向发布集（publisher set）添加项目',
     'Add the items in Archicad\'s Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         '在 Archicad 的 Organizer 中添加项目，然后用 <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> 发布该集。',
+    'Rename a publisher set': '重命名发布器集',
+    'Rename the set in Archicad\'s Organizer. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> reads the names, and <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> publishes a set by its name.':
+        '在 Archicad 的管理器中重命名该集。<a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> 读取名称，<a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> 按名称发布一个集。',
     'Change, rename or create a stored Model View Options combination': '修改、重命名或新建已保存的 Model View Options 组合',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         '用 <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a> 读取这些组合；用 <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a> 修改当前窗口的选项。',

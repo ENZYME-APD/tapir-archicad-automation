@@ -106,6 +106,9 @@
     'Add an item to a publisher set': 'Añadir un elemento a un publisher set',
     'Add the items in Archicad\'s Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Añada los elementos en el Organizer de Archicad y luego publique el set con <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.',
+    'Rename a publisher set': 'Renombrar un publisher set',
+    'Rename the set in Archicad\'s Organizer. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> reads the names, and <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> publishes a set by its name.':
+        'Renombre el set en el Organizador de Archicad. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> lee los nombres y <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> publica un set por su nombre.',
     'Change, rename or create a stored Model View Options combination': 'Cambiar, renombrar o crear una combinación guardada de Model View Options',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         'Lea las combinaciones con <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; cambie las opciones de la ventana actual con <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.',

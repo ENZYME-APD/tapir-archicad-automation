@@ -279,6 +279,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2836">#2836</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Rename a publisher set</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Rename the set in Archicad's Organizer. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> reads the names, and <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> publishes a set by its name.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Navigator.h</code> has only <code>ACAPI_Navigator_GetNavigatorSetNum</code> and <code>ACAPI_Navigator_GetNavigatorSet</code> for navigator sets (AC27&ndash;AC30; <code>APINavigator_GetNavigatorSetNumID</code> and <code>APINavigator_GetNavigatorSetID</code> in AC25&ndash;AC26), which copy the name of a set into an <code>API_NavigatorSet</code>; no function writes a set back. <code>ACAPI_Navigator_ChangeNavigatorItem</code> is documented for View Map items only. Tried on Archicad 30 (build 3001): <code>ACAPI_Navigator_ChangeNavigatorItem</code> with a new name on the root item of a set (its <code>rootGuid</code>) returns <code>NoError</code> and reads the new name back from that item, but the set keeps its name in the Navigator, the Organizer and <code>ACAPI_Navigator_GetNavigatorSet</code>.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change, rename or create a stored Model View Options combination</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.</td>
