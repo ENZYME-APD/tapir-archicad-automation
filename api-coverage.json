@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-24 04:58 UTC",
+ "generatedAt": "2026-11-24 10:02 UTC",
  "versions": [
   25,
   26,
@@ -7269,10 +7269,6 @@
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    },
-    {
-     "number": 2941,
-     "title": "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"
     },
     {
      "number": 2797,

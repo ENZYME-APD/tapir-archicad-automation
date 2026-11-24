@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-24 04:58 UTC.
+Archicad 25–30 DevKits; updated 2026-11-24 10:02 UTC.
 
 | | Status |
 |---|---|
@@ -149,7 +149,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub>
 - ➖ `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
-- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2941](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2941 "CreateStairs/ModifyStairs: fail the item when Archicad does not keep inputDirection or the walking line"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2979](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2979 "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
 - ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
