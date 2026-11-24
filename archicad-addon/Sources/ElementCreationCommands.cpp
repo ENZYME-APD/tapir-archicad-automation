@@ -402,7 +402,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "height": {
                             "type": "number",
                             "description": "Optional explicit column height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or of the tool defaults. Cannot be combined with a non-zero relativeTopStory.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "relativeTopStory": {
                             "type": "integer",
@@ -431,12 +431,12 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "width": {
                             "type": "number",
                             "description": "Cross section width of the column, the diameter of a round one. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "depth": {
                             "type": "number",
                             "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the depth; give buildingMaterialId to make a basic cross section of this size.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "coreAnchor": {
                             "$ref": "#/ColumnCoreAnchor"
@@ -632,7 +632,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     "thickness": {
                         "type": "number",
                         "description": "Optional slab thickness. Only takes effect on a Basic (homogeneous) slab - a Composite slab takes its thickness from the composite attribute. Without structureType, buildingMaterialId or compositeId the new slab keeps the structure of the slab tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply.",
-                        "exclusiveMinimum": 0.0
+                        "minimum": 0.0, "exclusiveMinimum": true
                     },
                     "structureType": {
                         "$ref": "#/SlabStructureType",
@@ -1756,7 +1756,7 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
 
                     "height": {
                         "type": "number",
-                        "exclusiveMinimum": 0.0,
+                        "minimum": 0.0, "exclusiveMinimum": true,
                         "description" : "Optional height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height); when omitted, the height and top link of the favorite or of the Zone tool defaults are kept. Do not combine with relativeTopStory."
                     },
                     "bottomOffset": {
@@ -1778,7 +1778,7 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                     },
                     "roomLSize": {
                         "type": "number",
-                        "exclusiveMinimum": 0.0,
+                        "minimum": 0.0, "exclusiveMinimum": true,
                         "description" : "Optional letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
                     },
                     "geometry": {
@@ -2030,12 +2030,12 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "stampPosition": { "$ref": "#/Coordinate2D", "description": "Position of the origin of the zone stamp." },
                         "stampAngle": { "type": "number", "description": "Rotation angle of the zone stamp in radians." },
                         "fixedStampAngle": { "type": "boolean", "description": "If true, the zone stamp angle remains fixed when the element is rotated." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height), so do not combine it with relativeTopStory in the same call: whichever is applied last wins." },
+                        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height), so do not combine it with relativeTopStory in the same call: whichever is applied last wins." },
                         "bottomOffset": { "type": "number", "description": "Base level of the zone relative to its home story level." },
                         "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
-                        "roomLSize": { "type": "number", "exclusiveMinimum": 0.0, "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks." },
+                        "roomLSize": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
                         "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
                         "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." },
@@ -2975,7 +2975,7 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     },
                     "ratio": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "Optional 'a/b' ratio of the ellipse, as GetDetailsOfElements returns it. Defaults to 1.0, a circular arc."
                     },
                     "reflected": {
@@ -3405,12 +3405,12 @@ GS::Optional<GS::UniString> CreatePicturesCommand::GetInputParametersSchema () c
                     },
                     "width": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "The width of the picture in model units. When only height is given, the width keeps the proportions of the image."
                     },
                     "height": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "The height of the picture in model units. When only width is given, the height keeps the proportions of the image."
                     },
                     "angle": {
@@ -5357,12 +5357,12 @@ GS::Optional<GS::UniString> ModifyPicturesCommand::GetInputParametersSchema () c
                         },
                         "width": {
                             "type": "number",
-                            "exclusiveMinimum": 0,
+                            "minimum": 0, "exclusiveMinimum": true,
                             "description": "The new width of the picture in model units. When only width is given, the height changes in proportion, so the picture keeps its current proportions."
                         },
                         "height": {
                             "type": "number",
-                            "exclusiveMinimum": 0,
+                            "minimum": 0, "exclusiveMinimum": true,
                             "description": "The new height of the picture in model units. When only height is given, the width changes in proportion, so the picture keeps its current proportions."
                         },
                         "angle": {
@@ -6387,7 +6387,7 @@ GS::Optional<GS::UniString> CreateRailingsCommand::GetInputParametersSchema () c
                     "height": {
                         "type": "number",
                         "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
-                        "exclusiveMinimum": 0.0
+                        "minimum": 0.0, "exclusiveMinimum": true
                     }
                 },
                 "additionalProperties": false,
@@ -6574,7 +6574,7 @@ GS::Optional<GS::UniString> CreateRailingsFromPolylineCommand::GetInputParameter
                     "height": {
                         "type": "number",
                         "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
-                        "exclusiveMinimum": 0.0
+                        "minimum": 0.0, "exclusiveMinimum": true
                     },
                     "templateElementId": {
                         "$ref": "#/ElementId",
@@ -6709,13 +6709,13 @@ GS::Optional<GS::UniString> CreateCurtainWallsCommand::GetInputParametersSchema 
                     "height": {
                         "type": "number",
                         "description": "Optional height of the curtain wall. When omitted, the height of the favorite (or of the Curtain Wall tool defaults) is kept.",
-                        "exclusiveMinimum": 0.0
+                        "minimum": 0.0, "exclusiveMinimum": true
                     },
                     "angle": {
                         "type": "number",
                         "description": "Optional slant angle of the curtain wall plane in degrees, measured from the horizontal: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first coordinate), more than 90 to the right. It is the value GetDetailsOfElements returns as angle. A slanted curtain wall needs a straight reference line (exactly 2 coordinates); height stays its vertical height, and zCoordinate the elevation of its reference line (Archicad raises the bottom of the panels by offset times the cosine of the angle). Give it even with a slanted favorite: Archicad does not take the slant of a favorite or of the tool defaults on creation, so without angle the curtain wall comes out vertical (seen in Archicad 29).",
-                        "exclusiveMinimum": 0.0,
-                        "exclusiveMaximum": 180.0
+                        "minimum": 0.0, "exclusiveMinimum": true,
+                        "maximum": 180.0, "exclusiveMaximum": true
                     },
                     "primaryPattern": {
                         "$ref": "#/CurtainWallPattern",
@@ -8997,7 +8997,7 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     },
                     "width": {
                         "type": "number",
-                        "exclusiveMinimum": 0.0,
+                        "minimum": 0.0, "exclusiveMinimum": true,
                         "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements with the same key (width), and as style.boxWidth with style.nonBreaking false."
                     },
                     "floorIndex": {
@@ -9141,7 +9141,7 @@ static const char* LevelDimensionSettingsSchemaProperties = R"(
                     },
                     "textHeight": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter."
                     },
                     "textPen": {
@@ -9162,7 +9162,7 @@ static const char* LevelDimensionSettingsSchemaProperties = R"(
                     },
                     "markerSize": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "Size of the marker in millimeters (paper size). Optional parameter."
                     },
                     "angle": {
@@ -9646,7 +9646,7 @@ GS::Optional<GS::UniString> CreateAngleDimensionsCommand::GetInputParametersSche
                     },
                     "textHeight": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
                     },
                     "textPen": {
@@ -9852,7 +9852,7 @@ GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetInputParametersSche
                     },
                     "textHeight": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
                     },
                     "textPen": {

@@ -881,7 +881,7 @@ static GS::ObjectState CreateDimensionTextPlacementObjectState (const API_Elemen
 static const char* DimensionSettingsSchemaProperties = R"(
                         "textHeight": {
                             "type": "number",
-                            "exclusiveMinimum": 0,
+                            "minimum": 0, "exclusiveMinimum": true,
                             "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName)."
                         },
                         "textPen": {
@@ -1928,7 +1928,7 @@ GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSch
                     },
                     "textHeight": {
                         "type": "number",
-                        "exclusiveMinimum": 0,
+                        "minimum": 0, "exclusiveMinimum": true,
                         "description": "Optional. The height of the dimension text in millimeters (paper size)."
                     },
                     "textPen": {
@@ -7347,8 +7347,8 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
 GS::UniString WindowOrDoorDetailSchemaFields ()
 {
     return R"(
-        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
+        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
         "sillHeight": { "type": "number" },
         "centerOffset": { "type": "number", "minimum": 0.0 },
         "reflected": { "type": "boolean" },
@@ -7770,8 +7770,8 @@ GS::UniString SkylightDetailSchemaFields ()
         "anchorPosition": { "$ref": "#/Coordinate2D", "description": "Global XY coordinates of the skylight's anchor point (API_SkylightType::anchorPosition). Archicad places the skylight on its owner roof or shell at this point; moving it onto another plane of a multi-plane roof has not been verified." },
         "anchorPoint": { "type": "string", "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"], "description": "Which point of the skylight anchorPosition places (API_SkylightType::anchorPoint)." },
         "fixMode": { "type": "string", "enum": ["Horizontal", "Vertical"], "description": "What the skylight keeps when the angle or the height of its owner changes (API_SkylightType::fixMode)." },
-        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
+        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
         "azimuthAngle": { "type": "number", "description": "Rotation angle of the skylight in the horizontal plane, measured clockwise, in radians (API_SkylightType::azimuthAngle)." },
         "elevationAngle": { "type": "number", "description": "Elevation angle of the owner's surface at the skylight, in radians (API_SkylightType::elevationAngle). Archicad may set it again from the owner roof or shell." },
         "reflected": { "type": "boolean", "description": "Mirror the skylight (API_OpeningBaseType::reflected)." },
@@ -8358,8 +8358,8 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 // ends with a comma, so the fragment is followed by at least one more property.
 static const char* WallSharedSettingsSchemaProperties = R"(
                         "geometryType": { "$ref": "#/WallModificationGeometryType", "description": "Plan outline of the wall. Trapezoid makes begThickness and endThickness the wall's thickness at its begin and end point. Polygonal is not settable here; it is read-only via GetDetailsOfElements. CreateWalls makes a Straight wall when this is omitted. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
-                        "begThickness": { "type": "number", "exclusiveMinimum": 0.0, "description": "Thickness at begCoordinate, the same value as thickness (applied after it, so it wins when both are given). Together with endThickness it shapes a Trapezoid wall (geometryType). Like thickness, it only takes effect on a Basic wall." },
-                        "endThickness": { "type": "number", "exclusiveMinimum": 0.0, "description": "Thickness at endCoordinate. Only takes effect on a Trapezoid wall (geometryType); a Straight wall has one thickness. Like thickness, it only takes effect on a Basic wall." },
+                        "begThickness": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Thickness at begCoordinate, the same value as thickness (applied after it, so it wins when both are given). Together with endThickness it shapes a Trapezoid wall (geometryType). Like thickness, it only takes effect on a Basic wall." },
+                        "endThickness": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Thickness at endCoordinate. Only takes effect on a Trapezoid wall (geometryType); a Straight wall has one thickness. Like thickness, it only takes effect on a Basic wall." },
                         "profileType": { "$ref": "#/WallModificationProfileType", "description": "Cross section shape of the wall. slantAlpha needs Slanted or Trapez, slantBeta needs Trapez. When omitted, CreateWalls keeps the favorite's or the Wall tool default's and ModifyWalls the wall's own." },
                         "slantAlpha": { "type": "number", "description": "Angle of the slanted face in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Slanted or Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped." },
                         "slantBeta": { "type": "number", "description": "Angle of the second slanted face of a double slanted wall, in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped." },
@@ -8408,10 +8408,10 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "floorIndex": { "type": "integer", "description": "Story index (as returned by GetStories). When provided, zCoordinate is interpreted as bottomOffset relative to the floor. Takes priority over zCoordinate for floor assignment." },
                         "zCoordinate": { "type": "number", "description": "Absolute Z when floorIndex is absent; bottomOffset relative to the floor when floorIndex is provided." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Optional explicit height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or the tool default. When omitted, the height and top link of the favorite (or of the Wall tool defaults) are kept." },
+                        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Optional explicit height. Sets relativeTopStory to 0, so it replaces the top link of the favorite or the tool default. When omitted, the height and top link of the favorite (or of the Wall tool defaults) are kept." },
                         "thickness": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Optional thickness. When omitted, the favorite's or the Wall tool default's thickness is kept. Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the favorite (or the wall tool default), which may be a composite; send structureType 'Basic' for the thickness to apply."
                         },
                         "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept. Unavailable when the wall's referenceLineLocation is Center or CoreCenter (Archicad keeps 0 there): a non-zero value on such a wall fails it instead of being dropped." },
@@ -8703,12 +8703,12 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "width": {
                             "type": "number",
                             "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "height": {
                             "type": "number",
                             "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the height; give buildingMaterialId to make a basic cross section of this size.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "anchorPoint": {
                             "$ref": "#/BeamAnchorPoint",
@@ -9146,12 +9146,12 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         "totalHeight": {
                             "type": "number",
                             "description": "Total height of the stair.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "flightWidth": {
                             "type": "number",
                             "description": "Width of the stair flight.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "stepNum": {
                             "type": "integer",
@@ -9161,12 +9161,12 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
                         "riserHeight": {
                             "type": "number",
                             "description": "Height of each riser. Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not use this riser height.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "treadDepth": {
                             "type": "number",
                             "description": "Depth (going) of each tread. Pinned as a fixed going in the stair rules, so the run length follows from the number of treads; the standard's combined riser/going rules (2R+G, R+G, R/G) are not applied to this stair.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "baseLineEdges": {
                             "type": "array",
@@ -10194,7 +10194,7 @@ GS::Optional<GS::UniString> CreateShellsCommand::GetInputParametersSchema () con
                     },
                     "thickness": {
                         "type": "number",
-                        "exclusiveMinimum": 0.0,
+                        "minimum": 0.0, "exclusiveMinimum": true,
                         "description": "Only takes effect on a Basic shell; a Composite shell takes its thickness from the composite."
                     },
                     "isFlipped": {
@@ -10695,11 +10695,11 @@ GS::Optional<GS::UniString> ModifyStairsCommand::GetInputParametersSchema () con
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "flightWidth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The width of the flights." },
-                        "totalHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the stair relative to its bottom." },
+                        "flightWidth": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The width of the flights." },
+                        "totalHeight": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The height of the stair relative to its bottom." },
                         "stepNum": { "type": "integer", "minimum": 1, "description": "The number of steps (risers)." },
-                        "riserHeight": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of each riser." },
-                        "treadDepth": { "type": "number", "exclusiveMinimum": 0.0, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + "," + StairOutlineSchemaProperties + R"(
+                        "riserHeight": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The height of each riser." },
+                        "treadDepth": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The length of each going. Pinned as a fixed going in the stair rules, as CreateStairs pins it: the going's minimum and maximum are both set to it and applied, and the standard's combined riser/going rules (2R+G, R+G, R/G) are no longer applied to this stair, so Archicad lays the steps out with this going (#2525)." },)") + StairSettingsSchemaProperties + "," + StairOutlineSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -13698,13 +13698,13 @@ GS::Optional<GS::UniString> RecreateCurtainWallsCommand::GetInputParametersSchem
                         },
                         "height": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Optional new height, as CreateCurtainWalls takes it: the vertical height, also of a slanted curtain wall. When omitted, the old curtain wall's height is kept. Archicad does not apply a new height to a slanted curtain wall through ACAPI_Element_Change (seen in Archicad 29), so it is given here."
                         },
                         "angle": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
-                            "exclusiveMaximum": 180.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
+                            "maximum": 180.0, "exclusiveMaximum": true,
                             "description": "Optional new slant angle in degrees, as CreateCurtainWalls takes it and GetDetailsOfElements returns it: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first point), more than 90 to the right. The vertical height and the elevation of the reference line are kept. A slanted curtain wall needs a reference line of exactly 2 points. When omitted, the old curtain wall's slant is kept. Archicad does not change the slant of an existing curtain wall through ACAPI_Element_Change, so it is given here."
                         }
                     },
@@ -15301,8 +15301,8 @@ GS::Optional<GS::UniString> CreateOpeningsCommand::GetInputParametersSchema () c
                     "properties": {
                         "ownerElementId": { "$ref": "#/ElementId" },
                         "basePoint": { "$ref": "#/Coordinate3D" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0 },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0 }
+                        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
+                        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true }
                     },
                     "additionalProperties": false,
                     "required": ["ownerElementId", "basePoint"]
@@ -16031,8 +16031,8 @@ static const char* OpeningExtrusionParametersInputSchema = R"({
             "enum": ["Rectangular", "Circular", "Polygonal"],
             "description": "The shape of the opening's polygon."
         },
-        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "The opening's width. See linkedStatus." },
-        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The opening's height. See linkedStatus." },
+        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The opening's width. See linkedStatus." },
+        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The opening's height. See linkedStatus." },
         "anchor": {
             "type": "string",
             "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
@@ -16892,7 +16892,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                         "floorIndex": { "type": "integer", "description": "Optional home story of the roof. If omitted, it is derived from level: the highest story whose elevation is at or below it (the lowest story when it is below every story). Either way level stays an absolute elevation; the offset from the home story is worked out from it." },
                         "thickness": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Without structureType the new roof keeps the structure of the roof tool default (or the favorite), which may be a composite; send structureType 'Basic' for the thickness to apply."
                         },
                         "polygonCoordinates": {
@@ -16912,7 +16912,7 @@ GS::Optional<GS::UniString> CreateRoofsCommand::GetInputParametersSchema () cons
                         "angle": {
                             "type": "number",
                             "description": "Slope angle of the single-plane roof in radians. Only valid together with 'pivotLine'.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "eavesOverhang": { "type": "number" },
                         "fitSkylightToCurve": {
@@ -17956,10 +17956,10 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
+                        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
                         "thickness": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Send structureType 'Basic' in the same call to switch such a wall first."
                         },
                         "bottomOffset": { "type": "number" },
@@ -18142,8 +18142,8 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "isFlipped": { "type": "boolean" },
                         "profileAngle": { "type": "number" },
                         "anchorPoint": { "$ref": "#/BeamAnchorPoint" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the height: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the height: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
@@ -18377,7 +18377,7 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
                         "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story." },
                         "thickness": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Only takes effect on a Basic (homogeneous) slab - a Composite slab takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite slab first."
                         },
                         "structureType": {
@@ -18762,7 +18762,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         "height": {
                             "type": "number",
                             "description": "The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed. Only for a vertical curtain wall (angle 90): on a slanted or horizontal one the item fails and nothing is changed; use RecreateCurtainWalls for a slanted one.",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "flipped": {
                             "type": "boolean",
@@ -18775,7 +18775,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         "nominalWidth": {
                             "type": "number",
                             "description": "The new nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth, the nominalWidth value GetDetailsOfElements returns).",
-                            "exclusiveMinimum": 0.0
+                            "minimum": 0.0, "exclusiveMinimum": true
                         },
                         "primaryPattern": {
                             "$ref": "#/CurtainWallPattern",
@@ -20935,7 +20935,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "thickness": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first."
                         },
                         "eavesOverhang": {
@@ -21727,7 +21727,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "compositeId": { "$ref": "#/AttributeId" },
                         "thickness": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "The new thickness of a Basic shell, in meters (or of a shell this item makes Basic with 'structureType'). The shell's reference surface (the surface its profile and base plane define) stays in place and the thickness is measured from it to the side 'isFlipped' selects, so only the opposite face moves. A Composite shell takes its thickness from its composite: the item fails, and nothing of it is written; change the skins of the composite attribute, or make the shell Basic in the same item."
                         },
                         "isFlipped": {
@@ -21758,7 +21758,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "extrusionLength": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Extruded shells only: the new length of the extrusion. The extrusion vector keeps its direction and is scaled to this length; the profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionVector."
                         },
                         "profile": {
@@ -21788,7 +21788,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "revolutionAngle": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "maximum": 6.283185307179587,
                             "description": "Revolved shells only: the new angle the profile is turned through, in radians, at most 2*pi (a full turn)."
                         },
@@ -21802,8 +21802,8 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "distortionAngle": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
-                            "exclusiveMaximum": 3.141592653589793,
+                            "minimum": 0.0, "exclusiveMinimum": true,
+                            "maximum": 3.141592653589793, "exclusiveMaximum": true,
                             "description": "Revolved shells only: the new shear of the revolution, in radians, between 0 and pi; pi/2 is no shear."
                         },
                         "segmentType": {
@@ -22353,7 +22353,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "origin": { "$ref": "#/Coordinate2D" },
                         "zCoordinate": { "type": "number", "description": "Absolute Z of the column's bottom. The home story is derived from it unless floorIndex is given; a Z below the lowest story stays on the lowest story with a negative bottomOffset." },
                         "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story (combine with bottomOffset to set the offset relative to it)." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
+                        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Sets relativeTopStory to 0 (explicit height). Do not combine with relativeTopStory in the same call - see the note on relativeTopStory below." },
                         "bottomOffset": { "type": "number" },
                         "axisRotationAngle": { "type": "number" },
                         "coreAnchor": { "$ref": "#/ColumnCoreAnchor" },
@@ -22364,8 +22364,8 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "wrapping": { "type": "boolean" },
                         "topOffset": { "type": "number" },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column, the diameter of a round one. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
-                        "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the depth: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Cross section width of the column, the diameter of a round one. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "depth": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Cross section depth (height) of the column. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the depth: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
@@ -22799,8 +22799,8 @@ GS::Optional<GS::UniString> ModifyOpeningsCommand::GetInputParametersSchema () c
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
                         "basePoint": { "$ref": "#/Coordinate3D", "description": "New base point of the opening: its bottom left corner in world space, the same point CreateOpenings takes." },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "New width of the opening." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "New height of the opening. The bottom edge stays where it is, the opening grows or shrinks upwards." }
+                        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "New width of the opening." },
+                        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "New height of the opening. The bottom edge stays where it is, the opening grows or shrinks upwards." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -24226,7 +24226,7 @@ GS::Optional<GS::UniString> ModifySectionsCommand::GetInputParametersSchema () c
                         "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." },
                         "startCoordinate": { "$ref": "#/Coordinate2D", "description": "The new start point of the section line. Only a straight marker (a section line of 2 points, as CreateSections and CreateElevations make) can be moved. The depth line and the marked distant area line keep their distance from it." },
                         "endCoordinate": { "$ref": "#/Coordinate2D", "description": "The new end point of the section line, as startCoordinate. The view looks to the side the depth line was on." },
-                        "depth": { "type": "number", "exclusiveMinimum": 0, "description": "The new distance of the depth line from the section line, on the side it is on. GetDetailsOfElements reads it back as depth. Only applies when the element's horizontalRange is Limited (SetSectionsAndElevationsDetails); refused otherwise." }
+                        "depth": { "type": "number", "minimum": 0, "exclusiveMinimum": true, "description": "The new distance of the depth line from the section line, on the side it is on. GetDetailsOfElements reads it back as depth. Only applies when the element's horizontalRange is Limited (SetSectionsAndElevationsDetails); refused otherwise." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -27606,7 +27606,7 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                         },
                         "height": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "The new height of the railing segments (the height GetDetailsOfElements returns), applied to every segment of the railing."
                         },
                         "bottomOffset": {
@@ -27650,7 +27650,7 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                     },
                                     "height": {
                                         "type": "number",
-                                        "exclusiveMinimum": 0.0,
+                                        "minimum": 0.0, "exclusiveMinimum": true,
                                         "description": "The new height of this segment."
                                     },
                                     "lateralOffset": {

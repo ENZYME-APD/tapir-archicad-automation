@@ -3535,7 +3535,7 @@
                 "description": "The sizes (widths of the columns or heights of the rows) of the pattern unit in meters, in order from the start of the segment or from the bottom. The unit is repeated to fill the segment.",
                 "items": {
                     "type": "number",
-                    "exclusiveMinimum": 0.0
+                    "minimum": 0.0, "exclusiveMinimum": true
                 },
                 "minItems": 1
             },
@@ -3659,11 +3659,11 @@
             },
             "width": {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "minimum": 0.0, "exclusiveMinimum": true
             },
             "height": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Only used for the Rectangular type."
             }
         },
@@ -6604,7 +6604,7 @@
             "depth": {
                 "type": "number",
                 "description": "How far each segment looks. Applied to every segment. Defaults to 1.0.",
-                "exclusiveMinimum": 0.0
+                "minimum": 0.0, "exclusiveMinimum": true
             },
             "name": {
                 "type": "string",
@@ -11798,12 +11798,12 @@
             },
             "width": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Cross section width of this segment (at its start when it is tapered)."
             },
             "depth": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Cross section depth (height) of this segment (at its start when it is tapered)."
             },
             "isWidthAndHeightLinked": {
@@ -12028,12 +12028,12 @@
             },
             "width": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Cross section width of the segment (at its start, for a tapered segment)."
             },
             "height": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Cross section height of the segment (at its start, for a tapered segment)."
             },
             "isWidthAndHeightLinked": {
@@ -12058,12 +12058,12 @@
             },
             "endWidth": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
             },
             "endHeight": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
             },
             "isEndWidthAndHeightLinked": {
@@ -12739,7 +12739,7 @@
             },
             "size": {
                 "type": "number",
-                "exclusiveMinimum": 0,
+                "minimum": 0, "exclusiveMinimum": true,
                 "description": "The arrowhead size in mm."
             },
             "pen": {
@@ -13556,7 +13556,7 @@
             },
             "length": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "The length of one repetition (API_RailingDistributionData::length)."
             },
             "patternAmount": {
@@ -15706,12 +15706,12 @@
             },
             "widthFactor": {
                 "type": "number",
-                "exclusiveMinimum": 0,
+                "minimum": 0, "exclusiveMinimum": true,
                 "description": "Width scale of the characters (1 is 100 %)."
             },
             "spacingFactor": {
                 "type": "number",
-                "exclusiveMinimum": 0,
+                "minimum": 0, "exclusiveMinimum": true,
                 "description": "Spacing scale between the characters (1 is 100 %)."
             }
         },
@@ -15734,7 +15734,7 @@
             },
             "size": {
                 "type": "number",
-                "exclusiveMinimum": 0,
+                "minimum": 0, "exclusiveMinimum": true,
                 "description": "The marker size, the API's markerData.markerSize, which the DevKit calls the size in millimeters at the drawing scale. Compare it with the marker size of the Dimension Settings before relying on it: on Archicad 29 a linear dimension whose dialog showed 1.0 read 2.5 here."
             }
         },
@@ -17070,7 +17070,7 @@
         "description": "The headroom of a Stair (API_StairHeadroomData, Stair Settings > Headroom): the clear space above the flights that Archicad checks against the elements above the stair. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
         "properties": {
             "method": { "type": "string", "enum": ["RightAngleToSlope", "VerticallyToSlope", "Unknown"], "description": "How the headroom is generated: at right angle to the slope of the stair (APIHM_RightAngleToSlope) or vertically to it (APIHM_VerticallyToSlope). GetDetailsOfElements returns Unknown for a value it does not know; CreateStairs and ModifyStairs refuse Unknown." },
-            "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the headroom." },
+            "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The height of the headroom." },
             "leftOffset": { "type": "number", "description": "The offset of the headroom from the left side of the stair." },
             "rightOffset": { "type": "number", "description": "The offset of the headroom from the right side of the stair." }
         },
@@ -18334,7 +18334,7 @@
             },
             "levelAngle": {
                 "type": "number",
-                "exclusiveMinimum": 0.0
+                "minimum": 0.0, "exclusiveMinimum": true
             },
             "height": {
                 "type": "number",
@@ -18342,7 +18342,7 @@
             },
             "angle": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "The same as levelAngle, as GetDetailsOfElements reads it."
             }
         },
@@ -19261,7 +19261,7 @@
             },
             "roomLSize": {
                 "type": "number",
-                "exclusiveMinimum": 0.0,
+                "minimum": 0.0, "exclusiveMinimum": true,
                 "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
             },
             "referencePosition": {
@@ -19746,7 +19746,7 @@
             },
             "rasterizeDPI": {
                 "type": "number",
-                "exclusiveMinimum": 0,
+                "minimum": 0, "exclusiveMinimum": true,
                 "description": "The resolution, in dots per inch, a PDF drawing is rasterized at (API_DrawingType::rasterizeDPI)."
             },
             "anchorPoint": {
@@ -24103,7 +24103,7 @@
             "length": {
                 "type": "number",
                 "description": "Optional length of the take-off in meters, set after placing it; must be positive. The length of the Take-Off tool when not given.",
-                "exclusiveMinimum": 0
+                "minimum": 0, "exclusiveMinimum": true
             },
             "defaults": {
                 "type": "object",
@@ -30405,12 +30405,12 @@
             "totalHeight": {
                 "type": "number",
                 "description": "Total height of the stair.",
-                "exclusiveMinimum": 0.0
+                "minimum": 0.0, "exclusiveMinimum": true
             },
             "flightWidth": {
                 "type": "number",
                 "description": "Width of the stair flight.",
-                "exclusiveMinimum": 0.0
+                "minimum": 0.0, "exclusiveMinimum": true
             },
             "stepNum": {
                 "type": "integer",
@@ -30420,12 +30420,12 @@
             "riserHeight": {
                 "type": "number",
                 "description": "Height of each riser.",
-                "exclusiveMinimum": 0.0
+                "minimum": 0.0, "exclusiveMinimum": true
             },
             "treadDepth": {
                 "type": "number",
                 "description": "Depth (going) of each tread.",
-                "exclusiveMinimum": 0.0
+                "minimum": 0.0, "exclusiveMinimum": true
             },
             "finishVisible": {
                 "type": "boolean",

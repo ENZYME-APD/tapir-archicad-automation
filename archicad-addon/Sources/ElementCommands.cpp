@@ -10997,12 +10997,12 @@ GS::Optional<GS::UniString> ScaleElementsCommand::GetInputParametersSchema () co
             },
             "factor": {
                 "type": "number",
-                "exclusiveMinimum": 0,
+                "minimum": 0, "exclusiveMinimum": true,
                 "description": "The scale factor, greater than 0: 2 doubles the distances from the center, 0.5 halves them."
             },
             "factorY": {
                 "type": "number",
-                "exclusiveMinimum": 0,
+                "minimum": 0, "exclusiveMinimum": true,
                 "description": "Optional scale factor in Y. Archicad's Resize scales X and Y by one ratio, so it must be the same as factor (or left out); a different value is refused."
             }
         },

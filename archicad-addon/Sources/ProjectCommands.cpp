@@ -3125,7 +3125,7 @@ GS::Optional<GS::UniString> InsertStoryCommand::GetInputParametersSchema () cons
             "height": {
                 "type": "number",
                 "description": "The height of the new story, greater than zero. Default is the height of the story of storyIndex.",
-                "exclusiveMinimum": 0
+                "minimum": 0, "exclusiveMinimum": true
             },
             "dispOnSections": {
                 "type": "boolean",
@@ -3596,7 +3596,7 @@ GS::Optional<GS::UniString> ModifyStoryCommand::GetInputParametersSchema () cons
             "height": {
                 "type": "number",
                 "description": "The new height of the story, greater than zero. As in Archicad's Story Settings dialog, every story above moves up or down with the top of this story and keeps its height.",
-                "exclusiveMinimum": 0
+                "minimum": 0, "exclusiveMinimum": true
             },
             "dispOnSections": {
                 "type": "boolean",
