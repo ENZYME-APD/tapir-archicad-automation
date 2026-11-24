@@ -1,9 +1,9 @@
 {
  "version": 1,
- "generatedAt": "2026-11-23T12:47:42Z",
+ "generatedAt": "2026-11-24T13:56:42Z",
  "totals": {
-  "people": 50,
-  "places": 46,
+  "people": 51,
+  "places": 47,
   "countries": 30
  },
  "places": [
@@ -110,6 +110,14 @@
    "countryCode": "FI",
    "lat": 60.17,
    "lon": 24.94,
+   "people": 1
+  },
+  {
+   "name": "Heraklion",
+   "country": "Greece",
+   "countryCode": "GR",
+   "lat": 35.34,
+   "lon": 25.13,
    "people": 1
   },
   {
@@ -425,6 +433,11 @@
    "people": 2
   },
   {
+   "name": "Greece",
+   "code": "GR",
+   "people": 2
+  },
+  {
    "name": "Italy",
    "code": "IT",
    "people": 2
@@ -452,11 +465,6 @@
   {
    "name": "Chile",
    "code": "CL",
-   "people": 1
-  },
-  {
-   "name": "Greece",
-   "code": "GR",
    "people": 1
   },
   {
@@ -650,6 +658,14 @@
    "countryCode": "FI",
    "lat": 60.17,
    "lon": 24.94,
+   "kind": "settlement"
+  },
+  "heraklion, crete": {
+   "name": "Heraklion",
+   "country": "Greece",
+   "countryCode": "GR",
+   "lat": 35.34,
+   "lon": 25.13,
    "kind": "settlement"
   },
   "hi, architect from prague, cz here": null,

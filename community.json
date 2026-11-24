@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-23T12:31:37Z",
+ "generatedAt": "2026-11-24T13:39:12Z",
  "months": [
   {
    "month": "2022-07",
@@ -420,14 +420,14 @@
   }
  ],
  "totals": {
-  "commits": 1473,
-  "discordMessages": 12503,
-  "discordMembers": 692,
+  "commits": 1474,
+  "discordMessages": 12562,
+  "discordMembers": 694,
   "discordMembersChange": {
-   "diff": 52,
-   "days": 17
+   "diff": 54,
+   "days": 18
   },
-  "participants": 535
+  "participants": 538
  },
  "topContributors": [
   {
@@ -459,18 +459,18 @@
    "tests": 156
   },
   {
+   "name": "MathiasJon",
+   "login": "MathiasJon",
+   "commits": 114,
+   "reports": 24,
+   "tests": 1
+  },
+  {
    "name": "Cri5chan",
    "login": "Cri5chan",
    "commits": 135,
    "reports": 2,
    "tests": 0
-  },
-  {
-   "name": "MathiasJon",
-   "login": "MathiasJon",
-   "commits": 112,
-   "reports": 23,
-   "tests": 1
   },
   {
    "name": "Viktor Kovacs",
@@ -780,6 +780,10 @@
   {
    "date": "2026-11-23",
    "members": 692
+  },
+  {
+   "date": "2026-11-24",
+   "members": 694
   }
  ]
 }
