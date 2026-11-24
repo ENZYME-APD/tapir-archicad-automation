@@ -1110,7 +1110,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetURLReferencesOfElementsCommand> (
             elementCommands, "1.8.0",
-            "Sets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. Fails with APIERR_MOREUSER for an element that already holds a link."
+            "Sets the web link (URL reference) of the given elements: a URL with a description, shown in Archicad in the element's settings under Element Information > Link. Without a description the URL is used as the description. Fails with APIERR_MOREUSER for an element that already holds a link."
         );
         err |= RegisterCommand<ChangeLibraryPartOfElementsCommand> (
             elementCommands, "1.8.0",
