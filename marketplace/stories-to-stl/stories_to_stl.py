@@ -19,7 +19,7 @@
 # changes = "files"
 # ///
 """
-Stories as STL for 3D printing
+Stories to STL for 3D printing
 
 Original by Constantin Koblmiller. Licence: MIT.
 
@@ -40,7 +40,7 @@ How it works (no UI automation):
 Needs the Tapir Add-On 1.6.0 or later.
 
 Testing without Archicad:
-  uv run --script story_stl_export.py --ifc model.ifc --out stl_out --scale 500
+  uv run --script stories_to_stl.py --ifc model.ifc --out stl_out --scale 500
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ from pathlib import Path
 
 import numpy as np
 
-SCRIPT_TITLE = "Stories as STL for 3D printing"
+SCRIPT_TITLE = "Stories to STL for 3D printing"
 MIN_TAPIR_VERSION = (1, 6, 0)
 
 # IFC classes that are never printed

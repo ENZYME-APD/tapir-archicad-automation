@@ -1,4 +1,4 @@
-# Stories as STL for 3D printing
+# Stories to STL for 3D printing
 
 Exports what you see in the 3D window as one STL file per story, so you can
 3D print a model that comes apart story by story. Each story is cut a little
@@ -67,7 +67,7 @@ It writes:
 - Large models take a few minutes; the window shows the progress.
 - Windows and macOS. The window is in English.
 - It can also be run without Archicad on an existing IFC file:
-  `uv run --script story_stl_export.py --ifc model.ifc --out stl_out --scale 500`
+  `uv run --script stories_to_stl.py --ifc model.ifc --out stl_out --scale 500`
 
 ## Credits
 
