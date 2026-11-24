@@ -921,6 +921,44 @@
       ]
     },
     {
+      "slug": "stories-to-stl",
+      "name": "Stories to STL for 3D printing",
+      "summary": "Exports what is visible in the 3D window as one closed STL per story, cut just below each story level, ready to 3D print a model that comes apart.",
+      "category": "import-export",
+      "tags": [
+        "stl",
+        "3d-printing",
+        "stories",
+        "physical-model",
+        "ifc",
+        "export"
+      ],
+      "author": {
+        "name": "Constantin Koblmiller",
+        "github": "consier"
+      },
+      "license": "MIT",
+      "entry": "stories_to_stl.py",
+      "changes": "files",
+      "screenshots": [
+        "01-dialog.png",
+        "02-print-beds.jpg"
+      ],
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            28
+          ],
+          "minTapirVersion": "1.6.0",
+          "changelog": "First version.",
+          "commit": "d722869fd264b0f8ea8ada68a6dda281a27d6da8",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/d722869fd264b0f8ea8ada68a6dda281a27d6da8/marketplace/stories-to-stl/stories_to_stl.py",
+          "sha256": "0d3fd1a8ed15c7595d9cbf54222df59d2a083cb93f9c1431dcaf8358f48f2c48"
+        }
+      ]
+    },
+    {
       "slug": "story-setup",
       "name": "Story Setup",
       "summary": "Sets up the stories of the project from a pasted table or a CSV file, shows what changes first, and refuses to delete a story with elements on it.",
